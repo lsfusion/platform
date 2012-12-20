@@ -18,13 +18,13 @@ parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 CLASS warehouse 'Склад' : stock, externalizable, employeeDivision;
 
 warehouseGroupWarehouse (warehouse) = DATA warehouseGroup (warehouse) AUTOSET;
-nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN baseGroup;
+nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN base;
 isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
     isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
 legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse) NOT NULL;
-nameLegalEntityWarehouse 'Организация' (warehouse) = name(legalEntityWarehouse(warehouse)) IN baseGroup;
+nameLegalEntityWarehouse 'Организация' (warehouse) = name(legalEntityWarehouse(warehouse)) IN base;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
 userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (legalEntity, warehouse);

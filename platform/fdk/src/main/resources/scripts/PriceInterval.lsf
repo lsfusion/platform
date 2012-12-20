@@ -25,9 +25,9 @@ TABLE priceInterval (priceInterval);
 
 roundConditionPriceInterval = DATA roundCondition(priceInterval);
 
-fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
-toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
-modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN baseGroup;
+fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN base;
+toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN base;
+modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN base;
 
 integerPriceRoundCondition 'Целое' (price, roundCondition) = divideInteger((price AS NUMERIC[14,3]), denominatorPriceRoundCondition(roundCondition));
 

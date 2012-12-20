@@ -17,11 +17,11 @@ TABLE customer (customer);
 //CLASS contractSkuCustomer 'Договор с покупателем' : contractSku;
 //
 //legalEntityContractSkuCustomer = DATA legalEntity (contractSkuCustomer) AUTOSET;
-//nameLegalEntityContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(legalEntityContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameLegalEntityContractSkuCustomer 'Продавец' (contractSkuCustomer) = name(legalEntityContractSkuCustomer(contractSkuCustomer)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyAContract (contract) += legalEntityContractSkuCustomer(contract);
 //
 //customerContractSkuCustomer = DATA customer (contractSkuCustomer) AUTOSET;
-//nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameCustomerContractSkuCustomer 'Покупатель' (contractSkuCustomer) = name(customerContractSkuCustomer(contractSkuCustomer)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyBContract (contract) += customerContractSkuCustomer(contract);
 //
 //TABLE legalEntityCustomer(legalEntity, customer);

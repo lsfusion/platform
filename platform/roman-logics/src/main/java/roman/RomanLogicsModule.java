@@ -1788,10 +1788,16 @@ public class RomanLogicsModule extends LogicsModule {
         addTable("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
     }
 
+    protected AbstractGroup idGroup;
+    protected AbstractGroup actionGroup;
+
     @Override
     public void initGroups() {
         initBaseGroupAliases();
         Settings.instance.setDisableSumGroupNotZero(true);
+
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
+        actionGroup = addAbstractGroup("actionGroup", "Действия", publicGroup, false);
 
         skuAttributeGroup = addAbstractGroup("skuAttributeGroup", "Атрибуты SKU", baseGroup);
         itemAttributeGroup = addAbstractGroup("itemAttributeGroup", "Атрибуты товара", baseGroup);
@@ -1799,7 +1805,6 @@ public class RomanLogicsModule extends LogicsModule {
         intraAttributeGroup = addAbstractGroup("intraAttributeGroup", "Внутренние атрибуты", publicGroup);
         importInvoiceActionGroup = addAbstractGroup("importInvoiceActionGroup","Импорт инвойсов", actionGroup, false);
         importOrderActionGroup = addAbstractGroup("importOrderActionGroup","Импорт заказов", actionGroup, false);
-        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     @Override

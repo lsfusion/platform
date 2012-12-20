@@ -7,7 +7,7 @@ REQUIRE System, Numerator;
 CLASS ABSTRACT postedObject 'Объект с возможностью закрытия';
 TABLE postedObject (postedObject);
 
-GROUP postedGroup 'Информация о закрытии' : baseGroup;
+GROUP postedGroup 'Информация о закрытии' : base;
 
 timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN postedGroup;
 userClosed 'Проведен пользователем' = DATA customUser (postedObject);
@@ -26,10 +26,10 @@ CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : n
 @defineNumeratedObjectDefault(numeratedDocument, 'Нумератор для документов', 'ДК');
 
 // Стандартные группы
-GROUP documentHeaderGroup 'Шапка документа' : baseGroup;
-GROUP documentSumGroup 'Суммы документа': publicGroup;
-GROUP documentPrmGroup 'Параметры документа': publicGroup;
-GROUP documentShipmentGroup 'Исполенние' : baseGroup;
+GROUP documentHeaderGroup 'Шапка документа' : base;
+GROUP documentSumGroup 'Суммы документа': public;
+GROUP documentPrmGroup 'Параметры документа': public;
+GROUP documentShipmentGroup 'Исполенние' : base;
 
 // Макросы по созданию документов
 
@@ -501,7 +501,7 @@ END
 META defineDocumentDetailIndex (object, detail)
     index###detail 'Номер строки' (idetail) =
         PARTITION SUM 1 IF idetail IS detail BY object###detail(idetail)
-        ORDER idetail IN recognizeGroup MINCHARWIDTH 4 PREFCHARWIDTH 4 IN recognizeGroup;
+        ORDER idetail IN recognize MINCHARWIDTH 4 PREFCHARWIDTH 4;
 END
 META defineDocumentInterfaceDetailIndex (object, detail)
     @defineDocumentDetailIndex(object, detail);

@@ -21,7 +21,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 CLASS transferTable 'Трансфер' : historizable, numeratedObject;//, innerDocument, consignment, outAccountDocumentLedger;
 
-GROUP datesGroup 'Период продаж' : publicGroup;
+GROUP datesGroup 'Период продаж' : public;
 
 TABLE transferTable (transferTable);
 @defineDocumentHeaderTime(transferTable);

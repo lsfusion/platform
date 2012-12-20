@@ -2,7 +2,7 @@ MODULE NaturalLoss;
 
 REQUIRE Document, PriceList, Sales;
 
-GROUP rateGroup 'Нормы' : publicGroup;
+GROUP rateGroup 'Нормы' : public;
 
  // ----------------------------------- Справочник норм естественной убыли -------------------------------------------- //
 
@@ -93,10 +93,10 @@ GROUP rateGroup 'Нормы' : publicGroup;
             CHECKED BY dayToNaturalLossGroupDetail MESSAGE 'Задайте корректный день месяца';
 
 countryNaturalLossGroup = DATA country (naturalLossGroup) AUTOSET;
-nameCountryNaturalLossGroup 'Страна' (naturalLossGroup) = name(countryNaturalLossGroup(naturalLossGroup)) IN baseGroup;
+nameCountryNaturalLossGroup 'Страна' (naturalLossGroup) = name(countryNaturalLossGroup(naturalLossGroup)) IN base;
 
 countrySubNaturalLossGroup = DATA country (subNaturalLossGroup) AUTOSET;
-nameCountrySubNaturalLossGroup 'Страна' (subNaturalLossGroup) = name(countrySubNaturalLossGroup(subNaturalLossGroup)) IN baseGroup;
+nameCountrySubNaturalLossGroup 'Страна' (subNaturalLossGroup) = name(countrySubNaturalLossGroup(subNaturalLossGroup)) IN base;
 
 CONSTRAINT  countryNaturalLossGroup(parentNaturalLossGroup(subNaturalLossGroup)) !=  countrySubNaturalLossGroup(subNaturalLossGroup)
     CHECKED BY parentNaturalLossGroup MESSAGE 'Страна родительской группы должна совпадать со страной группы';

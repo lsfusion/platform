@@ -21,7 +21,7 @@ CLASS WHfromRF 'Приход из РФ' : historizable, numeratedObject;
 CLASS WHfromRFPosted 'Проведенный приход из РФ' : WHfromRF, postedObject;
 CLASS WHfromRFDetail 'Строка прихода из РФ';
 
-GROUP exchangeGroup 'Курсы обмена' : publicGroup;
+GROUP exchangeGroup 'Курсы обмена' : public;
 
 @defineDocumentTables(WHfromRF);
 
@@ -31,7 +31,7 @@ GROUP exchangeGroup 'Курсы обмена' : publicGroup;
 currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == route.rf;
 typeExchangePayFreight 'Тип обмена (ИД)' (freight) = typeExchangeSTX() IF routeFreight(freight) == route.rf;
 
-@defineNearestRateExchangeObject(freight, pay, pay, dateArrivalFreight, baseGroup);
+@defineNearestRateExchangeObject(freight, pay, pay, dateArrivalFreight, base);
 
 tariffVolumeFreight 'Тариф для перевозок (м3)' = DATA NUMERIC[14,2](freight);
 percentCostFreight 'Процент расходов за оформление' = DATA NUMERIC[14,2](freight);

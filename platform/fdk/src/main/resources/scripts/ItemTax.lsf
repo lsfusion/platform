@@ -6,7 +6,7 @@ NAMESPACE Item;
 
 //------------------------- НДС -------------------------//
 
-@defineHistorizableCustom (VATItemCountry, 'НДС', range, numberRange, number, item, nameAttributeItem, country, name, 15, baseGroup);
+@defineHistorizableCustom (VATItemCountry, 'НДС', range, numberRange, number, item, nameAttributeItem, country, name, 15, base);
                         //(property,            caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
 VATSkuCountryDate (item, country, date) += VATItemCountryDate (item, country, date);
 

@@ -69,14 +69,14 @@ TABLE receiptReturnDetail (receiptReturnDetail);
 
 @defineDocumentRelation(zReport, receipt);
 cashRegisterReceipt (receipt) = cashRegisterZReport(zReportReceipt(receipt));
-numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegister(cashRegisterReceipt(receipt)) IN recognizeGroup;
+numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegister(cashRegisterReceipt(receipt)) IN recognize;
 
 groupCashRegisterReceipt (receipt) = groupCashRegisterCashRegister(cashRegisterReceipt(receipt));
 
 cashRegisterModelReceipt (receipt) = cashRegisterModelCashRegister(cashRegisterReceipt(receipt));
 sidCashRegisterModelReceipt 'Код модели' (receipt) = sidModel(cashRegisterModelReceipt(receipt));
 
-numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognizeGroup;
+numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognize;
 
 userReceipt = DATA customUser(receipt);
 nameUserReceipt 'Кассир' (receipt) = commonName(userReceipt(receipt));
@@ -121,7 +121,7 @@ departmentStoreReceiptDetail (receiptDetail) = UNION EXCLUSIVE departmentStoreRe
 @defineDocumentDetailSku(receiptSale, sku);
 @defineDocumentDetailSku(receiptReturn, sku);
 skuReceiptDetail (receiptDetail) = skuReceiptReturnDetail(receiptDetail) OR skuReceiptSaleDetail(receiptDetail);
-nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognizeGroup;
+nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognize;
 
 numberReceipt 'Номер чека' (receipt) = DATA INTEGER (receipt) IN documentHeaderGroup;
 numberReceiptReceiptDetail 'Номер чека' (receiptDetail) = numberReceipt(receiptReceiptDetail(receiptDetail));
@@ -130,7 +130,7 @@ maxNumberReceiptZReport 'Максимальный номер чека' (zReport)
 
 zReportReceiptToReceipt (zReport, receipt, cashRegister) = GROUP UNIQUE receipt BY numberZReport(zReportReceipt(receipt)), numberReceipt(receipt), numberCashRegister(cashRegisterZReport(zReportReceipt(receipt))) WHERE receipt IS receipt;
 
-GROUP receiptDiscountGroup 'Дисконтная карта' : publicGroup;
+GROUP receiptDiscountGroup 'Дисконтная карта' : public;
 
 discountCardReceipt (receipt) = DATA discountCard (receipt);
 numberDiscountCardReceipt 'Номер дисконтной карты' (receipt) = seriesNumberObject(discountCardReceipt(receipt)) IN receiptDiscountGroup;
@@ -303,9 +303,9 @@ CLASS paymentType 'Тип платежа' : named;
 TABLE paymentType (paymentType);
 
 paymentMeansPaymentType (paymentType) = DATA paymentMeans (paymentType);
-namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN baseGroup;
+namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN base;
 
-sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN baseGroup;
+sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN base;
 sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
 receiptPayment (payment) = DATA receipt (payment) NOT NULL DELETE;
@@ -522,7 +522,7 @@ zReportCashRegister = DATA zReport (cashRegister);
 
 currentCashRegister () = cashRegisterComputer(currentComputer());
 
-GROUP receiptZReportGroup 'Z-отчет' : publicGroup;
+GROUP receiptZReportGroup 'Z-отчет' : public;
 
 currentZReport() = zReportCashRegister(currentCashRegister());
 numberCurrentZReport 'Номер текущего Z-отчета' () = numberZReport(currentZReport()) IN receiptZReportGroup;
@@ -552,7 +552,7 @@ WHEN CHANGED (quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(
 
 // Проведение чека
 
-GROUP receiptActionGroup 'Оплата' : publicGroup;
+GROUP receiptActionGroup 'Оплата' : public;
 
 postPrintReceipt 'Напечатать фискальный чек' = ABSTRACT ACTION (receipt);
 noFiscalPostPrintReceipt 'Создать чек (без фискального регистратора)' = ACTION (receipt) {
@@ -682,7 +682,7 @@ createReceiptSaleDetail 'Добавить строку продажи' = ACTION 
     }
 }
 
-GROUP receiptSaleActionGroup 'Продажа' : publicGroup;
+GROUP receiptSaleActionGroup 'Продажа' : public;
 
 // По штрих-коду
 changeBarcodeSaleReceipt = ACTION (receipt) {
@@ -759,7 +759,7 @@ createReceiptReturnDetail 'Добавить строку возврата' = ACT
     }
 }
 
-GROUP receiptReturnActionGroup 'Возврат' : publicGroup;
+GROUP receiptReturnActionGroup 'Возврат' : public;
 
 // По штрих-коду
 FORM scanBarcodeReturnReceipt 'Выбор строки возврата'

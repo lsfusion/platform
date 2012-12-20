@@ -7,19 +7,19 @@ REQUIRE System, DefaultData;
 CLASS numerator 'Нумератор' : named;
 TABLE numerator (numerator);
 
-seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognizeGroup FIXEDCHARWIDTH 3;
+seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognize FIXEDCHARWIDTH 3;
 
-minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognizeGroup;
-maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognizeGroup;
+minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognize;
+maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognize;
 
-stringLengthNumerator 'Длина' = DATA INTEGER (numerator) IN baseGroup;
+stringLengthNumerator 'Длина' = DATA INTEGER (numerator) IN base;
 
-curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognizeGroup;
+curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognize;
 curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN ASSIGNED(numerator IS numerator);
 
 lpadStringWithZero = FORMULA STRING[18] 'lpad(CAST($1 AS text),$2,\'0\')';
 
-curStringValueNumerator 'Тек. значение (строка)' (numerator) = lpadStringWithZero(curValueNumerator(numerator), stringLengthNumerator(numerator)) IN baseGroup;
+curStringValueNumerator 'Тек. значение (строка)' (numerator) = lpadStringWithZero(curValueNumerator(numerator), stringLengthNumerator(numerator)) IN base;
 
 incrementValueNumerator 'Увеличить значение' = ACTION (numerator) NEWSESSION {
     IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
@@ -74,7 +74,7 @@ NAVIGATOR {
 
 // ---------------------------------------------- Нумерованные объекты ----------------------------------------------- //
 
-GROUP numberedGroup 'Нумератор' : baseGroup;
+GROUP numberedGroup 'Нумератор' : base;
 
 CLASS ABSTRACT numberedObject 'Нумерованный объект';
 TABLE numberedObject (numberedObject);

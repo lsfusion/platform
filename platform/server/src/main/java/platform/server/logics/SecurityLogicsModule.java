@@ -116,7 +116,6 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     @Override
@@ -137,11 +136,11 @@ public class SecurityLogicsModule<T extends BusinessLogics<T>> extends LogicsMod
         // ---- Роли
         // todo : переименовать в соответствии с namingPolicy
         sidUserRole = addDProp(BL.LM.baseGroup, "sidUserRole", getString("logics.user.identificator"), StringClass.get(30), userRole);
-        userRoleSID = addAGProp(idGroup, "userRoleSID", getString("logics.user.role.id"), userRole, sidUserRole);
+        userRoleSID = addAGProp("userRoleSID", getString("logics.user.role.id"), userRole, sidUserRole);
 
         // Главная роль
-        mainRoleUser = addDProp(idGroup, "mainRoleUser", getString("logics.user.role.main.role.id"), userRole, BL.LM.user);
-        mainRoleCustomUser = addJProp(idGroup, "mainRoleCustomUser", getString("logics.user.role.main.role.id"), BL.LM.and1, mainRoleUser, 1, is(baseLM.customUser), 1);
+        mainRoleUser = addDProp("mainRoleUser", getString("logics.user.role.main.role.id"), userRole, BL.LM.user);
+        mainRoleCustomUser = addJProp("mainRoleCustomUser", getString("logics.user.role.main.role.id"), BL.LM.and1, mainRoleUser, 1, is(baseLM.customUser), 1);
         sidMainRoleCustomUser = addJProp("sidMainRoleCustomUser", getString("logics.user.role.main.role.identificator"), sidUserRole, mainRoleCustomUser, 1);
         nameMainRoleUser = addJProp(BL.LM.baseGroup, "nameMainRoleUser", getString("logics.user.role.main.role"), BL.LM.name, mainRoleUser, 1);
 

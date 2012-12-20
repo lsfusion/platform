@@ -6,7 +6,7 @@ PRIORITY Sale;
 
 //----------------------------------------------------------------------------//
 
-GROUP orderSaleGroup 'Информация о заказе' : publicGroup;
+GROUP orderSaleGroup 'Информация о заказе' : public;
 
 createPurchaseOrder 'Создать заказ' = ABSTRACT BOOLEAN (order) PERSISTENT;
 createPurchaseUserOrder 'Создать заказ' = DATA BOOLEAN (userOrder) PERSISTENT;

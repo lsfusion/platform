@@ -102,7 +102,7 @@ FORM pricingCommitteeDialog 'Комиссии для акта расценки'
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 
-GROUP pricingCommitteeGroup 'Комиссия' : publicGroup;
+GROUP pricingCommitteeGroup 'Комиссия' : public;
 
 META defineDocumentHeaderPricingCommittee(object, stockClass)
     pricingCommittee###object (object) = DATA pricingCommittee(object);

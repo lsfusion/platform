@@ -2,7 +2,7 @@ MODULE Sample;
 
 REQUIRE System;
 
-GROUP base : baseGroup;
+GROUP base : base;
 
 CLASS article 'Товар' : named;
 CLASS store 'Склад' : named;

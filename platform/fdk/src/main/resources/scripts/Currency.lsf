@@ -38,7 +38,7 @@ TABLE typeExchange(typeExchange);
 TABLE rateExchange (typeExchange, currency, DATE);
 
 currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA currency(typeExchange);
-nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange)) IN baseGroup;
+nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange)) IN base;
 rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (typeExchange, currency, DATE);
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =

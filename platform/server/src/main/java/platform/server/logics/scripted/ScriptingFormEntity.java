@@ -211,7 +211,7 @@ public class ScriptingFormEntity {
             } else if (propertyName.equals("SELECTION")) {
                 //assertion, что создастся только один PropertyDrawEntity
                 property = BaseUtils.<PropertyDrawEntity>single(
-                        form.addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping))
+                        form.addPropertyDraw(LM.baseLM.selection, false, getMappingObjectsArray(mapping))
                 );
             } else if (propertyName.equals("ADDOBJ")) {
                 if (mapping.size() != 1) {

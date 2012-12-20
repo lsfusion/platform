@@ -13,7 +13,7 @@ CLASS storeType 'Формат магазина' : stockGroup, employeeDivisionGr
 TABLE storeType (storeType);
 
 chainStoresStoreType = DATA chainStores (storeType) NOT NULL DELETE;
-nameChainStoresStoreType 'Торговая сеть' (storeType) = name(chainStoresStoreType(storeType)) IN baseGroup;
+nameChainStoresStoreType 'Торговая сеть' (storeType) = name(chainStoresStoreType(storeType)) IN base;
 
 inChainStoresStoreType(chainStores, storeType) = chainStoresStoreType(storeType) == chainStores;
 
@@ -40,7 +40,7 @@ CLASS store 'Магазин' : stockGroup, externalizable, taxUnit, employeeDivi
 TABLE store (store);
 
 legalEntityStore = DATA legalEntity (store) NOT NULL;
-nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN baseGroup;
+nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN base;
 
 languageStore (store) = languageLegalEntity(legalEntityStore(store));
 
@@ -57,12 +57,12 @@ latitudePOI (store) += latitudeStore(store);
 longitudePOI (store) += longitudeStore(store);
 
 storeTypeStore = DATA storeType (store) AUTOSET;
-nameStoreTypeStore 'Формат' (store) = name(storeTypeStore(store)) IN baseGroup;
+nameStoreTypeStore 'Формат' (store) = name(storeTypeStore(store)) IN base;
 
 inStoreTypeStore (storeType, store) = storeTypeStore (store) == storeType;
 
 chainStoresStore (store) = chainStoresStoreType(storeTypeStore(store));
-nameChainStoresStore 'Торговая сеть' (store) = name(chainStoresStore(store)) IN baseGroup;
+nameChainStoresStore 'Торговая сеть' (store) = name(chainStoresStore(store)) IN base;
 
 inChainStoresStore (chainStores, store) = chainStoresStore(store) == chainStores;
 
@@ -84,7 +84,7 @@ TABLE departmentStore (departmentStore);
 TABLE departmentStoreDate (departmentStore, DATE);
 
 storeDepartmentStore = DATA store (departmentStore) AUTOSET;
-nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN baseGroup;
+nameStoreDepartmentStore 'Магазин' (departmentStore) = name(storeDepartmentStore(departmentStore)) IN base;
 stockGroupStock (departmentStore) += storeDepartmentStore(departmentStore);
 employeeDivisionGroupEmployeeDivision (departmentStore) += storeDepartmentStore(departmentStore);
 
@@ -118,7 +118,7 @@ explicitBatchLedgerStock(stock) += explicitBatchLedgerDepartmentStore(stock);
 
 regionStock(stock) += regionStore(storeDepartmentStore(stock));
 
-@defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, publicGroup);
+@defineHistorizable(tradingSquareDepartmentStore, 'Торговая площадь', NUMERIC[10,2], departmentStore, name, public);
 
 tradingSquareStoreDate (store, date) = GROUP SUM tradingSquareDepartmentStoreDate(departmentStore, date) BY storeDepartmentStore(departmentStore), date;
 tradingSquareStore 'Торговая площадь' (store) = tradingSquareStoreDate(store, currentDate());

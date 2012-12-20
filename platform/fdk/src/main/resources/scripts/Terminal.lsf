@@ -37,7 +37,7 @@ groupMachineryMachinery(machinery) += groupTerminalTerminal(machinery);
 terminalModelTerminal = DATA terminalModel (terminal);
 modelMachinery(machinery) += terminalModelTerminal(machinery);
 
-directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN baseGroup;
+directoryTerminal 'Директория обмена с ТСД' = DATA STRING[100] (terminal) IN base;
 
 FORM terminal 'ТСД'
     OBJECTS t=terminal FIXED PANEL
@@ -49,7 +49,7 @@ FORM terminal 'ТСД'
 CLASS groupTerminalDocumentType 'Группа типов документов';
 TABLE groupTerminalDocumentType (groupTerminalDocumentType);
 
-nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+nameGroupTerminalDocumentType 'Наименование группы' = DATA STRING[200] (groupTerminalDocumentType) IN base MINCHARWIDTH 10 PREFCHARWIDTH 20;
 groupTerminalDocumentTypeGroupTerminal 'Группа типов документов (ИД)' = DATA groupTerminalDocumentType (groupTerminal);
 nameGroupTerminalDocumentTypeGroupTerminal 'Группа типов документов' (groupTerminal) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeGroupTerminal(groupTerminal));
 
@@ -59,7 +59,7 @@ CLASS STATIC terminalHandbookType 'Вид справочника ТСД' {
     terminalHandbookTypeLegalEntity 'Организация'
 };
 
-idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN baseGroup;
+idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN base;
 terminalHandbookTypeID (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS terminalHandbookType;
 
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
@@ -76,23 +76,23 @@ TABLE terminalDocumentType (terminalDocumentType);
 groupTerminalDocumentTypeTerminalDocumentType = DATA groupTerminalDocumentType (terminalDocumentType);
 nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов документов' (terminalDocumentType) = nameGroupTerminalDocumentType(groupTerminalDocumentTypeTerminalDocumentType(terminalDocumentType));
 
-nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameTerminalDocumentType 'Название' = DATA STRING[200] (terminalDocumentType) IN base;
 
-idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN baseGroup;
+idTerminalDocumentType 'Код' = DATA STRING[10] (terminalDocumentType) IN base;
 terminalDocumentTypeID (terminalDocumentType) = GROUP UNIQUE terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS terminalDocumentType;
 
 terminalHandbookType1TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
 idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 nameTerminalHandbookType1TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
-nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook1TerminalDocumentType 'Наименование в справочнике 1' = DATA STRING[200] (terminalDocumentType) IN base;
 nameInHandbook1TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType1TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType1TerminalDocumentType(terminalDocumentType));
 
 terminalHandbookType2TerminalDocumentType = DATA terminalHandbookType (terminalDocumentType);
 idTerminalHandbookType2TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 nameTerminalHandbookType2TerminalDocumentType 'Имя' (terminalDocumentType)  = name (terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 
-nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN baseGroup;
+nameInHandbook2TerminalDocumentType 'Наименование в справочнике 2' = DATA STRING[200] (terminalDocumentType) IN base;
 nameInHandbook2TerminalDocumentType(terminalDocumentType) <- nameTerminalHandbookType2TerminalDocumentType(terminalDocumentType) WHEN CHANGED(terminalHandbookType2TerminalDocumentType(terminalDocumentType));
 
 FORM groupTerminalDocumentType 'Группа типов документов'
@@ -182,21 +182,21 @@ DESIGN groupsTerminal FROM DEFAULT {
 CLASS terminalDocument 'Документ ТСД';
 TABLE terminalDocument (terminalDocument);
 
-idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN baseGroup;
+idTerminalDocument 'Номер' = DATA INTEGER (terminalDocument) IN base;
 terminalDocumentID (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument)
                                                        WHERE terminalDocument IS terminalDocument;
 
-titleTerminalDocument 'Имя' = DATA STRING[100] (terminalDocument) IN baseGroup;
-quantityTerminalDocument 'Количество' = DATA NUMERIC[14,3] (terminalDocument) IN baseGroup;
-idTerminalHandbookType1TerminalDocument 'Код в справочнике 1' = DATA INTEGER (terminalDocument) IN baseGroup;
-idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = DATA INTEGER (terminalDocument) IN baseGroup;
+titleTerminalDocument 'Имя' = DATA STRING[100] (terminalDocument) IN base;
+quantityTerminalDocument 'Количество' = DATA NUMERIC[14,3] (terminalDocument) IN base;
+idTerminalHandbookType1TerminalDocument 'Код в справочнике 1' = DATA INTEGER (terminalDocument) IN base;
+idTerminalHandbookType2TerminalDocument 'Код в справочнике 2' = DATA INTEGER (terminalDocument) IN base;
 
 terminalDocumentTypeTerminalDocument = DATA terminalDocumentType (terminalDocument);
 nameTerminalDocumentTypeTerminalDocument 'Тип документа' (terminalDocument) = nameTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
 
 idTerminalDocumentTypeTerminalDocument (terminalDocument) = idTerminalDocumentType (terminalDocumentTypeTerminalDocument (terminalDocument));
 
-usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN baseGroup;
+usedTerminalDocument 'Использован' (terminalDocument) = DATA BOOLEAN (terminalDocument) IN base;
 notUsedTerminalDocument 'Неиспользован' (terminalDocument) = terminalDocument IS terminalDocument AND NOT usedTerminalDocument(terminalDocument);
 
 terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentDetail);
@@ -204,17 +204,17 @@ terminalDocumentTerminalDocumentDetail = DATA terminalDocument(terminalDocumentD
 CLASS terminalDocumentDetail 'Строка документа ТСД';
 TABLE terminalDocumentDetail (terminalDocumentDetail);
 
-numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN baseGroup;
+numberTerminalDocumentDetail 'Номер' = DATA INTEGER (terminalDocumentDetail) IN base;
 terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocument) =
     GROUP UNIQUE terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
           WHERE terminalDocumentDetail IS terminalDocumentDetail;
 
-barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (terminalDocumentDetail) IN baseGroup;
-quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN baseGroup;
-nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (terminalDocumentDetail) IN baseGroup;
-isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocumentDetail) IN baseGroup;
+barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (terminalDocumentDetail) IN base;
+quantityTerminalDocumentDetail 'Количество' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN base;
+priceTerminalDocumentDetail 'Цена' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN base;
+sumTerminalDocumentDetail 'Сумма' = DATA NUMERIC[14,3] (terminalDocumentDetail) IN base;
+nameTerminalDocumentDetail 'Наименование' = DATA STRING[200] (terminalDocumentDetail) IN base;
+isNewTerminalDocumentDetail 'Новый товар' = DATA BOOLEAN (terminalDocumentDetail) IN base;
 
 // ----------------------------------------------- Формы документов ------------------------------------------ //
 

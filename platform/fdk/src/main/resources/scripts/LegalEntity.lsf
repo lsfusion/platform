@@ -7,7 +7,7 @@ REQUIRE System, Historizable, Tax, Country, I18n, Integration;
 CLASS ownership 'Форма собственности' : named;
 TABLE ownership (ownership);
 
-shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN baseGroup FIXEDCHARWIDTH 6;
+shortNameOwnership 'Cокращенное название' = DATA STRING[10] (ownership) IN base FIXEDCHARWIDTH 6;
 shortNameToOwnership (string) = GROUP UNIQUE ownership BY shortNameOwnership (ownership) WHERE ownership IS ownership;
 
 countryOwnership = DATA country (ownership);
@@ -38,7 +38,7 @@ languageLegalEntity = DATA language(legalEntity);
 nameLanguageLegalEntity 'Язык' (legalEntity) = name(languageLegalEntity(legalEntity)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 languageLegalEntity(legalEntity) <- languageCountry(countryLegalEntity(legalEntity)) WHEN CHANGED(countryLegalEntity(legalEntity));
 
-GROUP lawGroup 'Реквизиты' : publicGroup;
+GROUP lawGroup 'Реквизиты' : public;
 
 ownershipLegalEntity = DATA ownership (legalEntity);
 nameOwnershipLegalEntity 'Форма собственности' = name(ownershipLegalEntity(legalEntity)) IN lawGroup;
@@ -52,19 +52,19 @@ fullNameLegalEntity 'Полное наименование' = DATA STRING[200] (
 @defineHistorizable(addressLegalEntity, 'Юридический адрес', STRING[150], legalEntity, name, lawGroup);
 @defineHistorizable(postAddressLegalEntity, 'Почтовый адрес', STRING[150], legalEntity, name, lawGroup);
 
-GROUP contactGroup 'Контактная информация' : publicGroup;
+GROUP contactGroup 'Контактная информация' : public;
 
 @defineHistorizable(phoneLegalEntity, 'Телефон/факс', STRING[100], legalEntity, name, contactGroup);
 emailLegalEntity 'E-mail' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactsLegalEntity 'Дополнительная информация' = DATA STRING[300] (legalEntity) IN contactGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-GROUP managementGroup 'Управление' : publicGroup;
+GROUP managementGroup 'Управление' : public;
 
 @defineHistorizable(managerLegalEntity, 'Руководитель', STRING[100], legalEntity, name, managementGroup);
 @defineHistorizable(accountantLegalEntity, 'Главный бухгалтер', STRING[100], legalEntity, name, managementGroup);
 
-GROUP docGroup 'Для договора' : publicGroup;
+GROUP docGroup 'Для договора' : public;
 
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
@@ -99,7 +99,7 @@ CLASS bank 'Банк' : named, externalizable;
 TABLE bank (bank);
 TABLE bankDate (bank, DATE);
 
-GROUP banksGroup 'Информация о банке' : baseGroup;
+GROUP banksGroup 'Информация о банке' : base;
 
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
@@ -130,7 +130,7 @@ TABLE account (account);
 
 bankAccount = DATA bank (account);
 
-GROUP accountGroup 'Банковская информация' : baseGroup;
+GROUP accountGroup 'Банковская информация' : base;
 
 numberAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
 accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS account;
@@ -154,7 +154,7 @@ numberAccountLegalEntity 'Основной р/сч.' (legalEntity) = numberAccou
 equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 // ----------------------------------- Лицензия ------------------------------------------ //
-GROUP licenseGroup 'Лицензионная информация' : baseGroup;
+GROUP licenseGroup 'Лицензионная информация' : base;
 CLASS license 'Лицензия';
 TABLE license (license);
 
@@ -176,7 +176,7 @@ CONSTRAINT countryLegalEntity(legalEntityLicense(license)) != countryLicense(lic
     CHECKED BY legalEntityLicense MESSAGE 'Страна лицензии должна совпадать со страной организации';
 
 // ------------------------------------ Собственные компании ----------------------------- //
-GROUP filterEntityGroup 'Фильтры' : publicGroup;
+GROUP filterEntityGroup 'Фильтры' : public;
 
 isSupplierLegalEntity 'Явл. поставщиком' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
 isCompanyLegalEntity 'Явл. компанией' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;

@@ -26,11 +26,11 @@ CLASS defectStock 'Склад брака' : stock, employeeDivision;
 TABLE defectStock (defectStock);
 
 groupDefectStockDefectStock (defectStock) = DATA groupDefectStock (defectStock);
-nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = name(groupDefectStockDefectStock(defectStock)) IN baseGroup;
+nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = name(groupDefectStockDefectStock(defectStock)) IN base;
 stockGroupStock (stock) += groupDefectStockDefectStock (stock);
 
 companyDefectStock (defectStock) = DATA company (defectStock);
-nameCompanyDefectStock 'Компания' (defectStock) = name(companyDefectStock(defectStock)) IN baseGroup;
+nameCompanyDefectStock 'Компания' (defectStock) = name(companyDefectStock(defectStock)) IN base;
 legalEntityStock (stock) += companyDefectStock(stock);
 
 addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (defectStock);

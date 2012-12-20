@@ -10,7 +10,7 @@ TABLE writeOffRate(writeOffRate);
 
 percentWriteOffRate 'Норма,%' = DATA NUMERIC[10,3] (writeOffRate);
 countryWriteOffRate  = DATA country (writeOffRate);
-nameCountryWriteOffRate 'Страна' (writeOffRate) = name(countryWriteOffRate(writeOffRate)) IN baseGroup;
+nameCountryWriteOffRate 'Страна' (writeOffRate) = name(countryWriteOffRate(writeOffRate)) IN base;
 
 FORM writeOffRate 'Норма отходов'
     OBJECTS r=writeOffRate FIXED PANEL
@@ -103,7 +103,7 @@ EXTEND FORM invoices
 
 //---------------------------------- Extend Shipment ------------------------------------//
 
-GROUP shipmentGroup 'Информация о поставке' : baseGroup;
+GROUP shipmentGroup 'Информация о поставке' : base;
 
 //createPurchaseWriteOffShipment 'Создать акт списания' (shipment) = ABSTRACT BOOLEAN(shipment);
 //createPurchaseWriteOffUserShipment 'Создать акт списания' (userShipment) = DATA BOOLEAN(userShipment) IN documentPrmGroup;

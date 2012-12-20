@@ -14,7 +14,7 @@ operatorNumberGroupCashRegisterCustomUser 'Номер в группе касс' 
 // Модели
 CLASS cashRegisterModel 'Модель касс' : model;
 
-dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN baseGroup;
+dateToCashRegisterModel 'Дата, до которой модель внесена в реестр' = DATA DATE (cashRegisterModel) IN base;
 
 FORM cashRegisterModel 'Модель касс'
     OBJECTS c=cashRegisterModel FIXED PANEL
@@ -41,17 +41,17 @@ modelMachinery(machinery) += cashRegisterModelCashRegister(machinery);
 
 departmentStoreCashRegister (cashRegister) = departmentStoreGroupCashRegister(groupCashRegisterCashRegister(cashRegister));
 
-roundSalesGroupCashRegister 'Округление цен до' = DATA INTEGER (groupMachinery) IN baseGroup;
+roundSalesGroupCashRegister 'Округление цен до' = DATA INTEGER (groupMachinery) IN base;
 
-numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN baseGroup;
+numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN base;
 cashRegisterNumber (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
 
-dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN baseGroup;
+dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (cashRegister) IN base;
 
-directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN baseGroup;
+directoryCashRegister 'Директория обмена с кассой' = DATA STRING[100] (cashRegister) IN base;
 
-comPortCashRegister 'Порт кассы' = DATA INTEGER (cashRegister) IN baseGroup;
-baudRateCashRegister 'Скорость кассы' = DATA INTEGER (cashRegister) IN baseGroup;
+comPortCashRegister 'Порт кассы' = DATA INTEGER (cashRegister) IN base;
+baudRateCashRegister 'Скорость кассы' = DATA INTEGER (cashRegister) IN base;
 countryCashRegister 'Страна кассы' (cashRegister) = countryStock(stockGroupMachinery(groupCashRegisterCashRegister(cashRegister)));
 
 userLegalEntityCashRegister (cashRegister) = DATA legalEntity (cashRegister);
@@ -61,7 +61,7 @@ legalEntityCashRegister (cashRegister) = UNION OVERRIDE legalEntityDepartmentSto
 nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = name(legalEntityCashRegister(cashRegister));
 
 computerCashRegister = DATA computer (cashRegister);
-hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN baseGroup;
+hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN base;
 
 cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS cashRegister PERSISTENT;
 

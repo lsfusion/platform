@@ -46,8 +46,8 @@ isPostedPriceChangeZReportDetail 'Проведен' (priceChangeZReportDetail) =
 @defineDocumentPriceChangeNumber(zReport);
 
 skuPriceChangeZReportDetail (priceChangeZReportDetail) = skuReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
-nameSkuPriceChangeZReportDetail 'SKU' (priceChangeZReportDetail) = nameSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognizeGroup;
-idBarcodeSkuPriceChangeZReportDetail 'Штрих-код' (priceChangeZReportDetail) = idBarcodeSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognizeGroup;
+nameSkuPriceChangeZReportDetail 'SKU' (priceChangeZReportDetail) = nameSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognize;
+idBarcodeSkuPriceChangeZReportDetail 'Штрих-код' (priceChangeZReportDetail) = idBarcodeSku(skuPriceChangeZReportDetail(priceChangeZReportDetail)) IN recognize;
 
 quantityPriceChangeZReportDetail 'Количество' (priceChangeZReportDetail) = quantityReceiptDetail(receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail));
 

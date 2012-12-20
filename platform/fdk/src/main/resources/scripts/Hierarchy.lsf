@@ -14,7 +14,7 @@ META defineHierarchyCustom (object)
     TABLE object(object);
     TABLE object###object (object, object);
 
-    nameParent###object 'Родительский объект' = name(parent###object(object)) IN baseGroup;
+    nameParent###object 'Родительский объект' = name(parent###object(object)) IN base;
 
     level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS object AND parent == child
                                                                   STEP 2l AND parent == parent###object($parent) PERSISTENT;

@@ -137,7 +137,7 @@ isContainerSku (sku) += isContainerItem(sku);
 //@defineItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
 
 //equipmentGroup
-GROUP equipmentGroup 'Внешние устройства' : publicGroup;
+GROUP equipmentGroup 'Внешние устройства' : public;
 
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
 isWeightSku(sku) += isWeightItem(sku);
@@ -150,7 +150,7 @@ labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
 
 //substanceGroup
-GROUP substanceGroup 'Энергетическая ценность' : publicGroup;
+GROUP substanceGroup 'Энергетическая ценность' : public;
 
 nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup MINCHARWIDTH 50;
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
@@ -166,7 +166,7 @@ heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN ite
 grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN itemSizeGroup;
 
 //expiryGroup
-GROUP expiryGroup 'Контроль сроков годности' : publicGroup;
+GROUP expiryGroup 'Контроль сроков годности' : public;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
@@ -186,7 +186,7 @@ barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item
 
 //------------------------------------ Товар с историей -------------------------------------------------------------//
 
-GROUP activeGroup 'Активность товара' : publicGroup;
+GROUP activeGroup 'Активность товара' : public;
 @defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
 isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
 EXTEND FORM items
@@ -199,7 +199,7 @@ EXTEND FORM items
 TABLE itemDepartmentStore (item, departmentStore);
 TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
 
-GROUP labelGroup 'Ценник' : publicGroup;
+GROUP labelGroup 'Ценник' : public;
 
 defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
 @defineHistorizableCustomDefault(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
@@ -490,7 +490,7 @@ EXTEND DESIGN defaultData {
 }
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
 
-GROUP lstradeIntegrationGroup 'LS Trade' : baseGroup;
+GROUP lstradeIntegrationGroup 'LS Trade' : public;
 
 importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'retail.ImportLSTDataActionProperty' IN lstradeIntegrationGroup;
 importLSTDirectory 'Папка' = DATA STRING[200] () IN lstradeIntegrationGroup;
@@ -524,7 +524,7 @@ EXTEND DESIGN integrationData {
     }
 }
 
-GROUP formularGroup 'Formular' : baseGroup;
+GROUP formularGroup 'Formular' : public;
 
 importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'retail.ImportDataActionProperty'IN formularGroup;
 importUrl 'URL' = DATA STRING[200]() IN formularGroup;

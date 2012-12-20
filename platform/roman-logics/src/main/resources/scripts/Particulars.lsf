@@ -13,7 +13,7 @@ REQUIRE System,
 
 PRIORITY MasterData, Stock, RomanLogicsModule;
 
-GROUP totalGroupSupplier 'Итого (поставщик)' : publicGroup;
+GROUP totalGroupSupplier 'Итого (поставщик)' : public;
 
 
 balanceBSupplierDate 'Остаток на начало' (supplier, dateFrom) =  GROUP SUM balanceBArticleDate(article, dateFrom)

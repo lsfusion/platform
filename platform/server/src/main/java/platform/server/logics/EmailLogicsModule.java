@@ -94,7 +94,7 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        emailGroup = addAbstractGroup("emailGroup", getString("logics.groups.emailgroup"), rootGroup, true);
+        emailGroup = addAbstractGroup("email", getString("logics.groups.email"), rootGroup, true);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class EmailLogicsModule<T extends BusinessLogics<T>> extends LogicsModule
         disableEmail = addDProp(emailGroup, "disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
         // Пользователи
-        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(emailContact, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));
+        generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(emailContact, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));
 
         emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), baseLM.customUser);
         addEARecipients(emailUserPassUser, emailContact, 1);

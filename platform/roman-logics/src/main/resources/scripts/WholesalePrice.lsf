@@ -30,16 +30,16 @@ backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(212,255,212) 
 
 inWholesalePriceDocumentArticle 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
 
-priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
 
-priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
 
 markupWholesalePriceDocumentArticle 'Оптовая надбавка' = DATA NUMERIC[8,3] (wholesalePriceDocument, article);
 
 markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF (wholesalePriceDocument IS wholesalePriceDocument AND article IS article)
     WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
-priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN baseGroup;
+priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
 
 priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
     round0(priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))

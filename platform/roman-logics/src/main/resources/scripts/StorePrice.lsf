@@ -2,7 +2,7 @@ MODULE StorePrice;
 
 REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceList;
 
-GROUP priceDetailGroup 'Цены' : publicGroup;
+GROUP priceDetailGroup 'Цены' : public;
 
 META defineDocumentDetailInPricePrefix (object, prefix, caption)
     prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
@@ -131,7 +131,7 @@ META defineDocumentDetailInvoiceSum (object)
     calcSupplierVATISum###object##Detail 'Сумма НДС (расч.)' (detail) = round0(
         quantity###object##Detail(detail) * supplierVATIPrice###object##Detail(detail));
 
-    supplierVATISum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    supplierVATISum###object##Detail 'Сумма НДС поставщика (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN base;
     supplierVATISum###object##Detail(detail) <- calcSupplierVATISum###object##Detail(detail)
                                                        WHEN CHANGED(calcSupplierVATISum###object##Detail(detail));
 
@@ -141,7 +141,7 @@ META defineDocumentDetailInvoiceSum (object)
     calcInvoiceISum###object##Detail 'Сумма поставщика с НДС (расч.)' (detail) =
         supplierISum###object##Detail(detail) (+) supplierVATISum###object##Detail(detail);
 
-    invoiceISum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN baseGroup;
+    invoiceISum###object##Detail 'Сумма поставщика с НДС (без посуды)' (detail) = DATA NUMERIC[16,2] (object##Detail) IN base;
     invoiceISum###object##Detail(detail) <- calcInvoiceISum###object##Detail(detail)
                                           WHEN CHANGED(calcInvoiceISum###object##Detail(detail));
 

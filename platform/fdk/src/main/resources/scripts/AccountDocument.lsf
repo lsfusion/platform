@@ -18,17 +18,17 @@ nameStockAccountDocumentLedger 'Отдел' (ledger) = name(stockAccountDocument
 
 descriptionAccountDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (accountDocumentLedger) PERSISTENT;
 
-GROUP ledgerGroup 'Суммы (всего)' : publicGroup;
+GROUP ledgerGroup 'Суммы (всего)' : public;
 sumIncAccountDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (incAccountDocumentLedger) PERSISTENT IN ledgerGroup;
 sumOutAccountDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (outAccountDocumentLedger) PERSISTENT IN ledgerGroup;
 sumAccountDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncAccountDocumentLedger(ledger), -sumOutAccountDocumentLedger(ledger) PERSISTENT;
 
-GROUP ledgerItemGroup 'Суммы по товару' : publicGroup;
+GROUP ledgerItemGroup 'Суммы по товару' : public;
 sumItemIncAccountDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (incAccountDocumentLedger) PERSISTENT IN ledgerItemGroup;
 sumItemOutAccountDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (outAccountDocumentLedger) PERSISTENT IN ledgerItemGroup;
 sumItemAccountDocumentLedger 'Сумма, товар' (ledger) = UNION EXCLUSIVE sumItemIncAccountDocumentLedger(ledger), -sumItemOutAccountDocumentLedger(ledger) PERSISTENT;
 
-GROUP ledgerContainerGroup 'Суммы по таре' : publicGroup;
+GROUP ledgerContainerGroup 'Суммы по таре' : public;
 sumContainerIncAccountDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (incAccountDocumentLedger) PERSISTENT IN ledgerContainerGroup;
 sumContainerOutAccountDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (outAccountDocumentLedger) PERSISTENT IN ledgerContainerGroup;
 sumContainerAccountDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUSIVE sumContainerIncAccountDocumentLedger(ledger), -sumContainerOutAccountDocumentLedger(ledger) PERSISTENT;

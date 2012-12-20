@@ -30,7 +30,7 @@ skuGroupSku(ware) += wareGroupWare(ware);
 nameSku(ware) += name(ware) IF ware IS ware;
 
 nameWareGroupWare 'Группа посуды' (ware) = name(wareGroupWare(ware));
-canonicalNameWareGroupWare 'Группа посуды' (ware) = canonicalNameWareGroup(wareGroupWare(ware)) IN baseGroup;
+canonicalNameWareGroupWare 'Группа посуды' (ware) = canonicalNameWareGroup(wareGroupWare(ware)) IN base;
 
 TABLE wareGroupWare (wareGroup, ware);
 
@@ -38,14 +38,14 @@ isParentWareGroupware (wareGroup, ware) = isParentWareGroupWareGroup(wareGroupWa
 
 TABLE wareDate(ware, DATE);
 
-@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, baseGroup);
+@defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, base);
 
-@defineHistorizableCustom(rangeWare, 'НДС', range, numberRange, ware, name, baseGroup);
+@defineHistorizableCustom(rangeWare, 'НДС', range, numberRange, ware, name, base);
 
 CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
-dataValueRangeWareDate 'НДС, %' (ware, date) = valueRateRangeDate(dataRangeWareDate(ware, date), date) IN baseGroup;
-valueCurrentRateRangeWare 'НДС, %' (ware) = valueCurrentRateRange(rangeWare(ware)) IN baseGroup;
+dataValueRangeWareDate 'НДС, %' (ware, date) = valueRateRangeDate(dataRangeWareDate(ware, date), date) IN base;
+valueCurrentRateRangeWare 'НДС, %' (ware) = valueCurrentRateRange(rangeWare(ware)) IN base;
 
 EXTEND FORM addRangeWare
     PROPERTIES READONLY dataValueRangeWareDate(a, d)

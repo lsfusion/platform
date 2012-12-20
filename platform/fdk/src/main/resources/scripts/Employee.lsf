@@ -32,7 +32,7 @@ isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDi
 CLASS employee 'Сотрудник' : customUser;
 TABLE employee(employee);
 
-namePositionEmployee 'Должность сотрудника' (employee) = name(positionEmployee(employee)) IN baseGroup MINCHARWIDTH 15 PREFCHARWIDTH 15;
+namePositionEmployee 'Должность сотрудника' (employee) = name(positionEmployee(employee)) IN base MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)']
                                                          (namePositionEmployee(employee), commonName(employee));
@@ -122,7 +122,7 @@ FORM employeeDialog 'Сотрудники'
 
 META defineCommitteeEmployee (committee, prefix, caption)
     prefix##Committee = DATA employee (committee);
-    name###prefix##Committee caption (committee) = commonName(prefix##Committee(committee)) IN recognizeGroup;
+    name###prefix##Committee caption (committee) = commonName(prefix##Committee(committee)) IN recognize;
     namePosition###prefix##Committee caption (committee) = namePositionEmployee(prefix##Committee(committee));
     CONSTRAINT prefix##Committee(committee) AND NOT countDivisionEmployeeCommittee(prefix##Committee(committee), committee)
         CHECKED BY prefix##Committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
@@ -130,7 +130,7 @@ END
 
 META defineCommitteeEmployeePrefix (committee, prefix, caption)
     prefix###committee = DATA employee (committee);
-    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognizeGroup;
+    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognize;
     namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
     CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
         CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';

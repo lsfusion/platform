@@ -61,7 +61,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
     CLASS userInvoicePosted 'Проведенная накладная (польз.)'###sign : userInvoice, postedObject;
 
-    GROUP invoiceGroup 'Информация о накладной' : baseGroup;
+    GROUP invoiceGroup 'Информация о накладной' : base;
 
     @defineDocumentInterface(invoice);
     Invoice.invoiceInvoiceDetail (detail) += invoiceInvoiceDetail(detail);
@@ -183,7 +183,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         CHECKED BY orderUserInvoiceDetail
             MESSAGE 'Поставщик и покупатель в заказе и накладной должны соответствовать друг другу';
 
-    GROUP orderGroup 'Информация о заказе' : publicGroup;
+    GROUP orderGroup 'Информация о заказе' : public;
 
     descriptionOrderInvoiceDetail 'Заказ' (invoiceDetail) = descriptionOrder(orderInvoiceDetail(invoiceDetail)) IN orderGroup;
     descriptionOrderUserInvoiceDetail 'Заказ' (userInvoiceDetail) = descriptionOrder(orderUserInvoiceDetail(userInvoiceDetail)) IN orderGroup;

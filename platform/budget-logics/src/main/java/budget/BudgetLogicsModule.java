@@ -128,6 +128,8 @@ public class BudgetLogicsModule extends LogicsModule {
         addTable("exchangeRate", getCurrencyClass(), getCurrencyClass(), DateClass.instance);
     }
 
+    protected AbstractGroup idGroup;
+
     @Override
     public void initGroups() {
         initBaseGroupAliases();

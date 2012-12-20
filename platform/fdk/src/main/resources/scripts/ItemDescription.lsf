@@ -4,7 +4,7 @@ REQUIRE System, Item;
 
 NAMESPACE Item;
 
-GROUP itemDescriptionGroup 'Описание' : publicGroup;
+GROUP itemDescriptionGroup 'Описание' : public;
 
 // Вид
 CLASS type 'Вид товара' : named;

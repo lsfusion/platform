@@ -4,7 +4,7 @@ REQUIRE System, Item;
 
 NAMESPACE Item;
 
-GROUP itemFoodGroup 'Пищевые характеристики' : publicGroup;
+GROUP itemFoodGroup 'Пищевые характеристики' : public;
 
 // Вкус
 CLASS taste 'Вкус товара' : named;

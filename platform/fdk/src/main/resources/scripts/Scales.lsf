@@ -8,17 +8,17 @@ CLASS groupScales 'Группы весов' : groupMachinery;
 stockGroupScales = DATA stock (groupScales);
 stockGroupMachinery (groupMachinery) += stockGroupScales(groupMachinery);
 
-directoryGroupScales 'Каталог обмена' = DATA STRING[200] (groupScales) IN baseGroup;
-pieceCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN baseGroup;
-weightCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN baseGroup;
+directoryGroupScales 'Каталог обмена' = DATA STRING[200] (groupScales) IN base;
+pieceCodeGroupScales 'Код для штучных товаров' = DATA STRING[2] (groupScales) IN base;
+weightCodeGroupScales 'Код для весовых товаров' = DATA STRING[2] (groupScales) IN base;
 
 // Модели
 CLASS scalesModel 'Модель весов' : model;
 
 scalesModelName (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS scalesModel;
 
-maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (scalesModel) IN baseGroup;
-compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (scalesModel) IN baseGroup;
+maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (scalesModel) IN base;
+compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (scalesModel) IN base;
 
 FORM scalesModel 'Модель весов'
     OBJECTS s=scalesModel FIXED PANEL
@@ -43,8 +43,8 @@ groupMachineryMachinery(machinery) += groupScalesScales(machinery);
 scalesModelScales = DATA scalesModel (scales);
 modelMachinery(machinery) += scalesModelScales(machinery);
 
-numberScales 'Заводской(серийный) номер' = DATA STRING[100] (scales) IN baseGroup;
-dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN baseGroup;
+numberScales 'Заводской(серийный) номер' = DATA STRING[100] (scales) IN base;
+dateScales 'Дата следующей обязательной поверки' = DATA DATE (scales) IN base;
 
 FORM scales 'Весы'
     OBJECTS s=scales FIXED PANEL
@@ -132,14 +132,14 @@ DESIGN cellScales FROM DEFAULT {
 CLASS labelFormat 'Формат этикетки' : named;
 TABLE labelFormat (labelFormat);
 
-idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN baseGroup;
+idLabelFormat 'Код формата этикетки' = DATA INTEGER (labelFormat) IN base;
 idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS labelFormat;
 
 fileLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN baseGroup;
+loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN base;
 
 fileMessageLabelFormat = DATA CUSTOMFILE (labelFormat);
-loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN baseGroup;
+loadFileMessageLabelFormat 'Загрузить файл спец.сообщений' (labelFormat) = ACTION LOADFILE fileMessageLabelFormat(labelFormat) IN base;
 
 scalesModelLabelFormat 'Модель весов'= DATA scalesModel (labelFormat);
 nameScalesModelLabelFormat 'Модель весов' (labelFormat) = name(scalesModelLabelFormat(labelFormat));

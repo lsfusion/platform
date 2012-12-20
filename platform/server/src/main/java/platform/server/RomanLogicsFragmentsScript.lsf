@@ -6,58 +6,58 @@ CLASS supplierAndDocument 'Поставщик и документ' : supplier, d
 CLASS namedDocument : named, supplierAndDocument;
 
 GROUP NewGroup '\'Новая группа\'';
-GROUP NewGroup2 'new group 2' : baseGroup;
+GROUP NewGroup2 'new group 2' : base;
 
 // DProps
 typeInvoiceDataFreightArticle2 = DATA typeInvoice (freight, article) IN idGroup;
 rateExchange2(type, currency, date) = DATA DOUBLE (typeExchange, currency, DATE);
-nameOrigin2 = DATA ISTRING[50] (secondNameClass) IN baseGroup;
-quantityPalletShipment2 = DATA INTEGER (shipment) IN baseGroup;
+nameOrigin2 = DATA ISTRING[50] (secondNameClass) IN base;
+quantityPalletShipment2 = DATA INTEGER (shipment) IN base;
 typeExchangeSTX2 =  DATA typeExchange () IN idGroup;
 somePropertyName = DATA supplierAndDocument (namedDocument) IN NewGroup2;
-mainCompositionFreightSku2(freight, sku) = DATA STRING[200] (freight, sku) IN baseGroup;
+mainCompositionFreightSku2(freight, sku) = DATA STRING[200] (freight, sku) IN base;
 
 
 // JProps
-nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) IN baseGroup;
+nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) IN base;
 nameTypeExchangeSTX2() = name(typeExchangeSTX()) IN NewGroup2;
-equalsItemArticleComposite2(item1, item2) = (articleCompositeItem(item1) == item2) IN baseGroup;
+equalsItemArticleComposite2(item1, item2) = (articleCompositeItem(item1) == item2) IN base;
 numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, list));
 netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) IN intraAttributeGroup PERSISTENT;
 orderedOrderInvoiceArticle2(order, invoice, param3) = and1(quantityListArticle(order, param3), inOrderInvoice(order, invoice));
 
 // JProps without params
-nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) IN baseGroup;
-nameTypeExchangeSTX3 = name(typeExchangeSTX()) IN baseGroup;
+nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) IN base;
+nameTypeExchangeSTX3 = name(typeExchangeSTX()) IN base;
 numberListSIDArticle3 = numberListArticle($1, articleSIDList($2, $1));
 netWeightArticleSizeSku3 = netWeightArticleSize(articleSku($1), sizeSupplierItem($1)) IN intraAttributeGroup PERSISTENT;
-grossWeightFreightSkuAggr2 = sumGrossWeightFreightSku($1, $2) / quantityFreightSku($1, $2) IN baseGroup;
-priceExpenseImporterFreightSku2 = priceInImporterFreightSku($1, $2, $3) + priceFreightImporterFreightSku($1, $2, $3) IN baseGroup;
+grossWeightFreightSkuAggr2 = sumGrossWeightFreightSku($1, $2) / quantityFreightSku($1, $2) IN base;
+priceExpenseImporterFreightSku2 = priceInImporterFreightSku($1, $2, $3) + priceFreightImporterFreightSku($1, $2, $3) IN base;
 
 
 // GProp
-numberDocumentArticle2 = GROUP SUM numberListArticle(param1, param2) BY documentList(param1), param2 IN baseGroup;
-orderedInvoiceArticle2(invoice, param3) = GROUP SUM orderedOrderInvoiceArticle2(order, invoice, param3) BY invoice, param3 IN baseGroup;
-invoicedOrderArticle2 = GROUP SUM invoicedOrderSku($1, $2) BY $1, articleSku($2) IN baseGroup;
+numberDocumentArticle2 = GROUP SUM numberListArticle(param1, param2) BY documentList(param1), param2 IN base;
+orderedInvoiceArticle2(invoice, param3) = GROUP SUM orderedOrderInvoiceArticle2(order, invoice, param3) BY invoice, param3 IN base;
+invoicedOrderArticle2 = GROUP SUM invoicedOrderSku($1, $2) BY $1, articleSku($2) IN base;
 //compositionFreightArticleCompositionCountryCategory2 =
 //    GROUP MAX mainCompositionFreightSku2(freight, sku) BY
 //        freight,
 //        articleSku(sku),
 //        mainCompositionOriginFreightSku(freight, sku),
 //        countryOfOriginFreightSku(freight, sku),
-//        customCategory10FreightSku(freight, sku) IN baseGroup;
+//        customCategory10FreightSku(freight, sku) IN base;
 
 
 // UProp
 typeInvoiceFreightArticle2(freight, article) = UNION OVERRIDE typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) IN idGroup;
 typeInvoiceFreightArticle3 = UNION OVERRIDE typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) IN idGroup;
-sumSku2 = UNION SUM sumStockedSku($1), sumDirectInvoicedSku($1) IN baseGroup;
+sumSku2 = UNION SUM sumStockedSku($1), sumDirectInvoicedSku($1) IN base;
 
 
 // Nested
 netWeightImporterFreightUnitSku2(freight, unit, sku) =
-    quantityImporterStockSku(freight, unit, sku) * netWeightFreightSku(freightFreightUnit(unit), sku) IN baseGroup;
-invoicedShipmentSku2 = GROUP SUM quantityDocumentSku(document, sku) AND inInvoiceShipment(document, shipment) BY shipment, sku IN baseGroup PERSISTENT;
+    quantityImporterStockSku(freight, unit, sku) * netWeightFreightSku(freightFreightUnit(unit), sku) IN base;
+invoicedShipmentSku2 = GROUP SUM quantityDocumentSku(document, sku) AND inInvoiceShipment(document, shipment) BY shipment, sku IN base PERSISTENT;
 
 
 // Constants

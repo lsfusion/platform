@@ -2,7 +2,7 @@ MODULE DefaultData;
 
 REQUIRE System;
 
-GROUP loadDefaultGroup 'Загрузка отдельных объектов' : publicGroup;
+GROUP loadDefaultGroup 'Загрузка отдельных объектов' : public;
 
 loadDefaultData 'Загрузить стандартные данные' = ABSTRACT ACTION ();
 

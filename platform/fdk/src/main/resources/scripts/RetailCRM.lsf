@@ -43,9 +43,9 @@ discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNum
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS discountCard;
 
 clientDiscountCard (discountCard) = DATA client(discountCard);
-nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard)) IN recognizeGroup;
+nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard)) IN recognize;
 
-GROUP discountCardDateGroup 'Срок действия' : baseGroup;
+GROUP discountCardDateGroup 'Срок действия' : base;
 dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;
 dateDiscountCard (discountCard) <- currentDate() WHEN ASSIGNED(discountCard IS discountCard);
 
@@ -152,7 +152,7 @@ TABLE promotion (promotion);
 @defineNumeratedObjectDefault(promotion, 'Нумератор для акций', 'АК');
 
 promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) AUTOSET NOT NULL;
-namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN baseGroup;
+namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN base;
 
 userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (promotion);
 orderPromotion 'Порядок' (promotion) = (1 IF promotion IS promotion) OR userOrderPromotion(promotion) PERSISTENT;
@@ -163,7 +163,7 @@ userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN 
 CLASS promotionCondition 'Условие акции' : named;
 TABLE promotionCondition (promotionCondition);
 
-GROUP retailCRMGroup 'Реквизиты' : recognizeGroup;
+GROUP retailCRMGroup 'Реквизиты' : recognize;
 
 dateFromPromotion 'ОТ:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;
 dateToPromotion 'ДО:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;

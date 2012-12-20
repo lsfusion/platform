@@ -624,6 +624,8 @@ public class VEDLogicsModule extends LogicsModule {
         addTable("barcodeObject", barcodeObject);
     }
 
+    protected AbstractGroup idGroup;
+
     @Override
     public void initGroups() {
         initBaseGroupAliases();

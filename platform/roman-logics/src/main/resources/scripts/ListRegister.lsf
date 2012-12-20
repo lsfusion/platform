@@ -292,7 +292,7 @@ DESIGN inputListRegisters FROM DEFAULT {
 }
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
-GROUP committeeGroup 'Комиссия' : publicGroup;
+GROUP committeeGroup 'Комиссия' : public;
 
 META defineDocumentHeaderListRegister(object)
     registerCommittee###object (object) = DATA registerCommittee(object);

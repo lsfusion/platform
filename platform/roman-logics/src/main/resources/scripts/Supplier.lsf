@@ -11,7 +11,7 @@ REQUIRE System,
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
 
-GROUP orderGroup 'Заказ' : publicGroup;
+GROUP orderGroup 'Заказ' : public;
 
 dataSurePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = DATA INTEGER (supplier) IN orderGroup;
 surePercentSupplier 'Обязательный % заказанных товаров в прих. накладной' = (0 IF supplier IS supplier) OR dataSurePercentSupplier(supplier) IN orderGroup;
@@ -64,11 +64,11 @@ FORM supplierGroups 'Группы поставщиков'
 //CLASS contractSkuSupplier 'Договор с поставщиком' : contractSku;
 //
 //supplierContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
-//nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameSupplierContractSkuSupplier 'Поставщик' (contract) = name(supplierContractSkuSupplier(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyAContract (contract) += supplierContractSkuSupplier(contract);
 //
 //legalEntityContractSkuSupplier = DATA legalEntity (contractSkuSupplier) AUTOSET;
-//nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameLegalEntityContractSkuSupplier 'Компания' (contract) = name(legalEntityContractSkuSupplier(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyBContract (contract) += legalEntityContractSkuSupplier(contract);
 //
 //TABLE supplierLegalEntity(supplier, legalEntity);

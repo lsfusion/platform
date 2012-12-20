@@ -431,6 +431,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     }
 
+    protected AbstractGroup idGroup;
+    protected AbstractGroup actionGroup;
+
     @Override
     public void initGroups() {
         initBaseGroupAliases();
@@ -438,6 +441,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         Settings.instance.setLimitExclusiveCount(5);
 //        Settings.instance.setEditLogicalOnSingleClick(true);
 //        Settings.instance.setEditActionOnSingleClick(true);
+
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
+        actionGroup = addAbstractGroup("actionGroup", "Действия", publicGroup, false);
 
         contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
@@ -513,8 +519,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentExpertiseGroup = addAbstractGroup("commentExpertiseGroup", "Опыт в областях", publicGroup);
 
         changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup);
-
-        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
     }
 
     public LCP negative;

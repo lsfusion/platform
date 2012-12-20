@@ -4,7 +4,7 @@ REQUIRE System, Item;
 
 NAMESPACE Item;
 
-GROUP itemArticleGroup 'Артикул' : publicGroup;
+GROUP itemArticleGroup 'Артикул' : public;
 
 // Артикул
 CLASS article 'Артикул' : named;

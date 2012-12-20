@@ -255,9 +255,6 @@ public abstract class LogicsModule {
     protected AbstractGroup publicGroup;
     protected AbstractGroup privateGroup;
     protected AbstractGroup baseGroup;
-    protected AbstractGroup idGroup;
-    protected AbstractGroup actionGroup;
-    protected AbstractGroup sessionGroup;
     protected AbstractGroup recognizeGroup;
 
     protected void setBaseLogicsModule(BaseLogicsModule<?> baseLM) {
@@ -269,8 +266,6 @@ public abstract class LogicsModule {
         this.publicGroup = baseLM.publicGroup;
         this.privateGroup = baseLM.privateGroup;
         this.baseGroup = baseLM.baseGroup;
-        this.actionGroup = baseLM.actionGroup;
-        this.sessionGroup = baseLM.sessionGroup;
         this.recognizeGroup = baseLM.recognizeGroup;
     }
 
@@ -2057,7 +2052,7 @@ public abstract class LogicsModule {
     }
 
     public LAP addAProp(ActionProperty property) {
-        return addAProp(baseLM.actionGroup, property);
+        return addAProp(baseLM.publicGroup, property);
     }
 
     public LAP addAProp(AbstractGroup group, ActionProperty property) {
@@ -2274,7 +2269,7 @@ public abstract class LogicsModule {
     public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
-        LAP property = addDMFAProp(actionGroup, "add" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+        LAP property = addDMFAProp(publicGroup, "add" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                                 form.form, new ObjectEntity[] {},
                                 form.form.addPropertyObject(getFormAddObjectAction(form.object, cls, false)), !oldSession);
         setAddFormActionProperties(property, form, oldSession);
@@ -2307,7 +2302,7 @@ public abstract class LogicsModule {
     @IdentityLazy
     public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
-        LAP property = addDMFAProp(actionGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
+        LAP property = addDMFAProp(publicGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
                 form.form, new ObjectEntity[]{form.object}, !oldSession);
         setEditFormActionProperties(property);
         return property;

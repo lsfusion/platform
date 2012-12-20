@@ -43,10 +43,10 @@ addressPOI (poi) += addressStock(poi);
 TABLE stockGroupStock (stockGroup, stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
-GROUP createGroup 'Создавать по умолчанию' : publicGroup;
-GROUP committeeGroup 'Комиссии' : publicGroup;
-GROUP responsibilityGroup 'Ответственные лица' : publicGroup;
-GROUP bookkeepingGroup 'Учет и цены' : publicGroup;
+GROUP createGroup 'Создавать по умолчанию' : public;
+GROUP committeeGroup 'Комиссии' : public;
+GROUP responsibilityGroup 'Ответственные лица' : public;
+GROUP bookkeepingGroup 'Учет и цены' : public;
 
 // -------------------------------------- Регион ------------------------------- //
 
@@ -62,9 +62,9 @@ CLASS UOM 'Единица измерения' : doubleNamed, externalizable;
 TABLE UOM (UOM);
 
 baseUOM = DATA UOM(UOM);
-shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN baseGroup;
-genitiveNameUOM 'Ед. изм. (родительный)' = DATA STRING[20](UOM) IN baseGroup;
-factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN baseGroup;
+shortNameBaseUOM 'Базовая ед.изм.' (UOM) = shortName(baseUOM(UOM)) IN base;
+genitiveNameUOM 'Ед. изм. (родительный)' = DATA STRING[20](UOM) IN base;
+factorUOM 'Коэффициент пересчета в баз.ед.' = DATA NUMERIC[14,3] (UOM) IN base;
 
 FORM UOM 'Единица измерения'
     OBJECTS u=UOM FIXED PANEL
@@ -95,7 +95,7 @@ TABLE sku(sku);
 TABLE legalEntitySku(legalEntity, sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
-nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognizeGroup;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
 
 TABLE skuLanguage(sku, language);
 nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (sku, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
@@ -103,10 +103,10 @@ nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
 UOMSku (sku) = ABSTRACT UOM (sku) PERSISTENT;
-shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognizeGroup;
+shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognize;
 
 countrySku = ABSTRACT country (sku) PERSISTENT;
-nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognizeGroup;
+nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognize;
 
 TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
@@ -145,15 +145,15 @@ timeBatch 'Время' (batch) = toTime(dateTimeBatch(batch));
 isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
 
 skuBatch (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
-nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognizeGroup;
+nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognize;
 
 stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED ;
-nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognizeGroup;
+nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognize;
 
 costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
 
-descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognizeGroup MINCHARWIDTH 30 PREFCHARWIDTH 60;
+descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
 prevExpiryDateBatch 'Годен до' (batch) = PREV(expiryDateBatch(batch));
@@ -709,15 +709,15 @@ END
 // Sku
 META defineDocumentDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     prefix###skuClass###detail = DATA skuClass (detail);
-    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
-    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
-    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
+    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
+    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
 END
 META defineDocumentAbstractDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     prefix###skuClass###detail = ABSTRACT skuClass (detail) PERSISTENT;
-    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
-    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
-    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognizeGroup;
+    prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
+    prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
+    prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
 END
 META defineDocumentInterfaceDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     @defineDocumentAbstractDetailSkuCustomPrefix(detail, skuClass, prefix, caption);
@@ -784,8 +784,8 @@ END
 // Sku
 META defineDocumentAggregationDetailSkuPrefix (primObject, aggrObject, skuProp, prefix)
     skuProp###aggrObject##Detail (detail) = prefix###skuProp###primObject##Detail(primObject##Detail###aggrObject##Detail(detail));
-    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail)) IN recognizeGroup;
-    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail)) IN recognizeGroup;
+    nameSku###aggrObject##Detail 'SKU' (detail) = nameSku(skuProp###aggrObject##Detail(detail)) IN recognize;
+    idBarcodeSku###aggrObject##Detail 'Штрих-код' (detail) = idBarcodeSku(skuProp###aggrObject##Detail(detail)) IN recognize;
 END
 META defineDocumentAggregationDetailSku (primObject, aggrObject, skuProp)
     @defineDocumentAggregationDetailSkuPrefix(primObject, aggrObject, skuProp, );

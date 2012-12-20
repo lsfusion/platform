@@ -7,28 +7,28 @@ REQUIRE System, Stock, Barcode, PriceList, DefaultData;
 CLASS equipmentServer 'Сервер оборудования' : named;
 TABLE equipmentServer (equipmentServer);
 
-sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN baseGroup;
+sidEquipmentServer 'Идентификатор' = DATA STRING[20] (equipmentServer) IN base;
 sidToEquipmentServer(equipmentServer) = GROUP UNIQUE equipmentServer BY sidEquipmentServer (equipmentServer) WHERE equipmentServer IS equipmentServer;
-delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (equipmentServer) IN baseGroup;
+delayEquipmentServer 'Период обновления (в миллисекундах)' = DATA INTEGER (equipmentServer) IN base;
 
 //---------------------------- Ошибки сервера оборудования ----------------------------//
 
 CLASS equipmentServerError 'Ошибки';
 TABLE equipmentServerError (equipmentServerError);
 
-dataEquipmentServerError 'Сообщение об ошибке' = DATA STRING[200] (equipmentServerError) IN baseGroup;
-erTraceEquipmentServerError 'След ошибки' = DATA TEXT (equipmentServerError) IN baseGroup;
-dateEquipmentServerError 'Время возникновения' = DATA DATETIME (equipmentServerError) IN baseGroup;
-equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN baseGroup;
+dataEquipmentServerError 'Сообщение об ошибке' = DATA STRING[200] (equipmentServerError) IN base;
+erTraceEquipmentServerError 'След ошибки' = DATA TEXT (equipmentServerError) IN base;
+dateEquipmentServerError 'Время возникновения' = DATA DATETIME (equipmentServerError) IN base;
+equipmentServerEquipmentServerError 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerError) IN base;
 
 //---------------------------- Лог сервера оборудования ----------------------------//
 
 CLASS equipmentServerLog 'Лог';
 TABLE equipmentServerLog (equipmentServerLog);
 
-dataEquipmentServerLog 'Сообщение' = DATA TEXT (equipmentServerLog) IN baseGroup;
-dateEquipmentServerLog 'Время' = DATA DATETIME (equipmentServerLog) IN baseGroup;
-equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerLog) IN baseGroup;
+dataEquipmentServerLog 'Сообщение' = DATA TEXT (equipmentServerLog) IN base;
+dateEquipmentServerLog 'Время' = DATA DATETIME (equipmentServerLog) IN base;
+equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' = DATA equipmentServer(equipmentServerLog) IN base;
 
 //---------------------------- Формы для серверов оборудования ----------------------------//
 
@@ -81,7 +81,7 @@ DESIGN equipmentServer FROM DEFAULT {
 CLASS ABSTRACT groupMachinery 'Группы оборудования';
 TABLE groupMachinery (groupMachinery);
 
-nameGroupMachinery 'Наименование' = DATA STRING[200] (groupMachinery) IN baseGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+nameGroupMachinery 'Наименование' = DATA STRING[200] (groupMachinery) IN base MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
 equipmentServerGroupMachinery = DATA equipmentServer (groupMachinery);
 nameEquipmentServerGroupMachinery 'Сервер оборудования' (groupMachinery) = name(equipmentServerGroupMachinery(groupMachinery));
@@ -131,12 +131,12 @@ showFilterSkuGroupMachinery 'Выбрать группы' (groupMachinery) = ACT
 CLASS ABSTRACT model 'Модель' : named;
 TABLE model (model);
 
-sidModel 'Код' = DATA STRING[20] (model) IN baseGroup;
+sidModel 'Код' = DATA STRING[20] (model) IN base;
 
-noteModel 'Примечание' = DATA STRING[200] (model) IN baseGroup;
-handlerModel 'Обработчик' = DATA STRING[200] (model) IN baseGroup;
+noteModel 'Примечание' = DATA STRING[200] (model) IN base;
+handlerModel 'Обработчик' = DATA STRING[200] (model) IN base;
 
-maxProductModel 'MAX допустимое колич. товаров' = DATA INTEGER (model) IN baseGroup;
+maxProductModel 'MAX допустимое колич. товаров' = DATA INTEGER (model) IN base;
 
 //---------------------------- типы оборудования  ----------------------------------------//
 CLASS ABSTRACT machinery 'Оборудование';
@@ -146,13 +146,13 @@ groupMachineryMachinery = ABSTRACT groupMachinery (machinery) PERSISTENT;
 nameGroupMachineryMachinery 'Группа' (machinery) = nameGroupMachinery(groupMachineryMachinery(machinery));
 
 modelMachinery = ABSTRACT model (machinery) PERSISTENT;
-sidModelMachinery 'Код' (machinery) = sidModel(modelMachinery(machinery)) IN baseGroup;
-nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN baseGroup;
-handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN baseGroup;
+sidModelMachinery 'Код' (machinery) = sidModel(modelMachinery(machinery)) IN base;
+nameModelMachinery 'Модель' (machinery) = name(modelMachinery(machinery)) IN base;
+handlerModelMachinery 'Обработчик' (machinery) = handlerModel(modelMachinery(machinery)) IN base;
 
-nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN baseGroup;
-descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN baseGroup;
-portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN baseGroup;
+nppMachinery 'Порядковый номер' = DATA INTEGER (machinery) IN base;
+descriptionMachinery 'Описание' = DATA STRING[200] (machinery) IN base;
+portMachinery 'Адрес/порт' = DATA STRING[100] (machinery) IN base;
 
 //---------------------------- Загрузка в ВУ  ----------------------------------------//
 CLASS ABSTRACT priceTransactionDocument 'Документ, требующий загрузки в оборудование';
@@ -255,12 +255,12 @@ transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудо
 CLASS machineryPriceTransactionError 'Ошибка';
 TABLE machineryPriceTransactionError (machineryPriceTransactionError);
 
-dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN baseGroup;
-dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN baseGroup;
-errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN baseGroup;
-machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN baseGroup;
+dataMachineryPriceTransactionError 'Сообщение об ошибке' = DATA STRING[200] (machineryPriceTransactionError) IN base;
+dateMachineryPriceTransactionError 'Время возникновения' = DATA DATETIME (machineryPriceTransactionError) IN base;
+errorTraceMachineryPriceTransactionError 'След исключения' = DATA TEXT (machineryPriceTransactionError) IN base;
+machineryPriceTransactionMachineryPriceTransactionError 'Транзакция (ID)' = DATA machineryPriceTransaction(machineryPriceTransactionError) IN base;
 quantityMachineryPriceTransactionErrorMachineryPriceTransaction 'Количество ошибок' (MachineryPriceTransaction) = GROUP SUM 1 IF machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) == MachineryPriceTransaction
-    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN baseGroup;
+    BY machineryPriceTransactionMachineryPriceTransactionError (machineryPriceTransactionError) IN base;
 
 // Загрузка в конкретные устройства
 TABLE machineryPriceTransactionMachinery (machineryPriceTransaction, machinery);
@@ -273,7 +273,7 @@ nppsMachineryPriceTransaction 'Номера устройств' (transaction) =
 // перезагрузка прайса целиком
 selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
 
-GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : publicGroup;
+GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : public;
 
 FORM groupMachineryInput 'Выбор оборудования для перезагрузки прайса'
 
@@ -405,7 +405,7 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
 } CONFIRM IN snapshotMachineryPriceGroup;
 
 // Инкрементная загрузка
-GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : publicGroup;
+GROUP incrementMachineryPriceGroup 'Инкрементная загрузка' : public;
 
 // ------------------------------- Определение цены, по которой загружать ------------------------------- //
 

@@ -12,7 +12,7 @@ TABLE contractSku(contractSku);
 
 editContractSku 'Редактировать' = ABSTRACT ACTION (contractSku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
-GROUP paymentGroup 'Взаиморасчеты' : publicGroup;
+GROUP paymentGroup 'Взаиморасчеты' : public;
 
 CLASS STATIC contractSkuType 'Тип договора на поставку' {
     sale 'Договор купли-продажи',
@@ -28,11 +28,11 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
 CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
 
 supplierContractSku = DATA legalEntity (contractSku) AUTOSET;
-nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyAContract (contract) += supplierContractSku(contract);
 
 customerContractSku = DATA legalEntity (contractSku) AUTOSET;
-nameCustomerContractSku 'Покупатель' (contract) = name(customerContractSku(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameCustomerContractSku 'Покупатель' (contract) = name(customerContractSku(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += customerContractSku(contract);
 
 TABLE supplierCustomer(legalEntity, legalEntity);
@@ -41,7 +41,7 @@ TABLE supplierCustomer(legalEntity, legalEntity);
 CLASS paymentCondition 'Условия оплаты';
 TABLE paymentCondition(paymentCondition);
 
-datePaymentCondition 'Дата' = DATA DATE (paymentCondition) IN baseGroup;
+datePaymentCondition 'Дата' = DATA DATE (paymentCondition) IN base;
 datePaymentCondition (paymentCondition) <- currentDate() WHEN ASSIGNED(paymentCondition IS paymentCondition);
 contractPaymentCondition 'Договор' = DATA contractSku (paymentCondition) AUTOSET;
 numberContractPaymentCondition 'Номер договора' (paymentCondition) = numberContract(contractPaymentCondition(paymentCondition));

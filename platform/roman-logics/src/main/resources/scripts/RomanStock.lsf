@@ -75,7 +75,7 @@ balanceAArticleDate 'Остаток на конец дня' (article, date) = GR
 //orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS batchType PERSISTENT;
 //
 //batchTypeBatch = ABSTRACT batchType (batch) PERSISTENT;
-//nameBatchTypeBatch 'Тип партии' (batch) = name(batchTypeBatch(batch)) IN baseGroup;
+//nameBatchTypeBatch 'Тип партии' (batch) = name(batchTypeBatch(batch)) IN base;
 
 //orderABatch (batch) = orderABatchType(batchTypeBatch(batch)) PERSISTENT;
 //orderBBatch (batch) = orderBBatchType(batchTypeBatch(batch)) PERSISTENT;
@@ -111,10 +111,10 @@ END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //
 ownerBatchA = ABSTRACT legalEntity(batchA) PERSISTENT;
-nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN baseGroup;
+nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN base;
 
 commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT INDEXED;
-numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN baseGroup;
+numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN base;
 
 importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
 

@@ -15,7 +15,7 @@ CLASS wayOfLoading 'Способ ПРР' : named;
 TABLE wayOfLoading (wayOfLoading);
 
 
-GROUP sumConsignmentGroup 'Суммы' : baseGroup;
+GROUP sumConsignmentGroup 'Суммы' : base;
 
 CLASS ABSTRACT consignment 'Накладная';
 CLASS ABSTRACT consignmentDetail 'Строка накладной';
@@ -44,7 +44,7 @@ fullNamePayerConsignment 'Наименование для накладных з�
 
 // ------------------------------------- Атрибуты --------------------------------- //
 
-GROUP carConsignmentGroup 'Автомобиль' : baseGroup;
+GROUP carConsignmentGroup 'Автомобиль' : base;
 
 truckConsignment = ABSTRACT truck(consignment);
 dataNameTruckConsignment = ABSTRACT STRING[70] (consignment);
@@ -91,7 +91,7 @@ readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT ST
 
 // ------------------------------------- Отпуск товара --------------------------------- //
 
-GROUP issuanceConsignmentGroup 'Отпуск' : baseGroup;
+GROUP issuanceConsignmentGroup 'Отпуск' : base;
 
 shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
 
@@ -110,7 +110,7 @@ goodsAcceptedConsignment 'Принял грузополучатель' (consignm
 
 // ------------------------------------- Погрузочно-разгрузочные работы --------------------------------- //
 
-GROUP loadingConsignmentGroup 'ПРР' : baseGroup;
+GROUP loadingConsignmentGroup 'ПРР' : base;
 
 loadingExecuterConsignment (consignment) = ABSTRACT employee(consignment);
 commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;

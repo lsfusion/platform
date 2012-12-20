@@ -10,10 +10,10 @@ TABLE language(language);
 localeLanguage 'Locale' = DATA STRING[5] (language);
 
 dictionaryCompositionLanguage = DATA dictionary(language);
-nameDictionaryCompositionLanguage 'Словарь для составов' = name(dictionaryCompositionLanguage(language)) IN baseGroup;
+nameDictionaryCompositionLanguage 'Словарь для составов' = name(dictionaryCompositionLanguage(language)) IN base;
 
 dictionaryNameLanguage = DATA dictionary(language);
-nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN baseGroup;
+nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN base;
 
 FORM language 'Язык'
     OBJECTS l = language FIXED PANEL

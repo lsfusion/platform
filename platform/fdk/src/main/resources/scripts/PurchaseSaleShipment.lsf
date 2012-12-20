@@ -6,7 +6,7 @@ PRIORITY Sale;
 
 //----------------------------------------------------------------------------//
 
-GROUP shipmentGroup 'Информация о поставке' : baseGroup;
+GROUP shipmentGroup 'Информация о поставке' : base;
 
 createPurchaseShipment 'Создать поставку' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
 createPurchaseUserShipment 'Создать поставку' = DATA BOOLEAN (userShipment) PERSISTENT;

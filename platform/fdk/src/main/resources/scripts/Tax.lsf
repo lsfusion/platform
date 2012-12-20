@@ -10,19 +10,19 @@ CLASS STATIC tax 'Налоги'
     taxNP 'Налог с продаж'
 };
 
-nameTax 'Наименование налога' = DATA STRING[200] (tax) IN baseGroup;
+nameTax 'Наименование налога' = DATA STRING[200] (tax) IN base;
 
 // ---------------------------------- Шкала налога --------------------------------------- //
 
 CLASS range 'Шкала';
 TABLE range(range);
-numberRange 'Шкала' = DATA INTEGER (range) AGGPROP IN recognizeGroup;
+numberRange 'Шкала' = DATA INTEGER (range) AGGPROP IN recognize;
 
 taxRange = DATA tax (range) NOT NULL;
-nameTaxRange 'Налог' (range) = name(taxRange(range)) IN recognizeGroup;
+nameTaxRange 'Налог' (range) = name(taxRange(range)) IN recognize;
 
 countryRange = DATA country (range) NOT NULL AUTOSET;
-nameCountryRange 'Страна' (range) = name(countryRange(range)) IN recognizeGroup;
+nameCountryRange 'Страна' (range) = name(countryRange(range)) IN recognize;
 
 countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF range IS range BY taxRange(range), countryRange(range);
 
@@ -40,7 +40,7 @@ CLASS STATIC rangeType 'Для каких подразделений дейст�
     units 'Для подразделений'
 };
 rangeTypeRange = DATA rangeType (range) NOT NULL;
-nameRangeTypeRange 'Тип шкалы' = name(rangeTypeRange(range)) IN baseGroup;
+nameRangeTypeRange 'Тип шкалы' = name(rangeTypeRange(range)) IN base;
 
 isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
 
@@ -75,20 +75,20 @@ TABLE rate(rate);
 rangeRate = DATA range (rate);
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
 
-valueRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognizeGroup NOT NULL;
-dateFromRate 'Действует с' = DATA DATE (rate) IN baseGroup;
-dateToRate 'Действует по' = DATA DATE (rate) IN baseGroup;
+valueRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognize NOT NULL;
+dateFromRate 'Действует с' = DATA DATE (rate) IN base;
+dateToRate 'Действует по' = DATA DATE (rate) IN base;
 
 rateRangeDate(range, date) = GROUP MAX rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE
                                          BY rangeRate(rate), date;
 valueRateRangeDate 'На дату' (range, date) = valueRate(rateRangeDate(range, date));
 
 currentRateRange (range) = rateRangeDate(range, currentDate()) PERSISTENT;
-valueCurrentRateRange 'Действующая ставка' (range) = valueRate(currentRateRange(range)) IN baseGroup;
+valueCurrentRateRange 'Действующая ставка' (range) = valueRate(currentRateRange(range)) IN base;
 
-dateFromActingRateRange 'Действует с' (range) = dateFromRate(currentRateRange(range)) IN baseGroup;
-dateToActingRateRange 'Действует по' (range) = dateToRate(currentRateRange(range)) IN baseGroup;
-nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreatedHistorizable(currentRateRange(range)) IN baseGroup;
+dateFromActingRateRange 'Действует с' (range) = dateFromRate(currentRateRange(range)) IN base;
+dateToActingRateRange 'Действует по' (range) = dateToRate(currentRateRange(range)) IN base;
+nameUserCreatedActingRateRange 'Создан пользователем' (range) = nameUserCreatedHistorizable(currentRateRange(range)) IN base;
 
 CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT (dateFromRate(rt2) <= dateFromRate(rt1) OR dateToRate(rt1) < dateFromRate(rt2))  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
 

@@ -90,7 +90,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup privateGroup;
     public AbstractGroup baseGroup;
     public AbstractGroup actionGroup;
-    public AbstractGroup sessionGroup;
     public AbstractGroup recognizeGroup;
 
     // properties
@@ -291,13 +290,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initGroups() {
-        rootGroup = addAbstractGroup("rootGroup", getString("logics.groups.rootgroup"), null, false);
-        sessionGroup = addAbstractGroup("sessionGroup", getString("logics.groups.sessiongroup"), rootGroup, false);
-        publicGroup = addAbstractGroup("publicGroup", getString("logics.groups.publicgroup"), rootGroup, false);
-        actionGroup = addAbstractGroup("actionGroup", getString("logics.groups.actiongroup"), rootGroup, false);
-        privateGroup = addAbstractGroup("privateGroup", getString("logics.groups.privategroup"), rootGroup, false);
-        baseGroup = addAbstractGroup("baseGroup", getString("logics.groups.basegroup"), publicGroup, false);
-        recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
+        rootGroup = addAbstractGroup("root", getString("logics.groups.root"), null, false);
+        publicGroup = addAbstractGroup("public", getString("logics.groups.public"), rootGroup, false);
+        privateGroup = addAbstractGroup("private", getString("logics.groups.private"), rootGroup, false);
+        baseGroup = addAbstractGroup("base", getString("logics.groups.base"), publicGroup, false);
+        recognizeGroup = addAbstractGroup("recognize", getString("logics.groups.recognize"), baseGroup, false);
 
         initBaseGroupAliases();
     }
@@ -345,7 +342,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // Множества свойств
         selection = new SelectionPropertySet();
-        sessionGroup.add(selection);
+        publicGroup.add(selection);
 
         objectValue = new ObjectValuePropertySet();
         baseGroup.add(objectValue);

@@ -17,7 +17,7 @@ CLASS STATIC groupStatic 'Ед. изм.' {
 @defineHierarchy(statisticGroup);
 
 countryStatisticGroup = DATA country (statisticGroup);
-nameCountryStatisticGroup 'Страна' (statisticGroup)= name(countryStatisticGroup(statisticGroup)) IN baseGroup;
+nameCountryStatisticGroup 'Страна' (statisticGroup)= name(countryStatisticGroup(statisticGroup)) IN base;
 
 CONSTRAINT  countryStatisticGroup(parentStatisticGroup(statisticGroup))!=  countryStatisticGroup(statisticGroup)
     CHECKED BY  parentStatisticGroup MESSAGE 'Страна родительской группы должна совпадать со страной группы';

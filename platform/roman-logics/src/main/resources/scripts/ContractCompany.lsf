@@ -7,11 +7,11 @@ NAMESPACE Contract;
 //CLASS contractSkuCompany 'Договор на поставку между компаниями' : contractSku;
 //
 //companyAContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
-//nameCompanyAContractSkuCompany 'Компания (поставщик)' (contract) = name(companyAContractSkuCompany(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameCompanyAContractSkuCompany 'Компания (поставщик)' (contract) = name(companyAContractSkuCompany(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyAContract (contract) += companyAContractSkuCompany(contract);
 //
 //companyBContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
-//nameCompanyBContractSkuCompany 'Компания (покупатель)' (contract) = name(companyBContractSkuCompany(contract)) IN recognizeGroup MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+//nameCompanyBContractSkuCompany 'Компания (покупатель)' (contract) = name(companyBContractSkuCompany(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyBContract (contract) += companyBContractSkuCompany(contract);
 //
 //@defineContractDefault(contractSkuCompany, company, company, companyA, companyB);

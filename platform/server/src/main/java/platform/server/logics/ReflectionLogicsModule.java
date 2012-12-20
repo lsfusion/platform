@@ -331,7 +331,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
         notNullQuantityTableColumn = addDProp(BL.LM.baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
         perсentNotNullTableColumn = addDProp(BL.LM.baseGroup, "perсentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
 
-        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
+        recalculateAggregationTableColumn = addAProp(baseGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
 
         // Удаленные колонки
         sidTableDropColumn = addDProp(BL.LM.baseGroup, "sidTableDropColumn", getString("logics.tables.name"), StringClass.get(100), dropColumn);

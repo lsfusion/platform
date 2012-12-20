@@ -66,7 +66,7 @@ skuGroupSku(item) += itemGroupItem(item);
 //roundSkuGroupSkuSku(item) += itemGroupItem(item);
 
 nameItemGroupItem 'Группа товара' (item) = name(itemGroupItem(item));
-canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN baseGroup;
+canonicalNameItemGroupItem 'Группа товара' (item) = canonicalNameItemGroup(itemGroupItem(item)) IN base;
 
 TABLE itemGroupItem (itemGroup, item);
 
@@ -247,7 +247,7 @@ postfixInNameItemAttribute 'Постфикс' = DATA STRING[20] (itemAttribute);
 EXTEND FORM options PROPERTIES(ia) prefixInNameItemAttribute, postfixInNameItemAttribute;
 
 META defineItemAttributeName (prefix, caption, group)
-    numberInName###prefix##ItemAttribute 'Порядковый номер в наименовании'##caption = DATA INTEGER (itemAttribute) IN baseGroup;
+    numberInName###prefix##ItemAttribute 'Порядковый номер в наименовании'##caption = DATA INTEGER (itemAttribute) IN base;
     EXTEND FORM options PROPERTIES(ia) numberInName###prefix##ItemAttribute;
 
     name###prefix##AttributeItem 'Наименование'###caption (item) = toString255(
@@ -324,7 +324,7 @@ END
 
 // ---------------------------- Конкретные свойства -------------------------------- //
 
-GROUP itemBaseGroup 'Базовые свойства' : baseGroup;
+GROUP itemBaseGroup 'Базовые свойства' : base;
 
 // Группа
 @implementObjectItemAttribute(itemGroup, 'Группа товаров');
@@ -363,7 +363,7 @@ EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
 
 // ------ Габариты товара ------ //
 
-GROUP itemSizeGroup 'Габариты товара' : publicGroup;
+GROUP itemSizeGroup 'Габариты товара' : public;
 
 // Вес нетто
 @defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто, кг', itemSizeGroup);
@@ -383,7 +383,7 @@ EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }
 // ---------------------------------------------- Формирование наименований -------------------------------------- //
 
 // Базовое наименование
-@defineItemAttributeName( , , recognizeGroup);
+@defineItemAttributeName( , , recognize);
 nameSku(item) += nameAttributeItem(item);
 
 // для оптимизации запросов
@@ -396,11 +396,11 @@ EXTEND FORM items
 ;
 
 // Кассы
-@defineItemAttributeName(cashRegister, ' (кассы)', publicGroup);
+@defineItemAttributeName(cashRegister, ' (кассы)', public);
 dataTitleCashRegisterBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
 titleCashRegisterBarcode 'Наименование для касс' = UNION OVERRIDE nameCashRegisterAttributeItem(skuBarcode(barcode)), dataTitleCashRegisterBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 // Весы
-@defineItemAttributeName(scales, ' (весы)', publicGroup);
+@defineItemAttributeName(scales, ' (весы)', public);
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;

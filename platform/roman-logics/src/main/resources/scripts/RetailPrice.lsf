@@ -19,8 +19,8 @@ PRIORITY MasterData, Stock, RomanLogicsModule;
 CLASS coefficientBrandRetail 'Надбавка';
 TABLE coefficientBrandRetail (coefficientBrandRetail);
 
-dateCoefficientBrandRetail 'Дата введения' = DATA DATE(coefficientBrandRetail) IN baseGroup;
-markupCoefficientBrandRetail 'Множитель' = DATA NUMERIC[14,2](coefficientBrandRetail) IN baseGroup;
+dateCoefficientBrandRetail 'Дата введения' = DATA DATE(coefficientBrandRetail) IN base;
+markupCoefficientBrandRetail 'Множитель' = DATA NUMERIC[14,2](coefficientBrandRetail) IN base;
 
 brandSupplierCoefficientBrandRetail = DATA brandSupplier(coefficientBrandRetail) AUTOSET;
 categorySupplierCoefficientBrandRetail = DATA categorySupplier(coefficientBrandRetail) AUTOSET;
@@ -132,7 +132,7 @@ EXTEND DESIGN options {
     }
 }
 dateTimeToPriceSetDocument 'Дата/время окончания' (priceSetDocument) = UNION OVERRIDE maxDateTime() IF priceSetDocument IS priceSetDocument,
-                                                                                            dateTimeToDataPriceSetDocument(priceSetDocument) IN baseGroup PERSISTENT;
+                                                                                            dateTimeToDataPriceSetDocument(priceSetDocument) IN base PERSISTENT;
 
 CONSTRAINT dateTimeToPriceSetDocument(document) < dateTimePriceSetDocument(document) MESSAGE 'Дата/время окончания действия документа меньше даты/времени его начала';
 
@@ -156,7 +156,7 @@ basePriceSetDocumentFreightImporter (freight, importer) = GROUP UNIQUE basePrice
 
 userReasonPriceSetDocument 'Основание прайса' = DATA STRING[100] (priceSetDocument);
 reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UNION OVERRIDE seriesNumberObject(freightBasePriceSetDocument (priceSetDocument)),
-                                                                              userReasonPriceSetDocument(priceSetDocument) IN recognizeGroup;
+                                                                              userReasonPriceSetDocument(priceSetDocument) IN recognize;
 
 // Валюта
 
@@ -250,7 +250,7 @@ priceBasePriceSetDocumentArticle 'Базовая цена' = DATA NUMERIC[14,2](
 priceBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
 // Уценки
-percentDiscountPriceSetDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, article) IN baseGroup;
+percentDiscountPriceSetDocumentArticle 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, article) IN base;
 percentDiscountPriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
 priceDiscountPriceSetDocumentArticle 'Цена со скидкой' = DATA NUMERIC[14,2](discountPriceSetDocument, article);
@@ -339,7 +339,7 @@ priceBasePriceSetDocumentSku 'Базовая цена' = DATA NUMERIC[14,2](base
 priceBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
 // Уценки
-percentDiscountPriceSetDocumentSku 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, sku) IN baseGroup;
+percentDiscountPriceSetDocumentSku 'Процент уценки' = DATA NUMERIC[14,2](discountPriceSetDocument, sku) IN base;
 percentDiscountPriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
 priceDiscountPriceSetDocumentSku 'Цена со скидкой' = DATA NUMERIC[14,2](discountPriceSetDocument, sku);

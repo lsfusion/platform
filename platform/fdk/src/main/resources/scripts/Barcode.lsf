@@ -6,13 +6,13 @@ CLASS barcode 'Штрих код';
 TABLE barcode (barcode);
 TABLE stringDate (STRING[14], DATE);
 
-idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognizeGroup FIXEDCHARWIDTH 14 AGGPROP INDEXED;
+idBarcode 'Штрих код' = DATA STRING[14] (barcode) IN recognize FIXEDCHARWIDTH 14 AGGPROP INDEXED;
 
 dataDateBarcode 'Дата действия' = DATA DATE (barcode);
-dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN baseGroup PERSISTENT;
+dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN base PERSISTENT;
 
 dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS barcode PERSISTENT;
-orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX LIST(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN baseGroup;
+orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX LIST(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN base;
 barcodeIdDate (id, date) = orderBarcodeIdDate(id, date)[2];
 
 barcodeId (id) = barcodeIdDate(id, currentDate());
@@ -24,8 +24,8 @@ amountBarcode 'Множитель' = (1.0 IF barcode IS barcode) OR dataAmountBa
 completeBarcode = FORMULA STRING[13] 'completeBarcode($1)';
 
 // Sku
-skuBarcode = DATA sku(barcode) IN baseGroup NOT NULL DELETE;
-nameSkuBarcode 'Наименование' (barcode) = nameSku(skuBarcode(barcode)) IN recognizeGroup;
+skuBarcode = DATA sku(barcode) IN base NOT NULL DELETE;
+nameSkuBarcode 'Наименование' (barcode) = nameSku(skuBarcode(barcode)) IN recognize;
 
 skuBarcodeIdDate (id, date) = skuBarcode(barcodeIdDate(id, date));
 
@@ -42,7 +42,7 @@ changePrimaryBarcodeSku = ACTION (barcode, sku) {
     }
 }
 
-idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN baseGroup AGGPROP PERSISTENT;
+idBarcodeSku 'Штрих-код' (sku) = idBarcode(barcodeSku(sku)) IN base AGGPROP PERSISTENT;
 idBarcodeSkuBatch 'Штрих-код' (batch) = idBarcodeSku(skuBatch(batch));
 idBarcodeSkuSkuLedger 'Штрих-код' (skuLedger) = idBarcodeSku(skuSkuLedger(skuLedger));
 
@@ -176,9 +176,9 @@ EXTEND FORM dialogBatch
 // Barcode
 META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
     prefixB###barcodePack###detail = DATA barcode (detail);
-    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
-    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
-    prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (detail) IN recognizeGroup;
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (detail) IN recognize;
 
     prefixB###amountPack###detail(detail) <- amountBarcode(prefixB###barcodePack###detail(detail)) WHEN CHANGED(prefixB###barcodePack###detail(detail));
 
@@ -187,9 +187,9 @@ META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
 END
 META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prefixB)
     prefixB###barcodePack###detail = ABSTRACT barcode (detail);
-    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
-    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognizeGroup;
-    prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (detail) IN recognizeGroup;
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (detail) IN recognize;
 END
 META defineDocumentInterfaceBarcodeSkuCustomPrefix (detail, skuProp, prefixB, prefixS)
     @defineDocumentAbstractDetailBarcodeCustomPrefix(detail, prefixB);

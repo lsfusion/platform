@@ -6,9 +6,9 @@ REQUIRE System;
 
 // Syntax:
 // GROUP name ['caption'] [: parentGroup];
-GROUP base 'Основная группа' : baseGroup;
+GROUP base 'Основная группа' : base;
 GROUP simpleGroup;
-GROUP sampleGroup : System.baseGroup; // явная квалификация имен
+GROUP sampleGroup : System.base; // явная квалификация имен
 
 /////////// CLASS STATEMENT ////////////
 

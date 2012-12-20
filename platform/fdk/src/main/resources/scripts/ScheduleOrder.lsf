@@ -20,13 +20,13 @@ META defineScheduleOrder(sign, stockProp)
 
     //общие свойства
     typeScheduleOrder 'Тип генерации графика (ИД)' = DATA genType (scheduleOrder);
-    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN baseGroup;
+    nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN base;
 
     supplierScheduleOrder 'Поставщик (ИД)' = DATA legalEntity(scheduleOrder);
-    nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = name(supplierScheduleOrder(scheduleOrder)) IN baseGroup;
+    nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = name(supplierScheduleOrder(scheduleOrder)) IN base;
 
     customerScheduleOrder 'Покупатель (ИД)' = DATA legalEntity(scheduleOrder);
-    nameCustomerScheduleOrder 'Покупатель' (scheduleOrder) = name(customerScheduleOrder(scheduleOrder)) IN baseGroup;
+    nameCustomerScheduleOrder 'Покупатель' (scheduleOrder) = name(customerScheduleOrder(scheduleOrder)) IN base;
 
     supplierStockScheduleOrder = DATA stock(scheduleOrder);
     nameSupplierStockScheduleOrder 'Склад поставщика' (scheduleOrder) = name(supplierStockScheduleOrder(scheduleOrder));
@@ -44,8 +44,8 @@ META defineScheduleOrder(sign, stockProp)
         CHECKED BY customerScheduleOrder, customerStockScheduleOrder
             MESSAGE 'Покупатель и склад покупателя не имеют связи';
 
-    startDateScheduleOrder 'Дата начала' = DATA DATE (scheduleOrder) IN baseGroup;
-    endDateScheduleOrder 'Дата окончания' = DATA DATE (scheduleOrder) IN baseGroup;
+    startDateScheduleOrder 'Дата начала' = DATA DATE (scheduleOrder) IN base;
+    endDateScheduleOrder 'Дата окончания' = DATA DATE (scheduleOrder) IN base;
 
     dayBeforeScheduleOrder 'За сколько дней формировать заказ' = DATA INTEGER (scheduleOrder);
 
@@ -72,8 +72,8 @@ META defineScheduleOrder(sign, stockProp)
     toShowGenNumber (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genNumber;
     toShowGenDayMonth (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genDayMonth;
 
-    dateOrderScheduleOrderDetail 'Дата заказа' = DATA DATE (scheduleOrderDetail) IN baseGroup;
-    dateSupplyScheduleOrderDetail 'Дата поставки' = DATA DATE (scheduleOrderDetail) IN baseGroup;
+    dateOrderScheduleOrderDetail 'Дата заказа' = DATA DATE (scheduleOrderDetail) IN base;
+    dateSupplyScheduleOrderDetail 'Дата поставки' = DATA DATE (scheduleOrderDetail) IN base;
 
     scheduleOrderScheduleOrderDetail 'График поставок' = DATA scheduleOrder(scheduleOrderDetail);
 
