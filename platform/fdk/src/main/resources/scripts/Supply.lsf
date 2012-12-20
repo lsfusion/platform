@@ -41,8 +41,6 @@ valueVATSupplyLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSupplyLedger(l
 sumVATSupplyLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSupplyLedger(ledger), valueVATSupplyLedger(ledger));
 
-//markupSumSupplyLedger 'Надбавка' (ledger) = sumSupplyLedger(ledger) - sumVATSupplyLedger(ledger) - costSumSkuLedger(ledger);
-
 quantityPurchaseSkuStockDate (sku, stock, date) = GROUP SUM quantitySupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
     BY skuSupplyLedger(ledger), stockSupplyLedger(ledger), dateSupplyLedger(ledger) PERSISTENT;
 
@@ -136,7 +134,7 @@ EXTEND DESIGN options {
 
 //---------------------------------------------- Формы закупки -------------------------------------//
 
-FORM supplyLedger 'Закупки по позициям'
+FORM supplyLedger 'Поступления по позициям'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
@@ -163,7 +161,7 @@ DESIGN supplyLedger FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM supplySkuStock 'Закупки по SKU'
+FORM supplySkuStock 'Поступления по SKU'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
@@ -195,7 +193,7 @@ FORM supplySkuStock 'Закупки по SKU'
                       balanceASkuStockDate(s, st, dTo), sumPurchaseSkuStockDateFromTo (s, st, dFrom, dTo),  sumPurchaseTypeExchangeSkuStockDateFromTo(te,s, st, dFrom, dTo)
 
     FILTERGROUP filtersPurchase
-        FILTER 'Показывать закупленные за интервал' 'F11' quantityPurchaseSkuStockDateFromTo(s, st, dFrom, dTo)
+        FILTER 'Показывать поступившие за интервал' 'F11' quantityPurchaseSkuStockDateFromTo(s, st, dFrom, dTo)
 
     FILTERGROUP filtersPurchase
         FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
@@ -238,7 +236,7 @@ DESIGN supplySkuStock FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW supplyNavigator 'Закупки' {
+    NEW supplyNavigator 'Поступления' {
         ADD supplyLedger;
         ADD supplySkuStock;
     }

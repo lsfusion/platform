@@ -91,3 +91,10 @@ sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(co
 
 @implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
 sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger) IF isPostedInvoice(inContractLedger);
+
+// Проводим по регистру  продаж
+
+@implementSalesLedger(invoice, sku, supplierStock);
+quantitySalesLedger (ledger) += quantityInvoiceDetail(ledger);
+VATSalesLedger (ledger) += VATInvoiceDetail(ledger);
+sumSalesLedger (ledger) += invoiceSumInvoiceDetail(ledger);

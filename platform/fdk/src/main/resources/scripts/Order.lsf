@@ -12,6 +12,7 @@ REQUIRE System,
         Agreement,
         Supply,
         Sales,
+        StockReserve,
         StockTax;
 
 
@@ -187,6 +188,9 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
     fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), quantityDaysNextShipmentUserOrder(userOrder));
     quantitySoldSkuStockUserOrder 'Реализовано' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+    recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-) (currentBalanceSkuStock(sku, stock) AND userOrder IS userOrder);
+    recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупке кол-во' (sku, stock, userOrder) = recQuantitySkuStockUserOrder(sku, stock, userOrder) IF recQuantitySkuStockUserOrder(sku, stock, userOrder) >0;
+    stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
 
 // --------------------------- Формы Заказа ---------------------------------
 
@@ -303,9 +307,18 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
     @defineDocumentSupplierSkuStock (userOrder, userOrder, o, sts);
+    supplierEntityUserOrder(userOrder) <- supplierUserOrder(userOrder) WHEN CHANGED(supplierUserOrder(userOrder));
+
+    fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым количеством' = ACTION (stock, userOrder) {
+        FOR quantitySupplierSku(supplierUserOrder(userOrder), sku) DO {
+            SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, stock, userOrder);
+            EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, stock);
+        }
+    } TOOLBAR CONFIRM;
+
 
     EXTEND FORM userOrder
-    PROPERTIES READONLY quantitySoldSkuStockUserOrder(s,st,o) BEFORE currentBalanceSkuStock(s,st)
+    PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o)
     ;
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;

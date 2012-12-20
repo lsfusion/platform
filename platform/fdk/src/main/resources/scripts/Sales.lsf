@@ -81,6 +81,10 @@ sumSoldSkuDateFromTo 'Продано за интервал (сумма)' (sku, d
         sumSoldSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, dateFrom, dateTo;
 
+quantityDaysDateToFrom 'Кол-во дней' (dateTo, dateFrom) =  subtractInteger(dateTo, dateFrom) + 1 AND dateTo AS DATE AND dateFrom AS DATE;
+   averageSoldInDaySkuStockDateFromTo 'Продаж в день' (sku, stock, dateFrom, dateTo) =  quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) / quantityDaysDateToFrom(dateTo, dateFrom);
+
+
 //---------------------------------Тип обмена---------------------------------------//
 
 sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));

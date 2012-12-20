@@ -73,6 +73,7 @@ REQUIRE System,
         Machinery,
         CashRegister,
         Scales,
+        StockReserve,
         PriceChecker,
         WriteOff,
         Terminal,
@@ -564,6 +565,7 @@ NAVIGATOR {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
         ADD supplyNavigator;
+        ADD stockReserveNavigator;
     }
 
     NEW warehouse 'Управление складом' TO toolbar {

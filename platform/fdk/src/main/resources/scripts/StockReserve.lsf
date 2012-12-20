@@ -1,0 +1,84 @@
+MODULE StockReserve;
+
+REQUIRE System,
+        Utils,
+        Historizable,
+        Stock,
+        Document,
+        Currency,
+        Sales,
+        Barcode;
+
+@defineHistorizable(stockReserveStockSku, 'Страховой запас (кол-во)', NUMERIC[14,3], stock, name, sku, nameSku, base);
+stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (stock, skuGroup);
+stockReserveDaysStockSku 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (stock, sku);
+
+levelParentStockSkuGroup (stock, skuGroup) = GROUP MIN levelSkuGroupSkuGroup(skuGroup, parent) IF stockReserveDaysStockSkuGroup(stock, parent)
+                                                               BY stock, skuGroup PERSISTENT;
+nearestParentStockSkuGroup (stock, skuGroup) = skuGroupSkuGroupLevel(skuGroup, levelParentStockSkuGroup(stock, skuGroup));
+nearestStockReserveDaysStockSkuGroup (stock, skuGroup) =
+    stockReserveDaysStockSkuGroup(stock, nearestParentStockSkuGroup(stock, skuGroup));
+
+stockReserveDaysStockSkuGroupOver 'Страховой запас (дн.)' (stock, skuGroup) =
+    UNION OVERRIDE nearestStockReserveDaysStockSkuGroup (stock, skuGroup),
+                   stockReserveDaysStockSkuGroup(stock, skuGroup);
+
+stockReserveDaysStockSkuOver 'Страховой запас (дн.)' (stock, sku) =
+    UNION OVERRIDE nearestStockReserveDaysStockSkuGroup(stock, skuGroupSku(sku)),
+                   stockReserveDaysStockSku(stock, sku);
+
+fillStockReserveDateDateFromTo 'Проставить кол-во исходя из продаж в день и запаса(дн.) ' = ACTION (stock, date, dFrom, dTo) {
+    FOR stockReserveDaysStockSkuOver(stock, sku) AND averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo) DO {
+    SET dataStockReserveStockSkuDate(stock, sku, date) <- averageSoldInDaySkuStockDateFromTo(sku,stock,dFrom,dTo)*stockReserveDaysStockSkuOver(stock,sku) WHERE  date AS DATE;
+    }
+} TOOLBAR CONFIRM;
+
+FORM stockReserve 'Страховые запасы'
+    OBJECTS dt = DATE FIXED PANEL
+    PROPERTIES valDt = OBJVALUE(dt) BACKGROUND dateDiffersCurrent(dt)
+    OBJECTS st = stock FIXED PANEL
+    PROPERTIES SELECTOR nameSt = name(st)
+
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES skuTreeName = name(sk) READONLY, stockReserveDaysStockSkuGroupOver(st,sk)
+    ORDER BY skuTreeName
+
+    OBJECTS s = sku
+    PROPERTIES READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s)
+    PROPERTIES overStockReserveStockSkuDate(st,s,dt), overDialogStockReserveStockSkuDate(st,s), stockReserveDaysStockSkuOver(st,s), quantitySoldSkuStockDateFromTo(s,st,dFrom,dTo) READONLY, averageSoldInDaySkuStockDateFromTo(s,st,dFrom,dTo) READONLY
+    PROPERTIES fillStockReserveDateDateFromTo(st,dt,dFrom,dTo) TODRAW s
+    ORDER BY          nameSku
+    FILTERS           isParentSkuGroupSku(sk, s)
+
+    FILTERGROUP soldFilter
+        FILTER 'Только с реализацией' 'F10' quantitySoldSkuStockDateFromTo(s,st,dFrom,dTo)
+
+;
+DESIGN stockReserve FROM DEFAULT {
+    main {
+        NEW row2 BEFORE functions.box {
+            type = SPLITH;
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD skuTree.tree.box { title = 'Товарные группы'; fillHorizontal = 1;}
+            ADD s.box { fillHorizontal = 2;};
+        };
+        NEW row1 BEFORE row2 {
+            childConstraints = TO THE BOTTOM;
+            NEW row11 {
+                childConstraints = TO THE RIGHT;
+                ADD st.box;
+                ADD dt.box;
+            }
+            ADD dates.box {title = 'Интервал для реализации'; }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW stockReserveNavigator 'Запасы' {
+        ADD stockReserve;
+    }
+}

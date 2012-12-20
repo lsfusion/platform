@@ -1417,28 +1417,31 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
 
     priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
 
-    changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
-        REQUEST NUMERIC[14,3] INPUT;
+    changeQuantityValueSku###object###Stock = ACTION (sku, object, stock) {
+
         IF detail###Sku###object###stockProp(sku, object, stock) THEN {
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
             } ELSE {
-//                FOR object###detail(detail) == object AND stockProp###detail(detail) == stock AND skuProp###detail(detail) == sku  DO {  //AND NOT quantity###detail(detail)
-                    EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
-                }
-//            }
+                EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
+            }
+
         } ELSE {
-            IF requestedNumeric() THEN
-                FOR ADDOBJ d = detail DO {
-                   SET object###detail(d) <- object;
-                   SET data###stockProp###detail (d) <- stock;
-                   SET skuProp###detail(d) <- sku;
-                   SET quantity###detail (d) <- requestedNumeric();
-                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
-                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
-                }
+            FOR ADDOBJ d = detail DO {
+               SET object###detail(d) <- object;
+               SET data###stockProp###detail (d) <- stock;
+               SET skuProp###detail(d) <- sku;
+               SET quantity###detail (d) <- requestedNumeric();
+               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+            }
         }
     }
+    changeQuantitySku###object###Stock = ACTION (sku, object, stock) {
+        REQUEST NUMERIC[14,3] INPUT;
+        EXEC changeQuantityValueSku###object###Stock(sku, object, stock);
+    }
+
 END
 META defineDocumentSkuStock(object, skuProp, stockProp)
     @defineDocumentSkuStockCustom(object, object##Detail, skuProp, stockProp);

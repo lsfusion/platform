@@ -36,3 +36,10 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUse
 
 @defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
+
+EXTEND FORM userOrder
+    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
+    PROPERTIES READONLY AFTER quantitySoldSkuStockUserOrder(s,st,o) stockReserveSkuStockUserOrder(s,st,o)
+    PROPERTIES  fillRecommendedQuantityStockUserOrder(st,o) TODRAW s
+;
+
