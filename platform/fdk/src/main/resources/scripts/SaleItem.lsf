@@ -1,4 +1,4 @@
-MODULE ItemSale;
+MODULE SaleItem;
 
 REQUIRE Item, Sale;
 

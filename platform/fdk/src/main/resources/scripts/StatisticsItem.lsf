@@ -1,4 +1,4 @@
-MODULE ItemStatistics;
+MODULE StatisticsItem;
 
 REQUIRE Statistics, Item;
 

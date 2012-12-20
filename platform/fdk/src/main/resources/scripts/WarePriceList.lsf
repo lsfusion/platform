@@ -1,6 +1,6 @@
 MODULE WarePriceList;
 
-REQUIRE PriceList, Ware, ItemWare;
+REQUIRE PriceList, Ware, WareItem;
 
 NAMESPACE PriceList;
 
