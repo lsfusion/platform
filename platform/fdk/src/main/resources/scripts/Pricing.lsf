@@ -470,7 +470,7 @@ EXTEND CLASS systemLedgerPriceListType {
     supplierPricingPriceListType 'Поставщика (расценка)',
     retailPricingPriceListType 'Розничная (расценка)'
 }
-includeVATBasePriceListType (priceListType) += priceListType == systemLedgerPriceListType.retailPricingPriceListType;
+includeVATSystemLedgerPriceListType (priceListType) += priceListType == systemLedgerPriceListType.retailPricingPriceListType;
 
 EXTEND CLASS pricingDetail : priceListLedger;
 
