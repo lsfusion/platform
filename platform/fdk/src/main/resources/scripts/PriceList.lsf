@@ -158,6 +158,9 @@ CLASS STATIC systemLedgerPriceListType 'Системный вид цены (ре
 
 batchLedgerPriceListType (type) += type == systemLedgerPriceListType.accountPriceListType;
 
+includeVATSystemLedgerPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (systemLedgerPriceListType) EXCLUSIVE;
+includeVATLedgerPriceListType (type) += includeVATSystemLedgerPriceListType(type);
+
 pricePriceListLedgerSystemLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, systemLedgerPriceListType) EXCLUSIVE PERSISTENT;
 pricePriceListLedgerLedgerPriceListType(ledger, type) += pricePriceListLedgerSystemLedgerPriceListType(ledger, type);
 
