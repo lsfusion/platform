@@ -27,14 +27,21 @@ priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
+FORM warePriceListType 'Цена cо стеклопосудой'
+    OBJECTS w = warePriceListType FIXED PANEL
+    PROPERTIES(w) name, includeVATPriceListType, nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
 
-EXTEND FORM editPriceListType
-    PROPERTIES(p) nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
+    EDIT warePriceListType OBJECT w
 ;
 
-EXTEND DESIGN editPriceListType{
-    p.box{
+DESIGN warePriceListType FROM DEFAULT {
+    w.box{
+        ADD PROPERTY(name);
+        ADD PROPERTY(includeVATPriceListType);
         ADD PROPERTY(nameCurrencyWarePriceListType);
         ADD PROPERTY(nameBasePriceListTypeWarePriceListType);
     }
 }
+
+editWarePriceListType 'Редактировать' = ACTION EDITFORM warePriceListType;
+editPriceListType(priceListType) += editWarePriceListType(priceListType);

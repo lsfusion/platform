@@ -249,22 +249,22 @@ TABLE priceListDetailPriceListType (priceListDetail, priceListType);
 TABLE priceListDataPriceListType (priceList, dataPriceListType);
 TABLE priceListDetailDataPriceListType (priceListDetail, dataPriceListType);
 
-inPriceListPriceListType 'Изменять цены' = ABSTRACT BOOLEAN (priceList, dataPriceListType) PERSISTENT;
-inUserPriceListPriceListType 'Изменять цены' = DATA BOOLEAN (userPriceList, dataPriceListType);
-inPriceListPriceListType (priceList, dataPriceListType) += inUserPriceListPriceListType(priceList, dataPriceListType);
+inPriceListDataPriceListType 'Изменять цены' = ABSTRACT BOOLEAN (priceList, dataPriceListType) PERSISTENT;
+inUserPriceListDataPriceListType 'Изменять цены' = DATA BOOLEAN (userPriceList, dataPriceListType);
+inPriceListDataPriceListType (priceList, dataPriceListType) += inUserPriceListDataPriceListType(priceList, dataPriceListType);
 
 showPriceListPriceListType 'Показывать цены' = ABSTRACT BOOLEAN (priceList, priceListType) PERSISTENT;
 showUserPriceListPriceListType 'Показывать цены' = DATA BOOLEAN (userPriceList, priceListType);
 showPriceListPriceListType (priceList, priceListType) += showUserPriceListPriceListType(priceList, priceListType);
 
-inShowPriceListPriceListType (priceList, priceListType) = inPriceListPriceListType (priceList, priceListType) AND
+inShowPriceListPriceListType (priceList, priceListType) = inPriceListDataPriceListType (priceList, priceListType) AND
                                                           showPriceListPriceListType (priceList, priceListType);
 
-priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListPriceListType(priceList, priceListType) , ', '
+priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListDataPriceListType(priceList, priceListType) , ', '
                                                BY priceList
                                                ORDER priceListType MINCHARWIDTH 50 PERSISTENT;
 
-inPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
+inPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListDataPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
 
 pricePriceListDetailDataPriceListType(detail, dataPriceListType) => inPriceListDetailPriceListType (detail, dataPriceListType) RESOLVE FALSE;
 
@@ -326,7 +326,7 @@ extendNameMarkUpDataPriceListType (userPriceList, dataPriceListType) =
 
 extendNameDataPriceListType (userPriceList, dataPriceListType) =
     [FORMULA STRING[50]  ' CAST($1 AS TEXT) || \' (новая) \''](
-    name(dataPriceListType)) IF inPriceListPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
+    name(dataPriceListType)) IF inPriceListDataPriceListType(userPriceList, dataPriceListType) MINCHARWIDTH 30 MAXCHARWIDTH 50;
 
 backgroundCurrentDataPriceListType 'Цвет' (dataPriceListType) = RGB(255,238,165) AND dataPriceListType IS dataPriceListType;
 backgroundMarkUpDataPriceListType 'Цвет' (dataPriceListType) = RGB(232,184,146) AND dataPriceListType IS dataPriceListType;
@@ -374,7 +374,7 @@ FORM chooseMarkUpSkuUserPriceList 'Наценка'
 
     OBJECTS t2 = dataPriceListType FIXED PANEL
     PROPERTIES(t2) SELECTOR name
-    FILTERS inPriceListPriceListType(p, t2)
+    FILTERS inPriceListDataPriceListType(p, t2)
 ;
 
 DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
@@ -418,11 +418,11 @@ FORM userPriceList 'Прайс'
 
     OBJECTS t = priceListType
     PROPERTIES(t) READONLY name
-    PROPERTIES(p, t) inPriceListPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
+    PROPERTIES(p, t) inPriceListDataPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
 
 //    OBJECTS st = dataPriceListType
 //    PROPERTIES(st) READONLY name
-//    FILTERS inPriceListPriceListType(p, st)
+//    FILTERS inPriceListDataPriceListType(p, st)
 
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
@@ -570,7 +570,7 @@ copyUserPriceList 'Копировать' = ACTION (price) NEWSESSION {
         SET inUserPriceListStock(u, stock) <- inUserPriceListStock(price, stock);
         SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(price, stockGroup);
         SET inUserPriceList(u) <- inUserPriceList(price);
-        SET inUserPriceListPriceListType(u, priceListType) <- inUserPriceListPriceListType(price, priceListType);
+        SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(price, priceListType);
         FOR userPriceListUserPriceListDetail(detail) == price DO {
             FOR ADDOBJ d = userPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
@@ -603,7 +603,7 @@ FORM userPriceLists 'Прайсы'
     PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
-            inPriceListPriceListType(p, t),
+            inPriceListDataPriceListType(p, t),
             inPriceListStockOver(p, ts),
             currencyUserPriceList(p) == currencyDataPriceListType(t)
 
@@ -696,74 +696,50 @@ backgroundMarkup 'Цвет' (calcPriceListType, priceGroup) = RGB(255,160,160) A
 
 // --------------------------- Формы ------------------------- //
 
-FORM editPriceListType 'Вид цены'
-    OBJECTS p = priceListType FIXED PANEL
-    PROPERTIES(p) READONLY objectClassName
-    PROPERTIES(p) name, includeVATPriceListType
+editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM dataPriceListType 'Пользовательский вид цен'
+    OBJECTS d = dataPriceListType FIXED PANEL
+    PROPERTIES(d) name, includeVATPriceListType, nameCurrencyDataPriceListType
+
+    EDIT dataPriceListType OBJECT d
+;
+
+DESIGN dataPriceListType FROM DEFAULT {
+    d.box{
+        ADD PROPERTY(name);
+        ADD PROPERTY(includeVATPriceListType);
+        ADD PROPERTY(nameCurrencyDataPriceListType);
+    }
+}
+
+editDataPriceListType 'Редактировать' = ACTION EDITFORM dataPriceListType;
+editPriceListType(priceListType) += editDataPriceListType(priceListType);
+
+FORM calcPriceListType 'Расчетный вид цен'
+    OBJECTS c = calcPriceListType FIXED PANEL
+    PROPERTIES(c) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType
 
     TREE treeGroup g=priceGroup PARENT parentPriceGroup
     PROPERTIES READONLY name(g)
     ORDER BY name(g)
+    PROPERTIES(c, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
 
-    EDIT priceListType OBJECT p
+    EDIT calcPriceListType OBJECT c
 ;
 
-DESIGN editPriceListType FROM DEFAULT{
+DESIGN calcPriceListType FROM DEFAULT{
     NEW mainContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
-        ADD p.box{
-            fillHorizontal = 3.0;
-            ADD PROPERTY(name);
-        }
-        ADD treeGroup.tree.box{
-            fillHorizontal = 2.0;
-        }
+        ADD c.box{fillHorizontal = 3.0;}
+        ADD treeGroup.tree.box{fillHorizontal = 2.0;}
     }
     ADD functions.box;
 }
-EXTEND FORM editPriceListType
-    PROPERTIES(p) nameCurrencyDataPriceListType, nameCurrencyCalcPriceListType,
-                  nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType
-    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
-;
 
-EXTEND DESIGN editPriceListType{
-    p.box{
-        ADD PROPERTY(nameCurrencyDataPriceListType);
-        ADD PROPERTY(nameCurrencyCalcPriceListType);
-        ADD PROPERTY(nameBasePriceListTypeCalcPriceListType);
-        ADD PROPERTY(nameRoundConditionCalcPriceListType);
-    }
-}
-
-//FORM dataPriceListType 'Базовый вид цен'
-//    OBJECTS p = dataPriceListType FIXED PANEL
-//    PROPERTIES(p) name, nameCurrencyDataPriceListType
-
-//    EDIT dataPriceListType OBJECT p
-//;
-
-//DESIGN dataPriceListType FROM DEFAULT {
-//    NEW topContainer{
-//       ADD PROPERTY(name);
-//        ADD PROPERTY(nameCurrencyDataPriceListType);
-//    }
-//    ADD functions.box;
-//}
-
-//FORM calcPriceListType 'Базовый вид цен'
-//    OBJECTS p = calcPriceListType FIXED PANEL
-//    PROPERTIES(p) name, nameBasePriceListTypeCalcPriceListType, roundCalcPriceListType
-
-//    TREE treeGroup g=priceGroup PARENT parentPriceGroup
-//    PROPERTIES READONLY name(g)
-//   ORDER BY name(g)
-
-//    PROPERTIES(p, g) markupCalcPriceListTypePriceGroup , nearestMarkupCalcPriceListTypePriceGroup
-
-//    EDIT calcPriceListType OBJECT p
-//;
+editCalcPriceListType 'Редактировать' = ACTION EDITFORM calcPriceListType;
+editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 
 FORM priceListType 'Вид цены'
     OBJECTS p = priceListType
@@ -782,7 +758,7 @@ FORM priceListTypes 'Виды цен'
 
     OBJECTS pt = priceListType
     PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
-    PROPERTIES(pt) ADDFORM, EDITFORM, delete
+    PROPERTIES(pt) ADDFORM, editPriceListType, delete
     ORDER BY objectClassName
 
     OBJECTS p = userPriceList
@@ -790,7 +766,7 @@ FORM priceListTypes 'Виды цен'
                            toDateUserPriceList, toTimeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
     PROPERTIES(p) EDITFORM, delete
     ORDER BY fromDateUserPriceList, fromTimeUserPriceList
-    FILTERS inPriceListPriceListType(p, pt),
+    FILTERS inPriceListDataPriceListType(p, pt),
             inPriceListStockOver(p, s)
 
     TREE skuTree sg = skuGroup PARENT parentSkuGroup
