@@ -8,6 +8,7 @@ import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.HashMap;
@@ -133,5 +134,11 @@ public class GwtClientUtils {
 
     public static void removeAllChildren(Element parent) {
         parent.setInnerText("");
+    }
+
+    public static Widget createHorizontalStrut(int size) {
+        SimplePanel strut = new SimplePanel();
+        strut.setWidth(size + "px");
+        return strut;
     }
 }

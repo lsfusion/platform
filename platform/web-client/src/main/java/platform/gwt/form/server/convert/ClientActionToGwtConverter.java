@@ -1,15 +1,12 @@
 package platform.gwt.form.server.convert;
 
-import com.google.common.base.Throwables;
-import jasperapi.ReportGenerator;
-import net.sf.jasperreports.engine.JasperExportManager;
-import platform.base.BaseUtils;
 import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
+import platform.gwt.form.server.ReportExporter;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
@@ -17,12 +14,11 @@ import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.window.GModalityType;
 import platform.interop.ModalityType;
 import platform.interop.action.*;
-import platform.interop.form.ReportGenerationData;
 
 import javax.servlet.http.HttpSession;
-import java.io.*;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 import static platform.base.BaseUtils.deserializeObject;
 
@@ -114,7 +110,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GReportAction(generateReport(session, false, action.generationData));
+        return new GReportAction(ReportExporter.exportReport(session, false, action.generationData));
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -134,12 +130,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = RunPrintReportClientAction.class)
     public GRunPrintReportAction convertAction(RunPrintReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunPrintReportAction(generateReport(session, false, form.remoteForm.getReportData(-1, null, false, null)));
+        return new GRunPrintReportAction(ReportExporter.exportReport(session, false, form.remoteForm.getReportData(-1, null, false, null)));
     }
 
     @Converter(from = RunOpenInExcelClientAction.class)
     public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunOpenInExcelAction(generateReport(session, true, form.remoteForm.getReportData(-1, null, true, null)));
+        return new GRunOpenInExcelAction(ReportExporter.exportReport(session, true, form.remoteForm.getReportData(-1, null, true, null)));
     }
 
     @Converter(from = AsyncResultClientAction.class)
@@ -160,31 +156,5 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = EditNotPerformedClientAction.class)
     public GEditNotPerformedAction convertAction(EditNotPerformedClientAction action) {
         return new GEditNotPerformedAction();
-    }
-
-    private String generateReport(HttpSession session, boolean toExcel, ReportGenerationData reportData) {
-        try {
-            TimeZone zone = Calendar.getInstance().getTimeZone();
-            ReportGenerator generator = new ReportGenerator(reportData, zone);
-            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData, zone);
-            File file = File.createTempFile("lsfReport", "");
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(report);
-
-            String reportSID = generateReportSID(session);
-            session.setAttribute(reportSID, file.getAbsolutePath());
-            return reportSID;
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-        return null;
-    }
-
-    private String generateReportSID(HttpSession session) {
-        String sid;
-        do {
-            sid = BaseUtils.randomString(20);
-        } while (session.getAttribute(sid) != null);
-        return sid;
     }
 }

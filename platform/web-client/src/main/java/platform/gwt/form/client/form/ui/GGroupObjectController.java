@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
@@ -75,6 +76,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         addFilterButton();
         if (filter != null && grid != null) {
             filter.addHotKeys(grid.getTable().getElement());
+            addToToolbar(GwtClientUtils.createHorizontalStrut(5));
         }
 
         if (groupObject.toolbar.showGroupChange) {
@@ -123,6 +125,36 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                 }
             };
             addToToolbar(sumButton);
+        }
+
+        addToToolbar(GwtClientUtils.createHorizontalStrut(5));
+
+        if (groupObject.toolbar.showPrintGroupButton) {
+            addToToolbar(new GToolbarButton("reportbw.png", "Распечатать таблицу") {
+                @Override
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            formController.runSingleGroupReport(groupObject.ID, false);
+                        }
+                    });
+                }
+            });
+        }
+
+        if (groupObject.toolbar.showPrintGroupXlsButton) {
+            addToToolbar(new GToolbarButton("excelbw.png", "Экспорт в xls") {
+                @Override
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            formController.runSingleGroupReport(groupObject.ID, true);
+                        }
+                    });
+                }
+            });
         }
     }
 

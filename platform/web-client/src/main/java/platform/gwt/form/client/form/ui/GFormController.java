@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
@@ -670,6 +671,19 @@ public class GFormController extends SimplePanel {
             @Override
             public void success(NumberResult result) {
                 controllers.get(groupObject).showSum(result.value, propertyDraw);
+            }
+        });
+    }
+
+    public void runSingleGroupReport(int groupObjectID, final boolean toExcel) {
+        syncDispatch(new SingleGroupReport(groupObjectID, toExcel), new AsyncCallbackEx<StringResult>() {
+            @Override
+            public void success(StringResult result) {
+                if (toExcel) {
+                    runOpenInExcel(result.get());
+                } else {
+                    runPrintReport(result.get());
+                }
             }
         });
     }
