@@ -54,7 +54,7 @@ Purchase.shipmentDataTimeOrderDetail(detail) += shipmentDataTimeOrderDetail(orde
 
 Purchase.agreementOrder(order) += agreementOrder(orderPurchaseOrder(order));
 Purchase.priceListTypeOrder(order) += priceListTypeOrder(orderPurchaseOrder(order));
-Purchase.dataPriceListTypeOrderDetail(detail) += dataPriceListTypeOrderDetail(orderDetailPurchaseOrderDetail(detail));
+Purchase.priceListTypeOrderDetail(detail) += priceListTypeOrderDetail(orderDetailPurchaseOrderDetail(detail));
 
 @defineDocumentAggregationStockPrefix(order, purchaseOrder, supplierStock, 'Склад поставщика', , );
 Purchase.supplierStockOrder(order) += supplierStockPurchaseOrder(order);

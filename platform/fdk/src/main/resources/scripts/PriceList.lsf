@@ -977,14 +977,12 @@ END
 //--
 
 META defineDocumentDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
-    data###prefix###type###detail =  DATA type (detail);
-    prefix###type###detail (idetail) = UNION OVERRIDE prefix###type###object(object###detail(idetail)), data###prefix###type###detail(idetail) PERSISTENT;
+    prefix###type###detail =  DATA type (detail);
     name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
 META defineDocumentAbstractDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
-    data###prefix###type###detail =  ABSTRACT type (detail);
-    prefix###type###detail (idetail) = UNION OVERRIDE prefix###type###object(object###detail(idetail)), data###prefix###type###detail(idetail) PERSISTENT;
+    prefix###type###detail =  ABSTRACT type (detail);
     name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
@@ -999,7 +997,7 @@ END
 META defineDocumentInterfaceDetailDataPriceListTypePrefix (object, detail, type, prefix, caption)
     @defineDocumentAbstractDetailDataPriceListTypePrefix(object, detail, type, prefix, caption);
     @defineDocumentDetailDataPriceListTypePrefix(user###object, user###detail, type, prefix, caption);
-    data###prefix###type###detail (detail) += data###prefix###type###user###detail (detail);
+    prefix###type###detail (detail) += prefix###type###user###detail (detail);
 END
 
 META defineDocumentInterfaceDetailDataPriceListTypePrefix (object, type, prefix, caption)
@@ -1022,30 +1020,14 @@ META defineDocumentInterfaceDataPriceListTypePrefix (object, type, prefix, capti
     @defineDocumentInterfaceDataPriceListTypePrefix(object, object##Detail, type, prefix, caption);
 END
 
-// ------------------------- Макросы по добавлению видов цен в документы (два объекта) --------------------- //
-META defineDocumentDoubleObjHeaderPriceListType (object1, object2)  //  object1 - документ
-    userPriceListType###object1###object2 (object1, object2) = DATA priceListType (object1, object2);
-
-END
-META defineDocumentDoubleObjDetailDataPriceListType (detail)
-    dataPriceListType###detail =  DATA priceListType (detail);
-END
-META defineDocumentDoubleObjPriceListType (object1, object2)
-    @defineDocumentDoubleObjHeaderPriceListType(object1, object2);
-    @defineDocumentDoubleObjDetailDataPriceListType(object1##Detail);
-END
-
 //--
-
 META defineDocumentDetailDataPriceListType (object, detail)
-    dataPriceListType###detail =  DATA priceListType (detail);
-    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object(object###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
+    priceListType###detail =  DATA priceListType (detail);
     namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
 META defineDocumentAbstractDetailDataPriceListType (object, detail)
-    dataPriceListType###detail =  ABSTRACT priceListType (detail) PERSISTENT;
-    priceListType###detail (idetail) = UNION OVERRIDE priceListType###object(object###detail(idetail)), dataPriceListType###detail(idetail) PERSISTENT;
+    priceListType###detail =  ABSTRACT priceListType (detail) PERSISTENT;
     namePriceListType###detail 'Вид цен' (idetail) = name(priceListType###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
@@ -1060,7 +1042,7 @@ END
 META defineDocumentInterfaceDetailDataPriceListType (object, detail)
     @defineDocumentAbstractDetailDataPriceListType(object, detail);
     @defineDocumentDetailDataPriceListType(user###object, user###detail);
-    dataPriceListType###detail (detail) += dataPriceListType###user###detail (detail);
+    priceListType###detail (detail) += priceListType###user###detail (detail);
 END
 
 META defineDocumentInterfaceDetailDataPriceListType (object)

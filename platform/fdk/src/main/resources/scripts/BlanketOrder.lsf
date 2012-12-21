@@ -38,7 +38,9 @@ META defineBlanketOrder(sign)
 
     customerStockBlanketOrderDetail (blanketOrderDetail) = DATA stock (blanketOrderDetail);
     nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
-    @defineDocumentDoubleObjPriceListType(blanketOrder, stock);
+
+    userPriceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
+    @defineDocumentDetailDataPriceListType(blanketOrder, blanketOrderDetail);
 
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
@@ -57,9 +59,7 @@ META defineBlanketOrder(sign)
     @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
     @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
 
-    @deriveDocumentDoubleDetailPriceListTypeAgreement (blanketOrder, stock, customerStock);
-
-    dataPriceListTypeBlanketOrderDetail (detail) <-
+    priceListTypeBlanketOrderDetail (detail) <-
         IF TRUE AND NOT supplierStockBlanketOrder (blanketOrderBlanketOrderDetail(detail))
             THEN priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
             ELSE priceListTypeBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
@@ -353,7 +353,7 @@ META defineOrderBlanketOrder(sign)
     shipmentDataDateOrderDetail(detail) += shipmentDataDateBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     shipmentDataTimeOrderDetail(detail) += shipmentDataTimeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 
-    dataPriceListTypeOrderDetail(detail) += dataPriceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    priceListTypeOrderDetail(detail) += priceListTypeBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 
     priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
