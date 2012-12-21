@@ -1,13 +1,19 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
+import platform.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
+import platform.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
+import platform.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.classes.GIntegralType;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.reader.GBackgroundReader;
 import platform.gwt.form.shared.view.reader.GCaptionReader;
@@ -27,6 +33,9 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
     // пустая панель внизу контейнера группы, которая расширяется при спрятанном гриде, прижимая тулбар и панельный контейнер кверху
     private SimplePanel blankElement = new SimplePanel();
+
+    private GCountQuantityButton quantityButton;
+    private GCalculateSumButton sumButton;
 
     public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GFormLayout iformLayout) {
         super(iformController, iformLayout, igroupObject == null ? null : igroupObject.toolbar);
@@ -58,12 +67,71 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                 gridParentParent.addDirectly(blankElement);
             }
 
-            addFilterButton();
-
-            if (filter != null && grid != null) {
-                filter.addHotKeys(grid.getTable().getElement());
-            }
+            configureToolbar();
         }
+    }
+
+    private void configureToolbar() {
+        addFilterButton();
+        if (filter != null && grid != null) {
+            filter.addHotKeys(grid.getTable().getElement());
+        }
+
+        if (groupObject.toolbar.showGroupChange) {
+            addToToolbar(new GToolbarButton("groupchange.png", "Групповая корректировка (F12)") {
+                @Override
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            grid.getTable().editCurrentCell(GEditBindingMap.GROUP_CHANGE);
+                        }
+                    });
+                }
+            });
+        }
+
+        if (groupObject.toolbar.showCountQuantity) {
+            quantityButton = new GCountQuantityButton() {
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            formController.countRecords(groupObject);
+                        }
+                    });
+                }
+            };
+            addToToolbar(quantityButton);
+        }
+
+        if (groupObject.toolbar.showCalculateSum) {
+            sumButton = new GCalculateSumButton() {
+                @Override
+                public void addListener() {
+                    addClickHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            GPropertyDraw property = getSelectedProperty();
+                            if (property.baseType instanceof GIntegralType) {
+                                formController.calculateSum(groupObject, getSelectedProperty(), grid.getTable().getCurrentColumnKey());
+                            } else {
+                                showSum(null, property);
+                            }
+                        }
+                    });
+                }
+            };
+            addToToolbar(sumButton);
+        }
+    }
+
+    public void showRecordQuantity(int quantity) {
+        quantityButton.showPopup(quantity);
+    }
+
+    public void showSum(Number sum, GPropertyDraw property) {
+        sumButton.showPopup(sum, property);
     }
 
     public void processFormChanges(GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects, HashSet<GGroupObject> changedGroups) {

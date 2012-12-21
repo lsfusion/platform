@@ -23,6 +23,6 @@ public class GActionType extends GDataType {
 
     @Override
     public String getPreferredMask() {
-        return "123456789";
+        return "1234567";
     }
 }

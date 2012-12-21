@@ -1,7 +1,6 @@
 package platform.client.form.grid;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.client.Main;
 import platform.client.SwingUtils;
@@ -330,7 +329,7 @@ public class GridTable extends ClientPropertyTable {
         InputMap inputMap = getInputMap();
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
-        inputMap.put(KeyStrokes.getGroupCorrectionDialogKeyStroke(), GROUP_CORRECTION_ACTION);
+//        inputMap.put(KeyStrokes.getGroupCorrectionDialogKeyStroke(), GROUP_CORRECTION_ACTION);
     }
 
     int getID() {

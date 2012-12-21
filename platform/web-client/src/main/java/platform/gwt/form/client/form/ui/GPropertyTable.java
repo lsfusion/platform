@@ -1,6 +1,9 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import platform.gwt.cellview.client.DataGrid;
@@ -125,6 +128,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         Element editCellParent = getCellParent(row, column);
 
         onEditEvent(editCell, editEvent, editContext, editCellParent);
+    }
+
+    public void editCurrentCell(String actionSID) {
+        editCellAt(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), actionSID);
     }
 
     private Element getCellParent(int row, int column) {

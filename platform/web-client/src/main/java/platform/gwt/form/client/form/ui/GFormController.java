@@ -14,9 +14,11 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
+import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.base.shared.actions.NumberResult;
 import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.LoadingBlocker;
@@ -652,6 +654,24 @@ public class GFormController extends SimplePanel {
         }
 
         dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
+    }
+
+    public void countRecords(final GGroupObject groupObject) {
+        dispatcher.execute(new CountRecords(groupObject.ID), new AsyncCallbackEx<NumberResult>() {
+            @Override
+            public void success(NumberResult result) {
+                controllers.get(groupObject).showRecordQuantity((Integer) result.value);
+            }
+        });
+    }
+
+    public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new AsyncCallbackEx<NumberResult>() {
+            @Override
+            public void success(NumberResult result) {
+                controllers.get(groupObject).showSum(result.value, propertyDraw);
+            }
+        });
     }
 
     public List<GPropertyDraw> getPropertyDraws() {

@@ -17,8 +17,6 @@ public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
 
     @Override
     protected String renderToString(Number value) {
-//        return format.format(value);
-        //так быстрей...
-        return String.valueOf(value);
+        return format.format(value);
     }
 }

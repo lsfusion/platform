@@ -1,5 +1,6 @@
-body, html, textarea, .gwt-Button, .messageBox-message, .ResizableWindow-header, .captionPanelLegend, .gwt-TreeItem, .gwt-TabBarItem,
-.checkBoxFilter, .comboBoxFilter, .filterDialogHeader, .dateTimeEditorBox, .customFontPresenter {
+body, html, textarea, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem,
+.messageBox-message, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
+.filterDialogHeader, .customFontPresenter {
     font-size: 8pt;
 }
 
@@ -295,6 +296,19 @@ textarea {
 
 .filterDialogHeaderButton {
     margin: 0;
+}
+
+/* ------------ Popups  ------------ */
+.popup {
+    background-color: #F0F0FF;
+    border: 1px outset;
+    padding: 2px;
+}
+
+.popup-sumBox {
+    padding: 2px;
+    text-align: right;
+    width: 8em;
 }
 
 /* ------------ Other components  ------------ */

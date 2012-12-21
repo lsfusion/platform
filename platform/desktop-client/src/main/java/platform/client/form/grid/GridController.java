@@ -195,7 +195,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createGroupChangeButton() {
-        ToolbarGridButton groupChangeButton = new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (Ctrl+F12)") {
+        ToolbarGridButton groupChangeButton = new ToolbarGridButton(groupChangeIcon, ClientResourceBundle.getString("form.grid.group.groupchange") + " (F12)") {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {

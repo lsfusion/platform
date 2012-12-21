@@ -432,6 +432,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return columnKeysList.get(context.getColumn());
     }
 
+    public GGroupObjectValue getColumnKey(int column) {
+        return columnKeysList.get(column);
+    }
+
+    public GGroupObjectValue getCurrentColumnKey() {
+        return getColumnKey(getKeyboardSelectedColumn());
+    }
+
     @Override
     public boolean isEditable(Cell.Context context) {
         GPropertyDraw property = getProperty(context);

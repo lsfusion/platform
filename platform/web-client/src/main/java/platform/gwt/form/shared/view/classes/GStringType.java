@@ -18,8 +18,8 @@ public class GStringType extends GDataType {
     public GStringType(int length) {
         this.length = length;
 
-        minimumMask = GwtSharedUtils.replicate('0', length <= 3 ? length : (int) Math.round(Math.pow(length, 0.7)));
-        preferredMask = GwtSharedUtils.replicate('0', length <= 20 ? length : (int) Math.round(Math.pow(length, 0.8)));
+        minimumMask = GwtSharedUtils.replicate('0', correctMinimumCharWidth(length));
+        preferredMask = GwtSharedUtils.replicate('0', correctPreferredCharWidth(length));
     }
 
     @Override
@@ -44,6 +44,32 @@ public class GStringType extends GDataType {
     @Override
     public GCompare getDefaultCompare() {
         return GCompare.START_WITH;
+    }
+
+    private int correctMinimumCharWidth(int charWidth) {
+        return charWidth <= 3
+                ? charWidth
+                : charWidth <= 80
+                    ? (int) Math.round(Math.pow(charWidth, 0.7))
+                    : (int) Math.round(Math.pow(charWidth, 0.65));
+    }
+
+    private int correctPreferredCharWidth(int charWidth) {
+        return charWidth <= 20
+                ? charWidth
+                : charWidth <= 80
+                    ? (int) Math.round(Math.pow(charWidth, 0.8))
+                    : (int) Math.round(Math.pow(charWidth, 0.7));
+    }
+
+    @Override
+    public int getMinimumCharWidth(int definedMinimumCharWidth) {
+        return definedMinimumCharWidth > 0 ? correctMinimumCharWidth(definedMinimumCharWidth) : minimumMask.length();
+    }
+
+    @Override
+    public int getPreferredCharWidth(int definedPreferredCharWidth) {
+        return definedPreferredCharWidth > 0 ? correctPreferredCharWidth(definedPreferredCharWidth) : preferredMask.length();
     }
 
     @Override
