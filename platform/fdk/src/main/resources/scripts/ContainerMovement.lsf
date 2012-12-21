@@ -21,7 +21,7 @@ overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) = UNI
     costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
     costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
-FORM sumMovementContainerDepartmentPrint 'Отчет по таре' PRINT
+FORM printContainerMovement 'Отчет по таре' PRINT
 
     OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)

@@ -536,7 +536,7 @@ NAVIGATOR {
         ADD stockBalance;
         NEW stockDocuments 'Бухгалтерские документы' {
             ADD sumStockDocumentLedger;
-            ADD sumMovementContainerDepartmentPrint;
+            ADD printContainerMovement;
         }
         NEW warehouseCatalog 'Справочники' {
             ADD warehouses;
