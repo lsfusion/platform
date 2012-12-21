@@ -92,9 +92,19 @@ sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(co
 @implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
 sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger) IF isPostedInvoice(inContractLedger);
 
+@defineDocumentContactSkuStock (userInvoice, userInvoice, customer, 'Покупатель', i, s);
+customerEntityUserInvoice(userInvoice) <- customerUserInvoice(userInvoice) WHEN CHANGED(customerUserInvoice(userInvoice));
+
+inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoice), sku);
+EXTEND FORM userInvoice
+       FILTERGROUP filter2
+            FILTER 'Товары с продажей ' 'F7' inUserInvoiceSku(i, s)
+
+;
 // Проводим по регистру  продаж
 
 @implementSalesLedger(invoice, sku, supplierStock);
 quantitySalesLedger (ledger) += quantityInvoiceDetail(ledger);
 VATSalesLedger (ledger) += VATInvoiceDetail(ledger);
 sumSalesLedger (ledger) += invoiceSumInvoiceDetail(ledger);
+customerSalesLedger (ledger) += customerInvoiceDetail(ledger);

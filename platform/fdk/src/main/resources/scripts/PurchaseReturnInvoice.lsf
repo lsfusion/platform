@@ -28,3 +28,14 @@ CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(suppli
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся компанией';
+
+@defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
+supplierEntityUserInvoice(userInvoice) <- supplierUserInvoice(userInvoice) WHEN CHANGED(supplierUserInvoice(userInvoice));
+
+inAssortmentSkuUserInvoice (sku, userInvoice)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
+inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
+EXTEND FORM userInvoice
+       FILTERGROUP filter2
+            FILTER 'Товары с поступлением ' 'F7' inUserInvoiceSku(i, s)
+            FILTER 'Товары в ассортименте ' 'F6' inAssortmentSkuUserInvoice(s, i)
+;

@@ -25,7 +25,7 @@ sumSupplyLedger 'Сумма покупки' (ledger) = ABSTRACT NUMERIC[16,2] (s
 supplierSupplyLedger  (ledger) = ABSTRACT legalEntity (supplyLedger) PERSISTENT;
 nameSupplierSupplyLedger 'Поставщик' (ledger) = name(supplierSupplyLedger (ledger));
 
-quantitySupplierSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
+inSupplierSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
     BY supplierSupplyLedger(ledger), skuSupplyLedger(ledger) PERSISTENT;
 
 sumPurchaseTypeExchangeSupplyLedger 'Сумма покупки валюта' (typeExchange, supplyLedger)= roundCurrency((sumSupplyLedger (supplyLedger)/
@@ -47,6 +47,11 @@ quantityPurchaseSkuStockDate (sku, stock, date) = GROUP SUM quantitySupplyLedger
 sumPurchaseSkuStockDate (sku, stock, date) = GROUP SUM sumSupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
     BY skuSupplyLedger(ledger), stockSupplyLedger(ledger), dateSupplyLedger(ledger) PERSISTENT;
 
+quantityPurchaseSkuStockSupplierDate (sku, stock, supplier, date) = GROUP SUM quantitySupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
+    BY skuSupplyLedger(ledger), stockSupplyLedger(ledger), supplierSupplyLedger(ledger), dateSupplyLedger(ledger);  // PERSISTENT
+
+sumPurchaseSkuStockSupplierDate (sku, stock, supplier, date) = GROUP SUM sumSupplyLedger(ledger) IF isPostedSupplyLedger(ledger)
+    BY skuSupplyLedger(ledger), stockSupplyLedger(ledger), supplierSupplyLedger(ledger), dateSupplyLedger(ledger);   // PERSISTENT
 
 quantityPurchaseSkuStockWeekDateFromTo 'Закуплено за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
         quantityPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
@@ -83,6 +88,12 @@ quantityPurchaseSkuDateFromTo 'Закуплено за интервал (кол-
 sumPurchaseSkuDateFromTo 'Закуплено за интервал (сумма)' (sku, dateFrom, dateTo) = GROUP SUM
         sumPurchaseSkuStockDate(sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY sku, dateFrom, dateTo;
+//-- Поставщик
+
+quantityPurchaseSkuStockSupplierDateFromTo 'Закуплено за интервал у поставщика (кол-во)' (sku, stock, supplier, dateFrom, dateTo) = GROUP SUM
+        quantityPurchaseSkuStockSupplierDate(sku, stock, supplier, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY sku, stock, supplier, dateFrom, dateTo;
+
 
 //---------------------------------Тип обмена---------------------------------------//
 
@@ -263,18 +274,13 @@ META defineSupplierDialogStockSku (form)
 
     form###supplier = SESSION DATA legalEntity ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
-
-    form###suppliersFilter (sku) =  (TRUE AND quantitySupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
-
+    form###suppliersFilter (sku) =  (TRUE AND inSupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
 
     EXTEND FORM form
         PROPERTIES() form###nameSupplier
-
-        PROPERTIES(s) READONLY form###balance SHOWIF form###stock()
         FILTERS form###suppliersFilter(s)
 
     ;
-
     EXTEND DESIGN form {
         filterContainer {
             ADD PROPERTY(form###nameSupplier());
@@ -283,20 +289,3 @@ META defineSupplierDialogStockSku (form)
 END
 @defineSupplierDialogStockSku(dialogSku);
 
-//-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
-
-META defineDocumentSupplierSkuStock (object, form, concrete, concrete2)
-    supplierEntity###object = SESSION DATA legalEntity (object);
-    nameSupplierEntity###object 'Поставщик' (object) = name(supplierEntity###object(object));
-    relationSupplier###object###sku (object, sku) =  (TRUE AND quantitySupplierSku(supplierEntity###object(object), sku)) OR (sku IS sku AND NOT supplierEntity###object(object));
-
-    EXTEND FORM form
-    PROPERTIES nameSupplierEntity###object(concrete) FORCE PANEL
-    FILTERS           relationSupplier###object###sku(concrete, s)
-    ;
-    EXTEND DESIGN form {
-        row {
-            ADD concrete.panel BEFORE concrete2.box;
-        }
-    }
-END

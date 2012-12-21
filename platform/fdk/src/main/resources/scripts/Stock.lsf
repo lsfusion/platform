@@ -1476,7 +1476,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
             FILTER 'Товары в заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
         FILTERGROUP filter1
             FILTER 'Товары с ценой ' 'F11' priceSkuStock###object(s, st, concrete)
-            FILTER 'Товары с реализацией ' 'F8' quantitySoldSkuStock###object(s, st, concrete)
+//            FILTER 'Товары с реализацией ' 'F8' quantitySoldSkuStock###object(s, st, concrete)
     ;
 
     EXTEND DESIGN form {
@@ -1716,6 +1716,24 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
             }
         }
         PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
+    }
+END
+
+//-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
+
+META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)  //  defineDocumentSupplierSkuStock
+    contact###entity###object = SESSION DATA legalEntity (object);
+    name###contact###entity###object contactCaption (object) = name(contact###entity###object(object));
+    relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS sku AND NOT contact###entity###object(object));
+
+    EXTEND FORM form
+    PROPERTIES name###contact###entity###object(concrete) FORCE PANEL
+    FILTERS           relation###contact###object###sku(concrete, s)
+    ;
+    EXTEND DESIGN form {
+        row {
+            ADD concrete.panel BEFORE concrete2.box;
+        }
     }
 END
 // ---------------------------------- Диалоги --------------------------- //

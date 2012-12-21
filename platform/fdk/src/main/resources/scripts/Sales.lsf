@@ -22,6 +22,12 @@ quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger
 
 sumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
 
+customerSalesLedger (ledger) = ABSTRACT legalEntity (salesLedger) PERSISTENT INDEXED;
+nameCustomerSalesLedger 'Покупатель' (ledger) = name(customerSalesLedger(ledger));
+
+inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
+    BY customerSalesLedger(ledger), skuSalesLedger(ledger) PERSISTENT;
+
 sumSoldTypeExchangeSalesLedger 'Сумма продажи валюта' (typeExchange, salesLedger)= roundCurrency((sumSalesLedger (salesLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSalesLedger(salesLedger)), dateSalesLedger(salesLedger))), currencyTypeExchange(typeExchange));
 
@@ -84,7 +90,6 @@ sumSoldSkuDateFromTo 'Продано за интервал (сумма)' (sku, d
 quantityDaysDateToFrom 'Кол-во дней' (dateTo, dateFrom) =  subtractInteger(dateTo, dateFrom) + 1 AND dateTo AS DATE AND dateFrom AS DATE;
    averageSoldInDaySkuStockDateFromTo 'Продаж в день' (sku, stock, dateFrom, dateTo) =  quantitySoldSkuStockDateFromTo(sku, stock, dateFrom, dateTo) / quantityDaysDateToFrom(dateTo, dateFrom);
 
-
 //---------------------------------Тип обмена---------------------------------------//
 
 sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
@@ -141,7 +146,7 @@ FORM salesLedger 'Продажи по позициям'
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s = salesLedger
-    PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
+    PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameCustomerSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
                            quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
     PROPERTIES    READONLY sumSoldTypeExchangeSalesLedger (te, s)
     FILTERS isPostedSalesLedger(s)
@@ -242,6 +247,26 @@ NAVIGATOR {
         ADD salesSkuStock;
     }
 }
+
+//---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
+META defineCustomerDialogStockSku (form)
+
+    form###customer = SESSION DATA legalEntity ();
+    form###nameCustomer 'Покупатель' () = name(form###customer()) PREFCHARWIDTH 30;
+    form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS sku AND NOT form###customer());
+
+    EXTEND FORM form
+        PROPERTIES() form###nameCustomer
+        FILTERS form###customersFilter(s)
+    ;
+
+    EXTEND DESIGN form {
+        filterContainer {
+            ADD PROPERTY(form###nameCustomer());
+        }
+    }
+END
+@defineCustomerDialogStockSku(dialogSku);
 
 //---------------------------------------------- Макросы для имплементаций -------------------------------------//
 
