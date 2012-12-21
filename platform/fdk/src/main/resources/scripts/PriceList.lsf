@@ -392,6 +392,30 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
+FORM priceLists 'Прайсы'
+
+    OBJECTS p = priceList
+    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
+                           fromDateTimePriceList, toDateTimePriceList, nameCurrencyPriceList,
+                           nameCompanyPriceList, noteUserPriceList, priceListTypesPriceList, stocksPriceList
+
+    DIALOG priceList OBJECT p
+;
+
+addUnderPriceListUserPriceList 'Заполнить на основании' = ACTION (userPriceList){
+
+    FORM priceLists MODAL;
+    IF formResult() == formResult.ok THEN {
+        FOR priceListPriceListDetail(detail) == chosenObject('p') DO {
+            ADDOBJ userPriceListDetail;
+            FOR d == addedObject() DO {
+                SET userPriceListUserPriceListDetail(d) <- userPriceList;
+                SET skuUserPriceListDetail(d) <- skuPriceListDetail(detail);
+            }
+        }
+    }
+}
+
 sessionDataPriceListType 'Вид цены' = SESSION DATA dataPriceListType();
 
 changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
@@ -427,6 +451,7 @@ FORM userPriceList 'Прайс'
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
+    PROPERTIES(p) addUnderPriceListUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
 
     TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
