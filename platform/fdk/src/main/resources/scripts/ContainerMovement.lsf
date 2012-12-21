@@ -1,0 +1,47 @@
+MODULE ContainerMovement;
+
+REQUIRE System,
+        Utils,
+        Stock,
+        Store;
+
+
+//------------------------------------Отчет по таре-------------------------------------------//
+
+
+costSumContainerStockDateFrom 'Остаток на начало по складу' (stock, dateFrom) = GROUP SUM costSumBatchStockDateFrom(batch, stock, dateFrom)
+    IF isContainerBatch(batch) BY stock, dateFrom;
+
+costSumContainerStockDateTo 'Остаток на конец по складу' (stock, dateTo) = GROUP SUM costSumBatchStockDateTo(batch, stock, dateTo)
+    IF isContainerBatch(batch) BY stock, dateTo;
+
+overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) = UNION OVERRIDE
+    balanceBBatchStockDate(batch, stock, dateFrom) AND dateTo AS DATE,
+    balanceABatchStockDate(batch, stock, dateTo) AND dateFrom AS DATE,
+    costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
+    costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
+
+FORM sumMovementContainerDepartmentPrint 'Отчет по таре' PRINT
+
+    OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
+
+    OBJECTS dep = departmentStore  FIXED PANEL
+    PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
+
+    OBJECTS bt=batch
+
+    PROPERTIES READONLY costSumContainerStockDateFrom(dep, dFrom), costSumContainerStockDateTo(dep, dTo)
+    PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, costBatch
+    PROPERTIES(bt, dep, dFrom) READONLY balanceBBatchStockDate, costSumBatchStockDateFrom
+    PROPERTIES(bt, dep, dTo) READONLY balanceABatchStockDate, costSumBatchStockDateTo
+    PROPERTIES(bt, dep, dFrom, dTo) READONLY costInBalanceBatchStockDateFromTo, costSumInBalanceBatchStockDateFromTo,
+               costOutBalanceBatchStockDateFromTo, costSumOutBalanceBatchStockDateFromTo
+
+    FILTERS isPostedBatch(bt),
+            isContainerBatch(bt),
+            overMovementContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
+;
+
+
+
