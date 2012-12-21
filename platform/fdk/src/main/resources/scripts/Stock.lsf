@@ -16,6 +16,8 @@ nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT NOT NULL;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
+isCompanyStock(stock) = isCompanyLegalEntity(legalEntityStock(stock));
+
 userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;

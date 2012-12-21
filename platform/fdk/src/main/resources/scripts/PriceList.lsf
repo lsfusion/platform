@@ -298,9 +298,9 @@ inPriceListStockGroupOver 'Отм' (priceList, stockGroup) =
                    inPriceListStockGroup(priceList, stockGroup);
 
 inPriceListStockOver 'Отм' (priceList, stock) =
-    UNION OVERRIDE inPriceList(priceList) AND stock IS stock,
+    (UNION OVERRIDE inPriceList(priceList) AND stock IS stock,
                    nearestInPriceListStockGroup(priceList, stockGroupStock(stock)),
-                   inPriceListStock(priceList, stock);
+                   inPriceListStock(priceList, stock)) AND isCompanyStock(stock);
 
 stocksPriceList 'Склады' (priceList) = GROUP CONCAT name(stock) IF inPriceListStockOver(priceList, stock) , ', '
                                        BY priceList
@@ -475,7 +475,8 @@ FORM userPriceList 'Прайс'
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS skuGroup AND d IS priceListDetail AND NOT skuPriceListDetail(d)),
             inStockGroupStock(sg, ts),
-            currencyUserPriceList(p) == currencyDataPriceListType(t)
+            currencyUserPriceList(p) == currencyDataPriceListType(t),
+            isCompanyStock(ts)
 
     FILTERGROUP filters
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
@@ -486,7 +487,8 @@ FORM userPriceList 'Прайс'
 
     OBJECTS ts2 = stock FIXED PANEL
     PROPERTIES(ts2) SELECTOR name
-    FILTERS inPriceListStockOver(p, ts2)
+    FILTERS inPriceListStockOver(p, ts2),
+            isCompanyStock(ts2)
 
     OBJECTS t2 = dataPriceListType FIXED PANEL
     PROPERTIES(t2) SELECTOR name
@@ -630,7 +632,8 @@ FORM userPriceLists 'Прайсы'
     FILTERS userPriceListUserPriceListDetail(d) == p,
             inPriceListDataPriceListType(p, t),
             inPriceListStockOver(p, ts),
-            currencyUserPriceList(p) == currencyDataPriceListType(t)
+            currencyUserPriceList(p) == currencyDataPriceListType(t),
+            isCompanyStock(ts)
 
 ;
 
