@@ -108,7 +108,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                                      'Сторона A договора накладной не соответствует стороне А накладной',
                                      'Сторона B договора накладной не соответствует стороне В накладной');
 
-    @defineDocumentInterfaceDataPriceListType(invoice);
+    @defineDocumentInterfacePriceListType(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
     Invoice.skuInvoiceDetail(detail) += skuInvoiceDetail(detail);

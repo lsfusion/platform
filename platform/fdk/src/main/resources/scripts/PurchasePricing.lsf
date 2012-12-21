@@ -14,7 +14,10 @@ NAMESPACE Purchase;
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
 
-@defineDocumentInterfaceDataPriceListTypePrefix (invoice, priceListType, retail, ' (розничный)');
+@defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
+EXTEND FORM userInvoice PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail;
+EXTEND FORM invoices PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupInvoiceDetail;
+
 retailPriceListTypeUserInvoice(userInvoice) <- priceListTypeDepartmentStore(customerStockUserInvoice(userInvoice)) IF customerStockUserInvoice(userInvoice) IS departmentStore
     WHEN CHANGED(customerStockUserInvoice(userInvoice));
 
@@ -29,6 +32,8 @@ EXTEND DESIGN userInvoice {
     }
 }
 
+retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
+                                                WHEN CHANGED(retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
 retailPriceUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail(detail) IS basePriceListType
     THEN prevPricePriceListTypeSkuStockDateTime(retailPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail), customerStockUserInvoiceDetail(detail), dateTimeUserInvoiceDetail(detail))
         ELSE roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](

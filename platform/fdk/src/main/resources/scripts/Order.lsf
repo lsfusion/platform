@@ -125,7 +125,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @deriveDocumentCurrency(userOrder, stockProp);
     Order.currencyOrder(order) += currencyOrder(order);
 
-    @defineDocumentInterfaceDataPriceListType(order);
+    @defineDocumentInterfacePriceListType(order);
 
     @defineDocumentInterfaceDetailSku(order, sku);
     Order.skuOrderDetail(detail) += skuOrderDetail(detail);

@@ -40,7 +40,7 @@ META defineBlanketOrder(sign)
     nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
 
     userPriceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
-    @defineDocumentDetailDataPriceListType(blanketOrder, blanketOrderDetail);
+    @defineDocumentDetailPriceListType(blanketOrder, blanketOrderDetail);
 
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
