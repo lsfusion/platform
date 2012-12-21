@@ -318,63 +318,6 @@ cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperat
 
 //------------------------------ Формы ---------------------------------------------------------------------------//
 
-
-FORM incomeCashOrderPrint 'ПКО' PRINT
-
-    OBJECTS i = incomeCashOrder FIXED PANEL
-    PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
-                           nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
-
-;
-
-FORM outcomeCashOrderPrint 'РКО' PRINT
-
-    OBJECTS o = outcomeCashOrder FIXED PANEL
-    PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
-                           nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
-
-;
-
-printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
-
-    FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
-    SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
-    EXEC apply();
-
-}](incomeCashOrder) CONFIRM;
-
-printAllIncomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
-
-    FOR isNotPrintedIncomeCashOrder(incomeCashOrder) AND
-        dateCashDocument(incomeCashOrder) >= (date1 AS DATE) AND
-        dateCashDocument(incomeCashOrder) <= (date2 AS DATE) DO {
-        FORM incomeCashOrderPrint OBJECTS i = incomeCashOrder;
-        SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
-        EXEC apply();
-    }
-
-} CONFIRM TOOLBAR;
-
-printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
-
-    FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
-    SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
-    EXEC apply();
-
-}](outcomeCashOrder) CONFIRM;
-
-printAllOutcomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
-
-    FOR isNotPrintedOutcomeCashOrder(outcomeCashOrder) AND
-        dateCashDocument(outcomeCashOrder) >= (date1 AS DATE) AND
-        dateCashDocument(outcomeCashOrder) <= (date2 AS DATE) DO {
-        FORM outcomeCashOrderPrint OBJECTS o = outcomeCashOrder;
-        SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
-        EXEC apply();
-    }
-
-} CONFIRM TOOLBAR;
-
 sumCashForIncomeCashOperation 'Сумма внесения денег' = SESSION DATA NUMERIC[16,2] (cashRegister);
 
 FORM addIncomeCashOperation 'Внесение денег'
@@ -639,11 +582,9 @@ FORM centralCashRegister 'Центральная касса'
     OBJECTS i = incomeCashOrder
     PROPERTIES(i) READONLY objectClassName, numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashIncomeCashOrder, basisCashDocument, isPrintedIncomeCashOrder
-    PROPERTIES(i) printIncomeCashOrder
     PROPERTIES(i) READONLY isCompleteCashOperation FORCE GRID
     PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES editOutcomeCashOperation(i) SHOWIF isOutcomeCashOperation(i)
-    PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
     PROPERTIES(i) delete
     ORDER BY dateCashDocument, timeCashDocument
 
@@ -654,12 +595,10 @@ FORM centralCashRegister 'Центральная касса'
     OBJECTS o = outcomeCashOrder
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashOutcomeCashOrder, basisCashDocument, isPrintedOutcomeCashOrder
-    PROPERTIES(o) printOutcomeCashOrder, isCompleteCashOperation FORCE GRID
     PROPERTIES addIncomeCashOperationForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES addCollectionForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES editIncomeCashOperation(o) SHOWIF isIncomeCashOperation(o)
     PROPERTIES editCollection(o) SHOWIF isCollection(o)
-    PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
     PROPERTIES(o) delete
     ORDER BY dateCashDocument(o), timeCashDocument(o)
     FILTERS departmentStoreCashDocument(o) == d,
