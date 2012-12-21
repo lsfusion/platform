@@ -11,7 +11,7 @@ REQUIRE System,
         Employee,
         StorePriceTransfer,
         ConsignmentBy,
-        AccountDocument,
+        StockDocument,
         ContractCompany,
         RomanLogicsModule;
 
@@ -19,7 +19,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS transferOut 'Перемещение товаров по накладным' : historizable, numberedObject, innerDocument, outAccountDocumentLedger;
+CLASS transferOut 'Перемещение товаров по накладным' : historizable, numberedObject, innerDocument, outStockDocumentLedger;
 CLASS transferOutPosted 'Проведенное перемещение товаров по накладным' : transferOut, postedObject;
 CLASS transferOutDetail 'Строка перемещения товаров по накладным';
 CLASS transferOutBatchDetail 'Строка перемещения товаров по накладным (по партиям)';
@@ -154,7 +154,7 @@ EXTEND FORM transferOuts
 ;
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS transferIn 'Поступление товаров по накладным' : historizable, incAccountDocumentLedger;
+CLASS transferIn 'Поступление товаров по накладным' : historizable, incStockDocumentLedger;
 CLASS transferInDetail 'Строка поступления товаров по накладным';
 
 @defineDocumentTransferIn(transfer, 'Поступление товаров по накладным', sku, stock);
@@ -257,21 +257,21 @@ EXTEND FORM transferIns
 //---------------------------------------- Товарный отчет ------------------------- //
 
 // расход
-dateTimeAccountDocumentLedger (ledger) += dateTimeTransferOut(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedTransferOut(ledger);
-stockAccountDocumentLedger (ledger) += stockTransferOut(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionTransferOut(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeTransferOut(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedTransferOut(ledger);
+stockStockDocumentLedger (ledger) += stockTransferOut(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionTransferOut(ledger);
 
-sumOutAccountDocumentLedger (ledger) += accountSumTransferOut(ledger);
-sumItemOutAccountDocumentLedger (ledger) += accountSumTransferOut(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
+sumOutStockDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumItemOutStockDocumentLedger (ledger) += accountSumTransferOut(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS transferOut;
 
 // приход
-dateTimeAccountDocumentLedger (ledger) += dateTimeTransferIn(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedTransferIn(ledger);
-stockAccountDocumentLedger (ledger) += stockTransferIn(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionTransferIn(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeTransferIn(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedTransferIn(ledger);
+stockStockDocumentLedger (ledger) += stockTransferIn(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionTransferIn(ledger);
 
-sumIncAccountDocumentLedger (ledger) += accountSumTransferIn(ledger);
-sumItemIncAccountDocumentLedger (ledger) += accountSumTransferIn(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS transferIn;
+sumIncStockDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumItemIncStockDocumentLedger (ledger) += accountSumTransferIn(ledger);
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS transferIn;

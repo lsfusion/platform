@@ -76,7 +76,7 @@ infoExternalStock 'Дополнительная информация' = DATA STR
 
 // -------------------------------------- Ремонт ------------------------------- //
 
-CLASS repair 'Передача в ремонт' : historizable, numberedObject, consignment, outAccountDocumentLedger;
+CLASS repair 'Передача в ремонт' : historizable, numberedObject, consignment, outStockDocumentLedger;
 CLASS repairPosted 'Проведенная передача в ремонт' : repair, postedObject;
 CLASS repairDetail 'Строка передачи в ремонт' : consignmentDetail;
 
@@ -296,7 +296,7 @@ skipASkuLedger (ledger) += skipSkuLedgerRepairDetail(ledger);
 
 // -------------------------------------- Возврат из ремонта ------------------------------- //
 
-CLASS returnRepair 'Возврат из ремонта' : historizable, numberedObject, outAccountDocumentLedger;
+CLASS returnRepair 'Возврат из ремонта' : historizable, numberedObject, outStockDocumentLedger;
 CLASS returnRepairPosted 'Проведенный возврат из ремонта' : returnRepair, postedObject;
 CLASS returnRepairDetail 'Строка возврата из ремонта';
 
@@ -526,7 +526,7 @@ DESIGN repairShops FROM DEFAULT {
 
 // -------------------------------------- Химчистка ------------------------------- //
 
-CLASS dryCleaning 'Передача в химчистку' : historizable, numberedObject, consignment, outAccountDocumentLedger;
+CLASS dryCleaning 'Передача в химчистку' : historizable, numberedObject, consignment, outStockDocumentLedger;
 CLASS dryCleaningPosted 'Проведенная передача в химчистку' : dryCleaning, postedObject;
 CLASS dryCleaningDetail 'Строка передачи в химчистку' : consignmentDetail;
 
@@ -583,7 +583,7 @@ skipASkuLedger (ledger) += skipSkuLedgerDryCleaningDetail(ledger);
 
 // -------------------------------------- Возврат из химчистки ------------------------------- //
 
-CLASS returnDryCleaning 'Возврат из химчистки' : historizable, numberedObject, outAccountDocumentLedger;
+CLASS returnDryCleaning 'Возврат из химчистки' : historizable, numberedObject, outStockDocumentLedger;
 CLASS returnDryCleaningPosted 'Проведенный возврат из химчистки' : returnDryCleaning, postedObject;
 CLASS returnDryCleaningDetail 'Строка возврата из химчистки';
 

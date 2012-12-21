@@ -64,10 +64,10 @@ costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) T
 batchPriceListLedger(ledger) += batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
 // Пишем в товарный отчет
-@implementAccountDocumentLedgerInc(shipment, customerStock);
-sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
-sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+@implementStockDocumentLedgerInc(shipment, customerStock);
+sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';

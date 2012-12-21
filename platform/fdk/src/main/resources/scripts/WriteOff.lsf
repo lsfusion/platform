@@ -10,7 +10,7 @@ REQUIRE System,
         Barcode,
         Document,
         Employee,
-        AccountDocument,
+        StockDocument,
         Utils;
 
 PRIORITY Stock;
@@ -180,8 +180,8 @@ sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 
 // Товарный отчет
 
-@implementAccountDocumentLedgerOut(writeOff, stock);
-sumOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+@implementStockDocumentLedgerOut(writeOff, stock);
+sumOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 
 // --------------------------- Печатная форма ---------------------------------
 

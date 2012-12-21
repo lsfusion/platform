@@ -26,10 +26,10 @@ limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);
 
-@implementAccountDocumentLedgerOut(shipment, customerStock);
-sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
-sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+@implementStockDocumentLedgerOut(shipment, customerStock);
+sumOutStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';

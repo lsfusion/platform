@@ -7,7 +7,7 @@ REQUIRE System,
         LegalEntityBy,
         Barcode,
         RetailCRM,
-        AccountDocument,
+        StockDocument,
         Employee,
         UserPriceChange,
         Contract,
@@ -397,8 +397,8 @@ EXTEND DESIGN company {
 }
 
 
-@extendStockFormAccountDocumentLedger(warehouse, w);
-@extendStockFormAccountDocumentLedger(departmentStore, d);
+@extendStockFormStockDocumentLedger(warehouse, w);
+@extendStockFormStockDocumentLedger(departmentStore, d);
 
 //----------------------------Concat для фрахта и декларации--------------------------//
 

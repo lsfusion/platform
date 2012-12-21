@@ -238,7 +238,7 @@ NAVIGATOR {
         ADD retailCRMNavigator;
         NEW retailAggregations 'Сводная информация' {
             ADD salesNavigator;
-            ADD sumAccountDocumentLedger;
+            ADD sumStockDocumentLedger;
         }
     }
     wholesaleTrade {

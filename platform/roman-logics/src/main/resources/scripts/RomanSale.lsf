@@ -18,7 +18,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS saleOut 'Продажа товаров по накладным' : historizable, numberedObject, outAccountDocumentLedger, innerDocument;
+CLASS saleOut 'Продажа товаров по накладным' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
 CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
 CLASS saleOutDetail 'Строка продажи товаров по накладным';
 CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)';
@@ -159,7 +159,7 @@ EXTEND FORM saleOuts
 ;
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS saleIn 'Покупка товаров по накладным' : historizable, incAccountDocumentLedger;
+CLASS saleIn 'Покупка товаров по накладным' : historizable, incStockDocumentLedger;
 CLASS saleInDetail 'Строка покупки товаров по накладным';
 CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)';
 
@@ -330,21 +330,21 @@ EXTEND FORM saleIns
 ;
 //---------------------------------------- Товарный отчет ------------------------- //
 
-dateTimeAccountDocumentLedger (ledger) += dateTimeSaleOut(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedSaleOut(ledger);
-stockAccountDocumentLedger (ledger) += stockSaleOut(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionSaleOut(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeSaleOut(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedSaleOut(ledger);
+stockStockDocumentLedger (ledger) += stockSaleOut(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionSaleOut(ledger);
 
-sumOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
-sumItemOutAccountDocumentLedger (ledger) += accountSumSaleOut(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
+sumOutStockDocumentLedger (ledger) += accountSumSaleOut(ledger);
+sumItemOutStockDocumentLedger (ledger) += accountSumSaleOut(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
 
 // приход
-dateTimeAccountDocumentLedger (ledger) += dateTimeSaleIn(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedSaleIn(ledger);
-stockAccountDocumentLedger (ledger) += stockSaleIn(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionSaleIn(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeSaleIn(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedSaleIn(ledger);
+stockStockDocumentLedger (ledger) += stockSaleIn(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionSaleIn(ledger);
 
-sumIncAccountDocumentLedger (ledger) += accountSumSaleIn(ledger);
-sumItemIncAccountDocumentLedger (ledger) += accountSumSaleIn(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleIn;
+sumIncStockDocumentLedger (ledger) += accountSumSaleIn(ledger);
+sumItemIncStockDocumentLedger (ledger) += accountSumSaleIn(ledger);
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS saleIn;

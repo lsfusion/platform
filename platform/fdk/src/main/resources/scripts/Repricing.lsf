@@ -1,6 +1,6 @@
 MODULE Repricing;
 
-REQUIRE Employee, Store, Pricing, AccountDocument, PriceList;
+REQUIRE Employee, Store, Pricing, StockDocument, PriceList;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
@@ -561,10 +561,10 @@ Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(do
 @defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(repricings, p, repricing);
 
-@implementAccountDocumentLedgerInc(repricing, departmentStore);
-sumIncAccountDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);
-sumItemIncAccountDocumentLedger (ledger) += sumItemRepricingDetailRepricing(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += sumContainerRepricingDetailRepricing(ledger);
+@implementStockDocumentLedgerInc(repricing, departmentStore);
+sumIncStockDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);
+sumItemIncStockDocumentLedger (ledger) += sumItemRepricingDetailRepricing(ledger);
+sumContainerIncStockDocumentLedger (ledger) += sumContainerRepricingDetailRepricing(ledger);
 
 // ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
 

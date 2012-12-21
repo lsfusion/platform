@@ -8,7 +8,7 @@ REQUIRE System,
         Barcode,
         Document,
         Employee,
-        AccountDocument,
+        StockDocument,
         Utils;
 
 //----------------------------------- Пересорт товара -------------------------------------------------------

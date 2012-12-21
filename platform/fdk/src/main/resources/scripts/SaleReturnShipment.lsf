@@ -24,10 +24,10 @@ quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
 sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 
-@implementAccountDocumentLedgerInc(shipment, supplierStock);
-sumIncAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
-sumItemIncAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+@implementStockDocumentLedgerInc(shipment, supplierStock);
+sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(supplierUserShipment(userShipment))
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся компанией';

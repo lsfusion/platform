@@ -18,14 +18,14 @@
 	<field name="il" class="java.lang.Integer"/>
 	<field name="iObjName" class="java.lang.String"/>
 	<field name="iDescription" class="java.lang.String"/>
-	<field name="sumItemIncAccountDocumentLedger" class="java.lang.Double"/>
-	<field name="sumContainerIncAccountDocumentLedger" class="java.lang.Double"/>
-	<field name="sumIncAccountDocumentLedger" class="java.lang.Double"/>
-	<field name="countIncAccountDocumentStockDateInterval" class="java.lang.Integer"/>
-	<field name="sumItemIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="sumContainerIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalItemIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalContainerIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumItemIncStockDocumentLedger" class="java.lang.Double"/>
+	<field name="sumContainerIncStockDocumentLedger" class="java.lang.Double"/>
+	<field name="sumIncStockDocumentLedger" class="java.lang.Double"/>
+	<field name="countIncStockDocumentStockDateInterval" class="java.lang.Integer"/>
+	<field name="sumItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="subtotalItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="subtotalContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -48,12 +48,12 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemIncAccountDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemIncStockDocumentLedger},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="0" width="80" height="12"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerIncAccountDocumentLedger},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerIncStockDocumentLedger},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -75,7 +75,7 @@
 				<textElement textAlignment="Left">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Итого в приходе документов: "+$F{countIncAccountDocumentStockDateInterval}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Итого в приходе документов: "+$F{countIncStockDocumentStockDateInterval}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="0" width="80" height="12"/>
@@ -88,7 +88,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemIncAccountDocumentStockDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumItemIncStockDocumentStockDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="0" width="53" height="12"/>
@@ -114,7 +114,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerIncAccountDocumentStockDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{sumContainerIncStockDocumentStockDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="404" y="12" width="80" height="12"/>
@@ -127,7 +127,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{subtotalContainerIncAccountDocumentStockDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{subtotalContainerIncStockDocumentStockDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="324" y="12" width="80" height="12"/>
@@ -140,7 +140,7 @@
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{subtotalItemIncAccountDocumentStockDateInterval},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{subtotalItemIncStockDocumentStockDateInterval},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="484" y="12" width="53" height="12"/>

@@ -13,14 +13,14 @@ REQUIRE System,
         ConsignmentBy,
         WholesalePrice,
         Customer,
-        AccountDocument,
+        StockDocument,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historizable, numberedObject, outAccountDocumentLedger, innerDocument;
+CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
 CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
 CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету';
 

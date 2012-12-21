@@ -67,7 +67,9 @@ REQUIRE System,
         StatisticsStore,
         PricingStore,
         ConsignmentBy,
-        AccountDocument,
+        StockDocument,
+        StockDocumentWarehouse,
+        StockDocumentStore,
         Sales,
         Supply,
         Machinery,
@@ -312,7 +314,7 @@ EXTEND DESIGN item {
 
 // -------------------------------------------- Подключение модуля POS -------------------------------------- //
 @implementSkuLedgerReceiptDetail();
-@implementAccountDocumentLedgerZReport();
+@implementStockDocumentLedgerZReport();
 
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
@@ -374,8 +376,8 @@ limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
 changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
 
 // Товарный отчет
-sumItemOutAccountDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
 
 //------------------------------------------------- Z-отчет ---------------------------------------------------------------------//
 
@@ -396,10 +398,10 @@ descriptionSaleDiscountDocument (saleDiscountDocument) =
     [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
 
-@implementAccountDocumentLedgerOut(saleDiscountDocument, departmentStore);
-sumOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
-sumItemOutAccountDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
+@implementStockDocumentLedgerOut(saleDiscountDocument, departmentStore);
+sumOutStockDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
+sumItemOutStockDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
 // --------------------------------------- Печать ценников ---------------------------------------- //
 
@@ -413,14 +415,14 @@ nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
 
-//---------------------------Товарный отчет-------------------------------------//
-
-@extendStockFormAccountDocumentLedger(departmentStore, d);
-EXTEND DESIGN departmentStore {
-    row1 {
-        ADD d. responsibilityGroup {childConstraints = TO THE BOTTOM;}
-    }
-}
+////---------------------------Товарный отчет-------------------------------------//
+//
+//@extendStockFormStockDocumentLedger(departmentStore, d);
+//EXTEND DESIGN departmentStore {
+//    row1 {
+//        ADD d. responsibilityGroup {childConstraints = TO THE BOTTOM;}
+//    }
+//}
 
 //------------------------------------Отчет по таре-------------------------------------------//
 
@@ -579,8 +581,8 @@ NAVIGATOR {
 
         ADD stockCost;
         ADD stockBalance;
-        NEW accountDocuments 'Бухгалтерские документы' {
-            ADD sumAccountDocumentLedger;
+        NEW stockDocuments 'Бухгалтерские документы' {
+            ADD sumStockDocumentLedger;
             ADD sumMotionContainerDepartmentPrint;
         }
         NEW warehouseCatalog 'Справочники' {

@@ -8,7 +8,7 @@ REQUIRE System,
         Barcode,
         Document,
         Employee,
-        AccountDocument,
+        StockDocument,
         Utils;
 
 // -------------------------------- Комиссия для инвентаризации ----------------------------------//
@@ -580,10 +580,10 @@ sumContainerShortageCollationSheet 'Сумма недостачи, тара' (co
 
 //-------------------------------------- Проведение по товарному отчету ----------------------------------------------------//
 
-@implementAccountDocumentLedgerOut(collationSheet, stock);
-sumOutAccountDocumentLedger (ledger) += sumShortageCollationSheet(ledger);
-sumItemOutAccountDocumentLedger (ledger) += sumItemShortageCollationSheet(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += sumContainerShortageCollationSheet(ledger);
+@implementStockDocumentLedgerOut(collationSheet, stock);
+sumOutStockDocumentLedger (ledger) += sumShortageCollationSheet(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemShortageCollationSheet(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerShortageCollationSheet(ledger);
 
 //---------------------------- Генерация сличительных ведомостей ----------------------------//
 

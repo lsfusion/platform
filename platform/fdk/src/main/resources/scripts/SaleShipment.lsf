@@ -27,10 +27,10 @@ sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 costShipmentDetailBatch(detail, batch) += costSkuLedgerBatch(detail, batch) IF detail IS shipmentDetail;
 
-@implementAccountDocumentLedgerOut(shipment, supplierStock);
-sumOutAccountDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
-sumItemOutAccountDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+@implementStockDocumentLedgerOut(shipment, supplierStock);
+sumOutStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(supplierUserShipment(userShipment))
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся компанией';

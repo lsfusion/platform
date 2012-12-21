@@ -13,7 +13,7 @@ REQUIRE System,
         RetailCRM,
         PriceInterval,
         PriceList,
-        AccountDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
+        StockDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
@@ -361,15 +361,15 @@ sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentSto
 
 // ----------------------------------- Проведение по товарному отчету -------------------------- //
 
-META implementAccountDocumentLedgerZReport(dumb)
-    @implementAccountDocumentLedgerZReportCustom(sumReceiptDetailZReport);
+META implementStockDocumentLedgerZReport(dumb)
+    @implementStockDocumentLedgerZReportCustom(sumReceiptDetailZReport);
 END
 
-META implementAccountDocumentLedgerZReportCustom (sumProp)
-    @implementAccountDocumentLedgerOut(zReport, departmentStore);
-    sumOutAccountDocumentLedger (ledger) += sumProp (ledger);
-    sumItemOutAccountDocumentLedger (ledger) += sumProp (ledger);
-    sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
+META implementStockDocumentLedgerZReportCustom (sumProp)
+    @implementStockDocumentLedgerOut(zReport, departmentStore);
+    sumOutStockDocumentLedger (ledger) += sumProp (ledger);
+    sumItemOutStockDocumentLedger (ledger) += sumProp (ledger);
+    sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
 END
 //----------------------------------- Формы -------------------------------------------------//
 

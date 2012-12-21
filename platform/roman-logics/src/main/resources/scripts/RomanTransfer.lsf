@@ -12,14 +12,14 @@ REQUIRE System,
         Employee,
         StorePriceTransfer,
         ConsignmentBy,
-        AccountDocument,
+        StockDocument,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Трнансфер ------------------------------------ //
 
-CLASS transferTable 'Трансфер' : historizable, numeratedObject;//, innerDocument, consignment, outAccountDocumentLedger;
+CLASS transferTable 'Трансфер' : historizable, numeratedObject;//, innerDocument, consignment, outStockDocumentLedger;
 
 GROUP datesGroup 'Период продаж' : public;
 

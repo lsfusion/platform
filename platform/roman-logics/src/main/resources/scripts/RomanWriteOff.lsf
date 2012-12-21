@@ -11,7 +11,7 @@ REQUIRE System,
         ConsignmentBy,
         WholesalePrice,
         WriteOff,
-        AccountDocument,
+        StockDocument,
         MasterData,
         RomanLogicsModule;
 
@@ -52,5 +52,5 @@ skipASkuLedger (ledger) += skipSkuLedgerWriteOffDetail(ledger);
 
 //---------------------------------------- Товарный отчет ------------------------- //
 
-sumItemOutAccountDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS writeOff;
+sumItemOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS writeOff;

@@ -64,6 +64,12 @@ FORM warehouse 'Склад'
 
     EDIT warehouse OBJECT w
 ;
+DESIGN warehouse FROM DEFAULT{
+    main {
+        ADD w.box;
+        ADD functions.box;
+    }
+}
 
 editWarehouse 'Редактировать' = ACTION EDITFORM warehouse;
 editStock(stock) += editWarehouse(stock);

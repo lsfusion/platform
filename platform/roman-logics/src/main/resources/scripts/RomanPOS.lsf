@@ -30,7 +30,7 @@ sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceip
 EXTEND FORM zReport PROPERTIES (z) sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
 EXTEND FORM zReports PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
 
-@implementAccountDocumentLedgerZReportCustom(sumAccountReceiptDetailZReport);
+@implementStockDocumentLedgerZReportCustom(sumAccountReceiptDetailZReport);
 
 // --------------------------------------- Подбор строк для изъятия денег --------------------------- //
 

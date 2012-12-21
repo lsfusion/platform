@@ -1,0 +1,17 @@
+MODULE StockDocumentBy;
+
+REQUIRE StockDocument, StockBy;
+
+NAMESPACE StockDocument;
+
+EXTEND FORM sumStockDocumentLedger
+
+    PROPERTIES(ds) UNPStock
+;
+
+EXTEND DESIGN sumStockDocumentLedger{
+
+    container12 {
+        ADD PROPERTY (UNPStock(ds));
+    }
+}

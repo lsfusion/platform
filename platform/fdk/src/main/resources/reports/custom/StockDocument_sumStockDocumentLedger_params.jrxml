@@ -41,22 +41,22 @@
 	<field name="sumItemAccountADocumentLedgerDate" class="java.lang.Double"/>
 	<field name="sumContainerAccountADocumentLedgerDate" class="java.lang.Double"/>
 	<field name="sumAccountADocumentLedgerDate" class="java.lang.Double"/>
-	<field name="countIncAccountDocumentStockDateInterval" class="java.lang.Integer"/>
-	<field name="countOutAccountDocumentStockDateInterval" class="java.lang.Integer"/>
+	<field name="countIncStockDocumentStockDateInterval" class="java.lang.Integer"/>
+	<field name="countOutStockDocumentStockDateInterval" class="java.lang.Integer"/>
 	<field name="nameCompanyStock" class="java.lang.String"/>
 	<field name="UNPStock" class="java.lang.String"/>
-	<field name="sumItemIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="sumContainerIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalItemIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="subtotalContainerIncAccountDocumentStockDateInterval" class="java.lang.Double"/>
-	<field name="sumItemOutAccountDocumentStoreDateInterval" class="java.lang.Double"/>
-	<field name="sumContainerOutAccountDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="subtotalItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="subtotalContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
+	<field name="sumItemOutStockDocumentStoreDateInterval" class="java.lang.Double"/>
+	<field name="sumContainerOutStockDocumentStockDateInterval" class="java.lang.Double"/>
 	<field name="nameMRPStock" class="java.lang.String"/>
 	<field name="namePositionMRPStock" class="java.lang.String"/>
-	<field name="namePersonCheckStock" class="java.lang.String"/>
-	<field name="namePositionPersonCheckStock" class="java.lang.String"/>
-	<field name="namePositionBookkeeperStock" class="java.lang.String"/>
-	<field name="nameBookkeeperStock" class="java.lang.String"/>
+	<field name="nameAuditorStock" class="java.lang.String"/>
+	<field name="namePositionAuditorStock" class="java.lang.String"/>
+	<field name="namePositionAccountantStock" class="java.lang.String"/>
+	<field name="nameAccountantStock" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -265,7 +265,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{namePersonCheckStock}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameAuditorStock}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="163" y="0" width="119" height="10"/>
@@ -278,11 +278,11 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{namePositionPersonCheckStock}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{namePositionAuditorStock}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="335" y="10" width="149" height="1">
-						<printWhenExpression><![CDATA[$F{namePersonCheckStock}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{nameAuditorStock}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -290,7 +290,7 @@
 				</line>
 				<line>
 					<reportElement x="163" y="10" width="115" height="1">
-						<printWhenExpression><![CDATA[$F{namePositionPersonCheckStock}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{namePositionAuditorStock}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -328,11 +328,11 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{nameBookkeeperStock}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameAccountantStock}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="335" y="10" width="149" height="1">
-						<printWhenExpression><![CDATA[$F{nameBookkeeperStock}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{nameAccountantStock}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -340,7 +340,7 @@
 				</line>
 				<line>
 					<reportElement x="163" y="9" width="115" height="1">
-						<printWhenExpression><![CDATA[$F{namePositionBookkeeperStock}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{namePositionAccountantStock}==null]]></printWhenExpression>
 					</reportElement>
 					<graphicElement>
 						<pen lineWidth="0.5"/>
@@ -357,7 +357,7 @@
 					<textElement verticalAlignment="Middle">
 						<font size="8" isBold="false" isUnderline="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{namePositionBookkeeperStock}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{namePositionAccountantStock}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement x="285" y="10" width="42" height="1"/>

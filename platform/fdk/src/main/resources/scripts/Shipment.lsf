@@ -1,6 +1,6 @@
 MODULE Shipment;
 
-REQUIRE Order, Invoice, AccountDocument;
+REQUIRE Order, Invoice, StockDocument;
 
 CLASS ABSTRACT shipment 'Поставка';
 CLASS ABSTRACT shipmentDetail 'Строка поставки';

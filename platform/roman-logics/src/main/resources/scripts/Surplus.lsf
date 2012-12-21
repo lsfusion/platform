@@ -20,7 +20,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Излишки ------------------------------------ //
 
-CLASS surplusOut 'Реализация излишков' : historizable, numberedObject, consignment, outAccountDocumentLedger;
+CLASS surplusOut 'Реализация излишков' : historizable, numberedObject, consignment, outStockDocumentLedger;
 CLASS surplusOutPosted 'Проведенная реализация излишков' : surplusOut, postedObject;
 CLASS surplusOutDetail 'Строка реализации излишков' : consignmentDetail;
 

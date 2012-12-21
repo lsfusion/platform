@@ -1,6 +1,6 @@
 MODULE PriceChange;
 
-REQUIRE System, Document, AccountDocument, Stock, Store, StorePrice, Ware;
+REQUIRE System, Document, StockDocument, Stock, Store, StorePrice, Ware;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
@@ -127,10 +127,10 @@ diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма �
     GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
         BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-@implementAccountDocumentLedgerInc(priceChangeDocument, departmentStore);
-sumIncAccountDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
-sumItemIncAccountDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
+@implementStockDocumentLedgerInc(priceChangeDocument, departmentStore);
+sumIncStockDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumItemIncStockDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
+sumContainerIncStockDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
 
                          // --------- Комиссия переоценки --------------- //
 

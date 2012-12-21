@@ -1,0 +1,309 @@
+MODULE StockDocument;
+
+REQUIRE System, Stock, Employee, Utils;
+
+CLASS ABSTRACT stockDocumentLedger 'Учетный документ';
+TABLE stockDocumentLedger (stockDocumentLedger);
+
+CLASS ABSTRACT incStockDocumentLedger 'Учетный документ (приход)' : stockDocumentLedger;
+CLASS ABSTRACT outStockDocumentLedger 'Учетный документ (расход)' : stockDocumentLedger;
+
+dateTimeStockDocumentLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (stockDocumentLedger) PERSISTENT INDEXED;
+dateStockDocumentLedger 'Дата' (ledger) = toDate(dateTimeStockDocumentLedger(ledger)) PERSISTENT;
+
+isPostedStockDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (stockDocumentLedger) PERSISTENT;
+
+stockStockDocumentLedger (ledger) = ABSTRACT stock (stockDocumentLedger) PERSISTENT;
+nameStockStockDocumentLedger 'Отдел' (ledger) = name(stockStockDocumentLedger(ledger));
+
+descriptionStockDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (stockDocumentLedger) PERSISTENT;
+
+GROUP ledgerGroup 'Суммы (всего)' : public;
+sumIncStockDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerGroup;
+sumOutStockDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerGroup;
+sumStockDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
+
+GROUP ledgerItemGroup 'Суммы по товару' : public;
+sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
+sumItemOutStockDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
+sumItemStockDocumentLedger 'Сумма, товар' (ledger) = UNION EXCLUSIVE sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
+
+GROUP ledgerContainerGroup 'Суммы по таре' : public;
+sumContainerIncStockDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
+sumContainerOutStockDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
+sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUSIVE sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
+
+// -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
+
+countIncStockDocumentStockDateInterval 'Количество приходных док-ов' (stock, dtFrom, dtTo)=
+    GROUP SUM 1 IF incStockDocumentLedger AS incStockDocumentLedger AND isPostedStockDocumentLedger(incStockDocumentLedger)
+        AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+
+countOutStockDocumentStockDateInterval 'Количество расходных док-ов' (stock, dtFrom, dtTo)=
+    GROUP SUM 1 IF outStockDocumentLedger AS outStockDocumentLedger AND isPostedStockDocumentLedger(outStockDocumentLedger)
+        AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
+
+
+sumItemIncStockDocumentStockDateInterval 'Сумма прихода, товар' (stock, dtFrom, dtTo)=
+    GROUP SUM sumItemIncStockDocumentLedger(incStockDocumentLedger)  AND isPostedStockDocumentLedger(incStockDocumentLedger)
+        AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
+
+sumItemOutStockDocumentStoreDateInterval 'Сумма расхода, товар' (stock, dtFrom, dtTo)=
+    GROUP SUM sumItemOutStockDocumentLedger(outStockDocumentLedger) AND isPostedStockDocumentLedger(outStockDocumentLedger)
+        AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerItemGroup;
+
+
+sumContainerIncStockDocumentStockDateInterval 'Сумма прихода, тара' (stock, dtFrom, dtTo)=
+    GROUP SUM sumContainerIncStockDocumentLedger(incStockDocumentLedger) AND isPostedStockDocumentLedger(incStockDocumentLedger)
+        AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
+
+sumContainerOutStockDocumentStockDateInterval 'Сумма расхода, тара' (stock, dtFrom, dtTo)=
+    GROUP SUM sumContainerOutStockDocumentLedger(outStockDocumentLedger) AND isPostedStockDocumentLedger(outStockDocumentLedger)
+        AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
+            BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerContainerGroup;
+
+// -------------------------------------- Остатки по суммам --------------------------------------------- //
+
+currentSumStockDocumentLedger 'Текущий остаток по документам' (stock) = GROUP SUM sumStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+                                                                                           BY stockStockDocumentLedger(ledger) PERSISTENT;
+
+sumAccountBDocumentLedgerDateTime 'Остаток на начало' (stock, dateTime) = UNION SUM currentSumStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumAccountADocumentLedgerDateTime 'Остаток на конец' (stock, dateTime) = UNION SUM currentSumStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumAccountBDocumentLedgerDate 'Остаток на начало' (stock, date) = UNION SUM currentSumStockDocumentLedger(stock) AND date IS DATE,
+                                                                            -[GROUP SUM sumStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                            BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
+
+sumAccountADocumentLedgerDate 'Остаток на конец' (stock, date) = UNION SUM currentSumStockDocumentLedger(stock) AND date IS DATE,
+                                                                           -[GROUP SUM sumStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                           BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerGroup;
+
+// -------------------------------------- Остатки по суммам (товар) --------------------------------------------- //
+
+currentSumItemStockDocumentLedger 'Текущий остаток по документам, товар' (stock) = GROUP SUM sumItemStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+                                                                                           BY stockStockDocumentLedger(ledger) PERSISTENT;
+
+sumItemAccountBDocumentLedgerDateTime 'Остаток на начало, товар' (stock, dateTime) = UNION SUM currentSumItemStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumItemStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumItemAccountADocumentLedgerDateTime 'Остаток на конец, товар' (stock, dateTime) = UNION SUM currentSumItemStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumItemStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumItemAccountBDocumentLedgerDate 'Остаток на начало, товар' (stock, date) = UNION SUM currentSumItemStockDocumentLedger(stock) AND date IS DATE,
+                                                                            -[GROUP SUM sumItemStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                            BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
+
+sumItemAccountADocumentLedgerDate 'Остаток на конец, товар' (stock, date) = UNION SUM currentSumItemStockDocumentLedger(stock) AND date IS DATE,
+                                                                           -[GROUP SUM sumItemStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                           BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerItemGroup;
+
+// -------------------------------------- Остатки по суммам (тара) --------------------------------------------- //
+
+currentSumContainerStockDocumentLedger 'Текущий остаток по документам, тара' (stock) = GROUP SUM sumContainerStockDocumentLedger (ledger) AND isPostedStockDocumentLedger(ledger)
+                                                                                           BY stockStockDocumentLedger(ledger) PERSISTENT;
+sumContainerAccountBDocumentLedgerDateTime 'Остаток на начало, тара' (stock, dateTime) = UNION SUM currentSumContainerStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) >= (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumContainerAccountADocumentLedgerDateTime 'Остаток на конец, тара' (stock, dateTime) = UNION SUM currentSumContainerStockDocumentLedger(stock) AND dateTime IS DATETIME,
+                                                                         -[GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateTimeStockDocumentLedger(ledger) > (dateTime AS DATETIME) AND isPostedStockDocumentLedger(ledger)
+                                                                         BY stockStockDocumentLedger(ledger), dateTime](stock, dateTime);
+
+sumContainerAccountBDocumentLedgerDate 'Остаток на начало, тара' (stock, date) = UNION SUM currentSumContainerStockDocumentLedger(stock) AND date IS DATE,
+                                                                            -[GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) >= (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                            BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
+
+sumContainerAccountADocumentLedgerDate 'Остаток на конец, тара' (stock, date) = UNION SUM currentSumContainerStockDocumentLedger(stock) AND date IS DATE,
+                                                                           -[GROUP SUM sumContainerStockDocumentLedger (ledger) AND dateStockDocumentLedger(ledger) > (date AS DATE) AND isPostedStockDocumentLedger(ledger)
+                                                                           BY stockStockDocumentLedger(ledger), date](stock, date) IN ledgerContainerGroup;
+
+// -------------------------------------- Подитоги --------------------------------------------- //
+
+subtotalItemIncStockDocumentStockDateInterval 'Итого с остатком, товар' (stock, dtFrom, dtTo) = UNION SUM
+    sumItemAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE,
+    sumItemIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerItemGroup;
+
+subtotalContainerIncStockDocumentStockDateInterval 'Итого с остатком, тара' (stock, dtFrom, dtTo) = UNION SUM
+    sumContainerAccountBDocumentLedgerDate(stock, dtFrom) AND dtTo AS DATE,
+    sumContainerIncStockDocumentStockDateInterval(stock, dtFrom, dtTo) IN ledgerContainerGroup;
+
+
+// ------------------------------------------- Ответственные лица --------------------------------------------- //
+
+MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (stock);
+nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
+    commonName (MRPStock(stock)) IN responsibilityGroup;
+namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
+    namePositionEmployee(MRPStock(stock));
+CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
+    CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
+
+accountantStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (stock);
+nameAccountantStock 'Бухгалтер, принимающий товарный отчет' (stock) = commonName(accountantStock(stock)) IN responsibilityGroup;
+namePositionAccountantStock 'Бухгалтер, принимающий товарный отчет (должность)' =
+    namePositionEmployee(accountantStock(stock));
+CONSTRAINT accountantStock(stock) AND NOT inEmployeeDivisionEmployee(stock, accountantStock(stock))
+    CHECKED BY accountantStock MESSAGE 'Бухгалтер не сотрудник отдела';
+
+auditorStock 'Кто проверяет товарный отчет (ИД)' = DATA employee (stock);
+nameAuditorStock 'Кто проверяет товарный отчет' (stock) = commonName(auditorStock(stock)) IN responsibilityGroup;
+namePositionAuditorStock 'Кто проверяет товарный отчет (должность)' =
+    namePositionEmployee(auditorStock(stock));
+CONSTRAINT auditorStock(stock) AND NOT inEmployeeDivisionEmployee(stock, auditorStock(stock))
+    CHECKED BY auditorStock MESSAGE 'Проверяющий не сотрудник отдела';
+
+// -------------------------------------- Формы --------------------------------------------- //
+
+FORM sumStockDocumentLedger 'Товарный отчет'
+    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
+            ds = stock FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
+    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
+                            namePositionAccountantStock, nameAuditorStock, namePositionAuditorStock
+
+    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
+               sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES(ds, dtFrom, dtTo) countIncStockDocumentStockDateInterval, countOutStockDocumentStockDateInterval,
+               sumItemIncStockDocumentStockDateInterval, sumContainerIncStockDocumentStockDateInterval,
+               subtotalItemIncStockDocumentStockDateInterval, subtotalContainerIncStockDocumentStockDateInterval,
+               sumItemOutStockDocumentStoreDateInterval, sumContainerOutStockDocumentStockDateInterval
+
+    OBJECTS il = incStockDocumentLedger
+    PROPERTIES(il) SELECTOR iDateTime = dateTimeStockDocumentLedger, iObjName = objectClassName, iDescription = descriptionStockDocumentLedger,
+                   sumItemIncStockDocumentLedger, sumContainerIncStockDocumentLedger, sumIncStockDocumentLedger
+    FILTERS isPostedStockDocumentLedger(il),
+            stockStockDocumentLedger(il) == ds,
+            dateStockDocumentLedger(il) >= dtFrom,
+            dateStockDocumentLedger(il) <= dtTo
+    ORDER BY iDateTime
+
+    OBJECTS ol = outStockDocumentLedger
+    PROPERTIES(ol) SELECTOR oDateTime = dateTimeStockDocumentLedger, oObjName = objectClassName, oDescription = descriptionStockDocumentLedger,
+                   sumItemOutStockDocumentLedger, sumContainerOutStockDocumentLedger, sumOutStockDocumentLedger
+    FILTERS isPostedStockDocumentLedger(ol),
+            stockStockDocumentLedger(ol) == ds,
+            dateStockDocumentLedger(ol) >= dtFrom,
+            dateStockDocumentLedger(ol) <= dtTo
+    ORDER BY oDateTime
+;
+
+
+DESIGN sumStockDocumentLedger FROM DEFAULT {
+    NEW row{
+        childConstraints = TO THE RIGHT;
+        title = 'Комиссия';
+        NEW row1 {
+            title = 'МОЛ';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (nameMRPStock(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (namePositionMRPStock(ds)){
+                caption = 'Должность';
+            }
+        }
+        NEW row2 {
+            title = 'Проверяющий';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (nameAuditorStock(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (namePositionAuditorStock(ds)){
+                caption = 'Должность';
+            }
+        }
+        NEW row3{
+            title = 'Бухгалтер';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (nameAccountantStock(ds)){
+                caption = 'Имя';
+            }
+            ADD PROPERTY (namePositionAccountantStock(ds)){
+                caption = 'Должность';
+            }
+        }
+    }
+
+    NEW HeaderCase BEFORE row{
+        title = 'Суммы';
+        childConstraints = TO THE RIGHT;
+        ADD ds.ledgerItemGroup;
+        ADD ds.ledgerContainerGroup;
+        ADD ds.ledgerGroup;
+    }
+
+    NEW OneCase BEFORE HeaderCase{
+         childConstraints = TO THE BOTTOM;
+         NEW container11 {
+            childConstraints = TO THE RIGHT;
+            NEW dateCase {
+                title = 'Даты';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(objFrom) {
+                    caption = 'Дата (с)';
+                }
+                ADD PROPERTY(objTo) {
+                    caption = 'Дата (по)';
+                }
+            }
+            NEW departmentCase {
+                title = 'Отдел';
+                ADD PROPERTY (name(ds)) {
+                    caption = 'Название';
+                };
+            }
+         }
+         NEW container12 {
+            title = 'Организация';
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY (nameLegalEntityStock(ds));
+         }
+    }
+
+    NEW topContainer{
+
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD il.box;
+        ADD ol.box;
+    }
+
+    ADD functions.box;
+}
+
+// ------------------------------------------ Макросы ----------------------------------------------------- //
+META implementStockDocumentLedger (concrete, stockProp)
+    dateTimeStockDocumentLedger (ledger) += dateTime###concrete(ledger);
+    isPostedStockDocumentLedger (ledger) += isPosted###concrete(ledger);
+    stockStockDocumentLedger (ledger) += stockProp###concrete(ledger);
+    descriptionStockDocumentLedger (ledger) += description###concrete(ledger);
+END
+
+META implementStockDocumentLedgerInc (concrete, stockProp)
+    EXTEND CLASS concrete : incStockDocumentLedger;
+    @implementStockDocumentLedger (concrete, stockProp);
+END
+
+META implementStockDocumentLedgerOut (concrete, stockProp)
+    EXTEND CLASS concrete : outStockDocumentLedger;
+    @implementStockDocumentLedger (concrete, stockProp);
+END
+
+META extendStockFormStockDocumentLedger(form, object)
+    EXTEND FORM form
+        PROPERTIES(object)   nameMRPStock, nameAccountantStock, nameAuditorStock
+    ;
+END

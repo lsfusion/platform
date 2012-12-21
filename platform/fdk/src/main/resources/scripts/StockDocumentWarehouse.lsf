@@ -1,0 +1,10 @@
+MODULE StockDocumentWarehouse;
+
+REQUIRE StockDocument, Warehouse;
+
+
+
+//------------------------- Расширяем форму отдела -------------------------//
+
+@extendStockFormStockDocumentLedger(warehouse, w);
+

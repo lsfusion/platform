@@ -15,7 +15,7 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historizable, numberedObject, outAccountDocumentLedger, innerDocument;
+CLASS returnOut 'Возврат товаров по накладным' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
 CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
 CLASS returnOutDetail 'Строка возврата товаров по накладным';
 
@@ -165,7 +165,7 @@ EXTEND FORM returnOuts
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS returnIn 'Получение товаров по накладным' : historizable, incAccountDocumentLedger;
+CLASS returnIn 'Получение товаров по накладным' : historizable, incStockDocumentLedger;
 CLASS returnInDetail 'Строка получения товаров по накладным';
 
 @defineDocumentTransferIn(return, 'Получение товаров по накладным', sku, stock);
@@ -259,21 +259,21 @@ EXTEND FORM returnIns
 //---------------------------------------- Товарный отчет ------------------------- //
 
 // расход
-dateTimeAccountDocumentLedger (ledger) += dateTimeReturnOut(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedReturnOut(ledger);
-stockAccountDocumentLedger (ledger) += stockReturnOut(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionReturnOut(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeReturnOut(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedReturnOut(ledger);
+stockStockDocumentLedger (ledger) += stockReturnOut(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionReturnOut(ledger);
 
-sumOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
-sumItemOutAccountDocumentLedger (ledger) += accountSumReturnOut(ledger);
-sumContainerOutAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnOut;
+sumOutStockDocumentLedger (ledger) += accountSumReturnOut(ledger);
+sumItemOutStockDocumentLedger (ledger) += accountSumReturnOut(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS returnOut;
 
 // приход
-dateTimeAccountDocumentLedger (ledger) += dateTimeReturnIn(ledger);
-isPostedAccountDocumentLedger (ledger) += isPostedReturnIn(ledger);
-stockAccountDocumentLedger (ledger) += stockReturnIn(ledger);
-descriptionAccountDocumentLedger (ledger) += descriptionReturnIn(ledger);
+dateTimeStockDocumentLedger (ledger) += dateTimeReturnIn(ledger);
+isPostedStockDocumentLedger (ledger) += isPostedReturnIn(ledger);
+stockStockDocumentLedger (ledger) += stockReturnIn(ledger);
+descriptionStockDocumentLedger (ledger) += descriptionReturnIn(ledger);
 
-sumIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
-sumItemIncAccountDocumentLedger (ledger) += accountSumReturnIn(ledger);
-sumContainerIncAccountDocumentLedger (ledger) += 0.0 IF ledger IS returnIn;
+sumIncStockDocumentLedger (ledger) += accountSumReturnIn(ledger);
+sumItemIncStockDocumentLedger (ledger) += accountSumReturnIn(ledger);
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS returnIn;
