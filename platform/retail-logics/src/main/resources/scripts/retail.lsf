@@ -71,6 +71,7 @@ REQUIRE System,
         StockDocumentWarehouse,
         StockDocumentStore,
         ContainerMovement,
+        POSPricing,
         Sales,
         Supply,
         Machinery,
@@ -379,30 +380,6 @@ changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
 // Товарный отчет
 sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
-
-//------------------------------------------------- Z-отчет ---------------------------------------------------------------------//
-
-// документ скидок для товарного отчета
-CLASS saleDiscountDocument 'Скидка по продаже через кассы';
-TABLE saleDiscountDocument (saleDiscountDocument);
-
-@defineAggregation(zReport, saleDiscountDocument, discountSumReceiptDetailZReport);
-@defineDocumentAggregationHeaderTime(zReport, saleDiscountDocument);
-@defineDocumentAggregationHeaderStock(zReport, saleDiscountDocument, departmentStore, 'Отдел магазина');
-@defineDocumentAggregationHeaderPosted(zReport, saleDiscountDocument);
-
-numberCashRegisterSaleDiscountDocument (saleDiscountDocument) = numberCashRegisterZReport(zReportSaleDiscountDocument(saleDiscountDocument));
-
-discountSaleDiscountDocument (saleDiscountDocument) = discountSumReceiptDetailZReport(zReportSaleDiscountDocument(saleDiscountDocument));
-
-descriptionSaleDiscountDocument (saleDiscountDocument) =
-    [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
-    numberCashRegisterSaleDiscountDocument(saleDiscountDocument), nameDepartmentStoreSaleDiscountDocument(saleDiscountDocument), dateSaleDiscountDocument(saleDiscountDocument));
-
-@implementStockDocumentLedgerOut(saleDiscountDocument, departmentStore);
-sumOutStockDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
-sumItemOutStockDocumentLedger (ledger) += discountSaleDiscountDocument(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS saleDiscountDocument;
 
 // --------------------------------------- Печать ценников ---------------------------------------- //
 

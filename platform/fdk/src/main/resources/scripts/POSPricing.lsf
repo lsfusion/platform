@@ -1,0 +1,29 @@
+MODULE POSPricing;
+
+REQUIRE System,
+        Utils,
+        POS,
+        Stock,
+        Store;
+
+// документ скидок для товарного отчета
+CLASS zReportRepricing 'Скидка по продаже через кассы';
+TABLE zReportRepricing (zReportRepricing);
+
+@defineAggregation(zReport, zReportRepricing, discountSumReceiptDetailZReport);
+@defineDocumentAggregationHeaderTime(zReport, zReportRepricing);
+@defineDocumentAggregationHeaderStock(zReport, zReportRepricing, departmentStore, 'Отдел магазина');
+@defineDocumentAggregationHeaderPosted(zReport, zReportRepricing);
+
+numberCashRegisterZReportRepricing (zReportRepricing) = numberCashRegisterZReport(zReportZReportRepricing(zReportRepricing));
+
+discountZReportRepricing (zReportRepricing) = discountSumReceiptDetailZReport(zReportZReportRepricing(zReportRepricing));
+
+descriptionZReportRepricing (zReportRepricing) =
+    [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
+    numberCashRegisterZReportRepricing(zReportRepricing), nameDepartmentStoreZReportRepricing(zReportRepricing), dateZReportRepricing(zReportRepricing));
+
+@implementStockDocumentLedgerOut(zReportRepricing, departmentStore);
+sumOutStockDocumentLedger (ledger) += discountZReportRepricing(ledger);
+sumItemOutStockDocumentLedger (ledger) += discountZReportRepricing(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReportRepricing;
