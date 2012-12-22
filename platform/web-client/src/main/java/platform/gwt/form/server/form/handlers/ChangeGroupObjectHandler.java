@@ -4,17 +4,15 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
+import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
-
-import static platform.base.BaseUtils.serializeObject;
 
 public class ChangeGroupObjectHandler extends ServerResponseActionHandler<ChangeGroupObject> {
+    private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
+
     public ChangeGroupObjectHandler(RemoteServiceImpl servlet) {
         super(servlet);
     }
@@ -23,15 +21,8 @@ public class ChangeGroupObjectHandler extends ServerResponseActionHandler<Change
     public ServerResponseResult executeEx(ChangeGroupObject action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        DataOutputStream outStream = new DataOutputStream(byteStream);
+        byte[] keyValues = gwtConverter.convertOrCast(action.keyValues);
 
-        outStream.writeInt(action.keyValues.size());
-        for (Map.Entry<Integer, Object> entry : action.keyValues.entrySet()) {
-            outStream.writeInt(entry.getKey());
-            serializeObject(outStream, entry.getValue());
-        }
-
-        return getServerResponseResult(form, form.remoteForm.changeGroupObject(action.requestIndex, action.groupId, byteStream.toByteArray()));
+        return getServerResponseResult(form, form.remoteForm.changeGroupObject(action.requestIndex, action.groupId, keyValues));
     }
 }

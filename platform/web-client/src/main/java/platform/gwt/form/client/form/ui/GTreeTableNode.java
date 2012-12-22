@@ -14,7 +14,7 @@ public class GTreeTableNode {
     private boolean open = false;
 
     public GTreeTableNode() {
-        this(null, new GGroupObjectValue());
+        this(null, GGroupObjectValue.EMPTY);
     }
 
     public GTreeTableNode(GGroupObject group, GGroupObjectValue key) {

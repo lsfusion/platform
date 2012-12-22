@@ -16,7 +16,7 @@
 package platform.gwt.cellview.client;
 
 import com.google.gwt.dom.client.*;
-import platform.gwt.base.client.JSNHelper;
+import platform.gwt.base.client.jsni.JSNIHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -162,6 +162,6 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         if (elem == null) {
             return null;
         }
-        return JSNHelper.getAttributeOrNull(elem, HEADER_ATTRIBUTE);
+        return JSNIHelper.getAttributeOrNull(elem, HEADER_ATTRIBUTE);
     }
 }

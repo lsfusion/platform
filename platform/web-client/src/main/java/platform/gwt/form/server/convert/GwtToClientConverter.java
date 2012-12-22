@@ -14,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 
 import static platform.base.BaseUtils.serializeObject;
 
@@ -58,10 +57,11 @@ public class GwtToClientConverter extends ObjectConverter {
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            dataStream.writeInt(groupObjectValue.size());
-            for (Map.Entry<Integer, Object> entry : groupObjectValue.entrySet()) {
-                dataStream.writeInt(entry.getKey());
-                serializeObject(dataStream, entry.getValue());
+            int size = groupObjectValue.size();
+            dataStream.writeInt(size);
+            for (int i = 0; i < size; ++i) {
+                dataStream.writeInt(groupObjectValue.getKey(i));
+                serializeObject(dataStream, groupObjectValue.getValue(i));
             }
         } catch (IOException e) {
             Throwables.propagate(e);

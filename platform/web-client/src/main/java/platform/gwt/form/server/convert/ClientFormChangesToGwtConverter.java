@@ -4,6 +4,7 @@ import platform.client.logics.*;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
@@ -30,17 +31,28 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientFormChanges.class)
     public GFormChangesDTO convertFormChanges(ClientFormChanges changes) {
-        GFormChangesDTO changesDTO = new GFormChangesDTO();
+        GFormChangesDTO dto = new GFormChangesDTO();
 
+        dto.classViewsGroupIds = new int[changes.classViews.size()];
+        dto.classViews = new GClassViewType[changes.classViews.size()];
+        int i = 0;
         for (Map.Entry<ClientGroupObject, ClassViewType> entry : changes.classViews.entrySet()) {
-            changesDTO.classViews.put(entry.getKey().getID(), GClassViewType.valueOf(entry.getValue().name()));
+            dto.classViewsGroupIds[i] = entry.getKey().getID();
+            dto.classViews[i++] = GClassViewType.valueOf(entry.getValue().name());
         }
 
+        dto.objectsGroupIds = new int[changes.objects.size()];
+        dto.objects = new GGroupObjectValue[changes.objects.size()];
+        i = 0;
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {
             GGroupObjectValue groupObjectValue = convertOrCast(e.getValue());
-            changesDTO.objects.put(e.getKey().ID, groupObjectValue);
+            dto.objectsGroupIds[i] = e.getKey().ID;
+            dto.objects[i++] = groupObjectValue;
         }
 
+        dto.gridObjectsGroupIds = new int[changes.gridObjects.size()];
+        dto.gridObjects = new ArrayList[changes.gridObjects.size()];
+        i = 0;
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.gridObjects.entrySet()) {
             ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
@@ -49,9 +61,13 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 keys.add(groupObjectValue);
             }
 
-            changesDTO.gridObjects.put(entry.getKey().ID, keys);
+            dto.gridObjectsGroupIds[i] = entry.getKey().ID;
+            dto.gridObjects[i++] = keys;
         }
 
+        dto.parentObjectsGroupIds = new int[changes.parentObjects.size()];
+        dto.parentObjects = new ArrayList[changes.parentObjects.size()];
+        i = 0;
         for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : changes.parentObjects.entrySet()) {
             ArrayList<GGroupObjectValue> keys = new ArrayList<GGroupObjectValue>();
 
@@ -60,9 +76,13 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 keys.add(groupObjectValue);
             }
 
-            changesDTO.parentObjects.put(entry.getKey().ID, keys);
+            dto.parentObjectsGroupIds[i] = entry.getKey().ID;
+            dto.parentObjects[i++] = keys;
         }
 
+        dto.properties = new GPropertyReaderDTO[changes.properties.size()];
+        dto.propertiesValues = new HashMap[changes.properties.size()];
+        i = 0;
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : changes.properties.entrySet()) {
             HashMap<GGroupObjectValue, Object> propValues = new HashMap<GGroupObjectValue, Object>();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
@@ -71,22 +91,24 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 propValues.put(groupObjectValue, convertOrCast(clientValues.getValue()));
             }
             ClientPropertyReader reader = entry.getKey();
-            changesDTO.properties.put(new GPropertyReaderDTO(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, reader.getType()), propValues);
+
+            dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType());
+            dto.propertiesValues[i++] = propValues;
         }
 
-        for (ClientPropertyReader dropProperty : changes.dropProperties) {
-            if (dropProperty instanceof ClientPropertyDraw) {
-                changesDTO.dropProperties.add(((ClientPropertyDraw) dropProperty).ID);
-            }
+        dto.panelPropertiesIds = new int[changes.panelProperties.size()];
+        i = 0;
+        for (ClientPropertyDraw panelProperty : changes.panelProperties) {
+            dto.panelPropertiesIds[i++] = panelProperty.ID;
         }
 
-        for (ClientPropertyReader panelProperty : changes.panelProperties) {
-            changesDTO.panelProperties.add(
-                    new GPropertyReaderDTO(panelProperty.getID(), panelProperty.getGroupObject() != null ? panelProperty.getGroupObject().ID : -1, panelProperty.getType())
-            );
+        dto.dropPropertiesIds = new int[changes.dropProperties.size()];
+        i = 0;
+        for (ClientPropertyDraw dropProperty : changes.dropProperties) {
+            dto.dropPropertiesIds[i++] = dropProperty.ID;
         }
 
-        return changesDTO;
+        return dto;
     }
 
     @Converter(from = Color.class)
@@ -101,10 +123,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientGroupObjectValue.class)
     public GGroupObjectValue convertGroupObjectValue(ClientGroupObjectValue clientGroupObjValue) {
-        GGroupObjectValue groupObjectValue = new GGroupObjectValue();
+        GGroupObjectValueBuilder groupObjectValue = new GGroupObjectValueBuilder();
         for (Map.Entry<ClientObject, Object> keyPart : clientGroupObjValue.entrySet()) {
             groupObjectValue.put(keyPart.getKey().ID, keyPart.getValue());
         }
-        return groupObjectValue;
+        return groupObjectValue.toGroupObjectValue();
     }
 }

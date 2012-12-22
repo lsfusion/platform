@@ -32,10 +32,10 @@ public class FormChanges {
 
     private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
 
-    private final ImSet<PropertyReaderInstance> panelProperties;
+    private final ImSet<PropertyDrawInstance> panelProperties;
     private final ImSet<PropertyDrawInstance> dropProperties;
 
-    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects, ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects, ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects, ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties, ImSet<PropertyReaderInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
+    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects, ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects, ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects, ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties, ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
         this.classViews = classViews;
         this.objects = objects;
         this.gridObjects = gridObjects;
@@ -70,7 +70,7 @@ public class FormChanges {
         }
 
         System.out.println(" ------- PANEL ---------------");
-        for (PropertyReaderInstance property : panelProperties)
+        for (PropertyDrawInstance property : panelProperties)
             System.out.println(property);
 
         System.out.println(" ------- Drop ---------------");
@@ -100,12 +100,6 @@ public class FormChanges {
         serializeKeyObjectsMap(outStream, gridObjects);
         serializeKeyObjectsMap(outStream, parentObjects);
 
-        outStream.writeInt(panelProperties.size());
-        for (PropertyReaderInstance propertyReader : panelProperties) {
-            outStream.writeByte(propertyReader.getTypeID());
-            outStream.writeInt(propertyReader.getID());
-        }
-
         outStream.writeInt(properties.size());
         for (int i=0,size=properties.size();i<size;i++) {
             PropertyReaderInstance propertyReadInstance = properties.getKey(i);
@@ -123,6 +117,11 @@ public class FormChanges {
 
                 serializeObject(outStream, rows.getValue(j).getValue());
             }
+        }
+
+        outStream.writeInt(panelProperties.size());
+        for (PropertyDrawInstance propertyDraw : panelProperties) {
+            outStream.writeInt(propertyDraw.getID());
         }
 
         outStream.writeInt(dropProperties.size());
@@ -192,7 +191,7 @@ public class FormChanges {
         }
 
         logger.trace("   Goes to panel ---------------");
-        for (PropertyReaderInstance property : panelProperties) {
+        for (PropertyDrawInstance property : panelProperties) {
             logger.trace("     " + property);
         }
 

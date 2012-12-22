@@ -1,11 +1,15 @@
 package platform.gwt.form.shared.view;
 
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import platform.gwt.form.shared.view.reader.GRowBackgroundReader;
 import platform.gwt.form.shared.view.reader.GRowForegroundReader;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GGroupObject implements Serializable {
     public List<GObject> objects = new ArrayList<GObject>();
@@ -68,25 +72,31 @@ public class GGroupObject implements Serializable {
 
     public static List<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys) {
         if (groupColumnKeys.isEmpty()) {
-            return Arrays.asList(new GGroupObjectValue());
+            return GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
         } else if (groupColumnKeys.size() == 1) {
             return groupColumnKeys.values().iterator().next();
         }
 
         //находим декартово произведение ключей колонок
-        ArrayList<GGroupObjectValue> propColumnKeys = new ArrayList<GGroupObjectValue>();
-        propColumnKeys.add(new GGroupObjectValue());
+        ArrayList<GGroupObjectValueBuilder> propColumnKeys = new ArrayList<GGroupObjectValueBuilder>();
+        propColumnKeys.add(new GGroupObjectValueBuilder());
         for (Map.Entry<GGroupObject, List<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
             List<GGroupObjectValue> groupObjectKeys = entry.getValue();
 
-            ArrayList<GGroupObjectValue> newPropColumnKeys = new ArrayList<GGroupObjectValue>();
-            for (GGroupObjectValue propColumnKey : propColumnKeys) {
+            ArrayList<GGroupObjectValueBuilder> newPropColumnKeys = new ArrayList<GGroupObjectValueBuilder>();
+            for (GGroupObjectValueBuilder propColumnKey : propColumnKeys) {
                 for (GGroupObjectValue groupObjectKey : groupObjectKeys) {
-                    newPropColumnKeys.add(new GGroupObjectValue(propColumnKey, groupObjectKey));
+                    newPropColumnKeys.add(new GGroupObjectValueBuilder(propColumnKey).putAll(groupObjectKey));
                 }
             }
             propColumnKeys = newPropColumnKeys;
         }
-        return propColumnKeys;
+
+        ArrayList<GGroupObjectValue> result = new ArrayList<GGroupObjectValue>();
+        for (GGroupObjectValueBuilder builder : propColumnKeys) {
+            result.add(builder.toGroupObjectValue());
+        }
+
+        return result;
     }
 }

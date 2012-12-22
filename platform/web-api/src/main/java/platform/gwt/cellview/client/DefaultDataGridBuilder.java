@@ -15,10 +15,7 @@
  */
 package platform.gwt.cellview.client;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import platform.gwt.cellview.client.DataGrid.Style;
@@ -102,28 +99,28 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
     }
 
     @Override
-    protected void updateRowImpl(int rowIndex, T rowValue, TableRowElement tr, int[] columnsToRedraw) {
+    protected void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         int columnCount = cellTable.getColumnCount();
 
-        assert columnCount == tr.getCells().getLength();
+        NodeList<TableCellElement> cells = tr.getCells();
+
+        assert columnCount == cells.getLength();
 
         if (columnsToRedraw == null) {
             for (int columnIndex = 0; columnIndex < columnCount; ++columnIndex) {
-                updateCellImpl(rowIndex, rowValue, tr, columnIndex);
+                updateCellImpl(rowIndex, rowValue, cells, columnIndex);
             }
         } else {
             for (int columnIndex : columnsToRedraw) {
-                updateCellImpl(rowIndex, rowValue, tr, columnIndex);
+                updateCellImpl(rowIndex, rowValue, cells, columnIndex);
             }
         }
     }
 
-    private void updateCellImpl(int rowIndex, T rowValue, TableRowElement tr, int columnIndex) {
+    private void updateCellImpl(int rowIndex, T rowValue, NodeList<TableCellElement> cells, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        TableCellElement td = tr.getCells().getItem(columnIndex);
-
-        DivElement div = td.getFirstChild().cast();
+        DivElement div = cells.getItem(columnIndex).getFirstChild().cast();
 
         // Render the cell into the div.
         updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);

@@ -15,11 +15,9 @@
  */
 package platform.gwt.cellview.client;
 
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.builder.client.DomTableSectionBuilder;
-import com.google.gwt.dom.builder.shared.HtmlTableSectionBuilder;
-import com.google.gwt.dom.builder.shared.TableSectionBuilder;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -32,8 +30,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
@@ -67,6 +63,26 @@ import java.util.*;
  * @param <T> the data type of each row
  */
 public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>, Focusable, KeyboardRowChangedEvent.HasKeyboardRowChangedHandlers {
+
+    private static Resources DEFAULT_RESOURCES;
+
+    private static Resources getDefaultResources() {
+        if (DEFAULT_RESOURCES == null) {
+            DEFAULT_RESOURCES = GWT.create(Resources.class);
+        }
+        return DEFAULT_RESOURCES;
+    }
+
+    /*
+     * The table specific {@link DataGridImpl}.
+     * NOT USED for now
+     */
+    private static DataGridImpl dataGridImpl;
+//    if (dataGridImpl == null) {
+//        dataGridImpl = GWT.create(DataGridImpl.class);
+//    }
+
+    private static int IGNORE_SCROLL_TIMEOUT = 80;
 
     /**
      * A ClientBundle that provides images for this widget.
@@ -546,6 +562,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             return false;
         }
 
+        private double lastScrollTime = 0;
         private boolean nextRow(boolean down) {
             int rowIndex = getDisplay().getKeyboardSelectedRow();
 
@@ -556,23 +573,32 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             int rowHeight = row.getOffsetHeight();
 
             //scroll row into view
+            int newVerticalScrollPosition = -1;
             if (down) {
                 int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
                 int scrollHeight = scrollPanel.getOffsetHeight() - hScrollBarHeight;
                 int newRowBottom = row.getOffsetTop() + rowHeight + rowHeight;
 
                 if (newRowBottom > scrollPosition + scrollHeight) {
-                    scrollPanel.setVerticalScrollPosition(newRowBottom - scrollHeight);
+                    newVerticalScrollPosition = newRowBottom - scrollHeight;
                 }
                 ++rowIndex;
-
             } else {
                 int newRowTop = rowTop - rowHeight;
                 if (newRowTop < scrollPosition) {
-                    scrollPanel.setVerticalScrollPosition(newRowTop);
+                    newVerticalScrollPosition = newRowTop;
                 }
-
                 --rowIndex;
+            }
+
+            if (newVerticalScrollPosition != -1) {
+                double currentTime = Duration.currentTimeMillis();
+                //ignore key stroke, if we need to scroll too often
+                if (currentTime - lastScrollTime < IGNORE_SCROLL_TIMEOUT) {
+                    return true;
+                }
+                scrollPanel.setVerticalScrollPosition(newVerticalScrollPosition);
+                lastScrollTime = currentTime;
             }
 
             setKeyboardSelectedRow(rowIndex);
@@ -644,31 +670,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
     }
 
-    private static Resources DEFAULT_RESOURCES;
-
-    private static Resources getDefaultResources() {
-        if (DEFAULT_RESOURCES == null) {
-            DEFAULT_RESOURCES = GWT.create(Resources.class);
-        }
-        return DEFAULT_RESOURCES;
-    }
-
-    /**
-     * The error message used when {@link HeaderBuilder} returns malformed table
-     * section HTML.
-     */
-    private static final String MALFORMED_HTML_SECTION =
-            "Malformed HTML: The table section returned by HeaderBuilder or FooterBuilder must use the "
-                    + "tag name thead or tfoot, as appropriate, and cannot contain any attributes or styles.";
-
-    /*
-     * The table specific {@link DataGridImpl}.
-     * NOT USED for now
-     */
-    private static DataGridImpl dataGridImpl;
-//    if (dataGridImpl == null) {
-//        dataGridImpl = GWT.create(DataGridImpl.class);
-//    }
 
     /**
      * The current state of the presenter reflected in the view. We intentionally
@@ -1319,34 +1320,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private static boolean isColumnInteractive(HasCell<?, ?> column) {
         Set<String> consumedEvents = column.getCell().getConsumedEvents();
         return consumedEvents != null && consumedEvents.size() > 0;
-    }
-
-    /**
-     * Get the {@link TableSectionElement} containing the children.
-     *
-     * @param tag the expected tag (tbody, tfoot, or thead)
-     */
-    private static SafeHtml tableSectionToSafeHtml(TableSectionBuilder section, String tag) {
-//        if (!(section instanceof HtmlTableSectionBuilder)) {
-//            throw new IllegalArgumentException("Only HtmlTableSectionBuilder is supported at this time");
-//        }
-
-        if (section instanceof HtmlTableSectionBuilder) {
-            // Strip the table section tags off of the tbody.
-            HtmlTableSectionBuilder htmlSection = (HtmlTableSectionBuilder) section;
-            String rawHtml = htmlSection.asSafeHtml().asString();
-            assert (tag.length()) == 5 : "Unrecognized tag: " + tag;
-            assert rawHtml.startsWith("<" + tag + ">") : MALFORMED_HTML_SECTION;
-            assert rawHtml.endsWith("</" + tag + ">") : MALFORMED_HTML_SECTION;
-            rawHtml = rawHtml.substring(7, rawHtml.length() - 8);
-            return SafeHtmlUtils.fromTrustedString(rawHtml);
-        } else {
-            assert section instanceof DomTableSectionBuilder;
-
-            DomTableSectionBuilder domSection = (DomTableSectionBuilder) section;
-
-            return SafeHtmlUtils.fromTrustedString(domSection.finish().getInnerHTML());
-        }
     }
 
     /**
@@ -2512,7 +2485,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 //        tableData.section.removeFromParent();
 
         // Render the html.
-        tableBuilder.update(values, updateRanges, columnsToRedraw, columnsChanged);
+        tableBuilder.update(tableData.section, values, updateRanges, columnsToRedraw, columnsChanged);
 
         /*
          * Reattach the section. If next section is null, the section will be appended instead.

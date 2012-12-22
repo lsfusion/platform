@@ -1,6 +1,7 @@
 package platform.gwt.form.client.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
@@ -20,7 +21,7 @@ public class FormDispatchAsync {
     private final GForm form;
     private final GFormController formController;
 
-    private long nextRequestIndex = 0;
+    private int nextRequestIndex = 0;
 
     private final LinkedList<QueuedAction> q = new LinkedList<QueuedAction>();
     private QueuedAction currentDispatchingAction;
@@ -39,7 +40,7 @@ public class FormDispatchAsync {
         queueAction(action, callback);
     }
 
-    public <A extends FormRequestIndexCountingAction<R>, R extends Result> long execute(A action, AsyncCallback<R> callback) {
+    public <A extends FormRequestIndexCountingAction<R>, R extends Result> int execute(A action, AsyncCallback<R> callback) {
         execute((FormBoundAction) action, callback);
         return action.requestIndex;
     }
@@ -52,13 +53,13 @@ public class FormDispatchAsync {
 
         formController.onAsyncStarted();
 
-        final long startExecTime = System.currentTimeMillis();
+        final double startExecTime = Duration.currentTimeMillis();
         gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
             @Override
             public void preProcess() {
-                long execTime = System.currentTimeMillis() - startExecTime;
+                double execTime = Duration.currentTimeMillis() - startExecTime;
 
-                Log.debug("Executed action: " + action.toString() + " in " + execTime / 1000 + " ms.");
+                Log.debug("Executed action: " + action.toString() + " in " + (int)(execTime / 1000) + " ms.");
             }
 
             @Override
@@ -93,7 +94,7 @@ public class FormDispatchAsync {
         currentDispatchingAction = null;
     }
 
-    public long getCurrentDispatchingRequestIndex() {
+    public int getCurrentDispatchingRequestIndex() {
         return currentDispatchingAction != null ? currentDispatchingAction.getRequestIndex() : -1;
     }
 }

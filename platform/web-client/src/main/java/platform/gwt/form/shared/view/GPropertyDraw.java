@@ -208,6 +208,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     @Override
+    public int hashCode() {
+        return ID;
+    }
+
+    @Override
     public String toString() {
         return "GPropertyDraw{" +
                 ", sID='" + sID + '\'' +

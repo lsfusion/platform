@@ -6,6 +6,7 @@ import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GObject;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 
 import java.util.*;
 
@@ -69,9 +70,12 @@ public class GTreeTableTree {
         for (int i = 0; i < keys.size(); i++) {
             GGroupObjectValue key = keys.get(i);
 
-            GGroupObjectValue parentPath = new GGroupObjectValue(key);
-            parentPath.removeAll(group.objects);
-            parentPath.putAll(parents.get(i));
+            GGroupObjectValueBuilder parentPathBuilder =
+                    new GGroupObjectValueBuilder(key)
+                            .removeAll(group.objects)
+                            .putAll(parents.get(i));
+
+            GGroupObjectValue parentPath = parentPathBuilder.toGroupObjectValue();
 
             if (childTree.containsKey(parentPath)) {
                 childTree.get(parentPath).add(key);
@@ -89,9 +93,10 @@ public class GTreeTableTree {
     }
 
     void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree) {
-        final List<GGroupObjectValue> syncChilds = tree.containsKey(parent.getKey())
-                ? tree.get(parent.getKey())
-                : new ArrayList<GGroupObjectValue>();
+        List<GGroupObjectValue> syncChilds = tree.get(parent.getKey());
+        if (syncChilds == null) {
+            syncChilds = new ArrayList<GGroupObjectValue>();
+        }
 
         if (hasOnlyExpandningNodeAsChild(parent)) {
             parent.getChild(0).removeFromParent();

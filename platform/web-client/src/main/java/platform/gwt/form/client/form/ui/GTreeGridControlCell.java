@@ -3,7 +3,7 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import platform.gwt.base.client.GwtClientUtils;
-import platform.gwt.base.client.JSNHelper;
+import platform.gwt.base.client.jsni.JSNIHelper;
 import platform.gwt.cellview.client.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
@@ -31,7 +31,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         if (DBLCLICK.equals(event.getType())) {
             changeTreeState(context, value, event);
         } else if (CLICK.equals(event.getType())) {
-            String attrID = JSNHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
+            String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
             if (attrID != null) {
                 changeTreeState(context, value, event);
             }

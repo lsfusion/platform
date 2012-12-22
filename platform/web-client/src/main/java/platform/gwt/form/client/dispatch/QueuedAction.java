@@ -41,7 +41,7 @@ public class QueuedAction<R extends Result> {
         }
     }
 
-    public long getRequestIndex() {
+    public int getRequestIndex() {
         return action instanceof FormRequestIndexCountingAction ? ((FormRequestIndexCountingAction) action).requestIndex : -1;
     }
 }

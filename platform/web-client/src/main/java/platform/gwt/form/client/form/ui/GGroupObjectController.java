@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.GwtClientUtils;
-import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
 import platform.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
@@ -22,6 +21,8 @@ import platform.gwt.form.shared.view.reader.GForegroundReader;
 import platform.gwt.form.shared.view.reader.GPropertyReader;
 
 import java.util.*;
+
+import static platform.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     public GGroupObject groupObject;
@@ -177,7 +178,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                     addProperty(property, fc.panelProperties.contains(property));
 
                     if (property.columnGroupObjects != null &&
-                            (fc.classViews.containsKey(groupObject) || GwtSharedUtils.containsAny(changedGroups, property.columnGroupObjects))) {
+                            (fc.classViews.containsKey(groupObject) || containsAny(changedGroups, property.columnGroupObjects))) {
                         LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<GGroupObject, List<GGroupObjectValue>>();
                         for (GGroupObject columnGroupObject : property.columnGroupObjects) {
                             List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
@@ -374,7 +375,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         if (grid != null) {
             result = grid.getTable().getCurrentKey();
         }
-        return result == null ? new GGroupObjectValue() : result;
+        return result == null ? GGroupObjectValue.EMPTY : result;
     }
 
     @Override

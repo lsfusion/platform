@@ -259,7 +259,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public GGroupObjectValue getCurrentKey() {
-        return selectedRecord == null ? new GGroupObjectValue() : selectedRecord.getKey();
+        return selectedRecord == null ? GGroupObjectValue.EMPTY : selectedRecord.getKey();
     }
 
     public GPropertyDraw getCurrentProperty() {

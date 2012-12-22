@@ -1,11 +1,11 @@
-package platform.gwt.base.client;
+package platform.gwt.base.client.jsni;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 
-public class JSNHelper {
+public class JSNIHelper {
 
-    private JSNHelper() {
+    private JSNIHelper() {
     }
 
     public static native JavaScriptObject createObject() /*-{

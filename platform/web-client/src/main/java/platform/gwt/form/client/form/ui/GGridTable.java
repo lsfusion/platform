@@ -4,6 +4,8 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
+import platform.gwt.base.client.jsni.Function;
+import platform.gwt.base.client.jsni.NativeHashMap;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
@@ -12,27 +14,31 @@ import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.CellPreviewEvent;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import platform.gwt.form.shared.view.classes.GObjectType;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.*;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.util.Collections.singleton;
-import static platform.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
     private ArrayList<GGroupObjectValue> columnKeysList = new ArrayList<GGroupObjectValue>();
-    private Map<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>> columnsMap = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>>();
+
+    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>>();
 
     private ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
 
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<GGroupObjectValue>();
 
-    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
-    private Set<GPropertyDraw> updatedProperties = new HashSet<GPropertyDraw>();
-    private Map<GPropertyDraw, List<GGroupObjectValue>> columnKeys = new HashMap<GPropertyDraw, List<GGroupObjectValue>>();
+    private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>>();
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private NativeHashMap<GPropertyDraw, Boolean> updatedProperties = new NativeHashMap<GPropertyDraw, Boolean>();
+    private NativeHashMap<GPropertyDraw, List<GGroupObjectValue>> columnKeys = new NativeHashMap<GPropertyDraw, List<GGroupObjectValue>>();
 
     private boolean rowsUpdated = false;
     private boolean columnsUpdated = false;
@@ -164,36 +170,42 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             }
 
             rowHeight = 0.0;
-            Map<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, GridColumn>>();
+            NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
                 GGroupObjectValue columnKey = columnKeysList.get(i);
 
-                GridColumn column = removeFromDoubleMap(columnsMap, property, columnKey);
+                GridColumn column = removeFromColumnsMap(columnsMap, property, columnKey);
                 if (column != null) {
                     moveGridColumn(column, i);
                 } else {
                     column = insertGridColumn(i);
                     setColumnWidth(column, property.getMinimumWidth());
                     // если колонка появилась через showif без обновления данных
-                    if (!updatedProperties.contains(property)) {
-                        updatedProperties.add(property);
+                    if (!updatedProperties.containsKey(property)) {
+                        updatedProperties.put(property, TRUE);
                     }
                 }
 
                 GGridPropertyTableHeader header = headers.get(i);
                 header.setCaption(columnCaptions.get(i));
 
-                putToDoubleMap(newColumnsMap, property, columnKey, column);
+                putToColumnsMap(newColumnsMap, property, columnKey, column);
 
                 rowHeight = Math.max(rowHeight, columnProperties.get(i).getMinimumPixelHeight());
             }
 
-            for (Map<GGroupObjectValue, GridColumn> columnsCollection : columnsMap.values()) {
-                for (GridColumn column : columnsCollection.values()) {
-                    removeGridColumn(column);
+            columnsMap.foreachValue(new Function<NativeHashMap<GGroupObjectValue, GridColumn>>() {
+                @Override
+                public void apply(NativeHashMap<GGroupObjectValue, GridColumn> columnsCollection) {
+                    columnsCollection.foreachValue(new Function<GridColumn>() {
+                        @Override
+                        public void apply(GridColumn column) {
+                            removeGridColumn(column);
+                        }
+                    });
                 }
-            }
+            });
 
             columnsMap = newColumnsMap;
 
@@ -206,45 +218,65 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
+    public static void putToColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column, GridColumn value) {
+        NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
+        if (rowMap == null) {
+            columnsMap.put(row, rowMap = new NativeHashMap<GGroupObjectValue, GridColumn>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public static GridColumn removeFromColumnsMap(NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap, GPropertyDraw row, GGroupObjectValue column) {
+        GridColumn result = null;
+        NativeHashMap<GGroupObjectValue, GridColumn> rowMap = columnsMap.get(row);
+        if (rowMap != null) {
+            result = rowMap.remove(column);
+        }
+        return result;
+    }
+
     private void updateDataImpl() {
         if (dataUpdated) {
-            Set<Column> updatedColumns = new HashSet<Column>();
-            for (GridDataRecord record : currentRecords) {
-                GGroupObjectValue rowKey = record.getKey();
-                for (GPropertyDraw property : updatedProperties) {
-                    List<GGroupObjectValue> propColumnKeys = columnKeys.get(property);
-                    if (propColumnKeys == null) {
-                        propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+            final Set<Column> updatedColumns = new HashSet<Column>();
+            for (final GridDataRecord record : currentRecords) {
+                final GGroupObjectValue rowKey = record.getKey();
+                updatedProperties.foreachKey(new Function<GPropertyDraw>() {
+                    @Override
+                    public void apply(GPropertyDraw property) {
+                        List<GGroupObjectValue> propColumnKeys = columnKeys.get(property);
+                        if (propColumnKeys == null) {
+                            propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                        }
+                        for (GGroupObjectValue columnKey : propColumnKeys) {
+                            NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
+                            GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
+                            // column == null, когда свойство скрыто через showif
+                            if (column != null) {
+                                updatedColumns.add(column);
+
+                                GGroupObjectValue fullKey = columnKey.isEmpty() ? rowKey : new GGroupObjectValueBuilder(rowKey, columnKey).toGroupObjectValue();
+
+                                Object value = values.get(property).get(fullKey);
+
+                                Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
+                                Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
+
+                                Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
+                                Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
+
+                                record.setValue(column.columnID, value);
+                                record.setBackground(column.columnID, background);
+                                record.setForeground(column.columnID, foreground);
+                            }
+                        }
                     }
-                    updateDI1(updatedColumns, record, rowKey, property, propColumnKeys);
-                }
+                });
             }
 
             redrawColumns(updatedColumns);
 
             updatedProperties.clear();
             dataUpdated = false;
-        }
-    }
-
-    private void updateDI1(Set<Column> updatedColumns, GridDataRecord record, GGroupObjectValue rowKey, GPropertyDraw property, List<GGroupObjectValue> propColumnKeys) {
-        for (GGroupObjectValue columnKey : propColumnKeys) {
-            HashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
-            GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
-            // column == null, когда свойство скрыто через showif
-            if (column != null) {
-                updatedColumns.add(column);
-
-                GGroupObjectValue fullKey = columnKey.isEmpty() ? rowKey : new GGroupObjectValue(rowKey, columnKey);
-
-                Object value = values.get(property).get(fullKey);
-                Object background = cellBackgroundValues.containsKey(property) ? cellBackgroundValues.get(property).get(fullKey) : null;
-                Object foreground = cellForegroundValues.containsKey(property) ? cellForegroundValues.get(property).get(fullKey) : null;
-
-                record.setValue(column.columnID, value);
-                record.setBackground(column.columnID, background);
-                record.setForeground(column.columnID, foreground);
-            }
         }
     }
 
@@ -342,10 +374,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
             if (updateKeys) {
-                propValues = override(values.get(property), propValues);
+                values.get(property).putAll(propValues);
+            } else {
+                NativeHashMap<GGroupObjectValue, Object> pvalues = new NativeHashMap<GGroupObjectValue, Object>();
+                pvalues.putAll(propValues);
+                values.put(property, pvalues);
             }
-            values.put(property, propValues);
-            updatedProperties.add(property);
+            updatedProperties.put(property, TRUE);
 
             dataUpdated = true;
         }
@@ -367,14 +402,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
-        updatedProperties.add(propertyDraw);
+        updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
 
     @Override
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updateCellForegroundValues(propertyDraw, values);
-        updatedProperties.add(propertyDraw);
+        updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
     }
 

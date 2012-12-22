@@ -12,8 +12,8 @@ public class GridDataRecord {
     private String rowForeground;
 
     private HashMap<Object, Object> values;
-    private HashMap<Object, String> backgrounds;
-    private HashMap<Object, String> foregrounds;
+    private HashMap<Integer, String> backgrounds;
+    private HashMap<Integer, String> foregrounds;
 
     public GridDataRecord(GGroupObjectValue key) {
         this(-1, key);
@@ -91,16 +91,16 @@ public class GridDataRecord {
         return values;
     }
 
-    private HashMap<Object, String> createBackgrounds() {
+    private HashMap<Integer, String> createBackgrounds() {
         if (backgrounds == null) {
-            backgrounds = new HashMap<Object, String>();
+            backgrounds = new HashMap<Integer, String>();
         }
         return backgrounds;
     }
 
-    private HashMap<Object, String> createForegrounds() {
+    private HashMap<Integer, String> createForegrounds() {
         if (foregrounds == null) {
-            foregrounds = new HashMap<Object, String>();
+            foregrounds = new HashMap<Integer, String>();
         }
         return foregrounds;
     }
@@ -113,12 +113,8 @@ public class GridDataRecord {
         if (values != null) {
             values.clear();
         }
-        if (backgrounds != null) {
-            backgrounds.clear();
-        }
-        if (foregrounds != null) {
-            foregrounds.clear();
-        }
+        backgrounds = null;
+        foregrounds = null;
     }
 
     @Override

@@ -6,7 +6,12 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import platform.gwt.cellview.client.AbstractDataGridBuilder;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
+import platform.gwt.cellview.client.Range;
 import platform.gwt.cellview.client.cell.Cell;
+
+import java.util.List;
+
+import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 /**
  * Based on platform.gwt.cellview.client.DefaultDataGridBuilder
@@ -20,6 +25,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String firstColumnStyle;
     private final String lastColumnStyle;
 
+    private Double cellHeight;
+    private boolean updateCellHeight;
+
     public GPropertyTableBuilder(DataGrid table) {
         super(table);
 
@@ -32,6 +40,19 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         oddCellStyle = " " + style.dataGridOddRowCell();
         firstColumnStyle = " " + style.dataGridFirstColumn();
         lastColumnStyle = " " + style.dataGridLastColumn();
+    }
+
+    @Override
+    public void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
+        Double newCellHeight = getCellPixelHeight();
+        if (!nullEquals(newCellHeight, cellHeight)) {
+            updateCellHeight = true;
+            cellHeight = newCellHeight;
+        } else {
+            updateCellHeight = false;
+        }
+
+        super.update(tbodyElement, values, updateRanges, columnsToRedraw, columnsChanged);
     }
 
     @Override
@@ -71,21 +92,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 td.setVAlign(vAlign.getVerticalAlignString());
             }
 
-            Double height = getCellPixelHeight();
-            if (height != null) {
-                td.getStyle().setHeight(height, Style.Unit.PX);
-                td.getStyle().setLineHeight(height, Style.Unit.PX);
-            }
-
-            String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
-            if (backgroundColor != null) {
-                td.getStyle().setBackgroundColor(backgroundColor);
-            }
-
-            String foregroundColor = getForeground(rowValue, rowIndex, columnIndex);
-            if (foregroundColor != null) {
-                td.getStyle().setColor(foregroundColor);
-            }
+            updateTD(rowIndex, rowValue, td, columnIndex, true);
 
             // Add the inner div.
             DivElement div = Document.get().createDivElement();
@@ -98,31 +105,49 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    protected void updateRowImpl(int rowIndex, T rowValue, TableRowElement tr, int[] columnsToRedraw) {
+    protected void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         int columnCount = cellTable.getColumnCount();
 
         assert columnCount == tr.getCells().getLength();
 
         if (columnsToRedraw == null) {
-            for (int columnIndex = 0; columnIndex < columnCount; ++columnIndex) {
-                updateCellImpl(rowIndex, rowValue, tr, columnIndex);
+            if (columnCount > 0) {
+                //td.nextSibling is faster than cells[index]
+                //http://jsperf.com/nextsibling-vs-childnodes
+                TableCellElement td = tr.getFirstChild().cast();
+                updateCellImpl(rowIndex, rowValue, td, 0);
+
+                int columnIndex = 1;
+                while (columnIndex < columnCount) {
+                    td = td.getNextSibling().cast();
+                    updateCellImpl(rowIndex, rowValue, td, columnIndex);
+                    ++columnIndex;
+                }
             }
         } else {
+            NodeList<TableCellElement> cells = tr.getCells();
             for (int columnIndex : columnsToRedraw) {
-                updateCellImpl(rowIndex, rowValue, tr, columnIndex);
+                TableCellElement td = cells.getItem(columnIndex);
+                updateCellImpl(rowIndex, rowValue, td, columnIndex);
             }
         }
     }
 
-    private void updateCellImpl(int rowIndex, T rowValue, TableRowElement tr, int columnIndex) {
+    private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        TableCellElement td = tr.getCells().getItem(columnIndex);
+        updateTD(rowIndex, rowValue, td, columnIndex, updateCellHeight);
 
-        Double height = getCellPixelHeight();
-        if (height != null) {
-            td.getStyle().setHeight(height, Style.Unit.PX);
-            td.getStyle().setLineHeight(height, Style.Unit.PX);
+        DivElement div = td.getFirstChild().cast();
+
+        // Render the cell into the div.
+        updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
+    }
+
+    private void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
+        if (updateCellHeight && cellHeight != null) {
+            td.getStyle().setHeight(cellHeight, Style.Unit.PX);
+            td.getStyle().setLineHeight(cellHeight, Style.Unit.PX);
         }
 
         String backgroundColor = getBackground(rowValue, rowIndex, columnIndex);
@@ -134,11 +159,6 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if (foregroundColor != null) {
             td.getStyle().setColor(foregroundColor);
         }
-
-        DivElement div = td.getFirstChild().cast();
-
-        // Render the cell into the div.
-        updateCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
     }
 
     public abstract String getBackground(T rowValue, int row, int column);

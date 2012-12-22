@@ -17,6 +17,7 @@ package platform.gwt.cellview.client;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.dom.client.TableSectionElement;
 import platform.gwt.cellview.client.cell.Cell.Context;
 import platform.gwt.cellview.client.cell.HasCell;
 
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public interface CellTableBuilder<T> {
 
-    void update(List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged);
+    void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged);
 
     /**
      * Return the column containing an element.

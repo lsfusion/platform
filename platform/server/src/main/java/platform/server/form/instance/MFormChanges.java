@@ -26,7 +26,7 @@ public class MFormChanges {
 
     public MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties = MapFact.mExclMap();
 
-    public MExclSet<PropertyReaderInstance> panelProperties = SetFact.mExclSet();
+    public MExclSet<PropertyDrawInstance> panelProperties = SetFact.mExclSet();
     public MExclSet<PropertyDrawInstance> dropProperties = SetFact.mExclSet();
 
     public FormChanges immutable() {

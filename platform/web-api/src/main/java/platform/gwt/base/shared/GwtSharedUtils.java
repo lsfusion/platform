@@ -3,6 +3,7 @@ package platform.gwt.base.shared;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
+import platform.gwt.base.client.jsni.NativeHashMap;
 
 import java.util.*;
 
@@ -84,6 +85,14 @@ public class GwtSharedUtils {
         HashMap<C, V> rowMap = doubleMap.get(row);
         if (rowMap == null) {
             doubleMap.put(row, rowMap = new HashMap<C, V>());
+        }
+        rowMap.put(column, value);
+    }
+
+    public static <R, C, V> void putToDoubleNativeMap(NativeHashMap<R, NativeHashMap<C, V>> doubleMap, R row, C column, V value) {
+        NativeHashMap<C, V> rowMap = doubleMap.get(row);
+        if (rowMap == null) {
+            doubleMap.put(row, rowMap = new NativeHashMap<C, V>());
         }
         rowMap.put(column, value);
     }

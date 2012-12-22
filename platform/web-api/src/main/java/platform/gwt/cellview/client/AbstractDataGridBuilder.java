@@ -17,7 +17,7 @@ package platform.gwt.cellview.client;
 
 import com.google.gwt.dom.builder.shared.ElementBuilderBase;
 import com.google.gwt.dom.client.*;
-import platform.gwt.base.client.JSNHelper;
+import platform.gwt.base.client.jsni.JSNIHelper;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.Cell.Context;
 import platform.gwt.cellview.client.cell.HasCell;
@@ -54,8 +54,6 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
     private final Map<String, HasCell<T, ?>> idToCellMap = new HashMap<String, HasCell<T, ?>>();
     private final Map<HasCell<T, ?>, String> cellToIdMap = new HashMap<HasCell<T, ?>, String>();
 
-    private TableSectionElement tbodyElement;
-
     /**
      * Construct a new table builder.
      *
@@ -63,7 +61,6 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
      */
     public AbstractDataGridBuilder(DataGrid<T> cellTable) {
         this.cellTable = cellTable;
-        tbodyElement = cellTable.getTableBodyElement();
     }
 
     /**
@@ -115,56 +112,63 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
     }
 
     @Override
-    public final void update(List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
+    public void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
         //assertion that updateRanges is sorted
 
         int valCount = values.size();
 
-        NodeList<TableRowElement> rows = tbodyElement.getRows();
-        int rowCount = rows.getLength();
+        int rowCount = tbodyElement.getChildCount();
         if (rowCount > valCount) {
             for (int i = rowCount - 1; i >= valCount; --i) {
-                TableRowElement rowElement = rows.getItem(i);
-                tbodyElement.removeChild(rowElement);
+                tbodyElement.deleteRow(i);
             }
             rowCount = valCount;
         }
 
         if (columnsChanged) {
             //rebuild rows if columns have been changed
-            for (int i = 0; i < rowCount; ++i) {
-                rebuildRow(i, values.get(i));
+            if (rowCount > 0) {
+                TableRowElement tr = tbodyElement.getFirstChild().cast();
+                rebuildRow(0, values.get(0), tr);
+                for (int i = 1; i < rowCount; ++i) {
+                    tr = tr.getNextSibling().cast();
+                    rebuildRow(i, values.get(i), tr);
+                }
             }
         } else {
             //update changed rows
+            NodeList<TableRowElement> rows = tbodyElement.getRows();
             for (Range range : updateRanges) {
                 if (range.start > rowCount) {
                     break;
                 }
                 int end = min(rowCount, range.end);
-                for (int i = range.start; i < end; ++i) {
-                    updateRow(i, values.get(i), columnsToRedraw);
+
+                int i = range.start;
+                if (i < end) {
+                    TableRowElement tr = rows.getItem(i);
+                    updateRow(i, values.get(i), columnsToRedraw, tr);
+                    for (++i; i < end; ++i) {
+                        tr = tr.getNextSibling().cast();
+                        updateRow(i, values.get(i), columnsToRedraw, tr);
+                    }
                 }
             }
         }
 
         //build new rows
         for (int i = rowCount; i < valCount; ++i) {
-            buildRow(values.get(i));
+            buildRow(tbodyElement, values.get(i), i);
         }
     }
 
-    private void rebuildRow(int rowIndex, T rowValue) {
-        TableRowElement rowElement = tbodyElement.getRows().getItem(rowIndex);
-        removeAllChildren(rowElement);
-
-        buildRowImpl(rowIndex, rowValue, rowElement);
+    private void rebuildRow(int rowIndex, T rowValue, TableRowElement tr) {
+        removeAllChildren(tr);
+        buildRowImpl(rowIndex, rowValue, tr);
     }
 
-    private void buildRow(T rowValue) {
-        int rowIndex = tbodyElement.getRows().getLength();
-
-        TableRowElement rowElement = tbodyElement.insertRow(rowIndex);
+    private void buildRow(TableSectionElement tbodyElement, T rowValue, int rowIndex) {
+        TableRowElement rowElement = tbodyElement.insertRow(-1);
         rowElement.setAttribute(ROW_ATTRIBUTE, String.valueOf(rowIndex));
 
         buildRowImpl(rowIndex, rowValue, rowElement);
@@ -185,13 +189,13 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
      * @param rowIndex the absolute row index
      * @param rowValue    the value for the row to render
      * @param columnsToRedraw
+     * @param tr
      */
-    private void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw) {
-        TableRowElement rowElement = tbodyElement.getRows().getItem(rowIndex);
-        updateRowImpl(rowIndex, rowValue, rowElement, columnsToRedraw);
+    private void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
+        updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr);
     }
 
-    protected abstract void updateRowImpl(int rowIndex, T rowValue, TableRowElement rowElement, int[] columnsToRedraw);
+    protected abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement);
 
     /**
      * Render the cell into an {@link ElementBuilderBase}.
@@ -224,7 +228,7 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
     protected final <C> void updateCell(DivElement cellParent, Context context, HasCell<T, C> column, T rowValue) {
         Cell<C> cell = column.getCell();
 
-        String oldCellType = JSNHelper.getAttributeOrNull(cellParent, CELL_TYPE_ATTRIBUTE);
+        String oldCellType = JSNIHelper.getAttributeOrNull(cellParent, CELL_TYPE_ATTRIBUTE);
         String newCellType = cell.getCellType(context);
         if (oldCellType != null || newCellType != null) {
             //if types doesn't match, than don't update - render instead
@@ -251,7 +255,7 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
         if (elem == null) {
             return null;
         }
-        return JSNHelper.getAttributeOrNull(elem, CELL_ATTRIBUTE);
+        return JSNIHelper.getAttributeOrNull(elem, CELL_ATTRIBUTE);
     }
 
     /**

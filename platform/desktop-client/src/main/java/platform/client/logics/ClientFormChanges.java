@@ -25,7 +25,7 @@ public class ClientFormChanges {
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
     public final Set<ClientPropertyDraw> updateProperties; // пришедшие значения на обновление, а не изменение
     
-    public final Set<ClientPropertyReader> panelProperties;
+    public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
@@ -46,13 +46,6 @@ public class ClientFormChanges {
         gridObjects = readGridObjectsMap(inStream, clientForm);
         parentObjects = readGridObjectsMap(inStream, clientForm);
 
-        //DropProperties
-        panelProperties = new HashSet<ClientPropertyReader>();
-        count = inStream.readInt();
-        for (int i = 0; i < count; i++) {
-            panelProperties.add(deserializePropertyReader(clientForm, inStream));
-        }
-
         properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -69,6 +62,13 @@ public class ClientFormChanges {
         }
         
         updateProperties = new HashSet<ClientPropertyDraw>();
+
+        //PanelProperties
+        panelProperties = new HashSet<ClientPropertyDraw>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            panelProperties.add(clientForm.getProperty(inStream.readInt()));
+        }
 
         //DropProperties
         dropProperties = new HashSet<ClientPropertyDraw>();

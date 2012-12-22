@@ -11,7 +11,6 @@ import platform.gwt.form.shared.view.reader.GPropertyReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 public class GFormChanges {
     public final HashMap<GGroupObject, GClassViewType> classViews = new HashMap<GGroupObject, GClassViewType>();
@@ -21,58 +20,63 @@ public class GFormChanges {
     public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>>();
     public final HashSet<GPropertyReader> panelProperties = new HashSet<GPropertyReader>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<GPropertyDraw>();
+
     public final HashSet<GPropertyDraw> updateProperties = new HashSet<GPropertyDraw>();
 
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();
-        
-        for (Map.Entry<Integer, GClassViewType> e : dto.classViews.entrySet()) {
-            remapped.classViews.put(form.getGroupObject(e.getKey()), e.getValue());
-        }
-        
-        for (Map.Entry<Integer, ArrayList<GGroupObjectValue>> e : dto.gridObjects.entrySet()) {
-            remapped.gridObjects.put(form.getGroupObject(e.getKey()), e.getValue());
+
+        for (int i = 0; i < dto.classViewsGroupIds.length; i++) {
+            remapped.classViews.put(form.getGroupObject(dto.classViewsGroupIds[i]), dto.classViews[i]);
         }
 
-        for (Map.Entry<Integer, ArrayList<GGroupObjectValue>> e : dto.parentObjects.entrySet()) {
-            remapped.parentObjects.put(form.getGroupObject(e.getKey()), e.getValue());
+        for (int i = 0; i < dto.objectsGroupIds.length; i++) {
+            remapped.objects.put(form.getGroupObject(dto.objectsGroupIds[i]), dto.objects[i]);
         }
 
-        for (Map.Entry<GPropertyReaderDTO, HashMap<GGroupObjectValue, Object>> e : dto.properties.entrySet()) {
-            remapped.properties.put(remapPropertyReader(form, e.getKey()), e.getValue());
+        for (int i = 0; i < dto.gridObjectsGroupIds.length; i++) {
+            remapped.gridObjects.put(form.getGroupObject(dto.gridObjectsGroupIds[i]), dto.gridObjects[i]);
         }
 
-        for (GPropertyReaderDTO property : dto.panelProperties) {
-            remapped.panelProperties.add(remapPropertyReader(form, property));
+        for (int i = 0; i < dto.parentObjectsGroupIds.length; i++) {
+            remapped.parentObjects.put(form.getGroupObject(dto.parentObjectsGroupIds[i]), dto.parentObjects[i]);
         }
 
-        for (Integer propertyID : dto.dropProperties) {
+        for (int i = 0; i < dto.properties.length; i++) {
+            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), dto.propertiesValues[i]);
+        }
+
+        for (int propertyId : dto.panelPropertiesIds) {
+            remapped.panelProperties.add(form.getProperty(propertyId));
+        }
+
+        for (Integer propertyID : dto.dropPropertiesIds) {
             remapped.dropProperties.add(form.getProperty(propertyID));
-        }
-
-        for (Map.Entry<Integer, GGroupObjectValue> e : dto.objects.entrySet()) {
-            remapped.objects.put(form.getGroupObject(e.getKey()), e.getValue());
         }
 
         return remapped;
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {
-        switch (readerDTO.type) {
+        return remapPropertyReader(form, readerDTO.type, readerDTO.readerID);
+    }
+
+    private static GPropertyReader remapPropertyReader(GForm form, int typeId, int readerId) {
+        switch (typeId) {
             case GPropertyReadType.DRAW:
-                return form.getProperty(readerDTO.readerID);
+                return form.getProperty(readerId);
             case GPropertyReadType.CAPTION:
-                return form.getProperty(readerDTO.readerID).captionReader;
+                return form.getProperty(readerId).captionReader;
             case GPropertyReadType.CELL_BACKGROUND:
-                return form.getProperty(readerDTO.readerID).backgroundReader;
+                return form.getProperty(readerId).backgroundReader;
             case GPropertyReadType.CELL_FOREGROUND:
-                return form.getProperty(readerDTO.readerID).foregroundReader;
+                return form.getProperty(readerId).foregroundReader;
             case GPropertyReadType.FOOTER:
-                return form.getProperty(readerDTO.readerID).footerReader;
+                return form.getProperty(readerId).footerReader;
             case GPropertyReadType.ROW_BACKGROUND:
-                return form.getGroupObject(readerDTO.readerID).rowBackgroundReader;
+                return form.getGroupObject(readerId).rowBackgroundReader;
             case GPropertyReadType.ROW_FOREGROUND:
-                return form.getGroupObject(readerDTO.readerID).rowForegroundReader;
+                return form.getGroupObject(readerId).rowForegroundReader;
             default:
                 return null;
         }

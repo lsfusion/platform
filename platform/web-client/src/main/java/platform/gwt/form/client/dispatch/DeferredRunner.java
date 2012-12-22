@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DeferredRunner {
-    public final int DEFAULT_DELAY = 25;
+    public final int DEFAULT_DELAY = 50;
 
     private static DeferredRunner instance;
 
