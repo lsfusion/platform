@@ -12,14 +12,13 @@ CONSTRAINT supplierScheduleOrder(scheduleOrder) AND NOT isCompanyLegalEntity(sup
 CONSTRAINT customerScheduleOrder(scheduleOrder) AND NOT isCustomerLegalEntity(customerScheduleOrder(scheduleOrder))
     CHECKED BY customerScheduleOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
 
-//CONSTRAINT supplier() AND NOT isSupplierLegalEntity(supplier())
-//    CHECKED BY supplier MESSAGE 'Выбрана в качестве поставщика организация, не являющаяся поставщиком';
-//CONSTRAINT customer() AND NOT isCompanyLegalEntity(customer())
-//    CHECKED BY customer MESSAGE 'Выбрана в качестве покупателя организация, не являющаяся компанией';
-
+CONSTRAINT supplier() AND NOT isCompanyLegalEntity(supplier())
+    CHECKED BY supplier MESSAGE 'Выбрана в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customer() AND NOT isCustomerLegalEntity(customer())
+    CHECKED BY customer MESSAGE 'Выбрана в качестве покупателя организация, не являющаяся покупателем';
 
 EXTEND FORM legalEntity
-    PROPERTIES(s, l) addScheduleOrderSupplierCustomer TODRAW ss
+    PROPERTIES(s, l) addScheduleOrderSupplierCustomer TODRAW ss SHOWIF isCustomerLegalEntity(l)
 ;
 
 
