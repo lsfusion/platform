@@ -26,7 +26,7 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, supplier, sku, supplierStock);
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, supplierStock);
 @deriveDocumentDetailVAT (userInvoice, retail, date, sku, supplierStock);
-@deriveDocumentDetailValueVATPrefix(userInvoice, retail);
+@deriveDocumentDetailValueVAT(userInvoice, retail);
 
 skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;

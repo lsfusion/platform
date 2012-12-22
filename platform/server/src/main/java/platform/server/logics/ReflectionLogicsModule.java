@@ -329,7 +329,7 @@ public class ReflectionLogicsModule<T extends BusinessLogics<T>> extends LogicsM
 
         quantityTableColumn = addDProp(BL.LM.baseGroup, "quantityTableColumn", getString("logics.tables.column.variety.quantity"), IntegerClass.instance, tableColumn);
         notNullQuantityTableColumn = addDProp(BL.LM.baseGroup, "notNullQuantityTableColumn", getString("logics.tables.column.notnull.quantity"), IntegerClass.instance, tableColumn);
-        perсentNotNullTableColumn = addDProp(BL.LM.baseGroup, "perсentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
+        perсentNotNullTableColumn = addDProp(BL.LM.baseGroup, "percentNotNullTableColumn", getString("logics.tables.column.notnull.per.cent"), NumericClass.get(6, 2), tableColumn);
 
         recalculateAggregationTableColumn = addAProp(baseGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
 

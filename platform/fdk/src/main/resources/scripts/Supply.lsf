@@ -2,7 +2,7 @@ MODULE Supply;
 
 REQUIRE System, Stock, Tax;
 
-CLASS ABSTRACT supplyLedger 'Покупка товара' : skuLedger;
+CLASS ABSTRACT supplyLedger 'Покупка товара';
 TABLE supplyLedger(supplyLedger);
 
 dateTimeSupplyLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (supplyLedger) PERSISTENT INDEXED;

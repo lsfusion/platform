@@ -229,25 +229,52 @@ FORM rangeDialog 'Шкала'
 
 // ----------------------------------------- Макросы по объявлению налогов в документах ---------------------------- //
 
-META defineDocumentDetailVATCustom(detail, countryProp)
-    VAT###detail(detail) = DATA range (detail);
-    numberVAT###detail 'НДС, номер' (detail) = numberRange(VAT###detail(detail));
-    valueVAT###detail 'НДС, %' (detail) = valueRateRangeDate(VAT###detail(detail), date###detail(detail));
+// ---------- с префиксом
+META defineDocumentDetailVATCustom(detail, countryProp, prefix, caption)
+    prefix###VAT###detail(detail) = DATA range (detail);
+    number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix##VAT###detail(detail));
+    value###prefix###VAT###detail 'НДС, %'###caption (detail) = DATA NUMERIC[10,5] (detail);
 
-    CONSTRAINT taxRange(VAT###detail(detail)) != tax.taxVAT OR
-               countryRange(VAT###detail(detail)) != countryProp###detail(detail)
-               CHECKED BY VAT###detail
+    CONSTRAINT taxRange(prefix###VAT###detail(detail)) != tax.taxVAT OR
+               countryRange(prefix###VAT###detail(detail)) != countryProp###detail(detail)
+               CHECKED BY prefix###VAT###detail
                MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 END
-META defineDocumentAbstractDetailVATCustom(detail)
-    VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
-    numberVAT###detail 'НДС, номер' (detail) = numberRange(VAT###detail(detail));
-    valueVAT###detail 'НДС, %' (detail) = valueRateRangeDate(VAT###detail(detail), date###detail(detail));
+
+META defineDocumentAbstractDetailVATCustom(detail, prefix, caption)
+    prefix###VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
+    number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
+    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail) PERSISTENT;
 END
+
+META defineDocumentInterfaceDetailVATCustom(detail, countryProp, prefix, caption)
+    @defineDocumentAbstractDetailVATCustom(detail, prefix, caption);
+    @defineDocumentDetailVATCustom(user###detail, countryProp, prefix, caption);
+    prefix###VAT###detail(detail) += prefix###VAT###user###detail(detail);
+    value###prefix###VAT###detail(detail) += value###prefix###VAT###user###detail(detail);
+END
+
+META defineDocumentDetailVAT(object, countryProp, prefix, caption)
+    @defineDocumentDetailVATCustom(object##Detail, countryProp, prefix, caption);
+END
+META defineDocumentAbstractDetailVAT(object, prefix, caption)
+    @defineDocumentAbstractDetailVATCustom(object##Detail, prefix, caption);
+END
+META defineDocumentInterfaceDetailVAT(object, countryProp, prefix, caption)
+    @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp, prefix, caption);
+END
+
+// ---------- без префикса
+META defineDocumentDetailVATCustom(detail, countryProp)
+    @defineDocumentDetailVATCustom(detail, countryProp, , );
+END
+
+META defineDocumentAbstractDetailVATCustom(detail)
+    @defineDocumentAbstractDetailVATCustom(detail, , );
+END
+
 META defineDocumentInterfaceDetailVATCustom(detail, countryProp)
-    @defineDocumentAbstractDetailVATCustom(detail);
-    @defineDocumentDetailVATCustom(user###detail, countryProp);
-    VAT###detail(detail) += VAT###user###detail(detail);
+    @defineDocumentInterfaceDetailVATCustom(detail, countryProp, , );
 END
 
 META defineDocumentDetailVAT(object, countryProp)
@@ -260,6 +287,19 @@ META defineDocumentInterfaceDetailVAT(object, countryProp)
     @defineDocumentInterfaceDetailVATCustom(object##Detail, countryProp);
 END
 
+// ------------ derive
+META deriveDocumentDetailValueVATCustom(detail, prefix)
+    value###prefix###VAT###detail (detail)  <- valueRateRangeDate(prefix###VAT###detail(detail), date###detail(detail))
+                    WHEN CHANGED(prefix###VAT###detail(detail)) OR CHANGED (date###detail(detail));
+END
+META deriveDocumentDetailValueVAT(object, prefix)
+    @deriveDocumentDetailValueVATCustom(object##Detail, prefix);
+END
+META deriveDocumentDetailValueVAT(object)
+    @deriveDocumentDetailValueVAT(object, );
+END
+
+// ---------- Суммы
 META defineDocumentDetailVATSumCustom(detail, prefix, currencyProp)
     VATSum###detail 'Сумма НДС' (detail) = roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
     prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
@@ -283,45 +323,6 @@ META defineDocumentInterfaceDetailVATSum(object)
     @defineDocumentInterfaceDetailVATSum(object, currency);
 END
 
-META defineDocumentDetailVATPrefixCustom(detail, prefix, countryProp, caption)
-    prefix###VAT###detail(detail) = DATA range (detail);
-    number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix##VAT###detail(detail));
-    value###prefix###VAT###detail 'НДС, %'###caption (detail) = DATA NUMERIC[10,5] (detail);
-
-    CONSTRAINT taxRange(prefix###VAT###detail(detail)) != tax.taxVAT OR
-               countryRange(prefix###VAT###detail(detail)) != countryProp###detail(detail)
-               CHECKED BY prefix###VAT###detail
-               MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
-END
-META defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, caption)
-    prefix###VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
-    number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
-    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail) PERSISTENT;
-END
-META defineDocumentInterfaceDetailVATPrefixCustom(detail, prefix, countryProp, caption)
-    @defineDocumentAbstractDetailVATPrefixCustom(detail, prefix, caption);
-    @defineDocumentDetailVATPrefixCustom(user###detail, prefix, countryProp, caption);
-    prefix###VAT###detail(detail) += prefix###VAT###user###detail(detail);
-    value###prefix###VAT###detail(detail) += value###prefix###VAT###user###detail(detail);
-END
-
-META defineDocumentDetailVATPrefix(object, prefix, countryProp, caption)
-    @defineDocumentDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
-END
-META defineDocumentAbstractDetailVATPrefix(object, prefix, caption)
-    @defineDocumentAbstractDetailVATPrefixCustom(object##Detail, prefix, caption);
-END
-META defineDocumentInterfaceDetailVATPrefix(object, prefix, countryProp, caption)
-    @defineDocumentInterfaceDetailVATPrefixCustom(object##Detail, prefix, countryProp, caption);
-END
-META deriveDocumentDetailValueVATCustomPrefix(detail, prefix)
-    value###prefix###VAT###detail (detail)  <- valueRateRangeDate(prefix###VAT###detail(detail), date###detail(detail))
-                    WHEN CHANGED(prefix###VAT###detail(detail)) OR CHANGED (date###detail(detail));
-END
-META deriveDocumentDetailValueVATPrefix(object, prefix)
-    @deriveDocumentDetailValueVATCustomPrefix(object##Detail, prefix);
-END
-
 //-- Сумма НДС в detail
 META defineDocumentDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
@@ -331,33 +332,45 @@ META defineDocumentAbstractDetailVATDataSumCustom (detail, prefix)
     VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
     prefix###sum###detail 'Сумма с НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
 END
-
 META defineDocumentInterfaceDetailVATDataSumCustom (detail, prefix)
     @defineDocumentAbstractDetailVATDataSumCustom(detail, prefix);
     @defineDocumentDetailVATDataSumCustom(user###detail, prefix);
     VATSum###detail (detail) += VATSum###user###detail(detail);
     prefix###sum###detail (detail) += prefix###sum###user###detail (detail);
 END
-META defineDocumentInterfaceDetailVATDataSum (object)
-    @defineDocumentInterfaceDetailVATDataSumCustom(object##Detail, object);
+
+META defineDocumentDetailVATDataSum (object, prefix)
+    @defineDocumentDetailVATDataSumCustom(object##Detail, prefix);
+END
+META defineDocumentAbstractDetailVATDataSum (object, prefix)
+    @defineDocumentAbstractDetailVATDataSumCustom(object##Detail, prefix);
+END
+META defineDocumentInterfaceDetailVATDataSum (object, prefix)
+    @defineDocumentInterfaceDetailVATDataSumCustom(object##Detail, prefix);
 END
 
-META deriveDocumentDetailDirectVATSumCustom(detail, currencyProp)
+// ------------ derive
+META deriveDocumentDetailVATDataSumCustom(detail, currencyProp)
     VATSum###detail (detail)  <- roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
                     WHEN CHANGED(sum###detail(detail)) OR CHANGED (VAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
 END
-META deriveDocumentDetailDirectVATSum(object, currencyProp)
-    @deriveDocumentDetailDirectVATSumCustom(object##Detail, currencyProp);
+META deriveDocumentDetailVATDataSum(object, currencyProp)
+    @deriveDocumentDetailVATDataSumCustom(object##Detail, currencyProp);
 END
-META deriveDocumentDetailDirectVATSum(object)
-    @deriveDocumentDetailDirectVATSum(object, currency);
+META deriveDocumentDetailVATDataSum(object)
+    @deriveDocumentDetailVATDataSum(object, currency);
 END
-META deriveDocumentDetailPrefixSumCustom(detail, prefix)
+
+META deriveDocumentDetailVATPrefixSumCustom(detail, prefix)
     prefix###sum###detail (detail) <- sum###detail(detail) (+) VATSum###detail(detail)
         WHEN CHANGED(sum###detail(detail)) OR CHANGED(VATSum###detail(detail));
 END
-META deriveDocumentDetailSumUserObject(object)
-    @deriveDocumentDetailPrefixSumCustom(user###object###detail, object);
+META deriveDocumentDetailVATPrefixSum(object, prefix)
+    @deriveDocumentDetailVATPrefixSumCustom(object##Detail, prefix);
+END
+
+META deriveDocumentDetailVATPrefixSum(object)
+    @deriveDocumentDetailVATPrefixSum(object, prefix);
 END
 
 //-- НДС - Розничный
@@ -393,16 +406,16 @@ META deriveDocumentDetailReverseVATSumPrefix(object, prefixA, prefixB)
 END
 
 //-- Сумма НДС в документе
-META defineDocumentHeaderVATSumPrefix (object, detail, prefix)
+META defineDocumentHeaderVATSum (object, detail, prefix)
     VATSum###detail###object 'Сумма НДС' (object) = GROUP SUM VATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
     prefix###sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
-META defineDocumentInterfaceHeaderVATSumPrefix (object, detail, prefix)
-    @defineDocumentHeaderVATSumPrefix(object, detail, prefix);
-    @defineDocumentHeaderVATSumPrefix(user###object, user###detail, prefix);
+META defineDocumentInterfaceHeaderVATSum (object, detail, prefix)
+    @defineDocumentHeaderVATSum(object, detail, prefix);
+    @defineDocumentHeaderVATSum(user###object, user###detail, prefix);
 END
 META defineDocumentInterfaceHeaderVATSum(object)
-    @defineDocumentInterfaceHeaderVATSumPrefix(object, object##Detail, object);
+    @defineDocumentInterfaceHeaderVATSum(object, object##Detail, object);
 END
 
 // ------------------------------------------------------- Стандартные данные ----------------------------------- //

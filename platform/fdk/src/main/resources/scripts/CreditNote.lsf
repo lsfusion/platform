@@ -45,7 +45,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @defineDocumentInterfaceHeaderQuantity(creditNote);
     @defineDocumentHeaderSkuQuantity(creditNote, sku);
     @defineDocumentInterfaceHeaderSum(creditNote);
-    @defineDocumentInterfaceHeaderVATSumPrefix(creditNote, creditNoteDetail, invoice);
+    @defineDocumentInterfaceHeaderVATSum(creditNote, creditNoteDetail, invoice);
 
     @defineAddDetailDialogSkuStock(userCreditNote, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userCreditNote, sku);

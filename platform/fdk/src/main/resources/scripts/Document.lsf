@@ -455,17 +455,17 @@ END
 // Closed
 META defineDocumentHeaderClosed (object)
     isClosed###object 'Закрыт' (object) = DATA BOOLEAN (object) PERSISTENT;
-    isOpend###object 'Не закрыт' (object) = isPosted###object(object) AND NOT isClosed###object(object) PERSISTENT;
+    isOpened###object 'Не закрыт' (object) = isPosted###object(object) AND NOT isClosed###object(object) PERSISTENT;
 
     close###object 'Закрыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET isClosed###object(object) <- TRUE WHERE object IS object; } ] (object)
                                     IF isPosted###object(object) AND NOT isClosed###object(object) TOOLBAR CONFIRM;
 
-    unclose###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET isClosed###object(object) <- NULL WHERE object IS object; } ] (object)
+    open###object 'Открыть' (object) = [ACTION (object) NEWSESSION AUTOAPPLY { SET isClosed###object(object) <- NULL WHERE object IS object; } ] (object)
                                       IF isClosed###object(object) TOOLBAR CONFIRM;
 END
 META defineDocumentAbstractHeaderClosed (object)
     isClosed###object 'Закрыт' (object) = ABSTRACT BOOLEAN(object) PERSISTENT;
-    isOpend###object 'Не закрыт' (object) = object IS object AND NOT isClosed###object(object) PERSISTENT;
+    isOpened###object 'Не закрыт' (object) = object IS object AND NOT isClosed###object(object) PERSISTENT;
 END
 META defineDocumentInterfaceHeaderClosed (object)
     @defineDocumentAbstractHeaderClosed(object);
@@ -475,7 +475,7 @@ END
 
 META defineDocumentDetailClosed (object, detail)
     isClosed###detail 'Закрыт' (idetail) = isClosed###object(object###detail(idetail));
-    isOpend###detail 'Не закрыт' (idetail) = isPosted###detail(idetail) AND NOT isClosed###detail(idetail);
+    isOpened###detail 'Не закрыт' (idetail) = isPosted###detail(idetail) AND NOT isClosed###detail(idetail);
 END
 
 META defineDocumentDetailClosed (object)

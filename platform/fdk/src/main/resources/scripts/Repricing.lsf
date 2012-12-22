@@ -188,12 +188,12 @@ CLASS userRepricingPosted 'Проведенный акт переоценки (�
 @defineDocumentHeaderSkuQuantity(repricing, sku);
 @defineDocumentHeaderSkuQuantity(userRepricing, sku);
 
-@defineDocumentInterfaceDetailVATPrefix(repricing, cur, countryDepartmentStore, ' до');
-@deriveDocumentDetailValueVATPrefix(userRepricing, cur);
+@defineDocumentInterfaceDetailVAT(repricing, countryDepartmentStore, cur, ' до');
+@deriveDocumentDetailValueVAT(userRepricing, cur);
 
-@defineDocumentInterfaceDetailVATPrefix(repricing, , countryDepartmentStore, ' после');
+@defineDocumentInterfaceDetailVAT(repricing, countryDepartmentStore, , ' после');
 @deriveDocumentDetailVAT(userRepricing, );
-@deriveDocumentDetailValueVATPrefix(userRepricing, );
+@deriveDocumentDetailValueVAT(userRepricing, );
 
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
 curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
@@ -252,7 +252,7 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 
 @deriveDocumentDetailVAT (userRepricing, cur, dateBefore);
 
-@deriveDocumentDetailValueVATPrefix(userRepricing, cur);
+@deriveDocumentDetailValueVAT(userRepricing, cur);
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, retailPricingPriceListType, curRetail, sku, departmentStore);
 
@@ -582,8 +582,8 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
     @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
 
-    @defineDocumentInterfaceDetailVATPrefix(invoice, cur, country###stockProp, ' до');
-    @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
+    @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, cur, ' до');
+    @deriveDocumentDetailValueVAT(userInvoice, cur);
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
     curMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
@@ -602,7 +602,7 @@ META defineRepricing(sign, stockProp)
 //    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
     @deriveDocumentDetailVAT (userInvoice, cur, dateBefore, sku, stockProp);
-    @deriveDocumentDetailValueVATPrefix(userInvoice, cur);
+    @deriveDocumentDetailValueVAT(userInvoice, cur);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
     @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, curRetail, cur, cur, cur);

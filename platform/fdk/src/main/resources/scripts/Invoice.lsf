@@ -36,7 +36,7 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной';
 
 @defineDocumentAbstractDetailPrice(invoice);
 @defineDocumentAbstractDetailDataSumCustomPrefix (invoiceDetail, , );
-@defineDocumentAbstractDetailVATPrefix(invoice, , );
+@defineDocumentAbstractDetailVAT(invoice, , );
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -108,7 +108,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                                      'Сторона A договора накладной не соответствует стороне А накладной',
                                      'Сторона B договора накладной не соответствует стороне В накладной');
 
-    @defineDocumentInterfacePriceListType(invoice);
+    @defineDocumentInterfaceHeaderAgreement(invoice);
+    @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
+    noAgreementUserInvoice (invoice) = invoice IS userInvoice AND NOT agreementUserInvoice(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
     Invoice.skuInvoiceDetail(detail) += skuInvoiceDetail(detail);
@@ -119,45 +121,47 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentDetailGrossWeight(invoice, sku);
 
     @defineDocumentInterfaceDetailPrice(invoice);
-   // @deriveDocumentDetailPricePriceListTypeCustom(userInvoiceDetail, stockProp);
     Invoice.priceInvoiceDetail(detail) += priceInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailDataSum(invoice);
     @deriveDocumentDetailSum(userInvoice, quantity);
     Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
-    @defineDocumentInterfaceDetailVATPrefix(invoice, , country###stockProp, );
-    @defineDocumentInterfaceDetailVATDataSum (invoice);
-    @deriveDocumentDetailSumUserObject (invoice);
-    @deriveDocumentDetailDirectVATSum(userInvoice);
+    @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, , ); // объявляем шкалу
+    @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp); // записываем ставку
+    @deriveDocumentDetailValueVAT(userInvoice); // записываем значение ставки
+
     Invoice.VATInvoiceDetail(detail) += VATInvoiceDetail(detail);
     Invoice.valueVATInvoiceDetail(detail) += valueVATInvoiceDetail(detail);
-    Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
 
-    @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС');
-    @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp);
-    @deriveDocumentDetailValueVATPrefix(userInvoice, );
-    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp);
+    @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС'); // объявляем цену с НДС
+
+    @defineDocumentInterfacePriceListType(invoice); // объявляем вид цены
+    @deriveDocumentDetailPriceListTypeAgreement(invoice); // записываем вид цены из соглашения
+    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
+
+    // объявляем Action'ы для ON CHANGE EXEC
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
     @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice, stockProp);
     @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userInvoice);
+
+    @defineDocumentInterfaceDetailVATDataSum (invoice, invoice); // объявляем свойства суммы НДС и суммы с НДС
+    @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
+    @deriveDocumentDetailVATPrefixSum(userInvoice, invoice); // записываем сумму с НДС
+    Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
     Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
+
+    @defineDocumentInterfaceHeaderVATSum(invoice);
 
     @defineDocumentInterfaceHeaderQuantity(invoice);
     @defineDocumentHeaderSkuQuantity(invoice, sku);
     @defineDocumentHeaderSkuQuantity(userInvoice, sku);
+
     @defineDocumentInterfaceHeaderSum(invoice);
-    @defineDocumentInterfaceHeaderVATSum(invoice);
 
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
-
-    @defineDocumentInterfaceHeaderAgreement(invoice);
-    @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
-    @deriveDocumentDetailPriceListTypeAgreement(invoice);
-
-    noAgreementUserInvoice (invoice) = invoice IS userInvoice AND NOT agreementUserInvoice(invoice);
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 

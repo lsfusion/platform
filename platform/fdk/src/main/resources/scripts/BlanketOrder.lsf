@@ -75,22 +75,22 @@ META defineBlanketOrder(sign)
     @defineDocumentDetailDataSum (blanketOrder);
     @deriveDocumentDetailSum(blanketOrder, quantity);
 
-    @defineDocumentDetailVATPrefixCustom(blanketOrderDetail, , countrySupplierStock, );
-    @defineDocumentDetailVATDataSumCustom (blanketOrderDetail, invoice);
-    @deriveDocumentDetailPrefixSumCustom (blanketOrderDetail, invoice);
-    @deriveDocumentDetailDirectVATSum(blanketOrder);
+    @defineDocumentDetailVAT(blanketOrder, countrySupplierStock);
+    @defineDocumentDetailVATDataSum (blanketOrder, invoice);
+    @deriveDocumentDetailVATPrefixSum (blanketOrder, invoice);
+    @deriveDocumentDetailVATDataSum(blanketOrder);
 
 
     @defineDocumentDetailPriceCustomPrefix (blanketOrderDetail, invoice, ' с НДС');
     @deriveDocumentDetailVAT (blanketOrder, , date,  sku, supplierStock);
-    @deriveDocumentDetailValueVATPrefix(blanketOrder, );
+    @deriveDocumentDetailValueVAT(blanketOrder, );
     @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock);
     @deriveDocumentPriceDetailOnChangeInvoicePrice(blanketOrder);
     @deriveDocumentInvoicePriceDetailOnChangePrice(blanketOrder);
     @deriveDocumentInvoicePriceDetailOnChangeVAT(blanketOrder, supplierStock);
 //    @deriveDocumentRangeDetailOnChange (blanketOrderDetail, supplierStock);
 
-    @defineDocumentHeaderVATSumPrefix (blanketOrder, blanketOrderDetail, invoice);
+    @defineDocumentHeaderVATSum (blanketOrder, blanketOrderDetail, invoice);
 
     @defineDocumentHeaderSumContractor (blanketOrder, customerStock);
     @defineDocumentHeaderSum (blanketOrder);
@@ -225,7 +225,7 @@ META defineBlanketOrder(sign)
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-        PROPERTIES (o) closeBlanketOrder SHOWIF isOpendBlanketOrder(o)
+        PROPERTIES (o) closeBlanketOrder SHOWIF isOpenedBlanketOrder(o)
 
 
         OBJECTS d=blanketOrderDetail

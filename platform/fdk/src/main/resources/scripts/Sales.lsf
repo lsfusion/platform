@@ -2,7 +2,7 @@ MODULE Sales;
 
 REQUIRE System, Stock, Tax;
 
-CLASS ABSTRACT salesLedger 'Продажа товара' : skuLedger;
+CLASS ABSTRACT salesLedger 'Продажа товара';
 TABLE salesLedger(salesLedger);
 
 dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;

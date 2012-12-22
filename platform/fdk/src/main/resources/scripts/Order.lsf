@@ -45,7 +45,7 @@ toDateOrder 'Дата автоматического закрытия' = ABSTRAC
 
 @defineDocumentAbstractDetailPrice(order);
 @defineDocumentAbstractDetailDataSumCustomPrefix (orderDetail, , );
-@defineDocumentAbstractDetailVATPrefix(order, , );
+@defineDocumentAbstractDetailVAT(order, , );
 @defineDocumentAbstractDetailVATDataSumCustom (orderDetail, invoice);
 
 @defineDocumentAbstractDetailQuantity(order);
@@ -53,7 +53,7 @@ toDateOrder 'Дата автоматического закрытия' = ABSTRAC
 @defineDocumentHeaderSkuQuantity(order, sku);
 
 @defineDocumentHeaderQuantity(order);
-@defineDocumentHeaderVATSumPrefix(order, orderDetail, invoice);
+@defineDocumentHeaderVATSum(order, orderDetail, invoice);
 @defineDocumentHeaderSum (order);
 
 @defineDocumentHeaderGrossWeight(order);
@@ -100,12 +100,12 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     Order.dataCustomerStockOrderDetail(detail) += dataCustomerStockOrderDetail(detail);
 
     CONSTRAINT supplierUserOrder(userOrder) AND supplierStockUserOrder(userOrder) AND NOT
-    inLegalEntityStock(supplierUserOrder(userOrder), supplierStockUserOrder(userOrder))
-        CHECKED BY supplierUserOrder, supplierStockUserOrder
+               inLegalEntityStock(supplierUserOrder(userOrder), supplierStockUserOrder(userOrder))
+        CHECKED BY supplierStockUserOrder
             MESSAGE 'Поставщик и склад поставщика не имеют связи';
     CONSTRAINT customerUserOrder(userOrder) AND customerStockUserOrder(userOrder) AND NOT
-    inLegalEntityStock(customerUserOrder(userOrder), customerStockUserOrder(userOrder))
-        CHECKED BY customerUserOrder, customerStockUserOrder
+               inLegalEntityStock(customerUserOrder(userOrder), customerStockUserOrder(userOrder))
+        CHECKED BY customerStockUserOrder
             MESSAGE 'Покупатель и склад покупателя не имеют связи';
 
     @defineDocumentInterfacePosted(order);
@@ -125,7 +125,8 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @deriveDocumentCurrency(userOrder, stockProp);
     Order.currencyOrder(order) += currencyOrder(order);
 
-    @defineDocumentInterfacePriceListType(order);
+    @defineDocumentInterfaceHeaderAgreement(order);
+    @deriveDocumentHeaderAgreement (userOrder, supplierUserOrder, customerUserOrder);
 
     @defineDocumentInterfaceDetailSku(order, sku);
     Order.skuOrderDetail(detail) += skuOrderDetail(detail);
@@ -134,31 +135,40 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     Order.quantityOrderDetail(detail) += quantityOrderDetail(detail);
 
     @defineDocumentInterfaceDetailPrice(order);
-    @deriveDocumentDetailPricePriceListType(userOrder, stockProp);
     Order.priceOrderDetail(detail) += priceOrderDetail(detail);
 
     @defineDocumentInterfaceDetailDataSum(order);
     @deriveDocumentDetailSum(userOrder, quantity);
     Order.sumOrderDetail(detail) += sumOrderDetail(detail);
 
-    @defineDocumentInterfaceDetailVATPrefix(order, , country###stockProp, );
-    @defineDocumentInterfaceDetailVATDataSumCustom (orderDetail, invoice);
-    @deriveDocumentDetailPrefixSumCustom (userOrderDetail, invoice);
-    @deriveDocumentDetailDirectVATSum(userOrder);
+    @defineDocumentInterfaceDetailVAT(order, country###stockProp, , ); // объявляем шкалу
+    @deriveDocumentDetailVAT (userOrder, , date,  sku, stockProp); // записываем ставку
+    @deriveDocumentDetailValueVAT(userOrder); // записываем значение ставки
+
     Order.VATOrderDetail(detail) += VATOrderDetail(detail);
     Order.valueVATOrderDetail(detail) += valueVATOrderDetail(detail);
-    Order.VATSumOrderDetail(detail) += VATSumOrderDetail(detail);
 
-    @defineDocumentInterfaceDetailPricePrefix (order, invoice, ' с НДС');
-    @deriveDocumentDetailVAT (userOrder, , date,  sku, stockProp);
-    @deriveDocumentDetailValueVATPrefix(userOrder, );
-    @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp);
+    @defineDocumentInterfaceDetailPricePrefix (order, invoice, ' с НДС'); // объявляем цену с НДС
+
+    @defineDocumentInterfacePriceListType(order); // объявляем вид цены
+    @deriveDocumentDetailPriceListTypeAgreement(order); // записываем вид цены из соглашения
+    @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp); // записываем цены с НДС и без НДС на основе priceListType
+
+    // объявляем Action'ы для ON CHANGE EXEC
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userOrder);
     @deriveDocumentInvoicePriceDetailOnChangePrice(userOrder);
     @deriveDocumentInvoicePriceDetailOnChangeVAT(userOrder, stockProp);
+    @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userOrder);
+
+    // суммы НДС и с НДС
+    @defineDocumentInterfaceDetailVATDataSum (order, invoice); // объявляем свойства суммы НДС и суммы с НДС
+    @deriveDocumentDetailVATDataSum(userOrder); // записываем сумму НДС
+    @deriveDocumentDetailVATPrefixSum (userOrder, invoice); // записываем сумму с НДС
+
+    Order.VATSumOrderDetail(detail) += VATSumOrderDetail(detail);
     Order.invoiceSumOrderDetail(detail) += invoiceSumOrderDetail(detail);
 
-    @defineDocumentInterfaceHeaderVATSumPrefix (order, orderDetail, invoice);
+    @defineDocumentInterfaceHeaderVATSum (order, orderDetail, invoice);
 
     @defineDocumentInterfaceHeaderQuantity(order);
     @defineDocumentHeaderSkuQuantity(order, sku);
@@ -169,10 +179,6 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 
     @defineAddDetailDialogSkuStock(userOrder, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
-
-    @defineDocumentInterfaceHeaderAgreement(order);
-    @deriveDocumentHeaderAgreement (userOrder, supplierUserOrder, customerUserOrder);
-    @deriveDocumentDetailPriceListTypeAgreement(order);
 
     noAgreementUserOrder (order) = order IS userOrder AND NOT agreementUserOrder(order);
 
@@ -319,7 +325,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editOrder
-        PROPERTIES (o) closeOrder SHOWIF isOpendOrder(o), uncloseOrder SHOWIF isClosedOrder(o)
+        PROPERTIES (o) closeOrder SHOWIF isOpenedOrder(o), openOrder SHOWIF isClosedOrder(o)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail

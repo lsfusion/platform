@@ -19,8 +19,8 @@ REQUIRE Disparity,
 @defineDocumentDetailDataSumCustomPrefix (disparityDetail, curInputRetail, ' розничная до');
 @deriveDocumentDetailSumPrefix(disparity, curInputRetail, currency, inputQuantity);
 
-@defineDocumentDetailVATPrefix(disparity, curInput, countryStock, ' до');
-@deriveDocumentDetailValueVATPrefix(disparity, curInput);
+@defineDocumentDetailVAT(disparity, countryStock, curInput, ' до');
+@deriveDocumentDetailValueVAT(disparity, curInput);
 
 @defineDocumentDetailMarkupPrefix (disparity, curInput, ' до');
 curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
@@ -50,8 +50,8 @@ curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @defineDocumentDetailDataSumCustomPrefix (disparityDetail, afterInputRetail, ' розничная после');
 @deriveDocumentDetailSumPrefix(disparity, afterInputRetail, currency, inputQuantity);
 
-@defineDocumentDetailVATPrefix(disparity, afterInput, countryStock, ' после');
-@deriveDocumentDetailValueVATPrefix(disparity, afterInput);
+@defineDocumentDetailVAT(disparity, countryStock, afterInput, ' после');
+@deriveDocumentDetailValueVAT(disparity, afterInput);
 
 @defineDocumentDetailVATDataSumCustomPrefix (disparityDetail, afterInput, ' после');
 @deriveDocumentDetailReverseVATSumPrefix(disparity, afterInput, afterInputRetail);

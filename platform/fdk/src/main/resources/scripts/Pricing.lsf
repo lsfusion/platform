@@ -268,9 +268,9 @@ CLASS userPricingPosted 'Проведенный акт расценки (пол�
 @defineDocumentInterfaceHeaderSumCustom (pricing, pricingDetail, ' входная');
 
 @defineDocumentInterfaceDetailPricePrefix(pricing, retail, ' выходная');
-@defineDocumentInterfaceDetailVATPrefix(pricing, retail, countryDepartmentStore, );
+@defineDocumentInterfaceDetailVAT(pricing, countryDepartmentStore, retail, );
 @deriveDocumentDetailVAT(userPricing, retail);
-@deriveDocumentDetailValueVATPrefix(userPricing, retail);
+@deriveDocumentDetailValueVAT(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
 @changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, , retail, retail);
@@ -509,7 +509,7 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, retail, ' розничная');
 
-    @defineDocumentInterfaceDetailVATPrefix(invoice, retail, country###stockProp, ' розничный');
+    @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, retail, ' розничный');
     @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, retail, ' розничная');
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
@@ -519,7 +519,7 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     pricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPricingQuantityUserInvoiceDetail(detail)
         WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPricingQuantityUserInvoiceDetail(detail));
 
-    @deriveDocumentDetailValueVATPrefix(userInvoice, retail);
+    @deriveDocumentDetailValueVAT(userInvoice, retail);
     @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, pricingQuantity);
     @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
