@@ -24,21 +24,29 @@ public final class GLog {
         error(message);
 
         VerticalPanel panel = new VerticalPanel();
-        panel.add(new HTML(message + "<br/>&nbsp;"));
-        FlexTable table = new FlexTable();
-        table.setCellSpacing(0);
-        table.setBorderWidth(1);
-        for (int i = 0; i < titles.size(); i++) {
-            table.setHTML(0, i, titles.get(i));
-        }
-        for (int i = 0; i < data.size(); i++) {
-            for (int j = 0; j < data.get(i).size(); j++) {
-                table.setHTML(i + 1, j, data.get(i).get(j));
-            }
-        }
-        panel.add(table);
+        HTML constraintMessage = new HTML("<h3 style=\"margin-top: 0;\">" + message + "</h3>");
+        panel.add(constraintMessage);
 
-        DialogBoxHelper.showMessageBox(true, "LSFusion", panel, null);
+        if (!data.isEmpty()) {
+            FlexTable table = new FlexTable();
+            table.setCellSpacing(0);
+            table.setBorderWidth(1);
+            table.setWidth("100%");
+
+            for (int i = 0; i < titles.size(); i++) {
+                table.setHTML(0, i, "<b style=\"font-size: 8pt\">" + titles.get(i) + "</b>");
+            }
+
+            for (int i = 0; i < data.size(); i++) {
+                for (int j = 0; j < data.get(i).size(); j++) {
+                    table.setHTML(i + 1, j, "<div style=\"font-size: 8pt\">" + data.get(i).get(j) + "</div>");
+                }
+            }
+
+            panel.add(table);
+        }
+
+        DialogBoxHelper.showMessageBox(true, "LS Fusion", panel, null);
     }
 
     public static void error(String message) {
