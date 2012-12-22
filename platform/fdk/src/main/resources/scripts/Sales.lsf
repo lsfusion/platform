@@ -1,6 +1,6 @@
 MODULE Sales;
 
-REQUIRE System, Stock, Tax;
+REQUIRE System, Stock, Tax, Employee;
 
 CLASS ABSTRACT salesLedger 'Продажа товара';
 TABLE salesLedger(salesLedger);
@@ -139,6 +139,7 @@ EXTEND DESIGN options {
 }
 
 //---------------------------------------------- Формы продаж -------------------------------------//
+isAccessGrantedSalesLedger (ledger) = accessEmployeeDivisionEmployee(stockSalesLedger(ledger), currentUser());
 
 FORM salesLedger 'Продажи по позициям'
 
@@ -149,7 +150,8 @@ FORM salesLedger 'Продажи по позициям'
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameCustomerSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
                            quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
     PROPERTIES    READONLY sumSoldTypeExchangeSalesLedger (te, s)
-    FILTERS isPostedSalesLedger(s)
+    FILTERS isPostedSalesLedger(s),
+            isAccessGrantedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
 DESIGN salesLedger FROM DEFAULT {
@@ -190,6 +192,7 @@ FORM salesSkuStock 'Продажи по SKU'
     PROPERTIES        READONLY nameSku(s), stockName = name(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
+                      isAccessGrantedStock(st),
                       (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
 
     ORDER BY          nameSku

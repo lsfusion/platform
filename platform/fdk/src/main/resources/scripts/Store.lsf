@@ -7,7 +7,7 @@ REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity
 CLASS chainStores 'Торговая сеть' : stockGroup, externalizable, employeeDivisionGroup;
 TABLE chainStores (chainStores);
 
-// -------------------------------------- Формат магазина ------------------------------- //
+// -------------------------------------- Формат магазина ----------------------------- //
 
 CLASS storeType 'Формат магазина' : stockGroup, employeeDivisionGroup;
 TABLE storeType (storeType);

@@ -531,6 +531,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
     editInvoice (invoice) += editUserInvoice(invoice);
+    isAccessGrantedInvoice (invoice) = accessEmployeeDivisionEmployee(stockProp###invoice(invoice), currentUser());
 
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
@@ -554,7 +555,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                        descriptionOrderInvoiceDetail
 
-        FILTERS invoiceInvoiceDetail(d) == i
+        FILTERS invoiceInvoiceDetail(d) == i,
+                isAccessGrantedInvoice(i)
 
         DIALOG invoice OBJECT i
     ;

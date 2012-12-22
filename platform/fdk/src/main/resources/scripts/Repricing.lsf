@@ -12,23 +12,6 @@ EXTEND DESIGN departmentStore{
     row21 { ADD PROPERTY(createRepricingDepartmentStore);}
 }
 
-//META defineDocumentHeaderCreateRepricing(object, stockClass)
-//    createRepricing###object 'Создать акт дооценки' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
-//
-//    createRepricing###object (object) <- TRUE IF createRepricingDepartmentStore(stockClass###object(object))
-//        WHEN CHANGED(stockClass###object(object));
-//
-//END
-//META defineDocumentAbstractHeaderCreateRepricing(object, stockClass)
-//    createRepricing###object 'Создать акт дооценки' (object) = ABSTRACT BOOLEAN(object);
-//END
-//
-//META defineDocumentInterfaceHeaderCreateRepricing (object, stockClass)
-//    @defineDocumentAbstractHeaderCreateRepricing (object, stockClass);
-//    @defineDocumentHeaderCreateRepricing (user###object, stockClass);
-//    createRepricing###object (object) += createRepricing###user###object(object);
-//END
-
 // ----------------------------------- Комиссия ------------------------------------------ //
 
 CLASS repricingCommittee 'Комиссия переоценки' : committee;
@@ -375,6 +358,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
 printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы --------------------------------- //
+isAccessGrantedRepricing (repricing) = accessEmployeeDivisionEmployee(departmentStoreRepricing(repricing), currentUser());
     
 FORM userRepricing 'Акт переоценки'
     OBJECTS p=userRepricing FIXED PANEL
@@ -487,7 +471,8 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
                numberVATRepricingDetail, valueVATRepricingDetail, VATSumRepricingDetail,
                retailPriceRepricingDetail, retailSumRepricingDetail
 
-    FILTERS repricingRepricingDetail(d) == p
+    FILTERS repricingRepricingDetail(d) == p,
+            isAccessGrantedRepricing(p)
 
     DIALOG repricing OBJECT p
 ;

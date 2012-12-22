@@ -39,6 +39,9 @@ positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40
 
 TABLE employeeDivisionEmployee (employeeDivision, employee);
 inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (employeeDivision, employee);
+accessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
+isAccessGrantedStock 'Доступ разрешен' (stock) = accessEmployeeDivisionEmployee(stock, currentUser());
+
 
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
@@ -51,7 +54,7 @@ FORM employee 'Сотрудник'
 
     OBJECTS                    d=employeeDivision
     PROPERTIES(d)              name
-    PROPERTIES(d, e)           inEmployeeDivisionEmployee
+    PROPERTIES(d, e)           inEmployeeDivisionEmployee, accessEmployeeDivisionEmployee
 
     FILTERS           dd == d AND dg IS employeeDivisionGroup OR
                       isParentEmployeeDivisionGroupEmployeeDivision(dg, d) AND NOT dd
@@ -93,21 +96,27 @@ FORM employees 'Сотрудники'
     PROPERTIES(e) ADDFORM, EDITFORM, delete
 
     OBJECTS d=employeeDivision
-    PROPERTIES(d) READONLY name
+    PROPERTIES READONLY nameD=name(d)
     FILTERS inEmployeeDivisionEmployee(d, e)
+
+    OBJECTS dd=employeeDivision
+    PROPERTIES READONLY nameDD=name(dd)
+    FILTERS accessEmployeeDivisionEmployee(dd, e)
+
+
 ;
 
 DESIGN employees FROM DEFAULT {
 
     NEW topContainer{
-
-        type = SPLITV;
         childConstraints = TO THE BOTTOM;
-
         ADD e.box;
-        ADD d.box;
+        NEW row {
+            type = TABBED;
+            ADD d.box { title = 'Сотрудник отдела';};
+            ADD dd.box { title = 'Доступ';};
+        }
     }
-
     ADD functions.box;
 }
 

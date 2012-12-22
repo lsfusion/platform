@@ -8,6 +8,7 @@ REQUIRE System,
         Document,
         Currency,
         PriceList,
+        Employee,
         Barcode;
 
 NAMESPACE Stock;
@@ -23,6 +24,7 @@ CLASS userAdjustmentPosted 'Проведенное изменение остат
 @defineDocumentInterfaceNumber(adjustment);
 
 @defineDocumentInterfaceStock (adjustment, stock, 'Склад');
+isAccessGrantedAdjustment (adjustment) = accessEmployeeDivisionEmployee(stockAdjustment(adjustment), currentUser());
 @defineDocumentDetailStock (userAdjustment, stock, 'Склад');
 @defineDocumentInterfacePosted(adjustment);
 @defineNumeratedObjectDefault(adjustment, 'Нумератор для изменения остатков', 'ИО');
@@ -172,7 +174,8 @@ FORM adjustments 'Изменения остатков'
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
                    descriptionBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
 
-    FILTERS adjustmentAdjustmentDetail(d) == i
+    FILTERS adjustmentAdjustmentDetail(d) == i,
+            isAccessGrantedAdjustment(i)
 
     DIALOG adjustment OBJECT i
 ;

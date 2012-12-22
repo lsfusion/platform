@@ -107,6 +107,7 @@ META defineBlanketOrder(sign)
 
     @defineNumeratedObject (blanketOrder, stock);
 // --------------------------- Формы Заказа ---------------------------------
+    isAccessGrantedBlanketOrder (blanketOrder) = accessEmployeeDivisionEmployee(supplierStockBlanketOrder(blanketOrder), currentUser());
 
     FORM blanketOrder 'Множественный заказ'###sign
         OBJECTS o = blanketOrder FIXED PANEL
@@ -134,7 +135,8 @@ META defineBlanketOrder(sign)
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder
 
         FILTERS blanketOrderBlanketOrderDetail(d) == o,
-                inCustomerBlanketOrderStock(o,c)
+                inCustomerBlanketOrderStock(o,c),
+                isAccessGrantedBlanketOrder(o)
         FILTERGROUP filtr1
             FILTER 'В заказе' 'F11' inBlanketOrderStock(o,c)
 

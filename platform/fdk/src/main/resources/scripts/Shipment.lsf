@@ -223,6 +223,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     addUserShipment 'Добавить' = ACTION ADDFORM userShipment;
     editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM userShipment;
     editShipment (shipment) += editUserShipment(shipment);
+    isAccessGrantedShipment (shipment) = accessEmployeeDivisionEmployee(stockProp###shipment(shipment), currentUser());
 
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = shipment
@@ -241,7 +242,8 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES (d) READONLY SHOWIF toShowProp###shipment(s) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail,
                        amountPackShipmentDetail, quantityPackShipmentDetail
         PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, name###stockProp###shipmentDetail
-        FILTERS shipmentShipmentDetail(d) == s
+        FILTERS shipmentShipmentDetail(d) == s,
+                isAccessGrantedShipment(s)
 
         DIALOG shipment OBJECT s
     ;

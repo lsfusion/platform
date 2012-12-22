@@ -13,6 +13,7 @@ REQUIRE System,
         Supply,
         Sales,
         StockReserve,
+        Employee,
         StockTax;
 
 
@@ -313,6 +314,8 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
     editOrder(order) += editUserOrder(order);
 
+    isAccessGrantedOrder (order) = accessEmployeeDivisionEmployee(stockProp###order(order), currentUser());
+
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
@@ -336,7 +339,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
 
-
+        FILTERS isAccessGrantedOrder(o)
         FILTERS orderOrderDetail(d) == o
         DIALOG order OBJECT o
     ;

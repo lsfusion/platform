@@ -135,11 +135,12 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     addUserCreditNote 'Добавить' = ACTION ADDFORM userCreditNote;
     editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM userCreditNote;
+    isAccessGrantedCreditNote (creditNote) = accessEmployeeDivisionEmployee(stockProp###creditNote(creditNote), currentUser());
 
     FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
         OBJECTS c = creditNote
         PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
-                                nameSupplierCreditNote, nameCustomerCreditNote, nameSupplierStockCreditNote, nameCustomerStockCreditNote,
+                                nameSupplierCreditNote, nameSupplierStockCreditNote, nameCustomerCreditNote, nameCustomerStockCreditNote,
                                 nameCurrencyCreditNote, noteCreditNote,
                                 countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
                                 VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote
@@ -153,7 +154,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
                                 quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
                                  VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, name###stockProp###creditNoteDetail
-        FILTERS creditNoteCreditNoteDetail(d) == c
+        FILTERS creditNoteCreditNoteDetail(d) == c,
+                isAccessGrantedCreditNote(c)
 
         DIALOG creditNote OBJECT c
     ;

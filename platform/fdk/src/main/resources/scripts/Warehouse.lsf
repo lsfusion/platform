@@ -62,11 +62,17 @@ FORM warehouse 'Склад'
                       explicitBatchLedgerWarehouse, latitudePOI, longitudePOI, showOnMapPOI
     ORDER BY          name
 
+    OBJECTS           e = employee
+    PROPERTIES(e)     READONLY userFirstName, userLastName
+    PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, delete
+    FILTERS           inEmployeeDivisionEmployee(w, e)
+
     EDIT warehouse OBJECT w
 ;
 DESIGN warehouse FROM DEFAULT{
     main {
         ADD w.box;
+        ADD e.box;
         ADD functions.box;
     }
 }

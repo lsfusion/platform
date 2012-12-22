@@ -124,6 +124,7 @@ CLASS userWriteOffPosted 'Проведенное списание (польз.)'
 
 @defineDocumentInterface(writeOff);
 @defineDocumentInterfaceDataStock(writeOff, stock, 'Склад');
+isAccessGrantedWriteOff (writeOff) = accessEmployeeDivisionEmployee(stockWriteOff(writeOff), currentUser());
 
 @defineDocumentInterfacePosted(writeOff);
 @defineDocumentInterfaceDescription (writeOff, 'Списание товара');
@@ -296,7 +297,8 @@ FORM writeOffs 'Списания'
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
-    FILTERS writeOffWriteOffDetail(d) == w
+    FILTERS writeOffWriteOffDetail(d) == w,
+            isAccessGrantedWriteOff(w)
 ;
 
 DESIGN writeOffs FROM DEFAULT {

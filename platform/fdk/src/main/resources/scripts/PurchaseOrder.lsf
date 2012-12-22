@@ -32,8 +32,6 @@ CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUs
 CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUserOrder(userOrder))
     CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся компанией';
 
-
-
 @defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
 

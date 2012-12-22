@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo;
+REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee;
 
 // ----------------------------------- Склады ------------------------------------------ //
 
@@ -1852,6 +1852,7 @@ DESIGN dialogBatch FROM DEFAULT {
 }
 
 // ------------------------------------------------- Себестоимость --------------------------- //
+isAccessGrantedSkuLedger (skuLedger) = accessEmployeeDivisionEmployee(stockSkuLedger(skuLedger), currentUser());
 
 FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = skuLedger
@@ -1866,7 +1867,8 @@ FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bt = batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
     PROPERTIES(bil, bt)     costSkuLedgerBatch FORCE GRID
-    FILTERS skuBatch(bt) == skuSkuLedger(bil)
+    FILTERS isAccessGrantedSkuLedger(bil),
+            skuBatch(bt) == skuSkuLedger(bil)
     ORDER BY dateTimeBatch DESC
 
     FILTERGROUP inSkuLedgerBatch
@@ -1950,6 +1952,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
+                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          nameSku
@@ -2026,6 +2029,7 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
+                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
@@ -2102,6 +2106,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
+                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          dateTimeBatch
@@ -2177,6 +2182,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
+                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
     ORDER BY          dateTimeBatch
 

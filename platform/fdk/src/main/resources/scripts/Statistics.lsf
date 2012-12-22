@@ -284,7 +284,6 @@ valueResidentByStatisticGroupDateTo 'Остаток на конец, бел. п�
         DEFAULT 0 IF statisticGroup IS statisticGroup AND stock IS stock AND dateTo IS DATE
     END;
 
-
 FORM statisticalReport 'Статистика (продажи) склад/группа/sku'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
@@ -304,7 +303,8 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
 
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameS=nameSku(s), name(st)
-    FILTERS           st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+    FILTERS           st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts,
+                      isAccessGrantedStock(st)
 
     ORDER BY          nameS
     FILTERGROUP filters

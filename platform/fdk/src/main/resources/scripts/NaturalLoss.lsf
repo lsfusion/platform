@@ -148,37 +148,37 @@ FORM naturalLossGroups 'Справочник норм естественной �
             countrySubNaturalLossGroup(sg) == c OR sg IS subNaturalLossGroup AND NOT c
 ;
 
- DESIGN naturalLossGroups FROM DEFAULT {
+DESIGN naturalLossGroups FROM DEFAULT {
 
-     NEW topContainer {
-         childConstraints = TO THE BOTTOM;
-         ADD c.box;
-         NEW firstContainer{
-             type = SPLITH;
-             childConstraints = TO THE RIGHT;
-             ADD treeNaturalLoss.tree.box;
-             NEW firstCase {
-                 type = SPLITV;
-                 childConstraints = TO THE BOTTOM;
-                 fillHorizontal = 4;
-                 ADD sg.box;
-                 ADD d.box;
-             }
-         }
-     }
+    NEW topContainer {
+        childConstraints = TO THE BOTTOM;
+        ADD c.box;
+        NEW firstContainer{
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+            ADD treeNaturalLoss.tree.box;
+            NEW firstCase {
+                type = SPLITV;
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 4;
+                ADD sg.box;
+                ADD d.box;
+            }
+        }
+    }
 
-     ADD functions.box;
+    ADD functions.box;
 
-     PROPERTY (delete(n)) {
-         caption = 'Удалить';
-         askConfirm = TRUE;
-     }
+    PROPERTY (delete(n)) {
+    caption = 'Удалить';
+    askConfirm = TRUE;
+    }
 
-     PROPERTY (delete(sg)) {
-         caption = 'Удалить';
-         askConfirm = TRUE;
-     }
- }
+    PROPERTY (delete(sg)) {
+    caption = 'Удалить';
+    askConfirm = TRUE;
+    }
+}
 
 //------------------------------------- Ведомость расчета естественной убыли ----------------------------------//
 
@@ -207,6 +207,8 @@ dateToNaturalLoss 'по' = DATA DATE (naturalLoss) IN documentPrmGroup;
 
 dateFromNaturalLossDetail 'с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 dateToNaturalLossDetail 'по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+
+isAccessGrantedNaturalLoss (naturalLoss) = accessEmployeeDivisionEmployee(stockNaturalLoss(naturalLoss), currentUser());
 
 subNaturalLossGroupNaturalLossDetail = DATA subNaturalLossGroup (naturalLossDetail);
 nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
@@ -350,7 +352,8 @@ FORM naturalLosses 'Ведомости естественной убыли'
                            nameSubNaturalLossGroupNaturalLossDetail, codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail,
                            percentNaturalLossDetail, quantityNaturalLossDetail, priceNaturalLossDetail, sumNaturalLossDetail
 
-    FILTERS inNaturalLossNaturalLossDetail(s, d)
+    FILTERS inNaturalLossNaturalLossDetail(s, d),
+            isAccessGrantedNaturalLoss(s)
 ;
 
 DESIGN naturalLosses FROM DEFAULT {
