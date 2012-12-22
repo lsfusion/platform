@@ -423,10 +423,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     }
 
     // для использования в нижних 2-х методах, ищет EQUALS'ы, EXPRVALUES, VALUES, из Collection<BaseExpr,T> делает Map<BaseExpr,T> без values (в том числе с учетом доп. where)
-    private static <A extends Expr, B extends Expr> ImList<Pair<Expr, A>> groupMap(Iterable<Pair<B, A>> group, ImMap<BaseExpr, BaseExpr> exprValues, Result<ImRevMap<B, A>> grouped) {
+    private static <A extends Expr, B extends Expr> ImList<Pair<Expr, A>> groupMap(Iterable<Pair<B, A>> group, ImMap<BaseExpr, BaseExpr> exprValues, Result<ImMap<B, A>> grouped) {
 
         MList<Pair<Expr,A>> mEquals = ListFact.mList(); // вообще size есть но спрятан в Iterable
-        MRevMap<B,A> mGrouped = MapFact.mRevMap();// вообще size есть но спрятан в Iterable
+        MExclMap<B,A> mGrouped = MapFact.mExclMap();// вообще size есть но спрятан в Iterable
         for(Pair<B, A> outerExpr : group) {
             A reversedExpr = mGrouped.get(outerExpr.first); // ищем EQUALS'ы в outer
             if(reversedExpr==null) {
@@ -438,15 +438,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 if(exprValue!=null)
                     mEquals.add(new Pair<Expr,A>(exprValue, outerExpr.second));
                 else
-                    mGrouped.revAdd(outerExpr.first, outerExpr.second);
+                    mGrouped.exclAdd(outerExpr.first, outerExpr.second);
             } else
                 mEquals.add(new Pair<Expr,A>(reversedExpr,outerExpr.second));
         }
-        grouped.set(mGrouped.immutableRev());
+        grouped.set(mGrouped.immutable());
         return mEquals.immutableList();
     }
 
-    private static <K, T extends Expr> Where groupMap(final ImMap<K, T> inner, final ImMap<K, BaseExpr> outer, Result<ImRevMap<BaseExpr, T>> outerInner) {
+    private static <K, T extends Expr> Where groupMapValues(final ImMap<K, T> inner, final ImMap<K, BaseExpr> outer, Result<ImMap<BaseExpr, T>> outerInner) {
         return getEqualsWhere(groupMap(new Iterable<Pair<BaseExpr, T>>() {
                     public Iterator<Pair<BaseExpr, T>> iterator() {
                         return new Iterator<Pair<BaseExpr, T>>() {
@@ -489,12 +489,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 };
             }
         };
-        return groupMap(iterable, exprValues, reversed);
+        Result<ImMap<B, A>> castReserved = new Result<ImMap<B, A>>();
+        ImList<Pair<Expr, A>> result = groupMap(iterable, exprValues, castReserved);
+        reversed.set(castReserved.result.toRevExclMap()); // так, иначе пришлось бы сильно с классами мудится
+        return result;
     }
 
     private static <K, I extends Expr> Expr createOuterBase(ImMap<K, I> inner, Query query, ImMap<K, BaseExpr> outer) {
-        Result<ImRevMap<BaseExpr, I>> outerInner = new Result<ImRevMap<BaseExpr, I>>();
-        query = query.and(groupMap(inner, outer, outerInner));
+        Result<ImMap<BaseExpr, I>> outerInner = new Result<ImMap<BaseExpr, I>>();
+        query = query.and(groupMapValues(inner, outer, outerInner));
         return createInner(outerInner.result, query, false);
     }
 

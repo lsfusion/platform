@@ -163,6 +163,7 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
 
     @Override
     public ImRevMap<K, V> toRevExclMap() {
+        assert values().toSet().size()==size();
         return this;
     }
 }
