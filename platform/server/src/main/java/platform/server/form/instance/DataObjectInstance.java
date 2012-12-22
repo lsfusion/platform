@@ -2,6 +2,7 @@ package platform.server.form.instance;
 
 import platform.base.BaseUtils;
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
@@ -13,7 +14,6 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 // ObjectInstance table'ы
 public class DataObjectInstance extends ObjectInstance {
@@ -26,7 +26,7 @@ public class DataObjectInstance extends ObjectInstance {
         this.dataClass = dataClass;
     }
 
-    public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
+    public AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups) {
         return dataClass;
     }
 
@@ -52,7 +52,7 @@ public class DataObjectInstance extends ObjectInstance {
         return false;
     }
 
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return false;
     }
 

@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -45,7 +46,7 @@ public class ChangeBarcodeActionProperty extends SystemActionProperty {
         String prefix = null;
         if (barcodePrefix != null)
             prefix = (String) barcodePrefix.read(context);
-        barcode.change(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object),
+        barcode.change(MapFact.singleton(barcode.interfaces.single(), object),
                 context, ChangeBarcodeActionProperty.formatBarcode(prefix, object.getValue().toString()));
     }
 }

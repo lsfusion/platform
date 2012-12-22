@@ -1,7 +1,6 @@
 package platform.server.classes;
 
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.ObjectInstance;

@@ -19,6 +19,8 @@ import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static platform.base.BaseUtils.deserializeObject;
 
@@ -91,7 +93,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = LogMessageClientAction.class)
     public GLogMessageAction convertAction(LogMessageClientAction action, LogicsDispatchServlet servlet) throws IOException {
-        return new GLogMessageAction(action.failed, action.message, action.data, action.titles);
+        ArrayList<ArrayList<String>> arrayData = new ArrayList<ArrayList<String>>();
+        for(List<String> row : action.data)
+            arrayData.add(new ArrayList<String>(row));
+        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<String>(action.titles));
     }
 
     @Converter(from = MessageClientAction.class)

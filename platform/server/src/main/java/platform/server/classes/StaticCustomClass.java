@@ -2,11 +2,13 @@ package platform.server.classes;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StaticValueExpr;
-import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
@@ -14,7 +16,6 @@ import platform.server.logics.linear.LCP;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -66,18 +67,20 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         Map<Object, String> modifiedNames = new HashMap<Object, String>();
 
         // Получаем старые sid и name
-        Query<String, Object> allClassesQuery = new Query<String, Object>(Collections.singleton("key"));
-        allClassesQuery.and(classSID.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)).getWhere());
-        allClassesQuery.and(BaseUtils.singleValue(allClassesQuery.mapKeys).isClass(this));
-        allClassesQuery.properties.put("sid", classSID.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)));
-        allClassesQuery.properties.put("name", name.getExpr(session.getModifier(), BaseUtils.singleValue(allClassesQuery.mapKeys)));
-        OrderedMap<Map<String, Object>, Map<Object, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
+        QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
+        Expr key = allClassesQuery.getMapExprs().singleValue();
+        allClassesQuery.and(classSID.getExpr(session.getModifier(), key).getWhere());
+        allClassesQuery.and(key.isClass(this));
+        allClassesQuery.addProperty("sid", classSID.getExpr(session.getModifier(), key));
+        allClassesQuery.addProperty("name", name.getExpr(session.getModifier(), key));
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
 
         // Забрасываем результат запроса в map: sid -> <id, name>
         Map<String, Pair<Integer, String>> oldClasses = new HashMap<String, Pair<Integer, String>>();
-        for (Map.Entry<Map<String, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
-            oldClasses.put(((String) entry.getValue().get("sid")).trim(),
-                            new Pair<Integer, String>((Integer) BaseUtils.singleValue(entry.getKey()), BaseUtils.nullTrim((String) entry.getValue().get("name"))));
+        for (int i=0,size=qResult.size();i<size;i++) {
+            ImMap<String, Object> resultKey = qResult.getKey(i); ImMap<String, Object> resultValue = qResult.getValue(i);
+            oldClasses.put(((String) resultValue.get("sid")).trim(),
+                            new Pair<Integer, String>((Integer) resultKey.singleValue(), BaseUtils.nullTrim((String) resultValue.get("name"))));
         }
 
         // новый sid -> старый sid

@@ -31,7 +31,7 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> exten
         return false;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres,(((ExtraSetWhere)o).wheres));
     }
 

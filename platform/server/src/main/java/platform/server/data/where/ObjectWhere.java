@@ -1,15 +1,15 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
-
-import java.util.List;
 
 
 public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
@@ -75,15 +75,15 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         fillDataJoinWheres(joins,andWhere.and(this));
     }
 
-    abstract protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere);
+    abstract protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
 
     public KeyEquals calculateKeyEquals() {
         return new KeyEquals(this);  // в operator'ах никаких equals быть не может
     }
 
-    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere);
+    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);
 }

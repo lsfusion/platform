@@ -1,21 +1,21 @@
 package platform.server.data.expr;
 
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.FormulaUnionProperty;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
     private final String delimiter;
-    private final List<CalcPropertyInterfaceImplement<Interface>> operands;
+    private final ImList<CalcPropertyInterfaceImplement<Interface>> operands;
 
-    public StringAggUnionProperty(String sID, String caption, List<Interface> interfaces, List<CalcPropertyInterfaceImplement<Interface>> operands, String delimiter) {
+    public StringAggUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, String delimiter) {
         super(sID, caption, interfaces);
         this.delimiter = delimiter;
         this.operands = operands;
@@ -39,10 +39,10 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @IdentityLazy
-    protected Map<String, CalcPropertyInterfaceImplement<Interface>> getParams() {
-        Map<String, CalcPropertyInterfaceImplement<Interface>> params = new HashMap<String, CalcPropertyInterfaceImplement<Interface>>();
-        for(int i=0;i<operands.size();i++)
-            params.put("prm"+(i+1), operands.get(i));
-        return params;
+    protected ImMap<String, CalcPropertyInterfaceImplement<Interface>> getParams() {
+        return operands.getCol().mapColKeys(new GetIndex<String>() {
+            public String getMapValue(int i) {
+                return "prm"+(i+1);
+            }});
     }
 }

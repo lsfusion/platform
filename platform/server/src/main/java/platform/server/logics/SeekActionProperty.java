@@ -1,6 +1,11 @@
 package platform.server.logics;
 
-import platform.server.classes.*;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.ValueClass;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.property.CalcProperty;
@@ -9,8 +14,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
 
 public class SeekActionProperty extends SystemActionProperty {
 
@@ -27,17 +30,19 @@ public class SeekActionProperty extends SystemActionProperty {
         context.emitExceptionIfNotInFormSession();
 
         FormInstance<?> form = context.getFormInstance();
-        Collection<ObjectInstance> objects;
+        ImCol<ObjectInstance> objects;
         if (property != null)
             objects = form.instanceFactory.getInstance(form.entity.getPropertyObject(property)).mapping.values();
         else
             objects = form.getObjects();
-        for (Map.Entry<ClassPropertyInterface, DataObject> key : context.getKeys().entrySet())
-            if (context.getObjectInstance(key.getKey()) == null) {
-                ConcreteClass keyClass = context.getSession().getCurrentClass(key.getValue());
+        ImMap<ClassPropertyInterface,DataObject> keys = context.getKeys();
+        for (int i=0,size=keys.size();i<size;i++)
+            if (context.getObjectInstance(keys.getKey(i)) == null) {
+                DataObject value = keys.getValue(i);
+                ConcreteClass keyClass = context.getSession().getCurrentClass(value);
                 for (ObjectInstance object : objects)
                     if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass))
-                        form.seekObject(object, key.getValue());
+                        form.seekObject(object, value);
             }
     }
 }

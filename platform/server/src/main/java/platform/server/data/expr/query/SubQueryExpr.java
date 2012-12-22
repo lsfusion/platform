@@ -1,7 +1,12 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.Result;
+import platform.base.SFunctionSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
@@ -12,14 +17,9 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQueryExpr, SubQueryExpr.QueryInnerContext> {
 
-    public SubQueryExpr(Expr query, Map<KeyExpr, BaseExpr> group) {
+    public SubQueryExpr(Expr query, ImMap<KeyExpr, BaseExpr> group) {
         super(query, group);
     }
 
@@ -53,7 +53,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         return new QueryInnerContext(this);
     }
 
-    protected SubQueryExpr createThis(Expr query, Map<KeyExpr, BaseExpr> group) {
+    protected SubQueryExpr createThis(Expr query, ImMap<KeyExpr, BaseExpr> group) {
         return new SubQueryExpr(query, group);
     }
 
@@ -87,7 +87,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
 
     @Override
     public Expr packFollowFalse(Where falseWhere) {
-        Map<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
+        ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Expr packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
             return create(packedQuery, packedGroup);
@@ -96,44 +96,43 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
     }
 
     public static Expr create(Expr expr) {
-        return create(expr, BaseUtils.<Map<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()), null);
+        return create(expr, BaseUtils.<ImMap<KeyExpr, BaseExpr>>immutableCast(expr.getOuterKeys().toMap()), null);
     }
 
     public static Where create(Where where) {
         return create(ValueExpr.get(where)).getWhere();
     }
 
-    public static Expr create(final Expr expr, Map<KeyExpr, ? extends Expr> group, PullExpr noPull) {
-        Map<KeyExpr, Expr> pullGroup = new HashMap<KeyExpr, Expr>(group);
-        for(KeyExpr key : getOuterKeys(expr))
-            if(key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull))
-                pullGroup.put(key, key);
-
-        return create(expr, pullGroup);
+    public static Expr create(final Expr expr, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
+        ImMap<KeyExpr, KeyExpr> pullKeys = getOuterKeys(expr).filterFn(new SFunctionSet<KeyExpr>() {
+            public boolean contains(KeyExpr key) {
+                return key instanceof PullExpr && !group.containsKey(key) && !key.equals(noPull);
+            }}).toMap();
+        return create(expr, MapFact.addExcl(group, pullKeys));
     }
 
-    public static Expr create(final Expr expr, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(final Expr expr, ImMap<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
-            protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
+            protected Expr proceedBase(ImMap<KeyExpr, BaseExpr> map) {
                 return createBase(expr, map);
             }
         }.proceed(group);
     }
 
-    public static Expr createBase(Expr expr, Map<KeyExpr, BaseExpr> group) {
-        Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
-        Map<KeyExpr,BaseExpr> translate = new HashMap<KeyExpr, BaseExpr>();
-        for(Map.Entry<KeyExpr,BaseExpr> groupKey : group.entrySet())
-            if(groupKey.getValue().isValue())
-                translate.put(groupKey.getKey(), groupKey.getValue());
-            else
-                restGroup.put(groupKey.getKey(), groupKey.getValue());
+    public static Expr createBase(Expr expr, ImMap<KeyExpr, BaseExpr> group) {
+        Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
+        ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
+            public Boolean getMapValue(KeyExpr key, BaseExpr value) {
+                return value.isValue();
+            }
+        }, restGroup);
+
         if(translate.size()>0) {
             QueryTranslator translator = new PartialQueryTranslator(translate);
             expr = expr.translateQuery(translator);
         }
 
-        return BaseExpr.create(new SubQueryExpr(expr, restGroup));
+        return BaseExpr.create(new SubQueryExpr(expr, restGroup.result));
     }
 
     @Override

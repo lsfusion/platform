@@ -39,8 +39,8 @@ class MySQLDataAdapter extends DataAdapter {
         return connect;
     }
 
-    public String isNULL(String expr1, String expr2, boolean notSafe) {
-        return "IFNULL(" + expr1 + "," + "Expr2" + ")";
+    public String isNULL(String exprs, boolean notSafe) {
+        return "IFNULL(" + exprs + ")";
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {

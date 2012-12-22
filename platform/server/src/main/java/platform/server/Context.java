@@ -1,5 +1,6 @@
 package platform.server;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
@@ -17,7 +18,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public interface Context {
     ThreadLocal<Context> context = new ThreadLocal<Context>();
@@ -30,7 +30,7 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
 
-    FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException;
+    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException;
     RemoteForm createRemoteForm(FormInstance formInstance);
     RemoteDialog createRemoteDialog(DialogInstance dialogInstance);
 

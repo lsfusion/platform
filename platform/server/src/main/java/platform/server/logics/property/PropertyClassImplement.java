@@ -1,29 +1,25 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.logics.linear.LP;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> {
+public abstract class PropertyClassImplement<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 
     public T property;
-    public Map<P, ValueClassWrapper> mapping;
+    public ImRevMap<P, ValueClassWrapper> mapping;
 
     public String toString() {
         return property.toString();
     }
 
-    public PropertyClassImplement(T property, List<ValueClassWrapper> classes, List<P> interfaces) {
+    public PropertyClassImplement(T property, ImOrderSet<ValueClassWrapper> classes, ImOrderSet<P> interfaces) {
         this.property = property;
-        this.mapping = BaseUtils.toMap(interfaces, classes);
+        this.mapping = interfaces.mapSet(classes);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return property.equals(((PropertyClassImplement) o).property) && mapping.equals(((PropertyClassImplement) o).mapping);
     }
 
@@ -31,5 +27,5 @@ public abstract class PropertyClassImplement<P extends PropertyInterface, T exte
         return property.hashCode() * 31 + mapping.hashCode();
     }
     
-    public abstract LP<P, ?> createLP(List<ValueClassWrapper> listInterfaces);
+    public abstract LP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces);
 }

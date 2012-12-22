@@ -1,71 +1,62 @@
 package platform.server.data.translator;
 
-import platform.base.ImmutableObject;
-import platform.base.OrderedMap;
-import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
-
-import java.util.*;
+import platform.server.data.query.SourceJoin;
 
 // в отдельный класс для allKeys и для аспектов
 public class QueryTranslator extends TwinImmutableObject {
 
-    public final Map<KeyExpr,? extends Expr> keys;
+    public final ImMap<KeyExpr,? extends Expr> keys;
 
     private final boolean allKeys;
+
+    private GetValue<SourceJoin, SourceJoin> trans;
+    private <V extends SourceJoin> GetValue<V, V> TRANS() {
+        if(trans==null) {
+            trans = new GetValue<SourceJoin, SourceJoin>() {
+                public SourceJoin getMapValue(SourceJoin value) {
+                    return value.translateQuery(QueryTranslator.this);
+                }};
+        }
+        return (GetValue<V, V>)trans;
+    }
 
     public QueryTranslator translateRemoveValues(MapValuesTranslate translate) {
         return new QueryTranslator(translate.mapKeys().translate(keys), allKeys);
     }
 
-    protected QueryTranslator(Map<KeyExpr, ? extends Expr> keys, boolean allKeys) {
+    protected QueryTranslator(ImMap<KeyExpr, ? extends Expr> keys, boolean allKeys) {
         this.keys = keys;
-
-        assert !keys.containsValue(null);
 
         this.allKeys = allKeys;
     }
 
-    public QueryTranslator(Map<KeyExpr, ? extends Expr> joinImplement) {
+    public QueryTranslator(ImMap<KeyExpr, ? extends Expr> joinImplement) {
         this(joinImplement, true);
     }
 
-    public <K> Map<K, Expr> translate(Map<K, ? extends Expr> map) {
-        Map<K, Expr> transMap = new HashMap<K, Expr>();
-        for(Map.Entry<K,? extends Expr> entry : map.entrySet())
-            transMap.put(entry.getKey(),entry.getValue().translateQuery(this));
-        return transMap;
+    public <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map) {
+        return ((ImMap<K, Expr>)map).mapValues(this.<Expr>TRANS());
     }
 
-    public <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map) {
-        OrderedMap<Expr, K> transMap = new OrderedMap<Expr, K>();
-        for(Map.Entry<? extends Expr,K> entry : map.entrySet())
-            transMap.put(entry.getKey().translateQuery(this), entry.getValue());
-        return transMap;
+    public <K> ImOrderMap<Expr, K> translate(ImOrderMap<? extends Expr, K> map) {
+        return ((ImOrderMap<Expr, K>)map).mapOrderKeys(this.<Expr>TRANS());
     }
 
-    public <K> Map<Expr, K> translateKeys(Map<? extends Expr, K> map) {
-        Map<Expr, K> transMap = new HashMap<Expr, K>();
-        for(Map.Entry<? extends Expr,K> entry : map.entrySet())
-            transMap.put(entry.getKey().translateQuery(this), entry.getValue());
-        return transMap;
+    public ImList<Expr> translate(ImList<? extends Expr> list) {
+        return ((ImList<Expr>)list).mapListValues(this.<Expr>TRANS());
     }
 
-    public List<Expr> translate(List<? extends Expr> list) {
-        List<Expr> result = new ArrayList<Expr>();
-        for(Expr expr : list)
-            result.add(expr.translateQuery(this));
-        return result;
-    }
-
-    public Set<Expr> translate(Set<? extends Expr> set) {
-        Set<Expr> result = new HashSet<Expr>();
-        for(Expr expr : set)
-            result.add(expr.translateQuery(this));
-        return result;
+    public ImSet<Expr> translate(ImSet<? extends Expr> set) {
+        return ((ImSet<Expr>)set).mapSetValues(this.<Expr>TRANS());
     }
 
     public Expr translate(KeyExpr key) {
@@ -78,7 +69,7 @@ public class QueryTranslator extends TwinImmutableObject {
             return transExpr;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return keys.equals(((QueryTranslator)o).keys);
     }
 

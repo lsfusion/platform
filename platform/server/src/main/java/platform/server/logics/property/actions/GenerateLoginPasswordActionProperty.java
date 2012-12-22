@@ -1,5 +1,6 @@
 package platform.server.logics.property.actions;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
@@ -9,7 +10,8 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Random;
 
 public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
 
@@ -54,7 +56,7 @@ public class GenerateLoginPasswordActionProperty extends AdminActionProperty {
     }
 
     @Override
-    public PropsNewSession aspectChangeExtProps() {
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return getChangeProps((CalcProperty)userLogin.property, (CalcProperty)userPassword.property);
     }
 }

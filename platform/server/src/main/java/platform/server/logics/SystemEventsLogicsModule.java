@@ -196,7 +196,7 @@ public class SystemEventsLogicsModule<T extends BusinessLogics<T>> extends Logic
             DataSession session = BL.createSession();
 
             PropertyChange statusChanges = new PropertyChange(connectionStatus.getDataObject("disconnectedConnection"),
-                    BaseUtils.single(connectionStatusConnection.property.interfaces), connectionStatus.getDataObject("connectedConnection"));
+                    connectionStatusConnection.property.interfaces.single(), connectionStatus.getDataObject("connectedConnection"));
 
             session.change((CalcProperty) connectionStatusConnection.property, statusChanges);
 

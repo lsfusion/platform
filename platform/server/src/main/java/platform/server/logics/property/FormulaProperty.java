@@ -1,10 +1,10 @@
 package platform.server.logics.property;
 
-import java.util.List;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 
 abstract public class FormulaProperty<T extends PropertyInterface> extends NoIncrementProperty<T> {
 
-    protected FormulaProperty(String sID, String caption, List<T> interfaces) {
+    protected FormulaProperty(String sID, String caption, ImOrderSet<T> interfaces) {
         super(sID, caption, interfaces);
     }
 

@@ -1,5 +1,7 @@
 package platform.server.form.entity;
 
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.form.instance.CalcPropertyObjectInstance;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.logics.property.CalcProperty;
@@ -14,12 +16,12 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping) {
-        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, null, null);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping) {
+        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, null, null);
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, Map<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
-        super(property, (Map<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
+        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
     }
 
     @Override
@@ -27,11 +29,11 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         return instanceFactory.getInstance(this);
     }
 
-    public CalcPropertyObjectEntity<P> getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        Map<P, PropertyObjectInterfaceEntity> nmapping = new HashMap<P, PropertyObjectInterfaceEntity>();    
-        for (P iFace : property.interfaces) {
-            nmapping.put(iFace, mapping.get(iFace).getRemappedEntity(oldObject, newObject, instanceFactory));
-        }
+    public CalcPropertyObjectEntity<P> getRemappedEntity(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceFactory) {
+        ImMap<P, PropertyObjectInterfaceEntity> nmapping = mapping.mapValues(new GetValue<PropertyObjectInterfaceEntity, PropertyObjectInterfaceEntity>() {
+            public PropertyObjectInterfaceEntity getMapValue(PropertyObjectInterfaceEntity value) {
+                return value.getRemappedEntity(oldObject, newObject, instanceFactory);
+            }});
         return new CalcPropertyObjectEntity<P>(property, nmapping, creationScript, creationPath);
     }
 

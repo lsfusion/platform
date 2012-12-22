@@ -4,7 +4,13 @@ import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ERunnable;
-import platform.base.OrderedMap;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.interop.ClassViewType;
 import platform.interop.Order;
 import platform.interop.Scroll;
@@ -39,7 +45,6 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -185,35 +190,34 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return new ServerResponse(resultActions.toArray(new ClientAction[resultActions.size()]), false);
     }
 
-    private Map<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
-        Map<ObjectInstance, Object> mapValues = new HashMap<ObjectInstance, Object>();
+    private ImMap<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
+        MExclMap<ObjectInstance, Object> mMapValues = MapFact.mExclMap();
         if (keysArray != null) {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(keysArray));
 
             int cnt = inStream.readInt();
             for (int i = 0 ; i < cnt; ++i) {
-                mapValues.put(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
+                mMapValues.exclAdd(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
             }
         }
 
-        return mapValues;
+        return mMapValues.immutable();
     }
 
-    private Map<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException {
-        Map<ObjectInstance, DataObject> keys = new HashMap<ObjectInstance, DataObject>();
-        Map<ObjectInstance, Object> dataKeys = deserializeKeysValues(columnKeys);
+    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException {
+        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(columnKeys);
 
-        for (Map.Entry<ObjectInstance, Object> e : dataKeys.entrySet()) {
+        ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
+        for (int i=0,size=dataKeys.size();i<size;i++) {
+            Object value = dataKeys.getValue(i);
             //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-            if (e.getValue() != null) {
-                keys.put(e.getKey(), form.session.getDataObject(e.getValue(), e.getKey().getType()));
-            }
+            if (value != null)
+                mvKeys.mapValue(i, form.session.getDataObject(value, dataKeys.getKey(i).getType()));
         }
-
-        return keys;
+        return mvKeys.immutableValue();
     }
 
-    private Map<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException {
+    private ImMap<ObjectInstance, DataObject> deserializeGroupObjectKeys(GroupObjectInstance group, byte[] treePathKeys) throws IOException {
         return group.findGroupObjectValue(deserializeKeysValues(treePathKeys));
     }
 
@@ -222,7 +226,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
+                ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(groupObject, value);
                 if (valueToSet == null) {
                     return;
                 }
@@ -234,8 +238,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
                     logger.trace("   keys: ");
-                    for (Map.Entry<ObjectInstance, DataObject> entry : valueToSet.entrySet()) {
-                        logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    for (int i=0,size=valueToSet.size();i<size;i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
                     }
                 }
             }
@@ -247,7 +251,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
                     form.expandGroupObject(group, valueToSet);
                 }
@@ -260,7 +264,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-                Map<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
+                ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
                     form.collapseGroupObject(group, valueToSet);
                 }
@@ -334,7 +338,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
                 propertyDraw.toDraw.changeOrder(((CalcPropertyObjectInstance<?>) propertyDraw.propertyObject).getRemappedPropertyObject(keys), Order.deserialize(modiType));
             }
         });
@@ -363,7 +367,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public Object call() throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
                 return form.calculateSum(propertyDraw, keys);
             }
         });
@@ -375,22 +379,24 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public Map<List<Object>, List<Object>> call() throws Exception {
                 List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
-                List<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>> outMaps = new ArrayList<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>>();
+                List<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
-                    Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> outMap = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
-                    for (Integer id : one.keySet()) {
-                        PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
-                        List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                    MExclMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> mOutMap = MapFact.mExclMap(one.size());
+                    for (Map.Entry<Integer, List<byte[]>> oneEntry : one.entrySet()) {
+                        PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(oneEntry.getKey());
+                        MList<ImMap<ObjectInstance, DataObject>> mList = ListFact.mList();
                         if (propertyDraw != null) {
-                            for (byte[] columnKeys : one.get(id)) {
-                                list.add(deserializePropertyKeys(propertyDraw, columnKeys));
+                            for (byte[] columnKeys : oneEntry.getValue()) {
+                                mList.add(deserializePropertyKeys(propertyDraw, columnKeys));
                             }
-                        }
-                        outMap.put(propertyDraw, list);
+                            mOutMap.exclAdd(propertyDraw, mList.immutableList());
+                        } else
+                            mOutMap.exclAdd(0, ListFact.<ImMap<ObjectInstance, DataObject>>EMPTY());
                     }
-                    outMaps.add(outMap);
+                    outMaps.add(mOutMap.immutable());
                 }
-                return form.groupData(outMaps.get(0), outMaps.get(1), outMaps.get(2), onlyNotNull);
+                return form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
+                        outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
             }
         });
     }
@@ -399,7 +405,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
-                for (GroupObjectInstance group : form.groups) {
+                for (GroupObjectInstance group : form.getGroups()) {
                     group.clearUserFilters();
                 }
                 for (byte[] state : filters) {
@@ -494,7 +500,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         return form.createForm(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, interactive);
     }
 
@@ -526,7 +532,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
                 ObjectValue pushChangeObject = null;
                 if (pushChange != null) {
@@ -552,7 +558,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 try {
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                    Map<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+                    ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
 
                     form.executeEditAction(propertyDraw, actionSID, keys);
 
@@ -560,8 +566,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
                         if (keys.size() > 0) {
                             logger.trace("   columnKeys: ");
-                            for (Map.Entry<ObjectInstance, DataObject> entry : keys.entrySet()) {
-                                logger.trace(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                            for (int i=0,size=keys.size();i<size;i++) {
+                                logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
                             }
                         }
 

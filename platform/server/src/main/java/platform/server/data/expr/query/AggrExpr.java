@@ -1,10 +1,10 @@
 package platform.server.data.expr.query;
 
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.BaseUtils;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
 import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
@@ -15,12 +15,10 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 
-import java.util.*;
-
 public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends AggrExpr<K, G, I, J, T, IC>, IC extends AggrExpr.QueryInnerContext<K, G, I, J, T, IC>> extends QueryExpr<K, I, J, T, IC> {
 
-    protected AggrExpr(I query, Map<K, BaseExpr> group) {
+    protected AggrExpr(I query, ImMap<K, BaseExpr> group) {
         super(query, group);
     }
 
@@ -29,8 +27,8 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
     }
 
     public static abstract class Query<G extends AggrType, I extends Query<G, I>> extends AbstractOuterContext<I> {
-        public final List<Expr> exprs;
-        public final OrderedMap<Expr, Boolean> orders;
+        public final ImList<Expr> exprs;
+        public final ImOrderMap<Expr, Boolean> orders;
         public final boolean ordersNotNull;
         public final G type;
 
@@ -38,14 +36,14 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return true;
         }
 
-        protected Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, boolean ordersNotNull, G type) {
+        protected Query(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, G type) {
             this.exprs = exprs;
             this.orders = orders;
             this.ordersNotNull = ordersNotNull;
             this.type = type;
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
         }
 
@@ -83,30 +81,24 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             return type.getMainExpr(exprs);
         }
 
-        public Set<Expr> getExprs() { // получает все выражения
-            Set<Expr> result = new HashSet<Expr>(exprs);
-            result.addAll(orders.keySet());
-            return result;
+        public ImSet<Expr> getExprs() { // получает все выражения
+            return SetFact.add(exprs.toOrderSet().getSet(), orders.keys());
         }
 
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(getExprs());
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return BaseUtils.immutableCast(getExprs());
         }
     }
     
-    public static Where getOrderWhere(OrderedMap<Expr, Boolean> orders, boolean ordersNotNull) {
+    public static Where getOrderWhere(ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull) {
         if(ordersNotNull)
-            return Expr.getWhere(orders.keySet());
+            return Expr.getWhere(orders.keys());
         else
             return Where.TRUE;
     }
 
-    public static OrderedMap<Expr, Boolean> fixOrders(OrderedMap<Expr, Boolean> orders, Map<?, KeyExpr> mapKeys) {
-        OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>(orders);
-        for(KeyExpr key : mapKeys.values())
-            if(!result.containsKey(key))
-                result.put(key, false);
-        return result;
+    public static ImOrderMap<Expr, Boolean> fixOrders(ImOrderMap<Expr, Boolean> orders, ImRevMap<?, KeyExpr> mapKeys) {
+        return orders.mergeOrder(mapKeys.valuesSet().toOrderSet().toOrderMap(false));
     }
 
     public abstract static class QueryInnerContext<K extends Expr,G extends AggrType, I extends AggrExpr.Query<G, I>, J extends QueryJoin<?, ?, ?, ?>,

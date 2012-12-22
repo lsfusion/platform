@@ -1,9 +1,9 @@
 package platform.server.logics.property;
 
-import platform.base.QuickSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.session.StructChanges;
-
-import java.util.List;
 
 public abstract class PullChangeProperty<T extends PropertyInterface, P extends PropertyInterface, I extends PropertyInterface> extends ChangeProperty<I> {
 
@@ -11,7 +11,7 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
     protected final CalcProperty<T> onChange;
     public final CalcProperty<P> toChange;
 
-    public PullChangeProperty(String SID, String caption, List<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
+    public PullChangeProperty(String SID, String caption, ImOrderSet<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
         super(SID, caption, interfaces);
         this.onChange = onChange;
         this.toChange = toChange;
@@ -21,11 +21,11 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
         return equals(property) || (depends(onChange, property) && depends(property, toChange));
     }
 
-    public static QuickSet<CalcProperty> getUsedChanges(CalcProperty<?> onChange, CalcProperty<?> toChange, StructChanges propChanges) {
-        return QuickSet.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
+    public static ImSet<CalcProperty> getUsedChanges(CalcProperty<?> onChange, CalcProperty<?> toChange, StructChanges propChanges) {
+        return SetFact.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
     }
 
-    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return getUsedChanges(onChange,toChange, propChanges);
     }
 

@@ -1,5 +1,10 @@
 package platform.server.integration;
 
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,12 +17,12 @@ import java.util.Map;
  */
 
 public class PlainDataTable<T> implements Iterable<PlainDataTable.Row> {
-    public final List<T> fields; // todo [dale]: отрефакторить, не нужен тут public
+    public final ImOrderSet<T> fields; // todo [dale]: отрефакторить, не нужен тут public
     public List<List<Object>> data;
     protected final Map<T, Integer> fieldIndex;
 
     public PlainDataTable(List<T> fields, List<List<Object>> data) {
-        this.fields = fields;
+        this.fields = SetFact.fromJavaOrderSet(fields);
         this.data = data;
 
         fieldIndex = new HashMap<T, Integer>();

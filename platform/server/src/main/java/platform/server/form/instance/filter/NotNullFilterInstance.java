@@ -1,6 +1,8 @@
 package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -16,7 +18,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 public class NotNullFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
@@ -41,7 +42,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         checkChange = false;
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         return property.getExpr(mapKeys, modifier).getWhere();
     }
 
@@ -61,8 +62,8 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         if (!hasObjectInInterface(object))
             return;
 
-        Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
-        Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
+        ImRevMap<P, KeyExpr> mapKeys = property.property.getMapKeys();
+        ImRevMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap().crossJoin(mapKeys);
         property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), env, true);
     }
 }

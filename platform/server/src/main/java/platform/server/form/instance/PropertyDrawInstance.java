@@ -1,15 +1,16 @@
 package platform.server.form.instance;
 
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.ServerResourceBundle;
-import platform.server.logics.property.*;
-
-import java.util.HashMap;
-import java.util.List;
+import platform.server.logics.property.NullValueProperty;
+import platform.server.logics.property.PropertyInterface;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -30,7 +31,13 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return toDraw != null ? toDraw.curClassView : ClassViewType.PANEL;
     }
 
-    public List<GroupObjectInstance> columnGroupObjects;
+    private final ImOrderSet<GroupObjectInstance> columnGroupObjects;
+    public ImSet<GroupObjectInstance> getColumnGroupObjects() {
+        return columnGroupObjects.getSet();
+    }
+    public ImOrderSet<GroupObjectInstance> getOrderColumnGroupObjects() {
+        return columnGroupObjects;
+    }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public final CalcPropertyObjectInstance<?> propertyCaption;
@@ -50,7 +57,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
                                 PropertyObjectInstance<P, ?> propertyObject,
                                 GroupObjectInstance toDraw,
-                                List<GroupObjectInstance> columnGroupObjects,
+                                ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 CalcPropertyObjectInstance<?> propertyCaption,
                                 CalcPropertyObjectInstance<?> propertyReadOnly,
                                 CalcPropertyObjectInstance<?> propertyFooter,
@@ -95,7 +102,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
         public CalcPropertyObjectInstance getPropertyObjectInstance() {
-            return new CalcPropertyObjectInstance<PropertyInterface>(NullValueProperty.instance, new HashMap<PropertyInterface, ObjectInstance>());
+            return new CalcPropertyObjectInstance<PropertyInterface>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 
         public byte getTypeID() {

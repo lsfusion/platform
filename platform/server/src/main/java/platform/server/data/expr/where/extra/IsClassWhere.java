@@ -1,7 +1,10 @@
 package platform.server.data.expr.where.extra;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -11,18 +14,16 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.*;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ExprStatJoin;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.List;
 
 public class IsClassWhere extends DataWhere {
 
@@ -64,19 +65,19 @@ public class IsClassWhere extends DataWhere {
         return expr.translateQuery(translator).isClass(classes);
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(expr);
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>singleton(expr);
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         if(classes instanceof ObjectClassSet)
             classExpr.fillJoinWheres(joins,andWhere);
         else
             expr.fillJoinWheres(joins,andWhere);        
     }
 
-    protected DataWhereSet calculateFollows() {
-        return new DataWhereSet(expr.getExprFollows(true, true));
+    protected ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(expr.getExprFollows(true, true));
     }
 
     //    public KeyEquals calculateKeyEquals() {
@@ -87,7 +88,7 @@ public class IsClassWhere extends DataWhere {
         BaseClass baseClass = classes.getBaseClass();
         return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         if(classes instanceof ObjectValueClassSet)
             return new GroupJoinsWheres(new ExprStatJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this, noWhere);
         return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
@@ -100,7 +101,7 @@ public class IsClassWhere extends DataWhere {
         return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes);
     }
 

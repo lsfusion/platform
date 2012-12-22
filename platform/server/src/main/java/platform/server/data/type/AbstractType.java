@@ -1,6 +1,5 @@
 package platform.server.data.type;
 
-import platform.server.classes.StringClass;
 import platform.server.data.sql.SQLSyntax;
 
 public abstract class AbstractType<T> implements Type<T> {

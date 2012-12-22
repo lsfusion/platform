@@ -1,6 +1,9 @@
 package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.ModalityType;
@@ -21,9 +24,7 @@ import platform.server.logics.property.derived.DerivedProperty;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -69,7 +70,7 @@ public class ScriptingFormEntity {
             String groupName = groupObject.groupName;
             if (groupName == null) {
                 groupName = "";
-                for (ObjectEntity obj : groupObj.objects) {
+                for (ObjectEntity obj : groupObj.getOrderObjects()) {
                     groupName = (groupName.length() == 0 ? "" : groupName + ".") + obj.getSID();
                 }
             }
@@ -116,7 +117,7 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();
                 for (String sid : properties) {
                     if (sid != null)
-                        propertyObjects.add(form.addPropertyObject((LCP)LM.findLPByCompoundName(sid), groupObj.objects.toArray(new ObjectEntity[groupObj.objects.size()])));
+                        propertyObjects.add(form.addPropertyObject((LCP)LM.findLPByCompoundName(sid), groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                 }
 
                 if (!propertyObjects.isEmpty())
@@ -257,7 +258,7 @@ public class ScriptingFormEntity {
         }
 
         if (options.getColumns() != null) {
-            property.columnGroupObjects = options.getColumns();
+            property.setColumnGroupObjects(SetFact.fromJavaOrderSet(options.getColumns()));
         }
 
         property.propertyCaption = options.getHeader();
@@ -326,14 +327,14 @@ public class ScriptingFormEntity {
         }
     }
 
-    private CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<?> groundProperty, boolean back) {
-        LCP<?> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
-        CalcPropertyMapImplement<?, ?> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
-                                                                     new CalcPropertyMapImplement(defaultColorProp.property, new HashMap()),
-                                                                     new CalcPropertyMapImplement(groundProperty.property, BaseUtils.buildMap(groundProperty.property.interfaces, groundProperty.property.interfaces)));
+    private <P extends PropertyInterface, C extends PropertyInterface> CalcPropertyObjectEntity addGroundPropertyObject(CalcPropertyObjectEntity<P> groundProperty, boolean back) {
+        LCP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
+        CalcPropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
+        CalcPropertyMapImplement<?, P> mapImpl = DerivedProperty.createAnd(groundProperty.property.interfaces,
+                new CalcPropertyMapImplement<C, P>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
-                BaseUtils.join(mapImpl.mapping, (Map<PropertyInterface,PropertyObjectInterfaceEntity>) groundProperty.mapping));
+                mapImpl.mapping.join(groundProperty.mapping));
     }
 
     private void setPropertyDrawAlias(String alias, PropertyDrawEntity property) {

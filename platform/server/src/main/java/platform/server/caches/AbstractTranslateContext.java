@@ -1,8 +1,12 @@
 package platform.server.caches;
 
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashContext;
@@ -11,7 +15,6 @@ import platform.server.data.Value;
 import platform.server.data.translator.MapObject;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать
 public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends TwinImmutableObject implements PackInterface<T> {
@@ -20,16 +23,30 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
     private WeakReference<T> from;
     private WeakReference<M> translator;
     public T getFrom() {
-        if(from==null)
+        if(from==null) {
+            translator = null;
             return null;
-        else
-            return from.get();
+        } else {
+            T result = from.get();
+            if(result==null) {
+                from = null;
+                translator = null;
+            }
+            return result;
+        }
     }
     public M getTranslator() {
-        if(translator==null)
+        if(translator==null) {
+            from = null;
             return null;
-        else
-            return translator.get();
+        } else {
+            M result = translator.get();
+            if(result==null) {
+                from = null;
+                translator = null;
+            }
+            return result;
+        }
     }
     public void initTranslate(T from, M translator) {
         assert from!=this; // identity должен отрубать
@@ -99,14 +116,14 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
     }
     protected abstract int hash(H hash); // по сути protected
 
-    protected QuickSet<Value> values;
+    protected ImSet<Value> values;
     @ManualLazy
-    protected QuickSet<Value> aspectGetValues() {
+    protected ImSet<Value> aspectGetValues() {
         if(values==null)
             values = getValues();
         return values;
     }
-    public abstract QuickSet<Value> getValues(); // по сути protected
+    public abstract ImSet<Value> getValues(); // по сути protected
 
     public T calculatePack() {
         throw new RuntimeException("not supported yet");
@@ -140,31 +157,27 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         throw new RuntimeException("not supported yet");
     }
 
-    public static <K, T extends PackInterface<T>> Map<K, T> pack(Map<K, T> map) {
-        Map<K, T> result = new HashMap<K, T>();
-        for(Map.Entry<K, T> entry : map.entrySet())
-            result.put(entry.getKey(), entry.getValue().pack());
-        return result;
+    private final static GetValue<Object, PackInterface<Object>> packValue = new GetValue<Object, PackInterface<Object>>() {
+        public Object getMapValue(PackInterface<Object> value) {
+            return value.pack();
+        }};
+    private static <T extends PackInterface<T>> GetValue<T, T> packValue() {
+        return BaseUtils.immutableCast(packValue);
     }
 
-    public static <T extends PackInterface<T>> List<T> pack(List<T> exprs) {
-        List<T> result = new ArrayList<T>();
-        for(T expr : exprs)
-            result.add(expr.pack());
-        return result;
+    public static <K, T extends PackInterface<T>> ImMap<K, T> pack(ImMap<K, T> map) {
+        return map.mapValues(AbstractTranslateContext.<T>packValue());
     }
 
-    public static <T extends PackInterface<T>> Set<T> pack(Set<T> exprs) {
-        Set<T> result = new HashSet<T>();
-        for(T expr : exprs)
-            result.add(expr.pack());
-        return result;
+    public static <T extends PackInterface<T>> ImList<T> pack(ImList<T> exprs) {
+        return exprs.mapListValues(AbstractTranslateContext.<T>packValue());
     }
 
-    public static <T extends PackInterface<T>> OrderedMap<T, Boolean> pack(OrderedMap<T, Boolean> map) {
-        OrderedMap<T, Boolean> result = new OrderedMap<T, Boolean>();
-        for(Map.Entry<T, Boolean> entry : map.entrySet())
-            result.put(entry.getKey().pack(), entry.getValue());
-        return result;
+    public static <T extends PackInterface<T>> ImSet<T> pack(ImSet<T> exprs) {
+        return exprs.mapMergeSetValues(AbstractTranslateContext.<T>packValue());
+    }
+
+    public static <T extends PackInterface<T>> ImOrderMap<T, Boolean> pack(ImOrderMap<T, Boolean> map) {
+        return map.mapMergeOrderKeys(AbstractTranslateContext.<T>packValue());
     }
 }

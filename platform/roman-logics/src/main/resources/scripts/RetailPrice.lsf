@@ -715,8 +715,8 @@ priceAPriceSetDocumentSkuCurrencyDateTime(sku, currency, dateTime) = priceABaseP
 
 // Цена на кассе
 EXTEND CLASS systemPriceListType { userPriceListType 'Продажная' }
-priceSystemPriceListTypeSkuStockDateTime (listType, sku, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore AND listType == systemPriceListType.userPriceListType;
-priceSystemPriceListTypeBatchStockDateTime (listType, batch, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(skuBatch(batch), currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore AND listType == systemPriceListType.userPriceListType;
+priceSystemPriceListTypeSkuStockDateTime (listType, sku, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(sku, currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore WHEN listType == systemPriceListType.userPriceListType;
+priceSystemPriceListTypeBatchStockDateTime (listType, batch, departmentStore, dateTime) += priceBPriceSetDocumentSkuCurrencyDateTime(skuBatch(batch), currencyStock(departmentStore), dateTime) IF departmentStore IS departmentStore WHEN listType == systemPriceListType.userPriceListType;
 
 // -------------------------------------------------- Форма истории изменения цен ------------------------------------- //
 

@@ -1,13 +1,12 @@
 package platform.server.data.expr;
 
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.ValueJoin;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.JoinData;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
@@ -30,7 +29,7 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
         return objectClass.getTypeStat();
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
     public Stat getStatValue(KeyStat keyStat) {

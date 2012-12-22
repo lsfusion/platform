@@ -1,7 +1,10 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.BaseClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -14,48 +17,54 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Map;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
 
     protected SessionData<?> table;
-    protected Map<KeyField, K> mapKeys;
-    protected Map<PropertyField, V> mapProps;
+    protected ImRevMap<KeyField, K> mapKeys;
+    protected ImRevMap<PropertyField, V> mapProps;
     
-    public Collection<K> getKeys() {
-        return mapKeys.values();
+    public ImSet<K> getKeys() {
+        return mapKeys.valuesSet();
     }
 
-    public Collection<V> getValues() {
-        return mapProps.values();
+    public ImSet<V> getValues() {
+        return mapProps.valuesSet();
     }
 
-    public Map<K, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(mapKeys.values());
+    public ImRevMap<K, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(getKeys());
     }
 
-    public SessionTableUsage(List<K> keys, List<V> properties, Type.Getter<K> keyType, Type.Getter<V> propertyType) {
-        List<KeyField> keyList = new ArrayList<KeyField>();
-        mapKeys = new HashMap<KeyField, K>();
-        for(K key : keys) {
-            KeyField keyField = new KeyField("k"+mapKeys.size(),keyType.getType(key));
-            keyList.add(keyField);
-            mapKeys.put(keyField, key);
-        }
+    public static <K, V, P extends PropertyInterface> PropertyChange<P> getChange(SessionTableUsage<K, V> table, ImRevMap<P, K> map, V value) {
+        ImRevMap<K, KeyExpr> mapKeys = table.getMapKeys();
+        Join<V> join = table.join(mapKeys);
+        return new PropertyChange<P>(map.join(mapKeys), join.getExpr(value), join.getWhere());
+    }
 
-        mapProps = new HashMap<PropertyField, V>();
-        for(V property : properties) // нужен детерминированный порядок, хотя бы для StructChanges
-            mapProps.put(new PropertyField("p"+mapProps.size(), propertyType.getType(property)), property);
+    public SessionTableUsage(ImOrderSet<K> keys, ImOrderSet<V> properties, final Type.Getter<K> keyType, final Type.Getter<V> propertyType) {
+        ImRevMap<K, KeyField> revMapKeys = keys.mapOrderRevValues(new GetIndexValue<KeyField, K>() {
+            public KeyField getMapValue(int i, K value) {
+                return new KeyField("k" + i, keyType.getType(value));
+            }});
+        mapKeys = revMapKeys.reverse();
 
-        table = new SessionRows(keyList, mapProps.keySet());
+        mapProps = properties.mapOrderRevKeys(new GetIndexValue<PropertyField, V>() { // нужен детерминированный порядок, хотя бы для StructChanges
+            public PropertyField getMapValue(int i, V value) {
+                return new PropertyField("p" + i, propertyType.getType(value));
+            }});
+
+        table = new SessionRows(keys.mapOrder(revMapKeys), mapProps.keys());
     }
 
 
     public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
-                             final Map<K, Type> keyTypes, final Map<V, Type> propertyTypes) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
-        this(new ArrayList<K>(query.mapKeys.keySet()), new ArrayList<V>(query.properties.keySet()), new Type.Getter<K>() {
+                             final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes) throws SQLException { // здесь порядок особо не важен, так как assert что getUsage'а не будет
+        this(query.mapKeys.keys().toOrderSet(), query.properties.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return keyTypes.get(key);
             }
@@ -67,36 +76,40 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         writeRows(sql, query, baseClass, env);
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return new RemapJoin<V, PropertyField>(table.join(BaseUtils.join(mapKeys, joinImplement)), BaseUtils.reverse(mapProps));
+    public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
+        return new RemapJoin<V, PropertyField>(table.join(mapKeys.join(joinImplement)), mapProps.reverse());
     }
 
-    public Where getWhere(Map<K, ? extends Expr> mapExprs) {
-        return table.join(BaseUtils.join(mapKeys, mapExprs)).getWhere();
+    public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
+        return table.join(mapKeys.join(mapExprs)).getWhere();
     }
 
-    public void modifyRecord(SQLSession session, Map<K, DataObject> keyObjects, Map<V, ObjectValue> propertyObjects, Modify type) throws SQLException {
-        table = table.modifyRecord(session, BaseUtils.join(mapKeys, keyObjects), BaseUtils.join(mapProps, propertyObjects), type, this);
+    public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type) throws SQLException {
+        table = table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this);
     }
 
-    public void writeKeys(SQLSession session,Collection<Map<K,DataObject>> writeRows) throws SQLException {
-        writeRows(session, BaseUtils.<Map<K,DataObject>, Map<V, ObjectValue>>toMap(writeRows, new HashMap<V, ObjectValue>()));
+    public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows) throws SQLException {
+        writeRows(session, writeRows.toMap(MapFact.<V, ObjectValue>EMPTY()));
     }
 
-    public void writeRows(SQLSession session,Map<Map<K,DataObject>,Map<V,ObjectValue>> writeRows) throws SQLException {
-        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> mapWriteRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-        for(Map.Entry<Map<K, DataObject>, Map<V, ObjectValue>> writeRow : writeRows.entrySet())
-            mapWriteRows.put(BaseUtils.join(mapKeys, writeRow.getKey()), BaseUtils.join(mapProps, writeRow.getValue()));
+    public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows) throws SQLException {
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
+            public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
+                return mapKeys.join(value);
+            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<V, ObjectValue>>() {
+            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
+                return mapProps.join(value);
+            }});
         table = table.rewrite(session, mapWriteRows, this);
     }
 
-    public void writeRows(SQLSession session, Query<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         table = table.rewrite(session, query.map(mapKeys, mapProps, MapValuesTranslator.noTranslate), baseClass, env, this);
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
-    public void modifyRows(SQLSession session, Query<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
-        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? new HashMap<PropertyField, V>() : mapProps, MapValuesTranslator.noTranslate), baseClass, type, env, this);
+    public void modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
+        table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps, MapValuesTranslator.noTranslate), baseClass, type, env, this);
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, int count) throws SQLException {
@@ -104,7 +117,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
 
     private PropertyField getField(V property) {
-        return BaseUtils.reverse(mapProps).get(property);
+        return mapProps.reverse().get(property);
     }
 
     /*    public void deleteProperty(SQLSession session, V property, DataObject object) throws SQLException {
@@ -116,38 +129,39 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         table = null;
     }
 
-    public Collection<Map<V, Object>> read(DataSession session, Map<K, DataObject> mapValues) throws SQLException {
-        return read(mapValues, session.sql, session.env, new OrderedMap<V, Boolean>()).values();
+    public ImCol<ImMap<V, Object>> read(DataSession session, ImMap<K, DataObject> mapValues) throws SQLException {
+        return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER()).values();
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> read(DataSession session) throws SQLException {
-        return read(session.sql, session.env, new OrderedMap<V, Boolean>());
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(DataSession session) throws SQLException {
+        return read(session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER());
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> read(FormInstance formInstance, OrderedMap<V, Boolean> orders) throws SQLException {
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(FormInstance formInstance, ImOrderMap<V, Boolean> orders) throws SQLException {
         return read(formInstance.session.sql, formInstance.getQueryEnv(), orders);
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> read(SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
-        return read(new HashMap<K, DataObject>(), session, env, orders);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException {
+        return read(MapFact.<K, DataObject>EMPTY(), session, env, orders);
     }
 
-    public OrderedMap<Map<K, Object>, Map<V, Object>> read(Map<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, OrderedMap<V, Boolean> orders) throws SQLException {
-        Query<K, V> query = new Query<K,V>(mapKeys.values(), mapValues);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(ImMap<K, DataObject> mapValues, SQLSession session, QueryEnvironment env, ImOrderMap<V, Boolean> orders) throws SQLException {
+        QueryBuilder<K, V> query = new QueryBuilder<K,V>(mapKeys.valuesSet(), mapValues);
         Join<V> tableJoin = join(query.getMapExprs());
-        query.properties.putAll(tableJoin.getExprs());
+        query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.execute(session, orders, 0, env);
     }
 
-    public <B> ClassWhere<B> getClassWhere(V property, Map<K, ? extends B> remapKeys, B mapProp) {
-        return new ClassWhere<B>(table.getClassWhere(getField(property)),
-                BaseUtils.merge(BaseUtils.join(mapKeys, remapKeys),
-                                BaseUtils.rightJoin(mapProps, Collections.singletonMap(property, mapProp))));
+    public <B> ClassWhere<B> getClassWhere(V property, ImRevMap<K, ? extends B> remapKeys, B mapProp) {
+        ClassWhere<Field> classWhere = table.getClassWhere(getField(property));
+        return new ClassWhere<B>(classWhere,
+                MapFact.addRevExcl(mapKeys.join(remapKeys),
+                        mapProps.rightJoin(MapFact.singletonRev(property, mapProp))));
     }
 
-    public <B> ClassWhere<B> getClassWhere(Map<K, B> remapKeys) {
-        return new ClassWhere<B>(table.getClassWhere(), BaseUtils.join(mapKeys, remapKeys));
+    public <B> ClassWhere<B> getClassWhere(ImRevMap<K, B> remapKeys) {
+        return new ClassWhere<B>(table.getClassWhere(), mapKeys.join(remapKeys));
     }
 
 
@@ -164,11 +178,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         this.table.rollDrop(sql, this);
     }
     
-    public static <T> Map<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {
-        Map<T, SessionData> result = new HashMap<T, SessionData>();
-        for(Map.Entry<T, ? extends SessionTableUsage> entry : map.entrySet())
-            result.put(entry.getKey(), entry.getValue().saveData());
-        return result;
+    public static <T> ImMap<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {
+        return MapFact.<T, SessionTableUsage>fromJavaMap(map).mapValues(new GetValue<SessionData, SessionTableUsage>() {
+            public SessionData getMapValue(SessionTableUsage value) {
+                return value.saveData();
+            }});
     }
 
     public int getCount() {

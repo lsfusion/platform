@@ -138,7 +138,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentInterfacePriceListType(invoice); // объявляем вид цены
     @deriveDocumentDetailPriceListTypeAgreement(invoice); // записываем вид цены из соглашения
-    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
+//    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
 
     // объявляем Action'ы для ON CHANGE EXEC
     @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
@@ -434,9 +434,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         HINTTABLE LIST dateTimeUserInvoiceDetail, skuUserInvoiceDetail, supplierStockUserInvoiceDetail, customerStockUserInvoiceDetail,
                        priceListTypeUserInvoiceDetail, currencyUserInvoiceDetail,
-                       priceUserInvoiceDetail, VATUserInvoiceDetail, valueVATUserInvoiceDetail, invoicePriceUserInvoiceDetail,
-                       prevListSkuPriceUserInvoiceDetail, prevListSkuPriceMVATUserInvoiceDetail, prevListSkuPricePVATUserInvoiceDetail
-
+                       priceUserInvoiceDetail, VATUserInvoiceDetail, valueVATUserInvoiceDetail, invoicePriceUserInvoiceDetail
 
         EDIT userInvoice OBJECT i
     ;
@@ -629,7 +627,7 @@ META defineInvoiceBatch(stockProp)
 
     EXTEND FORM userInvoice
         PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC batchDialogUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
-        HINTTABLE LIST batchUserInvoiceDetail, prevListBatchPriceUserInvoiceDetail, prevListPriceMVATUserInvoiceDetail, prevListPricePVATUserInvoiceDetail
+        HINTTABLE LIST batchUserInvoiceDetail
     ;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 END

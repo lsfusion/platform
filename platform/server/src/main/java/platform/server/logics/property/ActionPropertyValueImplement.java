@@ -1,11 +1,11 @@
 package platform.server.logics.property;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ActionPropertyValueImplement<T extends PropertyInterface> extends ActionPropertyImplement<T, DataObject> {
 
@@ -13,7 +13,7 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
         super(action);
     }
 
-    public ActionPropertyValueImplement(ActionProperty<T> action, Map<T, DataObject> mapping) {
+    public ActionPropertyValueImplement(ActionProperty<T> action, ImMap<T, DataObject> mapping) {
         super(action, mapping);
     }
 

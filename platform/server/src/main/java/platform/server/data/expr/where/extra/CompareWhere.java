@@ -1,5 +1,6 @@
 package platform.server.data.expr.where.extra;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
@@ -9,8 +10,6 @@ import platform.server.data.where.OrObjectWhere;
 import platform.server.data.where.OrWhere;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
-
-import java.util.Map;
 
 public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {
     
@@ -48,17 +47,17 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         return OrWhere.checkTrue(getSymmetricWhere(),where);
     }
 
-    public static <K> Where compare(Map<K,? extends Expr> map1,Map<K,? extends Expr> map2) {
+    public static <K> Where compare(ImMap<K, ? extends Expr> map1, ImMap<K, ? extends Expr> map2) {
         Where where = TRUE;
-        for(Map.Entry<K,? extends Expr> entry : map1.entrySet())
-            where = where.and(entry.getValue().compare(map2.get(entry.getKey()), Compare.EQUALS));
+        for(int i=0,size=map1.size();i<size;i++)
+            where = where.and(map1.getValue(i).compare(map2.get(map1.getKey(i)), Compare.EQUALS));
         return where;
     }
 
-    public static <K> Where compareValues(Map<K,? extends Expr> map,Map<K, DataObject> mapValues) {
+    public static <K> Where compareValues(ImMap<K,? extends Expr> map,ImMap<K, DataObject> mapValues) {
         Where where = TRUE;
-        for(Map.Entry<K,? extends Expr> entry : map.entrySet())
-            where = where.and(entry.getValue().compare(mapValues.get(entry.getKey()), Compare.EQUALS));
+        for(int i=0,size=map.size();i<size;i++)
+            where = where.and(map.getValue(i).compare(mapValues.get(map.getKey(i)), Compare.EQUALS));
         return where;
     }
 

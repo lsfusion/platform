@@ -1,6 +1,10 @@
 package platform.server.classes;
 
-import platform.server.classes.sets.*;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.ObjectClassSet;
+import platform.server.classes.sets.OrObjectClassSet;
+import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.logics.DataObject;
 
@@ -14,8 +18,8 @@ public abstract class ConcreteCustomClass extends CustomClass implements Concret
         return set.containsAll(this);
     }
 
-    public void fillNextConcreteChilds(ConcreteCustomClassSet classSet) {
-        classSet.add(this);            
+    public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {
+        mClassSet.add(this);
     }
 
     public DataObject getClassObject() {

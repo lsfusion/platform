@@ -1,11 +1,9 @@
 package platform.server.data.expr.where.extra;
 
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.StaticExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.where.Where;
 
@@ -35,7 +33,7 @@ public class GreaterWhere extends CompareWhere {
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return super.twins(obj) && orEquals == ((GreaterWhere)obj).orEquals;
     }
 

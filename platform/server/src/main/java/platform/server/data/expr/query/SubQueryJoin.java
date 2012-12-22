@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
@@ -10,12 +11,9 @@ import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
-import java.util.Map;
-import java.util.Set;
-
 public class SubQueryJoin extends QueryJoin<KeyExpr, Where, SubQueryJoin, SubQueryJoin.QueryOuterContext> {
 
-    public SubQueryJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where inner, Map<KeyExpr, BaseExpr> group) {
+    public SubQueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where inner, ImMap<KeyExpr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
@@ -32,7 +30,7 @@ public class SubQueryJoin extends QueryJoin<KeyExpr, Where, SubQueryJoin, SubQue
         return new QueryOuterContext(this);
     }
 
-    protected SubQueryJoin createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where query, Map<KeyExpr, BaseExpr> group) {
+    protected SubQueryJoin createThis(ImSet<KeyExpr> keys, ImSet<Value> values, Where query, ImMap<KeyExpr, BaseExpr> group) {
         return new SubQueryJoin(keys, values, query, group);
     }
 

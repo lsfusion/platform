@@ -1,12 +1,12 @@
 package platform.server.data;
 
-import platform.server.Settings;
 import platform.base.MutableObject;
+import platform.base.col.MapFact;
+import platform.server.Settings;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
@@ -37,7 +37,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     private final Object lock = new Object();
-    private final Map<Connection, WeakReference<MutableObject>> usedConnections = new HashMap<Connection, WeakReference<MutableObject>>();
+    private final Map<Connection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
     private final Stack<Connection> freeConnections = new Stack<Connection>();
 
     private void checkUsed() throws SQLException {

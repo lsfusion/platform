@@ -2,22 +2,22 @@ package platform.server.data.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-
-import java.util.List;
 
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
@@ -81,7 +81,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
     // разобъем чисто для оптимизации
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
             wheres[i].fillJoinWheres(joins,andWhere.and(toWhere(siblings(wheres, i))));
     }
@@ -90,7 +90,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         GroupJoinsWheres result = new GroupJoinsWheres(TRUE, noWhere);
         for(Where where : wheres)
             result = result.and(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
@@ -105,7 +105,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
         for(Where where : wheres) {
-            if(useNots && (result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
+            if(useNots && (result.size() > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
                 return groupMeanClassWheres(false);
             result = result.and(where.groupMeanClassWheres(useNots));
         }
@@ -214,7 +214,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
     }
 

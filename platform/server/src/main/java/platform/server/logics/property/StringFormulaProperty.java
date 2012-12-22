@@ -1,15 +1,15 @@
 package platform.server.logics.property;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
@@ -26,11 +26,11 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         }
     }
 
-    static List<Interface> getInterfaces(int paramCount) {
-        List<Interface> interfaces = new ArrayList<Interface>();
-        for(int i=0;i<paramCount;i++)
-            interfaces.add(new Interface(i));
-        return interfaces;
+    static ImOrderSet<Interface> getInterfaces(int paramCount) {
+        return SetFact.toOrderExclSet(paramCount, new GetIndex<Interface>() {
+            public Interface getMapValue(int i) {
+                return new Interface(i);
+            }});
     }
 
     public Interface findInterface(String string) {
@@ -47,11 +47,15 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         finalizeInit();
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
-        Map<String, Expr> params = new HashMap<String, Expr>();
-        for(Interface propertyInterface : interfaces)
-            params.put(propertyInterface.getString(), joinImplement.get(propertyInterface));
+        ImMap<String, Expr> params = interfaces.mapKeyValues(new GetValue<String, Interface>() {
+            public String getMapValue(Interface value) {
+                return value.getString();
+            }}, new GetValue<Expr, Interface>() {
+            public Expr getMapValue(Interface value) {
+                return joinImplement.get(value);
+            }});
 
         return FormulaExpr.create(formula, value, params);
     }

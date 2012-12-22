@@ -1,6 +1,10 @@
 package platform.server.form.entity;
 
-import platform.base.Result;
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.server.classes.ValueClass;
@@ -83,14 +87,14 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         addPropertyDraw(logProperty, entities);
 
-        List<PropertyClassImplement> recognizePropImpls =
-                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(property.property.getValueClass()))), true);
+        ImList<PropertyClassImplement> recognizePropImpls =
+                LM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass()))), true);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
                 CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
                 int paramCnt = logProperty.property.interfaces.size();
-                List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
+                ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
                 LCP lpMainProp = new LCP(calcImpl.property);
 
@@ -113,7 +117,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {
-        Map<? extends PropertyInterface,ValueClass> interfaces = property.property.getInterfaceClasses();
+        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses();
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
         for (PropertyInterface pi : property.property.interfaces) {

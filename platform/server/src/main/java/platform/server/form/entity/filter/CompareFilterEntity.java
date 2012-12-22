@@ -5,7 +5,6 @@ import platform.server.classes.DataClass;
 import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
-import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.logics.DataObject;

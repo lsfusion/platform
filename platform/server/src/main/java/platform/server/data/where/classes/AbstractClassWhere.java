@@ -1,6 +1,14 @@
 package platform.server.data.where.classes;
 
 import platform.base.*;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.WrapMap;
+import platform.base.SFunctionSet;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
@@ -8,8 +16,6 @@ import platform.server.classes.sets.OrClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-
-import java.util.*;
 
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться
@@ -22,91 +28,118 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     public This and(This where) {
         return intersect(where);
     }
+    
+    public static abstract class NF<K, V> extends WrapMap<K, V> {
 
-    public static class And<K> extends QuickMap<K, AndClassSet> {
-
-        @Override
-        public boolean add(K key, AndClassSet value) {
-            assert value!=null; // не зачем null'ы лучше вообще не добавлять
-            return super.add(key, value);
+        protected NF(ImMap<? extends K, ? extends V> map) {
+            super(map);
         }
 
-        public boolean compatible(And<K> and) {
-            for(int i=0;i<size;i++)
-                if(getValue(i).getType().getCompatible(and.get(getKey(i)).getType())==null)
-                    return false;
+        protected NF(K key, V value) {
+            super(key, value);
+        }
+
+        protected abstract boolean containsAll(V who, V what);
+
+        public boolean containsAll(NF<K, V> set) {
+            if (size() > set.size()) return false; // если больше то содержать не может
+
+            for (int i = 0, size = size() ; i < size; i++) {
+                V inSet = set.get(getKey(i));
+                if (inSet == null || !(containsAll(getValue(i), inSet))) return false;
+            }
             return true;
         }
-        
-        public <T> And<T> remap(Map<K, ? extends T> remap) {
-            And<T> result = new And<T>();
-            for(int i=0;i<size;i++)
-                result.add(remap.get(getKey(i)), getValue(i));
-            return result;
-        }
-        
-        public And<K> remove(Collection<? extends K> keys) {
-            And<K> result = new And<K>();
-            for(int i=0;i<size;i++) {
-                K key = getKey(i);
-                if(!keys.contains(key))
-                    result.add(key, getValue(i));
-            }
-            return result;
-        }
+    }
 
-        public <T extends K> And<T> keep(Collection<T> keys) {
-            And<T> result = new And<T>();
-            for(int i=0;i<size;i++) {
-                K key = getKey(i);
-                if(keys.contains(key))
-                    result.add((T) key, getValue(i));
-            }
-            return result;
-        }
-
-        protected AndClassSet addValue(K key, AndClassSet prevValue, AndClassSet newValue) {
+    private final static AddValue<Object, AndClassSet> addAnd = new AddValue<Object, AndClassSet>() {
+        public AndClassSet addValue(Object key, AndClassSet prevValue, AndClassSet newValue) {
             AndClassSet andValue = prevValue.and(newValue);
             if(andValue.isEmpty())
                 return null;
-            else
-                return andValue;
+            return andValue;
         }
 
-        protected boolean containsAll(AndClassSet who, AndClassSet what) {
-            return who.containsAll(what);
+        public boolean symmetric() {
+            return true;
         }
 
-        public And() {
+        public boolean stopWhenNull() {
+            return true;
         }
+    };
+    public static <K> AddValue<K, AndClassSet> addAnd() {
+        return (AddValue<K, AndClassSet>) addAnd;
+    }
 
-        public <V> And(And<V> andWhere, Map<V, K> map) {
-            for(int j=0;j< andWhere.size;j++) {
-                K mapValue = map.get(andWhere.getKey(j));
-                if(mapValue!=null)
-                    add(mapValue, andWhere.getValue(j));
-            }
-        }
+    public static class And<K> extends NF<K, AndClassSet> {
 
-        public And(QuickMap<? extends K, AndClassSet> set) {
-            super((QuickMap<K,AndClassSet>) set);
+        public And(ImMap<? extends K, ? extends AndClassSet> map) {
+            super(map);
         }
 
         public And(K key, AndClassSet value) {
             super(key, value);
         }
 
-        public Where getWhere(Map<K, ? extends Expr> mapExprs) {
+        private final static And empty = new And(MapFact.EMPTY());
+        public static <K> And<K> EMPTY() {
+            return empty;
+        } 
+
+        public boolean compatible(And<K> and) {
+            for(int i=0,size=size();i<size;i++)
+                if(getValue(i).getType().getCompatible(and.get(getKey(i)).getType())==null)
+                    return false;
+            return true;
+        }
+
+        protected And<K> intersect(And<K> where2) {
+            ImMap<K, AndClassSet> result = map.merge(where2.map, AbstractClassWhere.<K>addAnd()); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
+            if(result==null)
+                return null;
+            return new And<K>(result);
+        }
+
+        public <T> And<T> remap(ImRevMap<K, ? extends T> remap) {
+            return new And<T>((ImMap<T,AndClassSet>) remap.rightCrossJoin(map));
+        }
+        public <T> And<T> innerRemap(ImRevMap<K, ? extends T> remap) {
+            return new And<T>((ImMap<T,AndClassSet>) remap.innerCrossJoin(map));
+        }
+        public <T> And<T> mapBack(ImRevMap<T, ? extends K> remap) {
+            return new And<T>(((ImRevMap<T, K>)remap).join(map));
+        }
+
+        public And<K> remove(ImSet<? extends K> keys) {
+            return new And<K>(map.remove(keys));
+        }
+
+        public <T extends K> And<T> filterKeys(ImSet<T> keys) {
+            return new And<T>(map.filter(keys));
+        }
+
+        public <T extends K> And<T> filterInclKeys(ImSet<T> keys) {
+            return new And<T>(map.filterIncl(keys));
+        }
+
+        protected boolean containsAll(AndClassSet who, AndClassSet what) {
+            return who.containsAll(what);
+        }
+
+        public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
             Where result = Where.TRUE;
-            for(int i=0;i<size;i++)
+            for(int i=0,size=size();i<size;i++)
                 result = result.and(mapExprs.get(getKey(i)).isClass(getValue(i)));
             return result;
         }
 
         public And<K>[] andNot(AbstractClassWhere<K, ?> where) {
-            AndClassSet[][] ands = new AndClassSet[size][];
-            for(int i=0;i<size;i++)
-                ands[i] = getValue(i).getAnd();
+            ImOrderMap<K,AndClassSet> orderAnd = toOrderMap();
+
+            AndClassSet[][] ands = new AndClassSet[orderAnd.size()][];
+            for(int i=0;i<orderAnd.size();i++)
+                ands[i] = orderAnd.getValue(i).getAnd();
             ArrayCombinations<AndClassSet> combs = new ArrayCombinations<AndClassSet>(ands, AndClassSet.arrayInstancer);
             if(combs.max==1) {
                 if(where.meansFrom(this))
@@ -116,9 +149,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             }
             And<K>[] keep = new And[combs.max]; int k=0;
             for(AndClassSet[] comb : combs) {
-                And<K> and = new And<K>();
-                for(int i=0;i<size;i++)
-                    and.add(getKey(i), comb[i]);
+                And<K> and = new And<K>(orderAnd.replaceValues(comb).getMap());
                 if(!where.meansFrom(and))
                     keep[k++] = and;
             }
@@ -129,8 +160,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     }
 
-    protected And<K> createMap() {
-        return new And<K>();
+    protected And<K> createMap(ImMap<K, AndClassSet> map) {
+        return new And<K>(map);
     }
 
     protected AndClassSet addMapValue(AndClassSet value1, AndClassSet value2) {
@@ -138,10 +169,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     protected AbstractClassWhere(boolean isTrue) {
-        super(isTrue?new And[]{new And<K>()}:new And[0]);
+        super(isTrue?new And[]{And.EMPTY()}:new And[0]);
     }
 
-    public QuickMap<K,AndClassSet>[] getAnds() {
+    public ImMap<K,AndClassSet>[] getAnds() {
         return wheres;
     }
 
@@ -154,12 +185,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     protected And<K> intersect(And<K> where1, And<K> where2) {
-        if(where1.size>where2.size) return intersect(where2,where1); // пусть добавляется в большую
-
-        And<K> result = new And<K>(where2);
-        if(!result.addAll(where1))
-            return null;
-        return result;
+        return where1.intersect(where2);
     }
 
     protected AbstractClassWhere(And<K>[] wheres) {
@@ -170,14 +196,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         super(new And<K>(key,classes));
     }
 
-    private static <K> And<K> initAndClassSets(Map<K,? extends AndClassSet> map) {
-        And<K> result = new And<K>();
-        for(Map.Entry<K,? extends AndClassSet> entry : map.entrySet())
-            result.add(entry.getKey(),entry.getValue());
-        return result;
-    }
-    protected AbstractClassWhere(Map<K,? extends AndClassSet> map) {
-        super(initAndClassSets(map));
+    protected AbstractClassWhere(ImMap<K,? extends AndClassSet> map) {
+        super(new And<K>((ImMap<K, AndClassSet>) map));
     }
 
     public boolean isTrue() {
@@ -191,12 +211,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return result;
     }
 
-    protected abstract This FALSE();
+    protected abstract This FALSETHIS();
 
     public This andNot(This where) {
         if(where.isFalse())
             return (This) this;
-        This changedWhere = FALSE();
+        This changedWhere = FALSETHIS();
         if(where.isTrue())
             return changedWhere;
         
@@ -233,8 +253,9 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             Object[][] mwheres = new Object[wheres.length][]; AndClassSet[][] msets=new AndClassSet[wheres.length][]; int[] mnums=new int[wheres.length]; int mnum=0;
             // берем все перестановки из means, and'им их и проверяем на means всех элементов, сделаем в лоб потому как Combinations слишком громоздкий
             for(And<K> where : wheres) { // бежим по всем операндам
-                Object[] keys = new Object[where.size]; AndClassSet[] sets = new AndClassSet[where.size]; int num=0;
-                for(int i=0;i<where.size;i++) { // бежим по всем элементам
+                int size = where.size();
+                Object[] keys = new Object[size]; AndClassSet[] sets = new AndClassSet[size]; int num=0;
+                for(int i=0;i<size;i++) { // бежим по всем элементам
                     K key = where.getKey(i); AndClassSet set = where.getValue(i); AndClassSet fromSet;
                     if((fromSet=andFrom.getPartial(key))==null || fromSet.and(set).isEmpty()) { // если в from'е нету или не пересекаются не интересует
                         num = -1;
@@ -327,28 +348,35 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return prevKnf;
     }
 
-    static class Or<K> extends QuickMap<K,OrClassSet> {
+    public static class Or<K> extends NF<K,OrClassSet> {
 
-        Or() { }
-        Or(Or<K> set) { super(set); }
+        private final static Or empty = new Or(MapFact.EMPTY());
+        public static <K> Or<K> EMPTY() {
+            return empty;
+        }
 
-        protected OrClassSet addValue(K key, OrClassSet prevValue, OrClassSet newValue) {
-            return prevValue.or(newValue);
+        public Or(ImMap<K, OrClassSet> map) {
+            super(map);
         }
 
         protected boolean containsAll(OrClassSet who, OrClassSet what) {
             return who.containsAll(what);
         }
 
+        protected Or<K> intersect(Or<K> where2) {
+            if(size()>where2.size()) return where2.intersect(this);
+            return new Or<K>(map.merge(where2.map, OrObjectClassSet.<K>addOr())); // так быстрее этот участок кода выполняется, ОЧЕНЬ много раз
+        }
+
         public boolean meansFrom(And<K> where) {
-            for(int i=0;i<size;i++) { // так как элементы не зависимы проверим каждый в отдельности
+            for(int i=0,size=size();i<size;i++) { // так как элементы не зависимы проверим каждый в отдельности
                 AndClassSet inSet = where.getPartial(getKey(i));
                 if(inSet!=null && getValue(i).containsAll(inSet.getOr())) return true;
             }
             return false;
         }
 
-        Or(K key, OrClassSet value) {
+        public Or(K key, OrClassSet value) {
             super(key, value);
         }
     }
@@ -373,12 +401,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             super(iWheres);
         }
 
-        private KNF(boolean isTrue) {
-            super(isTrue?new Or[0]:new Or[]{new Or<K>()});
-        }
+        private final static KNF TRUE = new KNF(new Or[0]);
+        private final static KNF FALSE = new KNF(new Or[]{Or.EMPTY()});
         public static <K> KNF<K> STATIC(boolean isTrue) {
-            return new KNF<K>(isTrue);
+            return isTrue ? TRUE : FALSE;
         }
+        
 
         protected KNF<K> createThis(Or<K>[] wheres) {
             return new KNF<K>(wheres);
@@ -390,28 +418,25 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
 
         public Or<K> intersect(Or<K> where1, Or<K> where2) {
-            if(where1.size>where2.size) return intersect(where2,where1); // пусть добавляется в большую
-
-            Or<K> result = new Or<K>(where2);
-            result.addAll(where1);
-            return result;
+            return where1.intersect(where2);
         }
 
-        protected Or<K> createMap() {
-            return new Or<K>();
+        protected Or<K> createMap(ImMap<K, OrClassSet> map) {
+            return new Or<K>(map);
         }
 
         protected OrClassSet addMapValue(OrClassSet value1, OrClassSet value2) {
             return value1.and(value2);
         }
 
-        public KNF<K> or(QuickMap<K,AndClassSet> map) {
+        public KNF<K> or(ImMap<K,AndClassSet> map) {
             return orPairs(new BaseUtils.Paired<Or<K>>(wheres, toOr(map), KNF.<K>instancer()));
         }
 
-        private static <K> Or<K>[] toOr(QuickMap<K, AndClassSet> map) {
-            Or<K>[] toOr = new Or[map.size];
-            for(int j=0;j<map.size;j++)
+        private static <K> Or<K>[] toOr(ImMap<K, AndClassSet> map) {
+            int size = map.size();
+            Or<K>[] toOr = new Or[size];
+            for(int j=0;j<size;j++)
                 toOr[j] = new Or<K>(map.getKey(j),map.getValue(j).getOr());
             return toOr;
         }
@@ -443,22 +468,21 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     }
 
-    private static <K,V,VThis extends AbstractClassWhere<V,VThis>> And<K>[] initMapKeys(VThis classes,Map<V,K> map) {
+    private static <K,V,VThis extends AbstractClassWhere<V,VThis>> And<K>[] initMapKeys(VThis classes,ImRevMap<V,K> map) {
         And<K>[] mapWheres = new And[classes.wheres.length];
         for(int i=0;i<classes.wheres.length;i++)
-            mapWheres[i] = new And<K>(classes.wheres[i], map);
+            mapWheres[i] = classes.wheres[i].innerRemap(map);
         return mapWheres;
     }
-    protected <V, VThis extends AbstractClassWhere<V,VThis>> AbstractClassWhere(VThis classes,Map<V,K> map) {
+    protected <V, VThis extends AbstractClassWhere<V,VThis>> AbstractClassWhere(VThis classes,ImRevMap<V,K> map) {
         super(initMapKeys(classes, map));
     }
 
-    protected Set<K> keySet() {
-        Set<K> keys = new HashSet<K>();
+    protected ImSet<K> keySet() {
+        MSet<K> mKeys = SetFact.mSet();
         for(And<K> where : wheres)
-            for(int i=0;i<where.size;i++)
-                keys.add(where.getKey(i));
-        return keys;
+            mKeys.addAll(where.keys());
+        return mKeys.immutable();
     }
 
     protected AbstractClassWhere(And<K> where) {
@@ -473,19 +497,20 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return or1;
         return or1.or(or2);
     }
-    public <T extends K> Map<T, ValueClass> getCommonParent(Collection<T> keys) {
-
-        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
-        for(T key : keys) {
-            OrClassSet orSet = null;
-            for (And<K> where : wheres) {
-                AndClassSet and = where.get(key);
-                orSet = or(orSet, and == null ? null : and.getOr());
+    public <T extends K> ImMap<T, ValueClass> getCommonParent(ImSet<T> keys) {
+        return keys.mapValues(new GetValue<ValueClass, T>() {
+            public ValueClass getMapValue(T key) {
+                OrClassSet orSet = null;
+                for (And<K> where : wheres) {
+                    AndClassSet and = where.get(key);
+                    orSet = or(orSet, and == null ? null : and.getOr());
+                }
+                return orSet == null ? null : orSet.getCommonClass();
+            }}).filterFnValues(new SFunctionSet<ValueClass>() {
+            public boolean contains(ValueClass element) {
+                return element != null;
             }
-            if(orSet!=null)
-                result.put(key,orSet==null ? null : orSet.getCommonClass());
-        }
-        return result;
+        });
     }
 
     public OrObjectClassSet getOrSet(K key) {
@@ -500,13 +525,13 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return orSet;
     }
 
-    private static <K> Map<K,AndClassSet> initUpClassSets(Map<K, ValueClass> map) {
-        Map<K, AndClassSet> result = new HashMap<K,AndClassSet>();
-        for(Map.Entry<K, ValueClass> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().getUpSet());
-        return result;
+    private static <K> ImMap<K,AndClassSet> initUpClassSets(ImMap<K, ValueClass> map) {
+        return map.mapValues(new GetValue<AndClassSet, ValueClass>() {
+            public AndClassSet getMapValue(ValueClass value) {
+                return value.getUpSet();
+            }});
     }
-    public AbstractClassWhere(Map<K, ValueClass> mapClasses,boolean up) {
+    public AbstractClassWhere(ImMap<K, ValueClass> mapClasses,boolean up) {
         this(initUpClassSets(mapClasses));
         assert up;
     }

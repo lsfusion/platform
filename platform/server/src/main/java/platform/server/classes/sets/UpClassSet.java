@@ -1,13 +1,15 @@
 package platform.server.classes.sets;
 
 import platform.base.ExtraSetWhere;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-
-import java.util.HashSet;
-import java.util.Set;
+import platform.server.data.where.Where;
 
 // выше вершин
 public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
@@ -53,14 +55,15 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
     }
 
     protected CustomClass[] intersect(CustomClass where1, CustomClass where2) {
-        CustomClassSet common = where1.commonChilds(where2);
-        CustomClass[] result = new CustomClass[common.size];
-        for(int i=0;i<common.size;i++)
+        ImSet<CustomClass> common = where1.commonChilds(where2);
+        int size = common.size();
+        CustomClass[] result = new CustomClass[size];
+        for(int i=0;i<size;i++)
             result[i] = common.get(i);
         return result;
     }
 
-    public boolean inSet(UpClassSet up,ConcreteCustomClassSet set) { // проверяет находится ли в up,set - обратная containsAll
+    public boolean inSet(UpClassSet up,ImSet<ConcreteCustomClass> set) { // проверяет находится ли в up,set - обратная containsAll
         for(CustomClass node : wheres)
             if(!node.upInSet(up,set)) return false;
         return true;
@@ -101,7 +104,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
         if(node instanceof UpClassSet)
-            return ((UpClassSet)node).inSet(this,new ConcreteCustomClassSet());
+            return ((UpClassSet)node).inSet(this, SetFact.<ConcreteCustomClass>EMPTY());
         return getOr().containsAll((OrClassSet)node);
     }
 
@@ -109,21 +112,21 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return AbstractCustomClass.getSingleClass(wheres);
     }
 
-    private Set<ConcreteCustomClass> getConcreteChildren() {
-        Set<ConcreteCustomClass> children = new HashSet<ConcreteCustomClass>();
+    private ImSet<ConcreteCustomClass> getConcreteChildren() {
+        MSet<ConcreteCustomClass> children = SetFact.mSet();
         for(CustomClass node : wheres)
             node.fillConcreteChilds(children);
-        return children;
+        return children.immutable();
     }
 
     private String getChildString(String source) {
-        String childString = "";
-        Set<ConcreteCustomClass> children = getConcreteChildren();
-        for(ConcreteCustomClass child : children)
-            childString = (childString.length()==0?"":childString+",") + child.ID;
-        if(children.size()>0)
-            childString = source + " IN (" + childString + ")";
-        return childString;
+
+        ImSet<ConcreteCustomClass> children = getConcreteChildren();
+        if(children.size()==0) return Where.FALSE_STRING;
+        return source + " IN (" + children.toString(new GetValue<String, ConcreteCustomClass>() {
+            public String getMapValue(ConcreteCustomClass value) {
+                return value.ID.toString();
+            }}, ",") + ")";
     }
 
     public int getCount() {

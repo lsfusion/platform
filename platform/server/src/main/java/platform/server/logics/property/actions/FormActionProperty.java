@@ -1,5 +1,8 @@
 package platform.server.logics.property.actions;
 
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.ModalityType;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
@@ -23,15 +26,14 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.*;
-
-import static platform.base.BaseUtils.join;
+import java.util.HashSet;
+import java.util.Set;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends SystemActionProperty {
 
     public final FormEntity<?> form;
-    public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
+    public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final ActionPropertyObjectEntity<?> startAction;
     public ActionPropertyObjectEntity<?> closeAction;
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
@@ -56,7 +58,7 @@ public class FormActionProperty extends SystemActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.formResultClass = formResultClass;
@@ -68,11 +70,10 @@ public class FormActionProperty extends SystemActionProperty {
         this.sessionScope = sessionScope;
         this.startAction = setProperties;
 
-        int i = 0; // такой же дебилизм и в SessionDataProperty
-        mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
-        for (ClassPropertyInterface propertyInterface : interfaces) {
-            mapObjects.put(objectsToSet[i++], propertyInterface);
-        }
+        mapObjects = getOrderInterfaces().mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
+            public ObjectEntity getMapValue(int i) {
+                return objectsToSet[i];
+            }});
         this.form = form;
     }
 
@@ -82,14 +83,14 @@ public class FormActionProperty extends SystemActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        final FormInstance newFormInstance = context.createFormInstance(form, join(mapObjects, context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, !form.isPrintForm);
+        final FormInstance newFormInstance = context.createFormInstance(form, mapObjects.join(context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, !form.isPrintForm);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
-            for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
-                newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), context.getKeyValue(entry.getValue()));
+            for (int i=0,size=mapObjects.size();i<size;i++) {
+                newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(mapObjects.getKey(i)), context.getKeyValue(mapObjects.getValue(i)));
             }
 
             final FormInstance thisFormInstance = context.getFormInstance();
@@ -121,7 +122,7 @@ public class FormActionProperty extends SystemActionProperty {
 
                 if (chosenValueProperty != null) {
                     for (GroupObjectEntity group : form.groups) {
-                        for (ObjectEntity object : group.objects) {
+                        for (ObjectEntity object : group.getObjects()) {
                             chosenValueProperty.write(
                                     object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
                             );
@@ -162,6 +163,6 @@ public class FormActionProperty extends SystemActionProperty {
     }
 
     public static interface SelfInstancePostProcessor {
-        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance);
+        public void postProcessSelfInstance(ImMap<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance);
     }
 }

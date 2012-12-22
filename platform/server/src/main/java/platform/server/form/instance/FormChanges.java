@@ -2,6 +2,10 @@ package platform.server.form.instance;
 
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -9,52 +13,59 @@ import platform.server.logics.ObjectValue;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
 
 import static platform.base.BaseUtils.serializeObject;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
 
-    public String message = "";
-
-    public Map<GroupObjectInstance, ClassViewType> classViews = new HashMap<GroupObjectInstance, ClassViewType>();
+    private final ImMap<GroupObjectInstance, ClassViewType> classViews;
 
     // value.keySet() из key.getUpTreeGroups
-    public Map<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objects = new HashMap<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>>();
+    private final ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects;
 
     // value.keySet() из key.getUpTreeGroups
-    public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
+    private final ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects;
 
     // value.keySet() из key, или пустой если root
-    public Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> parentObjects = new HashMap<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>>();
+    private final ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects;
 
-    public Map<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, ObjectValue>> properties = new HashMap<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, ObjectValue>>();
+    private final ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties;
 
-    public Set<PropertyReaderInstance> panelProperties = new HashSet<PropertyReaderInstance>();
-    public Set<PropertyDrawInstance> dropProperties = new HashSet<PropertyDrawInstance>();
+    private final ImSet<PropertyReaderInstance> panelProperties;
+    private final ImSet<PropertyDrawInstance> dropProperties;
+
+    public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects, ImMap<GroupObjectInstance, ImOrderSet<ImMap<ObjectInstance, DataObject>>> gridObjects, ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects, ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties, ImSet<PropertyReaderInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
+        this.classViews = classViews;
+        this.objects = objects;
+        this.gridObjects = gridObjects;
+        this.parentObjects = parentObjects;
+        this.properties = properties;
+        this.panelProperties = panelProperties;
+        this.dropProperties = dropProperties;
+    }
 
     void out(FormInstance<?> bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
-        for (GroupObjectInstance group : bv.groups) {
-            List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
+        for (GroupObjectInstance group : bv.getGroups()) {
+            ImList<ImMap<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
                 System.out.println(group.getID() + " - GRID Changes");
-                for (Map<ObjectInstance, DataObject> value : groupGridObjects)
+                for (ImMap<ObjectInstance, DataObject> value : groupGridObjects)
                     System.out.println(value);
             }
 
-            Map<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
+            ImMap<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
             if (value != null)
                 System.out.println(group.getID() + " - Object Changes " + value);
         }
 
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
-        for (PropertyReaderInstance property : properties.keySet()) {
-            Map<Map<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
+        for (PropertyReaderInstance property : properties.keyIt()) {
+            ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
             System.out.println(property + " ---- property");
-            for (Map<ObjectInstance, DataObject> gov : propertyValues.keySet())
+            for (ImMap<ObjectInstance, DataObject> gov : propertyValues.keyIt())
                 System.out.println(gov + " - " + propertyValues.get(gov));
         }
 
@@ -67,23 +78,23 @@ public class FormChanges {
             System.out.println(property);
 
         System.out.println(" ------- CLASSVIEWS ---------------");
-        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
-            System.out.println(classView.getKey() + " - " + classView.getValue());
+        for (int i=0,size=classViews.size();i<size;i++) {
+            System.out.println(classViews.getKey(i) + " - " + classViews.getValue(i));
         }
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(classViews.size());
-        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
-            outStream.writeInt(classView.getKey().getID());
-            outStream.writeInt(classView.getValue().ordinal());
+        for (int i=0,size=classViews.size();i<size;i++) {
+            outStream.writeInt(classViews.getKey(i).getID());
+            outStream.writeInt(classViews.getValue(i).ordinal());
         }
 
         outStream.writeInt(objects.size());
-        for (Map.Entry<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objectValue : objects.entrySet()) {
-            outStream.writeInt(objectValue.getKey().getID());
-            serializeGroupObjectValue(outStream, objectValue.getValue());
+        for (int i=0,size=objects.size();i<size;i++) {
+            outStream.writeInt(objects.getKey(i).getID());
+            serializeGroupObjectValue(outStream, objects.getValue(i));
         }
 
         serializeKeyObjectsMap(outStream, gridObjects);
@@ -96,20 +107,21 @@ public class FormChanges {
         }
 
         outStream.writeInt(properties.size());
-        for (Map.Entry<PropertyReaderInstance, Map<Map<ObjectInstance, DataObject>, ObjectValue>> gridProperty : properties.entrySet()) {
-            PropertyReaderInstance propertyReadInstance = gridProperty.getKey();
+        for (int i=0,size=properties.size();i<size;i++) {
+            PropertyReaderInstance propertyReadInstance = properties.getKey(i);
+            ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> rows = properties.getValue(i);
 
             // сериализация PropertyReadInterface
             outStream.writeByte(propertyReadInstance.getTypeID());
             outStream.writeInt(propertyReadInstance.getID());
 
-            outStream.writeInt(gridProperty.getValue().size());
-            for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> gridPropertyValue : gridProperty.getValue().entrySet()) {
-                Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
+            outStream.writeInt(rows.size());
+            for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {
+                ImMap<ObjectInstance, DataObject> objectValues = rows.getKey(j);
 
                 serializeGroupObjectValue(outStream, objectValues);
 
-                serializeObject(outStream, gridPropertyValue.getValue().getValue());
+                serializeObject(outStream, rows.getValue(j).getValue());
             }
         }
 
@@ -118,25 +130,26 @@ public class FormChanges {
             outStream.writeInt(propertyView.getID());
         }
 
-        outStream.writeUTF(message);
+        outStream.writeUTF(""); // обратная совместимость
     }
 
-    private void serializeGroupObjectValue(DataOutputStream outStream, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {
+    private void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
         outStream.writeInt(values.size());
-        for (Map.Entry<ObjectInstance, ? extends ObjectValue> entry : values.entrySet()) {
-            outStream.writeInt(entry.getKey().getID());
-            serializeObject(outStream, entry.getValue().getValue());
+        for (int i=0,size=values.size();i<size;i++) {
+            outStream.writeInt(values.getKey(i).getID());
+            serializeObject(outStream, values.getValue(i).getValue());
         }
     }
 
-    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
+    private void serializeKeyObjectsMap(DataOutputStream outStream, ImMap<GroupObjectInstance, ? extends ImList<ImMap<ObjectInstance, DataObject>>> keyObjects) throws IOException {
         outStream.writeInt(keyObjects.size());
-        for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
+        for (int i=0,size=keyObjects.size();i<size;i++) {
 
-            outStream.writeInt(gridObject.getKey().getID());
+            outStream.writeInt(keyObjects.getKey(i).getID());
 
-            outStream.writeInt(gridObject.getValue().size());
-            for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
+            ImList<ImMap<ObjectInstance, DataObject>> rows = keyObjects.getValue(i);
+            outStream.writeInt(rows.size());
+            for (ImMap<ObjectInstance, DataObject> groupObjectValue : rows) {
                 serializeGroupObjectValue(outStream, groupObjectValue);
             }
         }
@@ -155,15 +168,15 @@ public class FormChanges {
     public void logChanges(FormInstance<?> bv, Logger logger) {
         logger.trace("getFormChanges:");
         logger.trace("  GROUPOBJECTS ---------------");
-        for (GroupObjectInstance group : bv.groups) {
-            List<Map<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
+        for (GroupObjectInstance group : bv.getGroups()) {
+            ImOrderSet<ImMap<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
                 logger.trace("   " + group.getID() + " - Current grid objects chaned to:");
-                for (Map<ObjectInstance, DataObject> value : groupGridObjects)
+                for (ImMap<ObjectInstance, DataObject> value : groupGridObjects)
                     logger.trace("     " + value);
             }
 
-            Map<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
+            ImMap<ObjectInstance, ? extends ObjectValue> value = objects.get(group);
             if (value != null) {
                 logger.trace("   " + group.getID() + " - Current object changed to:  " + value);
             }
@@ -171,11 +184,11 @@ public class FormChanges {
 
         logger.trace("  PROPERTIES ---------------");
         logger.trace("   Values ---------------");
-        for (PropertyReaderInstance property : properties.keySet()) {
-            Map<Map<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
+        for (PropertyReaderInstance property : properties.keyIt()) {
+            ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> propertyValues = properties.get(property);
             logger.trace("    " + property + " ---- property");
-            for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> propValue : propertyValues.entrySet())
-                logger.trace("      " + propValue.getKey() + " -> " + propValue.getValue());
+            for (int i=0,size=propertyValues.size();i<size;i++)
+                logger.trace("      " + propertyValues.getKey(i) + " -> " + propertyValues.getValue(i));
         }
 
         logger.trace("   Goes to panel ---------------");
@@ -188,8 +201,8 @@ public class FormChanges {
             logger.trace("     " + property);
 
         logger.trace("  CLASSVIEWS ---------------");
-        for (Map.Entry<GroupObjectInstance, ClassViewType> classView : classViews.entrySet()) {
-            logger.trace("     " + classView.getKey() + " - " + classView.getValue());
+        for (int i=0,size=classViews.size();i<size;i++) {
+            logger.trace("     " + classViews.getKey(i) + " - " + classViews.getValue(i));
         }
     }
 }

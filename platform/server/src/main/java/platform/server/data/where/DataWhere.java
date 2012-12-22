@@ -1,5 +1,7 @@
 package platform.server.data.where;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.ManualLazy;
 import platform.server.data.query.CompileSource;
 import platform.server.data.where.classes.MeanClassWhere;
@@ -28,18 +30,16 @@ abstract public class DataWhere extends ObjectWhere {
     }
 
     // возвращает себя и все зависимости
-    private DataWhereSet equalFollows = null;
+    private ImSet<DataWhere> equalFollows = null;
     @ManualLazy
-    public DataWhereSet getEqualFollows() {
-        if(equalFollows ==null) {
-            equalFollows = new DataWhereSet(calculateFollows());
-            equalFollows.add(this);
-        }
+    public ImSet<DataWhere> getEqualFollows() {
+        if(equalFollows ==null)
+            equalFollows = SetFact.addExcl(calculateFollows(), this);
         return equalFollows;
     }
 
     // определяет все
-    protected abstract DataWhereSet calculateFollows();
+    protected abstract ImSet<DataWhere> calculateFollows();
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 

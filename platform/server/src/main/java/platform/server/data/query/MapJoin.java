@@ -1,13 +1,11 @@
 package platform.server.data.query;
 
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-
-import java.util.Collection;
 
 public class MapJoin<U> extends AbstractJoin<U>  {
 
@@ -33,7 +31,7 @@ public class MapJoin<U> extends AbstractJoin<U>  {
         return join.getExpr(property).translateOuter(translator);
     }
 
-    public Collection<U> getProperties() {
+    public ImSet<U> getProperties() {
         return join.getProperties();
     }
 

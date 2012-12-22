@@ -4,9 +4,9 @@ import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.CalcProperty;
 
 import java.sql.SQLException;
 

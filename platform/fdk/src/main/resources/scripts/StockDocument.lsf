@@ -26,12 +26,12 @@ sumStockDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncStockDocume
 GROUP ledgerItemGroup 'Суммы по товару' : public;
 sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
 sumItemOutStockDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
-sumItemStockDocumentLedger 'Сумма, товар' (ledger) = UNION EXCLUSIVE sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
+sumItemStockDocumentLedger 'Сумма, товар' (ledger) = UNION CLASS sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerContainerGroup 'Суммы по таре' : public;
 sumContainerIncStockDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
 sumContainerOutStockDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
-sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION EXCLUSIVE sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
+sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION CLASS sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
 
 // -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
 

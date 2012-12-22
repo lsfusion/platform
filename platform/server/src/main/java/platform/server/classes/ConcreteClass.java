@@ -1,11 +1,7 @@
 package platform.server.classes;
 
-import platform.server.classes.sets.AndClassSet;
 import platform.base.GlobalObject;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import platform.server.classes.sets.AndClassSet;
 
 public interface ConcreteClass extends RemoteClass, AndClassSet, GlobalObject {
 

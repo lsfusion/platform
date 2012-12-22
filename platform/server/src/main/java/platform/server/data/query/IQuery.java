@@ -1,18 +1,14 @@
 package platform.server.data.query;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.AbstractInnerContext;
-import platform.server.caches.InnerContext;
-import platform.server.caches.PackInterface;
-import platform.server.caches.TranslateValues;
-import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.data.Value;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -21,13 +17,9 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.ExecutionEnvironment;
 
-import javax.management.loading.MLet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> implements MapKeysInterface<K> {
 
@@ -52,21 +44,21 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, new OrderedMap<V, Boolean>(), 0, SubQueryContext.EMPTY, false);
+        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, SubQueryContext.EMPTY, false);
     }
 
-    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
+    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
 
-    public abstract <B> ClassWhere<B> getClassWhere(Set<? extends V> classProps);
+    public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
+    public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
         return join(joinImplement, MapValuesTranslator.noTranslate);
     }
-    public abstract Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
-    public abstract Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues);
+    public abstract Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translateOuter'ся
+    public abstract Join<V> joinExprs(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues);
 
 
-    public abstract Set<V> getProperties();
+    public abstract ImSet<V> getProperties();
     public abstract Expr getExpr(V property);
     public abstract Where getWhere();    
 
@@ -82,19 +74,19 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N
-    public abstract <RMK, RMV> IQuery<RMK,RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate);
+    public abstract <RMK, RMV> IQuery<RMK,RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate);
 
     
     public static class PullValues<K, V> {
         public final IQuery<K, V> query;
-        public final Map<K, Expr> pullKeys;
-        public final Map<V, Expr> pullProps;
+        public final ImMap<K, Expr> pullKeys;
+        public final ImMap<V, Expr> pullProps;
 
         public PullValues(IQuery<K, V> query) {
-            this(query, new HashMap<K, Expr>(), new HashMap<V, Expr>());
+            this(query, MapFact.<K, Expr>EMPTY(), MapFact.<V, Expr>EMPTY());
         }
 
-        public PullValues(IQuery<K, V> query, Map<K, Expr> pullKeys, Map<V, Expr> pullProps) {
+        public PullValues(IQuery<K, V> query, ImMap<K, Expr> pullKeys, ImMap<V, Expr> pullProps) {
             this.query = query;
             this.pullKeys = pullKeys;
             this.pullProps = pullProps;
@@ -104,11 +96,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
             return pullKeys.isEmpty() && pullProps.isEmpty();
         }
         
-        public <MK, MV> PullValues<MK, MV> map(Map<MK, K> mapKeys, Map<MV, V> mapProps, MapValuesTranslate mapValues) {
-            return new PullValues<MK, MV>(query.map(BaseUtils.filterNotValues(mapKeys, pullKeys.keySet()), BaseUtils.filterNotValues(mapProps, pullProps.keySet()), mapValues),
-                    BaseUtils.rightJoin(mapKeys, mapValues.mapKeys().translate(pullKeys)),
-                    BaseUtils.rightJoin(mapProps, mapValues.mapKeys().translate(pullProps)));
+        public <MK, MV> PullValues<MK, MV> map(ImRevMap<MK, K> mapKeys, ImRevMap<MV, V> mapProps, MapValuesTranslate mapValues) {
+            return new PullValues<MK, MV>(query.map(mapKeys.filterNotValuesRev(pullKeys.keys()), mapProps.filterNotValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
+                    mapKeys.rightJoin(mapValues.mapKeys().translate(pullKeys)),
+                    mapProps.rightJoin(mapValues.mapKeys().translate(pullProps)));
         }
     }
     public abstract PullValues<K, V> pullValues();
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
+        return getQuery().executeClasses(env);
+    }
 }

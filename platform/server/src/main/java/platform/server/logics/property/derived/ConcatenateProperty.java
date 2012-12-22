@@ -1,5 +1,11 @@
 package platform.server.logics.property.derived;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ConcatenateValueClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.ConcatenateExpr;
@@ -9,7 +15,7 @@ import platform.server.logics.property.FormulaProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChanges;
 
-import java.util.*;
+import java.util.Iterator;
 
 public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Interface> {
 
@@ -19,11 +25,11 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         }
     }
 
-    static List<Interface> getInterfaces(int intNum) {
-        List<Interface> interfaces = new ArrayList<Interface>();
-        for(int i=0;i<intNum;i++)
-            interfaces.add(new Interface(i));
-        return interfaces;
+    static ImOrderSet<Interface> getInterfaces(int intNum) {
+        return SetFact.toOrderExclSet(intNum, new GetIndex<Interface>() {
+            public Interface getMapValue(int i) {
+                return new Interface(i);
+            }});
     }
 
     public ConcatenateProperty(String sID, int intNum) {
@@ -39,21 +45,22 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
         return it.next();
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        List<Expr> exprs = new ArrayList<Expr>();
-        for(int i=0;i<interfaces.size();i++) // assertion что порядок сохранился
-            exprs.add(joinImplement.get(getInterface(i)));
+    protected Expr calculateExpr(final ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        ImList<Expr> exprs = getOrderInterfaces().mapListValues(new GetValue<Expr, Interface>() {
+            public Expr getMapValue(Interface value) {
+                return joinImplement.get(value);
+            }});
         return ConcatenateExpr.create(exprs);
     }
 
     @Override
-    public Map<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
         if(commonValue!=null) {
-            Map<Interface, ValueClass> result = new HashMap<Interface, ValueClass>();
-            for(int i=0;i<interfaces.size();i++)
-                result.put(getInterface(i), ((ConcatenateValueClass)commonValue).get(i));
-            return result;
-        }            
+            return getOrderInterfaces().mapOrderValues(new GetIndex<ValueClass>() {
+                public ValueClass getMapValue(int i) {
+                    return ((ConcatenateValueClass)commonValue).get(i);
+                }});
+        }
         return super.getInterfaceCommonClasses(commonValue);
     }
 }

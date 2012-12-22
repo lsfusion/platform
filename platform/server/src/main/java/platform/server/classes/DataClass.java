@@ -1,16 +1,26 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.interop.Data;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
+import platform.server.data.expr.StaticValueExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.Query;
 import platform.server.data.type.AbstractType;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DataObjectInstance;
 import platform.server.form.instance.ObjectInstance;
@@ -24,15 +34,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.*;
+import java.util.Random;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, AndClassSet, OrClassSet {
-    private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
+    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mAddExclMap();
     protected String caption;
 
     public static void storeClass(DataClass... classes) {
         for(DataClass cls : classes)
-            sidToClass.put(cls.getSID(), cls);
+            sidToClass.exclAdd(cls.getSID(), cls);
     }
 
     protected DataClass(String caption) {
@@ -210,15 +220,15 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return this;
     }
 
-    public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
+    public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
+    public ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         return this;
     }
 
-    public List<AndClassSet> getUniversal(BaseClass baseClass) {
-        return Collections.<AndClassSet>singletonList(this);
+    public ImList<AndClassSet> getUniversal(BaseClass baseClass) {
+        return ListFact.<AndClassSet>singleton(this);
     }
 
     public int getBinaryLength(boolean charBinary) {

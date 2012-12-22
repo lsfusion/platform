@@ -1,10 +1,10 @@
 package platform.server.logics.property;
 
-import java.util.List;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 
 public abstract class NoIncrementProperty<T extends PropertyInterface> extends FunctionProperty<T> {
 
-    public NoIncrementProperty(String sID, String caption, List<T> interfaces) {
+    public NoIncrementProperty(String sID, String caption, ImOrderSet<T> interfaces) {
         super(sID, caption, interfaces);
     }
 

@@ -1,9 +1,9 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickMap;
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
 import platform.server.classes.BaseClass;
@@ -11,23 +11,18 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.stat.CalculateJoin;
-import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.type.Type;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.*;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту
 public abstract class UnionExpr extends NotNullExpr implements StaticClassExprInterface {
 
     public abstract DataClass getStaticClass();
 
-    protected abstract Set<Expr> getParams();
+    protected abstract ImSet<Expr> getParams();
 
     public Type getType(KeyType keyType) {
         return getStaticClass();
@@ -44,12 +39,12 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     @Override
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(getParams());
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return BaseUtils.immutableCast(getParams());
     }
 
     @Override
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         for(Expr operand : getParams()) // просто гоним по операндам
             operand.fillJoinWheres(joins, andWhere);
     }
@@ -59,7 +54,7 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     // мы и так перегрузили fillJoinWheres
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
     public Stat getStatValue(KeyStat keyStat) {
@@ -88,12 +83,12 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     @Override
-    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
         return StaticClassExpr.getAndClassSet(this, and);
     }
 
     @Override
-    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         return StaticClassExpr.addAndClassSet(this, add);
     }
 }

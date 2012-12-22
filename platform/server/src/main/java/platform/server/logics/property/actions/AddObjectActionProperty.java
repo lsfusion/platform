@@ -1,6 +1,12 @@
 package platform.server.logics.property.actions;
 
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
 import platform.server.classes.AbstractCustomClass;
@@ -26,9 +32,7 @@ import platform.server.session.PropertySet;
 import platform.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
-import java.util.*;
-
-import static platform.base.BaseUtils.merge;
+import java.util.HashSet;
 
 public class AddObjectActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
@@ -39,10 +43,10 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     private CalcPropertyMapImplement<?, I> result; // только extend интерфейсы
 
     public <T extends PropertyInterface> AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, CalcProperty<T> result) {
-        this(sID, valueClass, forceDialog, new ArrayList<I>(), new ArrayList<I>(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null);
+        this(sID, valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null);
     }
 
-    public AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, Collection<I> innerInterfaces, List<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result) {
+    public AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result) {
         super(sID, ServerResourceBundle.getString("logics.add"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
@@ -53,32 +57,32 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         
         assert where==null || !needDialog();
 
-        assert where==null || result==null || innerInterfaces.containsAll(merge(where.mapping.values(), result.mapping.values()));
+        assert where==null || result==null || innerInterfaces.containsAll(where.mapping.valuesSet().merge(result.mapping.valuesSet()));
     }
     
     protected boolean needDialog() {
         return valueClass instanceof AbstractCustomClass || (forceDialog && valueClass.hasChildren());
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+    public ImSet<ActionProperty> getDependActions() {
+        return SetFact.EMPTY();
     }
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
         if(where==null)
-            return new PropsNewSession();
+            return MapFact.EMPTY();
         return getUsedProps(where);
     }
 
     @Override
-    public PropsNewSession aspectChangeExtProps() {
-        PropsNewSession result = new PropsNewSession();
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
         if(this.result!=null)
-            result.addAll(this.result.property.getChangeProps());
-        result.addAll(valueClass.getParentSetProps());
-        result.add(valueClass.getBaseClass().getObjectClassProperty());
-        return result;
+            result.addAll(this.result.property.getChangeProps().toMap(false));
+        result.addAll(valueClass.getParentSetProps().toMap(false));
+        result.add(valueClass.getBaseClass().getObjectClassProperty(), false);
+        return result.immutable();
     }
 
     @Override
@@ -93,7 +97,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         return null;
     }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, Map<I, KeyExpr> innerKeys, Map<I, DataObject> innerValues, Map<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         ObjectClass readClass;
         if (needDialog()) {
             ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
@@ -108,7 +112,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         return FlowResult.FINISH;
     }
 
-    protected void executeRead(ExecutionContext<PropertyInterface> context, Map<I, KeyExpr> innerKeys, Map<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException {
+    protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException {
         PropertyChange<I> resultChange;
         if(where==null) // оптимизация, один объект добавляем
             resultChange = new PropertyChange<I>(context.addObject(readClass));
@@ -116,7 +120,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
             Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
             if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
                 return;
-            resultChange = SinglePropertyTableUsage.getChange(context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, new OrderedMap<Expr, Boolean>(), false)));
+            resultChange = SinglePropertyTableUsage.getChange(context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, MapFact.<Expr, Boolean>EMPTYORDER(), false)));
         }
 
         if(result != null) {

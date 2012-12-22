@@ -11,11 +11,15 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.MessageClientAction;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -23,6 +27,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
@@ -947,7 +952,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     }
 
     public Map<String, Timestamp> importProjectsFromXML(PrivateInfo pInfo, String host) throws IOException, SQLException {
-        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = null;
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = null;
         List<Element> elementList = new ArrayList<Element>();
         try {
             URL url = new URL(host + "&show=projects&limit=2000");
@@ -975,16 +980,16 @@ public class ImportProjectsActionProperty extends UserActionProperty {
             pInfo.responseContents = null;
 
             LCP<PropertyInterface> isProject = (LCP<PropertyInterface>) LM.is(LM.project);
-            Map<PropertyInterface, KeyExpr> keys = isProject.getMapKeys();
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-            query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("emailContact", LM.emailClaimerProject.getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("date", LM.updateDateProject.getExpr(BaseUtils.singleValue(keys)));
+            ImRevMap<PropertyInterface, KeyExpr> keys = isProject.getMapKeys();
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+            query.addProperty("id", LM.sidProject.getExpr(keys.singleValue()));
+            query.addProperty("emailContact", LM.emailClaimerProject.getExpr(keys.singleValue()));
+            query.addProperty("name", LM.nameNative.getExpr(keys.singleValue()));
+            query.addProperty("date", LM.updateDateProject.getExpr(keys.singleValue()));
             if (fillSids) {
                 query.and(isProject.property.getExpr(keys).getWhere());
             } else {
-                query.and(LM.sidProject.getExpr(BaseUtils.singleValue(keys)).getWhere());
+                query.and(LM.sidProject.getExpr(keys.singleValue()).getWhere());
             }
             result = query.execute(pInfo.session.sql);
 
@@ -1051,7 +1056,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         return calendar.getTime();
     }
 
-    public Map<String, Timestamp> makeImportList(PrivateInfo pInfo, OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elementList) {
+    public Map<String, Timestamp> makeImportList(PrivateInfo pInfo, ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> data, List<Element> elementList) {
         Map<String, Timestamp> projectList = new LinkedHashMap<String, Timestamp>();
         if (elementList != null) {
             Timestamp currentProjectDate;
@@ -1080,7 +1085,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                for (Map<Object, Object> project : data.values()) {
+                for (ImMap<Object, Object> project : data.valueIt()) {
                     Timestamp date = (Timestamp) project.get("date");
                     if (project.get("id").toString().trim().equals(projectId)) {
                         if (date == null || currentProjectDate.after(date)) {
@@ -1118,16 +1123,16 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                 " <- " + newName + "\n\tdate: " + oldDate + " <- " + newDate;
     }
 
-    public void fillSids(PrivateInfo pInfo, OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elements) throws SQLException {
-        for (Map<PropertyInterface, Object> key : data.keySet()) {
-            Map<Object, Object> project = data.get(key);
+    public void fillSids(PrivateInfo pInfo, ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> data, List<Element> elements) throws SQLException {
+        for (ImMap<PropertyInterface, Object> key : data.keyIt()) {
+            ImMap<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
                 Object email = project.get("emailContact");
                 if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
                     String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
-                        LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
-                        pInfo.toLog += "\nprojectId: " + projectId + "\n\temailContact: " + email.toString().trim() + "\n\t" +
+                        LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(key.singleValue(), LM.project.getType()));
+                        pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
                                 project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
                 }
@@ -1157,9 +1162,9 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         return null;
     }
 
-    public int getEmailRepeatings(OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
+    public int getEmailRepeatings(ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
-        for (Map<Object, Object> project : data.values()) {
+        for (ImMap<Object, Object> project : data.values()) {
             if (project.get("emailContact") != null && project.get("emailContact").toString().trim().toLowerCase().equals(email.toLowerCase())) {
                 repeatings++;
             }
@@ -1317,12 +1322,12 @@ public class ImportProjectsActionProperty extends UserActionProperty {
 
 
                     LCP<PropertyInterface> isCluster = (LCP<PropertyInterface>) LM.is(LM.cluster);
-                    Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
-                    Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-                    query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
-                    query.properties.put("nameNativeShort", LM.nameNativeShort.getExpr(BaseUtils.singleValue(keys)));
+                    ImRevMap<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
+                    QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+                    query.addProperty("name", LM.nameNative.getExpr(keys.singleValue()));
+                    query.addProperty("nameNativeShort", LM.nameNativeShort.getExpr(keys.singleValue()));
                     query.and(isCluster.property.getExpr(keys).getWhere());
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(pInfo.session.sql);
 
                     boolean fillOtherCluster = false;
                     Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
@@ -1330,7 +1335,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                     List<Element> listCluster = node.getChildren("cluster");
                     Map<String, ClusterInfo> clusterInfoList = new HashMap<String, ClusterInfo>();
 
-                    for (Map<Object, Object> values : result.values()) {
+                    for (ImMap<Object, Object> values : result.valueIt()) {
                         String nextItem = values.get("name").toString().trim();
                         Object nextNameNativeShort = values.get("nameNativeShort");
                         clusterInfoList.put(nextItem, new ClusterInfo(projectId, nextItem, nextNameNativeShort));
@@ -1659,12 +1664,12 @@ public class ImportProjectsActionProperty extends UserActionProperty {
 
 
                     LCP<PropertyInterface> isCluster = (LCP<PropertyInterface>) LM.is(LM.cluster);
-                    Map<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
-                    Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-                    query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
-                    query.properties.put("nameNativeShort", LM.nameNativeShort.getExpr(BaseUtils.singleValue(keys)));
+                    ImRevMap<PropertyInterface, KeyExpr> keys = isCluster.getMapKeys();
+                    QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+                    query.addProperty("name", LM.nameNative.getExpr(keys.singleValue()));
+                    query.addProperty("nameNativeShort", LM.nameNativeShort.getExpr(keys.singleValue()));
                     query.and(isCluster.property.getExpr(keys).getWhere());
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(pInfo.session.sql);
 
                     boolean fillOtherCluster = false;
                     Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
@@ -1672,7 +1677,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                     List<Element> listCluster = node.getChildren("cluster");
                     Map<String, ClusterInfo> clusterInfoList = new HashMap<String, ClusterInfo>();
 
-                    for (Map<Object, Object> values : result.values()) {
+                    for (ImMap<Object, Object> values : result.valueIt()) {
                         String nextItem = values.get("name").toString().trim();
                         Object nextNameNativeShort = values.get("nameNativeShort");
                         clusterInfoList.put(nextItem, new ClusterInfo(projectId, nextItem, nextNameNativeShort));

@@ -13,6 +13,7 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import org.apache.log4j.Logger;
 import platform.base.ByteArray;
+import platform.base.col.MapFact;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.ReportGenerationData;
 import platform.server.classes.ValueClass;
@@ -26,7 +27,6 @@ import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import javax.mail.Message;
@@ -248,7 +248,7 @@ public class EmailActionProperty extends SystemActionProperty {
             }
         }
 
-        return context.createReportForm(form, objectValues);
+        return context.createReportForm(form, MapFact.fromJavaMap(objectValues));
     }
 
     private String createReportFile(RemoteForm remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {

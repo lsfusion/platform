@@ -1,6 +1,6 @@
 package platform.server.session;
 
-import platform.server.classes.ConcreteCustomClass;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.form.instance.FormInstance;
@@ -13,7 +13,6 @@ import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public abstract class ExecutionEnvironment {
 
@@ -46,11 +45,11 @@ public abstract class ExecutionEnvironment {
     }
 
     public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
-        for(Map<P, DataObject> row : set.executeClasses(this))
+        for(ImMap<P, DataObject> row : set.executeClasses(this))
             execute(property, row, formEnv, null, null);
     }
 
-    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, Map<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, DataObject> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
         return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv));
     }
 

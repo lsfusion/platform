@@ -5,16 +5,16 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.*;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.query.AbstractSourceJoin;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 @Aspect
 public class CacheAspect {
@@ -51,7 +51,7 @@ public class CacheAspect {
             return method +"(" + Arrays.asList(args) + ')';
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return method.equals(((Invocation)o).method) && Arrays.equals(args,((Invocation)o).args);
         }
 
@@ -62,11 +62,11 @@ public class CacheAspect {
 
     private static Object lazyExecute(ImmutableObject object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
-        Map caches = object.getCaches();
+        MAddExclMap caches = object.getCaches();
         Object result = caches.get(invoke);
         if(result == null && !caches.containsKey(invoke)) {
             result = execute(object, thisJoinPoint, args, changedArgs);
-            caches.put(invoke,result);
+            caches.exclAdd(invoke, result);
         }
         return result;
     }
@@ -317,11 +317,11 @@ public class CacheAspect {
 
     static class Twins {
         WeakIdentityHashSet<Object> objects;
-        HashSet<Twins> diff;
+        Set<Twins> diff;
 
         Twins(Object object) {
             objects = new WeakIdentityHashSet<Object>(object);
-            diff = new HashSet<Twins>();
+            diff = SetFact.mAddRemoveSet();
         }
     }
 
@@ -371,7 +371,7 @@ public class CacheAspect {
 
     public static TwinsMap cacheTwins = new TwinsMap();
 
-    @Around("execution(boolean platform.base.TwinImmutableInterface.twins(platform.base.TwinImmutableInterface)) && target(object) && args(twin)")
+    @Around("execution(boolean platform.base.TwinImmutableObject.twins(platform.base.TwinImmutableObject)) && target(object) && args(twin)")
     // с call'ом есть баги
     public Object callTwins(ProceedingJoinPoint thisJoinPoint, GroupExpr object, AbstractSourceJoin twin) throws Throwable {
         return cacheTwins.call(thisJoinPoint, object, twin);

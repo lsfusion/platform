@@ -97,9 +97,9 @@ public class PostgreDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String isNULL(String expr1, String expr2, boolean notSafe) {
+    public String isNULL(String exprs, boolean notSafe) {
 //        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
-        return "COALESCE(" + expr1 + "," + expr2 + ")";
+        return "COALESCE(" + exprs + ")";
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {

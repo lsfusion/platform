@@ -2,11 +2,16 @@ package platform.fdk.actions.geo;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenUriClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -31,19 +36,19 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) LM.is(LM.getClassByName("POI"));
-            Map<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-            query.properties.put("latitude", LM.getLCPByName("latitudePOI").getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("longitude", LM.getLCPByName("longitudePOI").getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("numberPathPOI", LM.getLCPByName("numberPathPOI").getExpr(context.getModifier(), BaseUtils.singleValue(keys)));
-            query.properties.put("namePOI", LM.getLCPByName("namePOI").getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("descriptionPathPOI", LM.getLCPByName("descriptionPathPOI").getExpr(context.getModifier(), BaseUtils.singleValue(keys)));
+            ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+            query.addProperty("latitude", LM.getLCPByName("latitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("longitude", LM.getLCPByName("longitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("numberPathPOI", LM.getLCPByName("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
+            query.addProperty("namePOI", LM.getLCPByName("namePOI").getExpr(keys.singleValue()));
+            query.addProperty("descriptionPathPOI", LM.getLCPByName("descriptionPathPOI").getExpr(context.getModifier(), keys.singleValue()));
             query.and(isPOI.property.getExpr(keys).getWhere());
-            query.and(LM.getLCPByName("numberPathPOI").getExpr(context.getModifier(), BaseUtils.singleValue(keys)).getWhere());
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql, new OrderedMap(asList("numberPathPOI"), false));
+            query.and(LM.getLCPByName("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
+            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql, MapFact.singletonOrder((Object) "numberPathPOI", false));
             String uri = "http://maps.google.com/?";
             int index = 1;
-            for (Map<Object, Object> values : result.values()) {
+            for (ImMap<Object, Object> values : result.valueIt()) {
                 Double latitude = (Double) values.get("latitude");
                 Double longitude = (Double) values.get("longitude");
                 String name = (String) values.get("namePOI");

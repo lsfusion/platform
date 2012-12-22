@@ -1,18 +1,17 @@
 package platform.server.data.where.classes;
 
+import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.Field;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-
-import java.awt.event.KeyListener;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collection;
 
 public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
@@ -25,7 +24,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         if(compatible(where))
             return and(where);
         else
-            return STATIC(false);
+            return FALSE();
     }
 
     public boolean meansCompatible(ClassWhere<K> where) {
@@ -44,21 +43,24 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(where);
     }
 
+    private final static ClassWhere<Object> TRUE = new ClassWhere<Object>(true);
     public static <K> ClassWhere<K> TRUE() {
-        return STATIC(true);
+        return (ClassWhere<K>) TRUE;
     }
     public static <K> ClassWhere<K> STATIC(boolean isTrue) {
-        return new ClassWhere<K>(isTrue);
+        return isTrue ? ClassWhere.<K>TRUE() : ClassWhere.<K>FALSE();
     }
-    protected ClassWhere<K> FALSE() {
-        return STATIC(false);
+    private final static ClassWhere<Object> FALSE = new ClassWhere<Object>(false);
+    public static <K> ClassWhere<K> FALSE() {
+        return (ClassWhere<K>) FALSE;
     }
 
-    public static <M,K> Map<M,ClassWhere<K>> STATIC(Collection<M> keys, boolean isTrue) {
-        Map<M, ClassWhere<K>> result = new HashMap<M, ClassWhere<K>>();
-        for(M key : keys)
-            result.put(key, ClassWhere.<K>STATIC(isTrue));
-        return result;
+    protected ClassWhere<K> FALSETHIS() {
+        return ClassWhere.FALSE();
+    }
+
+    public static <M,K> ImMap<M,ClassWhere<K>> STATIC(ImSet<M> keys, boolean isTrue) {
+        return keys.toMap(ClassWhere.<K>STATIC(isTrue));
     }
 
     private ClassWhere(And<K>[] iWheres) {
@@ -72,28 +74,28 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         super(key, classes);
     }
 
-    public ClassWhere(Map<K, ValueClass> mapClasses,boolean up) {
+    public ClassWhere(ImMap<K, ValueClass> mapClasses,boolean up) {
         super(mapClasses, up);
     }
 
 
 
-    public ClassWhere(Map<K, ? extends AndClassSet> mapSets) {
+    public ClassWhere(ImMap<K, ? extends AndClassSet> mapSets) {
         super(mapSets);
     }
 
-    public ClassExprWhere map(Map<K, BaseExpr> map) {
+    public ClassExprWhere map(ImMap<K, BaseExpr> map) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<K> andWhere : wheres) {
             ClassExprWhere joinWhere = ClassExprWhere.TRUE;
-            for(Map.Entry<K, BaseExpr> joinExpr : map.entrySet())
-                joinWhere = joinWhere.and(joinExpr.getValue().getClassWhere(andWhere.get(joinExpr.getKey())));
+            for(int i=0,size=map.size();i<size;i++)
+                joinWhere = joinWhere.and(map.getValue(i).getClassWhere(andWhere.get(map.getKey(i))));
             result = result.or(joinWhere);
         }
         return result;
     }
 
-    public <V> ClassWhere(ClassWhere<V> classes, Map<V, K> map) {
+    public <V> ClassWhere(ClassWhere<V> classes, ImRevMap<V, K> map) {
         super(classes, map);
     }
 
@@ -102,21 +104,21 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     // аналогичный метод в ClassExprWhere
-    public ClassWhere<K> remove(Collection<? extends K> keys) {
-        ClassWhere<K> result = ClassWhere.STATIC(false);
+    public ClassWhere<K> remove(ImSet<? extends K> keys) {
+        ClassWhere<K> result = ClassWhere.FALSE();
         for(And<K> andWhere : wheres)
             result = result.or(new ClassWhere<K>(andWhere.remove(keys)));
         return result;
     }
 
-    public <T extends K> ClassWhere<T> keep(Collection<T> keys) {
-        ClassWhere<T> result = ClassWhere.STATIC(false);
+    public <T extends K> ClassWhere<T> filterKeys(ImSet<T> keys) {
+        ClassWhere<T> result = ClassWhere.FALSE();
         for(And<K> andWhere : wheres)
-            result = result.or(new ClassWhere<T>(andWhere.keep(keys)));
+            result = result.or(new ClassWhere<T>(andWhere.filterKeys(keys)));
         return result;
     }
 
-    public Where getWhere(Map<K, ? extends Expr> mapExprs) {
+    public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
             result = result.or(andWhere.getWhere(mapExprs));
@@ -124,11 +126,25 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
     }
     
-    public <T> ClassWhere<T> remap(Map<K, ? extends T> map) {
+    public <T> ClassWhere<T> remap(ImRevMap<K, ? extends T> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)
             remapWheres[i] = wheres[i].remap(map);
         return new ClassWhere<T>(remapWheres);
     }
+
+    private final static AddValue<Object, ClassWhere<Object>> addOr = new SimpleAddValue<Object, ClassWhere<Object>>() {
+        public ClassWhere<Object> addValue(Object key, ClassWhere<Object> prevValue, ClassWhere<Object> newValue) {
+            return prevValue.or(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <K, V> AddValue<K, ClassWhere<V>> addOr() {
+        return BaseUtils.immutableCast(addOr);
+    }
+
 }
 

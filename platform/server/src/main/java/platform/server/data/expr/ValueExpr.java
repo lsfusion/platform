@@ -1,14 +1,17 @@
 package platform.server.data.expr;
 
-import platform.base.BaseUtils;
 import platform.base.GlobalObject;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.*;
 import platform.server.data.Value;
-import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
@@ -20,16 +23,13 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 
 public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public final Object object;
 
-    public Value removeBig(QuickSet<Value> usedValues) {
+    public Value removeBig(MAddSet<Value> usedValues) {
         if(objectClass instanceof FileClass && ((byte[])object).length > 1000) {
             int i=0;
             while(true) {
@@ -66,10 +66,10 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return getType();
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
     }
 
@@ -96,40 +96,41 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
         return translator.translate(this);
     }
 
-    public QuickSet<Value> getValues() {
-        return new QuickSet<Value>(this);
+    public ImSet<Value> getValues() {
+        return SetFact.<Value>singleton(this);
     }
 
     public static Value ZERO = new ValueExpr(0.0, DoubleClass.instance);
     public static Value TRUEVAL = new ValueExpr(true, LogicalClass.instance);
 
-    private static Set<Value> staticExprs;
-    private static Set<Value> getStaticExprs() {
+    private static ImSet<Value> staticExprs;
+    private static ImSet<Value> getStaticExprs() {
         if(staticExprs == null) {
-            staticExprs = new HashSet<Value>();
-            staticExprs.add(ValueExpr.ZERO);
-            staticExprs.add(ValueExpr.TRUEVAL);
-            staticExprs.add(ActionClass.instance.getDefaultExpr());
-            staticExprs.add(null);
+            MExclSet<Value> mStaticExprs = SetFact.mExclSet(4);
+            mStaticExprs.exclAdd(ValueExpr.ZERO);
+            mStaticExprs.exclAdd(ValueExpr.TRUEVAL);
+            mStaticExprs.exclAdd(ActionClass.instance.getDefaultExpr());
+            staticExprs = mStaticExprs.immutable();
         }
         return staticExprs;
     }
 
-    public static Set<? extends Value> removeStatic(Set<? extends Value> col) {
-        Set<Value> result = new HashSet<Value>();
-        for(Value value : BaseUtils.removeSet(col,getStaticExprs()))
+    public static ImSet<? extends Value> removeStatic(ImSet<? extends Value> col) {
+        ImSet<Value> cleanCol = SetFact.remove(col, getStaticExprs());
+        MExclSet<Value> mResult = SetFact.mExclSet(cleanCol.size());
+        for(Value value : cleanCol)
             if(!(value instanceof ValueExpr && ((ValueExpr)value).objectClass instanceof ActionClass)) // && ((ValueExpr) value).equals(((ActionClass)((ValueExpr)value).objectClass).getDefaultExpr())))
-                result.add(value);
-        return result;
+                mResult.exclAdd(value);
+        return mResult.immutable();
     }
 
-    public static <V> Map<Value,V> removeStatic(Map<Value,V> map) {
-        return BaseUtils.filterNotKeys(map,getStaticExprs());
+    public static <V> ImMap<Value,V> removeStatic(ImMap<Value,V> map) {
+        return map.remove(getStaticExprs());
     }
 
     // пересечение с игнорированием ValueExpr.TRUE
-    public static boolean noStaticEquals(Set<? extends Value> col1, Set<? extends Value> col2) {
-        return removeStatic(col1).equals(removeStatic(col2));
+    public static boolean noStaticEquals(ImSet<? extends Value> col1, ImSet<? extends Value> col2) {
+        return ((ImSet<Value>)removeStatic(col1)).equals(removeStatic(col2));
     }
 
     public TypeObject getParseInterface() {

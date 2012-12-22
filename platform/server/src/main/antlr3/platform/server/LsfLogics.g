@@ -1169,7 +1169,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPa
 	}
 }
 	:	'UNION'
-		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
+		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}) | ('CLASS' {type = Union.CLASS;}))
 		exprList=nonEmptyPropertyExpressionList[context, dynamic]
 	;
 
@@ -1262,6 +1262,7 @@ specialPropertyName
 	:	('PREV') 
 	| 	('CHANGED')
 	| 	('ASSIGNED')
+    | 	('CLASS')
 	;
 
 
@@ -1925,10 +1926,11 @@ overrideStatement
 	List<String> context = new ArrayList<String>();
 	boolean dynamic = true;
 	LPWithParams property = null;
+	LPWithParams when = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addImplementationToAbstract($propName.sid, $list.ids, property);
+		self.addImplementationToAbstract($propName.sid, $list.ids, property, when);
 	}
 }
 	:	propName=compoundID
@@ -1937,6 +1939,7 @@ overrideStatement
 		(	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		|	action=actionPropertyDefinition[context, dynamic] { property = $action.property; }
 		)
+		('WHEN' where=propertyExpression[context, dynamic] {when = $where.property; } ) ?
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
@@ -2064,12 +2067,13 @@ globalEventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, !onApply, single, $property.text);
+		self.addScriptedGlobalEvent($action.property, !onApply, single, $property.text, $prevStart.ids);
 	}
 }
 	:	'ON' 
 		('APPLY' | 'SESSION' { onApply = false; })
 		('SINGLE' { single = true; })?
+		('PREVSTART' prevStart=nonEmptyIdList)?
 		('SHOWDEP' property=ID)?
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 	;

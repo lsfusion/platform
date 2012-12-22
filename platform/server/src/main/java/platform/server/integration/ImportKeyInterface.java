@@ -1,10 +1,9 @@
 package platform.server.integration;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.Expr;
 import platform.server.session.Modifier;
 import platform.server.session.SinglePropertyTableUsage;
-
-import java.util.Map;
 
 /**
  * User: DAle
@@ -14,5 +13,5 @@ import java.util.Map;
 
 public interface ImportKeyInterface {
 
-    Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier);
+    Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier);
 }

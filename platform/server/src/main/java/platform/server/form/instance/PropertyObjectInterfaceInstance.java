@@ -1,14 +1,13 @@
 package platform.server.form.instance;
 
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.DataObject;
 
-import java.util.Set;
-
 public interface PropertyObjectInterfaceInstance extends OrderInstance {
 
-    AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups);
+    AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups);
 
     DataObject getDataObject();
 

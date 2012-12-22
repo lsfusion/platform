@@ -2,6 +2,15 @@ package platform.server.form.entity;
 
 import org.apache.log4j.Logger;
 import platform.base.*;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.LongMutable;
+import platform.base.col.interfaces.mutable.MCol;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
@@ -10,6 +19,7 @@ import platform.interop.FormEventType;
 import platform.interop.ModalityType;
 import platform.interop.PropertyEditType;
 import platform.server.Context;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
@@ -141,21 +151,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка
-    @IdentityLazy
-    public QuickSet<CalcProperty> getChangeModifierProps() {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+    public ImSet<CalcProperty> getChangeModifierProps() {
+        MSet<CalcProperty> mResult = SetFact.mSet();
         for(PropertyDrawEntity propertyDraw : propertyDraws) {
             Property property = propertyDraw.propertyObject.property;
             if(property instanceof CalcProperty) {
-                QuickSet<CalcProperty> depends = ((CalcProperty<?>) property).getRecDepends();
-                for(int i=0;i<depends.size;i++) {
+                ImSet<CalcProperty> depends = ((CalcProperty<?>) property).getRecDepends();
+                for(int i=0,size=depends.size();i<size;i++) {
                     CalcProperty depend = depends.get(i);
                     if(depend instanceof SumGroupProperty && ((SumGroupProperty)depend).distribute!=null)
-                        result.add(((SumGroupProperty)depend).distribute.property);
+                        mResult.add(((SumGroupProperty)depend).distribute.property);
                 }
             }
         }
-        return result;
+        return mResult.immutable();
     }
 
     protected RegularFilterGroupEntity addSingleRegularFilterGroup(FilterEntity ifilter, String iname, KeyStroke ikey) {
@@ -209,7 +218,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public ObjectEntity getObject(int id) {
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.getObjects()) {
                 if (object.getID() == id) {
                     return object;
                 }
@@ -220,7 +229,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public ObjectEntity getObject(String sid) {
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.getObjects()) {
                 if (object.getSID().equals(sid)) {
                     return object;
                 }
@@ -231,7 +240,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public ObjectEntity getObject(ValueClass cls) {
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.getObjects()) {
                 if (cls.equals(object.baseClass)) {
                     return object;
                 }
@@ -243,7 +252,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public List<String> getObjectsNames() {
         List<String> names = new ArrayList<String>();
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.getObjects()) {
                 names.add(object.getSID());
             }
         }
@@ -355,14 +364,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void addGroupObject(GroupObjectEntity group) {
         // регистрируем ID'шники, чтобы случайно не пересеклись заданные вручную и сгенерированные ID'шники
         idGenerator.idRegister(group.getID());
-        for (ObjectEntity obj : group.objects) {
+        for (ObjectEntity obj : group.getObjects()) {
             idGenerator.idRegister(obj.getID());
         }
 
         for (GroupObjectEntity groupOld : groups) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
-            for (ObjectEntity obj : group.objects) {
-                for (ObjectEntity objOld : groupOld.objects) {
+            for (ObjectEntity obj : group.getObjects()) {
+                for (ObjectEntity objOld : groupOld.getObjects()) {
                     assert obj.getID() != objOld.getID() && !obj.getSID().equals(objOld.getSID());
                 }
             }
@@ -439,37 +448,32 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
-        List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
-        Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
-        for (ObjectEntity object : objects) {
-            ValueClassWrapper wrapper = new ValueClassWrapper(object.baseClass);
-            valueClasses.add(wrapper);
-            objectToClass.put(object, wrapper);
-        }
+        ImOrderSet<ObjectEntity> orderObjects = SetFact.toOrderExclSet(objects);
+        ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = orderObjects.getSet().mapRevValues(new GetValue<ValueClassWrapper, ObjectEntity>() {
+            public ValueClassWrapper getMapValue(ObjectEntity value) {
+                return new ValueClassWrapper(value.baseClass);
+            }
+        });
+        ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
 
-        List<List<ValueClassWrapper>> classSubsets;
+        ImCol<ImSet<ValueClassWrapper>> classSubsets;
         if (useObjSubsets) {
-            classSubsets = new ArrayList<List<ValueClassWrapper>>();
-            for (Set<ValueClassWrapper> set : new Subsets<ValueClassWrapper>(valueClasses)) {
-                List<ValueClassWrapper> objectList = new ArrayList<ValueClassWrapper>(set);
-                if (!objectList.isEmpty()) {
-                    classSubsets.add(objectList);
+            MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
+            for (ImSet<ValueClassWrapper> set : new Subsets<ValueClassWrapper>(valueClasses)) {
+                if (!set.isEmpty()) {
+                    mClassSubsets.add(set);
                 }
             }
+            classSubsets = mClassSubsets.immutableCol();
         } else {
-            classSubsets = Collections.singletonList(valueClasses);
+            classSubsets = SetFact.singleton(valueClasses);
         }
 
         List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
 
+        ImOrderSet<ValueClassWrapper> orderInterfaces = orderObjects.mapOrder(objectToClass);
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
-            List<ValueClassWrapper> interfaces = new ArrayList<ValueClassWrapper>();
-            List<ObjectEntity> entities = new ArrayList<ObjectEntity>();
-            for (ObjectEntity object : objects) {
-                interfaces.add(objectToClass.get(object));
-                entities.add(object);
-            }
-            propertyDraws.add(addPropertyDraw(implement.createLP( interfaces), groupObject, entities.toArray(new ObjectEntity[entities.size()])));
+            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(implement.mapping.valuesSet())), groupObject, orderObjects.toArray(new ObjectEntity[orderObjects.size()])));
         }
 
         return propertyDraws;
@@ -506,7 +510,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public GroupObjectEntity getApplyObject(Collection<ObjectEntity> objects) {
         GroupObjectEntity result = null;
         for (GroupObjectEntity group : groups) {
-            for (ObjectEntity object : group.objects) {
+            for (ObjectEntity object : group.getObjects()) {
                 if (objects.contains(object)) {
                     result = group;
                     break;
@@ -517,10 +521,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property) {
-        return addPropertyDraw(property, new HashMap<P, PropertyObjectInterfaceEntity>());
+        return addPropertyDraw(property, MapFact.<P, PropertyObjectInterfaceEntity>EMPTY());
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, ImMap<P, PropertyObjectInterfaceEntity> mapping) {
         return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null));
     }
 
@@ -770,23 +774,56 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return resultPropertyDraw;
     }
 
-    public QuickSet<CalcProperty> hintsIncrementTable = new QuickSet<CalcProperty>();
+    public void finalizeHints() {
+        finalizedHints = true;
+        hintsIncrementTable = ((MExclSet<CalcProperty>)hintsIncrementTable).immutable();
+        hintsNoUpdate = ((MSet<CalcProperty>)hintsNoUpdate).immutable();
+    }
+    
+    private boolean finalizedHints;
 
-    public void addHintsIncrementTable(LP... props) {
+    private Object hintsIncrementTable = SetFact.mExclSet();
+    @LongMutable
+    public ImSet<CalcProperty> getHintsIncrementTable() {
+        if(!finalizedHints)
+            finalizeHints();
+
+        return (ImSet<CalcProperty>) hintsIncrementTable;
+    }
+
+    public void addHintsIncrementTable(LCP... props) {
+        assert !finalizedHints;
         for (LP prop : props) {
-            hintsIncrementTable.add((CalcProperty) prop.property);
+            ((MExclSet<CalcProperty>)hintsIncrementTable).exclAdd((CalcProperty) prop.property);
         }
     }
 
     public void addHintsIncrementTable(CalcProperty... props) {
+        assert !finalizedHints;
         for (CalcProperty prop : props) {
-            hintsIncrementTable.add(prop);
+            ((MExclSet<CalcProperty>)hintsIncrementTable).exclAdd(prop);
         }
     }
 
-    public QuickSet<CalcProperty> hintsNoUpdate = new QuickSet<CalcProperty>();
+    private Object hintsNoUpdate = SetFact.mSet();
+    @LongMutable
+    public ImSet<CalcProperty> getHintsNoUpdate() {
+        if(!finalizedHints)
+            finalizeHints();
+        
+        return (ImSet<CalcProperty>) hintsNoUpdate;
+    }
+
+    @IdentityLazy
+    public FunctionSet<CalcProperty> getNoHints() {
+        if (Settings.instance.isDisableChangeModifierAllHints())
+            return BaseUtils.universal(getChangeModifierProps().isEmpty());
+        else
+            return CalcProperty.getDependsOnSet(getChangeModifierProps()); // тут какая то проблема есть
+    }
 
     public void addHintsNoUpdate(GroupObjectEntity groupObject) {
+        assert !finalizedHints;
         for (PropertyDrawEntity property : getProperties(groupObject)) {
             if (property.propertyObject.property instanceof CalcProperty) {
                 addHintsNoUpdate((CalcProperty) property.propertyObject.property);
@@ -795,6 +832,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addHintsNoUpdate(AbstractGroup group) {
+        assert !finalizedHints;
         for (Property property : group.getProperties()) {
             if (property instanceof CalcProperty) {
                 addHintsNoUpdate((CalcProperty) property);
@@ -813,9 +851,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addHintsNoUpdate(CalcProperty prop) {
-        if (!hintsNoUpdate.contains(prop)) {
-            hintsNoUpdate.add(prop);
-        }
+        assert !finalizedHints;
+        ((MSet<CalcProperty>)hintsNoUpdate).add(prop);
     }
 
     public FormView createDefaultRichDesign() {
@@ -1069,7 +1106,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
         ComponentSet result = new ComponentSet();
         for(PropertyDrawEntity property : propertyDraws)
-            if(!Collections.disjoint(property.propertyObject.mapping.values(), group.objects)) { // для свойств "зависящих" от группы
+            if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
                 ComponentView drawContainer = getDrawTabContainer(property, true);
                 if(drawContainer==null) // cheat \ оптимизация
                     return null;
@@ -1270,7 +1307,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public Collection<ObjectEntity> getObjects() {
         List<ObjectEntity> objects = new ArrayList<ObjectEntity>();
         for (GroupObjectEntity group : groups)
-            for (ObjectEntity object : group.objects)
+            for (ObjectEntity object : group.getObjects())
                 objects.add(object);
         return objects;
     }

@@ -1,5 +1,6 @@
 package platform.base;
 
+// equals и hashCode нет смысла перегружать так как singleton
 public class FullFunctionSet<T> implements FunctionSet<T> {
 
     private FullFunctionSet() {

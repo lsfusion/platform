@@ -1,8 +1,12 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.SFunctionSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashValues;
@@ -27,13 +31,16 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.integration.*;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
+import platform.server.session.SessionTableUsage;
+import platform.server.session.SinglePropertyTableUsage;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Set;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
@@ -104,18 +111,25 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return object;
     }
 
-    public static <K> Map<K,Object> getMapValues(Map<K,DataObject> map) {
-        Map<K,Object> mapClasses = new HashMap<K,Object>();
-        for(Map.Entry<K,DataObject> keyField : map.entrySet())
-            mapClasses.put(keyField.getKey(), keyField.getValue().object);
-        return mapClasses;
+    public static <K> ImMap<K,DataObject> filterDataObjects(ImMap<K,ObjectValue> map) {
+        return BaseUtils.immutableCast(map.filterFnValues(new SFunctionSet<ObjectValue>() {
+            public boolean contains(ObjectValue element) {
+                return element instanceof DataObject;
+            }}));
     }
 
-    public static <K> Map<K,ConcreteClass> getMapClasses(Map<K,DataObject> map) {
-        Map<K,ConcreteClass> mapClasses = new HashMap<K,ConcreteClass>();
-        for(Map.Entry<K,DataObject> keyField : map.entrySet())
-            mapClasses.put(keyField.getKey(), keyField.getValue().objectClass);
-        return mapClasses;
+    public static <K> ImMap<K,Object> getMapValues(ImMap<K,DataObject> map) {
+        return map.mapValues(new GetValue<Object, DataObject>() {
+            public Object getMapValue(DataObject value) {
+                return value.object;
+            }});
+    }
+
+    public static <K> ImMap<K,ConcreteClass> getMapClasses(ImMap<K,DataObject> map) {
+        return map.mapValues(new GetValue<ConcreteClass, DataObject>() {
+            public ConcreteClass getMapValue(DataObject value) {
+                return value.objectClass;
+            }});
     }
 
     public Where order(Expr expr, boolean desc, Where orderWhere) {
@@ -127,7 +141,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         }
     }
 
-    public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
+    public AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups) {
         return objectClass;
     }
 
@@ -154,7 +168,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void fillObjects(Set<ObjectEntity> objects) {
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return getExpr().equals(((DataObject) o).getExpr());
     }
 
@@ -162,8 +176,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return hashValues.hash(getExpr());
     }
 
-    public QuickSet<Value> getValues() {
-        return new QuickSet<Value>(getExpr());
+    public ImSet<Value> getValues() {
+        return SetFact.<Value>singleton(getExpr());
     }
 
     protected DataObject translate(MapValuesTranslate mapValues) {
@@ -190,8 +204,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         objectClass = pool.context.BL.getDataClass(object, TypeSerializer.deserializeType(inStream, 9999999));
     }
 
-    public Collection<ObjectInstance> getObjectInstances() {
-        return new ArrayList<ObjectInstance>();
+    public ImSet<ObjectInstance> getObjectInstances() {
+        return SetFact.EMPTY();
     }
 
     public DataObject getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
@@ -202,11 +216,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getDataObject();
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys) {
         return getExpr();
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
         return getExpr(importKeys);
     }
 

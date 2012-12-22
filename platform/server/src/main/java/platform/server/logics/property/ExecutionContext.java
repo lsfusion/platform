@@ -6,7 +6,9 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.ClientAction;
 import platform.interop.form.ReportGenerationData;
 import platform.server.Context;
@@ -31,12 +33,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
-
-import static platform.base.BaseUtils.join;
 
 public class ExecutionContext<P extends PropertyInterface> {
-    private final Map<P, DataObject> keys;
+    private final ImMap<P, DataObject> keys;
 
     private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject;
@@ -44,7 +43,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     private final ExecutionEnvironment env;
     private final FormEnvironment<P> form;
 
-    public ExecutionContext(Map<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
+    public ExecutionContext(ImMap<P, DataObject> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
         this.pushedAddObject = pushedAddObject;
@@ -56,7 +55,7 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env;
     }
 
-    public Map<P, DataObject> getKeys() {
+    public ImMap<P, DataObject> getKeys() {
         return keys;
     }
 
@@ -69,7 +68,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public DataObject getSingleKeyValue() {
-        return BaseUtils.singleValue(keys);
+        return keys.singleValue();
     }
 
     public Object getSingleKeyObject() {
@@ -106,7 +105,7 @@ public class ExecutionContext<P extends PropertyInterface> {
             return null;
         return drawInstance.toDraw;
     }
-    public Map<P, PropertyObjectInterfaceInstance> getObjectInstances() {
+    public ImMap<P, PropertyObjectInterfaceInstance> getObjectInstances() {
         return form!=null ? form.getMapObjects() : null;
     }
 
@@ -115,13 +114,13 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
-        Map<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
+        ImMap<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
         return objectInstances != null ? objectInstances.get(cls) : null;
     }
 
     public PropertyObjectInterfaceInstance getSingleObjectInstance() {
-        Map<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
-        return mapObjects != null && mapObjects.size() == 1 ? BaseUtils.singleValue(mapObjects) : null;
+        ImMap<P, PropertyObjectInterfaceInstance> mapObjects = getObjectInstances();
+        return mapObjects != null && mapObjects.size() == 1 ? mapObjects.singleValue() : null;
     }
 
     public Modifier getModifier() {
@@ -150,7 +149,7 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public boolean checkApply(BusinessLogics BL) throws SQLException {
-        return getSession().check(BL);
+        return getSession().check(BL, getFormInstance());
     }
 
     public boolean apply(BusinessLogics BL) throws SQLException {
@@ -171,34 +170,34 @@ public class ExecutionContext<P extends PropertyInterface> {
         return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, Map<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
         return override(keys, form!=null ? form.mapJoin(mapInterfaces) : null, pushedUserInput);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> map(Map<T, P> mapping) {
-        return override(join(mapping, keys), form!=null ? form.map(mapping) : null, pushedUserInput);
+    public <T extends PropertyInterface> ExecutionContext<T> map(ImRevMap<T, P> mapping) {
+        return override(mapping.join(keys), form!=null ? form.map(mapping) : null, pushedUserInput);
     }
 
-    public ExecutionContext<P> override(Map<P, DataObject> keys) {
+    public ExecutionContext<P> override(ImMap<P, DataObject> keys) {
         return override(keys, form, pushedUserInput);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, FormEnvironment<T> form) {
         return override(keys, form, pushedUserInput);
     }
 
-    public <T extends PropertyInterface> ExecutionContext<T> override(Map<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
+    public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, DataObject> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
         return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException {
         return Context.context.get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, interactive);
     }
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         return Context.context.get().createRemoteForm(formInstance);
     }
-    public RemoteForm createReportForm(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
+    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects) throws SQLException {
         return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false));
     }
 
@@ -260,7 +259,7 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
 
-        RemoteForm remoteForm = createReportForm(formEntity, Collections.singletonMap(objectEntity, dataObject));
+        RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
             ReportGenerationData generationData = remoteForm.reportManager.getReportData();
             ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());

@@ -4,11 +4,16 @@ import equ.api.SalesInfo;
 import equ.srv.EquipmentServerHolder;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -46,27 +51,26 @@ public class GenerateZReport extends ScriptingActionProperty {
 
             KeyExpr departmentStoreExpr = new KeyExpr("departmentStore");
             KeyExpr itemExpr = new KeyExpr("item");
-            Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
-            newKeys.put("departmentStore", departmentStoreExpr);
-            newKeys.put("item", itemExpr);
+            ImRevMap<Object, KeyExpr> newKeys = MapFact.<Object, KeyExpr>toRevMap("departmentStore", departmentStoreExpr, "item", itemExpr);
 
-            Query<Object, Object> query = new Query<Object, Object>(newKeys);
-            query.properties.put("currentBalanceSkuStock", getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
-            query.properties.put("currentRetailPriceLedger", getLCP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
+            QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(newKeys);
+            query.addProperty("currentBalanceSkuStock", getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
+            query.addProperty("currentRetailPriceLedger", getLCP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
             query.and(getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
 
             List<ItemZReportInfo> itemZReportInfoList = new ArrayList<ItemZReportInfo>();
             List<Integer> departmentStoreList = new ArrayList<Integer>();
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
-                DataObject itemObject = new DataObject(rows.getKey().get("item"), (ConcreteClass) getClass("item"));
-                Double currentBalanceSkuStock = (Double) rows.getValue().get("currentBalanceSkuStock");
+            for (int i=0,size=result.size();i<size;i++) {
+                ImMap<Object, Object> resultKeys = result.getKey(i); ImMap<Object, Object> resultValues = result.getValue(i);
+                DataObject itemObject = new DataObject(resultKeys.get("item"), (ConcreteClass) getClass("item"));
+                Double currentBalanceSkuStock = (Double) resultValues.get("currentBalanceSkuStock");
                 if (currentBalanceSkuStock > 0) {
-                    Integer departmentStore = (Integer) rows.getKey().get("departmentStore");
+                    Integer departmentStore = (Integer) resultKeys.get("departmentStore");
                     if ((departmentStore != null) && (!departmentStoreList.contains(departmentStore)))
                         departmentStoreList.add(departmentStore);
-                    Double currentRetailPriceLedger = (Double) rows.getValue().get("currentRetailPriceLedger");
+                    Double currentRetailPriceLedger = (Double) resultValues.get("currentRetailPriceLedger");
                     String barcodeItem = (String) getLCP("idBarcodeSku").read(session, itemObject);
                     Boolean isWeightItem = (Boolean) getLCP("isWeightItem").read(session, itemObject);
                     itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, isWeightItem != null, departmentStore));
@@ -78,16 +82,16 @@ public class GenerateZReport extends ScriptingActionProperty {
 
                 LCP<PropertyInterface> isGroupCashRegister = (LCP<PropertyInterface>) LM.is(getClass("groupCashRegister"));
 
-                Map<PropertyInterface, KeyExpr> groupCashRegisterKeys = isGroupCashRegister.getMapKeys();
-                KeyExpr groupCashRegisterKey = BaseUtils.singleValue(groupCashRegisterKeys);
-                Query<PropertyInterface, Object> groupCashRegisterQuery = new Query<PropertyInterface, Object>(groupCashRegisterKeys);
+                ImRevMap<PropertyInterface, KeyExpr> groupCashRegisterKeys = isGroupCashRegister.getMapKeys();
+                KeyExpr groupCashRegisterKey = groupCashRegisterKeys.singleValue();
+                QueryBuilder<PropertyInterface, Object> groupCashRegisterQuery = new QueryBuilder<PropertyInterface, Object>(groupCashRegisterKeys);
                 groupCashRegisterQuery.and(isGroupCashRegister.property.getExpr(groupCashRegisterKeys).getWhere());
                 groupCashRegisterQuery.and(getLCP("departmentStoreGroupCashRegister").getExpr(groupCashRegisterKey).compare((new DataObject(departmentStore, (ConcreteClass) getClass("departmentStore"))).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
+                ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> groupCashRegisterResult = groupCashRegisterQuery.execute(session.sql);
 
-                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> rows : groupCashRegisterResult.entrySet()) {
-                    Integer groupCashRegister = (Integer) rows.getKey().entrySet().iterator().next().getValue();
+                for (ImMap<PropertyInterface, Object> rows : groupCashRegisterResult.keyIt()) {
+                    Integer groupCashRegister = (Integer) rows.getValue(0);
                     if ((groupCashRegister != null) && (!groupCashRegisterDepartmentStoreMap.containsKey(groupCashRegister)))
                         groupCashRegisterDepartmentStoreMap.put(groupCashRegister, departmentStore);
                 }
@@ -98,16 +102,16 @@ public class GenerateZReport extends ScriptingActionProperty {
 
                 LCP<PropertyInterface> isCashRegister = (LCP<PropertyInterface>) LM.is(getClass("cashRegister"));
 
-                Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
-                KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-                Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
-                cashRegisterQuery.properties.put("numberCashRegister", getLCP("numberCashRegister").getExpr(cashRegisterKey));
+                ImRevMap<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+                KeyExpr cashRegisterKey = cashRegisterKeys.singleValue();
+                QueryBuilder<PropertyInterface, Object> cashRegisterQuery = new QueryBuilder<PropertyInterface, Object>(cashRegisterKeys);
+                cashRegisterQuery.addProperty("numberCashRegister", getLCP("numberCashRegister").getExpr(cashRegisterKey));
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
                 cashRegisterQuery.and(getLCP("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((new DataObject(groupCashRegisterDepartmentStore.getKey(), (ConcreteClass) getClass("groupCashRegister"))).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+                ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
-                for (Map<Object, Object> values : cashRegisterResult.values()) {
+                for (ImMap<Object, Object> values : cashRegisterResult.valueIt()) {
                     String numberCashRegister = (String) values.get("numberCashRegister");
                     if ((numberCashRegister != null) && (!numberCashRegisterDepartmentStoreMap.containsKey(numberCashRegister)))
                         numberCashRegisterDepartmentStoreMap.put(numberCashRegister, groupCashRegisterDepartmentStore.getValue());

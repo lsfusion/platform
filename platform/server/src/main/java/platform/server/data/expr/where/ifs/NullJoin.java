@@ -1,17 +1,16 @@
 package platform.server.data.expr.where.ifs;
 
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.Join;
-import platform.server.data.expr.Expr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
-import java.util.Collection;
-
 public class NullJoin<U> extends AbstractJoin<U> {
 
-    private Collection<U> properties;
-    public NullJoin(Collection<U> properties) {
+    private ImSet<U> properties;
+    public NullJoin(ImSet<U> properties) {
         this.properties = properties;
     }
 
@@ -23,7 +22,7 @@ public class NullJoin<U> extends AbstractJoin<U> {
         return Where.FALSE;
     }
 
-    public Collection<U> getProperties() {
+    public ImSet<U> getProperties() {
         return properties;
     }
 

@@ -1,9 +1,19 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.base.NotFunctionSet;
 import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.LongMutable;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.form.ServerResponse;
 import platform.server.Settings;
@@ -47,6 +57,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private String sID;
     private String name;
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
+
+    public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
+        public PropertyInterface getMapValue(int i) {
+            return new PropertyInterface(i);
+        }};
+
 
     public String caption;
     public String toolTip;
@@ -131,7 +147,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.logFormProperty = logFormProperty;
     }
 
-    public final Collection<T> interfaces;
 
     public Type getType() {
         return getValueClass().getType();
@@ -139,13 +154,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract ValueClass getValueClass();
 
-    public ValueClass[] getInterfaceClasses(List<T> listInterfaces) {
-        return BaseUtils.mapList(listInterfaces, getInterfaceClasses()).toArray(new ValueClass[listInterfaces.size()]);
+    public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces) {
+        return listInterfaces.mapOrder(getInterfaceClasses()).toArray(new ValueClass[listInterfaces.size()]);
     }
-    public Map<T, ValueClass> getInterfaceClasses() {
+    public ImMap<T, ValueClass> getInterfaceClasses() {
         return getInterfaceClasses(false);
     }
-    public abstract Map<T, ValueClass> getInterfaceClasses(boolean full);
+    public abstract ImMap<T, ValueClass> getInterfaceClasses(boolean full);
     public ClassWhere<T> getClassWhere() {
         return getClassWhere(false);
     }
@@ -155,25 +170,28 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().isFalse();
     }
 
-    public <P extends PropertyInterface> boolean intersect(Property<P> property, Map<P, T> map) {
+    public <P extends PropertyInterface> boolean intersect(Property<P> property, ImRevMap<P, T> map) {
         return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(), map)).isFalse();
     }
 
-    public boolean isInInterface(Map<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+    @IdentityLazy
+    public boolean cacheIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) { // для всех подряд свойств не имеет смысла
+        return isInInterface(interfaceClasses, isAny);
+    }
+
+    public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         return isAny ? anyInInterface(interfaceClasses) : allInInterface(interfaceClasses);
     }
 
-    @IdentityLazy
-    private boolean allInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
+    private boolean allInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses) {
         return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere(true));
     }
 
-    @IdentityLazy
-    private boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
+    private boolean anyInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses) {
         return !getClassWhere(true).andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
-    public boolean  isFull(Collection<T> checkInterfaces) {
+    public boolean isFull(ImCol<T> checkInterfaces) {
         ClassWhere<T> classWhere = getClassWhere();
         if(classWhere.isFalse())
             return false;
@@ -206,14 +224,21 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return isFull;
     }
 
-    public Property(String sID, String caption, List<T> interfaces) {
+    public Property(String sID, String caption, ImOrderSet<T> interfaces) {
         this.setSID(sID);
         this.caption = caption;
-        this.interfaces = interfaces;
+        this.interfaces = interfaces.getSet();
+        this.orderInterfaces = interfaces;
+    }
+
+    public final ImSet<T> interfaces;
+    private final ImOrderSet<T> orderInterfaces;
+    public ImOrderSet<T> getOrderInterfaces() {
+        return orderInterfaces;
     }
 
     @IdentityLazy
-    public Map<T, KeyExpr> getMapKeys() {
+    public ImRevMap<T, KeyExpr> getMapKeys() {
         return KeyExpr.getMapKeys(interfaces);
     }
 
@@ -256,10 +281,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean cached = false;
 
-    private Map<String, ActionPropertyMapImplement<?, T>> editActions = new HashMap<String, ActionPropertyMapImplement<?, T>>();
+    private Object editActions = MapFact.mMap(MapFact.override());
+
+    @LongMutable
+    private ImMap<String, ActionPropertyMapImplement<?, T>> getEditActions() {
+        return (ImMap<String, ActionPropertyMapImplement<?, T>>)editActions;
+    }
 
     public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
-        editActions.put(editActionSID, editActionImplement);
+        ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
     }
 
     public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID) {
@@ -267,7 +297,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID, CalcProperty filterProperty) {
-        ActionPropertyMapImplement<?, T> editAction = editActions.get(editActionSID);
+        ActionPropertyMapImplement<?, T> editAction = getEditActions().get(editActionSID);
         if (editAction != null) {
             return editAction;
         }
@@ -288,8 +318,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return this instanceof CalcProperty;
     }
 
-    public Map<T, T> getIdentityInterfaces() {
-        return BaseUtils.toMap(new HashSet<T>(interfaces));
+    public ImRevMap<T, T> getIdentityInterfaces() {
+        return interfaces.toRevMap();
     }
 
     // по умолчанию заполняет свойства
@@ -297,7 +327,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
         if (loggable && logFormProperty != null) {
             ActionPropertyObjectEntity logFormPropertyObject =
-                    form.addPropertyObject(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new PropertyObjectInterfaceEntity[0]));
+                    form.addPropertyObject(logFormProperty, getOrderInterfaces().mapOrderMap(entity.propertyObject.mapping).valuesList().toArray(new PropertyObjectInterfaceEntity[interfaces.size()]));
             entity.setContextMenuEditAction(logFormProperty.property.caption, logFormProperty.property.getSID(), logFormPropertyObject);
         }
 
@@ -369,35 +399,33 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return prop.equals(this);
     }
 
-    public List<Property> getProperties() {
-        return Collections.singletonList((Property) this);
+    public ImOrderSet<Property> getProperties() {
+        return SetFact.singletonOrder((Property) this);
     }
 
     @Override
-    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
-        List<PropertyClassImplement> resultList = new ArrayList<PropertyClassImplement>();
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
+        MList<PropertyClassImplement> mResultList = ListFact.mList();
         if (isFull()) {
-            for (List<ValueClassWrapper> classes : classLists) {
+            for (ImSet<ValueClassWrapper> classes : classLists) {
                 if (interfaces.size() == classes.size()) {
-                    for (List<T> mapping : new ListPermutations<T>(interfaces)) {
-                        Map<T, AndClassSet> propertyInterface = new HashMap<T, AndClassSet>();
-                        int interfaceCount = 0;
-                        for (T iface : mapping) {
-                            ValueClass propertyClass = classes.get(interfaceCount++).valueClass;
-                            propertyInterface.put(iface, propertyClass.getUpSet());
-                        }
-
+                    final ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
+                    for (ImOrderSet<T> mapping : new ListPermutations<T>(getOrderInterfaces())) {
+                        ImMap<T, AndClassSet> propertyInterface = mapping.mapOrderValues(new GetIndexValue<AndClassSet, T>() {
+                            public AndClassSet getMapValue(int i, T value) {
+                                return orderClasses.get(i).valueClass.getUpSet();
+                            }});
                         if (isInInterface(propertyInterface, anyInInterface)) {
-                            resultList.add(createClassImplement(classes, mapping));
+                            mResultList.add(createClassImplement(orderClasses, mapping));
                         }
                     }
                 }
             }
         }
-        return resultList;
+        return mResultList.immutableList();
     }
     
-    protected abstract PropertyClassImplement<T, ?> createClassImplement(List<ValueClassWrapper> classes, List<T> mapping);
+    protected abstract PropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
 
     @Override
     public Property getProperty(String sid) {
@@ -423,7 +451,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         outStream.writeUTF(getCode());
         outStream.writeBoolean(isField());
 
-        pool.serializeCollection(outStream, interfaces);
+        pool.serializeCollection(outStream, getOrderInterfaces().toJavaList());
         pool.serializeObject(outStream, getParent());
     }
 
@@ -442,6 +470,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         finalized = true;
     }
 
+    public void finalizeAroundInit() {
+        links = null;
+        editActions = ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).immutable();
+    }
+
     @IdentityLazy
     public PropertyChange<T> getNoChange() {
         return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);
@@ -449,34 +482,34 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     
     public abstract void prereadCaches();
 
-    protected abstract Collection<Pair<Property<?>, LinkType>> calculateLinks();
+    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks();
 
-    private QuickSet<Link> links;
+    private ImSet<Link> links;
     @ManualLazy
-    public QuickSet<Link> getLinks() {
+    public ImSet<Link> getLinks() { // чисто для лексикографики
         if(links==null) {
-            links = new QuickSet<Link>();
-            for(Pair<Property<?>, LinkType> link : calculateLinks())
-                links.add(new Link(this, link.first, link.second));
+            links = calculateLinks().mapColSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
+                public Link getMapValue(Pair<Property<?>, LinkType> value) {
+                    return new Link(Property.this, value.first, value.second);
+                }});
         }
         return links;
     }
+    public abstract ImSet<SessionCalcProperty> getSessionCalcDepends();
 
-    public abstract Set<SessionCalcProperty> getSessionCalcDepends();
-
-    public Set<OldProperty> getOldDepends() {
-        Set<OldProperty> result = new HashSet<OldProperty>();
-        for(SessionCalcProperty sessionCalc : getSessionCalcDepends())
-            result.add(sessionCalc.getOldProperty());
-        return result;
+    public ImSet<OldProperty> getOldDepends() {
+        return getSessionCalcDepends().mapSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
+            public OldProperty getMapValue(SessionCalcProperty value) {
+                return value.getOldProperty();
+            }});
     }
 
     // не сильно структурно поэтому вынесено в метод
-    public <V> Map<T, V> getMapInterfaces(List<V> list) {
-        int i=0;
-        Map<T, V> result = new HashMap<T, V>();
-        for(T propertyInterface : interfaces)
-            result.put(propertyInterface, list.get(i++));
-        return result;
+    public <V> ImRevMap<T, V> getMapInterfaces(final ImOrderSet<V> list) {
+        return getOrderInterfaces().mapOrderRevValues(new GetIndexValue<V, T>() {
+            public V getMapValue(int i, T value) {
+                return list.get(i);
+            }
+        });
     }
 }

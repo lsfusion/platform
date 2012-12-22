@@ -1,11 +1,13 @@
 package platform.server.logics;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileClass;
 import platform.server.data.type.Type;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
@@ -32,7 +34,7 @@ public class LoadActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public PropsNewSession aspectChangeExtProps() {
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return getChangeProps(fileProperty.property);
     }
 

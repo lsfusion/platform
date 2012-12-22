@@ -1,33 +1,18 @@
 package platform.server.data.expr.where.cases;
 
-import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.where.Where;
 
-import java.util.Map;
+public class MapCaseList<K> extends CaseList<ImMap<K, Expr>, ImMap<K, Expr>,MapCase<K>> {
 
-public class MapCaseList<K> extends CaseList<Map<K, BaseExpr>, Map<K, BaseExpr>,MapCase<K>> {
-
-    public MapCaseList() {
+    public MapCaseList(ImList<MapCase<K>> mapCases) {
+        super(mapCases);
     }
 
-    // добавляет Case, проверяя все что можно
-    public void add(Where where,Map<K, BaseExpr> map) {
-
-        where = where.followFalse(upWhere);
-        if(!where.isFalse()) {
-            MapCase<K> lastCase = size()>0?get(size()-1):null;
-            if(lastCase!=null && BaseUtils.hashEquals(lastCase.data,map)) // заOr'им
-                lastCase.where = lastCase.where.or(where);
-            else
-                add(new MapCase<K>(where, map));
-            upWhere = upWhere.or(where);
-        }
+    public MapCaseList(ImSet<MapCase<K>> mapCases) {
+        super(mapCases);
     }
 
-    @Override
-    public Map<K, BaseExpr> getFinal() {
-        throw new RuntimeException("not supported");
-    }
 }

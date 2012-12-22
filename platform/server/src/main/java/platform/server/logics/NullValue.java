@@ -1,7 +1,10 @@
 package platform.server.logics;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
@@ -11,8 +14,6 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.session.SessionChanges;
-
-import java.util.*;
 
 public class NullValue extends ObjectValue<NullValue> {
 
@@ -47,7 +48,7 @@ public class NullValue extends ObjectValue<NullValue> {
             return greater.or(orderWhere);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return true;
     }
 
@@ -55,8 +56,8 @@ public class NullValue extends ObjectValue<NullValue> {
         return 0;
     }
 
-    public QuickSet<Value> getValues() {
-        return QuickSet.EMPTY();
+    public ImSet<Value> getValues() {
+        return SetFact.EMPTY();
     }
 
     protected NullValue translate(MapValuesTranslate mapValues) {
@@ -72,18 +73,18 @@ public class NullValue extends ObjectValue<NullValue> {
         return true;
     }
 
-    public Collection<ObjectInstance> getObjectInstances() {
-        return new ArrayList<ObjectInstance>();
+    public ImSet<ObjectInstance> getObjectInstances() {
+        return SetFact.EMPTY();
     }
 
-    public static <K> Map<K,ObjectValue> getMap(Collection<K> keys) {
-        Map<K,ObjectValue> result = new HashMap<K, ObjectValue>();
-        for(K object : keys)
-            result.put(object, NullValue.instance);
-        return result;
+    public static <K> ImMap<K,ObjectValue> getMap(ImSet<K> keys) {
+        return keys.mapValues(new GetStaticValue<ObjectValue>() {
+            public ObjectValue getMapValue() {
+                return NullValue.instance;
+            }});
     }
 
     public <K> ClassWhere<K> getClassWhere(K key) {
-        return ClassWhere.STATIC(false);
+        return ClassWhere.FALSE();
     }
 }

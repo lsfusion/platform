@@ -1,22 +1,28 @@
 package platform.server.logics.table;
 
-import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.SystemClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.StructTable;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.DataSession;
-import platform.server.session.SingleKeyNoPropertyUsage;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class TableFactory {
 
@@ -31,32 +37,31 @@ public class TableFactory {
 
     public ImplementTable include(String name, ValueClass... classes) {
         ImplementTable newTable = new ImplementTable(name, classes);
-        newTable.include(implementTables[classes.length], true, new HashSet<ImplementTable>());
+        newTable.include(implementTables[classes.length], true, SetFact.<ImplementTable>mAddRemoveSet());
         return newTable;
     }
 
-    public Collection<DataTable> getDataTables(BaseClass baseClass) {
-        return BaseUtils.add(getImplementTables(), baseClass.table);
+    public ImSet<DataTable> getDataTables(BaseClass baseClass) {
+        return SetFact.addExcl(getImplementTables(), baseClass.table);
     }
 
     // получает постоянные таблицы
-    public Collection<ImplementTable> getImplementTables() {
-        Collection<ImplementTable> result = new ArrayList<ImplementTable>();
+    public ImSet<ImplementTable> getImplementTables() {
+        MExclSet<ImplementTable> result = SetFact.mExclSet();
         for(int i=0;i<=MAX_INTERFACE;i++) {
-            Set<ImplementTable> intTables = new HashSet<ImplementTable>();
+            MSet<ImplementTable> mIntTables = SetFact.mSet();
             for(ImplementTable implementTable : implementTables[i])
-                implementTable.fillSet(intTables);            
-            for(ImplementTable intTable : intTables)
-                result.add(intTable);
+                implementTable.fillSet(mIntTables);
+            result.exclAddAll(mIntTables.immutable());
         }
-        return result;
+        return result.immutable();
     }
     
-    public Map<String, ImplementTable> getImplementTablesMap() {
-        Map<String, ImplementTable> result = new HashMap<String, ImplementTable>();
-        for(ImplementTable impTable : getImplementTables())
-            result.put(impTable.name, impTable);
-        return result;
+    public ImRevMap<String, ImplementTable> getImplementTablesMap() {
+        return getImplementTables().mapRevKeys(new GetValue<String, ImplementTable>() {
+            public String getMapValue(ImplementTable value) {
+                return value.name;
+            }});
     }
 
     public <T> ImplementTable getImplementTable(String tableName) {
@@ -68,7 +73,7 @@ public class TableFactory {
         return null;
     }
 
-    public <T> MapKeysTable<T> getMapTable(Map<T, ValueClass> findItem) {
+    public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem) {
         for(ImplementTable implementTable : implementTables[findItem.size()]) {
             MapKeysTable<T> mapTable = implementTable.getMapTable(findItem);
             if(mapTable!=null) return mapTable;
@@ -84,12 +89,13 @@ public class TableFactory {
         sql.ensureTable(IDTable.instance);
         sql.ensureTable(StructTable.instance);
 
-        for (Map.Entry<Integer, Integer> idType : IDTable.getCounters().entrySet())
-            sql.ensureRecord(IDTable.instance, Collections.singletonMap(IDTable.instance.key,new DataObject(idType.getKey(), SystemClass.instance)), Collections.singletonMap(IDTable.instance.value,(ObjectValue)new DataObject(idType.getValue(), SystemClass.instance)));
+        ImMap<Integer, Integer> counters = IDTable.getCounters();
+        for (int i=0,size=counters.size();i<size;i++)
+            sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)));
 
         // создадим dumb
         sql.ensureTable(DumbTable.instance);
-        sql.ensureRecord(DumbTable.instance, Collections.singletonMap(DumbTable.instance.key,new DataObject(1, SystemClass.instance)), new HashMap<PropertyField, ObjectValue>());
+        sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY());
 
         sql.ensureTable(EmptyTable.instance);
 
@@ -97,10 +103,10 @@ public class TableFactory {
     }
     
     @IdentityLazy
-    public List<ImplementTable> getImplementTables(Set<CustomClass> cls) {
+    public List<ImplementTable> getImplementTables(ImSet<CustomClass> cls) {
         List<ImplementTable> result = new ArrayList<ImplementTable>();
         for (ImplementTable table : getImplementTables()) {
-            if (!Collections.disjoint(table.mapFields.values(), cls)) {
+            if (!table.mapFields.values().toSet().disjoint(cls)) {
                 result.add(table);
             }
         }

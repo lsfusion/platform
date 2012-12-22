@@ -1,9 +1,14 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.TranslateContext;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.extra.EqualsWhere;
@@ -17,34 +22,40 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
 
-public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual> {
+    public final ImMap<KeyExpr, BaseExpr> keyExprs;
 
-    public final Map<KeyExpr, BaseExpr> keyExprs;
-
-    public KeyEqual() {
-        this.keyExprs = new HashMap<KeyExpr, BaseExpr>();
+    private KeyEqual() {
+        this.keyExprs = MapFact.EMPTY();
     }
+    public final static KeyEqual EMPTY = new KeyEqual();
 
     public KeyEqual(KeyExpr key, BaseExpr expr) {
-        keyExprs = Collections.singletonMap(key, expr);
+        keyExprs = MapFact.singleton(key, expr);
     }
 
-    public KeyEqual(Map<KeyExpr, BaseExpr> keyExprs) {
+    public KeyEqual(ImMap<KeyExpr, BaseExpr> keyExprs) {
         this.keyExprs = keyExprs;
+    }
+    
+    private final static AddValue<KeyExpr, Expr> keepValue = new SimpleAddValue<KeyExpr, Expr>() {
+        public Expr addValue(KeyExpr key, Expr prevValue, Expr newValue) {
+            if(!prevValue.isValue()) // если было не value, предпочтительнее использовать value;
+                return newValue;
+            return prevValue;
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <E extends Expr> AddValue<KeyExpr, E> keepValue() {
+        return (AddValue<KeyExpr, E>) keepValue;
     }
 
     public KeyEqual and(KeyEqual and) {
-        Map<KeyExpr,BaseExpr> result = new HashMap<KeyExpr,BaseExpr>(keyExprs);
-        for(Map.Entry<KeyExpr,BaseExpr> andKeyExpr : and.keyExprs.entrySet()) {
-            BaseExpr expr = result.get(andKeyExpr.getKey());
-            if(expr==null || !expr.isValue())
-                result.put(andKeyExpr.getKey(),andKeyExpr.getValue());
-        }
-        return new KeyEqual(result);
+        return new KeyEqual(keyExprs.merge(and.keyExprs, KeyEqual.<BaseExpr>keepValue()));
     }
 
     public boolean isFalse() {
@@ -62,12 +73,12 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
 
     public Where getWhere() {
         Where equalsWhere = Where.TRUE;
-        for(Map.Entry<KeyExpr,BaseExpr> keyExpr : keyExprs.entrySet())
-            equalsWhere = equalsWhere.and(EqualsWhere.create(keyExpr.getKey(),keyExpr.getValue()));
+        for(int i=0,size=keyExprs.size();i<size;i++)
+            equalsWhere = equalsWhere.and(EqualsWhere.create(keyExprs.getKey(i),keyExprs.getValue(i)));
         return equalsWhere;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return keyExprs.equals(((KeyEqual) o).keyExprs);
     }
 
@@ -80,13 +91,13 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
             return new KeyEqual((KeyExpr) operator1, operator2);
         if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
             return new KeyEqual((KeyExpr) operator2, operator1);
-        return new KeyEqual();
+        return KeyEqual.EMPTY;
     }
 
     public WhereJoins getWhereJoins() {
         WhereJoin[] wheres = new WhereJoin[keyExprs.size()]; int iw = 0;
-        for(Map.Entry<KeyExpr, BaseExpr> keyExpr : keyExprs.entrySet())
-            wheres[iw++] = new ExprEqualsJoin(keyExpr.getKey(), keyExpr.getValue());
+        for(int i=0,size=keyExprs.size();i<size;i++)
+            wheres[iw++] = new ExprEqualsJoin(keyExprs.getKey(i), keyExprs.getValue(i));
         return new WhereJoins(wheres);
     }
     

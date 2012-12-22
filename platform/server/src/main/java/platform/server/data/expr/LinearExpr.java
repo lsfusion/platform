@@ -1,19 +1,19 @@
 package platform.server.data.expr;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
+import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.*;
-import platform.server.data.query.CompileSource;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.*;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr
@@ -34,8 +34,8 @@ public class LinearExpr extends UnionExpr {
     }
 
     @Override
-    protected Set<Expr> getParams() {
-        return map.keySet();
+    protected ImSet<Expr> getParams() {
+        return map.keys();
     }
 
     @IdentityLazy
@@ -45,7 +45,7 @@ public class LinearExpr extends UnionExpr {
     
     public class NotNull extends NotNullExpr.NotNull {
 
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
             return getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
         }
 
@@ -67,7 +67,7 @@ public class LinearExpr extends UnionExpr {
         return super.equals(obj);
     }*/
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return map.equals(((LinearExpr)obj).map);
     }
 
@@ -78,8 +78,8 @@ public class LinearExpr extends UnionExpr {
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
         Expr result = null;
-        for(Map.Entry<Expr, Integer> operand : map.entrySet()) {
-            Expr transOperand = operand.getKey().translateQuery(translator).scale(operand.getValue());
+        for(int i=0,size=map.size();i<size;i++) {
+            Expr transOperand = map.getKey(i).translateQuery(translator).scale(map.getValue(i));
             if(result==null)
                 result = transOperand;
             else
@@ -90,10 +90,7 @@ public class LinearExpr extends UnionExpr {
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
     protected LinearExpr translate(MapTranslate translator) {
-        LinearOperandMap transMap = new LinearOperandMap();
-        for(Map.Entry<Expr, Integer> operand : map.entrySet())
-            transMap.put(operand.getKey().translateOuter(translator),operand.getValue());
-        return new LinearExpr(transMap);
+        return new LinearExpr(map.translateOuter(translator));
     }
 
     @Override

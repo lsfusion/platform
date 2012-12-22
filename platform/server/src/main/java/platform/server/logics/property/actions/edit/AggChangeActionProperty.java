@@ -1,7 +1,9 @@
 package platform.server.logics.property.actions.edit;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
@@ -19,19 +21,13 @@ import platform.server.logics.property.actions.flow.AroundAspectActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Collections.singletonMap;
-import static platform.base.BaseUtils.singleValue;
 
 public class AggChangeActionProperty<P extends PropertyInterface> extends AroundAspectActionProperty {
 
     private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public AggChangeActionProperty(String sID, String caption, List<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+    public AggChangeActionProperty(String sID, String caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
         super(sID, caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
@@ -63,18 +59,18 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             // пока тупо MGProp'им назад
             KeyExpr keyExpr = new KeyExpr("key");
             Expr groupExpr = GroupExpr.create(
-                    singletonMap(0, aggProp.getExpr(singletonMap(BaseUtils.single(aggProp.interfaces), keyExpr), context.getModifier())),
+                    MapFact.singleton(0, aggProp.getExpr(MapFact.singleton(aggProp.interfaces.single(), keyExpr), context.getModifier())),
                     keyExpr,
                     keyExpr.isClass(aggClass.getUpSet()),
                     GroupType.ANY,
-                    singletonMap(0, readValue.getExpr())
+                    MapFact.singleton(0, readValue.getExpr())
             );
 
-            OrderedMap<Map<String,DataObject>,Map<String,ObjectValue>> values =
-                    new Query<String, String>(new HashMap<String, KeyExpr>(), singletonMap("value", groupExpr)).executeClasses(context);
+            ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> values =
+                    new Query<String, String>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr)).executeClasses(context);
 
             if (values.size() != 0) {
-                ObjectValue convertWYSValue = singleValue(singleValue(values));
+                ObjectValue convertWYSValue = values.singleValue().singleValue();
                 return proceed(context.pushUserInput(convertWYSValue));
             }
         }

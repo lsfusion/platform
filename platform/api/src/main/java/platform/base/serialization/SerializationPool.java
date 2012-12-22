@@ -1,5 +1,6 @@
 package platform.base.serialization;
 
+import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextHolder;
 

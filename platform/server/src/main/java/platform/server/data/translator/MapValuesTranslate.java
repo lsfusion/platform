@@ -1,12 +1,12 @@
 package platform.server.data.translator;
 
-import platform.base.QuickMap;
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.ValuesContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 
-import java.util.Map;
 import java.util.Set;
 
 public interface MapValuesTranslate extends MapObject {
@@ -14,26 +14,28 @@ public interface MapValuesTranslate extends MapObject {
     <V extends Value> V translate(V expr);
 
     int hash(HashValues hashValues);
-    QuickSet<Value> getValues();
+    ImSet<Value> getValues();
 
     // extend'ит интерфейс до MapTranslate
     MapTranslate mapKeys();
 
-    MapValuesTranslate filter(QuickSet<? extends Value> values);
+    MapValuesTranslate filter(ImSet<? extends Value> values);
 
     MapValuesTranslate map(MapValuesTranslate map);
 
-    <K,U extends ValuesContext<U>> Map<K,U> translateValues(Map<K,U> map);
-    <V extends Value> Set<V> translateValues(Set<V> values);
-    <V extends Value> QuickSet<V> translateValues(QuickSet<V> values);
-    <K,U extends Value> Map<K,U> translateMapValues(Map<K,U> map);
-    <K extends Value,U> QuickMap<K,U> translateValuesMapKeys(QuickMap<K, U> map);
+    <K,U extends ValuesContext<U>> ImMap<K, U> translateValues(ImMap<K, U> map);
+    <K1,U1 extends ValuesContext<U1>,K2,U2 extends ValuesContext<U2>> ImMap<ImMap<K1,U1>,ImMap<K2,U2>> translateMapKeyValues(ImMap<ImMap<K1,U1>,ImMap<K2,U2>> map);
+    <V extends Value> ImSet<V> translateValues(ImSet<V> values);
+    <K,U extends Value> ImRevMap<K, U> translateMapValues(ImRevMap<K, U> map);
+    <K,U extends Value> ImMap<K, U> translateMapValues(ImMap<K, U> map);
+    <K extends Value,U> ImMap<K, U> translateValuesMapKeys(ImMap<K, U> map);
+    <K extends Value,U> ImRevMap<K, U> translateValuesMapKeys(ImRevMap<K, U> map);
 
-    boolean assertValuesEquals(Set<? extends Value> values);
+    boolean assertValuesEquals(ImSet<? extends Value> values);
 
     public MapValuesTranslate reverse();
 
-    boolean identityValues(QuickSet<? extends Value> values);
+    boolean identityValues(ImSet<? extends Value> values);
 
     public HashValues getHashValues();
 }

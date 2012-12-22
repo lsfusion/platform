@@ -1,14 +1,15 @@
 package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.data.Table;
 import platform.server.data.Value;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.query.*;
+import platform.server.data.expr.query.QueryExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -17,13 +18,15 @@ import platform.server.logics.BusinessLogics;
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
     protected static class ToString extends CompileSource  {
-        public ToString(QuickSet<Value> values, QuickSet<KeyExpr> keys) {
+        public ToString(ImSet<Value> values) {
             super(new KeyType() {
                 public Type getKeyType(KeyExpr expr) {
                     return ObjectType.instance;
                 }
-            }, Where.FALSE, values.mapString(), BusinessLogics.debugSyntax);
-            keySelect.putAll(keys.mapString());
+            }, Where.FALSE, values.mapRevValues(new GetValue<String, Value>() {
+                public String getMapValue(Value value) {
+                    return value.toString();
+                }}), BusinessLogics.debugSyntax);
         }
 
         public String getSource(KeyExpr expr) {
@@ -49,7 +52,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
     @Override
     public String toString() {
-        return getSource(new ToString(getOuterValues(), getOuterKeys()));
+        return getSource(new ToString(getOuterValues()));
     }
 
     public final static ArrayInstancer<SourceJoin> instancer = new ArrayInstancer<SourceJoin>() {

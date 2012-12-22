@@ -1,5 +1,7 @@
 package platform.server.logics.property.actions;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
@@ -7,7 +9,6 @@ import platform.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Set;
 
 public abstract class CustomActionProperty extends ActionProperty<ClassPropertyInterface> {
 
@@ -31,8 +32,8 @@ public abstract class CustomActionProperty extends ActionProperty<ClassPropertyI
         return IsClassProperty.getProperty(interfaces);
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+    public ImSet<ActionProperty> getDependActions() {
+        return SetFact.EMPTY();
     }
     
     protected boolean isVolatile() {

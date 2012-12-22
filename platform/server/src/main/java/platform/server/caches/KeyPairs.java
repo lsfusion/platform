@@ -1,18 +1,19 @@
 package platform.server.caches;
 
-import platform.base.*;
+import platform.base.GlobalObject;
+import platform.base.GroupPairs;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.Settings;
 import platform.server.data.expr.KeyExpr;
 
-import java.util.Map;
+public class KeyPairs extends GroupPairs<GlobalObject, KeyExpr, ImRevMap<KeyExpr, KeyExpr>> {
 
-public class KeyPairs extends GroupPairs<GlobalObject, KeyExpr, Map<KeyExpr, KeyExpr>> {
-
-    protected Map<KeyExpr, KeyExpr> createI(Map<KeyExpr, KeyExpr> map) {
+    protected ImRevMap<KeyExpr, KeyExpr> createI(ImRevMap<KeyExpr, KeyExpr> map) {
         return map;
     }
 
-    public KeyPairs(QuickMap<KeyExpr, GlobalObject> map1, QuickMap<KeyExpr, GlobalObject> map2) {
+    public KeyPairs(ImMap<KeyExpr, GlobalObject> map1, ImMap<KeyExpr, GlobalObject> map2) {
         super(map1, map2, true, Settings.instance.getMapInnerMaxIterations());
     }
 }

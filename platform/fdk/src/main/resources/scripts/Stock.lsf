@@ -97,7 +97,7 @@ TABLE sku(sku);
 TABLE legalEntitySku(legalEntity, sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
-nameSku 'Наименование' (sku) = ABSTRACT STRING[200] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
 
 TABLE skuLanguage(sku, language);
 nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (sku, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
@@ -188,18 +188,18 @@ changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
 
 // -------------------------------- Для всего ledger'а -------------------- //
 
-dateTimeSkuLedger 'Дата/время' (ledger) = UNION EXCLUSIVE dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
+dateTimeSkuLedger 'Дата/время' (ledger) = UNION CLASS dateTimeDataSkuLedger (ledger), dateTimeBatch (ledger) PERSISTENT INDEXED;
 dateSkuLedger 'Дата' (ledger) = toDate(dateTimeSkuLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSkuLedger 'Проведен' (ledger) = UNION EXCLUSIVE isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
+isPostedSkuLedger 'Проведен' (ledger) = UNION CLASS isPostedDataSkuLedger (ledger), isPostedBatch (ledger) PERSISTENT;
 
-skuSkuLedger (ledger) = UNION EXCLUSIVE skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
+skuSkuLedger (ledger) = UNION CLASS skuDataSkuLedger (ledger), skuBatch (ledger) PERSISTENT INDEXED;
 nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 
-stockSkuLedger (ledger) = UNION EXCLUSIVE stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
+stockSkuLedger (ledger) = UNION CLASS stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
-descriptionSkuLedger 'Описание' (ledger) = UNION EXCLUSIVE descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
+descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
 // -------------------------------- Количества ---------------------------- //
 
@@ -207,20 +207,20 @@ quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch) PER
 
 quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger) PERSISTENT;
 
-quantityInSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityBatch(ledger),
+quantityInSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityBatch(ledger),
                                                         quantityInLIFOSkuLedger(ledger) PERSISTENT;
 
 quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger) PERSISTENT;
 
-quantityOutSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityOutFIFOSkuLedger(ledger) PERSISTENT;
+quantityOutSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
-quantityDataSkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInLIFOSkuLedger(ledger),
+quantityDataSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInLIFOSkuLedger(ledger),
                                                           quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
-quantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
+quantitySkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInSkuLedger(ledger),
                                                       quantityOutSkuLedger(ledger) PERSISTENT;
 
-signedQuantitySkuLedger 'Кол-во' (ledger) = UNION EXCLUSIVE quantityInSkuLedger(ledger),
+signedQuantitySkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInSkuLedger(ledger),
                                                             -quantityOutSkuLedger(ledger) PERSISTENT;
 
 // -------------------------------------------- Расчет себестоимости -------------------------------------- //
@@ -250,14 +250,14 @@ quantityOutFIFOSkuLedgerBatch (ledger, batch) =
                   BY ledger
                   ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
-quantityDataSkuLedgerBatch (ledger, batch) = UNION EXCLUSIVE quantityInLIFOSkuLedgerBatch(ledger, batch),
+quantityDataSkuLedgerBatch (ledger, batch) = UNION CLASS quantityInLIFOSkuLedgerBatch(ledger, batch),
                                                              quantityOutFIFOSkuLedgerBatch(ledger, batch);
 
 // Свойства для расчета себестоимости
 
 costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
 
-costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION EXCLUSIVE quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
+costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION CLASS quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
 
 signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
                                               THEN -costSkuLedgerBatch(ledger, batch)
@@ -346,7 +346,7 @@ costSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM cos
 sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (inSkuLedger) PERSISTENT;
 sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (outSkuLedger) PERSISTENT;
 
-signedSumSkuLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumInSkuLedger(ledger),
+signedSumSkuLedger 'Сумма' (ledger) = UNION CLASS sumInSkuLedger(ledger),
                                                       -sumOutSkuLedger(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
@@ -2465,7 +2465,7 @@ loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, n
        SET name(u) <- stringOne AS STRING[110];
        SET shortName(u) <- stringTwo AS STRING[5];
        SET baseUOM(u) <- u AS UOM;
-       SET factorUOM(u) <- numeric AS NUMERIC[14,3];
+       SET factorUOM(u) <- numeric AS NUMERIC[17,3];
     }
 }
 

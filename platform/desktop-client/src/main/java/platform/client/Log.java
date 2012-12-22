@@ -2,6 +2,7 @@ package platform.client;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
+import java.util.List;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -9,7 +10,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import static platform.client.ClientResourceBundle.getString;
@@ -92,7 +92,7 @@ public final class Log {
         error(message, null, null);
     }
 
-    public static void error(String message, ArrayList<String> titles, ArrayList<ArrayList<String>> data) {
+    public static void error(String message, List<String> titles, List<List<String>> data) {
         printFailedMessage(message, titles, data, "");
     }
 
@@ -108,7 +108,7 @@ public final class Log {
         printFailedMessage(message, null, null, trace);
     }
 
-    public static void printFailedMessage(String message, ArrayList<String> titles, ArrayList<ArrayList<String>> data, String trace) {
+    public static void printFailedMessage(String message, List<String> titles, List<List<String>> data, String trace) {
         printmsg(message);
 
         provideErrorFeedback();
@@ -139,7 +139,7 @@ public final class Log {
             Object columnNames[] = titles.toArray();
             Object dataArray[][] = new Object[size][];
             int i = 0;
-            for (ArrayList<String> dataRow : data) {
+            for (List<String> dataRow : data) {
                 dataArray[i] = dataRow.toArray();
                 i++;
             }

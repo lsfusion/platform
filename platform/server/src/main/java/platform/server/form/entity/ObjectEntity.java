@@ -2,7 +2,6 @@ package platform.server.form.entity;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
-import platform.interop.FormEventType;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -20,7 +19,6 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ServerIdentitySerializable {

@@ -2,12 +2,13 @@ package platform.server.data.expr.where.cases;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.Case;
 import platform.server.data.where.Where;
 
-public class ExprCase extends Case<BaseExpr> {
+public class ExprCase extends Case<Expr> {
 
-    public ExprCase(Where where, BaseExpr expr) {
+    public ExprCase(Where where, Expr expr) {
         super(where,expr);
     }
 

@@ -2,20 +2,20 @@ package skolkovo.actions;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
@@ -98,25 +98,24 @@ public class CopyProjectActionProperty extends UserActionProperty {
 
         KeyExpr clusterExpr = new KeyExpr("cluster");
         KeyExpr projectExpr = new KeyExpr("project");
-        Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
-        newKeys.put("cluster", clusterExpr);
-        newKeys.put("project", projectExpr);
+        ImRevMap<Object, KeyExpr> newKeys = MapFact.toRevMap((Object)"cluster", clusterExpr, "project", projectExpr);
 
-        Query<Object, Object> query = new Query<Object, Object>(newKeys);
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(newKeys);
         for (LCP prop : propertiesClusterProjectToCopy)
-            query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), projectExpr, clusterExpr));
+            query.addProperty(prop.toString(), prop.getExpr(context.getModifier(), projectExpr, clusterExpr));
         for (LCP prop : propertiesClusterToCopy)
-            query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), clusterExpr));
+            query.addProperty(prop.toString(), prop.getExpr(context.getModifier(), clusterExpr));
         query.and(LM.inProjectCluster.getExpr(context.getModifier(), projectExpr, clusterExpr).getWhere());
         query.and(projectExpr.compare(projectObject, Compare.EQUALS));
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
-        for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
-            DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), LM.cluster);
+        for (int i=0,size=result.size();i<size;i++) {
+            DataObject clusterObject = new DataObject(result.getKey(i).get("cluster"), LM.cluster);
+            ImMap<Object, Object> resultValue = result.getValue(i);
             for (LCP prop : propertiesClusterProjectToCopy)
-                prop.change(rows.getValue().get(prop.toString()), context, projectCopy, clusterObject);
+                prop.change(resultValue.get(prop.toString()), context, projectCopy, clusterObject);
             for (LCP prop : propertiesClusterToCopy)
-                prop.change(rows.getValue().get(prop.toString()), context, clusterObject);
+                prop.change(resultValue.get(prop.toString()), context, clusterObject);
         }
     }
 
@@ -125,17 +124,17 @@ public class CopyProjectActionProperty extends UserActionProperty {
     }
 
     private void copyObject(ConcreteCustomClass copyingCustomClass, List<LCP> propertiesToCopy, ExecutionContext context, LCP projectCopyingCustomClass, DataObject projectObject, DataObject projectCopy) throws SQLException {
-        LCP isCopyingCustomClass = LM.is(copyingCustomClass);
-        Map<Object, KeyExpr> keys = isCopyingCustomClass.getMapKeys();
-        KeyExpr key = BaseUtils.singleValue(keys);
-        Query<Object, Object> query = new Query<Object, Object>(keys);
+        LCP<?> isCopyingCustomClass = LM.is(copyingCustomClass);
+        ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isCopyingCustomClass.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
         for (LCP prop : propertiesToCopy)
-            query.properties.put(prop.toString(), prop.getExpr(context.getModifier(), key));
+            query.addProperty(prop.toString(), prop.getExpr(context.getModifier(), key));
         query.and(isCopyingCustomClass.getExpr(key).getWhere());
         query.and(projectCopyingCustomClass.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
-        for (Map<Object, Object> values : result.values()) {
+        for (ImMap<Object, Object> values : result.valueIt()) {
             DataObject copy = context.addObject(copyingCustomClass);
             projectCopyingCustomClass.change(projectCopy.getValue(), context, copy);
             for (LCP prop : propertiesToCopy)

@@ -3,16 +3,22 @@ package roman.actions;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -114,24 +120,24 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(title, ";");
             writerTSDocs44.println(row);
 
-            LCP isGroupDeclaration = LM.is(getClass("groupDeclaration"));
-            Map<Object, KeyExpr> keys = isGroupDeclaration.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
+            LCP<?> isGroupDeclaration = LM.is(getClass("groupDeclaration"));
+            ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isGroupDeclaration.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
             for (String propertySID : exportProperties)
-                query.properties.put(propertySID, getLCP(propertySID).getExpr(context.getModifier(), key));
+                query.addProperty(propertySID, getLCP(propertySID).getExpr(context.getModifier(), key));
             query.and(isGroupDeclaration.getExpr(key).getWhere());
             query.and(getLCP("declarationGroupDeclaration").getExpr(context.getModifier(), key).compare(declarationObject.getExpr(), Compare.EQUALS));
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
             TreeMap<Integer, Map<String, Object>> sortedRows = new TreeMap<Integer, Map<String, Object>>();
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : result.entrySet()) {
-                Map<Object, Object> values = entry.getValue();
+            for (int i=0,size=result.size();i<size;i++) {
+                ImMap<Object, Object> values = result.getValue(i);
                 Map<String, Object> valuesRow = new HashMap<String, Object>();
                 for (String propertySID : exportProperties)
                     valuesRow.put(propertySID, values.get(propertySID));
-                valuesRow.put("groupDeclarationID", entry.getKey().values().iterator().next());
+                valuesRow.put("groupDeclarationID", result.getKey(i).getValue(0));
                 sortedRows.put((Integer) values.get("numberGroupDeclaration"), valuesRow);
             }
 
@@ -155,19 +161,18 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
 
                 //Creation of TSDocs44.csv
                 KeyExpr innerInvoiceExpr = new KeyExpr("innerInvoice");
-                Map<Object, KeyExpr> innerInvoiceKeys = new HashMap<Object, KeyExpr>();
-                innerInvoiceKeys.put("innerInvoice", innerInvoiceExpr);
+                ImRevMap<Object, KeyExpr> innerInvoiceKeys = MapFact.singletonRev((Object)"innerInvoice", innerInvoiceExpr);
 
-                Query<Object, Object> innerInvoiceQuery = new Query<Object, Object>(innerInvoiceKeys);
-                innerInvoiceQuery.properties.put("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
-                innerInvoiceQuery.properties.put("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
+                QueryBuilder<Object, Object> innerInvoiceQuery = new QueryBuilder<Object, Object>(innerInvoiceKeys);
+                innerInvoiceQuery.addProperty("sidInnerInvoice", getLCP("sidInnerInvoice").getExpr(innerInvoiceExpr));
+                innerInvoiceQuery.addProperty("dateInnerInvoice", getLCP("dateInnerInvoice").getExpr(innerInvoiceExpr));
 
                 innerInvoiceQuery.and(getLCP("quantityGroupDeclarationInnerInvoice").getExpr(new DataObject(entry.getValue().get("groupDeclarationID")/*result.getKey(0).values().iterator().next()*/, (ConcreteClass) getClass("groupDeclaration")).getExpr(), innerInvoiceExpr).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> innerInvoiceResult = innerInvoiceQuery.execute(context.getSession().sql);
 
 
-                for (Map<Object, Object> innerInvoiceValues : innerInvoiceResult.values()) {
+                for (ImMap<Object, Object> innerInvoiceValues : innerInvoiceResult.valueIt()) {
                     row = "";
                     addStringCellToRow(entry.getKey(), ";");//numberGroupDeclaration
                     addStringCellToRow(innerInvoiceValues.get("sidInnerInvoice"), ";");

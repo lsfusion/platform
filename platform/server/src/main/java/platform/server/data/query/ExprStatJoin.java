@@ -1,24 +1,13 @@
 package platform.server.data.query;
 
-import platform.base.QuickSet;
-import platform.base.Result;
-import platform.base.TwinImmutableInterface;
-import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.OuterContext;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.NotNullExpr;
-import platform.server.data.expr.NotNullExprSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.where.Where;
-
-import java.util.Collections;
-import java.util.Map;
 
 public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
 
@@ -55,7 +44,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Integer>(Collections.singleton(0), getStat());
+        return new StatKeys<Integer>(SetFact.singleton(0), getStat());
     }
 
     protected int hash(HashContext hashContext) {
@@ -66,7 +55,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
         return new ExprStatJoin(baseExpr.translateOuter(translator), stat, valueJoins.translate(translator.mapValues()));
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return super.twins(o) && stat.equals(((ExprStatJoin)o).stat) && valueJoins.equals(((ExprStatJoin)o).valueJoins);
     }
 }

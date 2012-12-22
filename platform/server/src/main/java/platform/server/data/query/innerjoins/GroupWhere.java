@@ -1,16 +1,12 @@
 package platform.server.data.query.innerjoins;
 
-import org.antlr.analysis.SemanticContext;
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImList;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.PackInterface;
 import platform.server.data.where.Where;
 
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableObject {
     
@@ -49,7 +45,7 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return keyEqual.equals(((GroupWhere)o).keyEqual) && where.equals(((GroupWhere)o).where);
     }
 
@@ -58,7 +54,7 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
         return 31 * keyEqual.hashCode() + where.hashCode();
     }
     
-    public static <T extends GroupWhere> List<T> sort(Collection<T> joins) {
-        return BaseUtils.sort(joins, GroupWhere.<T>comparator());
+    public static <T extends GroupWhere> ImList<T> sort(ImCol<T> joins) {
+        return joins.sort(GroupWhere.<T>comparator());
     }
 }

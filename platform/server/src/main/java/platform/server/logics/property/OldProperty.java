@@ -1,20 +1,11 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.Pair;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
-
-import java.util.*;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
@@ -31,7 +22,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         return this;
     }
 
-    protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(propClasses)
             return getClassTableExpr(joinImplement);
 
@@ -43,7 +34,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         return property.getClassValueWhere();
     }
 
-    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         return property.getInterfaceCommonClasses(commonValue);
     }
 }

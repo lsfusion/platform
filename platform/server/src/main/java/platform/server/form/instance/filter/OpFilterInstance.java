@@ -2,6 +2,8 @@ package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
@@ -32,11 +34,11 @@ public abstract class OpFilterInstance extends FilterInstance {
         op2 = deserialize(inStream, form);
     }
 
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return op1.classUpdated(gridGroups) || op2.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
@@ -44,7 +46,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.dataUpdated(changedProps) || op2.dataUpdated(changedProps);
     }
 
-    public void fillProperties(Set<CalcProperty> properties) {
+    public void fillProperties(MSet<CalcProperty> properties) {
         op1.fillProperties(properties);
         op2.fillProperties(properties);
     }

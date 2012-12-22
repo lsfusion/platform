@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -10,14 +9,10 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    private final List<CalcPropertyInterfaceImplement<I>> props;
-    protected List<CalcPropertyInterfaceImplement<I>> getProps() {
+    private final ImList<CalcPropertyInterfaceImplement<I>> props;
+    protected ImList<CalcPropertyInterfaceImplement<I>> getProps() {
         return props;
     }
 
@@ -26,13 +21,13 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return groupType;
     }
 
-    private final OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
+    private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
     private final boolean ordersNotNull;
-    protected OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
+    protected ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
         return orders;
     }
 
-    public OrderGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, List<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+    public OrderGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(sID, caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;
@@ -40,19 +35,17 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         this.ordersNotNull = ordersNotNull;
 
         finalizeInit();
-        
-        assert !props.contains(null);
     }
 
-    protected Expr calculateExpr(Map<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
-        Map<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
+        ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 
-        Map<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
-        List<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
-        OrderedMap<Expr, Boolean> orders = getOrderImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
+        ImMap<Interface<I>, Expr> groups = getGroupImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
+        ImList<Expr> exprs = getExprImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
+        ImOrderMap<Expr, Boolean> orders = getOrderImplements(mapKeys, propClasses, propChanges, changedGroupWhere);
 
         if(changedWhere!=null) {
             assert !propClasses;
@@ -67,7 +60,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return true;
     }
 
-    protected Where getPartitionWhere(Where where, Map<Interface<I>, Expr> groups, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Map<Interface<I>, ? extends Expr> joinImplement) {
+    protected Where getPartitionWhere(Where where, ImMap<Interface<I>, Expr> groups, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, ImMap<Interface<I>, ? extends Expr> joinImplement) {
         return GroupExpr.create(groups, where.and(Expr.getWhere(exprs).and(AggrExpr.getOrderWhere(orders, ordersNotNull))), joinImplement).getWhere();
     }
 }

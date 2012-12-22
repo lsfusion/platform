@@ -1,6 +1,9 @@
 package platform.server.form.instance.filter;
 
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.interop.Compare;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -12,7 +15,6 @@ import platform.server.logics.property.PropertyInterface;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
@@ -34,11 +36,11 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.getApplyObject();
     }
 
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return property.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return property.objectUpdated(gridGroups);
     }
 
@@ -46,7 +48,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.dataUpdated(changedProps);
     }
 
-    public void fillProperties(Set<CalcProperty> properties) {
+    public void fillProperties(MSet<CalcProperty> properties) {
         property.fillProperties(properties);
     }
 
@@ -57,7 +59,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
     protected boolean hasObjectInInterface(CustomObjectInstance object) {
         // проверка на то, что в фильтре есть в качестве ключа свойства нужный ObjectInstance
         boolean inInterface = false;
-        for (PropertyObjectInterfaceInstance interfaceInstance : property.mapping.values()) {
+        for (PropertyObjectInterfaceInstance interfaceInstance : property.mapping.valueIt()) {
             if (interfaceInstance == object) {
                 inInterface = true;
                 break;
@@ -66,18 +68,19 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return inInterface;
     }
     
-    protected Where getChangedWhere(CustomObjectInstance object, Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects, DataObject addObject) {
+    protected Where getChangedWhere(CustomObjectInstance object, ImMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects, DataObject addObject) {
 
         Where changeWhere = Where.TRUE;
-        Where mapWhere;
-        for(Map.Entry<PropertyObjectInterfaceInstance, KeyExpr> mapObject : mapObjects.entrySet()) {
-            if(mapObject.getKey().getApplyObject() != object.groupTo)
-                mapWhere = mapObject.getValue().compare(mapObject.getKey().getDataObject(), Compare.EQUALS);
+        for(int i=0,size=mapObjects.size();i<size;i++) {
+            PropertyObjectInterfaceInstance mapObject = mapObjects.getKey(i); KeyExpr mapKey = mapObjects.getValue(i);
+            Where mapWhere;
+            if(mapObject.getApplyObject() != object.groupTo)
+                mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
             else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
-                if(!mapObject.getKey().equals(object))
-                    mapWhere = mapObject.getValue().isClass(((ObjectInstance)mapObject.getKey()).getGridClass().getUpSet());
+                if(!mapObject.equals(object))
+                    mapWhere = mapKey.isClass(((ObjectInstance)mapObject).getGridClass().getUpSet());
                 else
-                    mapWhere = mapObject.getValue().compare(addObject.getExpr(), Compare.EQUALS);
+                    mapWhere = mapKey.compare(addObject.getExpr(), Compare.EQUALS);
             changeWhere = changeWhere.and(mapWhere);
         }
         

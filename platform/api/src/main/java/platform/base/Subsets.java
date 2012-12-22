@@ -1,5 +1,10 @@
 package platform.base;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,22 +16,18 @@ import java.util.Set;
  * Time: 14:09:19
  */
 
-public class Subsets<E> implements Iterable<Set<E>> {
-    private Set<E> objects;
+public class Subsets<E> implements Iterable<ImSet<E>> {
+    private ImSet<E> objects;
     
-    public Subsets(Set<E> objects) {
+    public Subsets(ImSet<E> objects) {
         this.objects = objects;
     }
 
-    public Subsets(Collection<E> objects) {
-        this.objects = new HashSet<E>(objects);
-    }
-
-    public Iterator<Set<E>> iterator() {
+    public Iterator<ImSet<E>> iterator() {
         return new SubsetsIterator();
     }
 
-    public class SubsetsIterator implements Iterator<Set<E>> {
+    public class SubsetsIterator implements Iterator<ImSet<E>> {
         long subsetIndex;
         long subsetsCnt;
 
@@ -39,8 +40,8 @@ public class Subsets<E> implements Iterable<Set<E>> {
             return subsetIndex < subsetsCnt;
         }
 
-        public Set<E> next() {
-            Set<E> subset = new HashSet<E>();
+        public ImSet<E> next() {
+            MSet<E> subset = SetFact.mSet();
             int index = 0;
             for (E object : objects) {
                 if ((subsetIndex & (1 << index)) != 0) {
@@ -49,7 +50,7 @@ public class Subsets<E> implements Iterable<Set<E>> {
                 ++index;
             }
             ++subsetIndex;
-            return subset;
+            return subset.immutable();
         }
 
         public void remove() {

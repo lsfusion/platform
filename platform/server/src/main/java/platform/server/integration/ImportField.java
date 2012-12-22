@@ -1,17 +1,14 @@
 package platform.server.integration;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.DataClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.Property;
 import platform.server.session.Modifier;
 import platform.server.session.SinglePropertyTableUsage;
-
-import java.util.Map;
 
 /**
  * User: DAle
@@ -51,11 +48,11 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
         }
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys) {
         return importKeys.get(this);
     }
 
-    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
         return getExpr(importKeys);
     }
 

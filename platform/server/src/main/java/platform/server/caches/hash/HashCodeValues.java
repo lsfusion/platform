@@ -1,6 +1,6 @@
 package platform.server.caches.hash;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
@@ -18,11 +18,11 @@ public class HashCodeValues extends HashValues {
         return true;
     }
 
-    public HashValues filterValues(QuickSet<Value> values) {
+    public HashValues filterValues(ImSet<Value> values) {
         return this;
     }
 
-    public HashValues reverseTranslate(MapValuesTranslate translate, QuickSet<Value> values) {
+    public HashValues reverseTranslate(MapValuesTranslate translate, ImSet<Value> values) {
         if(translate.identityValues(values))
             return this;
         else

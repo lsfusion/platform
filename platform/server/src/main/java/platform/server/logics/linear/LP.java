@@ -1,5 +1,10 @@
 package platform.server.logics.linear;
 
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.ClassViewType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.PropertyObjectEntity;
@@ -10,48 +15,39 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
     public P property;
-    public List<T> listInterfaces;
+    public ImOrderSet<T> listInterfaces;
     private String creationScript = null;
     private String creationPath = null;
 
     public <IT extends PropertyInterface> boolean intersect(LP<IT, ?> lp) {
         assert listInterfaces.size()==lp.listInterfaces.size();
-        Map<IT,T> map = new HashMap<IT,T>();
-        for(int i=0;i<listInterfaces.size();i++)
-            map.put(lp.listInterfaces.get(i),listInterfaces.get(i));
-        return property.intersect(lp.property,map);
+        return property.intersect(lp.property,lp.getRevMap(listInterfaces));
     }
 
     public LP(P property) {
         this.property = property;
-        listInterfaces = new ArrayList<T>(property.interfaces);
+        listInterfaces = property.getOrderInterfaces();
     }
 
-    public LP(P property, List<T> listInterfaces) {
+    public LP(P property, ImOrderSet<T> listInterfaces) {
         this.property = property;
         this.listInterfaces = listInterfaces;
     }
 
-    public Map<T, DataObject> getMapValues(DataObject... objects) {
-        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapValues.put(listInterfaces.get(i),objects[i]);
-        return mapValues;
+    public ImMap<T, DataObject> getMapValues(final DataObject... objects) {
+        return getMap(objects);
     }
 
     public ClassWhere<Integer> getClassWhere() {
         ClassWhere<T> classWhere = property.getClassWhere();
-        Map<T, Integer> mapping = new HashMap<T, Integer>();
-        for (int i = 0; i < listInterfaces.size(); i++)
-            mapping.put(listInterfaces.get(i), i+1);
+        ImRevMap<T,Integer> mapping = listInterfaces.mapOrderRevValues(new GetIndex<Integer>() {
+            public Integer getMapValue(int i) {
+                return i+1;
+            }});
         return new ClassWhere<Integer>(classWhere, mapping);
     }
 
@@ -67,19 +63,41 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.maximumCharWidth = charWidth;
     }
 
-    public <U> Map<T, U> getMap(U... mapping) {
-        Map<T,U> propertyMapping = new HashMap<T, U>();
-        for(int i=0;i<listInterfaces.size();i++)
-            propertyMapping.put(listInterfaces.get(i), mapping[i]);
-        return propertyMapping;
+    public <U> ImMap<T, U> getMap(final U... mapping) {
+        return listInterfaces.mapOrderValues(new GetIndex<U>() {
+            public U getMapValue(int i) {
+                return mapping[i];
+            }});
     }
 
-    public <U> Map<T, U> getMap(List<U> mapping) {
-        Map<T,U> propertyMapping = new HashMap<T, U>();
-        for(int i=0;i<listInterfaces.size();i++)
-            propertyMapping.put(listInterfaces.get(i), mapping.get(i));
-        return propertyMapping;
+    public <U> ImMap<T, U> getMap(final ImList<U> mapping) {
+        return listInterfaces.mapOrderValues(new GetIndex<U>() {
+            public U getMapValue(int i) {
+                return mapping.get(i);
+            }});
     }
+
+    public <U> ImRevMap<T, U> getRevMap(final U... mapping) {
+        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
+            public U getMapValue(int i) {
+                return mapping[i];
+            }});
+    }
+
+    public <U> ImRevMap<T, U> getRevMap(final ImOrderSet<U> mapping) {
+        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
+            public U getMapValue(int i) {
+                return mapping.get(i);
+            }});
+    }
+
+    public <U> ImRevMap<T, U> getRevMap(final ImOrderSet<U> list, final Integer... mapping) {
+        return listInterfaces.mapOrderRevValues(new GetIndex<U>() {
+            public U getMapValue(int i) {
+                return list.get(mapping[i] - 1);
+            }});
+    }
+
     /*
     public <L extends PropertyInterface> void follows(LP<L> lp, int... mapping) {
         Map<L, T> mapInterfaces = new HashMap<L, T>();

@@ -1,6 +1,9 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.DataClass;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
@@ -9,21 +12,18 @@ import platform.server.data.Table;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class RecursiveTable extends Table {
 
     private final StatKeys<KeyField> statKeys;
     // assert'им что properties IntegralClass'ы
     
-    private static List<KeyField> getList(Collection<KeyField> keys) {
-        List<KeyField> result = new ArrayList<KeyField>(keys);
-        Collections.sort(result);
-        return result;
-    }
-
-    public RecursiveTable(String name, Collection<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, StatKeys<KeyField> statKeys) {
-        super(name, getList(keys), properties, classes, getPropClasses(properties, classes));
+    public RecursiveTable(String name, ImSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, StatKeys<KeyField> statKeys) {
+        super(name, keys.sort(), properties, classes, getPropClasses(properties, classes));
         this.statKeys = statKeys;
     }
 
@@ -31,15 +31,15 @@ public class RecursiveTable extends Table {
         return statKeys;
     }
     
-    private static Map<PropertyField, ClassWhere<Field>> getPropClasses(Set<PropertyField> props, ClassWhere<KeyField> keyClasses) {
-        Map<PropertyField, ClassWhere<Field>> result = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField prop : props)
-            result.put(prop, new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses)));
-        return result;
+    private static ImMap<PropertyField, ClassWhere<Field>> getPropClasses(ImSet<PropertyField> props, final ClassWhere<KeyField> keyClasses) {
+        return props.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
+            public ClassWhere<Field> getMapValue(PropertyField prop) {
+                return new ClassWhere<Field>(prop, (DataClass)prop.type).and(BaseUtils.<ClassWhere<Field>>immutableCast(keyClasses));
+            }});
     }
 
 
-    public Map<PropertyField, Stat> getStatProps() { // assert что пустой если Logical рекурсия
+    public ImMap<PropertyField, Stat> getStatProps() { // assert что пустой если Logical рекурсия
         return getStatProps(this, Stat.MAX);
     }
 }

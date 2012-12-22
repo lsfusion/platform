@@ -1,5 +1,6 @@
 package platform.server.data.type;
 
+import platform.base.col.interfaces.immutable.ImList;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
@@ -7,7 +8,6 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
-import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -42,7 +42,7 @@ public interface Type<T> extends ClassReader<T> {
 
     ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException;
 
-    List<AndClassSet> getUniversal(BaseClass baseClass);
+    ImList<AndClassSet> getUniversal(BaseClass baseClass);
 
     int getBinaryLength(boolean charBinary);
     ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;

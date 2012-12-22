@@ -1,17 +1,18 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
-import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
@@ -21,21 +22,19 @@ import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.*;
 
-import static platform.base.BaseUtils.*;
-import static platform.base.BaseUtils.filterKeys;
+import static platform.base.BaseUtils.hashEquals;
 
 public class SessionDataTable extends SessionData<SessionDataTable> {
     private SessionTable table;
 
-    private List<KeyField> keys; // чисто для порядка ключей
+    private ImOrderSet<KeyField> keys; // чисто для порядка ключей
 
-    private Map<KeyField, DataObject> keyValues;
-    private Map<PropertyField, ObjectValue> propertyValues;
+    private ImMap<KeyField, DataObject> keyValues;
+    private ImMap<PropertyField, ObjectValue> propertyValues;
 
-    public SessionDataTable(SessionTable table, List<KeyField> keys, Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propertyValues) {
-        assert keys.containsAll(table.keys);
+    public SessionDataTable(SessionTable table, ImOrderSet<KeyField> keys, ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propertyValues) {
+        assert keys.getSet().containsAll(table.getTableKeys());
 
         this.table = table;
 
@@ -45,9 +44,9 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         this.propertyValues = propertyValues;
     }
 
-    public Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
+    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
 
-        final Join<PropertyField> tableJoin = table.join(filterKeys(joinImplement, table.keys));
+        final Join<PropertyField> tableJoin = table.join(joinImplement.filterIncl(table.getTableKeys()));
         return new SessionJoin(joinImplement) {
             public Expr getExpr(PropertyField property) {
                 ObjectValue propertyValue = propertyValues.get(property);
@@ -59,19 +58,15 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             public Where getWhere() {
                 return tableJoin.getWhere();
             }
-        }.and(CompareWhere.compareValues(filterKeys(joinImplement, keyValues.keySet()), keyValues));
+        }.and(CompareWhere.compareValues(joinImplement.filterIncl(keyValues.keys()), keyValues));
     }
 
-    public List<KeyField> getKeys() {
+    public ImOrderSet<KeyField> getOrderKeys() {
         return keys;
     }
 
-    public Set<PropertyField> getProperties() {
-        return BaseUtils.mergeSet(table.getProperties(), propertyValues.keySet());
-    }
-
-    public Map<KeyField, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(keys);
+    public ImSet<PropertyField> getProperties() {
+        return table.getProperties().addExcl(propertyValues.keys());
     }
 
     protected boolean isComplex() {
@@ -83,8 +78,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return hash;
     }
 
-    public QuickSet<Value> getValues() {
-        return MapValuesIterable.getContextValues(keyValues).merge(MapValuesIterable.getContextValues(propertyValues)).merge(table);
+    public ImSet<Value> getValues() {
+        return MapValuesIterable.getContextValues(keyValues).merge(MapValuesIterable.getContextValues(propertyValues)).addExcl(table);
     }
 
     protected SessionDataTable translate(MapValuesTranslate mapValues) {
@@ -92,28 +87,28 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
                 mapValues.translateValues(keyValues), mapValues.translateValues(propertyValues));
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
+    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
 
-        Map<KeyField, DataObject> fixedKeyValues;
-        Map<PropertyField, ObjectValue> fixedPropValues;
+        ImMap<KeyField, DataObject> fixedKeyValues;
+        ImMap<PropertyField, ObjectValue> fixedPropValues;
         SessionTable fixedTable;
 
         if(type == Modify.DELETE) {
-            if(!BaseUtils.filterKeys(keyFields, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
+            if(!keyFields.filterIncl(keyValues.keys()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
                 return this;
             fixedKeyValues = keyValues;
             fixedPropValues = propertyValues;
             fixedTable = table;
         } else {
-            fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
-            fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
-            fixedTable = table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner);
+            fixedKeyValues = keyFields.addEquals(keyValues);
+            fixedPropValues = propFields.addEquals(propertyValues);
+            fixedTable = table.addFields(session, keys.removeOrder(fixedKeyValues.keys()), keyValues.remove(fixedKeyValues.keys()), propertyValues.remove(fixedPropValues.keys()), owner);
         }
-        return new SessionDataTable(fixedTable.modifyRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), type, owner),
+        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
@@ -135,26 +130,28 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     // для оптимизации групповых добавлений (batch processing'а)
-    public SessionDataTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+    public SessionDataTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
 
         this.keys = keys;
         // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
-        Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> it = rows.entrySet().iterator();
-        Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> first = it.next();
-        keyValues = new HashMap<KeyField, DataObject>(first.getKey());
-        propertyValues = new HashMap<PropertyField, ObjectValue>(first.getValue());
+        keyValues = rows.getKey(0);
+        propertyValues = rows.getValue(0);
 
-        while(it.hasNext()) {
-            Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> entry = it.next();
-            BaseUtils.removeNotEquals(keyValues, entry.getKey());
-            BaseUtils.removeNotEquals(propertyValues, entry.getValue());
+        for(int i=1,size=rows.size();i<size;i++) {
+            keyValues = keyValues.removeNotEquals(rows.getKey(i));
+            propertyValues = propertyValues.removeNotEquals(rows.getValue(i));
         }
 
+        final ImSet<KeyField> removeKeys = keyValues.keys(); final ImSet<PropertyField> removeProperties = propertyValues.keys();
         // пробежим по всем вырежем equals и создадим classes
-        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> tableRows = new HashMap<Map<KeyField,DataObject>, Map<PropertyField,ObjectValue>>();
-        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
-            tableRows.put(BaseUtils.filterNotKeys(row.getKey(), keyValues.keySet()), BaseUtils.filterNotKeys(row.getValue(), propertyValues.keySet()));
-        table = SessionTable.create(session, BaseUtils.filterNotList(keys, keyValues.keySet()), BaseUtils.removeSet(properties, propertyValues.keySet()), tableRows, owner);
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> tableRows = rows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
+            public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
+                return value.remove(removeKeys);
+            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
+            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
+                return value.remove(removeProperties);
+            }});
+        table = SessionTable.create(session, keys.removeOrder(removeKeys), properties.remove(removeProperties), tableRows, owner);
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {
@@ -197,7 +194,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     public SessionDataTable fixKeyClasses(ClassWhere<KeyField> fixClasses) {
         assert getProperties().size()==1;
         SessionTable fixTable;
-        if(propertyValues.size()>0 && BaseUtils.singleValue(propertyValues) instanceof NullValue &&
+        if(propertyValues.size()>0 && propertyValues.singleValue() instanceof NullValue &&
                 !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses))) {
             return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
         } else

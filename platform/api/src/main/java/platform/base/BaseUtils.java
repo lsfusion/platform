@@ -2,6 +2,14 @@ package platform.base;
 
 import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.implementations.HMap;
+import platform.base.col.implementations.HSet;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MFilterSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 
 import java.awt.*;
 import java.io.*;
@@ -29,7 +37,7 @@ public class BaseUtils {
         if (obj1 == null)
             return obj2 == null;
         else
-            return hashEquals(obj1,obj2);
+            return hashEquals(obj1, obj2);
     }
 
     public static int nullHash(Object obj) {
@@ -86,7 +94,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> List<V> mapList(List<? extends K> list, Map<K, ? extends V> map) {
+    public static <K, V> List<V> mapList(List<? extends K> list, ImMap<K, ? extends V> map) {
         List<V> result = new ArrayList<V>();
         for (K element : list)
             result.add(map.get(element));
@@ -199,10 +207,10 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, QuickSet<K> keys) {
+    public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, ImSet<? extends K> keys) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (!keys.contains(entry.getKey()))
+            if (!((ImSet<K>)keys).contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
         }
         return result;
@@ -220,6 +228,14 @@ public class BaseUtils {
     public static <BK,K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : col)
+            if (filter.contains(element))
+                result.add(element);
+        return result;
+    }
+
+    public static <K> List<K> filterList(List<K> list, ImSet<K> filter) {
+        List<K> result = new ArrayList<K>();
+        for (K element : list)
             if (filter.contains(element))
                 result.add(element);
         return result;
@@ -265,17 +281,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, Collection<K> keys, Map<BK, V> rest) {
-        Map<K, V> result = new HashMap<K, V>();
-        for (Map.Entry<BK, V> entry : map.entrySet())
-            if (keys.contains(entry.getKey()))
-                result.put((K) entry.getKey(), entry.getValue());
-            else
-                rest.put(entry.getKey(), entry.getValue());
-        return result;
-    }
-
-    public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, QuickSet<K> keys, Map<BK, V> rest) {
+    public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, HSet<K> keys, Map<BK, V> rest) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<BK, V> entry : map.entrySet())
             if (keys.contains((K) entry.getKey()))
@@ -303,15 +309,6 @@ public class BaseUtils {
             if (full.get(partEntry.getKey()).equals(partEntry.getValue()))
                 result.put(partEntry.getKey(), partEntry.getValue());
         return result;
-    }
-
-    public static <K, V> void removeNotEquals(Map<K, V> part, Map<K, V> full) {
-        Iterator<Map.Entry<K, V>> it = part.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<K, V> entry = it.next();
-            if (!full.get(entry.getKey()).equals(entry.getValue()))
-                it.remove();
-        }
     }
 
     public static <K, V> Map<V, K> reverse(Map<K, V> map) {
@@ -361,24 +358,6 @@ public class BaseUtils {
                 res2.put(map.getKey(), map2.get(map.getValue()));
         }
         return res1;
-    }
-
-    public static <KA, KB, V> Map<KA, KB> mapValues(Map<KA, V> map, Map<KB, V> equals) {
-        if (map.size() != equals.size()) return null;
-
-        Map<KA, KB> mapKeys = new HashMap<KA, KB>();
-        for (Map.Entry<KA, V> key : map.entrySet()) {
-            KB mapKey = null;
-            for (Map.Entry<KB, V> equalKey : equals.entrySet())
-                if (!hashContainsValue(mapKeys, equalKey.getKey()) &&
-                        hashEquals(key.getValue(), equalKey.getValue())) {
-                    mapKey = equalKey.getKey();
-                    break;
-                }
-            if (mapKey == null) return null;
-            mapKeys.put(key.getKey(), mapKey);
-        }
-        return mapKeys;
     }
 
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
@@ -785,12 +764,6 @@ public class BaseUtils {
         return true;
     }
 
-    public static <B, V> Map<B, V> forceMerge(Map<?, ? extends V> map1, Map<?, ? extends V> map2) {
-        Map<Object, V> result = new HashMap<Object, V>(map1);
-        result.putAll(map2);
-        return (Map<B, V>) result;
-    }
-
     public static <B, K1 extends B, K2 extends B> Collection<B> merge(Collection<K1> col1, Collection<K2> col2) {
         Collection<B> result = new ArrayList<B>(col1);
         result.addAll(col2);
@@ -1012,20 +985,12 @@ public class BaseUtils {
         else return Integer.parseInt(s);
     }
 
-    public static <T> T splitOne(Collection<? extends T> col, Collection<T> rest) {
-        Iterator<? extends T> iterator = col.iterator();
-        T one = iterator.next();
-        while(iterator.hasNext())
-            rest.add(iterator.next());
-        return one;
-    }
-
-    public static <K, V> void clearNotKeys(Map<K, V> map, Collection<? extends K> keep) {
+    public static <K, V> void clearNotKeys(Map<K, V> map, ImSet<? extends K> keep) {
         if(keep.isEmpty())
             map.clear();
         else {
             for(Iterator<K> it = map.keySet().iterator();it.hasNext();)
-                if(!keep.contains(it.next()))
+                if(!((ImSet<K>)keep).contains(it.next()))
                     it.remove();
         }
     }
@@ -1102,16 +1067,12 @@ public class BaseUtils {
         return groupSet(getter, getter.keySet());
     }
 
-    public static <G, K> Map<G, Set<K>> groupSet(final QuickMap<K, G> getter, Collection<K> keys) {
+    public static <G, K> Map<G, Set<K>> groupSet(final HMap<K, G> getter, Collection<K> keys) {
         return groupSet(new Group<G, K>() {
             public G group(K key) {
                 return getter.get(key);
             }
         }, keys);
-    }
-
-    public static <G, K> Map<G, Set<K>> groupSet(final QuickMap<K, G> getter) {
-        return groupSet(getter, getter.keys());
     }
 
     public static <G, K> Map<G, List<K>> groupList(final OrderedMap<K, G> getter) {
@@ -1143,18 +1104,6 @@ public class BaseUtils {
     }
 
     public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter) {
-        return groupSortedSet(getter, GlobalObject.comparator);
-    }
-
-    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(final QuickMap<K, G> getter, Comparator<? super G> comparator) {
-        return groupSortedSet(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, getter.keys(), comparator);
-    }
-
-    public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final QuickMap<K, G> getter) {
         return groupSortedSet(getter, GlobalObject.comparator);
     }
 
@@ -1729,7 +1678,7 @@ public class BaseUtils {
             this(valueClass, 0);
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
         }
 
@@ -1740,10 +1689,10 @@ public class BaseUtils {
 
     // есть в общем то другая схема с генерацией всех перестановок, и поиском минимума (или суммированием)
     public static class HashComponents<K> {
-        public final QuickMap<K, GlobalObject> map; // или сам класс или HashClass, то есть всегда содержит информацию о классе
+        public final ImMap<K, GlobalObject> map; // или сам класс или HashClass, то есть всегда содержит информацию о классе
         public final int hash;
 
-        public HashComponents(QuickMap<K, GlobalObject> map, int hash) {
+        public HashComponents(ImMap<K, GlobalObject> map, int hash) {
             this.map = map;
             this.hash = hash;
         }
@@ -1751,57 +1700,62 @@ public class BaseUtils {
 
     public static interface HashInterface<K, C> {
 
-        QuickMap<K, C> getParams(); // важно чтобы для C был статичный компаратор
+        ImMap<K, C> getParams(); // важно чтобы для C был статичный компаратор
 
-        int hashParams(QuickMap<K, ? extends GlobalObject> map);
+        int hashParams(ImMap<K, ? extends GlobalObject> map);
     }
 
     // цель минимизировать количество hashParams
     public static <K, C extends GlobalObject> HashComponents<K> getComponents(HashInterface<K, C> hashInterface) {
-        QuickMap<K, GlobalObject> components = new SimpleMap<K, GlobalObject>();
 
-        final QuickMap<K, C> classParams = hashInterface.getParams();
-        if (classParams.size == 0)
-            return new HashComponents<K>(new SimpleMap<K, GlobalObject>(), hashInterface.hashParams(components));
+        final ImMap<K, C> classParams = hashInterface.getParams();
+        if (classParams.size() == 0)
+            return new HashComponents<K>(MapFact.<K, GlobalObject>EMPTY(), hashInterface.hashParams(MapFact.<K, GlobalObject>EMPTY()));
+
+        MMap<K, GlobalObject> mComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override());
 
         int resultHash = 0; // как по сути "список" минимальных хэшей
         int compHash = 16769023;
 
-        Set<K> freeKeys = null;
-        for (Map.Entry<C, Set<K>> classGroupParam : BaseUtils.groupSortedSet(classParams).entrySet()) {
-            freeKeys = classGroupParam.getValue();
+        ImSet<K> freeKeys = null;
+        ImOrderMap<C, ImSet<K>> classOrders = classParams.groupValues().sort(BaseUtils.<Comparator<C>>immutableCast(GlobalObject.comparator));
+        for (int i=0,size=classOrders.size();i<size;i++) {
+            freeKeys = classOrders.getValue(i);
+            C groupClass = classOrders.getKey(i);
 
             while (freeKeys.size() > 1) {
                 int minHash = Integer.MAX_VALUE;
-                Set<K> minKeys = new HashSet<K>();
+                MFilterSet<K> mMinKeys = SetFact.mFilter(freeKeys);
                 for (K key : freeKeys) {
-                    QuickMap<K, GlobalObject> mergedComponents = new SimpleMap<K, GlobalObject>(classParams); // замещаем базовые ъэши - новыми
-                    mergedComponents.addAll(components);
-                    mergedComponents.add(key, new HashClass<C>(classGroupParam.getKey(), compHash));
+                    MMap<K, GlobalObject> mMergedComponents = MapFact.mMap(classParams, MapFact.<K, GlobalObject>override()); // замещаем базовые ъэши - новыми
+                    mMergedComponents.addAll(mComponents.immutableCopy());
+                    mMergedComponents.add(key, new HashClass<C>(groupClass, compHash));
 
-                    int hash = hashInterface.hashParams(mergedComponents);
+                    int hash = hashInterface.hashParams(mMergedComponents.immutable());
                     if (hash < minHash) { // сбрасываем минимальные ключи
-                        minKeys = new HashSet<K>();
+                        mMinKeys = SetFact.mFilter(freeKeys);
                         minHash = hash;
                     }
 
                     if (hash == minHash) // добавляем в минимальные ключи
-                        minKeys.add(key);
+                        mMinKeys.keep(key);
                 }
+                ImSet<K> minKeys = SetFact.imFilter(mMinKeys, freeKeys);
 
                 for (K key : minKeys)
-                    components.add(key, new HashClass<C>(classGroupParam.getKey(), compHash));
+                    mComponents.add(key, new HashClass<C>(groupClass, compHash));
 
                 resultHash = resultHash * 31 + minHash;
 
-                freeKeys = BaseUtils.removeSet(freeKeys, minKeys);
+                freeKeys = freeKeys.remove(minKeys);
 
-                compHash = QuickMap.hash(compHash * 57793 + 9369319);
+                compHash = MapFact.colHash(compHash * 57793 + 9369319);
             }
 
             if (freeKeys.size() == 1) // если остался один объект в классе оставляем его с hashCode'ом (для оптимизации)
-                components.add(BaseUtils.single(freeKeys), classGroupParam.getKey());
+                mComponents.add(freeKeys.single(), groupClass);
         }
+        ImMap<K, GlobalObject> components = mComponents.immutable();
 
         if (freeKeys.size() == 1) // если остался один объект то финальный хэш не учтен (для оптимизации)
             resultHash = resultHash * 31 + hashInterface.hashParams(components);
@@ -1809,18 +1763,18 @@ public class BaseUtils {
         return new HashComponents<K>(components, resultHash);
     }
 
-    public static boolean onlyObjects(Collection<?> col) {
+    public static boolean onlyObjects(Iterable<?> col) {
         for (Object object : col)
             if (!object.getClass().equals(Object.class))
                 return false;
         return true;
     }
 
-    public static <T> Map<T, Object> generateObjects(Set<T> col) {
-        Map<T, Object> result = new HashMap<T, Object>();
-        for (T object : col)
-            result.put(object, new Object());
-        return result;
+    public static <T> ImRevMap<T, Object> generateObjects(ImSet<T> col) {
+        return col.mapRevValues(new GetValue<Object, T>() {
+            public Object getMapValue(T value) {
+                return new Object();
+            }});
     }
 
     public static void openFile(byte[] data, String extension) throws IOException {
@@ -2117,17 +2071,26 @@ public class BaseUtils {
         return list;
     }
 
+    public static <K> FunctionSet<K> merge(FunctionSet<K>... sets) {
+        FunctionSet<K> result = sets[0];
+        for(int i=1;i<sets.length;i++)
+            result = merge(result, sets[i]);
+        return result;
+    }
+
     public static <K> FunctionSet<K> merge(FunctionSet<K> set1, FunctionSet<K> set2) {
         if(set1.isEmpty() || set2.isFull())
             return set2;
         if(set2.isEmpty() || set1.isFull())
             return set1;
+//        if(set1 instanceof ImSet && set2 instanceof ImSet)
+//            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
         return new MergeFunctionSet<K>(set1, set2);
     }
 
     public static <T> FunctionSet<T> universal(boolean empty) {
         if(empty)
-            return EmptyFunctionSet.instance();
+            return SetFact.EMPTY();
         else
             return FullFunctionSet.instance();
     }

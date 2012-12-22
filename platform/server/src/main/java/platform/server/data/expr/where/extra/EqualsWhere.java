@@ -1,22 +1,17 @@
 package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprStatJoin;
-import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
-
-import java.util.Set;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -42,7 +37,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator1) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator2) ||
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }
@@ -73,13 +68,13 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     @Override
     public MeanClassWhere getMeanClassWhere() {
-        QuickSet<QuickSet<VariableClassExpr>> equals = new QuickSet<QuickSet<VariableClassExpr>>();
+        ImSet<ImSet<VariableClassExpr>> equals = SetFact.EMPTY();
         ClassExprWhere classWhere = getOperandWhere().getClassWhere();
 
         if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExprInterface)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExprInterface)operator1).getStaticClass()));
         if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
-            equals.add(new QuickSet<VariableClassExpr>((VariableClassExpr)operator1, (VariableClassExpr) operator2));
+            equals = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
         if(operator1 instanceof VariableClassExpr && operator2 instanceof StaticClassExprInterface)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExprInterface)operator2).getStaticClass()));
 

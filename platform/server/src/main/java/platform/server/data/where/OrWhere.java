@@ -1,6 +1,12 @@
 package platform.server.data.where;
 
 import platform.base.*;
+import platform.base.col.MapFact;
+import platform.base.col.implementations.HMap;
+import platform.base.col.implementations.HSet;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
@@ -12,15 +18,16 @@ import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
-
-import java.util.List;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
@@ -326,18 +333,22 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
 
     static class Compare {
-        QuickSet<Compare> greater;
-        QuickSet<Compare> less;
+        HSet<Compare> greater;
+        HSet<Compare> less;
 
         Compare() {
-            greater = new QuickSet<Compare>();
-            less = new QuickSet<Compare>();
+            greater = new HSet<Compare>();
+            less = new HSet<Compare>();
             greater.add(this);
             less.add(this);
         }
     }
 
-    static class CompareMap extends SimpleMap<Equal, Compare> {
+    static class CompareMap extends HMap<Equal,Compare> {
+
+        CompareMap() {
+            super(MapFact.<Equal, Compare>override());
+        }
 
         Compare getCompare(Equal expr) {
             Compare compare = get(expr);
@@ -356,9 +367,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 return false;
 
             for(int i=0;i<compare1.greater.size;i++)
-                compare1.greater.get(i).less.addAll(compare2.less);
+                compare1.greater.get(i).less.exclAddAll(compare2.less);
             for(int i=0;i<compare2.less.size;i++)
-                compare2.less.get(i).greater.addAll(compare1.greater);
+                compare2.less.get(i).greater.exclAddAll(compare1.greater);
 
             return true;
         }
@@ -717,7 +728,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
     
     // разобъем чисто для оптимизации
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         for(int i=0;i<wheres.length;i++)
             wheres[i].fillJoinWheres(joins,andWhere.and(siblingsWhere(wheres,i).not()));
     }
@@ -743,29 +754,29 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return result;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres, ((OrWhere) o).wheres);
     }
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
-        GroupJoinsWheres result = new GroupJoinsWheres(noWhere);
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+        MMap<WhereJoins, GroupJoinsWheres.Value> result = MapFact.mMap(GroupJoinsWheres.getAddValue(noWhere));
         for(Where where : wheres)
-            result.or(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
-        return result;
+            result.addAll(where.groupJoinsWheres(keepStat, keyStat, orderTop, noWhere));
+        return new GroupJoinsWheres(result.immutable(), noWhere);
     }
     public KeyEquals calculateGroupKeyEquals() {
-        KeyEquals result = new KeyEquals();
+        MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
         for(Where where : wheres)
             result.addAll(where.getKeyEquals());
-        return result;
+        return new KeyEquals(result.immutable());
     }
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
-        MeanClassWheres result = new MeanClassWheres();
+        MMap<MeanClassWhere, CheckWhere> result = MapFact.mMap(AbstractWhere.<MeanClassWhere>addOrCheck());
         for(Where where : wheres)
-            result.or(where.groupMeanClassWheres(useNots));
-        return result;
+            result.addAll(where.groupMeanClassWheres(useNots));
+        return new MeanClassWheres(result.immutable());
     }
 
     public int hashCoeff() {

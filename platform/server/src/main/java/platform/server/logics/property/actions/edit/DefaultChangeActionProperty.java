@@ -2,7 +2,10 @@ package platform.server.logics.property.actions.edit;
 
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.action.AsyncResultClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.form.ServerResponse;
@@ -16,17 +19,11 @@ import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.SystemActionProperty;
 import platform.server.session.Modifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static platform.base.BaseUtils.reverse;
 
 public class DefaultChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
 
@@ -34,12 +31,12 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     private final String editActionSID;
     private final CalcProperty filterProperty;
 
-    public DefaultChangeActionProperty(String sID, String caption, CalcProperty<P> property, List<P> listInterfaces, List<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
+    public DefaultChangeActionProperty(String sID, String caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
         super(sID, caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
         
         assert filterProperty==null || filterProperty.interfaces.size()==1;
 
-        this.implement = new CalcPropertyMapImplement<P, ClassPropertyInterface>(property, reverse(getMapInterfaces(listInterfaces)));
+        this.implement = new CalcPropertyMapImplement<P, ClassPropertyInterface>(property, getMapInterfaces(listInterfaces).reverse());
         this.editActionSID = editActionSID;
         this.filterProperty = filterProperty;
     }
@@ -65,7 +62,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        Map<ClassPropertyInterface,DataObject> keys = context.getKeys();
+        ImMap<ClassPropertyInterface,DataObject> keys = context.getKeys();
         Modifier modifier = context.getModifier();
         final FormInstance<?> formInstance = context.getFormInstance();
 
@@ -101,7 +98,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
                     if(filterProperty!=null && changeValue!=null) {
                         Object updatedValue = filterProperty.read(
-                                context.getSession().sql, Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), changeValue), modifier, context.getQueryEnv()
+                                context.getSession().sql, MapFact.singleton(filterProperty.interfaces.single(), changeValue), modifier, context.getQueryEnv()
                         );
 
                         try {
@@ -133,7 +130,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         // "генерим" ключи для объектов, которые в группе объектов
         Map<ClassPropertyInterface, ObjectInstance> usedGroupObjects = filterValues(objectInstances, groupObject.objects);
         Map<ClassPropertyInterface, KeyExpr> mapKeys = KeyExpr.getMapKeys(usedGroupObjects.keySet());
-        Map<ClassPropertyInterface, DataObject> restKeys = BaseUtils.filterNotKeys(keys, usedGroupObjects.keySet());
+        Map<ClassPropertyInterface, DataObject> restKeys = BaseUtils.remove(keys, usedGroupObjects.keySet());
         Where changeWhere = Where.TRUE;
         Map<ObjectInstance, KeyExpr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
         for(Map.Entry<ClassPropertyInterface, KeyExpr> mapKey : mapKeys.entrySet()) {

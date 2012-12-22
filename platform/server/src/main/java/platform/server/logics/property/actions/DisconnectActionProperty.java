@@ -10,8 +10,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -24,8 +22,7 @@ public class DisconnectActionProperty extends AdminActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
-        DataObject connection = context.getKeyValue(interfacesList.remove(0));
+        DataObject connection = context.getKeyValue(getOrderInterfaces().get(0));
 
         String login = ((String) BL.systemEventsLM.userLoginConnection.read(context, connection)).trim();
         Integer computer = (Integer) BL.systemEventsLM.computerConnection.read(context, connection);

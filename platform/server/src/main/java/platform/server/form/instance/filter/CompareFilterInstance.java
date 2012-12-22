@@ -2,6 +2,10 @@ package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -18,8 +22,6 @@ import platform.server.session.PropertyChange;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Set;
 
 public class CompareFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
@@ -66,22 +68,22 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return super.classUpdated(gridGroups) || value.classUpdated(gridGroups);
     }
 
     @Override
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         Where where = property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
         return negate ? where.not() : where;
     }
 
     @Override
-    public void fillProperties(Set<CalcProperty> properties) {
+    public void fillProperties(MSet<CalcProperty> properties) {
         super.fillProperties(properties);
         value.fillProperties(properties);
     }
@@ -103,10 +105,10 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         if (!hasObjectInInterface(object))
             return;
 
-        Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
-        Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
+        ImRevMap<P, KeyExpr> mapKeys = property.property.getMapKeys();
+        ImMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap().crossJoin(mapKeys);
         env.change(property.property, new PropertyChange<P>(mapKeys,
-                value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), env.getModifier()),
+                value.getExpr(mapObjects.filter(object.groupTo.objects), env.getModifier()),
                 getChangedWhere(object, mapObjects, addObject)));
     }
 

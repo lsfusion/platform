@@ -1,21 +1,20 @@
 package platform.server.data.query;
 
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.NotNullExprSet;
+import platform.server.data.expr.NotNullExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
 
@@ -39,12 +38,12 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
         if(not)
-            return new StatKeys<Integer>(new ArrayList<Integer>(), Stat.ONE);
+            return new StatKeys<Integer>(SetFact.<Integer>EMPTY(), Stat.ONE);
         else
             if(compare.equals(Compare.EQUALS))
-                return new StatKeys<Integer>(Collections.singleton(0), Stat.ONE);
+                return new StatKeys<Integer>(SetFact.singleton(0), Stat.ONE);
             else
-                return new StatKeys<Integer>(Collections.singleton(0), baseExpr.getTypeStat(keyStat));
+                return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat));
     }
 
     protected int hash(HashContext hashContext) {
@@ -55,21 +54,21 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
         return new ExprOrderTopJoin(baseExpr.translateOuter(translator), compare, compareExpr, not);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return super.twins(o) && compare.equals(((ExprOrderTopJoin)o).compare) && compareExpr.equals(((ExprOrderTopJoin)o).compareExpr) && not==((ExprOrderTopJoin)o).not;
     }
 
     @Override
-    public NotNullExprSet getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
         if(not)
-            return new NotNullExprSet();
+            return SetFact.EMPTY();
         return super.getExprFollows(recursive);
     }
 
     @Override
-    public Map<Integer, BaseExpr> getJoins() {
+    public ImMap<Integer, BaseExpr> getJoins() {
         if(not)
-            return new HashMap<Integer, BaseExpr>();
+            return MapFact.EMPTY();
         return super.getJoins();
     }
 

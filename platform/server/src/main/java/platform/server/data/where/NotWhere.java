@@ -1,16 +1,19 @@
 package platform.server.data.where;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.BinaryWhere;
 import platform.server.data.expr.where.extra.IsClassWhere;
-import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
@@ -19,8 +22,6 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.PackClassWhere;
-
-import java.util.List;
 
 public class NotWhere extends ObjectWhere {
 
@@ -42,7 +43,7 @@ public class NotWhere extends ObjectWhere {
 
     final static String PREFIX = "NOT ";
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return where.equals(((NotWhere)o).where);
     }
 
@@ -59,8 +60,8 @@ public class NotWhere extends ObjectWhere {
         return where.translateQuery(translator).not();
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(where);
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>singleton(where);
     }
 
     public String getSource(CompileSource compile) {
@@ -70,11 +71,11 @@ public class NotWhere extends ObjectWhere {
         return where.getNotSource(compile);
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         WhereJoin exprJoin;
         if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
             return new GroupJoinsWheres(exprJoin, this, noWhere);

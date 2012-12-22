@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.base.QuickMap;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.sets.AndClassSet;
@@ -36,7 +36,7 @@ public abstract class SingleClassExpr extends BaseExpr {
     private OrClassSet getSet() {
         assert !isTrueWhere();
         OrClassSet result = null;
-        for(QuickMap<VariableClassExpr,AndClassSet> where : getWhere().getClassWhere().getAnds()) {
+        for(ImMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
             OrClassSet classSet = getAndClassSet(where).getOr();
             if(result==null)
                 result = classSet;
@@ -51,7 +51,7 @@ public abstract class SingleClassExpr extends BaseExpr {
         if(isTrueWhere())
             return !set.isEmpty();
         else {
-            for(QuickMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
+            for(ImMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
                 if(!getAndClassSet(where).and(set).isEmpty()) return true; // тут наверное тоже надо getAndClassSet на не null проверять для не полных случаев
             return false;
         }

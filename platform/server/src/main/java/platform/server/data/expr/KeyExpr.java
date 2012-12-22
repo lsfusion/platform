@@ -1,50 +1,67 @@
 package platform.server.data.expr;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import platform.server.logics.BusinessLogicsBootstrap;
 
 public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> {
 
-    public static <T> Map<T, KeyExpr> getMapKeys(Collection<T> objects) {
-        Map<T,KeyExpr> result = new HashMap<T, KeyExpr>();
-        for(T object : objects)
-            result.put(object,new KeyExpr(object.toString()));
-        return result;
+    private static final GetValue<KeyExpr, Object> genStringKeys = new GetValue<KeyExpr, Object>() {
+        public KeyExpr getMapValue(Object value) {
+            return new KeyExpr(value.toString());
+        }
+    };
+    private static final GetIndex<KeyExpr> genIndexKeys = new GetIndex<KeyExpr>() {
+        public KeyExpr getMapValue(int i) {
+            return new KeyExpr(i);
+        }
+    };
+    public static <T> ImRevMap<T, KeyExpr> getMapKeys(ImSet<T> objects) {
+        if(BusinessLogicsBootstrap.isDebug())
+            return objects.mapRevValues((GetValue<KeyExpr, T>) genStringKeys);
+
+        return objects.mapRevValues(genIndexKeys);
     }
 
-    final String name;
+    final Object name;
     @Override
     public String toString() {
-        return name;
+        return name.toString();
     }
 
     public KeyExpr(String name) {
         this.name = name;
     }
 
-    public String getSource(CompileSource compile) {
-        assert compile.keySelect.containsKey(this);
-        return compile.keySelect.get(this);
+    public KeyExpr(int id) {
+        this.name = id;
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public String getSource(CompileSource compile) {
+        String source = compile.getSource(this);
+        assert source!=null;
+        return source;
+    }
+
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
     public Type getType(KeyType keyType) {
@@ -74,7 +91,7 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return hashContext.keys.hash(this);
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return false;
     }
 
@@ -83,24 +100,24 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
     }
 
     public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Object>(new HashSet<Object>(), keyStat.getKeyStat(this));
+        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
         return this;
     }
 
-    public Map<Object, BaseExpr> getJoins() {
-        return new HashMap<Object, BaseExpr>();
+    public ImMap<Object, BaseExpr> getJoins() {
+        return MapFact.EMPTY();
     }
 
-    public NotNullExprSet getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 
     @Override
-    protected QuickSet<KeyExpr> getKeys() {
-        return new QuickSet<KeyExpr>(this);
+    protected ImSet<KeyExpr> getKeys() {
+        return SetFact.singleton(this);
     }
 
     public boolean isTableIndexed() {

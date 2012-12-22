@@ -1,6 +1,11 @@
 package platform.server.form.instance;
 
 import platform.base.FunctionSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
@@ -9,11 +14,10 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
-import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
-import java.util.*;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectInstance extends CellInstance<ObjectEntity> implements PropertyObjectInterfaceInstance {
@@ -47,11 +51,11 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return (DataObject)getObjectValue();
     }
 
-    public static <K> Map<ObjectInstance, Expr> getObjectValueExprs(Collection<ObjectInstance> objects) {
-        Map<ObjectInstance, Expr> result = new HashMap<ObjectInstance, Expr>();
-        for(ObjectInstance object : objects)
-            result.put(object, object.getExpr());
-        return result;
+    public static <K> ImMap<ObjectInstance, Expr> getObjectValueExprs(ImSet<ObjectInstance> objects) {
+        return objects.mapValues(new GetValue<Expr, ObjectInstance>() {
+            public Expr getMapValue(ObjectInstance value) {
+                return value.getExpr();
+            }});
     }
 
 
@@ -67,19 +71,19 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract Type getType();
 
-    protected boolean objectInGrid(Set<GroupObjectInstance> gridGroups) {
+    protected boolean objectInGrid(ImSet<GroupObjectInstance> gridGroups) {
         return GroupObjectInstance.getUpTreeGroups(gridGroups).contains(groupTo);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) { return false; }
-    public void fillProperties(Set<CalcProperty> properties) { }
+    public void fillProperties(MSet<CalcProperty> properties) { }
 
     protected Expr getExpr() {
         return getObjectValue().getExpr();
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
         Expr result;
         if(classSource!=null && (result = classSource.get(this))!=null)
             return result;
@@ -91,7 +95,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return groupTo;
     }
 
-    public Collection<ObjectInstance> getObjectInstances() {
-        return Collections.singletonList(this);
+    public ImSet<ObjectInstance> getObjectInstances() {
+        return SetFact.singleton(this);
     }
 }

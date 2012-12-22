@@ -36,8 +36,8 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
         return image;
     }
 
-    public void setProperty(Property property) {
-        this.property = (ActionProperty) property;
+    public void setProperty(ActionProperty property) {
+        this.property = property;
     }
 
     public ActionProperty getProperty() {

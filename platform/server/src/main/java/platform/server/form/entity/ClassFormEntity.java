@@ -1,6 +1,5 @@
 package platform.server.form.entity;
 
-import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BusinessLogics;
 
 public class ClassFormEntity<T extends BusinessLogics<T>> {

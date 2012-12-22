@@ -1,10 +1,11 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ConfirmClientAction;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -22,11 +23,11 @@ public class ConfirmActionProperty extends SystemActionProperty {
         super(sID, caption, new ValueClass[]{StringClass.get(length)});
 
         this.confirmedProperty = confirmedProperty;
-        this.msgInterface = BaseUtils.single(interfaces);
+        this.msgInterface = interfaces.single();
     }
 
     @Override
-    public PropsNewSession aspectChangeExtProps() {
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return getChangeProps(confirmedProperty.property);
     }
 

@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.RemoteContextInterface;
 import platform.interop.action.ChooseClassClientAction;
 import platform.interop.action.ClientAction;
@@ -35,7 +36,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import static platform.base.BaseUtils.serializeObject;
@@ -171,7 +171,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 

@@ -8,6 +8,17 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MOrderExclSet;
+import platform.base.col.interfaces.mutable.MOrderSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ModalityType;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
@@ -433,20 +444,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAbstractListAProp(paramCnt);
     }
 
-    public void addImplementationToAbstract(String abstractPropName, List<String> context, LPWithParams implement) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addImplementationToAbstract(" + abstractPropName + ", " + context + ", " + implement + ");");
+    public void addImplementationToAbstract(String abstractPropName, List<String> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addImplementationToAbstract(" + abstractPropName + ", " + context + ", " + implement + ", " + when + ");");
 
         LP abstractLP = findLPByCompoundName(abstractPropName);
         checkParamCount(abstractLP, context.size());
         checkAbstractProperty(abstractLP, abstractPropName);
 
-        List<Object> params = getParamsPlainList(Arrays.asList(implement));
+        List<LPWithParams> allProps = new ArrayList<LPWithParams>();
+        allProps.add(implement);
+        if(when!=null) {
+            checkCalculationProperty(when.property);
+            allProps.add(when);
+        }
+        List<Object> params = getParamsPlainList(allProps);
         if (abstractLP instanceof LCP) {
             checkCalculationProperty(implement.property);
-            ((LCP) abstractLP).addOperand(params.toArray());
+            ((LCP) abstractLP).addOperand(when!=null, params.toArray());
         } else if (abstractLP instanceof LAP) {
             checkActionProperty(implement.property);
-            List<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
+            ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(abstractLP.listInterfaces, params.toArray());
             ((ListActionProperty) abstractLP.property).addAction(actionImplements.get(0));
         } else assert false;
     }
@@ -612,7 +629,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setScriptedEditAction(LP property, String actionType, LPWithParams action) {
         List<Object> params = getParamsPlainList(Arrays.asList(action));
-        List<ActionPropertyMapImplement> actionImplements = readActionImplements(property.listInterfaces, params.toArray());
+        ImList<ActionPropertyMapImplement> actionImplements = readActionImplements(property.listInterfaces, params.toArray());
         property.property.setEditAction(actionType, actionImplements.get(0));
     }
 
@@ -789,13 +806,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
-        List<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams));
+        ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
+        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         LAP<ClassPropertyInterface> eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
         EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
 
-        List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
+        ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
 
         int i = 0;
         if (fromProp != null) {
@@ -906,10 +923,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, Set<String> upLocalNames, String used, List<LPWithParams> properties, List<String> localPropNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
 
-        Set<SessionDataProperty> sessionUsed = used != null ? Collections.singleton((SessionDataProperty) findLPByCompoundName(used).property) : new HashSet<SessionDataProperty>();
-        Set<SessionDataProperty> upLocal = new HashSet<SessionDataProperty>();
+        ImSet<SessionDataProperty> sessionUsed = used != null ? SetFact.singleton((SessionDataProperty) findLPByCompoundName(used).property) : SetFact.<SessionDataProperty>EMPTY();
+        MExclSet<SessionDataProperty> mUpLocal = SetFact.mExclSet(upLocalNames.size()); // exception кидается
         for(String name : upLocalNames)
-            upLocal.add((SessionDataProperty) findLPByCompoundName(name).property);
+            mUpLocal.exclAdd((SessionDataProperty) findLPByCompoundName(name).property);
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
@@ -921,7 +938,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         return !newSession
                ? new LPWithParams(listLP, usedParams)
-               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, upLocal, sessionUsed), usedParams);
+               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, mUpLocal.immutable(), sessionUsed), usedParams);
     }
 
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
@@ -1271,25 +1288,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> usedParams = mergeAllParams(asList(zeroStep, nextStep));
         checkRecursionContext(context, usedParams);
 
-        List<Integer> mainParams = new ArrayList<Integer>();
+        MOrderExclSet<Integer> mMainParams = SetFact.mOrderExclSetMax(usedParams.size());
         Map<Integer, Integer> usedToResult = new HashMap<Integer, Integer>();
         for (int i = 0; i < usedParams.size(); i++) {
             if (!context.get(usedParams.get(i)).startsWith("$")) {
-                mainParams.add(i);
+                mMainParams.add(i);
                 usedToResult.put(usedParams.get(i), i);
             }
         }
+        ImOrderSet<Integer> mainParams = mMainParams.immutableOrder();
 
         Map<Integer, Integer> mapPrev = new HashMap<Integer, Integer>();
         for (int i = 0; i < usedParams.size(); i++) {
-            String param = context.get(usedParams.get(i));
+            String param = context.get(usedParams.get(i)); // usedParams и context orderSet / revMap'ы
             if (param.startsWith("$")) {
                 mapPrev.put(i, usedToResult.get(context.indexOf(param.substring(1))));
             }
         }
 
         List<Object> resultParams = getParamsPlainList(Arrays.asList(zeroStep, nextStep));
-        LP res = addRProp(null, genSID(), false, "", cycleType, mainParams, mapPrev, resultParams.toArray());
+        LP res = addRProp(null, genSID(), false, "", cycleType, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
 
         List<Integer> resUsedParams = new ArrayList<Integer>();
         for (Integer usedParam : usedParams) {
@@ -1457,16 +1475,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
         property.property.caption = message;
-        List<CalcProperty<?>> checkedProps = null;
+        ImSet<CalcProperty<?>> checkedProps = null;
         CalcProperty.CheckType type = (checked ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO);
         if (checked && propNames != null) {
-            checkedProps = new ArrayList<CalcProperty<?>>();
+            MSet<CalcProperty<?>> mCheckedProps = SetFact.mSet();
             for (String propName : propNames) {
-                checkedProps.add((CalcProperty<?>) findLPByCompoundName(propName).property);
+                mCheckedProps.add((CalcProperty<?>) findLPByCompoundName(propName).property);
             }
             type = CalcProperty.CheckType.CHECK_SOME;
+            checkedProps = mCheckedProps.immutable();
         }
-        addConstraint((LCP<?>) property, type, BaseUtils.<List<CalcProperty<?>>>immutableCast(checkedProps), this);
+        addConstraint((LCP<?>) property, type, checkedProps, this);
     }
 
     public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {
@@ -1478,6 +1497,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             newProp = addCHProp((LCP) property.property, IncrementType.CHANGE);
         } else if (propType.equals("ASSIGNED")) {
             newProp = addCHProp((LCP) property.property, IncrementType.SET);
+        } else if (propType.equals("CLASS")) {
+            newProp = addClassProp((LCP) property.property);
         }
         return new LPWithParams(newProp, property.usedParams);
     }
@@ -1490,7 +1511,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkDistinctParameters(namedParams);
 
         for (int i = 0; i < props.size(); i++) {
-            int[] params = new int[props.get(i).usedParams.size()];
+            Integer[] params = new Integer[props.get(i).usedParams.size()];
             for (int j = 0; j < params.length; j++) {
                 params[j] = props.get(i).usedParams.get(j) + 1;
             }
@@ -1516,14 +1537,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((LAP)event.property).setEventAction(this, session, descending, false, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single, String showDep) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single, String showDep, List<String> sPrevStarts) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + session + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
         if(showDep!=null)
             action.showDep = findLPByCompoundName(showDep).property;
-        addBaseEvent(action, session, false, single);
+        ImSet<CalcProperty> prevStart = null;
+        if(sPrevStarts!=null) {
+            MExclSet<CalcProperty> mPrevStart = SetFact.mExclSet(); // функционально из-за exception'а не сделаешь
+            for(String sPrevStart : sPrevStarts)
+                mPrevStart.exclAdd(findLCPByCompoundName(sPrevStart).property);
+            prevStart = mPrevStart.immutable();
+        }
+        addBaseEvent(action, session, false, single, prevStart);
     }
 
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
@@ -1535,7 +1563,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkActionProperty(mainProp);
 
         List<Object> params = getParamsPlainList(Arrays.asList(actionProp));
-        List<ActionPropertyMapImplement> actionImplements = readActionImplements(mainProp.listInterfaces, params.toArray());
+        ImList<ActionPropertyMapImplement> actionImplements = readActionImplements(mainProp.listInterfaces, params.toArray());
         addAspectEvent((ActionProperty) mainProp.property, actionImplements.get(0), before);
     }
 
@@ -2119,7 +2147,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             needWarning = true;
         } else {
             AbstractClassWhere.And<Integer> where = classWhere.wheres[0];
-            for (int i = 0; i < where.size; ++i) {
+            for (int i = 0; i < where.size(); ++i) {
                 AndClassSet acSet = where.getValue(i);
                 if (acSet instanceof UpClassSet && ((UpClassSet)acSet).wheres.length > 1 ||
                     acSet instanceof OrObjectClassSet && ((OrObjectClassSet)acSet).up.wheres.length > 1) {
@@ -2135,7 +2163,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkAbstractProperty(LP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property.property instanceof ExclusiveUnionProperty && ((ExclusiveUnionProperty)property.property).isAbstract()) &&
+        if (!(property.property instanceof CaseUnionProperty && ((CaseUnionProperty)property.property).isAbstract()) &&
             !(property.property instanceof ListActionProperty && ((ListActionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);
         }

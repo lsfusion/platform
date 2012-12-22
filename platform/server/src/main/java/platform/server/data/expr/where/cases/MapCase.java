@@ -1,19 +1,14 @@
 package platform.server.data.expr.where.cases;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.Case;
 import platform.server.data.where.Where;
 
-import java.util.HashMap;
-import java.util.Map;
+public class MapCase<K> extends Case<ImMap<K, Expr>> {
 
-public class MapCase<K> extends Case<Map<K, BaseExpr>> {
-
-    public MapCase() {
-        super(Where.TRUE,new HashMap<K, BaseExpr>());
-    }
-
-    public MapCase(Where where, Map<K, BaseExpr> data) {
+    public MapCase(Where where, ImMap<K, Expr> data) {
         super(where, data);
     }
 }

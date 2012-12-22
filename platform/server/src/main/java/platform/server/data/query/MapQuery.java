@@ -1,8 +1,11 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
@@ -14,18 +17,12 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 
     final Query<MK,MV> query;
 
-    final Map<V,MV> mapProps;
-    final Map<K,MK> mapKeys;
+    final ImRevMap<V,MV> mapProps;
+    final ImRevMap<K,MK> mapKeys;
     // какой есть в query -> какой нужен
     final MapValuesTranslate mapValues;
 
@@ -33,37 +30,39 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return query.getExpr(mapProps.get(property)).translateOuter(mapValues.mapKeys());
     }
 
-    public Set<V> getProperties() {
-        return mapProps.keySet();
+    public ImSet<V> getProperties() {
+        return mapProps.keys();
     }
 
-    public Map<K, KeyExpr> getMapKeys() {
-        return BaseUtils.join(mapKeys, query.getMapKeys());
+    public ImRevMap<K, KeyExpr> getMapKeys() {
+        return mapKeys.join(query.getMapKeys());
     }
 
-    public MapQuery(Query<MK, MV> query, Map<V, MV> mapProps, Map<K, MK> mapKeys, MapValuesTranslate mapValues) {
+    public MapQuery(Query<MK, MV> query, ImRevMap<V, MV> mapProps, ImRevMap<K, MK> mapKeys, MapValuesTranslate mapValues) {
         this.query = query;
         this.mapProps = mapProps;
         this.mapKeys = mapKeys;
         this.mapValues = mapValues;
+
+        assert mapValues.assertValuesEquals(query.getInnerValues()); // все должны быть параметры
     }
 
-    public CompiledQuery<K, V> compile(SQLSyntax syntax, OrderedMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive) {
+    public CompiledQuery<K, V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive) {
         return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), top, subcontext, recursive),mapKeys,mapProps,mapValues);
     }
 
-    public <B> ClassWhere<B> getClassWhere(Set<? extends V> classProps) {
-        // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapValues потому как assert то классы совпадают
-        return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(new HashSet<MV>(BaseUtils.filterKeys(mapProps, classProps).values())), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
+    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
+        // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapColValues потому как assert то классы совпадают
+        return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(((ImSet<V>)classProps).mapRev(mapProps)), MapFact.addRevExcl(mapProps, mapKeys).reverse());
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
-        assert joinValues.assertValuesEquals(getInnerValues().getSet());
-        return new RemapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),mapValues.map(joinValues)),mapProps);
+    public Join<V> join(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
+        assert joinValues.assertValuesEquals(getInnerValues());
+        return new RemapJoin<V,MV>(query.join(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
     }
-    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
-        assert joinValues.assertValuesEquals(getInnerValues().getSet());
-        return new RemapJoin<V,MV>(query.joinExprs(BaseUtils.crossJoin(mapKeys,joinImplement),mapValues.map(joinValues)),mapProps);
+    public Join<V> joinExprs(ImMap<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
+        assert joinValues.assertValuesEquals(getInnerValues());
+        return new RemapJoin<V,MV>(query.joinExprs(mapKeys.crossJoin(joinImplement),mapValues.map(joinValues)),mapProps);
     }
 
     public PullValues<K, V> pullValues() {
@@ -89,11 +88,11 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
     @IdentityLazy
     public Query<K, V> getQuery() {
         Query<MK, MV> transQuery = query.translateQuery(mapValues.mapKeys());
-        return new Query<K,V>(BaseUtils.join(mapKeys, query.mapKeys), BaseUtils.join(mapProps, transQuery.properties), transQuery.where);
+        return new Query<K,V>(mapKeys.join(query.mapKeys), mapProps.join(transQuery.properties), transQuery.where);
     }
 
-    public <RMK, RMV> IQuery<RMK, RMV> map(Map<RMK, K> remapKeys, Map<RMV, V> remapProps, MapValuesTranslate translate) {
-        return new MapQuery<RMK, RMV, MK, MV>(query, BaseUtils.join(remapProps, mapProps), BaseUtils.join(remapKeys, mapKeys), translate.map(mapValues));
+    public <RMK, RMV> IQuery<RMK, RMV> map(ImRevMap<RMK, K> remapKeys, ImRevMap<RMV, V> remapProps, MapValuesTranslate translate) {
+        return new MapQuery<RMK, RMV, MK, MV>(query, remapProps.join(mapProps), remapKeys.join(mapKeys), mapValues.map(translate));
     }
 
     public MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate) {
@@ -103,7 +102,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return new MapQuery<K,V,MK,MV>(query.translateQuery(translate.onlyKeys()), mapProps, mapKeys, mapValues.map(translate.mapValues()));
     }
 
-    protected QuickSet<KeyExpr> getKeys() {
+    protected ImSet<KeyExpr> getKeys() {
         return query.getInnerKeys();
     }
 
@@ -111,7 +110,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         return query.getWhere().translateOuter(mapValues.mapKeys());
     }
 
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return mapValues.translateValues(query.getInnerValues());
     }
 

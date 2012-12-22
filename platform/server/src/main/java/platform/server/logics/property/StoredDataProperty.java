@@ -14,7 +14,8 @@ public class StoredDataProperty extends DataProperty {
     public boolean isStored() {
         return true;
     }
-    
+
+    // нет
     public static FunctionSet<CalcProperty> set = new FunctionSet<CalcProperty>() {
         public boolean contains(CalcProperty element) {
             return element instanceof StoredDataProperty;

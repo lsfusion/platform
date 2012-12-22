@@ -1,12 +1,11 @@
 package platform.server.data.expr.where.ifs;
 
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.AbstractJoin;
+import platform.server.data.query.Join;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.data.query.Join;
-import platform.server.data.expr.Expr;
-
-import java.util.Collection;
 
 public class IfJoin<U> extends AbstractJoin<U> {
 
@@ -32,7 +31,7 @@ public class IfJoin<U> extends AbstractJoin<U> {
         return ifWhere.ifElse(trueJoin.getWhere(),falseJoin.getWhere());
     }
 
-    public Collection<U> getProperties() {
+    public ImSet<U> getProperties() {
         return trueJoin.getProperties(); // assert что совпадает с falseJoin
     }
 

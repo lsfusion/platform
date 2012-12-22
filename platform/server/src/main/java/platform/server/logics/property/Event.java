@@ -1,16 +1,12 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.server.Settings;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityLazy;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.where.Where;
-import platform.server.session.*;
 
-import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class Event<C extends PropertyInterface, P extends Property<C>> {
 
@@ -23,20 +19,13 @@ public abstract class Event<C extends PropertyInterface, P extends Property<C>> 
         this.where = where;
     }
 
-    public Set<CalcProperty> getDepends() {
-        Set<CalcProperty> used = new HashSet<CalcProperty>();
-        where.mapFillDepends(used);
-        return used;
+    public ImSet<CalcProperty> getDepends() {
+        MSet<CalcProperty> mUsed = SetFact.mSet();
+        where.mapFillDepends(mUsed);
+        return mUsed.immutable();
     }
 
-    public Set<OldProperty> getOldDepends() {
-        Set<OldProperty> result = new HashSet<OldProperty>();
-        result.addAll(where.mapOldDepends());
-        return result;
-    }
-
-    @IdentityLazy
-    private boolean isWhereFull() {
-        return where.mapIsFull(writeTo.interfaces);
+    public ImSet<OldProperty> getOldDepends() {
+        return where.mapOldDepends();
     }
 }

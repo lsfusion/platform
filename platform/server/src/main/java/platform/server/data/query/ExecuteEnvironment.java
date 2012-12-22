@@ -1,6 +1,6 @@
 package platform.server.data.query;
 
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.Settings;
 import platform.server.caches.AbstractTranslateValues;
 import platform.server.data.SQLSession;
@@ -59,7 +59,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         return this;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         throw new RuntimeException("not supported yet");
 
 

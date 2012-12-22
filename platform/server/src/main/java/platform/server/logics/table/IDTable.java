@@ -1,19 +1,21 @@
 package platform.server.logics.table;
 
-import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 
 import java.sql.SQLException;
-import java.util.*;
 
 // таблица счетчика sID
 public class IDTable extends GlobalTable {
@@ -26,36 +28,31 @@ public class IDTable extends GlobalTable {
     public IDTable() {
         super("idtable");
         key = new KeyField("id", SystemClass.instance);
-        keys.add(key);
+        keys = SetFact.singletonOrder(key);
 
         value = new PropertyField("value", SystemClass.instance);
-        properties.add(value);
+        properties = SetFact.singleton(value);
 
         classes = new ClassWhere<KeyField>(key, SystemClass.instance);
 
-        Map<Field, SystemClass> valueClasses = new HashMap<Field, SystemClass>();
-        valueClasses.put(key, SystemClass.instance);
-        valueClasses.put(value, SystemClass.instance);
-        propertyClasses.put(value,new ClassWhere<Field>(valueClasses));
+        ImMap<Field, SystemClass> valueClasses = MapFact.toMap(key, SystemClass.instance, value, SystemClass.instance);
+        propertyClasses = MapFact.singleton(value,new ClassWhere<Field>(valueClasses));
     }
 
     public final static int OBJECT = 1;
     public final static int FORM = 2;
 
-    static Map<Integer, Integer> getCounters() {
-        Map<Integer, Integer> result = new HashMap<Integer, Integer>();
-        result.put(OBJECT, 10); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
-        result.put(FORM, 0);
-        return result;
+    static ImMap<Integer, Integer> getCounters() {
+        return MapFact.toMap(OBJECT, 10, FORM, 0); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
     }
 
     @IdentityLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
-        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
         platform.server.data.query.Join<PropertyField> joinTable = join(query.getMapExprs());
         query.and(joinTable.getWhere());
-        query.properties.put(value, joinTable.getExpr(value));
-        return query;
+        query.addProperty(value, joinTable.getExpr(value));
+        return query.getQuery();
     }
 
     private int freeID = 0;
@@ -83,11 +80,11 @@ public class IDTable extends GlobalTable {
         synchronized (this) {
             dataSession.startTransaction();
 
-            freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value) + 1; // замещаем
+            freeID = (Integer) getGenerateQuery(idType).execute(dataSession).singleValue().get(value) + 1; // замещаем
 
-            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(this, Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
-            updateQuery.properties.put(value,new ValueExpr(freeID + count - 1, SystemClass.instance));
-            dataSession.updateRecords(new ModifyQuery(this, updateQuery));
+            QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
+            updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
+            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery()));
 
             dataSession.commitTransaction();
         }
@@ -98,7 +95,7 @@ public class IDTable extends GlobalTable {
         return getStatKeys(this, getCounters().size());
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

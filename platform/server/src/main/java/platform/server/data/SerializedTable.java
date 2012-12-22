@@ -1,12 +1,12 @@
 package platform.server.data;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Map;
 
 // предыдущая таблица в базе
 public class SerializedTable extends Table {
@@ -19,7 +19,7 @@ public class SerializedTable extends Table {
     public static StatKeys<KeyField> getStatKeys(Table table) {
         return getStatKeys(table, prevStats);
     }
-    public static Map<PropertyField, Stat> getStatProps(Table table) {
+    public static ImMap<PropertyField, Stat> getStatProps(Table table) {
         return getStatProps(table, prevStats);
     }
 
@@ -27,7 +27,7 @@ public class SerializedTable extends Table {
         return getStatKeys(this);
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         return getStatProps(this);
     }
 }

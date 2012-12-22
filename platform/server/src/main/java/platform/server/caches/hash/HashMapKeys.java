@@ -1,14 +1,16 @@
 package platform.server.caches.hash;
 
-import platform.base.*;
+import platform.base.GlobalObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.translator.MapTranslate;
 
 public class HashMapKeys implements HashKeys {
 
-    private QuickMap<KeyExpr, ? extends GlobalObject> hashKeys;
-    public HashMapKeys(QuickMap<KeyExpr, ? extends GlobalObject> hashKeys) {
+    private ImMap<KeyExpr, ? extends GlobalObject> hashKeys;
+    public HashMapKeys(ImMap<KeyExpr, ? extends GlobalObject> hashKeys) {
         this.hashKeys = hashKeys;
     }
 
@@ -31,18 +33,12 @@ public class HashMapKeys implements HashKeys {
         return hashKeys.hashCode();
     }
 
-    @Override
-    public HashKeys filterKeys(QuickSet<KeyExpr> keys) {
-        return new HashMapKeys(hashKeys.filterKeys(keys)); // вообще InclKeys но могут быть PullExpr'ы
+    public HashKeys filterKeys(ImSet<KeyExpr> keys) {
+        return new HashMapKeys(hashKeys.filter(keys)); // вообще InclKeys но могут быть PullExpr'ы
     }
 
-    public HashKeys reverseTranslate(MapTranslate translator, QuickSet<KeyExpr> keys) {
-        QuickMap<KeyExpr, GlobalObject> transKeys = new SimpleMap<KeyExpr, GlobalObject>();
-        for(int i=0;i<keys.size;i++) {
-            KeyExpr keyExpr = keys.get(i);
-            transKeys.add(keyExpr, hashKeys.get(translator.translate(keyExpr)));
-        }
-        return new HashMapKeys(transKeys);
+    public HashKeys reverseTranslate(MapTranslate translator, ImSet<KeyExpr> keys) {
+        return new HashMapKeys(translator.translateKey(keys.toRevMap()).join(hashKeys));
     }
 
     public boolean isGlobal() {

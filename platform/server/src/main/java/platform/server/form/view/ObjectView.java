@@ -5,7 +5,9 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class ObjectView implements ServerIdentitySerializable {
 

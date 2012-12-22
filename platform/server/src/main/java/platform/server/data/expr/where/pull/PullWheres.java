@@ -1,38 +1,45 @@
 package platform.server.data.expr.where.pull;
 
-import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.cases.MapCaseList;
-import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.expr.where.ifs.NullExpr;
+import platform.server.data.expr.where.cases.*;
 import platform.server.data.expr.where.ifs.IfExpr;
+import platform.server.data.expr.where.ifs.NullExpr;
 import platform.server.data.where.Where;
-
-import java.util.Map;
 
 public abstract class PullWheres<R, K> {
 
     protected abstract R proceedCases(MapCaseList<K> cases);
-    protected abstract R proceedIf(Where ifWhere, Map<K, Expr> mapTrue, Map<K, Expr> mapFalse);
-    protected abstract R proceedBase(Map<K, BaseExpr> map);
+    protected abstract R proceedIf(Where ifWhere, ImMap<K, Expr> mapTrue, ImMap<K, Expr> mapFalse);
+    protected abstract R proceedBase(ImMap<K, BaseExpr> map);
 
     protected abstract R initEmpty();
 
-    public R proceed(Map<K, ? extends Expr> map) {
-        if(Expr.useCases) {
-            return proceedCases(CaseExpr.pullCases(map));
-        } else {
-            // ищем первый попавшийся, есть второй алгоритм с непроталкиванием скобок
-            for(Map.Entry<K, ? extends Expr> entry : map.entrySet())
-                if(!(entry.getValue() instanceof BaseExpr)) {
-                    if(entry.getValue() instanceof NullExpr)
-                        return initEmpty();
-                    IfExpr ifExpr = (IfExpr)entry.getValue();
-                    return proceedIf(ifExpr.ifWhere, BaseUtils.replace(map, entry.getKey(), ifExpr.trueExpr), BaseUtils.replace(map, entry.getKey(), ifExpr.falseExpr));
+    public R proceed(final ImMap<K, ? extends Expr> map) {
+        // ищем первый попавшийся, есть второй алгоритм с непроталкиванием скобок
+        for(int i=0,size=map.size();i<size;i++) {
+            final K key = map.getKey(i);
+            Expr expr = map.getValue(i);
+            if(!(expr instanceof BaseExpr)) {
+                if(expr instanceof NullExpr)
+                    return initEmpty();
+                if(expr instanceof CaseExpr) {
+                    ExprCaseList cases = expr.getCases();
+                    GetValue<MapCase<K>, ExprCase> mapCases = new GetValue<MapCase<K>, ExprCase>() {
+                        public MapCase<K> getMapValue(ExprCase value) {
+                            return new MapCase<K>(value.where, ((ImMap<K, Expr>) map).replaceValue(key, value.data));
+                        }};
+                    return proceedCases(cases.mapValues(mapCases));
                 }
-
-            return proceedBase((Map<K, BaseExpr>) (Map<K, ? extends BaseExpr>) map);
+                IfExpr ifExpr = (IfExpr)expr;
+                return proceedIf(ifExpr.ifWhere,
+                                    ((ImMap<K, Expr>)map).replaceValue(key, ifExpr.trueExpr),
+                                    ((ImMap<K, Expr>)map).replaceValue(key, ifExpr.falseExpr));
+            }
         }
+
+        return proceedBase((ImMap<K, BaseExpr>) (ImMap<K, ? extends BaseExpr>) map);
    }
 }

@@ -470,7 +470,7 @@ EXTEND CLASS systemLedgerPriceListType {
     supplierPricingPriceListType 'Поставщика (расценка)',
     retailPricingPriceListType 'Розничная (расценка)'
 }
-includeVATSystemLedgerPriceListType (priceListType) += priceListType == systemLedgerPriceListType.retailPricingPriceListType;
+includeVATSystemLedgerPriceListType (priceListType) += TRUE WHEN priceListType == systemLedgerPriceListType.retailPricingPriceListType;
 
 EXTEND CLASS pricingDetail : priceListLedger;
 
@@ -483,9 +483,9 @@ skuPriceListLedger (ledger) += skuPricingDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPricingDetail(ledger);
 
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) IF type == systemLedgerPriceListType.supplierPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.retailPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) IF type == systemLedgerPriceListType.accountPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) WHEN CLASS(pricePricingDetail(ledger)) AND type == systemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
 
 // ------------------------------------- Печать ценников ------------------------------ //

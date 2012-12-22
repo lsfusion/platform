@@ -1,8 +1,9 @@
 package platform.server.data.where;
 
+import platform.server.caches.TranslateContext;
 import platform.server.data.translator.MapTranslate;
 
-public interface CheckWhere {
+public interface CheckWhere<T extends TranslateContext<T>> extends TranslateContext<T> {
 
     boolean isTrue();
     boolean isFalse();
@@ -16,8 +17,6 @@ public interface CheckWhere {
     CheckWhere orCheck(CheckWhere where); // чисто для means
 
     AndObjectWhere[] getAnd(); // protected
-
-    CheckWhere translateOuter(MapTranslate translator);
 
     CheckWhere not();
 }

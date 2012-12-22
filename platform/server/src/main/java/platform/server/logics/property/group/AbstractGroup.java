@@ -1,6 +1,13 @@
 package platform.server.logics.property.group;
 
-import platform.server.logics.property.CalcProperty;
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
@@ -10,7 +17,10 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AbstractGroup extends AbstractNode implements ServerIdentitySerializable {
 
@@ -57,11 +67,11 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return false;
     }
 
-    public List<Property> getProperties() {
-        List<Property> result = new ArrayList<Property>();
+    public ImOrderSet<Property> getProperties() {
+        MOrderSet<Property> result = SetFact.mOrderSet();
         for (AbstractNode child : children)
             result.addAll(child.getProperties());
-        return result;
+        return result.immutableOrder();
     }
 
     public List<AbstractGroup> getParentGroups() {
@@ -93,11 +103,11 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return null;
     }
 
-    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
-        List<PropertyClassImplement> result = new ArrayList<PropertyClassImplement>();
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
+        MList<PropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : children)
-            result.addAll(child.getProperties(classLists, anyInInterface));
-        return result;
+            mResult.addAll(child.getProperties(classLists, anyInInterface));
+        return mResult.immutableList();
     }
 
     @Override

@@ -2,7 +2,6 @@ package platform.server.form.entity.filter;
 
 import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerSerializationPool;
 

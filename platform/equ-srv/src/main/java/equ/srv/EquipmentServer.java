@@ -4,10 +4,15 @@ import equ.api.*;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.BusinessLogicsBootstrap;
@@ -56,24 +61,25 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             List<TransactionInfo> transactionList = new ArrayList<TransactionInfo>();
 
             LCP isMachineryPriceTransaction = LM.is(LM.findClassByCompoundName("machineryPriceTransaction"));
-            Map<Object, KeyExpr> keys = isMachineryPriceTransaction.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
+            ImRevMap<Object, KeyExpr> keys = isMachineryPriceTransaction.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
 
-            query.properties.put("dateTimeMPT", LM.findLCPByCompoundName("dateTimeMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("groupMachineryMPT", LM.findLCPByCompoundName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
-            query.properties.put("snapshotMPT", LM.findLCPByCompoundName("groupMachineryMachineryPriceTransaction").getExpr(BaseUtils.singleValue(keys)));
+            query.addProperty("dateTimeMPT", LM.findLCPByCompoundName("dateTimeMachineryPriceTransaction").getExpr(key));
+            query.addProperty("groupMachineryMPT", LM.findLCPByCompoundName("groupMachineryMachineryPriceTransaction").getExpr(key));
+            query.addProperty("snapshotMPT", LM.findLCPByCompoundName("groupMachineryMachineryPriceTransaction").getExpr(key));
 
             query.and(LM.findLCPByCompoundName("sidEquipmentServerMachineryPriceTransaction").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
             query.and(LM.findLCPByCompoundName("processMachineryPriceTransaction").getExpr(key).getWhere());
 
-            OrderedMap<Map<Object, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
+            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(session);
             List<Object[]> transactionObjects = new ArrayList<Object[]>();
-            for (Map.Entry<Map<Object, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
-                DataObject dateTimeMPT = (DataObject) entry.getValue().get("dateTimeMPT");
-                DataObject groupMachineryMPT = (DataObject) entry.getValue().get("groupMachineryMPT");
-                DataObject transactionObject = entry.getKey().values().iterator().next();
-                Boolean snapshotMPT = entry.getValue().get("snapshotMPT") instanceof DataObject;
+            for (int i=0,size=result.size();i<size;i++) {
+                ImMap<Object, ObjectValue> value = result.getValue(i);
+                DataObject dateTimeMPT = (DataObject) value.get("dateTimeMPT");
+                DataObject groupMachineryMPT = (DataObject) value.get("groupMachineryMPT");
+                DataObject transactionObject = result.getKey(i).singleValue();
+                Boolean snapshotMPT = value.get("snapshotMPT") instanceof DataObject;
                 transactionObjects.add(new Object[]{groupMachineryMPT, transactionObject, dateTimeCode((Timestamp) dateTimeMPT.getValue()), dateTimeMPT, snapshotMPT});
             }
 
@@ -88,36 +94,35 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 skuTransactionList = new ArrayList<ItemInfo>();
                 KeyExpr barcodeExpr = new KeyExpr("barcode");
-                Map<Object, KeyExpr> skuKeys = new HashMap<Object, KeyExpr>();
-                skuKeys.put("barcode", barcodeExpr);
+                ImRevMap<Object, KeyExpr> skuKeys = MapFact.singletonRev((Object)"barcode", barcodeExpr);
 
-                Query<Object, Object> skuQuery = new Query<Object, Object>(skuKeys);
-                skuQuery.properties.put("idBarcode", LM.findLCPByCompoundName("idBarcode").getExpr(barcodeExpr));
-                skuQuery.properties.put("name", LM.findLCPByCompoundName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("price", LM.findLCPByCompoundName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("daysExpiry", LM.findLCPByCompoundName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("hoursExpiry", LM.findLCPByCompoundName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("expiryDate", LM.findLCPByCompoundName("expiryDataMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("labelFormat", LM.findLCPByCompoundName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("composition", LM.findLCPByCompoundName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("isWeight", LM.findLCPByCompoundName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
-                skuQuery.properties.put("skuGroup", LM.findLCPByCompoundName("skuGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                QueryBuilder<Object, Object> skuQuery = new QueryBuilder<Object, Object>(skuKeys);
+                skuQuery.addProperty("idBarcode", LM.findLCPByCompoundName("idBarcode").getExpr(barcodeExpr));
+                skuQuery.addProperty("name", LM.findLCPByCompoundName("nameMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("price", LM.findLCPByCompoundName("priceMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("daysExpiry", LM.findLCPByCompoundName("daysExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("hoursExpiry", LM.findLCPByCompoundName("hoursExpiryMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("expiryDate", LM.findLCPByCompoundName("expiryDataMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("labelFormat", LM.findLCPByCompoundName("labelFormatMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("composition", LM.findLCPByCompoundName("compositionMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("isWeight", LM.findLCPByCompoundName("isWeightMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
+                skuQuery.addProperty("skuGroup", LM.findLCPByCompoundName("skuGroupMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr));
 
                 skuQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionBarcode").getExpr(transactionObject.getExpr(), barcodeExpr).getWhere());
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> skuResult = skuQuery.execute(session.sql);
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> skuResult = skuQuery.execute(session.sql);
 
-                for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : skuResult.entrySet()) {
-                    String barcode = (String) entry.getValue().get("idBarcode");
-                    String name = (String) entry.getValue().get("name");
-                    Double price = (Double) entry.getValue().get("price");
-                    Double daysExpiry = (Double) entry.getValue().get("daysExpiry");
-                    Integer hoursExpiry = (Integer) entry.getValue().get("hoursExpiry");
-                    Date expiryDate = (Date) entry.getValue().get("expiryDate");
-                    Integer labelFormat = (Integer) entry.getValue().get("labelFormat");
-                    String composition = (String) entry.getValue().get("composition");
-                    Boolean isWeight = entry.getValue().get("isWeight") != null;
-                    Integer numberSkuGroup = (Integer) entry.getValue().get("skuGroup");
+                for (ImMap<Object, Object> row : skuResult.valueIt()) {
+                    String barcode = (String) row.get("idBarcode");
+                    String name = (String) row.get("name");
+                    Double price = (Double) row.get("price");
+                    Double daysExpiry = (Double) row.get("daysExpiry");
+                    Integer hoursExpiry = (Integer) row.get("hoursExpiry");
+                    Date expiryDate = (Date) row.get("expiryDate");
+                    Integer labelFormat = (Integer) row.get("labelFormat");
+                    String composition = (String) row.get("composition");
+                    Boolean isWeight = row.get("isWeight") != null;
+                    Integer numberSkuGroup = (Integer) row.get("skuGroup");
                     String canonicalNameSkuGroup = numberSkuGroup == null ? "" : (String) LM.findLCPByCompoundName("canonicalNameSkuGroup").read(session, new DataObject(numberSkuGroup, (ConcreteClass) LM.findClassByCompoundName("skuGroup")));
 
                     Integer cellScalesObject = composition == null ? null : (Integer) LM.findLCPByCompoundName("cellScalesGroupScalesComposition").read(session, groupObject, new DataObject(composition, TextClass.instance));
@@ -130,32 +135,31 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
                     LCP<PropertyInterface> isCashRegister = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("cashRegister"));
 
-                    Map<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
-                    KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-                    Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
+                    ImRevMap<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+                    KeyExpr cashRegisterKey = cashRegisterKeys.singleValue();
+                    QueryBuilder<PropertyInterface, Object> cashRegisterQuery = new QueryBuilder<PropertyInterface, Object>(cashRegisterKeys);
 
-                    cashRegisterQuery.properties.put("directoryCashRegister", LM.findLCPByCompoundName("directoryCashRegister").getExpr(cashRegisterKey));
-                    cashRegisterQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(cashRegisterKey));
-                    cashRegisterQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(cashRegisterKey));
-                    cashRegisterQuery.properties.put("numberCashRegister", LM.findLCPByCompoundName("numberCashRegister").getExpr(cashRegisterKey));
-                    cashRegisterQuery.properties.put("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(cashRegisterKey));
-                    cashRegisterQuery.properties.put("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("directoryCashRegister", LM.findLCPByCompoundName("directoryCashRegister").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("numberCashRegister", LM.findLCPByCompoundName("numberCashRegister").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(cashRegisterKey));
+                    cashRegisterQuery.addProperty("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(cashRegisterKey));
 
                     cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
                     cashRegisterQuery.and(LM.findLCPByCompoundName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare(groupObject, Compare.EQUALS));
                     if (snapshotTransaction)
                         cashRegisterQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), cashRegisterKey).getWhere());
 
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
-                    for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
-
-                        String directoryCashRegister = (String) values.getValue().get("directoryCashRegister");
-                        String portMachinery = (String) values.getValue().get("portMachinery");
-                        Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
-                        String numberCashRegister = (String) values.getValue().get("numberCashRegister");
-                        String nameModel = (String) values.getValue().get("nameModelMachinery");
-                        String handlerModel = (String) values.getValue().get("handlerModelMachinery");
+                    for (ImMap<Object, Object> row : cashRegisterResult.valueIt()) {
+                        String directoryCashRegister = (String) row.get("directoryCashRegister");
+                        String portMachinery = (String) row.get("portMachinery");
+                        Integer nppMachinery = (Integer) row.get("nppMachinery");
+                        String numberCashRegister = (String) row.get("numberCashRegister");
+                        String nameModel = (String) row.get("nameModelMachinery");
+                        String handlerModel = (String) row.get("handlerModelMachinery");
                         cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, null));
                     }
 
@@ -170,22 +174,22 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                     LCP<PropertyInterface> isScales = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("scales"));
 
-                    Map<PropertyInterface, KeyExpr> scalesKeys = isScales.getMapKeys();
-                    KeyExpr scalesKey = BaseUtils.singleValue(scalesKeys);
-                    Query<PropertyInterface, Object> scalesQuery = new Query<PropertyInterface, Object>(scalesKeys);
+                    ImRevMap<PropertyInterface, KeyExpr> scalesKeys = isScales.getMapKeys();
+                    KeyExpr scalesKey = scalesKeys.singleValue();
+                    QueryBuilder<PropertyInterface, Object> scalesQuery = new QueryBuilder<PropertyInterface, Object>(scalesKeys);
 
-                    scalesQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(scalesKey));
-                    scalesQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(scalesKey));
-                    scalesQuery.properties.put("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(scalesKey));
-                    scalesQuery.properties.put("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(scalesKey));
+                    scalesQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(scalesKey));
+                    scalesQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(scalesKey));
+                    scalesQuery.addProperty("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(scalesKey));
+                    scalesQuery.addProperty("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(scalesKey));
                     scalesQuery.and(isScales.property.getExpr(scalesKeys).getWhere());
                     scalesQuery.and(LM.findLCPByCompoundName("groupScalesScales").getExpr(scalesKey).compare(groupObject, Compare.EQUALS));
                     //if (snapshotTransaction)
                     //    scalesQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), scalesKey).getWhere());
 
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> scalesResult = scalesQuery.execute(session.sql);
 
-                    for (Map<Object, Object> values : scalesResult.values()) {
+                    for (ImMap<Object, Object> values : scalesResult.valueIt()) {
                         String portMachinery = (String) values.get("portMachinery");
                         Integer nppMachinery = (Integer) values.get("nppMachinery");
                         String nameModel = (String) values.get("nameModelMachinery");
@@ -201,23 +205,23 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     List<PriceCheckerInfo> priceCheckerInfoList = new ArrayList<PriceCheckerInfo>();
                     LCP<PropertyInterface> isCheck = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("check"));
 
-                    Map<PropertyInterface, KeyExpr> checkKeys = isCheck.getMapKeys();
-                    KeyExpr checkKey = BaseUtils.singleValue(checkKeys);
-                    Query<PropertyInterface, Object> checkQuery = new Query<PropertyInterface, Object>(checkKeys);
+                    ImRevMap<PropertyInterface, KeyExpr> checkKeys = isCheck.getMapKeys();
+                    KeyExpr checkKey = checkKeys.singleValue();
+                    QueryBuilder<PropertyInterface, Object> checkQuery = new QueryBuilder<PropertyInterface, Object>(checkKeys);
 
-                    checkQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(checkKey));
-                    checkQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(checkKey));
-                    checkQuery.properties.put("nameCheckModelCheck", LM.findLCPByCompoundName("nameCheckModelCheck").getExpr(checkKey));
-                    //checkQuery.properties.put("handlerCheckModelCheck", LM.findLCPByCompoundName("handlerCheckModelCheck").getExpr(checkKey));
+                    checkQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(checkKey));
+                    checkQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(checkKey));
+                    checkQuery.addProperty("nameCheckModelCheck", LM.findLCPByCompoundName("nameCheckModelCheck").getExpr(checkKey));
+                    //checkQuery.addProperty("handlerCheckModelCheck", LM.findLCPByCompoundName("handlerCheckModelCheck").getExpr(checkKey));
                     checkQuery.and(isCheck.property.getExpr(checkKeys).getWhere());
                     checkQuery.and(LM.findLCPByCompoundName("groupPriceCheckerPriceChecker").getExpr(checkKey).compare(groupObject, Compare.EQUALS));
 
                     if (snapshotTransaction)
                         checkQuery.and(LM.findLCPByCompoundName("inMachineryPriceTransactionMachinery").getExpr(transactionObject.getExpr(), checkKey).getWhere());
 
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> checkResult = checkQuery.execute(session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> checkResult = checkQuery.execute(session.sql);
 
-                    for (Map<Object, Object> values : checkResult.values()) {
+                    for (ImMap<Object, Object> values : checkResult.valueIt()) {
                         String portMachinery = (String) values.get("portMachinery");
                         Integer nppMachinery = (Integer) values.get("nppMachinery");
                         String nameModel = (String) values.get("nameCheckModelCheck");
@@ -233,21 +237,21 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                     List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
                     LCP<PropertyInterface> isTerminal = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminal"));
 
-                    OrderedMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
-                    KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
-                    Query<PropertyInterface, Object> terminalQuery = new Query<PropertyInterface, Object>(terminalKeys);
+                    ImRevMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
+                    KeyExpr terminalKey = terminalKeys.singleValue();
+                    QueryBuilder<PropertyInterface, Object> terminalQuery = new QueryBuilder<PropertyInterface, Object>(terminalKeys);
 
-                    terminalQuery.properties.put("directoryTerminal", LM.findLCPByCompoundName("directoryTerminal").getExpr(terminalKey));
-                    terminalQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(terminalKey));
-                    terminalQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(terminalKey));
-                    terminalQuery.properties.put("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(terminalKey));
-                    terminalQuery.properties.put("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(terminalKey));
+                    terminalQuery.addProperty("directoryTerminal", LM.findLCPByCompoundName("directoryTerminal").getExpr(terminalKey));
+                    terminalQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(terminalKey));
+                    terminalQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(terminalKey));
+                    terminalQuery.addProperty("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(terminalKey));
+                    terminalQuery.addProperty("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(terminalKey));
                     terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
                     terminalQuery.and(LM.findLCPByCompoundName("groupTerminalTerminal").getExpr(terminalKey).compare(groupObject, Compare.EQUALS));
 
-                    OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
+                    ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
-                    for (Map<Object, Object> values : terminalResult.values()) {
+                    for (ImMap<Object, Object> values : terminalResult.valueIt()) {
                         String directory = (String) values.get("directoryTerminal");
                         String portMachinery = (String) values.get("portMachinery");
                         Integer nppMachinery = (Integer) values.get("nppMachinery");
@@ -272,17 +276,17 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
 
             LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
-            OrderedMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-            query.properties.put("roundSalesGroupCashRegister", LM.findLCPByCompoundName("roundSalesGroupCashRegister").getExpr(key));
+            ImRevMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+            query.addProperty("roundSalesGroupCashRegister", LM.findLCPByCompoundName("roundSalesGroupCashRegister").getExpr(key));
             query.and(LM.findLCPByCompoundName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
-            OrderedMap<Map<PropertyInterface, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
+            ImOrderMap<ImMap<PropertyInterface, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(session);
             List<Object[]> groupMachineryObjects = new ArrayList<Object[]>();
-            for (Map.Entry<Map<PropertyInterface, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
-                DataObject groupMachineryObject = entry.getKey().values().iterator().next();
-                Integer roundSalesGroupCashRegister = (Integer) entry.getValue().get("roundSalesGroupCashRegister").getValue();
+            for (int i=0,size=result.size();i<size;i++) {
+                DataObject groupMachineryObject = result.getKey(i).getValue(0);
+                Integer roundSalesGroupCashRegister = (Integer) result.getValue(i).get("roundSalesGroupCashRegister").getValue();
                 groupMachineryObjects.add(new Object[]{groupMachineryObject, roundSalesGroupCashRegister});
             }
 
@@ -292,30 +296,29 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 LCP<PropertyInterface> isCashRegister = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("cashRegister"));
 
-                OrderedMap<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
-                KeyExpr cashRegisterKey = BaseUtils.singleValue(cashRegisterKeys);
-                Query<PropertyInterface, Object> cashRegisterQuery = new Query<PropertyInterface, Object>(cashRegisterKeys);
+                ImRevMap<PropertyInterface, KeyExpr> cashRegisterKeys = isCashRegister.getMapKeys();
+                KeyExpr cashRegisterKey = cashRegisterKeys.singleValue();
+                QueryBuilder<PropertyInterface, Object> cashRegisterQuery = new QueryBuilder<PropertyInterface, Object>(cashRegisterKeys);
 
-                cashRegisterQuery.properties.put("directoryCashRegister", LM.findLCPByCompoundName("directoryCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("numberCashRegister", LM.findLCPByCompoundName("numberCashRegister").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(cashRegisterKey));
-                cashRegisterQuery.properties.put("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("directoryCashRegister", LM.findLCPByCompoundName("directoryCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("numberCashRegister", LM.findLCPByCompoundName("numberCashRegister").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(cashRegisterKey));
+                cashRegisterQuery.addProperty("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(cashRegisterKey));
 
                 cashRegisterQuery.and(isCashRegister.property.getExpr(cashRegisterKeys).getWhere());
                 cashRegisterQuery.and(LM.findLCPByCompoundName("groupCashRegisterCashRegister").getExpr(cashRegisterKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
+                ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> cashRegisterResult = cashRegisterQuery.execute(session.sql);
 
-                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : cashRegisterResult.entrySet()) {
-
-                    String directoryCashRegister = (String) values.getValue().get("directoryCashRegister");
-                    String portMachinery = (String) values.getValue().get("portMachinery");
-                    Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
-                    String numberCashRegister = (String) values.getValue().get("numberCashRegister");
-                    String nameModel = (String) values.getValue().get("nameModelMachinery");
-                    String handlerModel = (String) values.getValue().get("handlerModelMachinery");
+                for (ImMap<Object, Object> row : cashRegisterResult.values()) {
+                    String directoryCashRegister = (String) row.get("directoryCashRegister");
+                    String portMachinery = (String) row.get("portMachinery");
+                    Integer nppMachinery = (Integer) row.get("nppMachinery");
+                    String numberCashRegister = (String) row.get("numberCashRegister");
+                    String nameModel = (String) row.get("nameModelMachinery");
+                    String handlerModel = (String) row.get("handlerModelMachinery");
                     cashRegisterInfoList.add(new CashRegisterInfo(nppMachinery, numberCashRegister, nameModel, handlerModel, portMachinery, directoryCashRegister, roundSalesGroupCashRegister));
                 }
             }
@@ -332,15 +335,15 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
 
             LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
-            OrderedMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
+            ImRevMap<PropertyInterface, KeyExpr> keys = isGroupMachinery.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
             query.and(LM.findLCPByCompoundName("sidEquipmentServerGroupMachinery").getExpr(key).compare(new DataObject(equServerID, StringClass.get(20)), Compare.EQUALS));
 
-            OrderedMap<Map<PropertyInterface, DataObject>, Map<Object, ObjectValue>> result = query.executeClasses(session);
+            ImOrderMap<ImMap<PropertyInterface, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(session);
             List<Object> groupMachineryObjects = new ArrayList<Object>();
-            for (Map.Entry<Map<PropertyInterface, DataObject>, Map<Object, ObjectValue>> entry : result.entrySet()) {
-                DataObject groupMachineryObject = entry.getKey().values().iterator().next();
+            for (ImMap<PropertyInterface, DataObject> entry : result.keyIt()) {
+                DataObject groupMachineryObject = entry.getValue(0);
                 groupMachineryObjects.add(groupMachineryObject);
             }
 
@@ -349,28 +352,27 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 LCP<PropertyInterface> isTerminal = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminal"));
 
-                OrderedMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
-                KeyExpr terminalKey = BaseUtils.singleValue(terminalKeys);
-                Query<PropertyInterface, Object> terminalQuery = new Query<PropertyInterface, Object>(terminalKeys);
+                ImRevMap<PropertyInterface, KeyExpr> terminalKeys = isTerminal.getMapKeys();
+                KeyExpr terminalKey = terminalKeys.singleValue();
+                QueryBuilder<PropertyInterface, Object> terminalQuery = new QueryBuilder<PropertyInterface, Object>(terminalKeys);
 
-                terminalQuery.properties.put("directoryTerminal", LM.findLCPByCompoundName("directoryTerminal").getExpr(terminalKey));
-                terminalQuery.properties.put("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(terminalKey));
-                terminalQuery.properties.put("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(terminalKey));
+                terminalQuery.addProperty("directoryTerminal", LM.findLCPByCompoundName("directoryTerminal").getExpr(terminalKey));
+                terminalQuery.addProperty("portMachinery", LM.findLCPByCompoundName("portMachinery").getExpr(terminalKey));
+                terminalQuery.addProperty("nppMachinery", LM.findLCPByCompoundName("nppMachinery").getExpr(terminalKey));
+                terminalQuery.addProperty("nameModelMachinery", LM.findLCPByCompoundName("nameModelMachinery").getExpr(terminalKey));
+                terminalQuery.addProperty("handlerModelMachinery", LM.findLCPByCompoundName("handlerModelMachinery").getExpr(terminalKey));
 
                 terminalQuery.and(isTerminal.property.getExpr(terminalKeys).getWhere());
                 terminalQuery.and(LM.findLCPByCompoundName("groupTerminalTerminal").getExpr(terminalKey).compare((groupMachineryObject).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
+                ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> terminalResult = terminalQuery.execute(session.sql);
 
-                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> values : terminalResult.entrySet()) {
-
-                    String directoryTerminal = (String) values.getValue().get("directoryTerminal");
-                    String portMachinery = (String) values.getValue().get("portMachinery");
-                    Integer nppMachinery = (Integer) values.getValue().get("nppMachinery");
-                    String nameModel = (String) values.getValue().get("nameModelMachinery");
-                    String handlerModel = (String) values.getValue().get("handlerModelMachinery");
+                for (ImMap<Object, Object> row : terminalResult.valueIt()) {
+                    String directoryTerminal = (String) row.get("directoryTerminal");
+                    String portMachinery = (String) row.get("portMachinery");
+                    Integer nppMachinery = (Integer) row.get("nppMachinery");
+                    String nameModel = (String) row.get("nameModelMachinery");
+                    String handlerModel = (String) row.get("handlerModelMachinery");
                     terminalInfoList.add(new TerminalInfo(directoryTerminal, nppMachinery, nameModel, handlerModel, portMachinery));
                 }
             }
@@ -389,16 +391,16 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             LCP<PropertyInterface> isLegalEntity = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("legalEntity"));
 
-            OrderedMap<PropertyInterface, KeyExpr> legalEntityKeys = isLegalEntity.getMapKeys();
-            KeyExpr legalEntityKey = BaseUtils.singleValue(legalEntityKeys);
-            Query<PropertyInterface, Object> legalEntityQuery = new Query<PropertyInterface, Object>(legalEntityKeys);
+            ImRevMap<PropertyInterface, KeyExpr> legalEntityKeys = isLegalEntity.getMapKeys();
+            KeyExpr legalEntityKey = legalEntityKeys.singleValue();
+            QueryBuilder<PropertyInterface, Object> legalEntityQuery = new QueryBuilder<PropertyInterface, Object>(legalEntityKeys);
 
-            legalEntityQuery.properties.put("name", LM.baseLM.name.getExpr(legalEntityKey));
+            legalEntityQuery.addProperty("name", LM.baseLM.name.getExpr(legalEntityKey));
             legalEntityQuery.and(isLegalEntity.property.getExpr(legalEntityKeys).getWhere());
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> legalEntityResult = legalEntityQuery.execute(session.sql);
-            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : legalEntityResult.entrySet()) {
-                String id = String.valueOf(entry.getKey().values().iterator().next());
-                String name = (String) entry.getValue().get("name");
+            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> legalEntityResult = legalEntityQuery.execute(session.sql);
+            for (int i=0,size=legalEntityResult.size();i<size;i++) {
+                String id = String.valueOf(legalEntityResult.getKey(i).getValue(0));
+                String name = (String) legalEntityResult.getValue(i).get("name");
                 DataObject terminalHandbookTypeObject = ((StaticCustomClass) LM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeLegalEntity");
                 String type = (String) LM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
@@ -407,20 +409,20 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             List<TerminalDocumentTypeInfo> terminalDocumentTypeInfoList = new ArrayList<TerminalDocumentTypeInfo>();
             LCP<PropertyInterface> isTerminalDocumentType = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("terminalDocumentType"));
 
-            Map<PropertyInterface, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
-            KeyExpr terminalDocumentTypeKey = BaseUtils.singleValue(terminalDocumentTypeKeys);
-            Query<PropertyInterface, Object> terminalDocumentTypeQuery = new Query<PropertyInterface, Object>(terminalDocumentTypeKeys);
-            terminalDocumentTypeQuery.properties.put("idTerminalDocumentType", LM.findLCPByCompoundName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
-            terminalDocumentTypeQuery.properties.put("nameTerminalDocumentType", LM.findLCPByCompoundName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
-            terminalDocumentTypeQuery.properties.put("nameInHandbook1TerminalDocumentType", LM.findLCPByCompoundName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-            terminalDocumentTypeQuery.properties.put("idTerminalHandbookType1TerminalDocumentType", LM.findLCPByCompoundName("idTerminalHandbookType1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-            terminalDocumentTypeQuery.properties.put("nameInHandbook2TerminalDocumentType", LM.findLCPByCompoundName("nameInHandbook2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
-            terminalDocumentTypeQuery.properties.put("idTerminalHandbookType2TerminalDocumentType", LM.findLCPByCompoundName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            ImRevMap<PropertyInterface, KeyExpr> terminalDocumentTypeKeys = isTerminalDocumentType.getMapKeys();
+            KeyExpr terminalDocumentTypeKey = terminalDocumentTypeKeys.singleValue();
+            QueryBuilder<PropertyInterface, Object> terminalDocumentTypeQuery = new QueryBuilder<PropertyInterface, Object>(terminalDocumentTypeKeys);
+            terminalDocumentTypeQuery.addProperty("idTerminalDocumentType", LM.findLCPByCompoundName("idTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            terminalDocumentTypeQuery.addProperty("nameTerminalDocumentType", LM.findLCPByCompoundName("nameTerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            terminalDocumentTypeQuery.addProperty("nameInHandbook1TerminalDocumentType", LM.findLCPByCompoundName("nameInHandbook1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            terminalDocumentTypeQuery.addProperty("idTerminalHandbookType1TerminalDocumentType", LM.findLCPByCompoundName("idTerminalHandbookType1TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            terminalDocumentTypeQuery.addProperty("nameInHandbook2TerminalDocumentType", LM.findLCPByCompoundName("nameInHandbook2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
+            terminalDocumentTypeQuery.addProperty("idTerminalHandbookType2TerminalDocumentType", LM.findLCPByCompoundName("idTerminalHandbookType2TerminalDocumentType").getExpr(terminalDocumentTypeKey));
             terminalDocumentTypeQuery.and(isTerminalDocumentType.property.getExpr(terminalDocumentTypeKeys).getWhere());
 
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
+            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> terminalDocumentTypeResult = terminalDocumentTypeQuery.execute(session.sql);
 
-            for (Map<Object, Object> values : terminalDocumentTypeResult.values()) {
+            for (ImMap<Object, Object> values : terminalDocumentTypeResult.valueIt()) {
                 String id = (String) values.get("idTerminalDocumentType");
                 String name = (String) values.get("nameTerminalDocumentType");
                 String nameInHandbook1 = (String) values.get("nameInHandbook1TerminalDocumentType");
@@ -746,20 +748,20 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
                 LCP<PropertyInterface> isLabelFormat = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("labelFormat"));
 
-                OrderedMap<PropertyInterface, KeyExpr> labelFormatKeys = isLabelFormat.getMapKeys();
-                KeyExpr labelFormatKey = BaseUtils.singleValue(labelFormatKeys);
-                Query<PropertyInterface, Object> labelFormatQuery = new Query<PropertyInterface, Object>(labelFormatKeys);
+                ImRevMap<PropertyInterface, KeyExpr> labelFormatKeys = isLabelFormat.getMapKeys();
+                KeyExpr labelFormatKey = labelFormatKeys.singleValue();
+                QueryBuilder<PropertyInterface, Object> labelFormatQuery = new QueryBuilder<PropertyInterface, Object>(labelFormatKeys);
 
-                labelFormatQuery.properties.put("fileLabelFormat", LM.findLCPByCompoundName("fileLabelFormat").getExpr(labelFormatKey));
-                labelFormatQuery.properties.put("fileMessageLabelFormat", LM.findLCPByCompoundName("fileMessageLabelFormat").getExpr(labelFormatKey));
+                labelFormatQuery.addProperty("fileLabelFormat", LM.findLCPByCompoundName("fileLabelFormat").getExpr(labelFormatKey));
+                labelFormatQuery.addProperty("fileMessageLabelFormat", LM.findLCPByCompoundName("fileMessageLabelFormat").getExpr(labelFormatKey));
                 labelFormatQuery.and(isLabelFormat.property.getExpr(labelFormatKeys).getWhere());
                 labelFormatQuery.and(LM.findLCPByCompoundName("scalesModelLabelFormat").getExpr(labelFormatKey).compare((scalesModelObject).getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> labelFormatResult = labelFormatQuery.execute(session.sql);
+                ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> labelFormatResult = labelFormatQuery.execute(session.sql);
 
-                for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> entry : labelFormatResult.entrySet()) {
-                    byte[] fileLabelFormat = (byte[]) entry.getValue().get("fileLabelFormat");
-                    byte[] fileMessageLabelFormat = (byte[]) entry.getValue().get("fileMessageLabelFormat");
+                for (ImMap<Object, Object> row : labelFormatResult.valueIt()) {
+                    byte[] fileLabelFormat = (byte[]) row.get("fileLabelFormat");
+                    byte[] fileMessageLabelFormat = (byte[]) row.get("fileMessageLabelFormat");
                     fileLabelFormats.add(new byte[][]{fileLabelFormat, fileMessageLabelFormat});
                 }
             }

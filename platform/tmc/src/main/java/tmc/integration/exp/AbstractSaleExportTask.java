@@ -8,6 +8,8 @@ import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
 import platform.server.auth.PolicyManager;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;

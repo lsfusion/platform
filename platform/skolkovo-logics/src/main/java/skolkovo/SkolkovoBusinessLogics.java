@@ -5,6 +5,11 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.exceptions.RemoteMessageException;
 import platform.server.auth.SecurityPolicy;
@@ -12,6 +17,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
@@ -67,7 +73,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         for (Property property : SkolkovoLM.voteResultGroup.getProperties())
             policyManager.defaultSecurityPolicy.property.change.deny(property);
 
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
+        policyManager.userPolicies.add(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
     }
     //!!!!
 
@@ -237,59 +243,58 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 else
                     isForeign = SkolkovoLM.isForeignExpert.read(session, expertObj) != null;
 
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("exp", "vote"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.toExclSet("exp", "vote"));
                 Expr expertExpr = keys.get("exp");
                 Expr voteExpr = keys.get("vote");
                 Expr projExpr = SkolkovoLM.projectVote.getExpr(session.getModifier(), voteExpr);
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(SkolkovoLM.inNewExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
-                q.properties.put("projectId", projExpr);
-                q.properties.put("projectName", (isForeign ? SkolkovoLM.nameForeignProject : SkolkovoLM.nameNativeProject).getExpr(session.getModifier(), projExpr));
-                q.properties.put("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeClaimerProject).getExpr(session.getModifier(), projExpr));
-                q.properties.put("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterExpert : SkolkovoLM.nameNativeClusterExpert).getExpr(session.getModifier(), expertExpr));
+                q.addProperty("projectId", projExpr);
+                q.addProperty("projectName", (isForeign ? SkolkovoLM.nameForeignProject : SkolkovoLM.nameNativeProject).getExpr(session.getModifier(), projExpr));
+                q.addProperty("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeClaimerProject).getExpr(session.getModifier(), projExpr));
+                q.addProperty("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterExpert : SkolkovoLM.nameNativeClusterExpert).getExpr(session.getModifier(), expertExpr));
 
-                q.properties.put("inCluster", SkolkovoLM.inClusterExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("innovative", SkolkovoLM.innovativeExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("innovativeComment", SkolkovoLM.innovativeCommentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("foreign", SkolkovoLM.foreignExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("competent", SkolkovoLM.competentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("complete", SkolkovoLM.completeExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("completeComment", SkolkovoLM.completeCommentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("inCluster", SkolkovoLM.inClusterExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("innovative", SkolkovoLM.innovativeExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("innovativeComment", SkolkovoLM.innovativeCommentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("foreign", SkolkovoLM.foreignExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("competent", SkolkovoLM.competentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("complete", SkolkovoLM.completeExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("completeComment", SkolkovoLM.completeCommentExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
 
-                q.properties.put("competitive", SkolkovoLM.competitiveAdvantagesExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("competitiveComment", SkolkovoLM.commentCompetitiveAdvantagesExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("commercialPotential", SkolkovoLM.commercePotentialExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("commercialPotentialComment", SkolkovoLM.commentCommercePotentialExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("implement", SkolkovoLM.canBeImplementedExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("implementComment", SkolkovoLM.commentCanBeImplementedExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("expertise", SkolkovoLM.haveExpertiseExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("expertiseComment", SkolkovoLM.commentHaveExpertiseExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("internationalExperience", SkolkovoLM.internationalExperienceExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("internationalExperienceComment", SkolkovoLM.commentInternationalExperienceExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("enoughDocuments", SkolkovoLM.enoughDocumentsExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("enoughDocumentsComment", SkolkovoLM.commentEnoughDocumentsExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("competitive", SkolkovoLM.competitiveAdvantagesExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("competitiveComment", SkolkovoLM.commentCompetitiveAdvantagesExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("commercialPotential", SkolkovoLM.commercePotentialExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("commercialPotentialComment", SkolkovoLM.commentCommercePotentialExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("implement", SkolkovoLM.canBeImplementedExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("implementComment", SkolkovoLM.commentCanBeImplementedExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("expertise", SkolkovoLM.haveExpertiseExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("expertiseComment", SkolkovoLM.commentHaveExpertiseExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("internationalExperience", SkolkovoLM.internationalExperienceExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("internationalExperienceComment", SkolkovoLM.commentInternationalExperienceExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("enoughDocuments", SkolkovoLM.enoughDocumentsExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("enoughDocumentsComment", SkolkovoLM.commentEnoughDocumentsExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
 
-                q.properties.put("vResult", SkolkovoLM.voteResultExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("openedVote", SkolkovoLM.openedVote.getExpr(session.getModifier(), voteExpr));
-                q.properties.put("date", SkolkovoLM.dateExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
-                q.properties.put("voteStartDate", SkolkovoLM.dateStartVote.getExpr(session.getModifier(), voteExpr));
-                q.properties.put("voteEndDate", SkolkovoLM.dateEndVote.getExpr(session.getModifier(), voteExpr));
-                q.properties.put("expertIP", SkolkovoLM.ipExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("vResult", SkolkovoLM.voteResultExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("openedVote", SkolkovoLM.openedVote.getExpr(session.getModifier(), voteExpr));
+                q.addProperty("date", SkolkovoLM.dateExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
+                q.addProperty("voteStartDate", SkolkovoLM.dateStartVote.getExpr(session.getModifier(), voteExpr));
+                q.addProperty("voteEndDate", SkolkovoLM.dateEndVote.getExpr(session.getModifier(), voteExpr));
+                q.addProperty("expertIP", SkolkovoLM.ipExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values =
-                        q.execute(session.sql, new OrderedMap<String, Boolean>(Collections.singletonList("voteStartDate"), false));
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values =
+                        q.execute(session.sql, MapFact.singletonOrder("voteStartDate", false));
                 profileInfo.voteInfos = new VoteInfo[values.size()];
 
-                int i = 0;
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    Map<String, Object> propValues = entry.getValue();
+                for (int i=0,size=values.size();i<size;i++) {
+                    ImMap<String, Object> propValues = values.getValue(i);
 
                     VoteInfo voteInfo = new VoteInfo();
 
-                    int voteId = (Integer)entry.getKey().get("vote");
+                    int voteId = (Integer)values.getKey(i).get("vote");
                     voteInfo.voteId = voteId;
                     voteInfo.linkHash = BaseUtils.encode(voteId, expertId);
                     voteInfo.projectName = (String) propValues.get("projectName");
@@ -328,7 +333,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.voteEndDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteEndDate"));
                     voteInfo.expertIP = (String) propValues.get("expertIP");
 
-                    profileInfo.voteInfos[i++] = correctVoteInfo(voteInfo);
+                    profileInfo.voteInfos[i] = correctVoteInfo(voteInfo);
                 }
 
                 profileInfo.scientific = SkolkovoLM.isScientificExpert.read(session, expertObj) != null;
@@ -342,27 +347,26 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 profileInfo.expertise = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
                 profileInfo.grant = SkolkovoLM.grantExpert.read(session, expertObj) != null;
 
-                keys = KeyExpr.getMapKeys(asList("exp", "foresight"));
+                keys = KeyExpr.getMapKeys(SetFact.toExclSet("exp", "foresight"));
                 expertExpr = keys.get("exp");
                 Expr foresightExpr = keys.get("foresight");
 
-                q = new Query<String, String>(keys);
+                q = new QueryBuilder<String, String>(keys);
                 q.and(SkolkovoLM.clusterInExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
-                q.properties.put("id", foresightExpr);
-                q.properties.put("sID", SkolkovoLM.sidForesight.getExpr(session.getModifier(), foresightExpr));
-                q.properties.put("nameCluster", isForeign ? SkolkovoLM.nameForeignClusterForesight.getExpr(session.getModifier(), foresightExpr) : SkolkovoLM.nameNativeClusterForesight.getExpr(session.getModifier(), foresightExpr));
-                q.properties.put("name", isForeign ? SkolkovoLM.nameForeign.getExpr(session.getModifier(), foresightExpr) : SkolkovoLM.nameNative.getExpr(session.getModifier(), foresightExpr));
-                q.properties.put("selected", SkolkovoLM.inExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr));
-                q.properties.put("comment", SkolkovoLM.commentExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr));
+                q.addProperty("id", foresightExpr);
+                q.addProperty("sID", SkolkovoLM.sidForesight.getExpr(session.getModifier(), foresightExpr));
+                q.addProperty("nameCluster", isForeign ? SkolkovoLM.nameForeignClusterForesight.getExpr(session.getModifier(), foresightExpr) : SkolkovoLM.nameNativeClusterForesight.getExpr(session.getModifier(), foresightExpr));
+                q.addProperty("name", isForeign ? SkolkovoLM.nameForeign.getExpr(session.getModifier(), foresightExpr) : SkolkovoLM.nameNative.getExpr(session.getModifier(), foresightExpr));
+                q.addProperty("selected", SkolkovoLM.inExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr));
+                q.addProperty("comment", SkolkovoLM.commentExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr));
 
-                values = q.execute(session.sql, new OrderedMap<String, Boolean>(Arrays.asList("nameCluster", "id"), false));
+                values = q.execute(session.sql, SetFact.toOrderExclSet("nameCluster", "id").toOrderMap(false));
                 profileInfo.foresightInfos = new ForesightInfo[values.size()];
 
-                i = 0;
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    Map<String, Object> propValues = entry.getValue();
+                for (int i=0,size=values.size();i<size;i++) {
+                    ImMap<String, Object> propValues = values.getValue(i);
 
                     ForesightInfo foresightInfo = new ForesightInfo();
 
@@ -373,7 +377,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     foresightInfo.selected = propValues.get("selected") != null;
                     foresightInfo.comment = (String) propValues.get("comment");
 
-                    profileInfo.foresightInfos[i++] = foresightInfo;
+                    profileInfo.foresightInfos[i] = foresightInfo;
                 }
 
                 return profileInfo;

@@ -3,15 +3,20 @@ package platform.server.form.view;
 import platform.base.identity.IdentityObject;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
-import platform.server.form.entity.*;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CustomFormView extends FormView {
 
@@ -62,7 +67,7 @@ public class CustomFormView extends FormView {
 
         List<PropertyDrawEntity> props = form.propertyDraws;
         for (PropertyDrawEntity prop : props) {
-            if (lp.property.getSID().equals(prop.propertyObject.property.getSID()) && new HashSet<ObjectEntity>(prop.propertyObject.mapping.values()).equals(set)) {
+            if (lp.property.getSID().equals(prop.propertyObject.property.getSID()) && prop.propertyObject.mapping.values().toSet().toJavaSet().equals(set)) {
                 propertyEntity = prop;
                 break;
             }

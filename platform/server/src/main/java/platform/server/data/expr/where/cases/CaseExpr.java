@@ -1,23 +1,31 @@
 package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.*;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.SourceJoin;
-import platform.server.data.translator.*;
-import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ClassReader;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Type;
@@ -25,7 +33,9 @@ import platform.server.data.where.Where;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class CaseExpr extends Expr {
 
@@ -104,15 +114,12 @@ public class CaseExpr extends Expr {
     }
 
     protected CaseExpr translate(MapTranslate translator) {
-        ExprCaseList translatedCases = new ExprCaseList();
-        for(ExprCase exprCase : cases)
-            translatedCases.add(new ExprCase(exprCase.where.translateOuter(translator),exprCase.data.translateOuter(translator)));
-        return new CaseExpr(translatedCases);        
+        return new CaseExpr(cases.translateOuter(translator));
     }
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        ExprCaseList translatedCases = new ExprCaseList();
+        MExprCaseList translatedCases = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
             translatedCases.add(exprCase.where.translateQuery(translator),exprCase.data.translateQuery(translator));
         return translatedCases.getFinal();
@@ -121,49 +128,22 @@ public class CaseExpr extends Expr {
     public Expr followFalse(Where where, boolean pack) {
         if(where.isFalse() && !pack) return this;
 
-        return new ExprCaseList(where, cases, pack).getFinal();
+        MExprCaseList mCases = new MExprCaseList(where, pack, cases.exclusive);
+        for(ExprCase exprCase : cases)
+            mCases.add(exprCase.where, exprCase.data);
+        return mCases.getFinal();
     }
 
-    static private <K> void recPullCases(ListIterator<Map.Entry<K, ? extends Expr>> ic, MapCase<K> current, Where currentWhere, MapCaseList<K> result) {
-
-        if(currentWhere.isFalse())
-            return;
-
-        if(!ic.hasNext()) {
-            result.add(current.where,new HashMap<K, BaseExpr>(current.data));
-            return;
-        }
-
-        Map.Entry<K,? extends Expr> mapExpr = ic.next();
-
-        for(ExprCase exprCase : mapExpr.getValue().getCases()) {
-            Where prevWhere = current.where;
-            current.where = current.where.and(exprCase.where);
-            current.data.put(mapExpr.getKey(),exprCase.data);
-            recPullCases(ic,current,currentWhere.and(exprCase.data.getWhere()),result);
-            current.data.remove(mapExpr.getKey());
-            current.where = prevWhere;
-        }
-
-        ic.previous();
-    }
-
-    public static <K> MapCaseList<K> pullCases(Map<K, ? extends Expr> mapExprs) {
-        MapCaseList<K> result = new MapCaseList<K>();
-        recPullCases(new ArrayList<Map.Entry<K,? extends Expr>>(mapExprs.entrySet()).listIterator(),new MapCase<K>(),Where.TRUE,result);
-        return result;
-    }
-
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        QuickSet<OuterContext> result = new QuickSet<OuterContext>();
+    public ImSet<OuterContext> calculateOuterDepends() {
+        MSet<OuterContext> result = SetFact.mSet();
         for(ExprCase exprCase : cases) {
-            result.addAll(exprCase.where.getOuterDepends());
-            result.addAll(exprCase.data.getOuterDepends());
+            result.add(exprCase.where);
+            result.add(exprCase.data);
         }
-        return result;
+        return result.immutable();
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         // здесь по-хорошему надо andNot(верхних) но будет тормозить
         for(ExprCase exprCase : cases) {
             exprCase.where.fillJoinWheres(joins, andWhere);
@@ -171,7 +151,7 @@ public class CaseExpr extends Expr {
         }
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
@@ -185,31 +165,31 @@ public class CaseExpr extends Expr {
     // получение Where'ов
 
     public Where calculateWhere() {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new GetValue<Where, Expr> (){
+            public Where getMapValue(Expr cCase) {
                 return cCase.getWhere();
             }
         });
     }
 
     public Where isClass(final AndClassSet set) {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new GetValue<Where, Expr>(){
+            public Where getMapValue(Expr cCase) {
                 return cCase.isClass(set);
             }
         });
     }
 
     public Where compareBase(final BaseExpr expr, final Compare compareBack) {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>() {
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new GetValue<Where, Expr>() {
+            public Where getMapValue(Expr cCase) {
                 return cCase.compareBase(expr, compareBack);
             }
         });
     }
     public Where compare(final Expr expr, final Compare compare) {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new GetValue<Where, Expr>(){
+            public Where getMapValue(Expr cCase) {
                 return cCase.compare(expr,compare);
             }
         });
@@ -236,24 +216,31 @@ public class CaseExpr extends Expr {
     }*/
 
     public Expr classExpr(BaseClass baseClass) {
-        ExprCaseList result = new ExprCaseList();
+        MExprCaseList result = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.classExpr(baseClass));
         return result.getFinal();
     }
 
     public Where getBaseWhere() {
-        return BaseUtils.single(cases).where;
+        return cases.get(0).where;
     }
 
+    private int whereDepth = -1;
+    @ManualLazy
     public int getWhereDepth() {
-        throw new RuntimeException("not supported");
+        if(whereDepth<0) {
+            for(ExprCase exprCase : cases)
+                whereDepth = BaseUtils.max(whereDepth, exprCase.data.getWhereDepth());
+            whereDepth = whereDepth + 1;
+        }
+        return whereDepth;
     }
 
     public Set<BaseExpr> getBaseExprs() {
         Set<BaseExpr> result = new HashSet<BaseExpr>();
         for(ExprCase exprCase : cases)
-            result.add(exprCase.data);
+            result.addAll(exprCase.data.getBaseExprs());
         return result;
     }
 

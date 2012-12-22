@@ -1,17 +1,16 @@
 package platform.server.data.query.stat;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.DistinctKeys;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.translator.MapTranslate;
-
-import java.util.Map;
-import java.util.Set;
 
 public class StatKeys<K> extends TwinImmutableObject {
 
@@ -19,19 +18,17 @@ public class StatKeys<K> extends TwinImmutableObject {
 
     public final DistinctKeys<K> distinct;
 
-    public StatKeys(Iterable<K> allKeys) {
+    public StatKeys(ImSet<K> allKeys) {
         this(allKeys, Stat.MIN);
     }
 
-    public QuickSet<K> getKeys() {
-        return distinct.keyQuickSet();
+    public ImSet<K> getKeys() {
+        return distinct.keys();
     }
 
-    public StatKeys(Iterable<K> allKeys, Stat stat) {
+    public StatKeys(ImSet<K> allKeys, Stat stat) {
         rows = stat;
-        distinct = new DistinctKeys<K>();
-        for(K key : allKeys)
-            distinct.add(key, stat);
+        distinct = new DistinctKeys<K>(allKeys.toMap(stat));
     }
 
     public StatKeys(Stat rows, DistinctKeys<K> distinct) {
@@ -39,11 +36,7 @@ public class StatKeys<K> extends TwinImmutableObject {
         this.distinct = distinct;
     }
 
-    public <T> StatKeys<T> map(Map<K,T> map) {
-        return new StatKeys<T>(rows, distinct.map(map));
-    }
-
-    public <T> StatKeys<T> mapBack(Map<T, K> map) {
+    public <T> StatKeys<T> mapBack(ImMap<T, K> map) {
         return new StatKeys<T>(rows, distinct.mapBack(map));
     }
 
@@ -51,30 +44,33 @@ public class StatKeys<K> extends TwinImmutableObject {
         return new StatKeys<K>(rows.or(stat.rows), distinct.or(stat.distinct));
     }
 
-    public StatKeys<K> and(StatKeys<K> stat) { // assert что ключи не пересекаются
-        return new StatKeys<K>(rows.mult(stat.rows), distinct.and(stat.distinct));
-    }
-
     public static <K extends Expr> int hashOuter(StatKeys<K> statKeys, HashContext hashContext) {
-        int hash = 0;
-        for(int i=0;i<statKeys.distinct.size;i++)
-            hash += statKeys.distinct.getKey(i).hashOuter(hashContext) ^ statKeys.distinct.getValue(i).hashCode();
-        return hash;
+        return statKeys.rows.hashCode() * 31 + DistinctKeys.hashOuter(statKeys.distinct, hashContext);
     }
 
     public static <K extends Expr> StatKeys<K> translateOuter(StatKeys<K> statKeys, MapTranslate translator) {
-        DistinctKeys<K> transKeys = new DistinctKeys<K>();
-        for(int i=0;i<statKeys.distinct.size;i++)
-            transKeys.add((K) statKeys.distinct.getKey(i).translateOuter(translator), statKeys.distinct.getValue(i));
-        return new StatKeys<K>(statKeys.rows, transKeys);
+        return new StatKeys<K>(statKeys.rows, DistinctKeys.translateOuter(statKeys.distinct, translator));
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return rows.equals(((StatKeys)o).rows) && distinct.equals(((StatKeys)o).distinct);
     }
 
     public int immutableHashCode() {
         return 31 * rows.hashCode() + distinct.hashCode();
+    }
+
+    private final static AddValue<Object, StatKeys<Object>> addOr = new SimpleAddValue<Object, StatKeys<Object>>() {
+        public StatKeys<Object> addValue(Object key, StatKeys<Object> prevValue, StatKeys<Object> newValue) {
+            return prevValue.or(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <M, K> AddValue<M, StatKeys<K>> addOr() {
+        return BaseUtils.immutableCast(addOr);
     }
 }
 

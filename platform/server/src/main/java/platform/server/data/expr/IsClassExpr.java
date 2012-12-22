@@ -1,8 +1,10 @@
 package platform.server.data.expr;
 
-import platform.base.QuickMap;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
@@ -12,7 +14,8 @@ import platform.server.classes.StaticCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Table;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.*;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.InnerJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -76,7 +79,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return compile.getSource(this);
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
     }
 
@@ -86,8 +89,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public InnerJoin<?, ?> getInnerJoin() {
         return getJoinExpr().getInnerJoin();
     }
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(getJoinExpr());
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>singleton(getJoinExpr());
     }
 
     // множественное наследование StaticClassExpr
@@ -107,12 +110,12 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     @Override
-    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
         return StaticClassExpr.getAndClassSet(this, and);
     }
 
     @Override
-    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         return StaticClassExpr.addAndClassSet(this, add);
     }
 

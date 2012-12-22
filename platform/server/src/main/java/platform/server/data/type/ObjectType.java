@@ -1,23 +1,26 @@
 package platform.server.data.type;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
-import platform.base.BaseUtils;
-import platform.server.classes.*;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.IntegerClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.List;
-import java.util.Map;
 
 public class ObjectType extends AbstractType<Integer> {
 
@@ -93,16 +96,16 @@ public class ObjectType extends AbstractType<Integer> {
         return getDataClass(idobject, session, baseClass); 
     }
 
-    public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
-        query.properties.put(expr,expr.classExpr(baseClass));
+    public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
+        exprs.add(expr);
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
+    public ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         return baseClass.findConcreteClassID((Integer) classes.get(expr));
     }
 
-    public List<AndClassSet> getUniversal(BaseClass baseClass) {
-        return BaseUtils.<AndClassSet>toList(baseClass.getUpSet(),baseClass.unknown);
+    public ImList<AndClassSet> getUniversal(BaseClass baseClass) {
+        return SetFact.<AndClassSet>toOrderExclSet(baseClass.getUpSet(), baseClass.unknown);
     }
 
     public int getBinaryLength(boolean charBinary) {

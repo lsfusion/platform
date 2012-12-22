@@ -1,5 +1,6 @@
 package tmc.integration.exp;
 
+import platform.base.col.MapFact;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.LogicalClass;
 import platform.server.form.instance.*;
@@ -28,6 +29,6 @@ public class NewSaleExportTask extends AbstractSaleExportTask {
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
         formInstance.executeEditAction(formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported), ServerResponse.GROUP_CHANGE,
-                new HashMap<ObjectInstance, DataObject>(), new DataObject(true, LogicalClass.instance), null, true);
+                MapFact.<ObjectInstance, DataObject>EMPTY(), new DataObject(true, LogicalClass.instance), null, true);
     }
 }

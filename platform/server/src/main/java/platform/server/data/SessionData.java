@@ -1,18 +1,23 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.Result;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.Settings;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
-import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
@@ -22,21 +27,27 @@ import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.*;
 
 public abstract class SessionData<T extends SessionData<T>> extends AbstractValuesContext<T> {
 
-    public abstract List<KeyField> getKeys();
-    public abstract Set<PropertyField> getProperties();
+    public ImSet<KeyField> getKeys() {
+        return getOrderKeys().getSet();
+    }
+    public abstract ImOrderSet<KeyField> getOrderKeys();
+    public abstract ImSet<PropertyField> getProperties();
 
-    public abstract Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement);
+    public ImRevMap<KeyField, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(getKeys());
+    }
+
+    public abstract Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement);
 
     public abstract void drop(SQLSession session, Object owner) throws SQLException;
     public abstract void rollDrop(SQLSession session, Object owner) throws SQLException;
 
     public abstract boolean used(IQuery<?, ?> query);
 
-    public abstract SessionData modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException;
+    public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException;
 
 
     public abstract void out(SQLSession session) throws SQLException;
@@ -52,13 +63,13 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     private interface ResultSingleValues<R> {
         
         R empty();
-        R singleRow(Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues) throws SQLException;
+        R singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) throws SQLException;
     }
-    private static <R> R readSingleValues(SQLSession session, BaseClass baseClass, QueryEnvironment env, IQuery<KeyField, PropertyField> query, Result<IQuery<KeyField, PropertyField>> pullQuery, Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues, ResultSingleValues<R> resultRead) throws SQLException {
+    private static <R> R readSingleValues(SQLSession session, BaseClass baseClass, QueryEnvironment env, IQuery<KeyField, PropertyField> query, Result<IQuery<KeyField, PropertyField>> pullQuery, Result<ImMap<KeyField, DataObject>> keyValues, Result<ImMap<PropertyField, ObjectValue>> propValues, ResultSingleValues<R> resultRead) throws SQLException {
         IQuery.PullValues<KeyField, PropertyField> pullValues = query.pullValues();
         query = pullValues.query;
-        Map<KeyField, Expr> keyExprValues = pullValues.pullKeys;
-        Map<PropertyField, Expr> propExprValues = pullValues.pullProps;
+        ImMap<KeyField, Expr> keyExprValues = pullValues.pullKeys;
+        ImMap<PropertyField, Expr> propExprValues = pullValues.pullProps;
 
         if(query.isEmpty()) // оптимизация
             return resultRead.empty();
@@ -66,41 +77,39 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         assert ((AbstractWhere)query.getWhere()).isValue() == query.getMapKeys().isEmpty();
         boolean singleQuery = query.getMapKeys().isEmpty();
 
-        Map<Object, Expr> readValues = new HashMap<Object, Expr>();
-        readValues.putAll(keyExprValues); // keys
-        readValues.putAll(propExprValues); // properties
-        if(singleQuery) // where
-            readValues.put("single", ValueExpr.get(query.getWhere()));
-
-        Map<Object, ObjectValue> readedValues = Expr.readValues(session, baseClass, readValues, env);
-
-        for(KeyField keyValue : keyExprValues.keySet()) { // keys
-            ObjectValue readedKeyValue = readedValues.get(keyValue);
-            if(readedKeyValue instanceof DataObject)
-                keyValues.put(keyValue, (DataObject) readedKeyValue);
-            else
-                return resultRead.empty(); // если null в ключах можно валить
-        }
-        for(PropertyField propValue : propExprValues.keySet()) // properties
-            propValues.put(propValue, readedValues.get(propValue));
+        ImMap<Object, Expr> readValues = MapFact.<Object, Expr>addExcl(keyExprValues, propExprValues);
+        Object whereObject = null;
         if(singleQuery) { // where
-            ObjectValue whereValue = readedValues.get("single");
+            whereObject = new Object();
+            readValues = readValues.addExcl(whereObject, ValueExpr.get(query.getWhere()));
+        }
+
+        final ImMap<Object, ObjectValue> readedValues = Expr.readValues(session, baseClass, readValues, env);
+
+        ImMap<KeyField, ObjectValue> keyReadValues = readedValues.filterIncl(keyExprValues.keys());
+        for(ObjectValue keyValue : keyReadValues.valueIt()) // keys
+            if(!(keyValue instanceof DataObject))
+                return resultRead.empty(); 
+        keyValues.set(BaseUtils.<ImMap<KeyField, DataObject>>immutableCast(keyReadValues));
+        propValues.set(readedValues.filterIncl(propExprValues.keys()));
+        if(singleQuery) { // where
+            ObjectValue whereValue = readedValues.get(whereObject);
             if(whereValue.isNull())
                 return resultRead.empty();
             else
-                return resultRead.singleRow(keyValues, propValues);
+                return resultRead.singleRow(keyValues.result, propValues.result);
         }
 
         pullQuery.set(query);
         return null;
     }
 
-    private static SessionData write(final SQLSession session, final List<KeyField> keys, final Set<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, Object owner) throws SQLException {
+    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, Object owner) throws SQLException {
 
         assert properties.equals(query.getProperties());
 
-        Map<KeyField, DataObject> keyValues = new HashMap<KeyField, DataObject>();
-        Map<PropertyField, ObjectValue> propValues = new HashMap<PropertyField, ObjectValue>();
+        Result<ImMap<KeyField, DataObject>> keyValues = new Result<ImMap<KeyField, DataObject>>();
+        Result<ImMap<PropertyField, ObjectValue>> propValues = new Result<ImMap<PropertyField, ObjectValue>>();
 
         if(!Settings.instance.isDisableReadSingleValues()) {
             Result<IQuery<KeyField, PropertyField>> pullQuery = new Result<IQuery<KeyField, PropertyField>>();
@@ -109,8 +118,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                     return new SessionRows(keys, properties);
                 }
 
-                public SessionRows singleRow(Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues) {
-                    return new SessionRows(keys, properties, Collections.singletonMap(keyValues, propValues));
+                public SessionRows singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) {
+                    return new SessionRows(keys, properties, MapFact.singleton(keyValues, propValues));
                 }
             });
             if(singleResult!=null)
@@ -119,7 +128,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         }
 
         final IQuery<KeyField, PropertyField> insertQuery = query;
-        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, query.getMapKeys().keySet()), query.getProperties(), null, new FillTemporaryTable() {
+        SessionTable table = new SessionTable(session, keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 return session.insertSessionSelect(name, insertQuery, env);
             }
@@ -127,35 +136,36 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.instance.isDisableReadSingleValues()) { // чтение singleValues
-                Map<KeyField, Object> actualKeyValues = new HashMap<KeyField, Object>();
-                Map<PropertyField, Object> actualPropValues = new HashMap<PropertyField, Object>();
+                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>();
+                Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues);
-                table = table.removeFields(session, actualKeyValues.keySet(), actualPropValues.keySet(), owner);
-                keyValues.putAll(baseClass.getDataObjects(session, actualKeyValues, Field.<KeyField>typeGetter()));
-                propValues.putAll(baseClass.getObjectValues(session, actualPropValues, Field.<PropertyField>typeGetter()));
+                table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner);
+                keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, Field.<KeyField>typeGetter()).addExcl(keyValues.result));
+                propValues.set(baseClass.getObjectValues(session, actualPropValues.result, Field.<PropertyField>typeGetter()).addExcl(propValues.result));
             }
 
-            return new SessionDataTable(table, keys, keyValues, propValues);
+            return new SessionDataTable(table, keys, keyValues.result, propValues.result);
         } else {
-            OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
+            ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
 
             table.drop(session, owner); // выкидываем таблицу
 
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
-            for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRow : readRows.entrySet())
-                sessionRows = (SessionRows) sessionRows.modifyRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), Modify.ADD, owner);
+            for (int i=0,size=readRows.size();i<size;i++)
+                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner);
             return sessionRows;
         }
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getQueryClasses(IQuery<KeyField, PropertyField> pullQuery) {
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getQueryClasses(final IQuery<KeyField, PropertyField> pullQuery) {
         // читаем классы не считывая данные
-        Map<PropertyField,ClassWhere<Field>> propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField field : pullQuery.getProperties())
-            propertyClasses.put(field,pullQuery.<Field>getClassWhere(Collections.singleton(field)));
-        ClassWhere<KeyField> classes = pullQuery.<KeyField>getClassWhere(new HashSet<PropertyField>());
-        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes, propertyClasses);
+        ImMap<PropertyField,ClassWhere<Field>> propertyClasses = pullQuery.getProperties().mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
+            public ClassWhere<Field> getMapValue(PropertyField value) {
+                return pullQuery.<Field>getClassWhere(SetFact.singleton(value));
+            }});
+        ClassWhere<KeyField> classes = pullQuery.<KeyField>getClassWhere(SetFact.<PropertyField>EMPTY());
+        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses);
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
@@ -163,22 +173,22 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         if(!used)
             drop(session, owner);
 
-        SessionData result = write(session, getKeys(), getProperties(), query, baseClass, env, owner);
+        SessionData result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner);
 
         if(used)
             drop(session, owner);
         return result;
     }
 
-    public SessionData modifyRows(final SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
+    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
         if(!Settings.instance.isDisableReadSingleValues()) {
-            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new HashMap<KeyField, DataObject>(),
-                    new HashMap<PropertyField, ObjectValue>(), new ResultSingleValues<SessionData>() {
+            SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
+                    new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
                 public SessionData empty() {
                     return SessionData.this;
                 }
 
-                public SessionData singleRow(Map<KeyField, DataObject> keyValues, Map<PropertyField, ObjectValue> propValues) throws SQLException {
+                public SessionData singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) throws SQLException {
                     return modifyRecord(session, keyValues, propValues, type, owner);
                 }
             });
@@ -186,40 +196,41 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 return singleResult;
         }
 
-        Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(query.getMapKeys());
-        Join<PropertyField> prevJoin = join(modifyQuery.mapKeys);
+        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(query.getMapKeys());
+        final Join<PropertyField> prevJoin = join(modifyQuery.getMapExprs());
 
-        Where prevWhere = prevJoin.getWhere();
-        Where newWhere = query.getWhere();
+        final Where prevWhere = prevJoin.getWhere();
+        final Where newWhere = query.getWhere();
         modifyQuery.and(type==Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
-        for(PropertyField property : getProperties()) {
-            Expr newExpr = query.getExpr(property);
-            Expr prevExpr = prevJoin.getExpr(property);
-            modifyQuery.properties.put(property, newExpr == null ? prevExpr : (type == Modify.MODIFY || type == Modify.UPDATE ?
-                    newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr)));
-        }
-        return rewrite(session, modifyQuery, baseClass, env, owner);
+        modifyQuery.addProperties(getProperties().mapValues(new GetValue<Expr, PropertyField>() {
+            public Expr getMapValue(PropertyField value) {
+                Expr newExpr = query.getExpr(value);
+                Expr prevExpr = prevJoin.getExpr(value);
+                return newExpr == null ? prevExpr : (type == Modify.MODIFY || type == Modify.UPDATE ?
+                        newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr));
+            }}));
+        return rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);
     }
     public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) throws SQLException;
 
     // "обновляет" ключи в таблице
-    public SessionData rewrite(SQLSession session, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRows, Object owner) throws SQLException {
+    public SessionData rewrite(SQLSession session, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> writeRows, Object owner) throws SQLException {
         drop(session, owner);
 
         if(writeRows.size()> SessionRows.MAX_ROWS)
-            return new SessionDataTable(session, getKeys(), getProperties(), writeRows, owner);
+            return new SessionDataTable(session, getOrderKeys(), getProperties(), writeRows, owner);
         else
-            return new SessionRows(getKeys(), getProperties(), writeRows);
+            return new SessionRows(getOrderKeys(), getProperties(), writeRows);
     }
 
     protected abstract class SessionJoin extends AbstractJoin<PropertyField> {
 
-        protected final Map<KeyField, ? extends Expr> joinImplement;
-        protected SessionJoin(Map<KeyField, ? extends Expr> joinImplement) {
+        protected final ImMap<KeyField, ? extends Expr> joinImplement;
+        protected SessionJoin(ImMap<KeyField, ? extends Expr> joinImplement) {
             this.joinImplement = joinImplement;
         }
 
-        public Collection<PropertyField> getProperties() {
+        public ImSet<PropertyField> getProperties() {
             return SessionData.this.getProperties();
         }
 

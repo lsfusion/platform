@@ -7,9 +7,14 @@ import com.lowagie.text.pdf.PdfCopyFields;
 import com.lowagie.text.pdf.PdfReader;
 import jasperapi.PdfUtils;
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
-import platform.base.IOUtils;
-import platform.base.OrderedMap;
+import platform.base.*;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
@@ -26,6 +31,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
@@ -4970,11 +4976,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objTypeMileStone = addSingleGroupObject(12, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
             PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
-            count.columnGroupObjects.add(objMileStone.groupTo);
+            count.addColumnGroupObject(objMileStone.groupTo);
             count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
-            count1.columnGroupObjects.add(objMileStone.groupTo);
+            count1.addColumnGroupObject(objMileStone.groupTo);
             count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             addObjectActions(this, objTypeMileStone);
@@ -5553,17 +5559,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 codeForesight = codeForesightObject.toString().trim();
 
             LCP<PropertyInterface> isForesight = (LCP<PropertyInterface>) is(foresight);
-            Map<PropertyInterface, KeyExpr> keys = isForesight.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-            query.properties.put("sidForesight", sidForesight.getExpr(BaseUtils.singleValue(keys)));
+            ImRevMap<PropertyInterface, KeyExpr> keys = isForesight.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+            query.addProperty("sidForesight", sidForesight.getExpr(keys.singleValue()));
             query.and(isForesight.property.getExpr(keys).getWhere());
             query.and(clusterForesight.getExpr(context.getModifier(), key).compare(clusterObject.getExpr(), Compare.EQUALS));
-            OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
-            for (Map.Entry<Map<PropertyInterface, Object>, Map<Object, Object>> rows : result.entrySet()) {
-                DataObject foresightNewObject = new DataObject(rows.getKey().get(((OrderedMap) keys).getKey(0)), foresight);
-                if (rows.getValue().get("sidForesight").toString().startsWith(codeForesight) && (!"".equals(codeForesight)))
+            for (int i=0,size=result.size();i<size;i++) {
+                DataObject foresightNewObject = new DataObject(result.getKey(i).get(keys.getKey(0)), foresight);
+                if (result.getValue(i).get("sidForesight").toString().startsWith(codeForesight) && (!"".equals(codeForesight)))
                     inProjectForesight.change(valueInProjectForesight, context, projectObject, foresightNewObject);
             }
         }
@@ -6378,7 +6384,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(2, "expert", expert, baseLM.selection, disableExpert, nameNativeShortClusterExpert, baseLM.userFirstName, baseLM.userLastName, sidExpert, BL.emailLM.emailContact);
 
             PropertyDrawEntity quantity = addPropertyDraw(quantityNewExpertWeek, objExpert, objWeek);
-            quantity.columnGroupObjects.add(objWeek.groupTo);
+            quantity.addColumnGroupObject(objWeek.groupTo);
             quantity.propertyCaption = addPropertyObject(baseLM.objectValue.getLP(IntegerClass.instance), objWeek);
 
             addPropertyDraw(objExpert, quantityTotalExpert);
@@ -7413,7 +7419,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProjectAction = addSingleGroupObject(5, "projectAction", projectAction, "Тип заявки", baseLM.name);
 
             PropertyDrawEntity count = addPropertyDraw(applicationsSubmitProjectActionClusterDateDate, objProjectAction, objCluster, objDateFrom, objDateTo);
-            count.columnGroupObjects.add(objCluster.groupTo);
+            count.addColumnGroupObject(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             count.propertyFooter = addPropertyObject(applicationsSubmitClusterDateDate, objCluster, objDateFrom, objDateTo);
 
@@ -7424,7 +7430,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProjectStatus = addSingleGroupObject(6, "projectStatus", projectStatus, "Статус заявки", baseLM.name, oficialNameProjectStatus);
 
             PropertyDrawEntity count1 = addPropertyDraw(applicationsSubmitStatusApplicationClusterDateDate, objProjectStatus, objCluster, objDateFrom, objDateTo);
-            count1.columnGroupObjects.add(objCluster.groupTo);
+            count1.addColumnGroupObject(objCluster.groupTo);
             count1.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             count1.propertyFooter = addPropertyObject(applicationsSubmitClusterDateDate, objCluster, objDateFrom, objDateTo);
 
@@ -7449,7 +7455,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objTypeProjectStatus = addSingleGroupObject(3, "typeProjectStatus", typeProjectStatus, "Тип статуса проекта", baseLM.name);
 
             PropertyDrawEntity count = addPropertyDraw(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
-            count.columnGroupObjects.add(objCluster.groupTo);
+            count.addColumnGroupObject(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             count.propertyFooter = addPropertyObject(sumApplicationsCluster, objCluster);
 
@@ -7458,13 +7464,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objTypeProjectStatus, percentApplicationsTypeProjectStatus);
 
             PropertyDrawEntity count2 = addPropertyDraw(percentSumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
-            count2.columnGroupObjects.add(objCluster.groupTo);
+            count2.addColumnGroupObject(objCluster.groupTo);
             count2.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
 
             objProjectStatus = addSingleGroupObject(2, "projectStatus", projectStatus, "Статус заявки", baseLM.name, oficialNameProjectStatus);
 
             PropertyDrawEntity count1 = addPropertyDraw(sumApplicationsStatusApplicationCluster, objProjectStatus, objCluster);
-            count1.columnGroupObjects.add(objCluster.groupTo);
+            count1.addColumnGroupObject(objCluster.groupTo);
             count1.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             addPropertyDraw(objProjectStatus, nonClusterApplicationsStatusApplication, sumApplicationsStatusApplication);
 
@@ -7563,12 +7569,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             DataObject projectObject = context.getKeyValue(projectInterface);
             DataObject documentTemplateObject = context.getKeyValue(documentTemplateInterface);
 
-            Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(documentTemplateDocumentTemplateDetail.getExpr(context.getModifier(), query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
-            query.properties.put("documentType", typeDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
-            query.properties.put("languageDocument", languageDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
+            QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("key"));
+            query.and(documentTemplateDocumentTemplateDetail.getExpr(context.getModifier(), query.getMapExprs().get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
+            query.addProperty("documentType", typeDocument.getExpr(context.getModifier(), query.getMapExprs().get("key")));
+            query.addProperty("languageDocument", languageDocument.getExpr(context.getModifier(), query.getMapExprs().get("key")));
 
-            for (Map<String, Object> row : query.execute(context).values()) {
+            for (ImMap<String, Object> row : query.execute(context).valueIt()) {
                 DataObject documentObject = context.addObject(document);
                 projectDocument.change(projectObject.getValue(), context, documentObject);
                 typeDocument.change(row.get("documentType"), context, documentObject);
@@ -7662,15 +7668,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             List<String> expertSIDList = new ArrayList<String>();
 
-            LCP isExpert = is(expert);
-            Map<Object, KeyExpr> keys = isExpert.getMapKeys();
-            KeyExpr key = BaseUtils.singleValue(keys);
-            Query<Object, Object> query = new Query<Object, Object>(keys);
-            query.properties.put("sidExpert", sidExpert.getExpr(context.getModifier(), key));
+            LCP<?> isExpert = is(expert);
+            ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isExpert.getMapKeys();
+            KeyExpr key = keys.singleValue();
+            QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+            query.addProperty("sidExpert", sidExpert.getExpr(context.getModifier(), key));
             query.and(isExpert.getExpr(key).getWhere());
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
-            for (Map<Object, Object> values : result.values()) {
+            for (ImMap<Object, Object> values : result.valueIt()) {
                 if (values.get("sidExpert") != null)
                     expertSIDList.add(values.get("sidExpert").toString());
             }
@@ -7679,18 +7685,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             KeyExpr expertExpr = new KeyExpr("expert");
             KeyExpr clusterExpr = new KeyExpr("cluster");
-            Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
-            newKeys.put("expert", expertExpr);
-            newKeys.put("cluster", clusterExpr);
+            ImRevMap<Object, KeyExpr> newKeys = MapFact.toRevMap((Object)"expert", expertExpr, "cluster", clusterExpr);
 
-            query = new Query<Object, Object>(newKeys);
-            query.properties.put(sidCluster, sidCluster.getExpr(context.getModifier(), clusterExpr));
+            query = new QueryBuilder<Object, Object>(newKeys);
+            query.addProperty(sidCluster, sidCluster.getExpr(context.getModifier(), clusterExpr));
             query.and(inClusterExpert.getExpr(context.getModifier(), clusterExpr, expertExpr).getWhere());
             query.and(expertExpr.compare(expertObject, Compare.EQUALS));
             result = query.execute(context.getSession().sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
-                DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), cluster);
+            for (ImMap<Object, Object> rows : result.keyIt()) {
+                DataObject clusterObject = new DataObject(rows.get("cluster"), cluster);
                 Object clusterSID = sidCluster.read(context, clusterObject);
                 if (clusterSID != null)
                     prefix = clusterSID.toString();
@@ -7775,21 +7779,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     languageDocument.change(language.getID("english"), context, documentObject);
                 }
 
-                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("nonRussianSpecialist"));
+                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.getMapExprs().get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                query.addProperty("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.getMapExprs().get("nonRussianSpecialist")));
+                query.addProperty("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.getMapExprs().get("nonRussianSpecialist")));
+                query.addProperty("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.getMapExprs().get("nonRussianSpecialist")));
                 int countForeign = 1;
                 int countNative = 1;
-                int size = query.executeClasses(context).entrySet().size();
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
-                    row.getKey().get("nonRussianSpecialist");
-                    row.getValue().get("fullNameNonRussianSpecialist");
-                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
-                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
+                ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> queryResult = query.executeClasses(context);
+                int size = queryResult.size();
+                for (int i=0;i<size;i++) {
+                    queryResult.getKey(i).get("nonRussianSpecialist");
+                    ImMap<String, ObjectValue> queryValue = queryResult.getValue(i);
+                    queryValue.get("fullNameNonRussianSpecialist");
+                    queryValue.get("fileForeignResumeNonRussianSpecialist");
+                    queryValue.get("fileNativeResumeNonRussianSpecialist");
 
-                    file = row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue();
+                    file = queryValue.get("fileForeignResumeNonRussianSpecialist").getValue();
                     if (file != null) {
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
@@ -7801,7 +7807,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         countForeign++;
                     }
 
-                    file = row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue();
+                    file = queryValue.get("fileNativeResumeNonRussianSpecialist").getValue();
                     if (file != null) {
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
@@ -8060,37 +8066,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
             boolean r2Foresight = r2 && !allExperts;
 
             // считываем всех экспертов, которые уже голосовали по проекту
-            Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+            QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("key"));
+            query.and(doneProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")).getWhere());
             query.and(currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()).compare( // смотрим чтобы голосование было из того же кластера
-                      clusterVotedProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")), Compare.EQUALS));
-            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
-            query.properties.put("vote", voteProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")));
-            query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
+                      clusterVotedProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")), Compare.EQUALS));
+            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.getMapExprs().get("key")).getWhere());
+            query.addProperty("vote", voteProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")));
+            query.addProperty("business", isBusinessExpert.getExpr(context.getModifier(), query.getMapExprs().get("key")));
 //            query.properties.put("technical", isTechnicalExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
             int previousBusiness = 0;
 //            int previousTechnical = 0;
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
-                if (!row.getValue().get("business").isNull())
+            ImOrderMap<ImMap<String,DataObject>,ImMap<String,ObjectValue>> queryResult = query.executeClasses(context);
+            for (int i=0,size=queryResult.size();i<size;i++) {
+                ImMap<String, ObjectValue> queryValue = queryResult.getValue(i);
+                if (!queryValue.get("business").isNull())
                     previousBusiness++;
-                previousResults.put(row.getKey().get("key"), (DataObject) row.getValue().get("vote"));
+                previousResults.put(queryResult.getKey(i).get("key"), (DataObject) queryValue.get("vote"));
             }
 
             // считываем всех неголосовавших экспертов из этого кластера
-            query = new Query<String, String>(Collections.singleton("key"));
-            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
-            query.and(disableExpert.getExpr(context.getModifier(), query.mapKeys.get("key")).getWhere().not());
-            query.and(voteResultProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
-            query.properties.put("technical", isTechnicalExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
-            query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
+            query = new QueryBuilder<String, String>(SetFact.singleton("key"));
+            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.getMapExprs().get("key")).getWhere());
+            query.and(disableExpert.getExpr(context.getModifier(), query.getMapExprs().get("key")).getWhere().not());
+            query.and(voteResultProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")).getWhere().not());
+            query.addProperty("technical", isTechnicalExpert.getExpr(context.getModifier(), query.getMapExprs().get("key")));
+            query.addProperty("business", isBusinessExpert.getExpr(context.getModifier(), query.getMapExprs().get("key")));
 
             if (r2Foresight) {
-                query.and(quantityForesightProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+                query.and(quantityForesightProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")).getWhere());
             }
 
-            query.properties.put("in", inProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")));
+            query.addProperty("in", inProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.getMapExprs().get("key")));
 
             // получаем два списка - один, которые уже назначались на проект, другой - которые нет
             java.util.List<DataObject> expertNew = new ArrayList<DataObject>();
@@ -8102,13 +8110,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.util.List<DataObject> expertVotedBusiness = new ArrayList<DataObject>();
             java.util.List<DataObject> expertVotedTechnical = new ArrayList<DataObject>();
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
-                DataObject objExpert = row.getKey().get("key");
+            queryResult = query.executeClasses(context);
+            for (int i=0,size=queryResult.size();i<size;i++) {
+                DataObject objExpert = queryResult.getKey(i).get("key");
+                ImMap<String, ObjectValue> queryValue = queryResult.getValue(i);
 
-                boolean business = row.getValue().get("business").getValue() != null;
-                boolean technical = row.getValue().get("technical").getValue() != null;
+                boolean business = queryValue.get("business").getValue() != null;
+                boolean technical = queryValue.get("technical").getValue() != null;
 
-                if (row.getValue().get("in").getValue() != null) {// эксперт уже голосовал
+                if (queryValue.get("in").getValue() != null) {// эксперт уже голосовал
                     expertVoted.add(objExpert);
                     if (r2) {
                         if (business)
@@ -8210,7 +8220,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public PropsNewSession aspectChangeExtProps() {
+        public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
             return getChangeProps((CalcProperty)projectVote.property, (CalcProperty)inExpertVote.property);
         }
     }
@@ -8232,31 +8242,32 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(context, voteObject);
 
             DataObject projectObject = new DataObject(projectVote.read(context, voteObject), project);
-            Query<String, String> voteQuery = new Query<String, String>(Collections.singleton("vote"));
-            voteQuery.and(projectVote.getExpr(context.getModifier(), voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
-            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(context.getModifier(), voteQuery.mapKeys.get("vote")));
+            QueryBuilder<String, String> voteQuery = new QueryBuilder<String, String>(SetFact.singleton("vote"));
+            voteQuery.and(projectVote.getExpr(context.getModifier(), voteQuery.getMapExprs().get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
+            voteQuery.addProperty("dateStartVote", dateStartVote.getExpr(context.getModifier(), voteQuery.getMapExprs().get("vote")));
 
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context).entrySet()) {
-                java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
+            ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> result = voteQuery.executeClasses(context);
+            for (int i=0,size=result.size();i<size;i++) {
+                java.sql.Date dateCur = (java.sql.Date) result.getValue(i).get("dateStartVote").getValue();
                 if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
                     datePrev = dateCur;
-                    votePrevObject = row.getKey().get("vote");
+                    votePrevObject = result.getKey(i).get("vote");
                 }
             }
             if (votePrevObject == null) return;
 
             // считываем всех экспертов, которые уже голосовали по проекту
-            Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneCorExpertVote.getExpr(context.getModifier(), query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
+            QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("key"));
+            query.and(doneCorExpertVote.getExpr(context.getModifier(), query.getMapExprs().get("key"), votePrevObject.getExpr()).getWhere());
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
-            Set<DataObject> experts = new HashSet<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context).entrySet()) {
-                experts.add(row.getKey().get("key"));
-            }
+            ImSet<DataObject> experts = query.executeClasses(context).keys().mapSetValues(new GetValue<DataObject, ImMap<String, DataObject>>() {
+                public DataObject getMapValue(ImMap<String, DataObject> value) {
+                    return value.get("key");
+                }});
 
             // копируем результаты старых заседаний
             for (DataObject expert : experts) {

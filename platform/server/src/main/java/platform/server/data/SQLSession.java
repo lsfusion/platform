@@ -3,12 +3,17 @@ package platform.server.data;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.MutableObject;
-import platform.base.OrderedMap;
 import platform.base.Result;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MOrderExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.*;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
-import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExecuteEnvironment;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
@@ -19,7 +24,11 @@ import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.logics.*;
+import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
@@ -29,6 +38,15 @@ public class SQLSession extends MutableObject {
     private final static Logger logger = Logger.getLogger(SQLSession.class);
 
     public SQLSyntax syntax;
+    
+    private final GetValue<String, Field> getDeclare = new GetValue<String, Field>() {
+        public String getMapValue(Field value) {
+            return value.getDeclare(syntax);
+        }};
+    public <F extends Field> GetValue<String, F> getDeclare() {
+        return (GetValue<String, F>) getDeclare;
+    }
+
     public DataAdapter adapter;
 
     private ConnectionPool connectionPool;
@@ -167,32 +185,26 @@ public class SQLSession extends MutableObject {
         returnConnection(connection);
     }
 
-    public void addExtraIndices(String table, List<KeyField> keys) throws SQLException {
-        List<String> keyStrings = new ArrayList<String>();
-        for(KeyField key : keys)
-            keyStrings.add(key.name);
+    public void addExtraIndices(String table, ImOrderSet<KeyField> keys) throws SQLException {
+        ImOrderSet<String> keyStrings = keys.mapOrderSetValues(Field.<KeyField>nameGetter());
         for(int i=1;i<keys.size();i++)
-            addIndex(table, BaseUtils.toOrderedMap(keyStrings.subList(i, keys.size()), true));
+            addIndex(table, keyStrings.subOrder(i, keys.size()).toOrderMap(true));
     }
 
     private String getConstraintName(String table) {
         return "PK_" + table;
     }
 
-    private String getConstraintDeclare(String table, List<KeyField> keys) {
-        String keyString = "";
-        for (KeyField key : keys)
-            keyString = (keyString.length() == 0 ? "" : keyString + ',') + key.name;
+    private String getConstraintDeclare(String table, ImOrderSet<KeyField> keys) {
+        String keyString = keys.toString(Field.<KeyField>nameGetter(), ",");
         return "CONSTRAINT " + getConstraintName(table) + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
 
-    public void createTable(String table, List<KeyField> keys) throws SQLException {
+    public void createTable(String table, ImOrderSet<KeyField> keys) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.table.creation") + " " + table + "... ");
         if (keys.size() == 0)
-            keys = Collections.singletonList(KeyField.dumb);
-        String createString = "";
-        for (KeyField key : keys)
-            createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
+            keys = SetFact.singletonOrder(KeyField.dumb);
+        String createString = keys.toString(this.<KeyField>getDeclare(), ",");
         createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
@@ -213,44 +225,37 @@ public class SQLSession extends MutableObject {
         logger.info(" Done");
     }
 
-    static String getIndexName(String table, OrderedMap<String, Boolean> fields) {
-        String name = table;
-        for (String indexField : fields.keySet())
-            name = name + "_" + indexField;
-        name += "_idx";
-        return name;
+    static String getIndexName(String table, ImOrderMap<String, Boolean> fields) {
+        return table + "_" + fields.keys().toString("_") + "_idx";
     }
 
-    private OrderedMap<String, Boolean> getOrderFields(List<KeyField> keyFields, List<String> fields, boolean order) {
-        OrderedMap<String, Boolean> result = new OrderedMap<String, Boolean>();
-        for (String element : fields)
-            result.put(element, false);
-        if(order) {
-            for(KeyField key : keyFields)
-                result.put(key.name, true);
-        }
+    private ImOrderMap<String, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) {
+        ImOrderMap<String, Boolean> result = fields.toOrderMap(false);
+        if(order)
+            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter()).toOrderMap(true));
         return result;
     }
     
-    public void addIndex(String table, List<KeyField> keyFields, List<String> fields, boolean order) throws SQLException {
+    public void addIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
         addIndex(table, getOrderFields(keyFields, fields, order));
     }
 
-    public void addIndex(String table, OrderedMap<String, Boolean> fields) throws SQLException {
+    public void addIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.index.creation") + " " + getIndexName(table, fields) + "... ");
-        String columns = "";
-        for (Map.Entry<String, Boolean> indexField : fields.entrySet())
-            columns = (columns.length() == 0 ? "" : columns + ",") + indexField.getKey() + " ASC" + (indexField.getValue()?"":" NULLS FIRST");
+        String columns = fields.toString(new GetKeyValue<String, String, Boolean>() {
+            public String getMapValue(String key, Boolean value) {
+                return key + " ASC" + (value?"":" NULLS FIRST");
+            }}, ",");
 
         executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
         logger.info(" Done");
     }
 
-    public void dropIndex(String table, List<KeyField> keyFields, List<String> fields, boolean order) throws SQLException {
+    public void dropIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
         dropIndex(table, getOrderFields(keyFields, fields, order));
     }
     
-    public void dropIndex(String table, OrderedMap<String, Boolean> fields) throws SQLException {
+    public void dropIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.index.deletion") + " " + getIndexName(table, fields) + "... ");
         executeDDL("DROP INDEX " + getIndexName(table, fields));
         logger.info(" Done");
@@ -309,9 +314,10 @@ public class SQLSession extends MutableObject {
 
     public void packTable(Table table) throws SQLException {
         logger.info(ServerResourceBundle.getString("data.table.packing")+" " + table + "... ");
-        String dropWhere = "";
-        for (PropertyField property : table.properties)
-            dropWhere = (dropWhere.length() == 0 ? "" : dropWhere + " AND ") + property.name + " IS NULL";
+        String dropWhere = table.properties.toString(new GetValue<String, PropertyField>() {
+            public String getMapValue(PropertyField value) {
+                return value.name + " IS NULL";
+            }}, " AND ");
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere));
         logger.info(" Done");
     }
@@ -321,12 +327,12 @@ public class SQLSession extends MutableObject {
         return temporaryPool;
     }
 
-    private final Map<String, WeakReference<Object>> sessionTablesMap = new HashMap<String, WeakReference<Object>>();
+    private final Map<String, WeakReference<Object>> sessionTablesMap = MapFact.mAddRemoveMap();
     private int sessionCounter = 0;
 
-    private final Set<String> transactionTables = new HashSet<String>();
+    private final Set<String> transactionTables = SetFact.mAddRemoveSet();
 
-    public String getTemporaryTable(List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
+    public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
         needPrivate();
 
         removeUnusedTemporaryTables();
@@ -383,14 +389,10 @@ public class SQLSession extends MutableObject {
         executeDDL(syntax.getDropSessionTable(tableName), ExecuteEnvironment.NOREADONLY);
     }
 
-    public void createTemporaryTable(String name, List<KeyField> keys, Collection<PropertyField> properties) throws SQLException {
-        String createString = "";
+    public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) throws SQLException {
         if(keys.size()==0)
-            keys = Collections.singletonList(KeyField.dumb);
-        for (KeyField key : keys)
-            createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-        for (PropertyField prop : properties)
-            createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
+            keys = SetFact.singletonOrder(KeyField.dumb);
+        String createString = SetFact.addExcl(keys.getSet(), properties).toString(this.<Field>getDeclare(), ",");
         createString = createString + "," + getConstraintDeclare(name, keys);
         executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
@@ -465,7 +467,7 @@ public class SQLSession extends MutableObject {
     }
 
     @Message("message.sql.execute")
-    private int executeDML(@ParamMessage String command, Map<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
+    private int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
         logger.debug(command);
@@ -522,7 +524,7 @@ public class SQLSession extends MutableObject {
     }
 
     @Message("message.sql.execute")
-    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
+    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
         logger.debug(select);
@@ -535,20 +537,18 @@ public class SQLSession extends MutableObject {
         }
 
         PreparedStatement statement = getStatement(select, paramObjects, connection, syntax);
-        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
+        MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
         try {
-            ResultSet result = statement.executeQuery();
+            final ResultSet result = statement.executeQuery();
             try {
                 while(result.next()) {
-                    Map<K,Object> rowKeys = new HashMap<K, Object>();
-                    for(Map.Entry<K,String> key : keyNames.entrySet())
-                        rowKeys.put(key.getKey(), keyReaders.get(key.getKey()).read(result.getObject(key.getValue())));
-                    Map<V,Object> rowProperties = new HashMap<V, Object>();
-                    for(Map.Entry<V,String> property : propertyNames.entrySet())
-                        rowProperties.put(property.getKey(),
-                                propertyReaders.get(property.getKey()).read(result.getObject(property.getValue())));
-                    Map<V, Object> prev = execResult.put(rowKeys, rowProperties);
-                    assert prev==null;
+                    ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
+                    for(int i=0,size=keyNames.size();i<size;i++)
+                        rowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result.getObject(keyNames.getValue(i))));
+                    ImValueMap<V, Object> rowProperties = propertyNames.mapItValues(); // потому как exception есть
+                    for(int i=0,size=propertyNames.size();i<size;i++)
+                        rowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result.getObject(propertyNames.getValue(i))));
+                    mExecResult.exclAdd(rowKeys.immutableValue(), rowProperties.immutableValue());
                 }
             } finally {
                 result.close();
@@ -564,28 +564,20 @@ public class SQLSession extends MutableObject {
             returnConnection(connection);
         }
 
-        return execResult;
+        return mExecResult.immutableOrder();
     }
 
-    public void insertBatchRecords(String table, List<KeyField> keys, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) throws SQLException {
+    public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) throws SQLException {
         Connection connection = getConnection();
 
-        List<PropertyField> properties = new ArrayList<PropertyField>(rows.values().iterator().next().keySet());
+        ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
+        ImOrderSet<Field> fields = SetFact.addOrderExcl(keys, properties);
 
-        String insertString = "";
-        String valueString = "";
-
-        // пробежим по KeyFields'ам
-        for (KeyField key : keys) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + "?";
-        }
-
-        // пробежим по Fields'ам
-        for (PropertyField prop : properties) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + prop.name;
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + "?";
-        }
+        String insertString = fields.toString(Field.nameGetter(), ",");
+        String valueString = fields.toString(new GetStaticValue<String>() {
+            public String getMapValue() {
+                return "?";
+            }}, ",");
 
         if(insertString.length()==0) {
             assert valueString.length()==0;
@@ -596,12 +588,12 @@ public class SQLSession extends MutableObject {
         PreparedStatement statement = connection.prepareStatement("INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")");
 
         try {
-            for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
+            for(int i=0,size=rows.size();i<size;i++) {
                 int p=1;
                 for(KeyField key : keys)
-                    new TypeObject(row.getKey().get(key)).writeParam(statement, p++, syntax);
+                    new TypeObject(rows.getKey(i).get(key)).writeParam(statement, p++, syntax);
                 for(PropertyField property : properties) {
-                    ObjectValue propValue = row.getValue().get(property);
+                    ObjectValue propValue = rows.getValue(i).get(property);
                     if(propValue instanceof NullValue)
                         statement.setNull(p++, property.type.getSQL(syntax));
                     else
@@ -620,34 +612,35 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private void insertParamRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
+    private void insertParamRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
         String insertString = "";
         String valueString = "";
 
         int paramNum = 0;
-        Map<String, ParseInterface> params = new HashMap<String, ParseInterface>();
+        MExclMap<String, ParseInterface> params = MapFact.<String, ParseInterface>mExclMapMax(keyFields.size()+propFields.size());
 
         // пробежим по KeyFields'ам
-        for (KeyField key : table.keys) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
-            DataObject keyValue = keyFields.get(key);
+        for (int i=0,size=keyFields.size();i<size;i++) {
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i);
+            DataObject keyValue = keyFields.getValue(i);
             if (keyValue.isString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.put(prm, new TypeObject(keyValue));
+                params.exclAdd(prm, new TypeObject(keyValue));
             }
         }
 
-        for (Map.Entry<PropertyField, ObjectValue> fieldValue : propFields.entrySet()) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + fieldValue.getKey().name;
-            if (fieldValue.getValue().isString(syntax))
-                valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getValue().getString(syntax);
+        for (int i=0,size=propFields.size();i<size;i++) {
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).name;
+            ObjectValue fieldValue = propFields.getValue(i);
+            if (fieldValue.isString(syntax))
+                valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getString(syntax);
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.put(prm, new TypeObject((DataObject) fieldValue.getValue()));
+                params.exclAdd(prm, new TypeObject((DataObject) fieldValue));
             }
         }
 
@@ -657,20 +650,20 @@ public class SQLSession extends MutableObject {
             valueString = "0";
         }
 
-        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", params, ExecuteEnvironment.EMPTY);
+        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", params.immutable(), ExecuteEnvironment.EMPTY);
     }
 
-    public void insertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
+    public void insertRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
 
         boolean needParam = false;
 
-        for (Map.Entry<KeyField, DataObject> keyField : keyFields.entrySet())
-            if (!keyField.getKey().type.isSafeString(keyField.getValue())) {
+        for (int i=0,size=keyFields.size();i<size;i++)
+            if (!keyFields.getKey(i).type.isSafeString(keyFields.getValue(i))) {
                 needParam = true;
             }
 
-        for (Map.Entry<PropertyField, ObjectValue> fieldValue : propFields.entrySet())
-            if (!fieldValue.getKey().type.isSafeString(fieldValue.getValue())) {
+        for (int i=0,size=propFields.size();i<size;i++)
+            if (!propFields.getKey(i).type.isSafeString(propFields.getValue(i))) {
                 needParam = true;
             }
 
@@ -683,15 +676,15 @@ public class SQLSession extends MutableObject {
         String valueString = "";
 
         // пробежим по KeyFields'ам
-        for (KeyField key : table.keys) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.get(key).getString(syntax);
+        for (int i=0,size=keyFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i).name;
+            valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.getValue(i).getString(syntax);
         }
 
         // пробежим по Fields'ам
-        for (PropertyField prop : propFields.keySet()) {
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + prop.name;
-            valueString = (valueString.length() == 0 ? "" : valueString + ',') + propFields.get(prop).getString(syntax);
+        for (int i=0,size=propFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).name;
+            valueString = (valueString.length() == 0 ? "" : valueString + ',') + propFields.getValue(i).getString(syntax);
         }
 
         if(insertString.length()==0) {
@@ -703,30 +696,24 @@ public class SQLSession extends MutableObject {
         executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");
     }
 
-    public boolean isRecord(Table table, Map<KeyField, DataObject> keyFields) throws SQLException {
+    public boolean isRecord(Table table, ImMap<KeyField, DataObject> keyFields) throws SQLException {
 
         // по сути пустое кол-во ключей
-        Query<KeyField, String> query = new Query<KeyField, String>(new ArrayList<KeyField>());
-        query.and(table.join(DataObject.getMapExprs(keyFields)).getWhere());
-        return query.execute(this).size() > 0;
+        return new Query<KeyField, String>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
+                table.join(DataObject.getMapExprs(keyFields)).getWhere()).execute(this).size() > 0;
     }
 
-    public void ensureRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
+    public void ensureRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
         if (!isRecord(table, keyFields))
             insertRecord(table, keyFields, propFields);
     }
 
-    public void updateRecords(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
-        if(!propFields.isEmpty()) {
-            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table, keyFields);
-            updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
-
-            // есть запись нужно Update лупить
-            updateRecords(new ModifyQuery(table, updateQuery));
-        }
+    public void updateRecords(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
+        if(!propFields.isEmpty()) // есть запись нужно Update лупить
+            updateRecords(new ModifyQuery(table, new Query<KeyField, PropertyField>(table.getMapKeys(), Where.TRUE, keyFields, ObjectValue.getMapExprs(propFields))));
     }
 
-    public boolean insertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
+    public boolean insertRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
         if(update && isRecord(table, keyFields)) {
             updateRecords(table, keyFields, propFields);
             return false;
@@ -736,12 +723,11 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    public Object readRecord(Table table, Map<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
+    public Object readRecord(Table table, ImMap<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
         // по сути пустое кол-во ключей
-        Query<KeyField, String> query = new Query<KeyField, String>(new ArrayList<KeyField>());
-        Expr fieldExpr = table.join(DataObject.getMapExprs(keyFields)).getExpr(field);
-        query.properties.put("result", fieldExpr);
-        return query.execute(this).singleValue().get("result");
+        return new Query<KeyField, String>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
+                table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result").
+                 execute(this).singleValue().get("result");
     }
 
     public void truncate(String table) throws SQLException {
@@ -749,10 +735,11 @@ public class SQLSession extends MutableObject {
         executeDML("DELETE FROM " + syntax.getSessionTableName(table));
     }
 
-    public int deleteKeyRecords(Table table, Map<KeyField, ?> keys) throws SQLException {
-        String deleteWhere = "";
-        for (Map.Entry<KeyField, ?> deleteKey : keys.entrySet())
-            deleteWhere = (deleteWhere.length() == 0 ? "" : deleteWhere + " AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
+    public <X> int deleteKeyRecords(Table table, ImMap<KeyField, X> keys) throws SQLException {
+        String deleteWhere = keys.toString(new GetKeyValue<String, KeyField, X>() {
+            public String getMapValue(KeyField key, X value) {
+                return key.name + "=" + value;
+            }}, " AND ");
 
         return executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
@@ -761,7 +748,7 @@ public class SQLSession extends MutableObject {
         return ((Number)value).intValue();
     }
     // в явную без query так как часто выполняется
-    public void readSingleValues(SessionTable table, Map<KeyField, Object> keyValues, Map<PropertyField, Object> propValues) throws SQLException {
+    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues) throws SQLException {
         String select = "SELECT COUNT(*) AS cnt";
         if(table.keys.size() > 1)
             for(KeyField field : table.keys) {
@@ -769,8 +756,11 @@ public class SQLSession extends MutableObject {
                 select = select + ", ANYVALUE(" + field.name + ")";
             }
         else 
-            if(table.properties.isEmpty())
+            if(table.properties.isEmpty()) {
+                keyValues.set(MapFact.<KeyField, Object>EMPTY());
+                propValues.set(MapFact.<PropertyField, Object>EMPTY());
                 return;
+            }
         for(PropertyField field : table.properties) {
             select = select + ", " + syntax.getCountDistinct(field.name);
             select = select + ", " + syntax.getCount(field.name);
@@ -790,22 +780,29 @@ public class SQLSession extends MutableObject {
                 assert next;
                 
                 int totalCnt = readInt(result.getObject(1));
-                int i=2;
-                if(table.keys.size() > 1)
-                    for(KeyField field : table.keys) {
-                        Integer cnt = readInt(result.getObject(i++));
+                int offs=2;
+                if(table.keys.size() > 1) {
+                    ImFilterValueMap<KeyField, Object> mKeyValues = table.getTableKeys().mapFilterValues();
+                    for(int i=0,size=table.keys.size();i<size;i++) {
+                        Integer cnt = readInt(result.getObject(2*i + offs));
                         if(cnt == 1)
-                            keyValues.put(field, field.type.read(result.getObject(i)));
-                        i++;
+                            mKeyValues.mapValue(i, table.keys.get(i).type.read(result.getObject(2*i + 1 + offs)));
                     }
-                for(PropertyField field : table.properties) {
-                    Integer cntDistinct = readInt(result.getObject(i++));
+                    keyValues.set(mKeyValues.immutableValue());
+                    offs += 2*table.keys.size();
+                } else
+                    keyValues.set(MapFact.<KeyField, Object>EMPTY());
+
+                ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
+                for(int i=0,size=table.properties.size();i<size;i++) {
+                    Integer cntDistinct = readInt(result.getObject(3*i + offs));
                     if(cntDistinct==0)
-                        propValues.put(field, null);
-                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(i)))
-                        propValues.put(field, field.type.read(result.getObject(i+1)));
-                    i+=2;
+                        mvPropValues.mapValue(i, null);
+                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(3*i + 1 + offs)))
+                        mvPropValues.mapValue(i, table.properties.get(i).type.read(result.getObject(3*i + 2 + offs)));
                 }
+                propValues.set(mvPropValues.immutableValue());
+
                 assert !result.next();
             } finally {
                 result.close();
@@ -849,7 +846,7 @@ public class SQLSession extends MutableObject {
 
         int result = 0;
         if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
-            if (!isRecord(modify.table, new HashMap<KeyField, DataObject>()))
+            if (!isRecord(modify.table, MapFact.<KeyField, DataObject>EMPTY()))
                 result = insertSelect(modify);
         } else
             result = insertLeftSelect(modify, false);
@@ -862,14 +859,14 @@ public class SQLSession extends MutableObject {
             privateConnection.close();
     }
 
-    private static PreparedStatement getStatement(String command, Map<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax) throws SQLException {
+    private static PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax) throws SQLException {
 
         char[][] params = new char[paramObjects.size()][];
         ParseInterface[] values = new ParseInterface[params.length];
         int paramNum = 0;
-        for (Map.Entry<String, ParseInterface> param : paramObjects.entrySet()) {
-            params[paramNum] = param.getKey().toCharArray();
-            values[paramNum++] = param.getValue();
+        for (int i=0,size=paramObjects.size();i<size;i++) {
+            params[paramNum] = paramObjects.getKey(i).toCharArray();
+            values[paramNum++] = paramObjects.getValue(i);
         }
 
         // те которые isString сразу транслируем
@@ -917,19 +914,24 @@ public class SQLSession extends MutableObject {
         return statement;
     }
 
+    private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {
+        public String getMapValue(String key, String value) {
+            return value + " AS " + key;
+        }};
     // вспомогательные методы
-    public static String stringExpr(Map<String, String> keySelect, Map<String, String> propertySelect) {
-        String expressionString = "";
-        for (Map.Entry<String, String> key : keySelect.entrySet())
-            expressionString = (expressionString.length() == 0 ? "" : expressionString + ",") + key.getValue() + " AS " + key.getKey();
-        for (Map.Entry<String, String> property : propertySelect.entrySet())
-            expressionString = (expressionString.length() == 0 ? "" : expressionString + ",") + property.getValue() + " AS " + property.getKey();
+
+    public static String stringExpr(ImMap<String, String> keySelect, ImMap<String, String> propertySelect) {
+        return stringExpr(keySelect.toOrderMap(), propertySelect.toOrderMap());
+    }
+    public static String stringExpr(ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect) {
+        
+        String expressionString = keySelect.addOrderExcl(propertySelect).toString(addFieldAliases, ",");
         if (expressionString.length() == 0)
             expressionString = "0";
         return expressionString;
     }
 
-    public static <T> OrderedMap<String, String> mapNames(Map<T, String> exprs, Map<T, String> names, List<T> order) {
+/*    public static <T> OrderedMap<String, String> mapNames(Map<T, String> exprs, Map<T, String> names, Result<ImList<T>> order) {
         OrderedMap<String, String> result = new OrderedMap<String, String>();
         if (order.isEmpty())
             for (Map.Entry<T, String> name : names.entrySet()) {
@@ -941,9 +943,13 @@ public class SQLSession extends MutableObject {
                 result.put(names.get(expr), exprs.get(expr));
         return result;
     }
+  */
+    public static <T> ImOrderMap<String, String> mapNames(ImMap<T, String> exprs, ImRevMap<T, String> names, Result<ImOrderSet<T>> order) {
+        return MapFact.orderMap(exprs, names, order);
+    }
 
-    public static OrderedMap<String, String> mapNames(Map<String, String> exprs, List<String> order) {
-        return mapNames(exprs, BaseUtils.toMap(exprs.keySet()), order);
+    public static ImOrderMap<String, String> mapNames(ImMap<String, String> exprs, Result<ImOrderSet<String>> order) {
+        return mapNames(exprs, exprs.keys().toRevMap(), order);
     }
 
 }

@@ -1,6 +1,12 @@
 package platform.server.logics.property.derived;
 
-import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
@@ -14,8 +20,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.PropertyChanges;
 
-import java.util.*;
-
 // определяет не максимум изменения, а для конкретных входов
 public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, OnChangeProperty.Interface<T, P>> {
 
@@ -27,7 +31,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
         public abstract Expr getExpr();
 
-        public abstract PropertyObjectInterfaceEntity getInterface(Map<T, DataObject> mapOnValues, Map<P,DataObject> mapToValues, ObjectEntity valueObject);
+        public abstract PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject);
     }
 
     public static class KeyOnInterface<T extends PropertyInterface, P extends PropertyInterface> extends Interface<T, P> {
@@ -40,11 +44,11 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         public Expr getExpr() {
-            return propertyInterface.changeExpr;
+            return propertyInterface.getChangeExpr();
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(Map<T, DataObject> mapOnValues, Map<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
             return mapOnValues.get(propertyInterface);
         }
     }
@@ -60,11 +64,11 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         public Expr getExpr() {
-            return propertyInterface.changeExpr;
+            return propertyInterface.getChangeExpr();
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(Map<T, DataObject> mapOnValues, Map<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
             return mapToValues.get(propertyInterface);
         }
     }
@@ -80,23 +84,25 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         public Expr getExpr() {
-            return toChange.changeExpr;
+            return toChange.getChangeExpr();
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(Map<T, DataObject> mapOnValues, Map<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
             return valueObject;
         }
     }
 
-    public static <T extends PropertyInterface, P extends PropertyInterface> List<Interface<T, P>> getInterfaces(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        List<Interface<T, P>> result = new ArrayList<Interface<T, P>>();
-        for(T propertyInterface : onChange.interfaces)
-            result.add(new KeyOnInterface<T, P>(propertyInterface));
-        for(P propertyInterface : toChange.interfaces)
-            result.add(new KeyToInterface<T, P>(propertyInterface));
-        result.add(new ValueInterface<T, P>(toChange));
-        return result;
+    public static <T extends PropertyInterface, P extends PropertyInterface> ImOrderSet<Interface<T, P>> getInterfaces(CalcProperty<T> onChange, CalcProperty<P> toChange) {
+        return onChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, T>() {
+            public Interface<T, P> getMapValue(T value) {
+                return new KeyOnInterface<T, P>(value);
+            }
+        }).addOrderExcl(toChange.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<T, P>, P>() {
+            public Interface<T, P> getMapValue(P value) {
+                return new KeyToInterface<T, P>(value);
+            }
+        })).addOrderExcl(new ValueInterface<T, P>(toChange));
     }
 
     public OnChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
@@ -106,34 +112,38 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     @Override
-    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add(onChange);
         depends.add(toChange);
     }
 
-    protected Expr calculateExpr(Map<Interface<T, P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<T, P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(propClasses) // пока так
             propClasses = false;
 
-        Map<Interface<T, P>, Expr> mapExprs = new HashMap<Interface<T, P>, Expr>();
-        Map<T, Expr> onChangeExprs = new HashMap<T, Expr>();
-        for(Interface<T, P> propertyInterface : interfaces)
+        ImFilterValueMap<Interface<T, P>, Expr> mvMapExprs = interfaces.mapFilterValues();
+        MExclMap<T, Expr> mOnChangeExprs = MapFact.mExclMapMax(interfaces.size());
+        for(int i=0,size=interfaces.size();i<size;i++) {
+            Interface<T, P> propertyInterface = interfaces.get(i);
             if(propertyInterface instanceof KeyOnInterface)
-                onChangeExprs.put(((KeyOnInterface<T,P>)propertyInterface).propertyInterface, joinImplement.get(propertyInterface));
+                mOnChangeExprs.exclAdd(((KeyOnInterface<T, P>) propertyInterface).propertyInterface, joinImplement.get(propertyInterface));
             else
-                mapExprs.put(propertyInterface, propertyInterface.getExpr());
+                mvMapExprs.mapValue(i, propertyInterface.getExpr());
+        }
+        ImMap<Interface<T, P>, Expr> mapExprs = mvMapExprs.immutableValue();
 
         WhereBuilder onChangeWhere = new WhereBuilder();
-        Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChangeExprs,
-                propClasses, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, BaseUtils.filterKeys(joinImplement, mapExprs.keySet()));
+        Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(mOnChangeExprs.immutable(),
+                propClasses, toChange.getChangeModifier(propChanges, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement.filterIncl(mapExprs.keys()));
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }
 
-    public CalcPropertyObjectEntity<Interface<T, P>> getPropertyObjectEntity(Map<T, DataObject> mapOnValues, Map<P, DataObject> mapToValues, ObjectEntity valueObject) {
-        Map<Interface<T, P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<T, P>, PropertyObjectInterfaceEntity>();
-        for(Interface<T, P> propertyInterface : interfaces)
-            interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapOnValues, mapToValues, valueObject));
+    public CalcPropertyObjectEntity<Interface<T, P>> getPropertyObjectEntity(final ImMap<T, DataObject> mapOnValues, final ImMap<P, DataObject> mapToValues, final ObjectEntity valueObject) {
+        ImMap<Interface<T, P>, PropertyObjectInterfaceEntity> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceEntity, Interface<T, P>>() {
+            public PropertyObjectInterfaceEntity getMapValue(Interface<T, P> value) {
+                return value.getInterface(mapOnValues, mapToValues, valueObject);
+            }});
         return new CalcPropertyObjectEntity<Interface<T, P>>(this,interfaceImplement);
     }
 }

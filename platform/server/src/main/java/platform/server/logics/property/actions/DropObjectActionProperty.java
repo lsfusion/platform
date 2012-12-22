@@ -1,8 +1,6 @@
 package platform.server.logics.property.actions;
 
-import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.NullValue;

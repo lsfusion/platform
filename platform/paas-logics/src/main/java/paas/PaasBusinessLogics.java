@@ -10,12 +10,18 @@ import paas.api.remote.PaasRemoteInterface;
 import paas.manager.server.AppManager;
 import platform.base.OrderedMap;
 import platform.base.SoftHashMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.exceptions.RemoteMessageException;
 import platform.server.Context;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -61,20 +67,20 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         try {
             DataSession session = createSession();
             try {
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("dbId"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("dbId"));
                 Expr dbExpr = keys.get("dbId");
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(dbExpr.isClass(paasLM.database));
                 q.and(
                         paasLM.databaseConfiguration.getExpr(session.getModifier(), dbExpr).getWhere().not()
                 );
 
-                q.properties.put("name", LM.name.getExpr(session.getModifier(), dbExpr));
+                q.addProperty("name", LM.name.getExpr(session.getModifier(), dbExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    String name = (String) entry.getValue().get("name");
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
+                for (ImMap<String, Object> entry : values.valueIt()) {
+                    String name = (String) entry.get("name");
 
                     if (name != null) {
                         removeDatabase(name);
@@ -121,27 +127,26 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         try {
             DataSession session = createSession();
             try {
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("project"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("project"));
                 Expr projExpr = keys.get("project");
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.projectOwnerUserLogin.getExpr(projExpr).compare(new DataObject(userLogin), Compare.EQUALS));
 
-                q.properties.put("name", LM.name.getExpr(projExpr));
-                q.properties.put("description", paasLM.projectDescription.getExpr(projExpr));
+                q.addProperty("name", LM.name.getExpr(projExpr));
+                q.addProperty("description", paasLM.projectDescription.getExpr(projExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
                 ProjectDTO projects[] = new ProjectDTO[values.size()];
-                int i = 0;
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    Map<String, Object> propValues = entry.getValue();
+                for (int i = 0, size = values.size(); i < size;i++) {
+                    ImMap<String, Object> propValues = values.getValue(i);
 
                     ProjectDTO dto = new ProjectDTO();
-                    dto.id = (Integer) entry.getKey().get("project");
+                    dto.id = (Integer) values.getKey(i).get("project");
                     dto.name = (String) propValues.get("name");
                     dto.description = (String) propValues.get("description");
 
-                    projects[i++] = dto;
+                    projects[i] = dto;
                 }
 
                 return projects;
@@ -232,17 +237,17 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("module"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("module"));
                 Expr moduleExpr = keys.get("module");
                 Expr projExpr = new DataObject(projectId, paasLM.project).getExpr();
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.moduleInProject.getExpr(projExpr, moduleExpr).getWhere());
 
-                q.properties.put("order", paasLM.moduleOrder.getExpr(projExpr, moduleExpr));
-                q.properties.put("name", LM.name.getExpr(moduleExpr));
+                q.addProperty("order", paasLM.moduleOrder.getExpr(projExpr, moduleExpr));
+                q.addProperty("name", LM.name.getExpr(moduleExpr));
 
-                return getModuleDTOs(q.execute(session.sql, new OrderedMap(asList("order"), false)));
+                return getModuleDTOs(q.execute(session.sql, MapFact.singletonOrder("order", false)));
             } finally {
                 session.close();
             }
@@ -260,15 +265,15 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("module"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("module"));
                 Expr moduleExpr = keys.get("module");
                 Expr projExpr = new DataObject(projectId, paasLM.project).getExpr();
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(moduleExpr.isClass(paasLM.module));
                 q.and(paasLM.moduleInProject.getExpr(projExpr, moduleExpr).getWhere().not());
 
-                q.properties.put("name", LM.name.getExpr(moduleExpr));
+                q.addProperty("name", LM.name.getExpr(moduleExpr));
 
                 return getModuleDTOs(q.execute(session.sql));
             } finally {
@@ -280,18 +285,17 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         }
     }
 
-    private ModuleDTO[] getModuleDTOs(OrderedMap<Map<String, Object>, Map<String, Object>> values) {
+    private ModuleDTO[] getModuleDTOs(ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values) {
         ModuleDTO modules[] = new ModuleDTO[values.size()];
-        int i = 0;
-        for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-            Map<String, Object> propValues = entry.getValue();
+        for (int i=0,size=values.size();i<size;i++) {
+            ImMap<String, Object> propValues = values.getValue(i);
 
             ModuleDTO dto = new ModuleDTO();
-            dto.id = (Integer) entry.getKey().get("module");
+            dto.id = (Integer) values.getKey(i).get("module");
             dto.name = (String) propValues.get("name");
             dto.description = "";
 
-            modules[i++] = dto;
+            modules[i] = dto;
         }
         return modules;
     }
@@ -303,31 +307,30 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("conf"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("conf"));
                 Expr confExpr = keys.get("conf");
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.configurationProject.getExpr(confExpr).compare(new DataObject(projectId, paasLM.project), Compare.EQUALS));
 
-                q.properties.put("name", LM.name.getExpr(confExpr));
-                q.properties.put("port", paasLM.configurationPort.getExpr(confExpr));
-                q.properties.put("status", paasLM.configurationStatus.getExpr(confExpr));
+                q.addProperty("name", LM.name.getExpr(confExpr));
+                q.addProperty("port", paasLM.configurationPort.getExpr(confExpr));
+                q.addProperty("status", paasLM.configurationStatus.getExpr(confExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
                 ConfigurationDTO configurations[] = new ConfigurationDTO[values.size()];
-                int i = 0;
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    Map<String, Object> propValues = entry.getValue();
+                for (int i = 0, size=values.size(); i<size;i++) {
+                    ImMap<String, Object> propValues = values.getValue(i);
 
                     ConfigurationDTO dto = new ConfigurationDTO();
-                    dto.id = (Integer) entry.getKey().get("conf");
+                    dto.id = (Integer) values.getKey(i).get("conf");
                     dto.name = (String) propValues.get("name");
                     dto.port = (Integer) propValues.get("port");
                     Integer statusId = (Integer) propValues.get("status");
                     dto.status = statusId == null ? null : paasLM.status.getSID(statusId);
                     dto.description = "";
 
-                    configurations[i++] = dto;
+                    configurations[i] = dto;
                 }
 
                 return configurations;
@@ -739,10 +742,10 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         try {
             DataSession session = createSession();
             try {
-                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("configId"));
+                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("configId"));
                 Expr confExpr = keys.get("configId");
 
-                Query<String, String> q = new Query<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(confExpr.isClass(paasLM.configuration));
                 if (projId != null) {
                     q.and(
@@ -750,12 +753,12 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                     );
                 }
 
-                q.properties.put("port", paasLM.configurationPort.getExpr(session.getModifier(), confExpr));
+                q.addProperty("port", paasLM.configurationPort.getExpr(session.getModifier(), confExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
-                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-                    Integer configId = (Integer) entry.getKey().get("configId");
-                    Integer port = (Integer) entry.getValue().get("port");
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
+                for (int i=0,size=values.size();i<size;i++) {
+                    Integer configId = (Integer) values.getKey(i).get("configId");
+                    Integer port = (Integer) values.getValue(i).get("port");
 
                     if (port != null) {
                         changeConfigurationStatus(session, configId, appManager.getStatus(port));

@@ -1,11 +1,19 @@
 package platform.server.data.expr;
 
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.Result;
+import platform.base.SFunctionSet;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.PackInterface;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.IntegralClass;
@@ -13,16 +21,16 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.CaseExprInterface;
-import platform.server.data.expr.where.ifs.NullExpr;
-import platform.server.data.expr.where.ifs.IfCases;
+import platform.server.data.expr.where.cases.CaseExpr;
+import platform.server.data.expr.where.cases.ExprCase;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.cases.MExprCaseList;
+import platform.server.data.expr.where.ifs.MIfCases;
 import platform.server.data.expr.where.ifs.IfExpr;
+import platform.server.data.expr.where.ifs.NullExpr;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.Query;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ClassReader;
@@ -30,23 +38,22 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Set;
 
 // абстрактный класс выражений
 
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static final boolean useCases = false;
-    public static final Expr NULL = useCases?new CaseExpr(new ExprCaseList()):NullExpr.instance;
-    public static CaseExprInterface newCases() {
-        if(useCases)
-            return new ExprCaseList();
+    public static final Expr NULL = useCases?new CaseExpr(new ExprCaseList(SetFact.<ExprCase>EMPTY())):NullExpr.instance;
+    public static CaseExprInterface newCases(boolean exclusive) {
+        if(useCases || exclusive)
+            return new MExprCaseList(exclusive);
         else
-            return new IfCases();
+            return new MIfCases();
     }
 
     public abstract Type getType(KeyType keyType);
@@ -92,7 +99,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public Expr scale(int coeff) {
         if(coeff==1) return this;
 
-        LinearOperandMap map = new LinearOperandMap();
+        MLinearOperandMap map = new MLinearOperandMap();
         map.add(this,coeff);
         return map.getExpr();
     }
@@ -106,7 +113,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 //        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
 //            return nvl(expr);
 
-        LinearOperandMap map = new LinearOperandMap();
+        MLinearOperandMap map = new MLinearOperandMap();
         map.add(this,1);
         map.add(expr,1);
         return map.getExpr();
@@ -123,9 +130,12 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return ifElse(where, Expr.NULL);
     }
     public Expr ifElse(Where where, Expr elseExpr) {
-        if(Expr.useCases)
-            return new ExprCaseList(where,this,elseExpr).getFinal();
-        else
+        if(Expr.useCases) {
+            MExprCaseList mCases = new MExprCaseList(false);
+            mCases.add(where,this);
+            mCases.add(Where.TRUE,elseExpr);
+            return mCases.getFinal();
+        } else
             return IfExpr.create(where, this, elseExpr);
     }
     public Expr compareExpr(Expr expr, boolean min) {
@@ -143,56 +153,63 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Expr translateQuery(QueryTranslator translator);
 
-    public static Where getWhere(Iterable<? extends Expr> col) {
+    public static Where getWhere(ImList<? extends Expr> list) {
+        return getWhere(list.getCol());
+    }
+    
+    public static Where getWhere(ImCol<? extends Expr> col) {
         Where where = Where.TRUE;
         for(Expr expr : col)
             where = where.and(expr.getWhere());
         return where;
     }
 
-    public static Where getOrWhere(Iterable<? extends Expr> col) {
+    public static Where getOrWhere(ImCol<? extends Expr> col) {
         Where where = Where.FALSE;
         for(Expr expr : col)
             where = where.or(expr.getWhere());
         return where;
     }
 
-    public static <K> Where getWhere(Map<K, ? extends Expr> map) {
+    public static <K> Where getWhere(ImMap<K, ? extends Expr> map) {
         return getWhere(map.values());
     }
 
     public void checkInfiniteKeys() {
-        QuickSet<KeyExpr> keys = getOuterKeys();
+        ImSet<KeyExpr> keys = getOuterKeys();
 
-        Map<KeyExpr,BaseExpr> keyValues = new HashMap<KeyExpr, BaseExpr>();
-        Set<KeyExpr> keyRest = new HashSet<KeyExpr>();
-        for(KeyExpr key : keys) {
-            Type type = key.getType(getWhere());
-            if(type instanceof DataClass)
-                keyValues.put(key, ((DataClass)type).getDefaultExpr());
-            else
-                keyRest.add(key);
-        }
+        Result<ImSet<KeyExpr>> keyRest = new Result<ImSet<KeyExpr>>();
+        ImSet<KeyExpr> keyValues = keys.split(new SFunctionSet<KeyExpr>() {
+            public boolean contains(KeyExpr key) {
+                return key.getType(getWhere()) instanceof DataClass;
+            }
+        }, keyRest);
 
-        Query<KeyExpr,Object> query = new Query<KeyExpr,Object>(BaseUtils.toMap(keyRest));
-        query.and(translateQuery(new PartialQueryTranslator(keyValues)).getWhere());
-        query.compile(BusinessLogics.debugSyntax);
+        new Query<KeyExpr,Object>(keyRest.result.toRevMap(),
+                     translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
+                         public Expr getMapValue(KeyExpr key) {
+                             return ((DataClass)key.getType(getWhere())).getDefaultExpr();
+                         }}))).getWhere()).compile(BusinessLogics.debugSyntax);
     }
 
-    public static <K> Map<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, Map<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
-        Map<K, ObjectValue> mapValues = new HashMap<K, ObjectValue>();
-        Map<K, Expr> mapExprValues = new HashMap<K, Expr>();
-        for(Map.Entry<K, Expr> mapExpr : mapExprs.entrySet()) {
-            ObjectValue objectValue = mapExpr.getValue().getObjectValue();
+    public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
+        MExclMap<K, ObjectValue> mMapValues = MapFact.<K, ObjectValue>mExclMap(mapExprs.size());
+        MExclMap<K, Expr> mMapExprValues = MapFact.<K, Expr>mExclMap(mapExprs.size());
+        for(int i=0,size=mapExprs.size();i<size;i++) {
+            Expr expr = mapExprs.getValue(i);
+            ObjectValue objectValue = expr.getObjectValue();
             if(objectValue!=null)
-                mapValues.put(mapExpr.getKey(), objectValue);
+                mMapValues.exclAdd(mapExprs.getKey(i), objectValue);
             else
-                mapExprValues.put(mapExpr.getKey(), mapExpr.getValue());
+                mMapExprValues.exclAdd(mapExprs.getKey(i), expr);
         }
+        ImMap<K, ObjectValue> mapValues = mMapValues.immutable();
+        ImMap<K, Expr> mapExprValues = mMapExprValues.immutable();
+
         if(mapExprValues.isEmpty()) // чисто для оптимизации чтобы лишний раз executeClasses не вызывать
             return mapValues;
         else
-            return BaseUtils.merge(mapValues, new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
+            return mapValues.addExcl(new Query<Object, K>(MapFact.<Object, KeyExpr>EMPTYREV(), mapExprValues, Where.TRUE).executeClasses(session, env, baseClass).singleValue());
     }
 
     public abstract Where getBaseWhere();
@@ -203,6 +220,16 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     
     public ObjectValue getObjectValue() {
         return null;
+    }
+
+    public static Where andExprCheck(Where where1, Where where2) {
+//        return where1.and(where2);
+        return (Where) where1.andCheck(where2);
+    }
+    
+    public static Where orExprCheck(Where where1, Where where2) {
+//        return where1.or(where2);
+        return (Where) where1.orCheck(where2);
     }
 }
 

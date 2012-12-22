@@ -1,9 +1,16 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.BaseUtils;
-import platform.base.Pair;
-import platform.base.QuickMap;
-import platform.base.QuickSet;
+import platform.base.*;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.WrapMap;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MCol;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.data.expr.BaseExpr;
@@ -11,17 +18,22 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
 
-public class KeyEquals extends QuickMap<KeyEqual, Where> {
+public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
-    public KeyEquals() {
+    public KeyEquals(ImMap<KeyEqual, Where> map) {
+        super(map);
     }
 
+    public final static KeyEquals EMPTY = new KeyEquals(MapFact.<KeyEqual, Where>EMPTY());
+
     public KeyEquals(Where where) {
-        super(new KeyEqual(), where);
+        super(KeyEqual.EMPTY, where);
         assert !where.isFalse();
     }
 
@@ -29,19 +41,11 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         super(new KeyEqual(key, expr), expr.getWhere());
     }
 
-    protected Where addValue(KeyEqual key, Where prevValue, Where newValue) {
-        return prevValue.or(newValue);
-    }
-
-    protected KeyEquals createThis() {
-        return new KeyEquals();
-    }
-
     public KeyEquals and(KeyEquals joins) {
-        KeyEquals result = new KeyEquals();
+        MMap<KeyEqual, Where> result = MapFact.mMap(AbstractWhere.<KeyEqual>addOr());
         // берем все пары joins'ов
-        for(int i1=0;i1<size;i1++)
-            for(int i2=0;i2<joins.size;i2++) {
+        for(int i1=0,size1=size();i1<size1;i1++)
+            for(int i2=0,size2=joins.size();i2<size2;i2++) {
                 KeyEqual eq1 = getKey(i1);
                 KeyEqual eq2 = joins.getKey(i2);
 
@@ -49,22 +53,25 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                 Where where2 = joins.getValue(i2);
 
                 // сначала определяем общие ключи
-                Map<KeyExpr, BaseExpr> diffEq1 = new HashMap<KeyExpr, BaseExpr>(); Map<KeyExpr, BaseExpr> diffEq2 = new HashMap<KeyExpr, BaseExpr>();
-                Map<KeyExpr, BaseExpr> sameEq1 = BaseUtils.splitKeys(eq1.keyExprs, eq2.keyExprs.keySet(), diffEq1);
-                Map<KeyExpr, BaseExpr> sameEq2 = BaseUtils.splitKeys(eq2.keyExprs, eq1.keyExprs.keySet(), diffEq2);
+                Result<ImMap<KeyExpr, BaseExpr>> diffEq1 = new Result<ImMap<KeyExpr, BaseExpr>>(); 
+                Result<ImMap<KeyExpr, BaseExpr>> diffEq2 = new Result<ImMap<KeyExpr, BaseExpr>>();
+                ImMap<KeyExpr, BaseExpr> sameEq1 = eq1.keyExprs.splitKeys(eq2.keyExprs.keys(), diffEq1);
+                ImMap<KeyExpr, BaseExpr> sameEq2 = eq2.keyExprs.splitKeys(eq1.keyExprs.keys(), diffEq2);
 
-                // транслируем правые левыми
-                Map<KeyExpr, Expr> cleanEq1 = new HashMap<KeyExpr, Expr>();// складываются "очищенные" equals'ы
-                Map<KeyExpr, Expr> transEq1 = new PartialQueryTranslator(diffEq2).translate(diffEq1);
-                // погнали топологическую сортировку отсеивая Expr'ы
-                while(!transEq1.isEmpty()) {
+                // транслируем правые левыми, погнали топологическую сортировку отсеивая Expr'ы
+                java.util.Map<KeyExpr, Expr> mTransEq1 = MapFact.mAddRemoveMap(); // remove есть
+                MapFact.addJavaAll(mTransEq1, new PartialQueryTranslator(diffEq2.result).translate(diffEq1.result));
+
+                MExclMap<KeyExpr, Expr> mCleanEq1 = MapFact.mExclMap();// складываются "очищенные" equals'ы
+
+                while(!mTransEq1.isEmpty()) {
                     boolean found = false;
-                    Iterator<Map.Entry<KeyExpr,Expr>> it = transEq1.entrySet().iterator();
+                    Iterator<java.util.Map.Entry<KeyExpr,Expr>> it = mTransEq1.entrySet().iterator();
                     while(it.hasNext()) {
-                        Map.Entry<KeyExpr,Expr> keyEq = it.next();
-                        QuickSet<KeyExpr> enumKeys = keyEq.getValue().getOuterKeys();
-                        if(enumKeys.disjoint(transEq1.keySet())) {// если не зависит от остальных
-                            cleanEq1.put(keyEq.getKey(),keyEq.getValue().translateQuery(new PartialQueryTranslator(cleanEq1))); // транслэйтим clean'ами
+                        java.util.Map.Entry<KeyExpr,Expr> keyEq = it.next();
+                        ImSet<KeyExpr> enumKeys = keyEq.getValue().getOuterKeys();
+                        if(MapFact.disjointJava(enumKeys, mTransEq1.keySet())) {// если не зависит от остальных
+                            mCleanEq1.exclAdd(keyEq.getKey(), keyEq.getValue().translateQuery(new PartialQueryTranslator(mCleanEq1.immutableCopy()))); // транслэйтим clean'ами
                             it.remove();
                             found = true; 
                             break;
@@ -72,34 +79,42 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                     }
 
                     if(!found) { // значит остались циклы, берем любую и перекидываем в where
-                        Map.Entry<KeyExpr, Expr> cycle = transEq1.entrySet().iterator().next();
+                        java.util.Map.Entry<KeyExpr, Expr> cycle = mTransEq1.entrySet().iterator().next();
                         where1 = where1.and(cycle.getKey().compare(cycle.getValue(), Compare.EQUALS));
                     }
                 }
+                ImMap<KeyExpr, Expr> cleanEq1 = mCleanEq1.immutable();
 
                 // второй просто транслируем первым
                 PartialQueryTranslator cleanTranslator1 = new PartialQueryTranslator(cleanEq1);
-                Map<KeyExpr, Expr> cleanEq2 = cleanTranslator1.translate(diffEq2);
+                ImMap<KeyExpr, Expr> cleanEq2 = cleanTranslator1.translate(diffEq2.result);
                 PartialQueryTranslator cleanTranslator2 = new PartialQueryTranslator(cleanEq2);
                 Where andWhere = where2.translateQuery(cleanTranslator1).and(where1.translateQuery(cleanTranslator2));
 
                 // сливаем same'ы, их также надо translateOuter'ить так как могут быть несвободными от противоположных ключей
-                Where extraWhere = Where.TRUE;
-                Map<KeyExpr,Expr> mergeSame = new HashMap<KeyExpr,Expr>(cleanTranslator2.translate(sameEq1));
-                for(Map.Entry<KeyExpr,Expr> andKeyExpr : cleanTranslator1.translate(sameEq2).entrySet()) {
-                    Expr expr = mergeSame.get(andKeyExpr.getKey());
-                    if(!expr.isValue()) // предпочитаем статичные значение
-                        mergeSame.put(andKeyExpr.getKey(),andKeyExpr.getValue());
-                    if(!BaseUtils.hashEquals(expr, andKeyExpr.getValue())) // закидываем compare
-                        extraWhere = extraWhere.and(expr.compare(andKeyExpr.getValue(), Compare.EQUALS));
-                }
+                ImMap<KeyExpr, Expr> transSameEq1 = cleanTranslator2.translate(sameEq1);
+                ImMap<KeyExpr, Expr> transSameEq2 = cleanTranslator1.translate(sameEq2);
 
-                Map<KeyExpr,BaseExpr> andEq = new HashMap<KeyExpr, BaseExpr>();
-                for(Map.Entry<KeyExpr,Expr> mergeEntry : BaseUtils.merge(mergeSame,BaseUtils.merge(cleanEq1, cleanEq2)).entrySet()) // assertion что не пересекаются
-                    if(mergeEntry.getValue() instanceof BaseExpr)
-                        andEq.put(mergeEntry.getKey(), (BaseExpr) mergeEntry.getValue());
-                    else // выкидываем Expr
-                        extraWhere = extraWhere.and(mergeEntry.getKey().compare(mergeEntry.getValue(), Compare.EQUALS));
+                assert BaseUtils.hashEquals(sameEq1.keys(), sameEq2.keys());
+                Where extraWhere = Where.TRUE;
+                for(int i=0,size=transSameEq2.size();i<size;i++) {
+                    KeyExpr key = transSameEq2.getKey(i);
+                    Expr value2 = transSameEq2.getValue(i);
+                    Expr value1 = transSameEq1.get(key);
+                    if(!BaseUtils.hashEquals(value1, value2)) // закидываем compare
+                        extraWhere = extraWhere.and(value1.compare(value2, Compare.EQUALS));
+                }
+                ImMap<KeyExpr, Expr> mergeSame = transSameEq1.merge(transSameEq2, KeyEqual.keepValue()); // предпочитаем статичные значение
+
+                ImMap<KeyExpr, Expr> mergeKeys = mergeSame.addExcl(cleanEq1.addExcl(cleanEq2));
+
+                Result<ImMap<KeyExpr, Expr>> notBaseExprs = new Result<ImMap<KeyExpr, Expr>>();
+                ImMap<KeyExpr, BaseExpr> andEq = BaseUtils.immutableCast(mergeKeys.splitKeys(new GetKeyValue<Boolean, KeyExpr, Expr>() {
+                    public Boolean getMapValue(KeyExpr key, Expr value) {
+                        return value instanceof BaseExpr;
+                    }}, notBaseExprs));
+                for(int i=0,size=notBaseExprs.result.size();i<size;i++)
+                    extraWhere = extraWhere.and(notBaseExprs.result.getKey(i).compare(notBaseExprs.result.getValue(i), Compare.EQUALS));
 
                 andWhere = andWhere.and(extraWhere);
                 if (cleanEq1.isEmpty() && cleanEq2.isEmpty() && extraWhere.isTrue()) { // чтобы не уходило в бесконечный цикл
@@ -107,39 +122,34 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
                         result.add(new KeyEqual(andEq), andWhere);
                 } else {
                     KeyEquals recEquals = andWhere.getKeyEquals();
-                    for(int i=0;i<recEquals.size;i++) {
+                    for(int i=0,recSize=recEquals.size();i<recSize;i++) {
                         KeyEqual recEqual = recEquals.getKey(i);
-                        result.add(new KeyEqual((Map<KeyExpr, BaseExpr>) (Object) BaseUtils.merge(recEqual.getTranslator().translate(andEq), recEqual.keyExprs)), recEquals.getValue(i));
+                        result.add(new KeyEqual((ImMap) (Object) recEqual.getTranslator().translate(andEq).addExcl(recEqual.keyExprs)), recEquals.getValue(i));
                     }
                 }
             }
-        return result;
-    }
-    
-
-    protected boolean containsAll(Where who, Where what) {
-        throw new RuntimeException("not supported yet");
+        return new KeyEquals(result.immutable());
     }
 
     // получает Where с учетом трансляций
     private Where getWhere() {
         Where where = Where.FALSE;
-        for(int i=0;i<size;i++)
+        for(int i=0,size=size();i<size;i++)
            where = where.or(getValue(i).and(getKey(i).getWhere()));
         return where;
     }
 
-    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(QuickSet<K> keepStat, List<Expr> orderTop, boolean noWhere) {
-        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
-        for(int i=0;i<size;i++) {
+    public <K extends BaseExpr> ImCol<GroupJoinsWhere> getWhereJoins(ImSet<K> keepStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
+        MCol<GroupJoinsWhere> result = ListFact.mCol();
+        for(int i=0,size=size();i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
             where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop, noWhere).compileMeans().fillList(keyEqual, result);
         }
-        return result;
+        return result.immutableCol();
     }
 
-    private static <T extends GroupWhere> long getComplexity(List<T> statJoins) {
+    private static <T extends GroupWhere> long getComplexity(ImList<T> statJoins) {
         long prev = 0;
         long result = 0;
         for(T statJoin : statJoins) {
@@ -150,12 +160,14 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
     }
 
     //по аналогии с GroupStatType, сливает одинаковые
-    public static Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
-        return merge(whereJoins, Collections.singleton(join));
+    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
+        return merge(whereJoins, SetFact.singleton(join));
     }
 
-    public static Collection<GroupJoinsWhere> merge(Collection<GroupJoinsWhere> whereJoins, Collection<GroupJoinsWhere> joins) {
-        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>(whereJoins);
+    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, ImCol<GroupJoinsWhere> joins) {
+        Collection<GroupJoinsWhere> result = ListFact.mAddRemoveCol();
+        ListFact.addJavaAll(whereJoins, result);
+
         for(GroupJoinsWhere join : joins) {
             for(Iterator<GroupJoinsWhere> i=result.iterator();i.hasNext();) {
                 GroupJoinsWhere where = i.next();
@@ -167,71 +179,69 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
             }
             result.add(join);
         }
-        return result;
+        return ListFact.fromJavaCol(result);
     }
 
-    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
-        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
+    public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
+        ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
         if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
-        List<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
+        ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
         long sortedComplexity = getComplexity(sortedWhereJoins);
         if(sortedComplexity > Settings.instance.getLimitExclusiveComplexity())
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(whereJoins, false);
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, false);
 
         // если сложность превышает порог - просто andNot'им верхние
         if(sortedWhereJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || sortedComplexity > Settings.instance.getLimitExclusiveSimpleComplexity()) {
-            Collection<GroupJoinsWhere> exclJoins = new ArrayList<GroupJoinsWhere>();
+            MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
             Where prevWhere = Where.FALSE;
             for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
                 exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not())));
                 prevWhere.or(whereJoin.getFullWhere());
             }
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(exclJoins, true);
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(exclJoins.immutableCol(), true);
         } else { // иначе запускаем рекурсию
             GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
-            Pair<Collection<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, orderTop);
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+            Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, orderTop);
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keepStat, boolean noWhere) {
-        Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
-        for(GroupJoinsWhere whereJoin : getWhereJoins(keepStat, new ArrayList<Expr>(), noWhere))
-            statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where));
-        return statJoins;
+    public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(final ImSet<K> keepStat, boolean noWhere) {
+        return getWhereJoins(keepStat, SetFact.<Expr>EMPTYORDER(), noWhere).mapColValues(new GetValue<GroupStatWhere<K>, GroupJoinsWhere>() {
+            public GroupStatWhere<K> getMapValue(GroupJoinsWhere whereJoin) {
+                return new GroupStatWhere<K>(whereJoin.keyEqual, whereJoin.getStatKeys(keepStat), whereJoin.where);
+            }
+        });
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(boolean exclusive, QuickSet<K> keepStat, GroupStatType type, boolean noWhere) {
+    public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(boolean exclusive, ImSet<K> keepStat, GroupStatType type, boolean noWhere) {
         assert !(exclusive && noWhere); // если noWhere то не exclusive
         // получаем GroupJoinsWhere, конвертим в GroupStatWhere, группируем по type'у (через MapWhere), упорядочиваем по complexity
-        Collection<GroupStatWhere<K>> statJoins = type.group(getStatJoins(keepStat, noWhere || type.equals(GroupStatType.ALL)), noWhere, this);
+        ImCol<GroupStatWhere<K>> statJoins = type.group(getStatJoins(keepStat, noWhere || type.equals(GroupStatType.ALL)), noWhere, this);
         if(!exclusive || statJoins.size()<=1) // если не нужно notExclusive || один элемент
             return statJoins;
 
-        List<GroupStatWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
+        ImList<GroupStatWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
         if(sortedStatJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.instance.getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние
-            Collection<GroupStatWhere<K>> exclJoins = new ArrayList<GroupStatWhere<K>>();
+            MCol<GroupStatWhere<K>> exclJoins = ListFact.mCol(sortedStatJoins.size());
             Where prevWhere = Where.FALSE;
             for(GroupStatWhere<K> statJoin : sortedStatJoins) {
                 exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statJoin.where.and(prevWhere.translateQuery(statJoin.keyEqual.getTranslator()).not())));
                 prevWhere = prevWhere.or(statJoin.getFullWhere());
             }
-            return exclJoins;
+            return exclJoins.immutableCol();
         } else { // иначе запускаем рекурсию
-            GroupStatWhere<K> firstJoin = sortedStatJoins.iterator().next();
+            GroupStatWhere<K> firstJoin = sortedStatJoins.get(0);
             return type.merge(getWhere().and(firstJoin.getFullWhere().not()).getStatJoins(keepStat, exclusive, type, noWhere), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
     
     public boolean isSimple() {
-        return size==1 && getKey(0).isEmpty();
+        return size()==1 && getKey(0).isEmpty();
     }
 
     public KeyEquals translateOuter(MapTranslate translator) {
-        KeyEquals result = new KeyEquals();
-        for(int i=0;i<size;i++)
-            result.add(getKey(i).translateOuter(translator), getValue(i).translateOuter(translator));
-        return result;
+        return new KeyEquals(translator.translateMap(map));
     }
 }

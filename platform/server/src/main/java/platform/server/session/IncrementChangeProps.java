@@ -1,11 +1,11 @@
 package platform.server.session;
 
-import platform.base.QuickSet;
-import platform.server.data.SQLSession;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +19,10 @@ public class IncrementChangeProps extends IncrementProps {
         add(property, table);
     }
 
-    private Map<CalcProperty, PropertyChange<PropertyInterface>> changes = new HashMap<CalcProperty, PropertyChange<PropertyInterface>>();
+    private Map<CalcProperty, PropertyChange<PropertyInterface>> changes = MapFact.mAddRemoveMap(); // mutable поведение
 
-    public QuickSet<CalcProperty> getProperties() {
-        return new QuickSet<CalcProperty>(changes.keySet());
+    public ImSet<CalcProperty> getProperties() {
+        return SetFact.fromJavaSet(changes.keySet());
     }
 
     protected boolean isFinal() {

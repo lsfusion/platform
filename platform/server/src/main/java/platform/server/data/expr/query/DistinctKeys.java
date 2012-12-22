@@ -1,61 +1,51 @@
 package platform.server.data.expr.query;
 
-import platform.base.QuickMap;
+import platform.base.col.WrapMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapTranslate;
 
-import java.util.Map;
+public class DistinctKeys<K> extends WrapMap<K, Stat> {
 
-public class DistinctKeys<K> extends QuickMap<K, Stat> {
-
-    public DistinctKeys() {
-    }
-
-    public DistinctKeys(DistinctKeys<K> copy) {
-        super(copy);
-    }
-
-    protected Stat addValue(K key, Stat prevValue, Stat newValue) {
-        if(newValue.less(prevValue))
-            return newValue;
-        return null;
-    }
-
-    protected boolean containsAll(Stat who, Stat what) {
-        throw new RuntimeException("not supported");
+    public DistinctKeys(ImMap<K, Stat> map) {
+        super(map);
     }
 
     public Stat getMax() {
         Stat result = Stat.ONE;
-        for(int i=0;i<size;i++)
+        for(int i=0,size=size();i<size;i++)
             result = result.mult(getValue(i));
         return result;
     }
 
-    public <T> DistinctKeys<T> map(Map<K,T> map) {
-        DistinctKeys<T> result = new DistinctKeys<T>();
-        for(int i=0;i<size;i++)
-            result.add(map.get(getKey(i)), getValue(i));
-        return result;
+    public <T> DistinctKeys<T> mapBack(ImMap<T, K> map) {
+        return new DistinctKeys<T>(map.mapValues(new GetValue<Stat, K>() {
+            public Stat getMapValue(K value) {
+                return get(value);
+            }
+        }));
     }
 
-    public <T> DistinctKeys<T> mapBack(Map<T, K> map) {
-        DistinctKeys<T> result = new DistinctKeys<T>();
-        for(Map.Entry<T, K> entry : map.entrySet())
-            result.add(entry.getKey(), get(entry.getValue()));
-        return result;
+    public DistinctKeys<K> or(final DistinctKeys<K> stat) {
+        return new DistinctKeys<K>(mapValues(new GetKeyValue<Stat, K, Stat>() {
+            public Stat getMapValue(K key, Stat value) {
+                return value.or(stat.get(key));
+            }}));
     }
 
-    public DistinctKeys<K> or(DistinctKeys<K> stat) {
-        DistinctKeys<K> result = new DistinctKeys<K>();
-        for(int i=0;i<size;i++) {
-            K key = getKey(i);
-            result.add(key, getValue(i).or(stat.get(key)));
-        }
-        return result;
+    public static <K extends Expr> int hashOuter(DistinctKeys<K> distinct, HashContext hashContext) {
+        int hash = 0;
+        for(int i=0,size=distinct.size();i<size;i++)
+            hash += distinct.getKey(i).hashOuter(hashContext) ^ distinct.getValue(i).hashCode();
+        return hash;
     }
 
-    public DistinctKeys<K> and(DistinctKeys<K> stat) {
-        DistinctKeys<K> result = new DistinctKeys<K>(this);
-        addAll(stat);
-        return result;
+    public static <K extends Expr> DistinctKeys<K> translateOuter(DistinctKeys<K> distinct, MapTranslate translator) {
+        return new DistinctKeys<K>(translator.translateExprKeys(distinct.map));
     }
+
 }

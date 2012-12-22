@@ -1,11 +1,10 @@
 package platform.server.data.expr;
 
-import platform.base.QuickMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -32,17 +31,17 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return isClass(this, set);
     }
 
-    public static AndClassSet getAndClassSet(StaticClassExprInterface expr, QuickMap<VariableClassExpr, AndClassSet> and) {
+    public static AndClassSet getAndClassSet(StaticClassExprInterface expr, ImMap<VariableClassExpr, AndClassSet> and) {
         return expr.getStaticClass();
     }
-    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
         return getAndClassSet(this, and);
     }
 
     public static boolean addAndClassSet(StaticClassExprInterface expr, AndClassSet add) {
         return expr.getStaticClass().inSet(add);
     }
-    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         return addAndClassSet(this, add);
     }
 }

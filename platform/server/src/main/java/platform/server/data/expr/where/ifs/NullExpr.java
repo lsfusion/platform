@@ -1,25 +1,29 @@
 package platform.server.data.expr.where.ifs;
 
-import platform.base.QuickSet;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.interop.Compare;
 import platform.server.caches.OuterContext;
-import platform.server.data.expr.*;
+import platform.server.caches.hash.HashContext;
+import platform.server.classes.BaseClass;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.cases.ExprCase;
 import platform.server.data.expr.where.cases.ExprCaseList;
-import platform.server.data.type.Type;
-import platform.server.data.type.ClassReader;
-import platform.server.data.type.NullReader;
-import platform.server.data.where.Where;
-import platform.server.data.where.MapWhere;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.MapTranslate;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.classes.BaseClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.caches.hash.HashContext;
-import platform.interop.Compare;
-import platform.base.TwinImmutableInterface;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.ClassReader;
+import platform.server.data.type.NullReader;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
@@ -52,7 +56,7 @@ public class NullExpr extends Expr {
     }
 
     public ExprCaseList getCases() {
-        throw new RuntimeException("not supported");
+        return new ExprCaseList(SetFact.<ExprCase>EMPTY());
     }
 
     public Expr followFalse(Where where, boolean pack) {
@@ -79,7 +83,7 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return true;
     }
 
@@ -95,11 +99,11 @@ public class NullExpr extends Expr {
         return SQLSyntax.NULL;
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return QuickSet.EMPTY();
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.EMPTY();
     }
 
     public Where getBaseWhere() {

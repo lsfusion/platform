@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.data.Time;
@@ -25,7 +25,7 @@ public class TimeExpr extends StaticExpr<DataClass> {
         return this;
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return time.equals(((TimeExpr)obj).time);
     }
 

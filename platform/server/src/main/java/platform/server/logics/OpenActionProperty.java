@@ -1,6 +1,8 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.OpenFileClientAction;
 import platform.server.classes.DynamicFormatFileClass;
 import platform.server.classes.FileClass;
@@ -14,8 +16,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Set;
 
 /**
 * Created by IntelliJ IDEA.
@@ -35,8 +35,8 @@ public class OpenActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
-        return new PropsNewSession(fileProperty.property);
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        return MapFact.<CalcProperty, Boolean>singleton(fileProperty.property, false);
     }
 
     private FileClass getFileClass() {

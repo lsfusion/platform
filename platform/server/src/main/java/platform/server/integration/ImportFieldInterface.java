@@ -1,10 +1,9 @@
 package platform.server.integration;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-
-import java.util.Map;
 
 /**
  * User: DAle
@@ -15,7 +14,7 @@ import java.util.Map;
 public interface ImportFieldInterface {
     DataObject getDataObject(ImportTable.Row row);
 
-    Expr getExpr(Map<ImportField, ? extends Expr> importKeys);
+    Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys);
 
     Type getType();
 }

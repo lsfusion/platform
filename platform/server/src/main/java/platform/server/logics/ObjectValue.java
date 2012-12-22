@@ -1,6 +1,10 @@
 package platform.server.logics;
 
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
@@ -11,14 +15,11 @@ import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.filter.CompareValue;
 import platform.server.logics.property.CalcProperty;
-import platform.server.session.SessionChanges;
 import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareValue {
 
@@ -38,15 +39,15 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
             return new DataObject(value, objectClass);
     }
 
-    public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
+    public Expr getExpr(ImMap<ObjectInstance, ? extends Expr> classSource, Modifier modifier) {
         return getExpr();
     }
 
-    public static <K> Map<K,Expr> getMapExprs(Map<K,? extends ObjectValue> map) {
-        Map<K,Expr> mapExprs = new HashMap<K,Expr>();
-        for(Map.Entry<K,? extends ObjectValue> keyField : map.entrySet())
-            mapExprs.put(keyField.getKey(), keyField.getValue().getExpr());
-        return mapExprs;
+    public static <K> ImMap<K,Expr> getMapExprs(ImMap<K,? extends ObjectValue> map) {
+        return ((ImMap<K, ObjectValue>)map).mapValues(new GetValue<Expr, ObjectValue>() {
+            public Expr getMapValue(ObjectValue value) {
+                return value.getExpr();
+            }});
     }
 
     public static <K> boolean containsNull(Collection<ObjectValue> col) {
@@ -57,10 +58,10 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     }
 
     
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {return false;}
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean dataUpdated(FunctionSet<CalcProperty> changedProps) {return false;}
-    public void fillProperties(Set<CalcProperty> properties) {}
+    public void fillProperties(MSet<CalcProperty> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);

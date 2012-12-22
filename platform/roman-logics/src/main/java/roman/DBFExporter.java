@@ -5,6 +5,7 @@ import org.xBaseJ.fields.*;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.form.instance.FormData;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.logics.DataObject;
@@ -20,11 +21,11 @@ import java.util.Map;
 
 public class DBFExporter {
     DataSession session;
-    Map<ClassPropertyInterface, DataObject> keys;
+    ImMap<ClassPropertyInterface, DataObject> keys;
     FormData data;
     Map<Field, PropertyDrawInstance> map;
 
-    public DBFExporter(Map<ClassPropertyInterface, DataObject> keys) {
+    public DBFExporter(ImMap<ClassPropertyInterface, DataObject> keys) {
         this.keys = keys;
     }
 

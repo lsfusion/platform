@@ -49,7 +49,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
         } else {
             Set<Integer> hidedGroupsId = new HashSet<Integer>();
-            for (GroupObjectInstance group : form.groups) {
+            for (GroupObjectInstance group : form.getGroups()) {
                 if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
                     hidedGroupsId.add(group.getID());
                 }
@@ -104,7 +104,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
 
     private Set<Integer> getGridGroups(Integer groupId) {
         Set<Integer> gridGroupsId = new HashSet<Integer>();
-        for (GroupObjectInstance group : form.groups) {
+        for (GroupObjectInstance group : form.getGroups()) {
             if (group.curClassView == ClassViewType.GRID && (groupId == null || groupId == group.getID())) {
                 gridGroupsId.add(group.getID());
             }
@@ -185,7 +185,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
 
         Set<Integer> hidedGroupsId = new HashSet<Integer>();
-        for (GroupObjectInstance group : form.groups) {
+        for (GroupObjectInstance group : form.getGroups()) {
             if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
                 hidedGroupsId.add(group.getID());
             }

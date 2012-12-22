@@ -8,6 +8,8 @@ import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
@@ -78,12 +80,12 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
         DateField dateCon = new DateField("DATECON");
         CharField imp = new CharField("IMPORTER", 110);
 
-        public InvoiceExporter(Map<ClassPropertyInterface, DataObject> keys) throws IOException, xBaseJException {
+        public InvoiceExporter(ImMap<ClassPropertyInterface, DataObject> keys) throws IOException, xBaseJException {
             super(keys);
-            List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
-            importerObject = keys.get(interfacesList.remove(0));
-            freightObject = keys.get(interfacesList.remove(0));
-            invoiceTypeObject = keys.get(interfacesList.remove(0));
+            ImOrderSet<ClassPropertyInterface> interfacesList = getOrderInterfaces();
+            importerObject = keys.get(interfacesList.get(0));
+            freightObject = keys.get(interfacesList.get(1));
+            invoiceTypeObject = keys.get(interfacesList.get(2));
 
             tempDbfInvoice = File.createTempFile("dbfInvoice", ".DBF");
             dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), true, "Cp866");

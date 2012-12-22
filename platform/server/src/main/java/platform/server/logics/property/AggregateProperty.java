@@ -1,23 +1,25 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
-import platform.server.data.*;
+import platform.server.data.ModifyQuery;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChanges;
 
 import java.sql.SQLException;
-import java.util.*;
-
-import static java.util.Collections.singletonMap;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
 
@@ -26,7 +28,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return mapTable!=null && !DataSession.reCalculateAggr; // для тестирования 2-е условие
     }
 
-    protected AggregateProperty(String SID,String caption,List<T> interfaces) {
+    protected AggregateProperty(String SID,String caption,ImOrderSet<T> interfaces) {
         super(SID,caption,interfaces);
     }
 
@@ -38,11 +40,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
         String message = "";
 
-        OrderedMap<Map<T, Object>, Map<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
+        ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
         if(checkResult.size() > 0) {
             message += "---- Checking Aggregations : " + this + "-----" + '\n';
-            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : checkResult.entrySet())
-                message += "Keys : " + row.getKey() + " : " + row.getValue() + '\n';
+            for(int i=0,size=checkResult.size();i<size;i++)
+                message += "Keys : " + checkResult.getKey(i) + " : " + checkResult.getValue(i) + '\n';
         }
 
         session.popVolatileStats(null);
@@ -50,25 +52,25 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return message;
     }
 
-    public Expr calculateExpr(Map<T, ? extends Expr> joinImplement) {
+    public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement) {
         return calculateExpr(joinImplement, false, PropertyChanges.EMPTY, null);
     }
 
-    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
         return calculateExpr(joinImplement, true, PropertyChanges.EMPTY, null);
     }
 
     private Query<T, String> getRecalculateQuery(boolean outDB) {
-        Query<T, String> query = new Query<T, String>(this);
+        QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
 
-        Expr dbExpr = getExpr(query.mapKeys);
-        Expr calculateExpr = calculateExpr(query.mapKeys);
+        Expr dbExpr = getExpr(query.getMapExprs());
+        Expr calculateExpr = calculateExpr(query.getMapExprs());
         if(outDB)
-            query.properties.put("dbvalue", dbExpr);
-        query.properties.put("calcvalue", calculateExpr);
+            query.addProperty("dbvalue", dbExpr);
+        query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
         query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not());
-        return query;
+        return query.getQuery();
     }
 
     public static AggregateProperty recalculate = null;
@@ -78,14 +80,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     public void recalculateAggregation(SQLSession session) throws SQLException {
         session.pushVolatileStats(null);
         session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                BaseUtils.reverse(mapTable.mapKeys), singletonMap(field, "calcvalue"), MapValuesTranslator.noTranslate)));
+                mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"), MapValuesTranslator.noTranslate)));
         session.popVolatileStats(null);
     }
 
     @IdentityLazy
     public ClassWhere<Object> getClassValueWhere() {
-        Query<T, String> query = new Query<T, String>(this);
-        query.properties.put("value", calculateClassExpr(query.mapKeys));
-        return query.getClassWhere(Collections.singleton("value"));
+        QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
+        query.addProperty("value", calculateClassExpr(query.getMapExprs()));
+        return query.getQuery().getClassWhere(SetFact.singleton("value"));
     }
 }

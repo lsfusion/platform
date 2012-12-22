@@ -1,6 +1,8 @@
 package platform.server.classes;
 
 import platform.base.ImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
@@ -12,9 +14,6 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.actions.ChangeClassActionProperty;
-
-import java.util.Collection;
 
 public class UnknownClass extends ImmutableObject implements ConcreteObjectClass {
 
@@ -28,9 +27,9 @@ public class UnknownClass extends ImmutableObject implements ConcreteObjectClass
         this.baseClass = baseClass;
     }
 
-    public void getDiffSet(ConcreteObjectClass diffClass, Collection<CustomClass> addClasses, Collection<CustomClass> removeClasses) {
+    public void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses) {
         if(diffClass instanceof CustomClass) // все удаляются
-            ((CustomClass)diffClass).fillParents(removeClasses);
+            ((CustomClass)diffClass).fillParents(mRemoveClasses);
     }
 
     public boolean inSet(AndClassSet set) {

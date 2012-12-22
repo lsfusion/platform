@@ -15,11 +15,17 @@ import paas.PaasUtils;
 import paas.manager.common.ConfigurationEventData;
 import platform.base.NullOutputStream;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.remote.ApplicationTerminal;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.DataObject;
@@ -169,25 +175,23 @@ public final class AppManager {
 
         Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
 
-        Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("moduleKey"));
+        ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("moduleKey"));
         Expr moduleExpr = keys.get("moduleKey");
         Expr projExpr = new DataObject(projId, paasLM.project).getExpr();
 
-        Query<String, String> q = new Query<String, String>(keys);
+        QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
         q.and(
                 paasLM.moduleInProject.getExpr(session.getModifier(), projExpr, moduleExpr).getWhere()
         );
-        q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.getModifier(), projExpr, moduleExpr));
-        q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.getModifier(), moduleExpr));
+        q.addProperty("moduleOrder", paasLM.moduleOrder.getExpr(session.getModifier(), projExpr, moduleExpr));
+        q.addProperty("moduleSource", paasLM.moduleSource.getExpr(session.getModifier(), moduleExpr));
 
-        OrderedMap<String, Boolean> orders = new OrderedMap<String, Boolean>();
-        orders.put("moduleOrder", false);
-
-        OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql, orders);
+        ImOrderMap<String, Boolean> orders = MapFact.singletonOrder("moduleOrder", false);
+        ImOrderMap<ImMap<String,Object>, ImMap<String, Object>> values = q.execute(session.sql, orders);
 
         List<String> moduleFilePaths = new ArrayList<String>();
-        for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-            String moduleSource = nvl((String) entry.getValue().get("moduleSource"), "");
+        for (ImMap<String, Object> entry : values.valueIt()) {
+            String moduleSource = nvl((String) entry.get("moduleSource"), "");
             moduleFilePaths.add(createTemporaryScriptFile(moduleSource));
         }
 

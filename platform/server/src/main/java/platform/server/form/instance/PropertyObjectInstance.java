@@ -1,25 +1,23 @@
 package platform.server.form.instance;
 
-import platform.base.TwinImmutableInterface;
-import platform.base.TwinImmutableObject;
+import platform.base.*;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.CalcProperty;
-import platform.server.logics.property.CalcPropertyImplement;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Modifier;
-
-import java.util.*;
 
 public abstract class PropertyObjectInstance<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 
     public T property;
-    public Map<P, PropertyObjectInterfaceInstance> mapping;
+    public ImMap<P, PropertyObjectInterfaceInstance> mapping;
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return property.equals(((PropertyObjectInstance) o).property) && mapping.equals(((PropertyObjectInstance) o).mapping);
     }
 
@@ -27,9 +25,9 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectInstance(T property,Map<P,? extends PropertyObjectInterfaceInstance> mapping) {
+    public PropertyObjectInstance(T property,ImMap<P,? extends PropertyObjectInterfaceInstance> mapping) {
         this.property = property;
-        this.mapping = (Map<P, PropertyObjectInterfaceInstance>) mapping;
+        this.mapping = (ImMap<P, PropertyObjectInterfaceInstance>) mapping;
     }
 
     // получает GRID в котором рисоваться
@@ -42,51 +40,42 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
         return applyObject;
     }
 
-    public Collection<ObjectInstance> getObjectInstances() {
-        Collection<ObjectInstance> result = new ArrayList<ObjectInstance>();
-        for(PropertyObjectInterfaceInstance object : mapping.values())
-            if(object instanceof ObjectInstance)
-                result.add((ObjectInstance) object);
-        return result;
+    public ImCol<ObjectInstance> getObjectInstances() {
+        return BaseUtils.immutableCast(mapping.values().filterCol(new SFunctionSet<PropertyObjectInterfaceInstance>() {
+            public boolean contains(PropertyObjectInterfaceInstance element) {
+                return element instanceof ObjectInstance;
+            }}));
     }
 
     // в интерфейсе
     public boolean isInInterface(GroupObjectInstance classGroup) {
-        return isInInterface(classGroup == null ? new HashSet<GroupObjectInstance>() : Collections.singleton(classGroup), false);
+        return isInInterface(classGroup == null ? SetFact.<GroupObjectInstance>EMPTY() : SetFact.singleton(classGroup), false);
     }
 
-    public boolean isInInterface(Set<GroupObjectInstance> classGroups, boolean any) {
+    public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
         // assert что classGroups все в GRID представлении
-        Map<P, AndClassSet> classImplement = new HashMap<P, AndClassSet>();
-        for(P propertyInterface : property.interfaces)
-            classImplement.put(propertyInterface, mapping.get(propertyInterface).getClassSet(classGroups));
-        return property.isInInterface(classImplement, any);
+        ImMap<P, AndClassSet> classImplement = mapping.mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceInstance>() {
+            public AndClassSet getMapValue(PropertyObjectInterfaceInstance value) {
+                return value.getClassSet(classGroups);
+            }});
+        return property.cacheIsInInterface(classImplement, any);
     }
 
     public abstract CalcPropertyObjectInstance<?> getDrawProperty();
 
-    public Map<P, DataObject> getInterfaceValues() {
-        Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
-        for(Map.Entry<P, PropertyObjectInterfaceInstance> implement : mapping.entrySet())
-            mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
-        return mapInterface;
+    public ImMap<P, DataObject> getInterfaceValues() {
+        return mapping.mapValues(new GetValue<DataObject, PropertyObjectInterfaceInstance>() {
+            public DataObject getMapValue(PropertyObjectInterfaceInstance value) {
+                return value.getDataObject();
+            }});
     }
 
     public Type getType() {
         return property.getType();
     }
 
-    protected Map<P, PropertyObjectInterfaceInstance> remap(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        Map<P, PropertyObjectInterfaceInstance> remapping = new HashMap<P, PropertyObjectInterfaceInstance>();
-        remapping.putAll(mapping);
-        for (P propertyInterface : property.interfaces) {
-
-            DataObject dataObject = mapKeyValues.get(remapping.get(propertyInterface));
-            if (dataObject != null) {
-                remapping.put(propertyInterface, dataObject);
-            }
-        }
-        return remapping;
+    protected ImMap<P, PropertyObjectInterfaceInstance> remap(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return mapping.replaceValues(mapKeyValues);
     }
 
     @Override

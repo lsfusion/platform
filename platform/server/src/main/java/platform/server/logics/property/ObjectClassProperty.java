@@ -1,7 +1,10 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
@@ -19,9 +22,6 @@ import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
-import java.util.Collections;
-import java.util.Map;
-
 public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     private final BaseClass baseClass;
@@ -34,16 +34,16 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
         finalizeInit();
     }
 
-    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return QuickSet.EMPTY();
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+        return SetFact.EMPTY();
     }
 
-    protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return BaseUtils.singleValue(joinImplement).classExpr(baseClass);
+    protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        return joinImplement.singleValue().classExpr(baseClass);
     }
     
     public Expr getExpr(Expr expr, Modifier modifier) {
-        return getExpr(Collections.singletonMap(getInterface(), expr), modifier);
+        return getExpr(MapFact.singleton(getInterface(), expr), modifier);
     }
 
     @Override
@@ -52,19 +52,19 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     private ClassPropertyInterface getInterface() {
-        return BaseUtils.single(interfaces);
+        return interfaces.single();
     }
 
     @Override
     @IdentityLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        return ChangeClassActionProperty.create(null, false, baseClass).getImplement(Collections.singletonList(getInterface()));
+        return ChangeClassActionProperty.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
-        PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
+        PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
         if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;
     }

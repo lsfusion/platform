@@ -75,8 +75,8 @@ class OracleDataAdapter extends DataAdapter {
         return "";
     }
 
-    public String isNULL(String expr1, String expr2, boolean notSafe) {
-        return "NVL("+ expr1 +","+ expr2 +")";
+    public String isNULL(String exprs, boolean notSafe) {
+        return "NVL("+ exprs +")";
     }
 
     public String getTop(int Top, String SelectString, String OrderString, String WhereString) {

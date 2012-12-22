@@ -62,11 +62,12 @@ public class MSSQLDataAdapter extends DataAdapter {
         return connect;
     }
 
-    public String isNULL(String expr1, String expr2, boolean notSafe) {
-        if(notSafe)
+    public String isNULL(String exprs, boolean notSafe) {
+        return "COALESCE(" + exprs + ")";
+/*        if(notSafe)
             return "CASE WHEN "+ expr1 +" IS NULL THEN "+ expr2 +" ELSE "+ expr1 +" END";
         else
-            return "ISNULL("+ expr1 +","+ expr2 +")";
+            return "ISNULL("+ expr1 +","+ expr2 +")";*/
     }
 
     public String getCreateSessionTable(String tableName, String declareString) {

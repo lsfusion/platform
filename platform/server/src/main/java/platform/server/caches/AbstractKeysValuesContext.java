@@ -1,6 +1,6 @@
 package platform.server.caches;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
@@ -14,11 +14,11 @@ public abstract class AbstractKeysValuesContext<T> extends AbstractTranslateCont
 
     @Override
     protected T aspectContextTranslate(MapTranslate translator) {
-        QuickSet<Value> values = aspectGetValues();
-        QuickSet<KeyExpr> keys = aspectGetKeys();
+        ImSet<Value> values = aspectGetValues();
+        ImSet<KeyExpr> keys = aspectGetKeys();
 
-        QuickSet<KeyExpr> transKeys = translator.translateKeys(keys);
-        QuickSet<Value> transValues = translator.translateValues(values);
+        ImSet<KeyExpr> transKeys = translator.translateKeys(keys);
+        ImSet<Value> transValues = translator.translateValues(values);
 
         if(transValues.equals(values) && transKeys.equals(keys))
             return (T) this;
@@ -34,12 +34,12 @@ public abstract class AbstractKeysValuesContext<T> extends AbstractTranslateCont
         return hash.filterKeysValues(aspectGetKeys(), aspectGetValues());
     }
 
-    private QuickSet<KeyExpr> keys;
+    private ImSet<KeyExpr> keys;
     @ManualLazy
-    protected QuickSet<KeyExpr> aspectGetKeys() {
+    protected ImSet<KeyExpr> aspectGetKeys() {
         if(keys==null)
             keys = getKeys();
         return keys;
     }
-    protected abstract QuickSet<KeyExpr> getKeys();
+    protected abstract ImSet<KeyExpr> getKeys();
 }

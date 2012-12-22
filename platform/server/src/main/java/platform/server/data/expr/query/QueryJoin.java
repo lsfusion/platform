@@ -1,30 +1,32 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
 import platform.base.Result;
-import platform.base.TwinImmutableInterface;
-import platform.server.caches.*;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractInnerHashContext;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
-import platform.server.data.query.*;
+import platform.server.data.query.ExprEnumerator;
+import platform.server.data.query.InnerJoin;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
         OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractInnerContext<T> implements InnerJoin<K, T> {
 
     protected final I query;
-    public final Map<K, BaseExpr> group; // вообще гря не reverseable
+    public final ImMap<K, BaseExpr> group; // вообще гря не reverseable
 
     public abstract static class QueryOuterContext<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
             OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractOuterContext<OC> {
@@ -50,28 +52,28 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         }
 
         @Override
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(thisObj.group.values());
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return BaseUtils.immutableCast(thisObj.group.values().toSet());
         }
 
-        public QuickSet<Value> getValues() {
+        public ImSet<Value> getValues() {
             return super.getValues().merge(thisObj.getInnerValues());
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return thisObj.equals(thisObj);
         }
 
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public NotNullExprSet getExprFollows(boolean recursive) {
+        public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
             return InnerExpr.getExprFollows(thisObj, recursive);
         }
         public InnerJoins getInnerJoins() {
             return InnerExpr.getInnerJoins(thisObj);
         }
-        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+        public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
             return InnerExpr.getFollowJoins(thisObj, upWheres, unionJoins);
         }
 
@@ -88,16 +90,16 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             outer = createOuterContext();
         return outer;
     }
-    public QuickSet<KeyExpr> getOuterKeys() {
+    public ImSet<KeyExpr> getOuterKeys() {
         return getOuter().getOuterKeys();
     }
-    public QuickSet<Value> getOuterValues() {
+    public ImSet<Value> getOuterValues() {
         return getOuter().getOuterValues();
     }
     public int hashOuter(HashContext hashContext) {
         return getOuter().hashOuter(hashContext);
     }
-    public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
+    public ImSet<OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
     public boolean enumerate(ExprEnumerator enumerator) {
@@ -113,24 +115,24 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
-    public NotNullExprSet getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
         return getOuter().getExprFollows(recursive);
     }
     public InnerJoins getInnerJoins() {
         return getOuter().getInnerJoins();
     }
-    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+    public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
         return getOuter().getJoinFollows(upWheres, unionJoins);
     }
 
-    public Map<K, BaseExpr> getJoins() {
+    public ImMap<K, BaseExpr> getJoins() {
         return group;
     }
 
     // множественное наследование
-    public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin whereJoin) {
-        QuickSet<InnerExpr> set = whereJoin.getExprFollows(true).getInnerExprs(null);
-        for(int i=0;i<set.size;i++) {
+    public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin<?, ?> whereJoin) {
+        ImSet<InnerExpr> set = NotNullExpr.getInnerExprs(whereJoin.getExprFollows(true), null);
+        for(int i=0,size=set.size();i<size;i++) {
             InnerExpr expr = set.get(i);
             if(BaseUtils.hashEquals(join,expr.getInnerJoin()))
                 return expr;
@@ -139,14 +141,14 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     }
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений
-    protected final QuickSet<KeyExpr> keys;
-    private final QuickSet<Value> values;
+    protected final ImSet<KeyExpr> keys;
+    private final ImSet<Value> values;
 
-    public QuickSet<KeyExpr> getKeys() {
+    public ImSet<KeyExpr> getKeys() {
         return keys;
     }
 
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return values;
     }
 
@@ -156,14 +158,12 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         MapValuesTranslate mapValues = translator.mapValues().filter(join.values);
         MapTranslate valueTranslator = mapValues.mapKeys();
         query = join.query.translateOuter(valueTranslator);
-        group = new HashMap<K, BaseExpr>();
-        for(Map.Entry<K, BaseExpr> groupJoin : join.group.entrySet())
-            group.put((K) groupJoin.getKey().translateOuter(valueTranslator),groupJoin.getValue().translateOuter(translator));
+        group = valueTranslator.translateExprKeys(translator.translateDirect(join.group));
         keys = join.keys;
         values = mapValues.translateValues(join.values);
     }
 
-    public QueryJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, I inner, Map<K, BaseExpr> group) {
+    public QueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, I inner, ImMap<K, BaseExpr> group) {
         this.keys = keys;
         this.values = values;
 
@@ -182,8 +182,8 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
 
         public int hashInner(HashContext hashContext) {
             int hash = 0;
-            for(Map.Entry<K,BaseExpr> groupExpr : thisObj.group.entrySet())
-                hash += groupExpr.getKey().hashOuter(hashContext) ^ hashOuterExpr(groupExpr.getValue());
+            for(int i=0,size=thisObj.group.size();i<size;i++)
+                hash += thisObj.group.getKey(i).hashOuter(hashContext) ^ hashOuterExpr(thisObj.group.getValue(i));
             hash = hash * 31;
             for(KeyExpr key : thisObj.keys)
                 hash += hashContext.keys.hash(key);
@@ -193,7 +193,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             return hash * 31 + thisObj.query.hashOuter(hashContext);
         }
 
-        public QuickSet<KeyExpr> getInnerKeys() {
+        public ImSet<KeyExpr> getInnerKeys() {
             return thisObj.keys;
         }
     }
@@ -209,10 +209,10 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         return innerHashContext.hashInner(hashContext);
     }
 
-    protected abstract T createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, I query, Map<K,BaseExpr> group);
+    protected abstract T createThis(ImSet<KeyExpr> keys, ImSet<Value> values, I query, ImMap<K, BaseExpr> group);
 
     protected T translate(MapTranslate translator) {
-        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (Map<K,BaseExpr>) translator.translateExprKeys(group));
+        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (ImMap<K,BaseExpr>) translator.translateExprKeys(group));
     }
 
     public boolean equalsInner(T object) {

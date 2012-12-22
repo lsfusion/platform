@@ -1,13 +1,11 @@
 package platform.server.session;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.SQLSession;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class IncrementTableProps extends IncrementProps {
 
@@ -24,7 +22,7 @@ public class IncrementTableProps extends IncrementProps {
         add(property, table);
     }
 
-    public QuickSet<CalcProperty> getProperties() {
+    public ImSet<CalcProperty> getProperties() {
         return tableProps.getProperties();
     }
 

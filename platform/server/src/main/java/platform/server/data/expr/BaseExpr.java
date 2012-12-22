@@ -1,32 +1,38 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.base.QuickMap;
-import platform.base.QuickSet;
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.cases.ExprCase;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.InArrayWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
-import platform.server.data.query.InnerJoins;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.BaseJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ClassReader;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 
 public abstract class BaseExpr extends Expr {
@@ -40,22 +46,22 @@ public abstract class BaseExpr extends Expr {
 
     // получает список ExprCase'ов
     public ExprCaseList getCases() {
-        return new ExprCaseList(this);
+        return new ExprCaseList(SetFact.<ExprCase>singleton(new ExprCase(Where.TRUE, this)));
     }
 
-    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean recursive) {
         assert includeThis || recursive; // также предполагается что NotNullExpr includeThis отработал
         return getExprFollows(recursive);
     }
-    private NotNullExprSet exprFollows = null;
+    private ImSet<NotNullExpr> exprFollows = null;
     @ManualLazy
-    public NotNullExprSet getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
         if(exprFollows==null)
             exprFollows = getBaseJoin().getExprFollows(recursive);
         return exprFollows;
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));
     }
 
@@ -68,7 +74,7 @@ public abstract class BaseExpr extends Expr {
         return (BaseExpr) aspectTranslate(translator);
     }
 
-    public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
+    public abstract void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
 
     public Expr followFalse(Where where, boolean pack) {
         if(getWhere().means(where))
@@ -125,35 +131,35 @@ public abstract class BaseExpr extends Expr {
     }
 
     // может возвращать null, оба метода для ClassExprWhere
-    public abstract AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and);
-    public abstract boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add);
+    public abstract AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and);
+    public abstract boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add);
 
-    public static <K> Map<K, Expr> packFollowFalse(Map<K, BaseExpr> mapExprs, Where falseWhere) {
-        Map<K, Expr> result = new HashMap<K, Expr>();
-        for(Map.Entry<K,BaseExpr> groupExpr : mapExprs.entrySet()) {
-            CheckWhere siblingWhere = Where.TRUE;
-            for(Map.Entry<K,BaseExpr> sibling : mapExprs.entrySet())
-                if(!BaseUtils.hashEquals(sibling.getKey(), groupExpr.getKey())) {
-                    Expr siblingExpr = result.get(sibling.getKey());
-                    if(siblingExpr==null) siblingExpr = sibling.getValue();
-                    siblingWhere = siblingWhere.andCheck(siblingExpr.getWhere());
+    public static <K> ImMap<K, Expr> packFollowFalse(final ImMap<K, BaseExpr> mapExprs, Where falseWhere) {
+
+        ImValueMap<K, Expr> result = mapExprs.mapItValues(); // идет обращение к предыдущим значениям
+        for(int i=0,size=mapExprs.size();i<size;i++) {
+            Where siblingWhere = Where.TRUE;
+            for(int j=0;j<size;j++) {
+                if(j!=i) {
+                    Expr siblingExpr = result.getMapValue(j);
+                    if(siblingExpr==null) siblingExpr = mapExprs.getValue(j);
+                    siblingWhere = andExprCheck(siblingWhere, siblingExpr.getWhere());
                 }
-            result.put(groupExpr.getKey(), groupExpr.getValue().packFollowFalse((Where) falseWhere.orCheck(siblingWhere.not())));
+            }
+            result.mapValue(i, mapExprs.getValue(i).packFollowFalse(orExprCheck(falseWhere, siblingWhere.not())));
         }
-        return result;
+        return result.immutableValue();
     }
 
-    private static <K> Map<K, BaseExpr> pushValues(Map<K, BaseExpr> group, Where falseWhere) {
-        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
-        Map<K, BaseExpr> pushedGroup = new HashMap<K, BaseExpr>();
-        for(Map.Entry<K, BaseExpr> groupExpr : group.entrySet()) { // проталкиваем values внутрь
-            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
-            pushedGroup.put(groupExpr.getKey(), pushValue!=null?pushValue: groupExpr.getValue());
-        }
-        return pushedGroup;
+    private static <K> ImMap<K, BaseExpr> pushValues(ImMap<K, BaseExpr> group, Where falseWhere) {
+        final ImMap<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
+        return group.mapValues(new GetValue<BaseExpr, BaseExpr>() {
+            public BaseExpr getMapValue(BaseExpr value) {
+                return BaseUtils.nvl(exprValues.get(value), value);
+            }});
     }
 
-    public static <K> Map<K, Expr> packPushFollowFalse(Map<K, BaseExpr> mapExprs, Where falseWhere) {
+    public static <K> ImMap<K, Expr> packPushFollowFalse(ImMap<K, BaseExpr> mapExprs, Where falseWhere) {
         return packFollowFalse(pushValues(mapExprs, falseWhere), falseWhere);
     }
 
@@ -168,8 +174,8 @@ public abstract class BaseExpr extends Expr {
     public abstract Stat getStatValue(KeyStat keyStat);
     public abstract InnerBaseJoin<?> getBaseJoin();
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(getUsed());
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return BaseUtils.immutableCast(getUsed().toSet());
     }
 
     public abstract Stat getTypeStat(KeyStat keyStat);
@@ -182,7 +188,7 @@ public abstract class BaseExpr extends Expr {
         return Collections.singleton(this);
     }
 
-    public Collection<BaseExpr> getUsed() {
+    public ImCol<BaseExpr> getUsed() {
         return getBaseJoin().getJoins().values();
     }
 
@@ -200,7 +206,7 @@ public abstract class BaseExpr extends Expr {
     
     public static Where getOrWhere(BaseJoin<?> join){
         Where result = Where.TRUE;
-        for(BaseExpr baseExpr : join.getJoins().values())
+        for(BaseExpr baseExpr : join.getJoins().valueIt())
             result = result.and(baseExpr.getOrWhere());
         return result;
     } 
@@ -224,7 +230,7 @@ public abstract class BaseExpr extends Expr {
         return !getNotNullWhere().isTrue();
     }
     
-    public static Where getNotNullWhere(Collection<? extends BaseExpr> exprs) {
+    public static Where getNotNullWhere(ImCol<? extends BaseExpr> exprs) {
         Where result = Where.TRUE;
         for(BaseExpr baseExpr : exprs)
             result = result.and(baseExpr.getNotNullWhere());

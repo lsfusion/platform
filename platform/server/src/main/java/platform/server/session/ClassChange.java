@@ -1,29 +1,25 @@
 package platform.server.session;
 
 import platform.base.ImmutableObject;
-import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.*;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.SystemClass;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.data.SessionRows;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.AbstractJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 
 public class ClassChange extends ImmutableObject {
     
@@ -66,13 +62,13 @@ public class ClassChange extends ImmutableObject {
     @IdentityLazy
     public Query<String, String> getQuery() {
         if(keyValue != null)
-            return new Query<String, String>(Collections.singletonMap("key", new KeyExpr("key")), Where.TRUE, Collections.singletonMap("key", keyValue), Collections.singletonMap("value", propValue.getExpr()));
+            return new Query<String, String>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE, MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getExpr()));
         else
-            return new Query<String, String>(Collections.singletonMap("key", key), expr, "value", where);
+            return new Query<String, String>(MapFact.singletonRev("key", key), expr, "value", where);
     }
 
     public Join<String> join(Expr expr) {
-        return getQuery().join(Collections.singletonMap("key", expr));
+        return getQuery().join(MapFact.singleton("key", expr));
     }
 
     public ClassChange materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
@@ -83,5 +79,15 @@ public class ClassChange extends ImmutableObject {
     
     public boolean isEmpty() {
         return where != null && where.isFalse();
+    }
+
+    @Override
+    public int hashCode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        throw new UnsupportedOperationException();
     }
 }

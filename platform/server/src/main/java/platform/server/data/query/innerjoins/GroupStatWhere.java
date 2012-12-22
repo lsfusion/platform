@@ -1,15 +1,11 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.TwinImmutableInterface;
-import platform.server.caches.ManualLazy;
-import platform.server.data.expr.Expr;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
 
 // сделаем generics для обратной совместимости, хотя в общем то он не нужен
 public class GroupStatWhere<K> extends GroupWhere {
@@ -20,18 +16,18 @@ public class GroupStatWhere<K> extends GroupWhere {
         super(keyEqual, where);
         this.stats = stats;
 
-        assert where.getKeyEquals().getSingleKey().isEmpty();
+        assert where.getKeyEquals().singleKey().isEmpty();
     }
 
-    public static <K, V> Collection<GroupStatWhere<V>> mapBack(Collection<GroupStatWhere<K>> col, Map<V,K> map) {
-        Collection<GroupStatWhere<V>> result = new ArrayList<GroupStatWhere<V>>();
-        for(GroupStatWhere<K> group : col)
-            result.add(new GroupStatWhere<V>(group.keyEqual, group.stats.mapBack(map), group.where));
-        return result;
+    public static <K, V> ImCol<GroupStatWhere<V>> mapBack(ImCol<GroupStatWhere<K>> col, final ImMap<V,K> map) {
+        return col.mapColValues(new GetValue<GroupStatWhere<V>, GroupStatWhere<K>>() {
+            public GroupStatWhere<V> getMapValue(GroupStatWhere<K> group) {
+                return new GroupStatWhere<V>(group.keyEqual, group.stats.mapBack(map), group.where);
+            }});
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return super.twins(o) && stats.equals(((GroupStatWhere) o).stats);
     }
 

@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.rules.TestName;
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.classes.CustomClass;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.form.entity.GroupObjectEntity;
@@ -106,7 +107,7 @@ public class LsfLogicsParserPresentationTest {
 
         AndFormulaProperty andProp = (AndFormulaProperty) captionProp.implement.property;
 
-        CalcPropertyInterfaceImplement<JoinProperty.Interface> andMappedImplement = captionProp.implement.mapping.get(single(andProp.andInterfaces));
+        CalcPropertyInterfaceImplement<JoinProperty.Interface> andMappedImplement = captionProp.implement.mapping.get(andProp.andInterfaces.single());
 
         assertTrue(andMappedImplement instanceof CalcPropertyMapImplement);
 
@@ -272,10 +273,10 @@ public class LsfLogicsParserPresentationTest {
         PropertyDrawEntity incProp = propDraw("incomeQuantity");
         PropertyDrawEntity inc2Prop = propDraw("incomeQuantity2");
 
-        assertEquals(incProp.columnGroupObjects.size(), 1);
-        assertSame(BaseUtils.single(incProp.columnGroupObjects), sGroup);
+        assertEquals(incProp.getColumnGroupObjects().size(), 1);
+        assertSame(incProp.getColumnGroupObjects().single(), sGroup);
 
-        assertEquals(inc2Prop.columnGroupObjects.size(), 0);
+        assertEquals(inc2Prop.getColumnGroupObjects().size(), 0);
     }
 
     @Test

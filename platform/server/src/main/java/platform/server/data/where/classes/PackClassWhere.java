@@ -1,23 +1,23 @@
 package platform.server.data.where.classes;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.query.innerjoins.GroupJoinsWheres;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.where.MapWhere;
+import platform.server.data.expr.NotNullExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-
-import java.util.List;
 
 // упрощенный Where
 public class PackClassWhere extends DataWhere {
@@ -31,15 +31,15 @@ public class PackClassWhere extends DataWhere {
         assert !packWhere.isTrue();
     }
 
-    protected DataWhereSet calculateFollows() {
-        return new DataWhereSet(packWhere.getExprFollows());
+    protected ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(packWhere.getExprFollows());
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return QuickSet.EMPTY();
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.EMPTY();
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         throw new RuntimeException("Not supported");
     }
 
@@ -47,7 +47,7 @@ public class PackClassWhere extends DataWhere {
         return System.identityHashCode(this);
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return false;
     }
 
@@ -70,7 +70,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         throw new RuntimeException("Not supported");
     }
     public ClassExprWhere calculateClassWhere() {

@@ -1,8 +1,7 @@
 package platform.server.classes;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 import platform.server.data.expr.Expr;
+import platform.server.data.sql.SQLSyntax;
 
 public interface StaticClass extends ConcreteValueClass {
 

@@ -1,14 +1,19 @@
 package platform.server.classes;
 
-import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
-import platform.base.QuickSet;
+import platform.base.SFunctionSet;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.sets.ConcreteCustomClassSet;
-import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
@@ -25,7 +30,9 @@ import platform.server.logics.property.actions.ChangeClassActionProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -67,7 +74,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public final void addParentClass(CustomClass parent) {
         this.parents.add(parent);
         parent.children.add(this);
-        assert parent.childs==null;
+        assert checkParentChildsCaches(parent);
+    }
+
+    private boolean checkParentChildsCaches(CustomClass parent) {
+        assert parent.childs == null; 
+        for(CustomClass recParent : parent.parents)
+            checkParentChildsCaches(recParent);
+        return true;
     }
 
     @Override
@@ -120,64 +134,65 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return (ConcreteCustomClass) cls;
     }
 
-    public CustomClassSet commonParents(CustomClass toCommon) {
+    public ImSet<CustomClass> commonParents(CustomClass toCommon) {
         commonClassSet1(true);
         toCommon.commonClassSet2(false,null,true);
 
-        CustomClassSet result = new CustomClassSet();
+        MSet<CustomClass> result = SetFact.mSet();
         commonClassSet3(result,null,true);
-        return result;
+        return result.immutable();
     }
 
-    Map<CustomClass,CustomClassSet> cacheChilds = new HashMap<CustomClass,CustomClassSet>();
+    MAddExclMap<CustomClass,ImSet<CustomClass>> cacheChilds = MapFact.mSmallAddExclMap();
 
     // получает классы у которого есть оба интерфейса
-    public CustomClassSet commonChilds(CustomClass toCommon) {
-        CustomClassSet result = null;
+    public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
+        ImSet<CustomClass> result = null;
         if(BusinessLogics.activateCaches) result = cacheChilds.get(toCommon);
         if(result!=null) return result;
-        result = new CustomClassSet();
         commonClassSet1(false);
         toCommon.commonClassSet2(false,null,false);
 
-        commonClassSet3(result,null,false);
-        if(BusinessLogics.activateCaches) cacheChilds.put(toCommon,result);
+        MSet<CustomClass> mResult = SetFact.mSet();
+        commonClassSet3(mResult,null,false);
+        result = mResult.immutable();
+
+        if(BusinessLogics.activateCaches) cacheChilds.exclAdd(toCommon, result);
         return result;
     }
 
 
-    public void fillParents(Collection<CustomClass> parentSet) {
-        if (parentSet.contains(this)) return;
-        parentSet.add(this);
+    public void fillParents(MSet<CustomClass> parentSet) {
+        if (parentSet.add(this)) return;
 
         for(CustomClass parent : parents)
             parent.fillParents(parentSet);
     }
 
     // заполняет список классов
-    public void fillChilds(Set<CustomClass> classSet) {
+    public void fillChilds(MSet<CustomClass> classSet) {
         classSet.add(this);
 
         for(CustomClass child : children)
             child.fillChilds(classSet);
     }
 
-    private Set<CustomClass> childs = null;
+    private ImSet<CustomClass> childs = null;
     @ManualLazy
-    public Set<CustomClass> getChilds() {
+    public ImSet<CustomClass> getChilds() {
         if(childs==null) {
-            childs = new HashSet<CustomClass>();
-            fillChilds(childs);
+            MSet<CustomClass> mChilds = SetFact.mSet();
+            fillChilds(mChilds);
+            childs = mChilds.immutable();
         }
         return childs;
     }
 
     // заполняет список классов
-    public void fillConcreteChilds(Collection<ConcreteCustomClass> classSet) {
+    public void fillConcreteChilds(MSet<ConcreteCustomClass> classSet) {
         if(this instanceof ConcreteCustomClass) {
             ConcreteCustomClass concreteThis = (ConcreteCustomClass) this;
-            if(classSet.contains(concreteThis)) return;
-            classSet.add(concreteThis);
+            if(classSet.add(concreteThis)) return;
         }
 
         for(CustomClass child : children)
@@ -185,25 +200,25 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     // заполняет все нижние классы имплементации
-    public abstract void fillNextConcreteChilds(ConcreteCustomClassSet classSet);
+    public abstract void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet);
 
-    public Collection<ConcreteCustomClass> getConcreteChildren() {
+    public ImSet<ConcreteCustomClass> getConcreteChildren() {
 
-        Collection<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
-        fillConcreteChilds(result);
-        return result;
+        MSet<ConcreteCustomClass> mResult = SetFact.mSet();
+        fillConcreteChilds(mResult);
+        return mResult.immutable();
     }
 
-    public void getDiffSet(ConcreteObjectClass diffClass,Collection<CustomClass> addClasses,Collection<CustomClass> removeClasses) {
+    public void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses) {
         if(diffClass instanceof UnknownClass) { // если неизвестный то все добавляем
-            fillParents(addClasses);
+            fillParents(mAddClasses);
             return;
         }
 
         commonClassSet1(true); // check
-        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,removeClasses,true);
+        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true);
 
-        commonClassSet3(null,addClasses,true);
+        commonClassSet3(null,mAddClasses,true);
     }
 
 
@@ -219,7 +234,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     // 2-й шаг пометки
     // 2 - верхний общий класс
     // 3 - просто общий класс
-    private void commonClassSet2(boolean set,Collection<CustomClass> free,boolean up) {
+    private void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up) {
         if(!set) {
             if(check >0) {
                 if(check !=1) return;
@@ -241,7 +256,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    private void commonClassSet3(CustomClassSet common,Collection<CustomClass> free,boolean up) {
+    private void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up) {
         if(check ==0) return;
         if(common!=null && check ==2) common.add(this);
         if(free!=null && check ==1) free.add(this);
@@ -270,8 +285,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public List<NavigatorElement> getRelevantElements(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
-        List<CustomClass> upParents = new ArrayList<CustomClass>();
-        fillParents(upParents);
+        MSet<CustomClass> mUpParents = SetFact.mSet();
+        fillParents(mUpParents);
+        ImSet<CustomClass> upParents = mUpParents.immutable();
 
         List<NavigatorElement> result = new ArrayList<NavigatorElement>();
         for(CustomClass parent : upParents)
@@ -297,7 +313,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е
-    public boolean upInSet(UpClassSet upSet, ConcreteCustomClassSet set) {
+    public boolean upInSet(UpClassSet upSet, ImSet<ConcreteCustomClass> set) {
         if(upSet.has(this)) return true; // по child'ам уже не идем они явно все тоже есть
         if(this instanceof ConcreteCustomClass && !set.contains((ConcreteCustomClass) this)) return false;
         for(CustomClass child : children)
@@ -413,57 +429,64 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return property;
     }
 
-    public static Set<IsClassProperty> getProperties(Set<? extends ValueClass> classes) {
-        Set<IsClassProperty> result = new HashSet<IsClassProperty>();
-        for(ValueClass valueClass : classes)
-            result.add(valueClass.getProperty());
-        return result;
+    public static ImSet<IsClassProperty> getProperties(ImSet<? extends ValueClass> classes) {
+        return ((ImSet<ValueClass>)classes).mapSetValues(new GetValue<IsClassProperty, ValueClass>() {
+            public IsClassProperty getMapValue(ValueClass value) {
+                return value.getProperty();
+            }});
     }
 
-    public QuickSet<CalcProperty> getChildProps() {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
-        for(CustomClass customClass : getChilds()) {
-            result.add(customClass.getProperty().getChanged(IncrementType.SET));
-            result.add(customClass.getProperty().getChanged(IncrementType.DROP));
+    public ImSet<CalcProperty> getChildProps() {
+        ImSet<CustomClass> childs = getChilds();
+        MExclSet<CalcProperty> mResult = SetFact.mExclSet(childs.size()*2);
+        for(CustomClass customClass : childs) {
+            mResult.exclAdd(customClass.getProperty().getChanged(IncrementType.SET));
+            mResult.exclAdd(customClass.getProperty().getChanged(IncrementType.DROP));
         }
-        return result;
+        return mResult.immutable();
     }
 
-    public QuickSet<CalcProperty> getChildDropProps(ConcreteObjectClass toClass) {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
-        for(CustomClass customClass : getChilds())
-            if(!(toClass instanceof CustomClass && ((CustomClass)toClass).isChild(customClass)))
-                result.add(customClass.getProperty().getChanged(IncrementType.DROP));
-        return result;
+    public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
+        return getChilds().filterFn(new SFunctionSet<CustomClass>() {
+            public boolean contains(CustomClass customClass) {
+                return !(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(customClass));
+            }
+        }).mapSetValues(new GetValue<CalcProperty, CustomClass>() {
+            public CalcProperty getMapValue(CustomClass value) {
+                return value.getProperty().getChanged(IncrementType.DROP);
+            }
+        });
     }
 
-    public QuickSet<CalcProperty> getParentSetProps() {
-        QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
-        Collection<CustomClass> parents = new HashSet<CustomClass>();
-        fillParents(parents);
+    public ImSet<CalcProperty> getParentSetProps() {
+        MSet<CustomClass> mParents = SetFact.mSet();
+        fillParents(mParents);
+        ImSet<CustomClass> parents = mParents.immutable();
+
+        MExclSet<CalcProperty> result = SetFact.mExclSet(parents.size());
         for(CustomClass parent : parents)
-            result.add(parent.getProperty().getChanged(IncrementType.SET));
-        return result;
+            result.exclAdd(parent.getProperty().getChanged(IncrementType.SET));
+        return result.immutable();
     }
 
-    public static Set<ChangedProperty> getChangeProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
-        Set<ChangedProperty> result = new HashSet<ChangedProperty>();
+    public static ImSet<ChangedProperty> getChangeProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
+        MExclSet<ChangedProperty> result = SetFact.mExclSet(addClasses.size() + removeClasses.size());
         for(CustomClass addClass : addClasses)
-            result.add(addClass.getProperty().getChanged(IncrementType.SET));
+            result.exclAdd(addClass.getProperty().getChanged(IncrementType.SET));
         for(CustomClass removeClass : removeClasses)
-            result.add(removeClass.getProperty().getChanged(IncrementType.DROP));
-        return result;
+            result.exclAdd(removeClass.getProperty().getChanged(IncrementType.DROP));
+        return result.immutable();
     }
 
-    public static Set<IsClassProperty> getProperties(Set<CustomClass> addClasses, Set<CustomClass> removeClasses) {
-        return getProperties(BaseUtils.mergeSet(addClasses, removeClasses));
+    public static ImSet<IsClassProperty> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
+        return getProperties(addClasses.merge(removeClasses));
     }
 
-    public void fillChangeProps(ConcreteObjectClass cls, QuickSet<CalcProperty> fill) {
-        Set<CustomClass> addClasses = new HashSet<CustomClass>();
-        Set<CustomClass> removeClasses = new HashSet<CustomClass>();
-        getDiffSet(cls, addClasses, removeClasses);
-        fill.addAll(getChangeProperties(addClasses, removeClasses));
+    public void fillChangeProps(ConcreteObjectClass cls, MExclSet<CalcProperty> fill) {
+        MSet<CustomClass> mAddClasses = SetFact.mSet();
+        MSet<CustomClass> mRemoveClasses = SetFact.mSet();
+        getDiffSet(cls, mAddClasses, mRemoveClasses);
+        fill.exclAddAll(getChangeProperties(mAddClasses.immutable(), mRemoveClasses.immutable()));
     }
 
     public static ActionProperty getChangeClassAction(ObjectClass cls) {

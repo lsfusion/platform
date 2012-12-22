@@ -1,35 +1,39 @@
 package platform.server.data.expr.where.ifs;
 
-import platform.base.QuickSet;
+import platform.base.BaseUtils;
+import platform.base.TwinImmutableObject;
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.interop.Compare;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
-import platform.server.data.expr.*;
-import platform.server.data.expr.query.Stat;
-import platform.server.data.expr.where.cases.ExprCaseList;
-import platform.server.data.query.SourceJoin;
-import platform.server.data.where.Where;
-import platform.server.data.where.MapWhere;
-import platform.server.data.type.Type;
-import platform.server.data.type.ClassReader;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.ManualLazy;
-import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
-import platform.interop.Compare;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.cases.ExprCase;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.ClassReader;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 
 import java.util.Set;
 
 public class IfExpr extends Expr {
 
-    public Where ifWhere;
-    public Expr trueExpr;
-    public Expr falseExpr;
+    public final Where ifWhere;
+    public final Expr trueExpr;
+    public final Expr falseExpr;
 
     public IfExpr(Where ifWhere, Expr trueExpr, Expr falseExpr) {
         this.ifWhere = ifWhere;
@@ -53,14 +57,14 @@ public class IfExpr extends Expr {
     }
 
     private static Expr createPack(Where where, Expr trueExpr, Expr falseExpr, Where falseWhere, boolean pack) {
-        trueExpr = trueExpr.followFalse(falseWhere.or(where.not()), pack);
-        falseExpr = falseExpr.followFalse(falseWhere.or(where), pack);
+        trueExpr = trueExpr.followFalse(orExprCheck(falseWhere, where.not()), pack);
+        falseExpr = falseExpr.followFalse(orExprCheck(falseWhere, where), pack);
 
         if(BaseUtils.hashEquals(trueExpr, falseExpr))
             return trueExpr;
 
        // вообще должен был быть equals (и верхняя проверка не нужна), но будет слишком сложное условие
-        where = where.followFalse(falseWhere.or(trueExpr.getWhere().not().and(falseExpr.getWhere().not())), pack);
+        where = where.followFalse(orExprCheck(falseWhere, andExprCheck(trueExpr.getWhere().not(), falseExpr.getWhere().not())), pack);
         if(where.isTrue())
             return trueExpr;
         if(where.isFalse())
@@ -77,19 +81,23 @@ public class IfExpr extends Expr {
             IfExpr trueIfExpr = ((IfExpr)trueExpr);
             if(trueIfExpr.ifWhere.means(where)) {
                 Where.FollowChange change = new Where.FollowChange();
-                Where meanWhere = where.followFalse(trueIfExpr.ifWhere, pack, change);
+                Where meanWhere = where.followFalseChange(trueIfExpr.ifWhere, pack, change);
                 if(change.type!= Where.FollowType.EQUALS)
-                    return createMerge(trueIfExpr.ifWhere, trueIfExpr.trueExpr, createMean(meanWhere, trueIfExpr.falseExpr, falseExpr, pack, falseChecked));
+                    return createOrderMerge(trueIfExpr.ifWhere, trueIfExpr.trueExpr, createMean(meanWhere, trueIfExpr.falseExpr, falseExpr, pack, falseChecked));
             }
         }
 
-        if(falseChecked) {
-            if(trueExpr.getWhereDepth() >= falseExpr.getWhereDepth())
-                return createMerge(where, trueExpr, falseExpr);
-            else
-                return createMerge(where.not(), falseExpr, trueExpr);
-        } else
+        if(falseChecked)
+            return createOrderMerge(where, trueExpr, falseExpr);
+        else
             return createMean(where.not(), falseExpr, trueExpr, pack, true);
+    }
+
+    private static Expr createOrderMerge(Where where, Expr trueExpr, Expr falseExpr) {
+        if(trueExpr.getWhereDepth() >= falseExpr.getWhereDepth())
+            return createMerge(where, trueExpr, falseExpr);
+        else
+            return createMerge(where.not(), falseExpr, trueExpr);
     }
 
     private static Expr createMerge(Where where, Expr trueExpr, Expr falseExpr) {
@@ -135,7 +143,7 @@ public class IfExpr extends Expr {
         return trueExpr.getTypeStat(fullWhere.and(ifWhere));
     }
 
-    public boolean twins(TwinImmutableInterface o) { // порядок высот / общий
+    public boolean twins(TwinImmutableObject o) { // порядок высот / общий
         return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr) o).falseExpr);
     }
 
@@ -156,7 +164,7 @@ public class IfExpr extends Expr {
     }
 
     public ExprCaseList getCases() {
-        throw new RuntimeException("not supported");
+        return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE, falseExpr)));
     }
 
     public Expr classExpr(BaseClass baseClass) {
@@ -190,14 +198,14 @@ public class IfExpr extends Expr {
         return "CASE WHEN " + ifWhere.getSource(compile) + " THEN " + trueExpr.getSource(compile) + " ELSE " + falseExpr.getSource(compile) + " END";
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         ifWhere.fillJoinWheres(joins, andWhere);
         trueExpr.fillJoinWheres(joins, andWhere.and(ifWhere));
         falseExpr.fillJoinWheres(joins, andWhere.and(ifWhere.not()));
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(ifWhere, trueExpr, falseExpr);
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>toSet(ifWhere, trueExpr, falseExpr);
     }
 
     public Set<BaseExpr> getBaseExprs() {

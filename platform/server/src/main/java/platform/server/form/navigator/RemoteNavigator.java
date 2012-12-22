@@ -10,6 +10,9 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
@@ -24,7 +27,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.StringClass;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -39,11 +42,13 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.instance.remote.RemotePausableInvocation;
 import platform.server.form.view.FormView;
 import platform.server.logics.*;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.DataSession;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -109,7 +114,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         for (DataSession session : sessions)
-            session.updateProperties(Collections.singleton(property));
+            session.updateProperties(SetFact.singleton(property));
     }
 
     public void relogin(String login) throws RemoteException {
@@ -192,8 +197,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public byte[] getCurrentUserInfoByteArray() {
         try {
             DataSession session = createSession();
-            Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
-            query.properties.put("name", BL.LM.currentUserName.getExpr());
+            QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
+            query.addProperty("name", BL.LM.currentUserName.getExpr());
             String userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
             session.close();
 
@@ -435,7 +440,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             for (String objectSID : initialObjects.keySet()) {
                 GroupObjectInstance groupObject = null;
                 ObjectInstance object = null;
-                for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.groups) {
+                for (GroupObjectInstance group : (List<GroupObjectInstance>) form.form.getOrderGroups()) {
                     for (ObjectInstance obj : group.objects) {
                         if (obj.getsID().equals(objectSID)) {
                             object = obj;
@@ -452,8 +457,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return form;
     }
 
-    private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
-    private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
+    private Map<FormEntity, RemoteForm> openForms = MapFact.mAddRemoveMap();
+    private Map<FormEntity, RemoteForm> invalidatedForms = MapFact.mAddRemoveMap();
 
     private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean interactive) {
         try {
@@ -461,7 +466,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             if (remoteForm == null) {
 
                 remoteForm = createRemoteForm(
-                        createFormInstance(formEntity, new HashMap<ObjectEntity, DataObject>(), createSession(), isModal, FormSessionScope.NEWSESSION, false, interactive)
+                        createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, interactive)
                 );
             }
             openForms.put(formEntity, remoteForm);
@@ -717,7 +722,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 DataSession session = createSession();
-                property.execute(new HashMap<ClassPropertyInterface, DataObject>(), session, null);
+                property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
                 session.apply(BL);
                 session.close();
                 assert !delayRemoteChanges; // тут не должно быть никаких delayRemote
@@ -752,7 +757,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         return new FormInstance<T>(formEntity, BL,
                                    sessionScope.isNewSession() ? session.createSession() : session,
                                    securityPolicy, this, this, computer, mapObjects, isModal, sessionScope.isManageSession(),

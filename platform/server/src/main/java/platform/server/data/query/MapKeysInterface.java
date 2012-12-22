@@ -1,10 +1,9 @@
 package platform.server.data.query;
 
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.data.expr.KeyExpr;
-
-import java.util.Map;
 
 public interface MapKeysInterface<T> {
 
-    Map<T, KeyExpr> getMapKeys();
+    ImRevMap<T, KeyExpr> getMapKeys();
 }

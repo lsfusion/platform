@@ -1,5 +1,7 @@
 package platform.base.identity;
 
+import platform.base.col.interfaces.mutable.MOrderExclSet;
+
 public class IdentityObject implements IdentityInterface {
 
     public int ID;

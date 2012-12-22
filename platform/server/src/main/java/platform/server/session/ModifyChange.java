@@ -1,14 +1,15 @@
 package platform.server.session;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.BaseUtils;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.PropertyInterface;
-
-import java.util.Set;
 
 public class ModifyChange<P extends PropertyInterface> extends AbstractValuesContext<ModifyChange<P>> {
     public final PropertyChange<P> change;
@@ -24,7 +25,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
         return change.hashValues(hashValues) * 31 + (isFinal?1:0);
     }
 
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return change.getInnerValues();
     }
 
@@ -34,7 +35,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return change.equals(((ModifyChange)o).change) && isFinal == ((ModifyChange)o).isFinal;
     }
 
@@ -55,4 +56,18 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     public boolean isEmpty() {
         return change.where.isFalse();
     }
+
+    public final static AddValue<Object, ModifyChange<PropertyInterface>> addValue = new SimpleAddValue<Object, ModifyChange<PropertyInterface>>() {
+        public ModifyChange<PropertyInterface> addValue(Object key, ModifyChange<PropertyInterface> prevValue, ModifyChange<PropertyInterface> newValue) {
+            return prevValue.add(newValue);
+        }
+
+        public boolean symmetric() {
+            return false;
+        }
+    };
+    public static <M> AddValue<M, ModifyChange> addValue() {
+        return BaseUtils.immutableCast(addValue);
+    }
+
 }

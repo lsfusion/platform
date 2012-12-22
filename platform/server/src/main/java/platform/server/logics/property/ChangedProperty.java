@@ -2,6 +2,10 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -13,8 +17,6 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
-
-import java.util.*;
 
 public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
@@ -32,12 +34,12 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld());
     }
 
-    protected Expr calculateExpr(Map<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         WhereBuilder changedIncrementWhere = new WhereBuilder();
         property.getIncrementExpr(joinImplement, changedIncrementWhere, propClasses, propChanges, type);
         if(changedWhere!=null) changedWhere.add(changedIncrementWhere.toWhere());
@@ -46,7 +48,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
 
     // для resolve'а следствий в частности
     public PropertyChange<T> getFullChange(Modifier modifier) {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
+        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Expr expr = property.getExpr(mapKeys, modifier);
         Where where;
         switch(type) {
@@ -63,10 +65,10 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    protected Collection<Pair<Property<?>, LinkType>> calculateLinks() {
-        if(property instanceof IsClassProperty)
-            return actionChangeProps; // только у Data и IsClassProperty
-        else
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {
+        if(property instanceof IsClassProperty) {
+            return getActionChangeProps(); // только у Data и IsClassProperty
+        } else
             return super.calculateLinks();
     }
 
@@ -75,7 +77,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(false)));
     }
 
-    public Map<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         return property.getInterfaceCommonClasses(null);
     }
 }

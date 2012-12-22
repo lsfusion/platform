@@ -1,6 +1,11 @@
 package platform.server.data.type;
 
 import platform.base.ListCombinations;
+import platform.base.col.ListFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.ConcreteClass;
@@ -10,14 +15,14 @@ import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.*;
+import java.util.Arrays;
 
 public class ConcatenateType extends AbstractType<byte[]> {
 
@@ -123,7 +128,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return createConcrete(classes);
     }
 
-    public String getConcatenateSource(List<String> exprs,SQLSyntax syntax) {
+    public String getConcatenateSource(ImList<String> exprs,SQLSyntax syntax) {
         // сначала property и extra объединяем в одну строку
         String source = "";
         for(int i=0;i<types.length;i++)
@@ -139,14 +144,14 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return types[part].getCast("SUBSTRING(" + expr + "," + (offset + 1) + "," + types[part].getBinaryLength(syntax.isBinaryString()) + ")", syntax, false);
     }
 
-    public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
+    public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {
         for(int i=0;i<types.length;i++) {
             Expr partExpr = DeconcatenateExpr.create(expr, i, baseClass);
-            partExpr.getReader(query.where).prepareClassesQuery(partExpr,query,baseClass);
+            partExpr.getReader(where).prepareClassesQuery(partExpr, where, exprs,baseClass);
         }
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
+    public ConcreteClass readClass(Expr expr, ImMap<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         ConcreteClass[] classSets = new ConcreteClass[types.length];
         for(int i=0;i<types.length;i++) {
             Expr partExpr = DeconcatenateExpr.create(expr, i, baseClass);
@@ -155,7 +160,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return new ConcatenateClassSet(classSets);
     }
 
-    public List<AndClassSet> getUniversal(BaseClass baseClass) {
+    public ImList<AndClassSet> getUniversal(BaseClass baseClass) {
         throw new RuntimeException("not supported yet");
     }
 
@@ -166,11 +171,11 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return new ConcatenateClassSet(classSets);
     }
 
-    public Iterable<List<AndClassSet>> getUniversal(BaseClass baseClass, int part, AndClassSet fix) {
-        List<List<AndClassSet>> classSets = new ArrayList<List<AndClassSet>>();
+    public Iterable<ImList<AndClassSet>> getUniversal(BaseClass baseClass, int part, AndClassSet fix) {
+        MList<ImList<AndClassSet>> mClassSets = ListFact.mList(types.length);
         for(int i=0;i<types.length;i++)
-            classSets.add(i==part? Collections.singletonList(fix) : ((Type<?>)types[i]).getUniversal(baseClass));
-        return new ListCombinations<AndClassSet>(classSets);
+            mClassSets.add(i==part? ListFact.singleton(fix) : ((Type<?>)types[i]).getUniversal(baseClass));
+        return new ListCombinations<AndClassSet>(mClassSets.immutableList());
     }
 
     public int getBinaryLength(boolean charBinary) {

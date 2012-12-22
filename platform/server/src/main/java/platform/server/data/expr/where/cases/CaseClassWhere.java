@@ -1,10 +1,9 @@
 package platform.server.data.expr.where.cases;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.Map;
-
 public interface CaseClassWhere<K,V> {
-    V getCaseClassWhere(Map<K, BaseExpr> mapCase, ClassExprWhere caseClassWhere);
+    V getCaseClassWhere(ImMap<K, BaseExpr> mapCase, ClassExprWhere caseClassWhere);
 }

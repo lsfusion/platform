@@ -1,6 +1,10 @@
 package platform.server.caches;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.GlobalInteger;
+import platform.base.GlobalObject;
+import platform.base.ImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashMapKeys;
@@ -19,13 +23,21 @@ public abstract class AbstractInnerHashContext extends ImmutableObject implement
     public BaseUtils.HashComponents<KeyExpr> getComponents(final HashValues hashValues) {
         return BaseUtils.getComponents(new BaseUtils.HashInterface<KeyExpr, GlobalInteger>() {
 
-                public QuickMap<KeyExpr, GlobalInteger> getParams() {
-                    return getInnerKeys().toQuickMap(keyClass);
+                public ImMap<KeyExpr, GlobalInteger> getParams() {
+                    return getInnerKeys().toMap(keyClass);
                 }
 
-                public int hashParams(QuickMap<KeyExpr, ? extends GlobalObject> map) {
-                    return hashInner(new HashContext(map.size>0?new HashMapKeys(map): HashCodeKeys.instance, hashValues));
+                public int hashParams(ImMap<KeyExpr, ? extends GlobalObject> map) {
+                    return hashInner(new HashContext(map.size()>0?new HashMapKeys(map): HashCodeKeys.instance, hashValues));
                 }
             });
+    }
+
+    public boolean equals(Object obj) {
+        throw new UnsupportedOperationException();
+    }
+
+    public int hashCode() {
+        throw new UnsupportedOperationException();
     }
 }

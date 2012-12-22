@@ -96,7 +96,7 @@ META defineOutContractLedgerInContractLedgerPrefix(caption, prefix)
         paymentConditionContractDate(contract###prefix##ContractLedger(prefix##ContractLedger), date###prefix##ContractLedger(prefix##ContractLedger));
 
     description###prefix##ContractLedger 'Название документа' (prefix##ContractLedger) = ABSTRACT STRING[200] (prefix##ContractLedger) PERSISTENT;
-    sum###prefix##ContractLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (prefix##ContractLedger) PERSISTENT;
+    sum###prefix##ContractLedger 'Сумма' = ABSTRACT NUMERIC[22,8] (prefix##ContractLedger) PERSISTENT;
 
     is###prefix##ContractLedger (prefix##ContractLedger) = prefix##ContractLedger IS prefix##ContractLedger;
 
@@ -468,7 +468,7 @@ END
 
 META defineCreditMemoUnion (prop, caption)
 
-    prop##CreditMemo caption (creditMemo) = UNION EXCLUSIVE prop##CreditMemoIn(creditMemo), prop##CreditMemoOut(creditMemo);
+    prop##CreditMemo caption (creditMemo) = UNION CLASS prop##CreditMemoIn(creditMemo), prop##CreditMemoOut(creditMemo);
 
 END
 

@@ -13,7 +13,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/open.png"));

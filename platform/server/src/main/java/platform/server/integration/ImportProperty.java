@@ -1,5 +1,8 @@
 package platform.server.integration;
 
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.ThisMessage;
@@ -14,7 +17,8 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: DAle
@@ -53,11 +57,11 @@ public class ImportProperty <P extends PropertyInterface> {
         return implement;
     }
 
-    private static <P> Map<P, Expr> getImplementExprs(Map<P, ImportKeyInterface> mapping, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Map<ImportField, Expr> importExprs, Modifier modifier) {
-        Map<P, Expr> importKeyExprs = new HashMap<P, Expr>();
-        for(Map.Entry<P, ImportKeyInterface> entry : mapping.entrySet())
-            importKeyExprs.put(entry.getKey(), entry.getValue().getExpr(importExprs, addedKeys, modifier));
-        return importKeyExprs;
+    private static <P> ImMap<P, Expr> getImplementExprs(final ImMap<P, ImportKeyInterface> mapping, final ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, final ImMap<ImportField, Expr> importExprs, final Modifier modifier) {
+        return mapping.mapValues(new GetValue<Expr, ImportKeyInterface>() {
+            public Expr getMapValue(ImportKeyInterface value) {
+                return value.getExpr(importExprs, addedKeys, modifier);
+            }});
     }
 
     @Override
@@ -67,8 +71,8 @@ public class ImportProperty <P extends PropertyInterface> {
 
     @Message("message.synchronize.property")
     @ThisMessage
-    public DataChanges synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
-        Map<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
+    public DataChanges synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
+        ImMap<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
         Expr importExpr;
         if (converter != null)
@@ -76,8 +80,8 @@ public class ImportProperty <P extends PropertyInterface> {
         else
             importExpr = importField.getExpr(importExprs);
 
-        Map<P, KeyExpr> mapKeys = implement.property.getMapKeys();
-        Map<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.getModifier());
+        ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
+        ImMap<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.getModifier());
 
         Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
 

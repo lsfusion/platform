@@ -1,6 +1,6 @@
 package platform.server.caches.hash;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
@@ -31,11 +31,11 @@ public class HashContext extends HashObject {
         return 31 * keys.hashCode() + values.hashCode();
     }
 
-    public HashContext filterKeysValues(QuickSet<KeyExpr> filterKeys, QuickSet<Value> filterValues) {
+    public HashContext filterKeysValues(ImSet<KeyExpr> filterKeys, ImSet<Value> filterValues) {
         return new HashContext(keys.filterKeys(filterKeys), values.filterValues(filterValues));
     }
 
-    public HashContext reverseTranslate(MapTranslate translator, QuickSet<KeyExpr> contextKeys, QuickSet<Value> contextValues) {
+    public HashContext reverseTranslate(MapTranslate translator, ImSet<KeyExpr> contextKeys, ImSet<Value> contextValues) {
         HashKeys transKeys = keys.reverseTranslate(translator, contextKeys);
         if(transKeys==null)
             return null;

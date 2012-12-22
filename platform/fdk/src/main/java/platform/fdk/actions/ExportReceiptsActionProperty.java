@@ -1,23 +1,23 @@
 package platform.fdk.actions;
 
-import jxl.write.DateTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -31,7 +31,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -62,43 +61,41 @@ public class ExportReceiptsActionProperty extends ScriptingActionProperty {
             String numberZReport = (String) LM.findLCPByCompoundName("numberZReport").read(session, zReportObject);
 
             KeyExpr receiptExpr = new KeyExpr("receipt");
-            Map<Object, KeyExpr> receiptKeys = new HashMap<Object, KeyExpr>();
-            receiptKeys.put("receipt", receiptExpr);
+            ImRevMap<Object, KeyExpr> receiptKeys = MapFact.singletonRev((Object) "receipt", receiptExpr);
 
             String[] receiptProperties = new String[]{"dateTimeReceipt", "discountSumReceipt",
                     "numberDiscountCardReceipt"};
-            Query<Object, Object> receiptQuery = new Query<Object, Object>(receiptKeys);
+            QueryBuilder<Object, Object> receiptQuery = new QueryBuilder<Object, Object>(receiptKeys);
             for (String rProperty : receiptProperties) {
-                receiptQuery.properties.put(rProperty, getLCP(rProperty).getExpr(context.getModifier(), receiptExpr));
+                receiptQuery.addProperty(rProperty, getLCP(rProperty).getExpr(context.getModifier(), receiptExpr));
             }
-            receiptQuery.and(getLCP("zReportReceipt").getExpr(context.getModifier(), receiptQuery.mapKeys.get("receipt")).compare(zReportObject.getExpr(), Compare.EQUALS));
-            receiptQuery.and(getLCP("exportReceipt").getExpr(context.getModifier(), receiptQuery.mapKeys.get("receipt")).getWhere());
+            receiptQuery.and(getLCP("zReportReceipt").getExpr(context.getModifier(), receiptQuery.getMapExprs().get("receipt")).compare(zReportObject.getExpr(), Compare.EQUALS));
+            receiptQuery.and(getLCP("exportReceipt").getExpr(context.getModifier(), receiptQuery.getMapExprs().get("receipt")).getWhere());
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptResult = receiptQuery.execute(session.sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptResult = receiptQuery.execute(session.sql);
 
-            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> receiptRows : receiptResult.entrySet()) {
-                DataObject receiptObject = new DataObject(receiptRows.getKey().get("receipt"), (ConcreteClass) LM.findClassByCompoundName("receipt"));
+            for (int i=0,size=receiptResult.size();i<size;i++) {
+                DataObject receiptObject = new DataObject(receiptResult.getKey(i).get("receipt"), (ConcreteClass) LM.findClassByCompoundName("receipt"));
                 LM.findLCPByCompoundName("exportReceipt").change(null, context.getSession(), receiptObject);
 
                 Element receipt = doc.createElement("receipt");
                 rootElement.appendChild(receipt);
 
                 KeyExpr receiptDetailExpr = new KeyExpr("receiptDetail");
-                Map<Object, KeyExpr> receiptDetailKeys = new HashMap<Object, KeyExpr>();
-                receiptDetailKeys.put("receiptDetail", receiptDetailExpr);
+                ImRevMap<Object, KeyExpr> receiptDetailKeys = MapFact.singletonRev((Object)"receiptDetail", receiptDetailExpr);
 
                 String[] receiptDetailProperties = new String[]{"quantityReceiptSaleDetail", "quantityReceiptReturnDetail",
                         "priceReceiptDetail", "idBarcodeReceiptDetail", "sumReceiptDetail", "discountSumReceiptDetail"};
-                Query<Object, Object> receiptDetailQuery = new Query<Object, Object>(receiptDetailKeys);
+                QueryBuilder<Object, Object> receiptDetailQuery = new QueryBuilder<Object, Object>(receiptDetailKeys);
                 for (String rdProperty : receiptDetailProperties) {
-                    receiptDetailQuery.properties.put(rdProperty, getLCP(rdProperty).getExpr(context.getModifier(), receiptDetailExpr));
+                    receiptDetailQuery.addProperty(rdProperty, getLCP(rdProperty).getExpr(context.getModifier(), receiptDetailExpr));
                 }
-                receiptDetailQuery.and(getLCP("receiptReceiptDetail").getExpr(context.getModifier(), receiptDetailQuery.mapKeys.get("receiptDetail")).compare(receiptObject.getExpr(), Compare.EQUALS));
+                receiptDetailQuery.and(getLCP("receiptReceiptDetail").getExpr(context.getModifier(), receiptDetailQuery.getMapExprs().get("receiptDetail")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(context.getSession().sql);
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(context.getSession().sql);
 
                 int numberReceiptDetail = 1;
-                for (Map<Object, Object> receiptDetailValues : receiptDetailResult.values()) {
+                for (ImMap<Object, Object> receiptDetailValues : receiptDetailResult.valueIt()) {
                     Element receiptDetail = doc.createElement("receiptDetail");
                     rootElement.appendChild(receiptDetail);
 
@@ -121,18 +118,17 @@ public class ExportReceiptsActionProperty extends ScriptingActionProperty {
                     receipt.appendChild(receiptDetail);
                 }
                 KeyExpr paymentExpr = new KeyExpr("payment");
-                Map<Object, KeyExpr> paymentKeys = new HashMap<Object, KeyExpr>();
-                paymentKeys.put("payment", paymentExpr);
+                ImRevMap<Object, KeyExpr> paymentKeys = MapFact.singletonRev((Object)"payment", paymentExpr);
 
-                Query<Object, Object> paymentQuery = new Query<Object, Object>(paymentKeys);
-                paymentQuery.properties.put("sumPayment", getLCP("sumPayment").getExpr(context.getModifier(), paymentExpr));
-                paymentQuery.properties.put("paymentMeansPayment", getLCP("paymentMeansPayment").getExpr(context.getModifier(), paymentExpr));
-                paymentQuery.properties.put("sidPaymentTypePayment", getLCP("sidPaymentTypePayment").getExpr(context.getModifier(), paymentExpr));
+                QueryBuilder<Object, Object> paymentQuery = new QueryBuilder<Object, Object>(paymentKeys);
+                paymentQuery.addProperty("sumPayment", getLCP("sumPayment").getExpr(context.getModifier(), paymentExpr));
+                paymentQuery.addProperty("paymentMeansPayment", getLCP("paymentMeansPayment").getExpr(context.getModifier(), paymentExpr));
+                paymentQuery.addProperty("sidPaymentTypePayment", getLCP("sidPaymentTypePayment").getExpr(context.getModifier(), paymentExpr));
 
-                paymentQuery.and(getLCP("receiptPayment").getExpr(context.getModifier(), paymentQuery.mapKeys.get("payment")).compare(receiptObject.getExpr(), Compare.EQUALS));
+                paymentQuery.and(getLCP("receiptPayment").getExpr(context.getModifier(), paymentQuery.getMapExprs().get("payment")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
-                for (Map<Object, Object> paymentValues : paymentResult.values()) {
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
+                for (ImMap<Object, Object> paymentValues : paymentResult.valueIt()) {
                     Element payment = doc.createElement("payment");
                     rootElement.appendChild(payment);
 
@@ -150,7 +146,7 @@ public class ExportReceiptsActionProperty extends ScriptingActionProperty {
 
                 String[] fields = new String[]{"dateTimeReceipt", "discountSumReceipt", "numberDiscountCardReceipt"};
                 for (String field : fields) {
-                    Object value = receiptRows.getValue().get(field);
+                    Object value = receiptResult.getValue(i).get(field);
                     if (value != null) {
                         Element element = doc.createElement(field);
                         if (value instanceof Timestamp)

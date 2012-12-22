@@ -1,25 +1,31 @@
 package platform.server.form.instance;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.MOrderFilterSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.form.entity.TreeGroupEntity;
 
-import java.util.*;
-
 public class TreeGroupInstance {
     public TreeGroupEntity entity;
-    public final List<GroupObjectInstance> groups;
+    public final ImOrderSet<GroupObjectInstance> groups;
 
-    @IdentityLazy
-    public List<GroupObjectInstance> getDownTreeGroups(GroupObjectInstance group) {
-        List<GroupObjectInstance> downGroups = new ArrayList<GroupObjectInstance>();
-        for (int i = groups.size() - 1; i >= 0; i--) {
-            GroupObjectInstance downGroup = groups.get(i);
-            if (downGroup.equals(group)) {
-                return downGroups;
-            }
-            downGroups.add(downGroup);
+    private static ImOrderSet<GroupObjectInstance> getUpTreeGroups(ImOrderSet<GroupObjectInstance> groups, GroupObjectInstance group, boolean include) {
+        MOrderFilterSet<GroupObjectInstance> upGroups = SetFact.mOrderFilter(groups);
+        for(GroupObjectInstance upGroup : groups) {
+            if(include)
+                upGroups.keep(upGroup);
+            if(upGroup.equals(group))
+                return SetFact.imOrderFilter(upGroups, groups);
+            if(!include)
+                upGroups.keep(upGroup);
         }
         throw new RuntimeException("should not be");
+    }
+
+    @IdentityLazy
+    public ImOrderSet<GroupObjectInstance> getDownTreeGroups(GroupObjectInstance group) {
+        return getUpTreeGroups(groups.reverseOrder(), group, false).reverseOrder();
     }
 
     @IdentityLazy
@@ -34,17 +40,11 @@ public class TreeGroupInstance {
     }
 
     @IdentityLazy
-    public List<GroupObjectInstance> getUpTreeGroups(GroupObjectInstance group) {
-        List<GroupObjectInstance> upGroups = new ArrayList<GroupObjectInstance>();
-        for(GroupObjectInstance upGroup : groups) {
-            upGroups.add(upGroup);
-            if(upGroup.equals(group))
-                return upGroups;
-        }
-        throw new RuntimeException("should not be");
+    public ImOrderSet<GroupObjectInstance> getUpTreeGroups(GroupObjectInstance group) {
+        return getUpTreeGroups(groups, group, true);
     }
 
-    public TreeGroupInstance(TreeGroupEntity entity, List<GroupObjectInstance> groups) {
+    public TreeGroupInstance(TreeGroupEntity entity, ImOrderSet<GroupObjectInstance> groups) {
         this.entity = entity;
         this.groups = groups;
 

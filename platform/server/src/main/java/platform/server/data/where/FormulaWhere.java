@@ -2,7 +2,9 @@ package platform.server.data.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
@@ -16,8 +18,6 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-
-import java.util.List;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
@@ -42,8 +42,8 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return "("+result+")";
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(wheres);
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>toExclSet(wheres);
     }
 
     protected boolean isComplex() {
@@ -122,11 +122,11 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return checkTrue;
     }
 
-    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere);
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);
 
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, noWhere);
-        if(result.size > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
+        if(result.size() > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
             result = result.compileMeans(keepStat, keyStat);
         return result;
     }
@@ -134,7 +134,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     protected abstract MeanClassWheres calculateGroupMeanClassWheres(boolean useNots);
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
         MeanClassWheres result = calculateGroupMeanClassWheres(useNots);
-        if(!useNots && (result.size > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
+        if(!useNots && (result.size() > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
             result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
         return result;
     }
@@ -142,7 +142,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     protected abstract KeyEquals calculateGroupKeyEquals();
     public KeyEquals calculateKeyEquals() {
         if(isFalse())
-            return new KeyEquals();
+            return KeyEquals.EMPTY;
 
         for(Where where : wheres)
             if(!where.getKeyEquals().isSimple())

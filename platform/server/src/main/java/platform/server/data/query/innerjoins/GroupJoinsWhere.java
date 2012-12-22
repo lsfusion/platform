@@ -1,47 +1,35 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
-import platform.server.caches.AbstractTranslateContext;
-import platform.server.caches.ManualLazy;
-import platform.server.caches.PackInterface;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.where.Where;
 
-import java.util.*;
-
 public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
     public final WhereJoins joins;
 
-    public final Map<WhereJoin, Where> upWheres;
+    public final ImMap<WhereJoin, Where> upWheres;
 
-    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Map<WhereJoin, Where> upWheres, Where where) {
+    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, ImMap<WhereJoin, Where> upWheres, Where where) {
         this(keyEqual, joins, where, upWheres);
 
-        assert where.getKeyEquals().getSingleKey().isEmpty();
+        assert where.getKeyEquals().singleKey().isEmpty();
     }
 
     // конструктор паковки для assertion'а
-    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Where where, Map<WhereJoin, Where> upWheres) {
+    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Where where, ImMap<WhereJoin, Where> upWheres) {
         super(keyEqual, where);
         this.joins = joins;
         this.upWheres = upWheres;
     }
 
-    public static long getComplexity(Collection<GroupJoinsWhere> whereJoins, boolean outer) {
-        int complexity = 0;
-        for(GroupJoinsWhere whereJoin : whereJoins)
-            complexity += whereJoin.where.getComplexity(outer);
-        return complexity;
-    }
-
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups) {
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) {
         return joins.getStatKeys(groups, where, keyEqual);
     }
 
@@ -50,7 +38,7 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     }
 
     @Override
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return super.twins(o) && joins.equals(((GroupJoinsWhere) o).joins) && upWheres.equals(((GroupJoinsWhere) o).upWheres);
     }
 

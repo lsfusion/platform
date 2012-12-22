@@ -2,8 +2,6 @@ package platform.server.logics.scripted.proxy;
 
 import platform.server.form.view.GroupObjectView;
 
-import java.awt.*;
-
 public class GroupObjectViewProxy extends ViewProxy<GroupObjectView> {
     public GroupObjectViewProxy(GroupObjectView target) {
         super(target);

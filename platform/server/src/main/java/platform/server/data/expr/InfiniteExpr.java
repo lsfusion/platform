@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.data.query.CompileSource;
@@ -35,7 +35,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return objectClass.getString(objectClass.getInfiniteValue(), compile.syntax);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return objectClass.equals(((InfiniteExpr)o).objectClass);
     }
 }

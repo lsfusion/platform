@@ -16,7 +16,7 @@ public interface SQLSyntax {
     String getClassName();
     Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
-    String isNULL(String expr1, String expr2, boolean notSafe);
+    String isNULL(String exprs, boolean notSafe);
 
     String getClustered();
     String getCommandEnd();

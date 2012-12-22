@@ -1,23 +1,24 @@
 package platform.server.logics.property.actions;
 
-import platform.server.logics.property.*;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.server.logics.property.ActionPropertyMapImplement;
+import platform.server.logics.property.CalcPropertyInterfaceImplement;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.flow.AroundAspectActionProperty;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-
-import static platform.base.BaseUtils.reverse;
 
 public class PushUserInputActionProperty extends AroundAspectActionProperty {
 
     private final CalcPropertyInterfaceImplement<PropertyInterface> push;
 
     // по аналогии с If
-    public <I extends PropertyInterface> PushUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
+    public <I extends PropertyInterface> PushUserInputActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
         super(sID, caption, innerInterfaces, action);
 
-        Map<I, PropertyInterface> mapInterfaces = reverse(getMapInterfaces(innerInterfaces));
+        ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.push = push.map(mapInterfaces);
     }
 

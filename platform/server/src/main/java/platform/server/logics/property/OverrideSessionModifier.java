@@ -1,11 +1,17 @@
 package platform.server.logics.property;
 
-import platform.base.*;
+import platform.base.FullFunctionSet;
+import platform.base.FunctionSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.session.*;
+import platform.server.session.IncrementProps;
+import platform.server.session.ModifyChange;
+import platform.server.session.PropertyChange;
+import platform.server.session.SessionModifier;
 
 import java.sql.SQLException;
 
@@ -22,14 +28,21 @@ public class OverrideSessionModifier extends SessionModifier {
     private final FunctionSet<CalcProperty> forceNoUpdate;
 
     @Override
-    public QuickSet<CalcProperty> getHintProps() {
+    public ImSet<CalcProperty> getHintProps() {
         return super.getHintProps().merge(modifier.getHintProps());
     }
 
     @Override
-    public void clearHints(SQLSession session) throws SQLException {
-        super.clearHints(session);
-        modifier.clearHints(session);
+    public FunctionSet<CalcProperty> getUsedHints() {
+        return merge(super.getUsedHints(), modifier.getUsedHints(), pushHints(), forceDisableHintIncrement, forceDisableNoUpdate);
+    }
+
+    private FunctionSet<CalcProperty> pushHints() {
+        return merge(override.getProperties(), forceHintIncrement, forceNoUpdate);
+    }
+
+    private boolean pushHint(CalcProperty property) {
+        return !CalcProperty.depends(property, pushHints());
     }
 
     @Override
@@ -49,6 +62,19 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
+    public boolean forceNoUpdate(CalcProperty property) {
+        return forceNoUpdate.contains(property);
+    }
+
+    @Override
+    public boolean forceDisableNoUpdate(CalcProperty property) {
+        boolean result = forceDisableNoUpdate.contains(property);
+        // если здесь запрещено, то и в modifier'е должно быть запрещено
+        assert !result || modifier.forceDisableNoUpdate(property);
+        return result;
+    }
+
+    @Override
     public void addHintIncrement(CalcProperty property) {
         assert allowHintIncrement(property);
 
@@ -61,21 +87,10 @@ public class OverrideSessionModifier extends SessionModifier {
         super.addHintIncrement(property);
     }
 
-    private boolean pushHint(CalcProperty property) {
-        return !CalcProperty.depends(property, merge(merge(override.getProperties(), forceHintIncrement), forceNoUpdate));
-    }
-
     @Override
-    public boolean forceDisableNoUpdate(CalcProperty property) {
-        boolean result = forceDisableNoUpdate.contains(property);
-        // если здесь запрещено, то и в modifier'е должно быть запрещено
-        assert !result || modifier.forceDisableNoUpdate(property);
-        return result;
-    }
-
-    @Override
-    public boolean forceNoUpdate(CalcProperty property) {
-        return forceNoUpdate.contains(property);
+    public void clearHints(SQLSession session) throws SQLException {
+        super.clearHints(session);
+        modifier.clearHints(session);
     }
 
     @Override
@@ -123,7 +138,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, forceDisableHintIncrement, FullFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), EmptyFunctionSet.<CalcProperty>instance(), modifier);
+        this(override, forceDisableHintIncrement, FullFunctionSet.<CalcProperty>instance(), SetFact.<CalcProperty>EMPTY(), SetFact.<CalcProperty>EMPTY(), modifier);
     }
 
     public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
@@ -131,7 +146,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, disableHintIncrement ? FullFunctionSet.<CalcProperty>instance() : EmptyFunctionSet.<CalcProperty>instance(), modifier);
+        this(override, disableHintIncrement ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY(), modifier);
     }
 
     @Override
@@ -139,10 +154,10 @@ public class OverrideSessionModifier extends SessionModifier {
         PropertyChange<P> overrideChange = override.getPropertyChange(property);
         if(overrideChange!=null)
             return new ModifyChange<P>(overrideChange, true);
-        return modifier.getModifyChange(property, merge(merge(overrided, CalcProperty.getDependsSet(override.getProperties())), forceDisableHintIncrement));
+        return modifier.getModifyChange(property, merge(overrided, CalcProperty.getDependsOnSet(override.getProperties()), forceDisableHintIncrement));
     }
 
-    public QuickSet<CalcProperty> calculateProperties() {
+    public ImSet<CalcProperty> calculateProperties() {
         return modifier.getProperties().merge(override.getProperties());
     }
 

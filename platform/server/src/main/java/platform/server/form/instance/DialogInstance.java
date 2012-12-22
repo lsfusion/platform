@@ -3,7 +3,8 @@ package platform.server.form.instance;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.FunctionSet;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.CalcPropertyObjectEntity;
@@ -44,7 +45,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
         this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null);
     }
 
-    private final Set<PullChangeProperty> pullProps;
+    private final ImSet<PullChangeProperty> pullProps;
     public DialogInstance(FormEntity<T> entity,
                           T BL,
                           DataSession session,
@@ -54,8 +55,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
-                          Set<FilterEntity> additionalFilters,
-                          Set<PullChangeProperty> pullProps) throws SQLException {
+                          ImSet<FilterEntity> additionalFilters,
+                          ImSet<PullChangeProperty> pullProps) throws SQLException {
         super(entity,
               BL,
               session,
@@ -63,7 +64,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               tFocusView,
               classListener,
               computer,
-              singletonMap(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
+              MapFact.singleton(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
               true,
               false,
               false,

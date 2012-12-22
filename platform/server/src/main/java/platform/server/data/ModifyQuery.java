@@ -1,9 +1,17 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.NullReader;
@@ -11,8 +19,6 @@ import platform.server.data.where.Where;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public class ModifyQuery {
     public final Table table;
@@ -29,40 +35,36 @@ public class ModifyQuery {
         this.env = env;
     }
 
-    public SQLExecute getUpdate(SQLSyntax syntax) {
+    public SQLExecute getUpdate(final SQLSyntax syntax) {
 
         assert !change.getProperties().isEmpty();
         
         int updateModel = syntax.updateModel();
-        CompiledQuery<KeyField, PropertyField> changeCompile;
         String update;
         String setString;
-        Collection<String> whereSelect;
+        ImCol<String> whereSelect;
+        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(syntax);
 
         switch(updateModel) {
             case 2:
-                // Oracl'вская модель Update'а
-                changeCompile = change.compile(syntax);
-                whereSelect = new ArrayList<String>(changeCompile.whereSelect);
+                // Oracl'вская модель Update'а (ISO'ная)
                 String fromSelect = changeCompile.from;
 
-                for(KeyField key : table.keys)
-                    whereSelect.add(table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key));
+                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
+                    public String getMapValue(KeyField key, String value) {
+                        return table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key);
+                    }}));
 
-                List<KeyField> keyOrder = new ArrayList<KeyField>();
-                List<PropertyField> propertyOrder = new ArrayList<PropertyField>();
-                String SelectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
+                Result<ImOrderSet<KeyField>> keyOrder = new Result<ImOrderSet<KeyField>>();
+                Result<ImOrderSet<PropertyField>> propertyOrder = new Result<ImOrderSet<PropertyField>>();
+                String selectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
                         SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
                         SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
-                        BaseUtils.toString(whereSelect, " AND "),"","","", "");
+                        whereSelect.toString(" AND "),"","","", "");
 
-                setString = "";
-                for(KeyField field : keyOrder)
-                    setString = (setString.length()==0?"":setString+",") + field.name;
-                for(PropertyField field : propertyOrder)
-                    setString = (setString.length()==0?"":setString+",") + field.name;
+                setString = SetFact.addOrderExcl(keyOrder.result, propertyOrder.result).toString(Field.<Field>nameGetter(), ",");
 
-                update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = ("+SelectString+") WHERE EXISTS ("+SelectString+")";
+                update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = ("+selectString+") WHERE EXISTS ("+selectString+")";
                 break;
             case 1:
                 // SQL-серверная модель когда она подхватывает первый JoinSelect и старую таблицу уже не вилит
@@ -72,33 +74,34 @@ public class ModifyQuery {
                 // надо в compile параметром для какого join'а оставлять alias
                 changeCompile = updateQuery.compile(syntax);
                 whereSelect = changeCompile.whereSelect;*/
-                changeCompile = change.compile(syntax);
-                String changeAlias = "ch_upd_al";
+                final String changeAlias = "ch_upd_al";
 
-                whereSelect = new ArrayList<String>();
-                for(KeyField key : table.keys)
-                    whereSelect.add(table.getName(syntax)+"."+key.name + "=" + changeAlias + "." + changeCompile.keyNames.get(key));
+                whereSelect = changeCompile.keyNames.mapColValues(new GetKeyValue<String, KeyField, String>() {
+                    public String getMapValue(KeyField key, String value) {
+                        return table.getName(syntax)+"."+key.name + "=" + changeAlias + "." + changeCompile.keyNames.get(key);
+                    }});
 
-                setString = "";
-                for(Map.Entry<PropertyField,String> setProperty : changeCompile.propertyNames.entrySet())
-                    setString = (setString.length()==0?"":setString+",") + setProperty.getKey().name + "=" + changeAlias + "." + setProperty.getValue();
-                
+                setString = changeCompile.propertyNames.toString(new GetKeyValue<String, PropertyField, String>() {
+                    public String getMapValue(PropertyField key, String value) {
+                        return key.name + "=" + changeAlias + "." + value;
+                    }}, ",");
+
                 update = "UPDATE " + table.getName(syntax) + " SET " + setString + " FROM " + table.getName(syntax) + " JOIN (" +
-                        changeCompile.select + ") " + changeAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:BaseUtils.toString(whereSelect," AND "));
+                        changeCompile.select + ") " + changeAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;
             case 0:
                 // по умолчанию - нормальная
-                changeCompile = change.compile(syntax);
+                whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
+                    public String getMapValue(KeyField key, String value) {
+                        return table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key);
+                    }}));
 
-                whereSelect = new ArrayList<String>(changeCompile.whereSelect);
-                for(KeyField key : table.keys)
-                    whereSelect.add(table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key));
-
-                setString = "";
-                for(Map.Entry<PropertyField,String> setProperty : changeCompile.propertySelect.entrySet())
-                    setString = (setString.length()==0?"":setString+",") + setProperty.getKey().name + "=" + setProperty.getValue();
-
-                update = "UPDATE " + syntax.getUpdate(table.getName(syntax)," SET "+setString,changeCompile.from,BaseUtils.clause("WHERE", BaseUtils.toString(whereSelect, " AND ")));
+                setString = changeCompile.propertySelect.toString(new GetKeyValue<String, PropertyField, String>() {
+                    public String getMapValue(PropertyField key, String value) {
+                        return key.name + "=" + value;
+                    }}, ",");
+                
+                update = "UPDATE " + syntax.getUpdate(table.getName(syntax)," SET "+setString,changeCompile.from,BaseUtils.clause("WHERE", whereSelect.toString(" AND ")));
                 break;
             default:
                 throw new RuntimeException();
@@ -107,16 +110,17 @@ public class ModifyQuery {
         return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env);
     }
 
-    public SQLExecute getDelete(SQLSyntax syntax) {
+    public SQLExecute getDelete(final SQLSyntax syntax) {
         // пока реализуем чисто PostgreSQL синтаксис
-        CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
-        String deleteAlias = "ch_dl_sq";
+        final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
+        final String deleteAlias = "ch_dl_sq";
 
-        Collection<String> whereSelect = new ArrayList<String>();
-        for(KeyField key : table.keys)
-            whereSelect.add(table.getName(syntax)+"."+key.name + "=" + deleteAlias + "." + deleteCompile.keyNames.get(key));
+        ImSet<String> whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
+            public String getMapValue(KeyField value) {
+                return table.getName(syntax) + "." + value.name + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
+            }});
 
-        String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:BaseUtils.toString(whereSelect," AND "));
+        String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
 
         return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env);
     }
@@ -127,24 +131,25 @@ public class ModifyQuery {
 
     public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps) {
         // делаем для этого еще один запрос
-        Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.getMapKeys());
+        QueryBuilder<KeyField, PropertyField> leftKeysQuery = new QueryBuilder<KeyField, PropertyField>(change.getMapKeys());
         if(updateProps)
             for(PropertyField property : change.getProperties())
-                leftKeysQuery.properties.put(property, change.getExpr(property));
+                leftKeysQuery.addProperty(property, change.getExpr(property));
         leftKeysQuery.and(change.getWhere());
         // исключим ключи которые есть
-        leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
-        return leftKeysQuery;
+        leftKeysQuery.and(table.join(leftKeysQuery.getMapExprs()).getWhere().not());
+        return leftKeysQuery.getQuery();
     }
 
-    private static String getInsertCastSelect(CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
+    private static String getInsertCastSelect(final CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
         if(changeCompile.union && syntax.nullUnionTrouble()) {
-            String alias = "castalias";
-            String exprs = "";
+            final String alias = "castalias";
             boolean casted = false;
-            for(KeyField keyField : changeCompile.keyOrder)
-                exprs = (exprs.length()==0?"":exprs+",") + alias + "." + changeCompile.keyNames.get(keyField);
-            for(PropertyField propertyField : changeCompile.propertyOrder) {
+            String exprs = changeCompile.keyOrder.toString(new GetValue<String, KeyField>() {
+                public String getMapValue(KeyField value) {
+                    return alias + "." + changeCompile.keyNames.get(value);
+                }}, ",");
+            for(PropertyField propertyField : changeCompile.propertyOrder) { // последействие
                 String propertyExpr = alias + "." + changeCompile.propertyNames.get(propertyField);
                 if(changeCompile.propertyReaders.get(propertyField) instanceof NullReader) { // если null, вставляем явный cast
                     propertyExpr = propertyField.type.getCast(propertyExpr,syntax, false);
@@ -161,11 +166,7 @@ public class ModifyQuery {
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, SQLSyntax syntax) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
-        String insertString = "";
-        for(KeyField keyField : changeCompile.keyOrder)
-            insertString = (insertString.length()==0?"":insertString+",") + keyField.name;
-        for(PropertyField propertyField : changeCompile.propertyOrder)
-            insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
+        String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(), ",");
 
         return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env), changeCompile.env);
     }

@@ -1,12 +1,17 @@
 package platform.server.form.instance;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
+import platform.base.Result;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.ReportConstants;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.Type;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -57,22 +62,22 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         this.gridGroupsId = gridGroupsId;
         this.groupId = groupId;
 
-        for (GroupObjectInstance group : form.groups) {
+        for (GroupObjectInstance group : form.getGroups()) {
             idToInstance.put(group.getID(), group);
         }
     }
 
     public Map<String, ReportData> generate() throws SQLException {
-        iterateChildReports(hierarchy.getRootNodes(), new ArrayList<GroupObjectInstance>(), null);
+        iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObjectInstance>EMPTYORDER(), null);
         return sources;
     }
 
-    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(List<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
-            Pair<Object, PropertyType>> parentTable, OrderedMap<Pair<Object, PropertyType>, Boolean> orders, Map<Pair<Object, PropertyType>, Type> types) {
+    private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImSet<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
+            Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) {
 
-        Query<ObjectInstance, Pair<Object, PropertyType>> newQuery;
+        QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
-            newQuery = new Query<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups));
+            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups));
         } else {
             GroupObjectInstance ourGroup = null;
             for (GroupObjectInstance group : groups) {
@@ -82,87 +87,96 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 }
             }
             assert ourGroup != null;
-            newQuery = new Query<ObjectInstance, Pair<Object, PropertyType>>(ourGroup.objects);
+            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(ourGroup.objects);
         }
+        MExclMap<Pair<Object, PropertyType>, Type> mTypes = MapFact.mExclMap();
+        MOrderExclMap<Pair<Object, PropertyType>, Boolean> mOrders = MapFact.mOrderExclMap();
 
         if (parentTable != null) {
-            newQuery.and(parentTable.getWhere(newQuery.mapKeys));
+            newQuery.and(parentTable.getWhere(newQuery.getMapExprs()));
         }
 
         Modifier modifier = form.getModifier();
         for (GroupObjectInstance group : groups) {
             if (groupId == null || groupId.equals(group.getID())) {
-                newQuery.and(group.getWhere(newQuery.mapKeys, modifier));
+                newQuery.and(group.getWhere(newQuery.getMapExprs(), modifier));
 
-                for(Map.Entry<OrderInstance, Boolean> order : BaseUtils.mergeOrders(group.orders, BaseUtils.toOrderedMap(new ArrayList<OrderInstance>(group.objects), false)).entrySet()) {
-                    Pair<Object, PropertyType> orderObject = new Pair<Object, PropertyType>(order.getKey(), PropertyType.ORDER);
-                    newQuery.properties.put(orderObject, order.getKey().getExpr(newQuery.mapKeys, modifier));
-                    orders.put(orderObject, order.getValue());
-                    types.put(orderObject, order.getKey().getType());
+                ImOrderMap<OrderInstance,Boolean> mergeOrders = group.orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
+                for(int i=0,size=mergeOrders.size();i<size;i++) {
+                    OrderInstance order = mergeOrders.getKey(i);
+
+                    Pair<Object, PropertyType> orderObject = new Pair<Object, PropertyType>(order, PropertyType.ORDER);
+                    newQuery.addProperty(orderObject, order.getExpr(newQuery.getMapExprs(), modifier));
+                    mOrders.exclAdd(orderObject, mergeOrders.getValue(i));
+                    mTypes.exclAdd(orderObject, order.getType());
                 }
 
                 if (group.propertyBackground != null) {
                     Pair<Object, PropertyType> backgroundObject = new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND);
-                    newQuery.properties.put(backgroundObject, group.propertyBackground.getExpr(newQuery.mapKeys, modifier));
-                    types.put(backgroundObject, group.propertyBackground.getType());
+                    newQuery.addProperty(backgroundObject, group.propertyBackground.getExpr(newQuery.getMapExprs(), modifier));
+                    mTypes.exclAdd(backgroundObject, group.propertyBackground.getType());
                 }
 
                 if (!gridGroupsId.contains(group.getID()))
                     for (ObjectInstance object : group.objects) {
-                        newQuery.and(object.getExpr(newQuery.mapKeys, modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                        newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }
+
             }
         }
 
         for(PropertyDrawInstance<?> property : filterProperties(groups)) {
-            if (property.columnGroupObjects.isEmpty()) {
+            if (property.getColumnGroupObjects().isEmpty()) {
                 Pair<Object, PropertyType> propertyObject = new Pair<Object, PropertyType>(property, PropertyType.PLAIN);
-                newQuery.properties.put(propertyObject, property.getDrawInstance().getExpr(newQuery.mapKeys, modifier));
-                types.put(propertyObject, property.propertyObject.getType());
+                newQuery.addProperty(propertyObject, property.getDrawInstance().getExpr(newQuery.getMapExprs(), modifier));
+                mTypes.exclAdd(propertyObject, property.propertyObject.getType());
 
                 if (property.propertyCaption != null) {
                     Pair<Object, PropertyType> captionObject = new Pair<Object, PropertyType>(property, PropertyType.CAPTION);
-                    newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, modifier));
-                    types.put(captionObject, property.propertyCaption.getType());
+                    newQuery.addProperty(captionObject, property.propertyCaption.getExpr(newQuery.getMapExprs(), modifier));
+                    mTypes.exclAdd(captionObject, property.propertyCaption.getType());
                 }
 
                 if (property.propertyFooter != null) {
                     Pair<Object, PropertyType> footerObject = new Pair<Object, PropertyType>(property, PropertyType.FOOTER);
-                    newQuery.properties.put(footerObject, property.propertyFooter.getExpr(newQuery.mapKeys, modifier));
-                    types.put(footerObject, property.propertyFooter.getType());
+                    newQuery.addProperty(footerObject, property.propertyFooter.getExpr(newQuery.getMapExprs(), modifier));
+                    mTypes.exclAdd(footerObject, property.propertyFooter.getType());
                 }
             }
         }
-        return newQuery;
+        types.set(mTypes.immutable());
+        orders.set(mOrders.immutableOrder());
+        return newQuery.getQuery();
     }
 
-    private void iterateChildReports(List<ReportNode> children, List<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException {
+    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException {
         for (ReportNode node : children) {
             String sid = node.getID();
-            List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>(parentGroups);
-            List<GroupObjectInstance> localGroups = new ArrayList<GroupObjectInstance>();
-            for (GroupObjectEntity group : node.getGroupList()) {
+            List<GroupObjectEntity> groupList = node.getGroupList();
+            MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
+            for (GroupObjectEntity group : groupList) {
                 GroupObjectInstance groupInstance = idToInstance.get(group.getID());
-                localGroups.add(groupInstance);
-            }
-            groups.addAll(localGroups);
-
-            OrderedMap<Pair<Object, PropertyType>, Boolean> orders = new OrderedMap<Pair<Object, PropertyType>, Boolean>();
-            Map<Pair<Object, PropertyType>, Type> propTypes = new HashMap<Pair<Object, PropertyType>, Type>();
-            Map<ObjectInstance, Type> keyTypes = new HashMap<ObjectInstance, Type>();
-            for (ObjectInstance object : GroupObjectInstance.getObjects(groups)) {
-                keyTypes.put(object, object.getType());
+                mLocalGroups.add(groupInstance);
             }
 
-            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
+            ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
+
+            Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>>();
+            Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<ImMap<Pair<Object, PropertyType>, Type>>();
+            ImMap<ObjectInstance, Type> keyTypes = GroupObjectInstance.getObjects(groups.getSet()).mapValues(new GetValue<Type, ObjectInstance>() {
+                public Type getMapValue(ObjectInstance value) {
+                    return value.getType();
+                }});
+
+            Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups.getSet(), parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
-                    form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes);
+                    form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
 
             try {
-                OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders);
+                ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders.result);
 
                 List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<Pair<String, PropertyReaderInstance>>();
-                for(PropertyDrawInstance property : filterProperties(groups)) {
+                for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
                     propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
                     if (property.propertyCaption != null) {
                         propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
@@ -178,28 +192,30 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
                 }
 
-                List<ObjectInstance> keyList = GroupObjectInstance.getObjects(groups);
-                ReportData data = new ReportData(keyList, propertyList);
+                ImOrderSet<ObjectInstance> keyList = GroupObjectInstance.getOrderObjects(groups);
+                ReportData data = new ReportData(keyList.toJavaList(), propertyList);
 
-                for (Map.Entry<Map<ObjectInstance,Object>,Map<Pair<Object,PropertyType>,Object>> row : resultData.entrySet()) {
+                for (int i=0,size=resultData.size();i<size;i++) {
+                    ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
+
                     List<Object> propertyValues = new ArrayList<Object>();
-                    for(PropertyDrawInstance property : filterProperties(groups)) {
-                        propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
+                    for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
+                        propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
                         if (property.propertyCaption != null) {
-                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
+                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
                         }
                         if (property.propertyFooter != null) {
-                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
+                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
                         }
                     }
 
                     for (GroupObjectInstance group : groups) {
                         if (group.propertyBackground != null) {
-                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND)));
+                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND)));
                         }
                     }
 
-                    data.add(BaseUtils.mapList(keyList, row.getKey()), propertyValues);
+                    data.add(keyList.mapOrder(resultData.getKey(i)).toJavaList(), propertyValues);
                 }
 
                 sources.put(sid, data);
@@ -211,11 +227,11 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         }
     }
 
-    private List<PropertyDrawInstance> filterProperties(Collection<GroupObjectInstance> filterGroups) {
+    private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups) {
         List<PropertyDrawInstance> resultList = new ArrayList<PropertyDrawInstance>();
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
-            if ((applyGroup == null || property.toDraw == applyGroup) && filterGroups.contains(property.toDraw)) {
+            if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw!=null && filterGroups.contains(property.toDraw)) {
                 resultList.add(property);
             }
         }
@@ -226,39 +242,42 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         ColumnGroupCaptionsData resultData = new ColumnGroupCaptionsData();
 
         for (PropertyDrawInstance<?> property : form.properties) {
-            if (property.columnGroupObjects.size() > 0) {
-                List<GroupObjectInstance> groups = getNeededGroupsForColumnProp(property);
-                OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
+            ImOrderSet<GroupObjectInstance> columnGroupObjects = property.getOrderColumnGroupObjects();
+            if (columnGroupObjects.size() > 0) {
+                ImOrderSet<GroupObjectInstance> groups = getNeededGroupsForColumnProp(property);
+                ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
 
-                Collection<ObjectInstance> propObjects = property.propertyObject.getObjectInstances();
+                ImCol<ObjectInstance> propObjects = property.propertyObject.getObjectInstances();
 
                 Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
                 Map<List<Object>, Object> captionData = new HashMap<List<Object>, Object>();
                 Map<List<Object>, Object> footerData = new HashMap<List<Object>, Object>();
                 LinkedHashSet<List<Object>> columnData = new LinkedHashSet<List<Object>>();
 
-                for (Map.Entry<Map<ObjectInstance, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
+                for (int i=0,size=qResult.size();i<size;i++) {
+                    ImMap<ObjectInstance, Object> key = qResult.getKey(i); ImMap<Object, Object> value = qResult.getValue(i);
+
                     List<Object> values = new ArrayList<Object>();
                     for (ObjectInstance object : propObjects) {
-                        values.add(entry.getKey().get(object));
+                        values.add(key.get(object));
                     }
-                    data.put(values, entry.getValue().get(property));
+                    data.put(values, value.get(property));
                     if (property.propertyCaption != null) {
-                        captionData.put(values, entry.getValue().get(property.propertyCaption));
+                        captionData.put(values, value.get(property.propertyCaption));
                     }
                     if (property.propertyFooter != null) {
-                        footerData.put(values, entry.getValue().get(property.propertyFooter));
+                        footerData.put(values, value.get(property.propertyFooter));
                     }
 
                     List<Object> columnValues = new ArrayList<Object>();
-                    for (ObjectInstance object : GroupObjectInstance.getObjects(property.columnGroupObjects)) {
-                        columnValues.add(entry.getKey().get(object));
+                    for (ObjectInstance object : GroupObjectInstance.getOrderObjects(columnGroupObjects)) {
+                        columnValues.add(key.get(object));
                     }
                     columnData.add(columnValues);
                 }
 
-                resultData.propertyObjects.put(property.getsID(), new ArrayList<ObjectInstance>(propObjects));
-                resultData.columnObjects.put(property.getsID(), GroupObjectInstance.getObjects(property.columnGroupObjects));
+                resultData.propertyObjects.put(property.getsID(), propObjects.toList().toJavaList());
+                resultData.columnObjects.put(property.getsID(), GroupObjectInstance.getOrderObjects(columnGroupObjects).toJavaList());
                 resultData.data.put(property.getsID(), data);
                 if (property.propertyCaption != null) {
                     resultData.data.put(property.getsID() + ReportConstants.captionSuffix, captionData);
@@ -272,41 +291,42 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return resultData;
     }
 
-    private OrderedMap<Map<ObjectInstance, Object>, Map<Object, Object>> getColumnPropQueryResult(List<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException {
-        List<ObjectInstance> objects = GroupObjectInstance.getObjects(groups);
-        Query<ObjectInstance, Object> query = new Query<ObjectInstance, Object>(objects);
-        OrderedMap<Object, Boolean> queryOrders = new OrderedMap<Object, Boolean>();
+    private ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException {
+        ImSet<ObjectInstance> objects = GroupObjectInstance.getObjects(groups.getSet());
+        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<ObjectInstance, Object>(objects);
+        MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
 
         Modifier modifier = form.getModifier();
         for (GroupObjectInstance group : groups) {
-            query.and(group.getWhere(query.mapKeys, modifier));
+            query.and(group.getWhere(query.getMapExprs(), modifier));
 
-            for (Map.Entry<OrderInstance, Boolean> order : group.orders.entrySet()) {
-                query.properties.put(order.getKey(), order.getKey().getExpr(query.mapKeys, modifier));
-                queryOrders.put(order.getKey(), order.getValue());
+            for (int i=0,size=group.orders.size();i<size;i++) {
+                OrderInstance order = group.orders.getKey(i);
+                query.addProperty(order, order.getExpr(query.getMapExprs(), modifier));
+                mQueryOrders.add(order, group.orders.getValue(i));
             }
 
             for (ObjectInstance object : group.objects) {
-                query.properties.put(object, object.getExpr(query.mapKeys, modifier));
-                queryOrders.put(object, false);
+                query.addProperty(object, object.getExpr(query.getMapExprs(), modifier));
+                mQueryOrders.add(object, false);
             }
 
             if (group.curClassView != ClassViewType.GRID) {
                 for (ObjectInstance object : group.objects) {
-                    query.and(object.getExpr(query.mapKeys, modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                    query.and(object.getExpr(query.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                 }
             }
         }
 
-        query.properties.put(property, property.getDrawInstance().getExpr(query.mapKeys, modifier));
+        query.addProperty(property, property.getDrawInstance().getExpr(query.getMapExprs(), modifier));
         if (property.propertyCaption != null) {
-            query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, modifier));
+            query.addProperty(property.propertyCaption, property.propertyCaption.getExpr(query.getMapExprs(), modifier));
         }
         if (property.propertyFooter != null) {
-            query.properties.put(property.propertyFooter, property.propertyFooter.getExpr(query.mapKeys, modifier));
+            query.addProperty(property.propertyFooter, property.propertyFooter.getExpr(query.getMapExprs(), modifier));
         }
 
-        return query.execute(form, queryOrders, 0);
+        return query.execute(form, mQueryOrders.immutableOrder(), 0);
     }
 
     private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {
@@ -318,28 +338,28 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
 
     // получает все группы, от которых зависит (не только непосредственно) свойство
-    private List<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
+    private ImOrderSet<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
         Set<GroupObjectInstance> initialGroups = getPropertyDependencies(property);
-        Set<GroupObjectInstance> groups = new HashSet<GroupObjectInstance>();
+        MExclSet<GroupObjectInstance> groups = SetFact.mExclSet();
         
         for (GroupObjectInstance group : initialGroups) {
             ReportNode curNode = fullFormHierarchy.getReportNode(group.entity);
             List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
             int groupIndex = nodeGroups.indexOf(group.entity);
             for (int i = 0; i <= groupIndex; i++) {
-                groups.add(idToInstance.get(nodeGroups.get(i).getID()));
+                groups.exclAdd(idToInstance.get(nodeGroups.get(i).getID()));
             }
 
             curNode = fullFormHierarchy.getParentNode(curNode);
             while (curNode != null) {
                 for (GroupObjectEntity nodeGroup : curNode.getGroupList()) {
-                    groups.add(idToInstance.get(nodeGroup.getID()));
+                    groups.exclAdd(idToInstance.get(nodeGroup.getID()));
                 }
                 curNode = fullFormHierarchy.getParentNode(curNode);
             }
         }
 
-        return BaseUtils.filterList(form.groups, groups);
+        return form.getOrderGroups().filterOrderIncl(groups.immutable());
     }
 
     public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND}

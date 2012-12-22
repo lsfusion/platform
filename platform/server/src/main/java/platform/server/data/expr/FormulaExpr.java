@@ -1,29 +1,29 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.IdentityLazy;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.IntegralClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
-import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.FormulaJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.*;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-import java.util.*;
+import java.util.Iterator;
 
 import static platform.base.BaseUtils.nullEquals;
 import static platform.base.BaseUtils.nullHash;
@@ -35,16 +35,16 @@ public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
     private final ConcreteClass valueClass;
-    private final Map<String, BaseExpr> params;
+    private final ImMap<String, BaseExpr> params;
 
     // этот конструктор напрямую можно использовать только заведомо зная что getClassWhere не null или через оболочку create 
-    private FormulaExpr(String formula,Map<String, BaseExpr> params, ConcreteClass valueClass) {
+    private FormulaExpr(String formula,ImMap<String, BaseExpr> params, ConcreteClass valueClass) {
         this.formula = formula;
         this.params = params;
         this.valueClass = valueClass;
     }
 
-    public static Expr create(String formula, Map<String, BaseExpr> params, ConcreteClass value) {
+    public static Expr create(String formula, ImMap<String, BaseExpr> params, ConcreteClass value) {
         if(formula.equals(MIN2)) {
             Iterator<BaseExpr> i = params.values().iterator();
             BaseExpr operator1 = i.next(); BaseExpr operator2 = i.next();
@@ -58,32 +58,29 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     public static Expr create1(final String formula, final ConcreteClass value,Expr prm1) {
-        return create(formula, value, Collections.singletonMap("prm1", prm1));
+        return create(formula, value, MapFact.singleton("prm1", prm1));
     }
     public static Expr create2(final String formula, final ConcreteClass value,Expr prm1, Expr prm2) {
-        Map<String, Expr> params = new HashMap<String, Expr>();
-        params.put("prm1", prm1);
-        params.put("prm2", prm2);
-        return create(formula, value, params);
+        return create(formula, value, MapFact.toMap("prm1", prm1, "prm2", prm2));
     }
 
-    public static Expr create(final String formula, final ConcreteClass value,Map<String,? extends Expr> params) {
+    public static Expr create(final String formula, final ConcreteClass value,ImMap<String,? extends Expr> params) {
         return new ExprPullWheres<String>() {
-            protected Expr proceedBase(Map<String, BaseExpr> map) {
+            protected Expr proceedBase(ImMap<String, BaseExpr> map) {
                 return create(formula, map, value);
             }
         }.proceed(params);
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         for(BaseExpr param : params.values())
             param.fillJoinWheres(joins, andWhere);
     }
 
-    public static String getSource(String formula, Map<String, ? extends Expr> params, Type type, CompileSource compile) {
+    public static String getSource(String formula, ImMap<String, ? extends Expr> params, Type type, CompileSource compile) {
         String sourceString = formula;
-        for(Map.Entry<String, ? extends Expr> prm : params.entrySet())
-            sourceString = sourceString.replace(prm.getKey(), prm.getValue().getSource(compile));
+        for(int i=0,size=params.size();i<size;i++)
+            sourceString = sourceString.replace(params.getKey(i), params.getValue(i).getSource(compile));
          return "("+sourceString+")"; // type.getCast(sourceString, compile.syntax, false)
     }
 
@@ -112,14 +109,14 @@ public class FormulaExpr extends StaticClassExpr {
 
     @Override
     public Expr packFollowFalse(Where where) {
-        Map<String, Expr> packParams = packPushFollowFalse(params, where);
+        ImMap<String, Expr> packParams = packPushFollowFalse(params, where);
         if(!BaseUtils.hashEquals(packParams, params)) 
             return create(formula, valueClass, packParams);
         else
             return this;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && nullEquals(valueClass, ((FormulaExpr) o).valueClass);
     }
 
@@ -130,7 +127,7 @@ public class FormulaExpr extends StaticClassExpr {
         return (nullHash(valueClass) * 31 * 31) + (hashOuter(params, hashContext) * 31) + formula.hashCode();
     }
 
-    public static Type getCompatibleType(Collection<? extends Expr> exprs) {
+    public static Type getCompatibleType(ImCol<? extends Expr> exprs) {
         assert exprs.size()>0;
 
         DataClass type = null;

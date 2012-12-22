@@ -1,8 +1,11 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickSet;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MExclSet;
 import platform.interop.KeyStrokes;
 import platform.server.classes.*;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -26,11 +29,8 @@ import platform.server.logics.property.actions.flow.ForActionProperty;
 import platform.server.session.ClassChange;
 
 import java.sql.SQLException;
-import java.util.*;
 
-import static platform.base.BaseUtils.singleValue;
 import static platform.server.logics.property.derived.DerivedProperty.createChangeClassAction;
-import static platform.server.logics.property.derived.DerivedProperty.createSetAction;
 
 /**
     * User: DAle
@@ -49,25 +49,25 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
      @Override
-     public PropsNewSession aspectChangeExtProps() {
+     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
          OrObjectClassSet orSet;
          if(needDialog() || where==null || (orSet = where.mapClassWhere().getOrSet(changeInterface))==null)
-             return new PropsNewSession(baseClass.getChildProps());
+             return baseClass.getChildProps().toMap(false);
 
-         QuickSet<CalcProperty> result = new QuickSet<CalcProperty>();
+         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
          for(CustomClass cls : orSet.up.wheres) {
-             cls.fillChangeProps((ConcreteObjectClass)valueClass, result);
-             result.addAll(cls.getChildDropProps((ConcreteObjectClass) valueClass));
+             cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
+             mResult.exclAddAll(cls.getChildDropProps((ConcreteObjectClass) valueClass));
          }
          for(CustomClass cls : orSet.set)
-            cls.fillChangeProps((ConcreteObjectClass)valueClass, result);
-         return new PropsNewSession(result);
+            cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
+         return mResult.immutable().toMap(false);
      }
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
         if(where==null)
-            return new PropsNewSession();
+            return MapFact.EMPTY();
         return getUsedProps(where);
     }
 
@@ -79,23 +79,23 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          return getSID(valueClass);
      }
 
-    public Set<ActionProperty> getDependActions() {
-        return new HashSet<ActionProperty>();
+    public ImSet<ActionProperty> getDependActions() {
+        return SetFact.EMPTY();
     }
 
     @Override
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
         if(where==null)
-            return IsClassProperty.getMapProperty(Collections.singletonMap(changeInterface, (ValueClass)baseClass));
+            return IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
         return where;
     }
 
     public static ChangeClassActionProperty<PropertyInterface, PropertyInterface> create(ObjectClass valueClass, boolean forceDialog, BaseClass baseClass) {
         PropertyInterface propInterface = new PropertyInterface();
-        return new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(getSID(valueClass), valueClass, forceDialog, Collections.singleton(propInterface), Collections.singletonList(propInterface), propInterface, null, baseClass);
+        return new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(getSID(valueClass), valueClass, forceDialog, SetFact.singleton(propInterface), SetFact.singletonOrder(propInterface), propInterface, null, baseClass);
     }
 
-    public ChangeClassActionProperty(String sID, ObjectClass valueClass, boolean forceDialog, Collection<I> innerInterfaces, List<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
+    public ChangeClassActionProperty(String sID, ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
          super(sID, ServerResourceBundle.getString(
                  valueClass instanceof UnknownClass ? "logics.property.actions.delete" : "logics.property.actions.changeclass"), innerInterfaces, mapInterfaces);
 
@@ -105,7 +105,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          this.changeInterface = changeInterface;
          this.where = where;
 
-         assert where==null || BaseUtils.add(this.mapInterfaces.values(), changeInterface).containsAll(where.mapping.values());
+         assert where==null || this.mapInterfaces.valuesSet().addExcl(changeInterface).containsAll(where.mapping.valuesSet());
      }
 
      protected boolean needDialog() {
@@ -113,7 +113,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                  valueClass instanceof ConcreteCustomClass && ((ConcreteCustomClass)valueClass).hasChildren());
      }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, Map<I, KeyExpr> innerKeys, Map<I, DataObject> innerValues, Map<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, DataObject> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
         ConcreteObjectClass readClass;
 
         if (needDialog()) {
@@ -139,13 +139,13 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
         boolean singleWhereNotNull = true;
         if(where==null || (innerKeys.isEmpty() && (singleWhereNotNull = where.read(context, innerValues)!=null))) {
             PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-            DataObject object = singleValue(innerValues);
+            DataObject object = innerValues.singleValue();
 
             DataObject nearObject = null; // после удаления выбираем соседний объект
             if (objectInstance != null && objectInstance instanceof ObjectInstance) {
                 CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
                 if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) // если удаляется
-                    nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, object, customObjectInstance.groupTo.keys.keyList());
+                    nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, object, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
             }
 
             context.changeClass(objectInstance, object, (ConcreteObjectClass) readClass);
@@ -156,7 +156,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
             if(singleWhereNotNull) { // дебильный кейс, но надо все равно поддержать
                 Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
                 if(!exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
-                    context.changeClass(new ClassChange(singleValue(innerKeys), exprWhere, (ConcreteObjectClass)readClass));
+                    context.changeClass(new ClassChange(innerKeys.singleValue(), exprWhere, (ConcreteObjectClass)readClass));
             }
 
         return FlowResult.FINISH;
@@ -182,25 +182,25 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     @Override
     public PropertyInterface getSimpleDelete() {
         if (where == null && valueClass instanceof UnknownClass)
-            return BaseUtils.single(interfaces);
+            return interfaces.single();
         return null;
     }
 
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(Map<PropertyInterface, T> mapping, Collection<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> boolean hasPushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         return !ordersNotNull;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(Map<PropertyInterface, T> mapping, Collection<T> context, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> CalcProperty getPushWhere(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
         return null;
     }
     @Override
-    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(Map<PropertyInterface, T> mapping, Collection<T> context, CalcPropertyMapImplement<PW, T> push, OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
+    public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
         return ForActionProperty.pushFor(innerInterfaces, where, mapInterfaces, mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<I, PropertyInterface>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> push(Collection<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, OrderedMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, Map<I, PropertyInterface> mapInnerInterfaces) {
+            public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
                 return createChangeClassAction(context, mapInnerInterfaces.get(changeInterface), valueClass, forceDialog, where, baseClass, orders, ordersNotNull);
             }
         });

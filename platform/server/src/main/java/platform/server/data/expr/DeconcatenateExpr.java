@@ -1,32 +1,28 @@
 package platform.server.data.expr;
 
-import platform.base.QuickMap;
-import platform.base.TwinImmutableInterface;
 import platform.base.BaseUtils;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
-import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.FormulaJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 public class DeconcatenateExpr extends SingleClassExpr {
 
@@ -53,10 +49,10 @@ public class DeconcatenateExpr extends SingleClassExpr {
 
     public static Expr create(Expr expr, final int part, final BaseClass baseClass) {
         return new ExprPullWheres<Integer>() {
-            protected Expr proceedBase(Map<Integer, BaseExpr> map) {
+            protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
                 return createBase(map.get(0), part, baseClass);
             }
-        }.proceed(Collections.singletonMap(0, expr));
+        }.proceed(MapFact.singleton(0, expr));
     }
 
 
@@ -64,7 +60,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return new DeconcatenateExpr(expr.translateOuter(translator), part, baseClass);
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         expr.fillJoinWheres(joins, andWhere);
     }
 
@@ -76,7 +72,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.getTypeStat(keyStat);
     }
 
-    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
         AndClassSet classSet = expr.getAndClassSet(and);
         if(classSet == null)
             return null;
@@ -87,7 +83,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return create(expr.translateQuery(translator),part,baseClass);
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 
@@ -102,15 +98,15 @@ public class DeconcatenateExpr extends SingleClassExpr {
         ClassExprWhere result = ClassExprWhere.FALSE;
 
         ConcatenateType type = (ConcatenateType) expr.getSelfType();
-        for(List<AndClassSet> list : type.getUniversal(baseClass,part,classes))
+        for(ImList<AndClassSet> list : type.getUniversal(baseClass,part,classes))
             result = result.or(expr.getClassWhere(new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()]))));
 
         return result;
     }
 
-    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         ConcatenateType type = (ConcatenateType) expr.getSelfType();
-        List<AndClassSet> list = BaseUtils.single(type.getUniversal(baseClass,part,add));
+        ImList<AndClassSet> list = BaseUtils.single(type.getUniversal(baseClass, part, add));
         return expr.addAndClassSet(and, new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()])));
     }
 
@@ -123,6 +119,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     public InnerBaseJoin<?> getBaseJoin() {
-        return new FormulaJoin<Integer>(Collections.singletonMap(0, expr));
+        return new FormulaJoin<Integer>(MapFact.singleton(0, expr));
     }
 }

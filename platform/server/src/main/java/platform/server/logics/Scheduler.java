@@ -1,20 +1,23 @@
 package platform.server.logics;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.ContextAwareDaemonThreadFactory;
 import platform.server.SchedulerContext;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.linear.LAP;
 import platform.server.session.DataSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,32 +36,30 @@ public class Scheduler {
         DataSession session = BL.createSession();
 
         KeyExpr scheduledTask1Expr = new KeyExpr("scheduledTask");
-        Map<Object, KeyExpr> scheduledTaskKeys = new HashMap<Object, KeyExpr>();
-        scheduledTaskKeys.put("scheduledTask", scheduledTask1Expr);
+        ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTask1Expr);
 
-        Query<Object, Object> scheduledTaskQuery = new Query<Object, Object>(scheduledTaskKeys);
-        scheduledTaskQuery.properties.put("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
-        scheduledTaskQuery.properties.put("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
-        scheduledTaskQuery.properties.put("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(BaseUtils.singleValue(scheduledTaskKeys)));
+        QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<Object, Object>(scheduledTaskKeys);
+        scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
 
         scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
 
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
-        for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : scheduledTaskResult.entrySet()) {
-            currentScheduledTaskObject = new DataObject(rows.getKey().entrySet().iterator().next().getValue(), BL.schedulerLM.scheduledTask);
-            Boolean runAtStart = rows.getValue().get("runAtStartScheduledTask") != null;
-            Timestamp startDate = (Timestamp) rows.getValue().get("startDateScheduledTask");
-            Integer period = (Integer) rows.getValue().get("periodScheduledTask");
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
+        for (int i=0,size=scheduledTaskResult.size();i<size;i++) {
+            ImMap<Object, Object> key = scheduledTaskResult.getKey(i); ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
+            currentScheduledTaskObject = new DataObject(key.getValue(0), BL.schedulerLM.scheduledTask);
+            Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
+            Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
+            Integer period = (Integer) value.get("periodScheduledTask");
 
             KeyExpr propertyExpr = new KeyExpr("property");
             KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
-            Map<Object, KeyExpr> propertyKeys = new HashMap<Object, KeyExpr>();
-            propertyKeys.put("property", propertyExpr);
-            propertyKeys.put("scheduledTask", scheduledTaskExpr);
+            ImRevMap<Object, KeyExpr> propertyKeys = MapFact.<Object, KeyExpr>toRevMap("property", propertyExpr, "scheduledTask", scheduledTaskExpr);
 
-            Query<Object, Object> propertyQuery = new Query<Object, Object>(propertyKeys);
-            propertyQuery.properties.put("SIDProperty", BL.reflectionLM.SIDProperty.getExpr(propertyExpr));
-            propertyQuery.properties.put("orderScheduledTaskProperty", BL.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
+            QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<Object, Object>(propertyKeys);
+            propertyQuery.addProperty("SIDProperty", BL.reflectionLM.SIDProperty.getExpr(propertyExpr));
+            propertyQuery.addProperty("orderScheduledTaskProperty", BL.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
             propertyQuery.and(BL.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(BL.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
@@ -66,9 +67,9 @@ public class Scheduler {
             ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(this)));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
             int defaultOrder = propertyResult.size() + 100;
-            for (Map<Object, Object> propertyValues : propertyResult.values()) {
+            for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
                 String sidProperty = (String) propertyValues.get("SIDProperty");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskProperty");
                 if (sidProperty != null) {

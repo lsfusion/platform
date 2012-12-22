@@ -1,7 +1,15 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.server.caches.*;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.OuterContext;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
@@ -11,24 +19,23 @@ import platform.server.data.expr.*;
 import platform.server.data.expr.query.DistinctKeys;
 import platform.server.data.expr.query.QueryJoin;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.query.stat.StatKeys;
-import platform.server.data.expr.where.cases.JoinCaseList;
-import platform.server.data.expr.where.pull.AddPullWheres;
-import platform.server.data.expr.where.ifs.NullJoin;
+import platform.server.data.expr.where.cases.MCaseList;
+import platform.server.data.expr.where.cases.MJoinCaseList;
 import platform.server.data.expr.where.ifs.IfJoin;
-import platform.server.data.query.stat.UnionJoin;
-import platform.server.data.query.stat.WhereJoin;
-import platform.server.data.translator.MapValuesTranslate;
-import platform.server.data.where.MapWhere;
+import platform.server.data.expr.where.ifs.NullJoin;
+import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
+import platform.server.data.query.stat.UnionJoin;
+import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.ClassWhere;
@@ -40,15 +47,20 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
     public String name;
-    public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
-    public final Set<PropertyField> properties;
+    public ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+    public ImOrderSet<KeyField> getOrderTableKeys() {
+        return keys;
+    }
+    public ImSet<KeyField> getTableKeys() {
+        return keys.getSet();
+    }
+    public ImSet<PropertyField> properties;
 
     public abstract StatKeys<KeyField> getStatKeys();
-    public abstract Map<PropertyField, Stat> getStatProps();
+    public abstract ImMap<PropertyField, Stat> getStatProps();
 
     private static Stat getFieldStat(Field field, Stat defStat) {
         if(field.type instanceof DataClass)
@@ -58,22 +70,25 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     protected static StatKeys<KeyField> getStatKeys(Table table, int count) { // для мн-го наследования
-        Stat stat = new Stat(count);
+        final Stat stat = new Stat(count);
 
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>() ;
-        for(KeyField key : table.keys)
-            distinctKeys.add(key, getFieldStat(key, stat));
+        ImMap<KeyField, Stat> statMap = table.getTableKeys().mapValues(new GetValue<Stat, KeyField>() {
+            public Stat getMapValue(KeyField value) {
+                return getFieldStat(value, stat);
+            }});
+        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(statMap);
+
         return new StatKeys<KeyField>(distinctKeys.getMax().min(stat), distinctKeys);
     }
 
-    protected static Map<PropertyField, Stat> getStatProps(Table table, Stat stat) { // для мн-го наследования
-        Map<PropertyField, Stat> result = new HashMap<PropertyField, Stat>();
-        for(PropertyField prop : table.properties)
-            result.put(prop, getFieldStat(prop, stat));
-        return result;
+    protected static ImMap<PropertyField, Stat> getStatProps(Table table, final Stat stat) { // для мн-го наследования
+        return table.properties.mapValues(new GetValue<Stat, PropertyField>() {
+            public Stat getMapValue(PropertyField prop) {
+                return getFieldStat(prop, stat);
+            }});
     }
     
-    protected static Map<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
+    protected static ImMap<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
         return getStatProps(table, new Stat(count));
     }
 
@@ -81,15 +96,15 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return keys.size()==0;
     }
 
-    public Map<KeyField, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(keys);
+    public ImRevMap<KeyField, KeyExpr> getMapKeys() {
+        return KeyExpr.getMapKeys(getTableKeys());
     }
 
     protected Table(String name) {
-        this(name, new ArrayList<KeyField>(), new HashSet<PropertyField>(), new ClassWhere<KeyField>(), new HashMap<PropertyField, ClassWhere<Field>>());
+        this(name, SetFact.<KeyField>EMPTYORDER(), SetFact.<PropertyField>EMPTY(), ClassWhere.<KeyField>FALSE(), MapFact.<PropertyField, ClassWhere<Field>>EMPTY());
     }
 
-    protected Table(String name, List<KeyField> keys, Set<PropertyField> properties,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+    protected Table(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties,ClassWhere<KeyField> classes,ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
         this.name = name;
         this.keys = keys;
         this.properties = properties;
@@ -134,49 +149,52 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
 
-    public Table(DataInputStream inStream, BaseClass baseClass, int version) throws IOException {
+    public Table(DataInputStream inStream, final BaseClass baseClass, int version) throws IOException {
         name = inStream.readUTF();
         int keysNum = inStream.readInt();
-        keys = new ArrayList<KeyField>();
+        MOrderExclSet<KeyField> mKeys = SetFact.mOrderExclSet(keysNum); // десериализация, поэтому порядок важен
         for(int i=0;i<keysNum;i++)
-            keys.add((KeyField) Field.deserialize(inStream, version));
+            mKeys.add((KeyField) Field.deserialize(inStream, version));
+        keys = mKeys.immutableOrder();
         int propNum = inStream.readInt();
-        properties = new HashSet<PropertyField>();
+        MExclSet<PropertyField> mProperties = SetFact.mExclSet(propNum);
         for(int i=0;i<propNum;i++)
-            properties.add((PropertyField) Field.deserialize(inStream, version));
+            mProperties.exclAdd((PropertyField) Field.deserialize(inStream, version));
+        properties = mProperties.immutable();
 
-        Map<KeyField, AndClassSet> baseClasses = new HashMap<KeyField, AndClassSet>();
-        for(KeyField key : keys)
-            baseClasses.put(key,key.type.getBaseClassSet(baseClass));
+        final ImMap<KeyField, AndClassSet> baseClasses = getTableKeys().mapValues(new GetValue<AndClassSet, KeyField>() {
+            public AndClassSet getMapValue(KeyField value) {
+                return value.type.getBaseClassSet(baseClass);
+            }});
         classes = new ClassWhere<KeyField>(baseClasses);
 
-        propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField property : properties)
-            propertyClasses.put(property, new ClassWhere<Field>(BaseUtils.merge(baseClasses, Collections.singletonMap(property, property.type.getBaseClassSet(baseClass)))));
+        propertyClasses = properties.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
+            public ClassWhere<Field> getMapValue(PropertyField value) {
+                return new ClassWhere<Field>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
+            }});
     }
 
-    public OrderedMap<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException {
-        Query<KeyField, PropertyField> query = new Query<KeyField,PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> tableJoin = join(query.mapKeys);
-        query.properties.putAll(tableJoin.getExprs());
+    public ImOrderMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException {
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
+        query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.executeClasses(session, baseClass);
     }
 
     protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
-
-    protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
+    protected ImMap<PropertyField,ClassWhere<Field>> propertyClasses;
 
     public String outputKeys() {
-        return ServerResourceBundle.getString("data.table")+" : " + name + ", "+ServerResourceBundle.getString("data.keys")+" : " + classes.getCommonParent(keys).toString();
+        return ServerResourceBundle.getString("data.table")+" : " + name + ", "+ServerResourceBundle.getString("data.keys")+" : " + classes.getCommonParent(getTableKeys()).toString();
     }
 
     public String outputField(PropertyField field, boolean outputTable) {
-        Map<Field,ValueClass> commonParent = propertyClasses.get(field).getCommonParent(BaseUtils.merge(keys, Collections.singleton(field)));
-        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.toString() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + BaseUtils.removeKey(commonParent, field);
+        ImMap<Field, ValueClass> commonParent = propertyClasses.get(field).getCommonParent(SetFact.addExcl(getTableKeys(), field));
+        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.toString() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return name.equals(((Table)o).name) && classes.equals(((Table)o).classes) && propertyClasses.equals(((Table) o).propertyClasses);
     }
 
@@ -185,11 +203,11 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public Query<KeyField, PropertyField> getQuery() {
-        Query<KeyField,PropertyField> query = new Query<KeyField,PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> join = joinAnd(query.mapKeys);
+        QueryBuilder<KeyField,PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
         query.and(join.getWhere());
-        query.properties.putAll(join.getExprs());
-        return query;
+        query.addProperties(join.getExprs());
+        return query.getQuery();
     }
 
     public void out(SQLSession session) throws SQLException {
@@ -200,10 +218,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         getQuery().outClassesSelect(session, baseClass);
     }
 
-    public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
+    public platform.server.data.query.Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
         return new AddPullWheres<KeyField, platform.server.data.query.Join<PropertyField>>() {
-            protected JoinCaseList<PropertyField> initCaseList() {
-                return new JoinCaseList<PropertyField>(properties);
+            protected MCaseList<platform.server.data.query.Join<PropertyField>, ?, ?> initCaseList(boolean exclusive) {
+                return new MJoinCaseList<PropertyField>(properties, exclusive);
             }
             protected platform.server.data.query.Join<PropertyField> initEmpty() {
                 return new NullJoin<PropertyField>(properties);
@@ -211,13 +229,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             protected platform.server.data.query.Join<PropertyField> proceedIf(Where ifWhere, platform.server.data.query.Join<PropertyField> resultTrue, platform.server.data.query.Join<PropertyField> resultFalse) {
                 return new IfJoin<PropertyField>(ifWhere, resultTrue, resultFalse);
             }
-            protected platform.server.data.query.Join<PropertyField> proceedBase(Map<KeyField, BaseExpr> joinBase) {
+
+            protected platform.server.data.query.Join<PropertyField> proceedBase(ImMap<KeyField, BaseExpr> joinBase) {
                 return joinAnd(joinBase);
             }
         }.proceed(joinImplement);
     }
 
-    public Join joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
+    public Join joinAnd(ImMap<KeyField, ? extends BaseExpr> joinImplement) {
         return new Join(joinImplement);
     }
 
@@ -229,23 +248,23 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return this;
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return QuickSet.EMPTY();
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.EMPTY();
     }
 
-    public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, platform.server.data.query.Join<PropertyField>, TwinImmutableInterface {
+    public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, platform.server.data.query.Join<PropertyField> {
 
-        public final Map<KeyField, BaseExpr> joins;
+        public final ImMap<KeyField, BaseExpr> joins;
 
-        public Map<KeyField, BaseExpr> getJoins() {
+        public ImMap<KeyField, BaseExpr> getJoins() {
             return joins;
         }
         public StatKeys<KeyField> getStatKeys(KeyStat keyStat) {
             return Table.this.getStatKeys();
         }
 
-        public Join(Map<KeyField, ? extends BaseExpr> joins) {
-            this.joins = (Map<KeyField, BaseExpr>) joins;
+        public Join(ImMap<KeyField, ? extends BaseExpr> joins) {
+            this.joins = (ImMap<KeyField, BaseExpr>) joins;
             assert (joins.size()==keys.size());
         }
 
@@ -254,7 +273,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return platform.server.data.expr.Expr.getWhere(joins);
         }
 
-        public NotNullExprSet getExprFollows(boolean recursive) {
+        public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
             return InnerExpr.getExprFollows(this, recursive);
         }
 
@@ -262,7 +281,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return InnerExpr.getInnerJoins(this);
         }
 
-        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres, Collection<UnionJoin> unionJoins) {
+        public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
             return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
         }
 
@@ -283,15 +302,15 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return new IsIn();
         }
 
-        public Collection<PropertyField> getProperties() {
+        public ImSet<PropertyField> getProperties() {
             return Table.this.properties;
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
         }
 
-        public Map<PropertyField, platform.server.data.expr.Expr> getExprs() {
+        public ImMap<PropertyField, platform.server.data.expr.Expr> getExprs() {
             return AbstractJoin.getExprs(this);
         }
 
@@ -326,7 +345,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
 
         public platform.server.data.query.Join<PropertyField> packFollowFalse(Where falseWhere) {
-            Map<KeyField, platform.server.data.expr.Expr> packJoins = BaseExpr.packPushFollowFalse(joins, falseWhere);
+            ImMap<KeyField, platform.server.data.expr.Expr> packJoins = BaseExpr.packPushFollowFalse(joins, falseWhere);
             if(!BaseUtils.hashEquals(packJoins, joins))
                 return join(packJoins);
             else
@@ -345,8 +364,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return QueryJoin.getInnerExpr(this, join);
         }
 
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(joins.values(), Table.this);
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return SetFact.<OuterContext>addExcl(joins.values().toSet(), Table.this);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -357,8 +376,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return keys.iterator().next().toString();
             }
 
-            public QuickSet<OuterContext> calculateOuterDepends() {
-                return new QuickSet<OuterContext>(Join.this);
+            public ImSet<OuterContext> calculateOuterDepends() {
+                return SetFact.<OuterContext>singleton(Join.this);
             }
 
             public Join getJoin() {
@@ -369,7 +388,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this;
             }
 
-            protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+            protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
                 joins.add(this,andWhere);
             }
 
@@ -392,8 +411,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this.packFollowFalse(falseWhere).getWhere();
             }
 
-            protected DataWhereSet calculateFollows() {
-                return new DataWhereSet(getExprFollows(true));
+            protected ImSet<DataWhere> calculateFollows() {
+                return NotNullExpr.getFollows(getExprFollows(true));
             }
 
             public platform.server.data.expr.Expr getFJExpr() {
@@ -404,14 +423,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return exprFJ + " IS NOT NULL";
             }
 
-            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<platform.server.data.expr.Expr> orderTop, boolean noWhere) {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<platform.server.data.expr.Expr> orderTop, boolean noWhere) {
                 return new GroupJoinsWheres(Join.this, this, noWhere);
             }
             public ClassExprWhere calculateClassWhere() {
                 return classes.map(joins).and(getJoinsWhere().getClassWhere());
             }
 
-            public boolean twins(TwinImmutableInterface o) {
+            public boolean twins(TwinImmutableObject o) {
                 return Join.this.equals(((IsIn) o).getJoin());
             }
 
@@ -426,13 +445,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public final PropertyField property;
 
             @Override
-            public QuickSet<OuterContext> calculateOuterDepends() {
-                return new QuickSet<OuterContext>(Join.this);
+            public ImSet<OuterContext> calculateOuterDepends() {
+                return SetFact.<OuterContext>singleton(Join.this);
             }
 
             // напрямую может конструироваться только при полной уверенности что не null
             private Expr(PropertyField property) {
                 this.property = property;
+                assert properties.contains(property);
             }
 
             public platform.server.data.expr.Expr translateQuery(QueryTranslator translator) {
@@ -463,7 +483,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return new NotNull();
             }
 
-            public boolean twins(TwinImmutableInterface o) {
+            public boolean twins(TwinImmutableObject o) {
                 return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 
@@ -481,19 +501,17 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             public class NotNull extends InnerExpr.NotNull {
 
                 @Override
-                protected DataWhereSet calculateFollows() {
-                    DataWhereSet result = new DataWhereSet(super.calculateFollows());
-                    result.add((DataWhere) Join.this.getWhere());
-                    return result;
+                protected ImSet<DataWhere> calculateFollows() {
+                    return SetFact.addExcl(super.calculateFollows(), (DataWhere) Join.this.getWhere());
                 }
 
                 public ClassExprWhere calculateClassWhere() {
-                    return propertyClasses.get(property).map(BaseUtils.merge(joins,Collections.singletonMap(property, Expr.this))).and(Join.this.getJoinsWhere().getClassWhere());
+                    return propertyClasses.get(property).map(MapFact.addExcl(joins, property, Expr.this)).and(Join.this.getJoinsWhere().getClassWhere());
                 }
             }
 
             @Override
-            public void fillFollowSet(DataWhereSet fillSet) {
+            public void fillFollowSet(MSet<DataWhere> fillSet) {
                 super.fillFollowSet(fillSet);
                 fillSet.add((DataWhere) Join.this.getWhere());
             }

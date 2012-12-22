@@ -1,7 +1,9 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.Expr;
@@ -11,14 +13,10 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.property.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 public enum GroupType implements AggrType {
     SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
 
-    public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, Collection<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, Collection<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
+    public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
             case MAX:
                 return new MaxGroupProperty<T>(sID, caption, innerInterfaces, interfaces, property, false);
@@ -56,7 +54,7 @@ public enum GroupType implements AggrType {
 //        assert isSelect();
         return this == LAST;
     }
-    public Where getWhere(List<Expr> exprs) {
+    public Where getWhere(ImList<Expr> exprs) {
         if(this==LAST) {
             assert exprs.size()==2;
             return exprs.get(0).getWhere();
@@ -64,11 +62,11 @@ public enum GroupType implements AggrType {
         return Expr.getWhere(exprs);
     }
 
-    public Expr getMainExpr(List<Expr> exprs) {
+    public Expr getMainExpr(ImList<Expr> exprs) {
         return getSingleExpr(exprs, null);
     }
 
-    public Expr getSingleExpr(List<Expr> exprs, OrderedMap<Expr, Boolean> orders) {
+    public Expr getSingleExpr(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
         if(this==LAST) {
             assert exprs.size()==2;
             return exprs.get(1);
@@ -105,7 +103,7 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(List<String> exprs, OrderedMap<String, Boolean> orders, Set<String> ordersNotNull, Type type, SQLSyntax syntax) {
+    public String getSource(ImList<String> exprs, ImOrderMap<String, Boolean> orders, ImSet<String> ordersNotNull, Type type, SQLSyntax syntax) {
         String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, ordersNotNull, syntax));
 
         switch (this) {

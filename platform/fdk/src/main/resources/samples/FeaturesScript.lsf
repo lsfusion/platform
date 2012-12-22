@@ -243,7 +243,7 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 // - (unary)
 //
 // Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, 2011_10_25_18:00, NULL, #ff0000, RGB(255, 0, 0)
-balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article);
+balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article) PERSISTENT;
 
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
 foo2(store, article) = - outcomeQuantity(store, article) + 5 * incomeQuantity(store, article);

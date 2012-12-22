@@ -1,15 +1,8 @@
 package platform.server.caches.hash;
 
-import platform.base.GlobalInteger;
-import platform.base.ImmutableObject;
-import platform.base.QuickSet;
-import platform.server.caches.NoCacheInterface;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class HashTranslateValues extends HashValues {
 
@@ -35,11 +28,11 @@ public class HashTranslateValues extends HashValues {
         return false;
     }
 
-    public HashValues filterValues(QuickSet<Value> values) {
+    public HashValues filterValues(ImSet<Value> values) {
         throw new RuntimeException("not supported");
     }
 
-    public HashValues reverseTranslate(MapValuesTranslate translate, QuickSet<Value> values) {
+    public HashValues reverseTranslate(MapValuesTranslate translate, ImSet<Value> values) {
         throw new RuntimeException("not supported");
     }
 }

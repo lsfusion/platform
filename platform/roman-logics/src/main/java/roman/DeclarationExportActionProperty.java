@@ -6,6 +6,8 @@ import org.xBaseJ.fields.*;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
@@ -84,13 +86,13 @@ public class DeclarationExportActionProperty extends UserActionProperty {
         FormData data;
         Map<Field, PropertyDrawInstance> map;
 
-        public DeclarationExporter(Map<ClassPropertyInterface, DataObject> keys) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, IOException, xBaseJException {
+        public DeclarationExporter(ImMap<ClassPropertyInterface, DataObject> keys) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, IOException, xBaseJException {
             super(keys);
-            List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
             createDBFFiles();
 
-            importerDO = keys.get(interfacesList.remove(0));
-            freightDO = keys.get(interfacesList.remove(0));
+            ImOrderSet<ClassPropertyInterface> interfacesList = getOrderInterfaces();
+            importerDO = keys.get(interfacesList.get(0));
+            freightDO = keys.get(interfacesList.get(1));
         }
 
         public void getPropertyDraws() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {

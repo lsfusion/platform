@@ -1,6 +1,7 @@
 package roman;
 
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.*;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.MessageClientAction;
@@ -4671,7 +4672,7 @@ public class RomanLogicsModule extends LogicsModule {
             objItem = addSingleGroupObject(item, "Товар", barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
-            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.addColumnGroupObject(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
             addPropertyDraw(addGCAProp(actionGroup, "nullOrderListArticleCompositeColor" + (edit ? "Edit" : ""), "Сбросить", objSizeSupplier.groupTo, addSetPropertyAProp(quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero), 1, 2, 3, 4, 4),
@@ -4753,14 +4754,14 @@ public class RomanLogicsModule extends LogicsModule {
 
         protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             
-            List<DataObject> listKeys = BaseUtils.mapList(new ArrayList<ClassPropertyInterface>(interfaces), context.getKeys());
+            ImOrderSet<DataObject> listKeys = getOrderInterfaces().mapOrder(context.getKeys());
             DataObject[] keys = listKeys.toArray(new DataObject[listKeys.size()]);
             
             ObjectValue value = context.requestUserData((DataClass) quantityListArticleCompositeColorSize.property.getValueClass(), quantityListArticleCompositeColorSize.read(context, keys));
             
             if(value instanceof DataObject) {
                 ((CalcProperty)itemArticleCompositeColorSize.property).setNotNull(
-                        BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, listKeys.subList(1, 4)),
+                        itemArticleCompositeColorSize.listInterfaces.mapSet(listKeys.subOrder(1, 4)),
                         context.getEnv(), true, true);
             }
 
@@ -4932,7 +4933,7 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(executeAddColorDocument, objList, objArticle, objColorSupplier));
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objList, objArticle, objColorSupplier, objSizeSupplier);
-            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.addColumnGroupObject(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
             String formPostfix = (box ? "Box" : "") + (edit ? "Edit" : "");
@@ -5369,7 +5370,7 @@ public class RomanLogicsModule extends LogicsModule {
                 quantityColumn = addPropertyDraw(quantitySimpleShipmentRouteSku, objShipment, objRoute, objSku);
             }
 
-            quantityColumn.columnGroupObjects.add(objRoute.groupTo);
+            quantityColumn.addColumnGroupObject(objRoute.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(baseLM.name, objRoute);
 
             addPropertyDraw(quantityRouteSku, objRoute, objSku);
@@ -5774,7 +5775,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objShipment, objArticle, objColorSupplier, sumShipmentArticleColor);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityShipmentArticleColorSize, objShipment, objArticle, objColorSupplier, objSizeSupplier);
-            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.addColumnGroupObject(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));

@@ -1,16 +1,14 @@
 package platform.server.classes;
 
+import platform.base.Result;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.classes.sets.ObjectClassSet;
-import platform.server.data.SQLSession;
-import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-
-import java.sql.SQLException;
-import java.util.Collection;
 
 public interface ConcreteObjectClass extends ConcreteClass,ObjectClass,ObjectClassSet {
 
-    public abstract void getDiffSet(ConcreteObjectClass diffClass, Collection<CustomClass> addClasses,Collection<CustomClass> removeClasses);
+    public abstract void getDiffSet(ConcreteObjectClass diffClass, MSet<CustomClass> mAddClasses, MSet<CustomClass> mRemoveClasses);
 
     public abstract ObjectValue getClassObject();
 

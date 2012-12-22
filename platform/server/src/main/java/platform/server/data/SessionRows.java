@@ -1,14 +1,22 @@
 package platform.server.data;
 
-import platform.base.*;
+import platform.base.Pair;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.translator.MapValuesTranslate;
@@ -20,52 +28,47 @@ import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.*;
 
 public class SessionRows extends SessionData<SessionRows> {
 
     public final static int MAX_ROWS = 1;
 
-    private List<KeyField> keys;
-    private Set<PropertyField> properties;
+    private ImOrderSet<KeyField> keys;
+    private ImSet<PropertyField> properties;
 
-    protected final Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> rows;
+    protected final ImMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> rows;
 
-    public SessionRows(List<KeyField> keys, Set<PropertyField> properties) {
-        this(keys, properties, new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>());
+    public SessionRows(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
+        this(keys, properties, MapFact.<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>EMPTY());
     }
 
-    public SessionRows(List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+    public SessionRows(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
         this.keys = keys;
         this.properties = properties;
         this.rows = rows;
     }
 
-    public List<KeyField> getKeys() {
+    public ImOrderSet<KeyField> getOrderKeys() {
         return keys;
     }
 
-    public Set<PropertyField> getProperties() {
+    public ImSet<PropertyField> getProperties() {
         return properties;
     }
 
-    public Map<KeyField, KeyExpr> getMapKeys() {
-        return KeyExpr.getMapKeys(keys);
-    }
-
-    public Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
+    public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
         return new SessionJoin(joinImplement) {
             public Expr getExpr(PropertyField property) {
-                CaseExprInterface cases = Expr.newCases();
-                for(Map.Entry<Map<KeyField, DataObject>,Map<PropertyField, ObjectValue>> row : rows.entrySet())
-                    cases.add(CompareWhere.compareValues(joinImplement,row.getKey()),row.getValue().get(property).getExpr());
+                CaseExprInterface cases = Expr.newCases(true);
+                for(int i=0,size=rows.size();i<size;i++)
+                    cases.add(CompareWhere.compareValues(joinImplement,rows.getKey(i)),rows.getValue(i).get(property).getExpr());
                 return cases.getFinal();
             }
 
             public Where getWhere() {
                 Where result = Where.FALSE;
-                for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                    result = result.or(CompareWhere.compareValues(joinImplement,row.getKey()));
+                for(int i=0,size=rows.size();i<size;i++)
+                    result = result.or(CompareWhere.compareValues(joinImplement,rows.getKey(i)));
                 return result;
             }
         };
@@ -76,35 +79,32 @@ public class SessionRows extends SessionData<SessionRows> {
     }
     protected int hash(HashValues hashValues) {
         int hash = 0;
-        for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-            hash += MapValuesIterable.hash(row.getKey(),hashValues) ^ MapValuesIterable.hash(row.getValue(),hashValues);
+        for(int i=0,size=rows.size();i<size;i++)
+            hash += MapValuesIterable.hash(rows.getKey(i),hashValues) ^ MapValuesIterable.hash(rows.getValue(i),hashValues);
         return hash;
     }
 
-    public QuickSet<Value> getValues() {
-        QuickSet<Value> result = new QuickSet<Value>();
-        for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet()) {
-            result.addAll(MapValuesIterable.getContextValues(row.getKey()));
-            result.addAll(MapValuesIterable.getContextValues(row.getValue()));
+    public ImSet<Value> getValues() {
+        MSet<Value> result = SetFact.mSet();
+        for(int i=0,size=rows.size();i<size;i++) {
+            result.addAll(MapValuesIterable.getContextValues(rows.getKey(i)));
+            result.addAll(MapValuesIterable.getContextValues(rows.getValue(i)));
         }
-        return result;
+        return result.immutable();
     }
 
-    protected SessionRows translate(MapValuesTranslate mapValues) {
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> transRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-        for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-            transRows.put(mapValues.translateValues(row.getKey()), mapValues.translateValues(row.getValue()));
-        return new SessionRows(keys, properties, transRows);
+    protected SessionRows translate(final MapValuesTranslate mapValues) {
+        return new SessionRows(keys, properties, mapValues.translateMapKeyValues(rows));
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData modifyRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
+    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner) throws SQLException {
 
         if(type==Modify.DELETE)
-            return new SessionRows(keys, properties, BaseUtils.removeKey(rows, keyFields));
+            return new SessionRows(keys, properties, rows.remove(keyFields));
         if(type== Modify.LEFT)
             if(rows.containsKey(keyFields))
                 return this;
@@ -115,8 +115,7 @@ public class SessionRows extends SessionData<SessionRows> {
             if(!rows.containsKey(keyFields))
                 return this;
 
-        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> orRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
-        orRows.put(keyFields,propFields);
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> orRows = rows.override(keyFields, propFields);
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
             return new SessionDataTable(session, keys, properties, orRows, owner);
@@ -138,15 +137,15 @@ public class SessionRows extends SessionData<SessionRows> {
         return false;
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getClasses(Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, Map<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>STATIC(false), BaseUtils.toMap(properties, ClassWhere.<Field>STATIC(false)));
-        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
-            orClasses = SessionTable.orFieldsClassWheres(orClasses.first, orClasses.second, row.getKey(), row.getValue());
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses(ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
+        Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, ImMap<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>FALSE(), properties.toMap(ClassWhere.<Field>FALSE()));
+        for(int i=0,size=rows.size();i<size;i++)
+            orClasses = SessionTable.orFieldsClassWheres(orClasses.first, orClasses.second, rows.getKey(i), rows.getValue(i));
         return orClasses;
     }
 
     @IdentityLazy
-    private Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getClasses() {
+    private Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses() {
         return getClasses(properties, rows);
     }
 
@@ -157,7 +156,7 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public ClassWhere<Field> getClassWhere(PropertyField property) {
         if(rows.size()==0)
-            return ClassWhere.STATIC(false);
+            return ClassWhere.FALSE();
         else
             return getClasses().second.get(property);
     }
@@ -166,11 +165,11 @@ public class SessionRows extends SessionData<SessionRows> {
         return this;
     }
 
-    public SessionRows updateCurrentClasses(DataSession session) throws SQLException {
-        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> updatedRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
-            updatedRows.put(session.updateCurrentClasses(row.getKey()), session.updateCurrentClasses(row.getValue()));
-        return new SessionRows(keys, properties, updatedRows);
+    public SessionRows updateCurrentClasses(final DataSession session) throws SQLException {
+        MExclMap<ImMap<KeyField, DataObject>,ImMap<PropertyField, ObjectValue>> mUpdatedRows = MapFact.mExclMap(rows.size());// exception кидается
+        for(int i=0,size=rows.size();i<size;i++)
+            mUpdatedRows.exclAdd(session.updateCurrentClasses(rows.getKey(i)), session.updateCurrentClasses(rows.getValue(i)));
+        return new SessionRows(keys, properties, mUpdatedRows.immutable());
     }
 
     public boolean isEmpty() {
@@ -182,19 +181,17 @@ public class SessionRows extends SessionData<SessionRows> {
     }
 
     // assert что содержит
-    public static Map<PropertyField, ObjectValue> updateAdded(Map<PropertyField, ObjectValue> map, PropertyField property, int count) {
-        Map<PropertyField, ObjectValue> result = new HashMap<PropertyField, ObjectValue>(map);
-
-        DataObject prevValue = (DataObject)result.get(property);
-        result.put(property, new DataObject(ObjectType.idClass.read(prevValue.object) + count, prevValue.objectClass));
-        return result;
+    public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, int count) {
+        DataObject prevValue = (DataObject)map.get(property);
+        return map.replaceValue(property, new DataObject(ObjectType.idClass.read(prevValue.object) + count, prevValue.objectClass));
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) {
-        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> updatedRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
-        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
-            updatedRows.put(row.getKey(), updateAdded(row.getValue(), property, count));
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final int count) {
+        ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
+            public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
+                return updateAdded(value, property, count);
+            }});
         return new SessionRows(keys, properties, updatedRows);
     }
 }

@@ -1,6 +1,5 @@
 package platform.server.data.query;
 
-import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
 
 public class SubQueryContext extends TwinImmutableObject {
@@ -34,7 +33,7 @@ public class SubQueryContext extends TwinImmutableObject {
         return new SubQueryContext(alias, recursion + 1);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return alias == ((SubQueryContext)o).alias && recursion == ((SubQueryContext)o).recursion;
     }
 

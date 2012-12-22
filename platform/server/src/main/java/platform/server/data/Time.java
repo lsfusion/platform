@@ -1,6 +1,9 @@
 package platform.server.data;
 
-import platform.server.classes.*;
+import platform.server.classes.DataClass;
+import platform.server.classes.DateTimeClass;
+import platform.server.classes.IntegerClass;
+import platform.server.classes.LongClass;
 import platform.server.data.query.CompileSource;
 
 public enum Time {

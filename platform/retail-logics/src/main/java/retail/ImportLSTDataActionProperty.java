@@ -5,10 +5,14 @@ import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -1194,17 +1198,17 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 Object storeObject = getLCP("externalizableSID").readClasses(context.getSession(), new DataObject(store, StringClass.get(110)));
                 if (!(storeObject instanceof NullValue)) {
                     LCP isDepartmentStore = LM.is(getClass("departmentStore"));
-                    Map<Object, KeyExpr> keys = isDepartmentStore.getMapKeys();
-                    KeyExpr key = BaseUtils.singleValue(keys);
-                    Query<Object, Object> query = new Query<Object, Object>(keys);
-                    query.properties.put("sidExternalizable", getLCP("sidExternalizable").getExpr(context.getModifier(), key));
+                    ImRevMap<Object, KeyExpr> keys = isDepartmentStore.getMapKeys();
+                    KeyExpr key = keys.singleValue();
+                    QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+                    query.addProperty("sidExternalizable", getLCP("sidExternalizable").getExpr(context.getModifier(), key));
                     query.and(isDepartmentStore.getExpr(key).getWhere());
                     query.and(getLCP("storeDepartmentStore").getExpr(context.getModifier(), key).compare(((DataObject)storeObject).getExpr(), Compare.EQUALS));
-                    OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql);
 
-                    for (Map.Entry<Map<Object, Object>, Map<Object, Object>> entry : result.entrySet()) {
+                    for (ImMap<Object, Object> entry : result.valueIt()) {
                         List<Object> row = new ArrayList<Object>();
-                        row.addAll(Arrays.asList(supplier + "ПР", entry.getValue().get("sidExternalizable"), null, true));
+                        row.addAll(Arrays.asList(supplier + "ПР", entry.get("sidExternalizable"), null, true));
                         if (!data.contains(row))
                             data.add(row);
                     }

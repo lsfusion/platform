@@ -1,6 +1,8 @@
 package platform.server.logics.property.actions;
 
-public class SystemEvent implements BaseEvent {
+import platform.base.ImmutableObject;
+
+public class SystemEvent extends ImmutableObject implements BaseEvent {
     
     private SystemEvent() {        
     }

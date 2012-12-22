@@ -1,34 +1,28 @@
 package platform.server.data.where;
 
-import org.springframework.core.Ordered;
-import platform.base.OrderedMap;
 import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.*;
 import platform.server.caches.OuterContext;
-import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.stat.KeyStat;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.*;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, KeyStat, CheckWhere {
+public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, KeyStat, CheckWhere<Where> {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
+    Where followFalseChange(Where falseWhere, boolean packExprs, FollowChange change);
+
     Where followFalse(CheckWhere falseWhere, boolean pack, FollowChange change); // protected
 
     static enum FollowType { // protected
@@ -58,9 +52,10 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
         }
     }
 
-    <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack);
-    List<Expr> followFalse(List<Expr> list, boolean pack);
-    <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map, boolean pack);
+    <K> ImMap<K, Expr> followTrue(ImMap<K, ? extends Expr> map, boolean pack);
+    ImList<Expr> followFalse(ImList<Expr> list, boolean pack);
+    ImSet<Expr> followFalse(ImSet<Expr> set, boolean pack);
+    <K> ImOrderMap<Expr, K> followFalse(ImOrderMap<Expr, K> map, boolean pack);
 
     Where not();
 
@@ -69,31 +64,32 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     Where or(Where where);
     Where or(Where where, boolean packExprs);
 
+    Where exclOr(Where where); // вообще толку с него мало, собсно чтобы проверить в профайлере надо ли оптимизировать
+
     Where xor(Where where);
 
     OrObjectWhere[] getOr(); // protected
 
-    Map<BaseExpr,BaseExpr> getExprValues();
-    Map<BaseExpr,BaseExpr> getNotExprValues();
-    Map<BaseExpr,BaseExpr> getOnlyExprValues();
+    ImMap<BaseExpr, BaseExpr> getExprValues();
+    ImMap<BaseExpr, BaseExpr> getNotExprValues();
+    ImMap<BaseExpr, BaseExpr> getOnlyExprValues();
 
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
-    <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop);
-    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
-    <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> keys);
-    <K extends BaseExpr> StatKeys<K> getStatKeys(Collection<K> keys);
+    <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop);
+    <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop);
+    <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(ImSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere);
+    <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> keys);
     <K extends BaseExpr> Stat getStatRows();
-    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, QuickSet<K> exprs, GroupStatType type, boolean noWhere);
-    <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> keys);
+    <K extends Expr> ImCol<GroupStatWhere<K>> getStatJoins(boolean notExclusive, ImSet<K> exprs, GroupStatType type, boolean noWhere);
+    <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> keys);
 
     // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
-    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere);
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere);
     MeanClassWheres groupMeanClassWheres(boolean useNots);
 
     abstract public ClassExprWhere getClassWhere();
@@ -107,7 +103,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     Where translateOuter(MapTranslate translator);
 
-    Where map(Map<KeyExpr,? extends Expr> map);
+    Where map(ImMap<KeyExpr, ? extends Expr> map);
 
     Where getKeepWhere(KeyExpr expr);
 

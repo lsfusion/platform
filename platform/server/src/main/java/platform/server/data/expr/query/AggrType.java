@@ -1,9 +1,8 @@
 package platform.server.data.expr.query;
 
+import platform.base.col.interfaces.immutable.ImList;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-
-import java.util.List;
 
 public interface AggrType {
 
@@ -12,6 +11,6 @@ public interface AggrType {
 
     boolean canBeNull(); // может возвращать null если само выражение не null
     
-    Where getWhere(List<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
-    Expr getMainExpr(List<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
+    Where getWhere(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
+    Expr getMainExpr(ImList<Expr> exprs); // вот тут надо быть аккуратнее, предполагается что первое выражение попадет в getWhere, см. GroupExpr.Query.and
 }

@@ -1,5 +1,6 @@
 package platform.server;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
@@ -17,7 +18,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class WrapperContext implements Context{
     Context wrappedContext;
@@ -46,7 +46,7 @@ public class WrapperContext implements Context{
         return wrappedContext.popActionMessage();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, interactive);
     }
 

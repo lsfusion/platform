@@ -1,13 +1,16 @@
 package platform.server.data.query.stat;
 
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.NotNullExprSet;
+import platform.server.data.expr.NotNullExpr;
 import platform.server.data.expr.query.Stat;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 public class ValueJoin implements InnerBaseJoin<Object> {
 
@@ -15,15 +18,15 @@ public class ValueJoin implements InnerBaseJoin<Object> {
     }
     public final static ValueJoin instance = new ValueJoin();
 
-    public Map<Object, BaseExpr> getJoins() {
-        return new HashMap<Object, BaseExpr>();
+    public ImMap<Object, BaseExpr> getJoins() {
+        return MapFact.EMPTY();
     }
 
     public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Object>(new HashSet<Object>(), Stat.ONE);
+        return new StatKeys<Object>(SetFact.<Object>EMPTY(), Stat.ONE);
     }
 
-    public NotNullExprSet getExprFollows(boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean recursive) {
         return InnerExpr.getExprFollows(this, recursive);
     }
 }

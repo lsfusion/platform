@@ -2,32 +2,37 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
 import platform.server.data.expr.query.Stat;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 // выделяется в отдельный объект так как синхронизироваться должен
 public class SQLTemporaryPool {
-    private final Map<FieldStruct, Set<String>> tables = new HashMap<FieldStruct, Set<String>>();
-    private final Map<String, Object> stats = new HashMap<String, Object>();
-    private final Map<String, FieldStruct> structs = new HashMap<String, FieldStruct>(); // чтобы удалять таблицы, не имея структры
+    private final Map<FieldStruct, Set<String>> tables = MapFact.mAddRemoveMap();
+    private final Map<String, Object> stats = MapFact.mAddRemoveMap();
+    private final Map<String, FieldStruct> structs = MapFact.mAddRemoveMap(); // чтобы удалять таблицы, не имея структры
     private int counter = 0;
 
     public boolean isEmpty(Map<String, WeakReference<Object>> used) {
         return tables.isEmpty();
     }
 
-    public String getTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used, Result<Boolean> isNew) throws SQLException {
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable data, Integer count, Result<Integer> resultActual, Map<String, WeakReference<Object>> used, Result<Boolean> isNew) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
         resultActual.set(count);
 
         synchronized(tables) {
             Set<String> matchTables = tables.get(fieldStruct);
             if(matchTables==null) {
-                matchTables = new HashSet<String>();
+                matchTables = SetFact.mAddRemoveSet();
                 tables.put(fieldStruct, matchTables);
             }
 
@@ -77,18 +82,21 @@ public class SQLTemporaryPool {
             if(!Settings.instance.isAutoAnalyzeTempStats())
                 stats.remove(table);
             FieldStruct fieldStruct = structs.remove(table);
-            tables.get(fieldStruct).remove(table);
+            Set<String> structTables = tables.get(fieldStruct);
+            structTables.remove(table);
+            if(structTables.isEmpty())
+                tables.remove(fieldStruct);
         }
     }
 
     private static class FieldStruct {
 
-        public final List<KeyField> keys;
-        public final Collection<PropertyField> properties;
+        public final ImOrderSet<KeyField> keys;
+        public final ImSet<PropertyField> properties;
 
         private final Object statistics;
 
-        public FieldStruct(List<KeyField> keys, Collection<PropertyField> properties, Integer count) {
+        public FieldStruct(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count) {
             this.keys = keys;
             this.properties = properties;
 

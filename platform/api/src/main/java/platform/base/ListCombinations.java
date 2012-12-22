@@ -1,27 +1,31 @@
 package platform.base;
 
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class ListCombinations<V> implements Iterable<List<V>> {
+public class ListCombinations<V> implements Iterable<ImList<V>> {
 
-    public Iterator<List<V>> iterator() {
+    public Iterator<ImList<V>> iterator() {
         return new CombinationIterator();
     }
 
-    List<List<V>> list = new ArrayList<List<V>>();
-    public ListCombinations(List<List<V>> list) {
+    ImList<ImList<V>> list;
+    public ListCombinations(ImList<ImList<V>> list) {
         this.list = list;
     }
 
-    class CombinationIterator implements Iterator<List<V>> {
+    class CombinationIterator implements Iterator<ImList<V>> {
 
         int[] nums;
         int size;
 
         CombinationIterator() {
-            for(List<V> innerList : list)
+            for(ImList<V> innerList : list)
                 if(innerList.size()==0) {
                     hasNext = false;
                     return;
@@ -35,11 +39,12 @@ public class ListCombinations<V> implements Iterable<List<V>> {
             return hasNext;
         }
 
-        public List<V> next() {
+        public ImList<V> next() {
 
-            List<V> next = new ArrayList<V>();
-            for(int i=0;i<size;i++)
-                next.add(list.get(i).get(nums[i]));
+            ImList<V> next = list.mapListValues(new GetIndexValue<V, ImList<V>>() {
+                public V getMapValue(int i, ImList<V> value) {
+                    return value.get(nums[i]);
+                }});
 
             // переходим к следующей паре
             int i = 0;

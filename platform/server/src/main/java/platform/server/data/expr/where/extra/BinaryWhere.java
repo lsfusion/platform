@@ -1,15 +1,18 @@
 package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.NotNullExprSet;
+import platform.server.data.expr.NotNullExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -17,10 +20,9 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.*;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.List;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -32,17 +34,17 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         this.operator2 = operator2;
     }
 
-    public QuickSet<OuterContext> calculateOuterDepends() {
-        return new QuickSet<OuterContext>(operator1, operator2);
+    public ImSet<OuterContext> calculateOuterDepends() {
+        return SetFact.<OuterContext>toSet(operator1, operator2);
     }
 
-    public void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    public void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
         operator1.fillJoinWheres(joins,andWhere);
         operator2.fillJoinWheres(joins,andWhere);
     }
 
-    public DataWhereSet calculateFollows() {
-        return new DataWhereSet(new NotNullExprSet(BaseUtils.toSet(operator1, operator2), true));
+    public ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(NotNullExpr.getExprFollows(SetFact.toSet(operator1, operator2), true));
     }
 
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
@@ -66,7 +68,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOperator1.compare(packOperator2, getCompare());
     }
 
-    public WhereJoin groupJoinsWheres(List<Expr> orderTop, boolean not) {
+    public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop, boolean not) {
         if(operator1.isValue()) {
             if(operator2.isTableIndexed() && orderTop.contains(operator2))
                 return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, not);
@@ -83,7 +85,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return new ExprEqualsJoin(operator1, operator2);
         return null;        
     }
-    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(QuickSet<K> keepStat, KeyStat keyStat, List<Expr> orderTop, boolean noWhere) {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         WhereJoin exprJoin = groupJoinsWheres(orderTop, false);
         if(exprJoin!=null)
             return new GroupJoinsWheres(exprJoin, this, noWhere);
@@ -99,7 +101,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return getOperandWhere().getClassWhere();
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
     }
 

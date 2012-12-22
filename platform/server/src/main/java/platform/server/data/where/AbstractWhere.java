@@ -1,9 +1,13 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
@@ -11,22 +15,20 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.expr.where.pull.ExclPullWheres;
-import platform.server.data.query.innerjoins.GroupStatType;
-import platform.server.data.query.innerjoins.GroupStatWhere;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
+import platform.server.data.query.innerjoins.GroupStatType;
+import platform.server.data.query.innerjoins.GroupStatWhere;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-
-import java.util.*;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
@@ -52,36 +54,53 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return OrWhere.orCheck(this,where);
     }
 
+    public Where exclOr(Where where) {
+//        assert OrWhere.checkTrue(not(), where.not());
+        return or(where);
+    }
+
     public Where followFalse(Where falseWhere) {
         return followFalse(falseWhere, false);
     }
     public Where followFalse(Where falseWhere, boolean packExprs) {
-        Where result = followFalse(falseWhere, packExprs, new FollowChange());
-        if(result instanceof ObjectWhere && OrWhere.checkTrue(this,falseWhere))
+        return followFalseChange(falseWhere, packExprs, new FollowChange());
+    }
+    public Where followFalseChange(Where falseWhere, boolean packExprs, FollowChange change) {
+        Where result = followFalse(falseWhere, packExprs, change);
+        if(result instanceof ObjectWhere && OrWhere.checkTrue(this,falseWhere)) {
+            change.type = FollowType.WIDE;
             result = TRUE;
-//        assert BaseUtils.hashEquals(oldff(falseWhere, false, packExprs, new FollowChange()),result);
+        }
         return result;
     }
 
-    public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map, boolean pack) {
-        Map<K, Expr> result = new HashMap<K, Expr>();
-        for(Map.Entry<K,? extends Expr> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().followFalse(not(), pack));
-        return result;
+    public <K> ImMap<K, Expr> followTrue(ImMap<K, ? extends Expr> map, final boolean pack) {
+        return ((ImMap<K, Expr>)map).mapValues(new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.followFalse(not(), pack);
+            }
+        });
     }
 
-    public List<Expr> followFalse(List<Expr> list, boolean pack) {
-        List<Expr> result = new ArrayList<Expr>();
-        for(Expr item : list)
-            result.add(item.followFalse(this, pack));
-        return result;
+    public ImList<Expr> followFalse(ImList<Expr> list, final boolean pack) {
+        return list.mapListValues(new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.followFalse(AbstractWhere.this, pack);
+            }});
     }
 
-    public <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map, boolean pack) {
-        OrderedMap<Expr, K> result = new OrderedMap<Expr, K>();
-        for(Map.Entry<Expr, K> entry : map.entrySet())
-            result.put(entry.getKey().followFalse(this, pack),entry.getValue());
-        return result;
+    public ImSet<Expr> followFalse(ImSet<Expr> set, final boolean pack) {
+        return set.mapSetValues(new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.followFalse(AbstractWhere.this, pack);
+            }});
+    }
+
+    public <K> ImOrderMap<Expr, K> followFalse(ImOrderMap<Expr, K> map, final boolean pack) {
+        return map.mapMergeOrderKeys(new GetValue<Expr, Expr>() {
+            public Expr getMapValue(Expr value) {
+                return value.followFalse(AbstractWhere.this, pack);
+            }});
     }
 
     public boolean means(CheckWhere where) {
@@ -171,8 +190,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
     public abstract MeanClassWheres calculateMeanClassWheres(boolean useNots);
 
-    private Map<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
-        Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();
+    private ImMap<BaseExpr, BaseExpr> getExprValues(boolean and, boolean only) {
+        MMap<BaseExpr, BaseExpr> result = MapFact.mMap(MapFact.<BaseExpr, BaseExpr>override());
         for(Where opWhere : and?getOr():getAnd()) {
             BaseExpr expr = null; BaseExpr valueExpr = null;
             if(opWhere instanceof EqualsWhere) {
@@ -190,112 +209,109 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             }
             
             if(expr!=null)
-                result.put(expr, valueExpr);
+                result.add(expr, valueExpr);
             else
                 if(only)
                     return null;
         }
-        return result;
+        return result.immutable();
     }
 
-    private Map<BaseExpr, BaseExpr> getExprValues(boolean and) {
+    private ImMap<BaseExpr, BaseExpr> getExprValues(boolean and) {
         return getExprValues(and, false);
     }
 
     @TwinLazy
-    public Map<BaseExpr, BaseExpr> getExprValues() {
+    public ImMap<BaseExpr, BaseExpr> getExprValues() {
         return getExprValues(true);
     }
 
-    public Map<BaseExpr, BaseExpr> getOnlyExprValues() {
+    public ImMap<BaseExpr, BaseExpr> getOnlyExprValues() {
         return getExprValues(true, true);
     }
 
     @TwinLazy
-    public Map<BaseExpr, BaseExpr> getNotExprValues() {
+    public ImMap<BaseExpr, BaseExpr> getNotExprValues() {
         return not().getExprValues(false);
     }
 
-    public Where map(Map<KeyExpr, ? extends Expr> map) {
-        return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
+    public Where map(ImMap<KeyExpr, ? extends Expr> map) {
+        return new Query<KeyExpr,Object>(map.keys().toRevMap(),this).join(map).getWhere();
     }
 
-    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
-        Pair<Collection<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
-        Collection<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
+    public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
+        Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
+        ImCol<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
         boolean exclusive = whereJoinsExcl.second;
 
         if(whereJoins.size()==1) // нет смысла упаковывать если один whereJoins
             return whereJoinsExcl;
         else {
-            Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
-
-            List<Where> recPacks = new ArrayList<Where>();
-            if(!exclusive) recPacks.add(Where.FALSE);
+            MCol<GroupJoinsWhere> mResult = ListFact.mColFilter(whereJoins);
+            MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
+            if(!exclusive) mRecPacks.add(Where.FALSE);
             for(GroupJoinsWhere innerJoin : whereJoins) {
                 if(innerJoin.isComplex())
-                    result.add(innerJoin);
+                    mResult.add(innerJoin);
                 else { // не будем запускать рекурсию
                     Where fullWhere = innerJoin.getFullWhere();
                     Where fullPackWhere = fullWhere.pack();
                     if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
-                        result.add(innerJoin);
+                        mResult.add(innerJoin);
                     else {
                         if(exclusive)
-                            recPacks.add(fullPackWhere); // если не exclusive
+                            mRecPacks.add(fullPackWhere); // если не exclusive
                         else
-                            recPacks.set(0, recPacks.get(0).or(fullPackWhere));
+                            mRecPacks.set(0, mRecPacks.get(0).or(fullPackWhere));
                     }
                 }
             }
-            
+            ImCol<GroupJoinsWhere> result = ListFact.imColFilter(mResult, whereJoins);
+            ImList<Where> recPacks = mRecPacks.immutableList();
+
             if(result.size()==whereJoins.size())
                 return whereJoinsExcl;
 
             for(Where recPack : recPacks) {
-                Pair<Collection<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
+                Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
                 exclusive = exclusive && recWhereJoins.second;
                 result = KeyEquals.merge(result, recWhereJoins.first);
             }
-            return new Pair<Collection<GroupJoinsWhere>, Boolean>(result, exclusive);
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(result, exclusive);
         }
     }
 
     // 2-й параметр чисто для оптимизации пока
-    public <K extends BaseExpr> Pair<Collection<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, QuickSet<K> keepStat, List<Expr> orderTop) {
+    public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
         return getKeyEquals().getWhereJoins(tryExclusive, keepStat, orderTop);
     }
 
-    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(QuickSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere) {
+    public <K extends BaseExpr> ImCol<GroupStatWhere<K>> getStatJoins(ImSet<K> keys, boolean exclusive, GroupStatType type, boolean noWhere) {
         return getKeyEquals().getStatJoins(exclusive, keys, type, noWhere);
     }
 
-    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean exclusive, QuickSet<K> exprs, final GroupStatType type, final boolean noWhere) {
-        return new ExclPullWheres<Collection<GroupStatWhere<K>>, K, Where>() {
-            protected Collection<GroupStatWhere<K>> proceedBase(Where data, Map<K, BaseExpr> map) {
+    public <K extends Expr> ImCol<GroupStatWhere<K>> getStatJoins(final boolean exclusive, ImSet<K> exprs, final GroupStatType type, final boolean noWhere) {
+        return new ExclPullWheres<ImCol<GroupStatWhere<K>>, K, Where>() {
+            protected ImCol<GroupStatWhere<K>> proceedBase(Where data, ImMap<K, BaseExpr> map) {
                 return GroupStatWhere.mapBack(data.and(Expr.getWhere(map)).getStatJoins(
-                        new QuickSet<BaseExpr>(map.values()), exclusive, type, noWhere), map);
+                        map.values().toSet(), exclusive, type, noWhere), map);
             }
 
-            protected Collection<GroupStatWhere<K>> initEmpty() {
-                return new ArrayList<GroupStatWhere<K>>();
+            protected ImCol<GroupStatWhere<K>> initEmpty() {
+                return SetFact.EMPTY();
             }
 
-            protected Collection<GroupStatWhere<K>> add(Collection<GroupStatWhere<K>> op1, Collection<GroupStatWhere<K>> op2) {
+            protected ImCol<GroupStatWhere<K>> add(ImCol<GroupStatWhere<K>> op1, ImCol<GroupStatWhere<K>> op2) {
                 return type.merge(op1, op2, noWhere);
             }
         }.proceed(this, exprs.toMap());
     }
 
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(QuickSet<K> groups) { // assertion что where keys входят в это where
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups) { // assertion что where keys входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupStatWhere<K> groupJoin : getStatJoins(groups, false, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
         return result;
-    }
-
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Collection<K> groups) { // assertion что where keys входят в это where
-        return getStatKeys(new QuickSet<K>(groups));
     }
 
     @IdentityLazy
@@ -303,7 +319,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getStatKeys(getOuterKeys()).rows;
     }
 
-    public <K extends Expr> StatKeys<K> getStatExprs(QuickSet<K> groups) {
+    public <K extends Expr> StatKeys<K> getStatExprs(ImSet<K> groups) {
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupStatWhere<K> groupJoin : getStatJoins(false, groups, GroupStatType.ALL, true))
             result = result.or(groupJoin.stats);
@@ -337,6 +353,32 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public Where ifElse(Where trueWhere, Where falseWhere) {
-        return and(trueWhere).or(falseWhere.and(not()));
+        return and(trueWhere).exclOr(falseWhere.and(not()));
+    }
+
+    private final static AddValue<Object, Where> addOr = new SimpleAddValue<Object, Where>() {
+        public Where addValue(Object key, Where prevValue, Where newValue) {
+            return prevValue.or(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <T> AddValue<T, Where> addOr() {
+        return (AddValue<T, Where>) addOr;
+    }
+
+    private final static AddValue<Object, CheckWhere> addOrCheck = new SimpleAddValue<Object, CheckWhere>() {
+        public CheckWhere addValue(Object key, CheckWhere prevValue, CheckWhere newValue) {
+            return prevValue.orCheck(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <T> AddValue<T, CheckWhere> addOrCheck() {
+        return (AddValue<T, CheckWhere>) addOrCheck;
     }
 }

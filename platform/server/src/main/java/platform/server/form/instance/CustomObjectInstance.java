@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
@@ -15,7 +16,6 @@ import platform.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
-import java.util.Set;
 
 public class CustomObjectInstance extends ObjectInstance {
 
@@ -44,7 +44,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return baseClass;
     }
 
-    public AndClassSet getClassSet(Set<GroupObjectInstance> gridGroups) {
+    public AndClassSet getClassSet(ImSet<GroupObjectInstance> gridGroups) {
         if(objectInGrid(gridGroups))
             return getGridClass().getUpSet();
         else
@@ -107,7 +107,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return changedProps.contains(gridClass.getProperty());
     }
 
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         if(objectInGrid(gridGroups))
             return (updated & ObjectInstance.UPDATED_CLASS)!=0;
         else

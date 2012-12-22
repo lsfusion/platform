@@ -1,5 +1,11 @@
 package platform.server.integration;
 
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.server.Message;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.IntegerClass;
@@ -9,7 +15,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.cases.CaseExpr;
-import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -18,7 +23,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
 
 public class IntegrationService {
     private ImportTable table;
@@ -54,10 +59,11 @@ public class IntegrationService {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 
         int counter = 0;
-        for (PlainDataTable.Row row : table) {
-            Map<ImportField, ObjectValue> insertRow = new HashMap<ImportField, ObjectValue>();
-            for (ImportField field : table.fields)
-                insertRow.put(field, ObjectValue.getValue(row.getValue(field), field.getFieldClass()));
+        for (final PlainDataTable.Row row : table) {
+            ImMap<ImportField, ObjectValue> insertRow = table.fields.getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
+                public ObjectValue getMapValue(ImportField value) {
+                    return ObjectValue.getValue(row.getValue(value), value.getFieldClass());
+                }});
             importTable.modifyRecord(session.sql, new DataObject(counter++), insertRow, Modify.ADD);
         }
 
@@ -66,14 +72,15 @@ public class IntegrationService {
         }
 
         // приходится через addKeys, так как synchronize сам не может resolv'ить сессию на добавление
-        Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = new HashMap<ImportKey<?>, SinglePropertyTableUsage<?>>();
+        MExclMap<ImportKey<?>, SinglePropertyTableUsage<?>> mAddedKeys = MapFact.mExclMapMax(keys.size());
         for (ImportKey<?> key : keys)
             if(!key.skipKey && key.keyClass instanceof ConcreteCustomClass)
-                addedKeys.put(key, key.synchronize(session, importTable));
+                mAddedKeys.exclAdd(key, key.synchronize(session, importTable));
+        ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = mAddedKeys.immutable();
 
-        DataChanges propertyChanges = new DataChanges();
+        DataChanges propertyChanges = DataChanges.EMPTY;
         for (ImportProperty<?> property : properties)
-            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
+            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, mAddedKeys.immutable(), replaceNull, replaceEqual));
         
         System.gc();
 
@@ -89,31 +96,32 @@ public class IntegrationService {
             Where deleteWhere = Where.TRUE;
 
             // выражения для полей в импортируемой таблице
-            Map<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
+            ImMap<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
             // фильтруем только те, которых нету в ImportTable
             if (!delete.deleteAll)
-                deleteWhere = deleteWhere.and(GroupExpr.create(Collections.singletonMap("key",
+                deleteWhere = deleteWhere.and(GroupExpr.create(MapFact.singleton("key",
                                            delete.key.getExpr(importExprs, session.getModifier())),
                                            Where.TRUE,
-                                           Collections.singletonMap("key", keyExpr)).getWhere().not());
+                                           MapFact.singleton("key", keyExpr)).getWhere().not());
 
-            Map<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
-            Map<P, Expr> deleteExprs = new HashMap<P, Expr>();
+            ImRevMap<P, KeyExpr> intraKeyExprs = delete.deleteProperty.property.getMapKeys(); // генерим ключи (использовать будем только те, что не в DataObject
             KeyExpr groupExpr = null;
-            for (Map.Entry<P, ImportDeleteInterface> entry : ((CalcPropertyImplement<P, ImportDeleteInterface>)delete.deleteProperty).mapping.entrySet()) {
-                P propInt = entry.getKey();
-                KeyExpr intraKeyExpr = intraKeyExprs.get(propInt);
-                if (delete.key.equals(entry.getValue())) {
+            ImMap<P, ImportDeleteInterface> deleteMapping = ((CalcPropertyImplement<P, ImportDeleteInterface>) delete.deleteProperty).mapping;
+            ImValueMap<P,Expr> mvDeleteExprs = deleteMapping.mapItValues();
+            for (int i=0,size=deleteMapping.size();i<size;i++) {
+                KeyExpr intraKeyExpr = intraKeyExprs.get(deleteMapping.getKey(i));
+                ImportDeleteInterface deleteInterface = deleteMapping.getValue(i);
+                if (delete.key.equals(deleteInterface)) {
                     groupExpr = intraKeyExpr; // собственно группируем по этому ключу
-                    deleteExprs.put(propInt, groupExpr);
+                    mvDeleteExprs.mapValue(i, groupExpr);
                 } else
-                    deleteExprs.put(propInt, entry.getValue().getDeleteExpr(importTable, intraKeyExpr, session.getModifier()));
+                    mvDeleteExprs.mapValue(i, deleteInterface.getDeleteExpr(importTable, intraKeyExpr, session.getModifier()));
             }
 
-            deleteWhere = deleteWhere.and(GroupExpr.create(Collections.singletonMap("key", groupExpr),
-                                       delete.deleteProperty.property.getExpr(deleteExprs, session.getModifier()),
-                                       GroupType.ANY, Collections.singletonMap("key", keyExpr)).getWhere());
+            deleteWhere = deleteWhere.and(GroupExpr.create(MapFact.singleton("key", groupExpr),
+                                       delete.deleteProperty.property.getExpr(mvDeleteExprs.immutableValue(), session.getModifier()),
+                                       GroupType.ANY, MapFact.singleton("key", keyExpr)).getWhere());
 
             session.changeClass(new ClassChange(keyExpr, deleteWhere, CaseExpr.NULL));
         }

@@ -1,24 +1,27 @@
 package platform.base;
 
-import java.util.HashMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+
 import java.util.List;
-import java.util.Map;
 
-public class Pairs<T,V> extends Permutations<Map<T,V>> {
+public class Pairs<T,V> extends Permutations<ImRevMap<T,V>> {
 
-    private List<T> from;
-    private List<V> to;
-    public Pairs(List<T> from, List<V> to) {
+    private ImOrderSet<T> from;
+    private ImOrderSet<V> to;
+    public Pairs(ImOrderSet<T> from, ImOrderSet<V> to) {
         super(from.size()==to.size()?from.size():-1);
         this.from = from;
         this.to = to;
     }
 
-    Map<T, V> getPermute(PermuteIterator permute) {
-        Map<T,V> next = new HashMap<T,V>();
-        for(int i=0;i<size;i++)
-            next.put(from.get(i),to.get(permute.nums[i]));
-        return next;
+    ImRevMap<T, V> getPermute(final PermuteIterator permute) {
+        return from.mapOrderRevValues(new GetIndex<V>() {
+            public V getMapValue(int i) {
+                return to.get(permute.nums[i]);
+            }});
     }
 
     boolean isEmpty() {

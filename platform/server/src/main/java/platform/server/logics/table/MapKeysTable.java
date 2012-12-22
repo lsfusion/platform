@@ -1,17 +1,16 @@
 package platform.server.logics.table;
 
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.data.KeyField;
-
-import java.util.Map;
 
 public class MapKeysTable<T> {
     public ImplementTable table;
-    public Map<T,KeyField> mapKeys;
+    public ImRevMap<T,KeyField> mapKeys;
 
-    public MapKeysTable(ImplementTable iTable, Map<T,KeyField> iMapKeys) {
-        table = iTable;
-        mapKeys = iMapKeys;
+    public MapKeysTable(ImplementTable table, ImRevMap<T,KeyField> mapKeys) {
+        this.table = table;
+        this.mapKeys = mapKeys;
         
-        assert (table.keys.size()==mapKeys.size());
+        assert (table.keys.size()== this.mapKeys.size());
     }
 }

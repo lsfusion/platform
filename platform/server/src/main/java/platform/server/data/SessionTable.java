@@ -1,6 +1,13 @@
 package platform.server.data;
 
 import platform.base.*;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.add.MAddSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ValuesContext;
@@ -16,11 +23,11 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.query.IQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
@@ -30,17 +37,11 @@ import platform.server.data.type.StringParseInterface;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ObjectClassProperty;
 import platform.server.session.DataSession;
-import platform.server.session.SessionModifier;
 
 import java.sql.SQLException;
-import java.util.*;
 
-import static java.util.Collections.singletonMap;
 import static platform.base.BaseUtils.hashEquals;
-import static platform.base.BaseUtils.merge;
-import static platform.base.BaseUtils.singleKey;
 
 public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
 
@@ -50,29 +51,29 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return getStatKeys(this, count);
     }
 
-    public Value removeBig(QuickSet<Value> usedValues) {
+    public Value removeBig(MAddSet<Value> usedValues) {
         return null;
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         return getStatProps(this, count);
     }
 
     // просто дебилизм, но с ограничениями конструктора по другому не сделаешь
-    private SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, Result<Integer> actual, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
+    private SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Result<Integer> actual, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         super(session.getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, classes, propertyClasses);
 
         this.count = actual.result;
     }
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
+    public SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
     }
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
+    public SessionTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, Object owner) throws SQLException {
         this(session, keys, properties, count, fill, new Result<Integer>(), queryClasses.first, queryClasses.second, owner);
     }
 
     // создает таблицу batch'ем
-    public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+    public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
         // прочитаем классы
         return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
@@ -82,16 +83,16 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         }, SessionRows.getClasses(properties, rows), owner);
     }
 
-    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, Integer count, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
         super(name, keys, properties, classes, propertyClasses);
 
         this.count = count;
     }
-    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, Integer count, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> tableClasses) {
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> tableClasses) {
         this(name, keys, properties, count, tableClasses.first, tableClasses.second);
     }
 
-    public Set<PropertyField> getProperties() {
+    public ImSet<PropertyField> getProperties() {
         return properties;
     }
 
@@ -114,7 +115,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return hashValues(hashContext.values);
     }
 
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return getContextValues();
     }
 
@@ -130,8 +131,8 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return hashValues.hash(this);
     }
 
-    public QuickSet<Value> getContextValues() {
-        return new QuickSet<Value>(this);
+    public ImSet<Value> getContextValues() {
+        return SetFact.<Value>singleton(this);
     }
 
     public ParseInterface getParseInterface() {
@@ -145,15 +146,15 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     // теоретически достаточно только
     private static class Struct extends TwinImmutableObject implements GlobalObject {
 
-        public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
-        public final Collection<PropertyField> properties;
+        public final ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+        public final ImCol<PropertyField> properties;
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
-        protected final Map<PropertyField, ClassWhere<Field>> propertyClasses;
+        protected final ImMap<PropertyField, ClassWhere<Field>> propertyClasses;
 
         protected final StatKeys<KeyField> statKeys;
-        protected final Map<PropertyField, Stat> statProps;
+        protected final ImMap<PropertyField, Stat> statProps;
 
-        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, Map<PropertyField, Stat> statProps) {
+        private Struct(ImOrderSet<KeyField> keys, ImCol<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, ImMap<PropertyField, Stat> statProps) {
             this.keys = keys;
             this.properties = properties;
             this.classes = classes;
@@ -163,7 +164,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             this.statProps = statProps;
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses) && statKeys.equals(((Struct)o).statKeys) && statProps.equals(((Struct)o).statProps);
         }
 
@@ -182,7 +183,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return struct;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return name.equals(((SessionTable) o).name) && getValueClass().equals(((SessionTable) o).getValueClass());
     }
 
@@ -190,98 +191,82 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return name.hashCode() * 31 + getValueClass().hashCode();
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses) {
-        Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : propertyClasses.entrySet())
-            orPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().or(orClasses.second.get(propertyClass.getKey())));
-        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes.or(orClasses.first), orPropertyClasses);
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses) {
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.merge(orClasses.second, ClassWhere.<PropertyField, Field>addOr());
+        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes.or(orClasses.first), orPropertyClasses);
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) {
 
-        Map<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
-        Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+        final ImMap<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propFields.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
+            public ClassWhere<Field> getMapValue(PropertyField propField, ObjectValue propValue) {
+                ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propField);
+                assert existedPropertyClasses != null;
 
-        for (Map.Entry<PropertyField, ObjectValue> propertyField : propFields.entrySet()) {
-            PropertyField propField = propertyField.getKey();
-            ObjectValue propValue = propertyField.getValue();
-
-            ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propField);
-            assert existedPropertyClasses != null;
-
-            if (propValue instanceof DataObject) {
-                orPropertyClasses.put(
-                        propField,
-                        existedPropertyClasses.or(
-                                new ClassWhere<Field>(merge(insertKeyClasses, singletonMap(propField, ((DataObject) propValue).objectClass)))
-                        )
-                );
-            } else {
-                orPropertyClasses.put(propField, existedPropertyClasses);
-            }
-        }
-        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(
+                if (propValue instanceof DataObject)
+                    existedPropertyClasses = existedPropertyClasses.or(new ClassWhere<Field>(
+                            MapFact.addExcl(insertKeyClasses, propField, ((DataObject) propValue).objectClass)));
+                return existedPropertyClasses;
+            }});
+        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(
                 classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> andFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) {
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> andFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) {
         // определяем новые классы чтобы создать таблицу
-        ClassWhere<KeyField> addKeyClasses = new ClassWhere<KeyField>(DataObject.getMapClasses(keyFields));
+        final ClassWhere<KeyField> addKeyClasses = new ClassWhere<KeyField>(DataObject.getMapClasses(keyFields));
 
-        ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
-        Map<PropertyField, ClassWhere<Field>> andPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : propertyClasses.entrySet()) // добавляем старые
-            andPropertyClasses.put(propertyClass.getKey(), propertyClass.getValue().and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses)));
-        for(Map.Entry<PropertyField, ObjectValue> addProp : propFields.entrySet()) // добавляем новые
-            andPropertyClasses.put(addProp.getKey(), !(addProp.getValue() instanceof DataObject)?ClassWhere.<Field>STATIC(false):
-                        new ClassWhere<Field>(Collections.<Field, ConcreteClass>singletonMap(addProp.getKey(), ((DataObject) addProp.getValue()).objectClass)).
-                                and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses)));
-        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(andKeyClasses, andPropertyClasses);
+        final ClassWhere<KeyField> andKeyClasses = classes.and(addKeyClasses);
+
+        ImMap<PropertyField, ClassWhere<Field>> andPropertyClasses = propertyClasses.mapValues(new GetValue<ClassWhere<Field>, ClassWhere<Field>>() {
+            public ClassWhere<Field> getMapValue(ClassWhere<Field> value) {
+                return value.and(BaseUtils.<ClassWhere<Field>>immutableCast(addKeyClasses));
+            }}).addExcl(
+                propFields.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
+                    public ClassWhere<Field> getMapValue(PropertyField key, ObjectValue value) {
+                        return !(value instanceof DataObject)?ClassWhere.<Field>FALSE():
+                                new ClassWhere<Field>(MapFact.<Field, ConcreteClass>singleton(key, ((DataObject) value).objectClass)).
+                                        and(BaseUtils.<ClassWhere<Field>>immutableCast(andKeyClasses));
+                    }}));
+        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(andKeyClasses, andPropertyClasses);
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> removeFieldsClassWheres(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Set<KeyField> keyFields, Set<PropertyField> propFields) {
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> removeFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, final ImSet<KeyField> keyFields, ImSet<PropertyField> propFields) {
         if(keyFields.isEmpty())
-            return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes, BaseUtils.filterNotKeys(propertyClasses, propFields));
+            return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses.remove(propFields));
         else {
-            Map<PropertyField, ClassWhere<Field>> removePropClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-            for(Map.Entry<PropertyField, ClassWhere<Field>> propClass : propertyClasses.entrySet())
-                if(!propFields.contains(propClass.getKey()))
-                    removePropClasses.put(propClass.getKey(), propClass.getValue().remove(keyFields));
-            return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(classes.remove(keyFields), removePropClasses);
+            ImMap<PropertyField, ClassWhere<Field>> removePropClasses = propertyClasses.remove(propFields).mapValues(new GetValue<ClassWhere<Field>, ClassWhere<Field>>() {
+                public ClassWhere<Field> getMapValue(ClassWhere<Field> value) {
+                    return value.remove(keyFields);
+                }});
+            return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes.remove(keyFields), removePropClasses);
         }
     }
 
-    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> data) {
-        ClassWhere<KeyField> keysClassWhere = new ClassWhere<KeyField>();
-        Map<PropertyField, ClassWhere<Field>> propertiesClassWheres = new HashMap<PropertyField, ClassWhere<Field>>();
-        for (Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : data.entrySet()) {
-            Map<KeyField, DataObject> rowKeys = row.getKey();
-            Map<PropertyField, ObjectValue> rowProps = row.getValue();
-
-            Map<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapClasses(rowKeys);
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getFieldsClassWheres(ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> data) {
+        ClassWhere<KeyField> keysClassWhere = ClassWhere.<KeyField>FALSE();
+        ImMap<PropertyField, ClassWhere<Field>> propertiesClassWheres = null;
+        for (int i=0,size=data.size();i<size;) {
+            final ImMap<KeyField, ConcreteClass> rowKeyClasses = DataObject.getMapClasses(data.getKey(i));
 
             keysClassWhere = keysClassWhere.or(new ClassWhere(rowKeyClasses));
 
-            for (Map.Entry<PropertyField, ObjectValue> entry : rowProps.entrySet()) {
-                PropertyField propField = entry.getKey();
-                ObjectValue propValue = entry.getValue();
-
-                ClassWhere<Field> propClassWhere = propertiesClassWheres.containsKey(propField) ? propertiesClassWheres.get(propField) : new ClassWhere<Field>();
-                if (propValue instanceof DataObject) {
-                    propClassWhere = propClassWhere.or(
-                            new ClassWhere<Field>(
-                                    merge(rowKeyClasses, singletonMap(propField, ((DataObject) propValue).objectClass))
-                            )
-                    );
+            ImMap<PropertyField, ClassWhere<Field>> rowClasses = data.getValue(i).mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
+                public ClassWhere<Field> getMapValue(PropertyField key, ObjectValue value) {
+                    return new ClassWhere<Field>(MapFact.addExcl(rowKeyClasses, key, ((DataObject) value).objectClass));
                 }
+            });
 
-                propertiesClassWheres.put(propField, propClassWhere);
-            }
+            if(propertiesClassWheres==null)
+                propertiesClassWheres = rowClasses;
+            else
+                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.<PropertyField, Field>addOr());
         }
-        return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
+        return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable modifyRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, Modify type, final Object owner) throws SQLException {
+    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner) throws SQLException {
 
         if(type==Modify.DELETE) { // статистику пока не учитываем
             return new SessionTable(name, keys, properties, count - deleteRecords(session, keyFields), classes, propertyClasses).
@@ -340,41 +325,43 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                             updateStatistics(session, count, owner);
     }
     public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, int count) throws SQLException {
-        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
-        platform.server.data.query.Join<PropertyField> join = join(query.mapKeys);
-        query.properties.put(field, FormulaExpr.create2("prm1+prm2", baseClass.unknown, join.getExpr(field), ObjectType.idClass.getStaticExpr(count)));
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
+        query.addProperty(field, FormulaExpr.create2("prm1+prm2", baseClass.unknown, join.getExpr(field), ObjectType.idClass.getStaticExpr(count)));
         query.and(join.getWhere());
-        session.updateRecords(new ModifyQuery(this, query));
+        session.updateRecords(new ModifyQuery(this, query.getQuery()));
     }
 
     public SessionTable updateCurrentClasses(DataSession session) throws SQLException {
-        Map<KeyField, KeyExpr> mapKeys = getMapKeys();
+        final ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
         platform.server.data.query.Join<PropertyField> join = join(mapKeys);
 
-        Map<Field, Expr> mapExprs = new HashMap<Field, Expr>();
-        Map<Field, DataClass> mapData = new HashMap<Field, DataClass>();
-        ClassWhere<KeyField> updatedClasses = ClassWhere.STATIC(false);
+        MExclMap<Field, Expr> mMapExprs = MapFact.mExclMapMax(keys.size()+properties.size());
+        MExclMap<Field, DataClass> mMapData = MapFact.mExclMapMax(keys.size()+properties.size());
+        ClassWhere<KeyField> updatedClasses = ClassWhere.FALSE();
         for(KeyField key : keys)
             if(key.type instanceof ObjectType)
-                mapExprs.put(key, mapKeys.get(key));
+                mMapExprs.exclAdd(key, mapKeys.get(key));
             else
-                mapData.put(key, (DataClass) key.type);
-        Map<PropertyField, ClassWhere<Field>> updatedPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField property : properties) {
+                mMapData.exclAdd(key, (DataClass) key.type);
+        for(PropertyField property : properties)
             if(property.type instanceof ObjectType)
-                mapExprs.put(property, join.getExpr(property));
+                mMapExprs.exclAdd(property, join.getExpr(property));
             else
-                mapData.put(property, (DataClass) property.type);
-            updatedPropertyClasses.put(property, ClassWhere.<Field>STATIC(false));
-        }
+                mMapData.exclAdd(property, (DataClass) property.type);
+        ImMap<Field, Expr> mapExprs = mMapExprs.immutable();
+        ImMap<Field, DataClass> mapData = mMapData.immutable();
+        ImMap<PropertyField, ClassWhere<Field>> updatedPropertyClasses = properties.toMap(ClassWhere.<Field>FALSE());
 
         // пока исходим из assertion'а что не null, потом надо будет разные делать
-        for(Map<Field, ConcreteObjectClass> diffClasses : session.readDiffClasses(join.getWhere(), new HashMap<Field, Expr>(), mapExprs)) {
-            Map<Field, ConcreteClass> result = BaseUtils.merge(diffClasses, mapData);
-            updatedClasses = updatedClasses.or(new ClassWhere<KeyField>(BaseUtils.filterKeys(result, mapKeys.keySet())));
-            for(Map.Entry<PropertyField, ClassWhere<Field>> propertyClass : updatedPropertyClasses.entrySet())
-                propertyClass.setValue(propertyClass.getValue().or(new ClassWhere<Field>(
-                        BaseUtils.filterKeys(result, BaseUtils.add(mapKeys.keySet(), propertyClass.getKey())))));
+        for(ImMap<Field, ConcreteObjectClass> diffClasses : session.readDiffClasses(join.getWhere(), MapFact.<Field, Expr>EMPTY(), mapExprs)) {
+            final ImMap<Field, ConcreteClass> result = MapFact.addExcl(diffClasses, mapData);
+            updatedClasses = updatedClasses.or(new ClassWhere<KeyField>(result.filterIncl(getTableKeys())));
+            
+            updatedPropertyClasses = updatedPropertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
+                public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
+                    return value.or(new ClassWhere<Field>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
+                }});
         }
         return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses);
     }
@@ -383,11 +370,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
             return new SessionTable(session, keys, properties, count, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException {
-                    Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
-                    platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
+                    QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(SessionTable.this);
+                    platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
-                    moveData.properties.putAll(prevJoin.getExprs());
-                    session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                    moveData.addProperties(prevJoin.getExprs());
+                    session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
                     session.returnTemporaryTable(SessionTable.this, owner);
                     return null;
                 }
@@ -396,7 +383,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return this;
     }
 
-    public int deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
+    public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys) throws SQLException {
         return session.deleteKeyRecords(this, DataObject.getMapValues(keys));
     }
 
@@ -409,50 +396,52 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
 
-    public SessionTable addFields(final SQLSession session, final List<KeyField> keys, final Map<KeyField, DataObject> addKeys, final Map<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException {
+    public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException {
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
-        return new SessionTable(session, keys, BaseUtils.mergeSet(properties, addProps.keySet()), count, new FillTemporaryTable() {
+        return new SessionTable(session, keys, properties.addExcl(addProps.keys()), count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
-                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys, addKeys);
-                platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.getMapExprs(), SessionTable.this.keys));
+                ImSet<KeyField> tableKeys = getTableKeys();
+                QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(tableKeys.addExcl(addKeys.keys()), addKeys);
+                platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs().filterIncl(tableKeys));
                 moveData.and(prevJoin.getWhere());
-                moveData.properties.putAll(prevJoin.getExprs());
-                moveData.properties.putAll(DataObject.getMapExprs(addProps));
-                session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                moveData.addProperties(prevJoin.getExprs());
+                moveData.addProperties(DataObject.getMapExprs(addProps));
+                session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
                 session.returnTemporaryTable(SessionTable.this, owner);
                 return null;
             }
         }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner);
     }
 
-    public SessionTable removeFields(final SQLSession session, Set<KeyField> removeKeys, Set<PropertyField> removeProps, final Object owner) throws SQLException {
+    public SessionTable removeFields(final SQLSession session, ImSet<KeyField> removeKeys, ImSet<PropertyField> removeProps, final Object owner) throws SQLException {
         if(removeKeys.isEmpty() && removeProps.isEmpty())
             return this;
 
         // assert что удаляемые ключи с одинаковыми значениями, но вообще может использоваться как слияние
-        final List<KeyField> remainKeys = BaseUtils.filterNotList(keys, removeKeys);
-        final Set<PropertyField> remainProps = BaseUtils.filterNotSet(properties, removeProps);
-        return new SessionTable(session, remainKeys, remainProps, count, new FillTemporaryTable() {
+        final ImOrderSet<KeyField> remainOrderKeys = keys.removeOrder(removeKeys);
+        final ImSet<KeyField> remainKeys = remainOrderKeys.getSet();
+        final ImSet<PropertyField> remainProps = properties.remove(removeProps);
+        return new SessionTable(session, remainOrderKeys, remainProps, count, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
-                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(remainKeys);
+                QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(remainKeys);
 
                 if(remainKeys.size()==keys.size()) { // для оптимизации
-                    platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.mapKeys);
+                    platform.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
-                    moveData.properties.putAll(BaseUtils.filterKeys(prevJoin.getExprs(), remainProps));
+                    moveData.addProperties(prevJoin.getExprs().filterIncl(remainProps));
                 } else {
-                    Map<KeyField,KeyExpr> tableKeys = getMapKeys();
+                    ImRevMap<KeyField, KeyExpr> tableKeys = getMapKeys();
                     platform.server.data.query.Join<PropertyField> prevJoin = join(tableKeys);
-                    Map<KeyField, KeyExpr> groupKeys = BaseUtils.filterKeys(tableKeys, remainKeys);
-                    moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.mapKeys).getWhere());
+                    ImRevMap<KeyField, KeyExpr> groupKeys = tableKeys.filterInclRev(remainKeys);
+                    moveData.and(GroupExpr.create(groupKeys, prevJoin.getWhere(), moveData.getMapExprs()).getWhere());
                     for(PropertyField prop : remainProps)
-                        moveData.properties.put(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.mapKeys));
+                        moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.getMapExprs()));
                 }
-                session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
                 session.returnTemporaryTable(SessionTable.this, owner);
                 return null;
             }

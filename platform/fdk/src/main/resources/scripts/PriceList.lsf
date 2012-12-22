@@ -55,8 +55,8 @@ prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)'
 
 CLASS ABSTRACT basePriceListType 'Базовый вид цены' : priceListType;
 
-priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, sku, stock, DATETIME) EXCLUSIVE;
-priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (basePriceListType, batch, stock, DATETIME) EXCLUSIVE;
+priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (basePriceListType, sku, stock, DATETIME);
+priceBasePriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (basePriceListType, batch, stock, DATETIME);
 
 includeVATBasePriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (basePriceListType);
 includeVATPriceListType(type) += includeVATBasePriceListType(type);
@@ -175,7 +175,7 @@ META implementSystemLedgerPriceListType (type, object, stockProp, prefix)
 
     descriptionPriceListLedger (ledger) += description###object(ledger);
 
-    pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += prefix###price###object(ledger) IF type == systemLedgerPriceListType.##type##PriceListType;
+    pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += prefix###price###object(ledger) WHEN CLASS(prefix###price###object(ledger)) AND type == systemLedgerPriceListType.##type##PriceListType;
     inPriceListLedgerStock (ledger, stock) += stockProp###object(ledger) == stock;
 END
 
@@ -1093,43 +1093,66 @@ META deriveDocumentDetailPriceBatchPriceListType (object, stockProp)
 END
 
 META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
-    prevListBatchPrice###detail (detail) = prevPricePriceListTypeBatchStockDateTime(priceListType###detail(detail),
-                                                                                    batch###detail(detail),
-                                                                                    stockProp###detail(detail),
-                                                                                    dateTime###detail(detail));
-    prevListPrice###detail (detail) = IF batch###detail(detail) THEN prevListBatchPrice###detail(detail) ELSE prevListSkuPrice###detail (detail);
+    prevListSkuPrice###detail (priceListType, detail) = prevPricePriceListTypeSkuStockDateTime(priceListType,
+                                                                                               sku###detail(detail),
+                                                                                               stockProp###detail(detail),
+                                                                                               dateTime###detail(detail));
+    prevListBatchPrice###detail (priceListType, detail) = prevPricePriceListTypeBatchStockDateTime(priceListType,
+                                                                                                   batch###detail(detail),
+                                                                                                   stockProp###detail(detail),
+                                                                                                   dateTime###detail(detail));
+    prevListPrice###detail (priceListType, detail) = IF batch###detail(detail) THEN prevListBatchPrice###detail(priceListType, detail) ELSE prevListSkuPrice###detail (priceListType, detail);
 
-    prevListPriceMVAT###detail (detail) =
-        IF includeVATPriceListType(priceListType###detail(detail))
+    prevListPriceMVAT###detail (priceListType, detail) =
+        IF includeVATPriceListType(priceListType)
             THEN
-                prevListPrice###detail(detail) * 100.0 /(100.0 + valueVAT###detail(detail))
+                prevListPrice###detail(priceListType, detail) * 100.0 /(100.0 + valueVAT###detail(detail))
             ELSE
-                prevListPrice###detail(detail);
+                prevListPrice###detail(priceListType, detail);
 
-    prevListPricePVAT###detail (detail) =
-        IF includeVATPriceListType(priceListType###detail(detail))
+    prevListPricePVAT###detail (priceListType, detail) =
+        IF includeVATPriceListType(priceListType)
             THEN
-                prevListPrice###detail(detail)
+                prevListPrice###detail(priceListType, detail)
             ELSE
-                prevListPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
+                prevListPrice###detail(priceListType, detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
 
-    price###detail(detail) <- prevListPriceMVAT###detail (detail)
-                            WHEN priceListType###detail(detail) AND
-                                (CHANGED(priceListType###detail(detail)) OR
-                                 CHANGED(batch###detail(detail)) OR
-                                 CHANGED(sku###detail(detail)) OR
-                                 CHANGED(stockProp###detail(detail)) OR
-                                 CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(VAT###detail(detail)));
+//    price###detail(detail) <- prevListPriceMVAT###detail (detail)
+//                            WHEN priceListType###detail(detail) AND
+//                                (CHANGED(priceListType###detail(detail)) OR
+//                                 CHANGED(batch###detail(detail)) OR
+//                                 CHANGED(sku###detail(detail)) OR
+//                                 CHANGED(stockProp###detail(detail)) OR
+//                                 CHANGED(dateTime###detail(detail)) OR
+//                                 CHANGED(valueVAT###detail(detail)));
+//
+//    invoicePrice###detail(detail) <- prevListPricePVAT###detail (detail)
+//                            WHEN priceListType###detail(detail) AND
+//                                (CHANGED(priceListType###detail(detail)) OR
+//                                 CHANGED(batch###detail(detail)) OR
+//                                 CHANGED(sku###detail(detail)) OR
+//                                 CHANGED(stockProp###detail(detail)) OR
+//                                 CHANGED(dateTime###detail(detail)) OR
+//                                 CHANGED(valueVAT###detail(detail)));
 
-    invoicePrice###detail(detail) <- prevListPricePVAT###detail (detail)
-                            WHEN priceListType###detail(detail) AND
-                                (CHANGED(priceListType###detail(detail)) OR
-                                 CHANGED(batch###detail(detail)) OR
-                                 CHANGED(sku###detail(detail)) OR
-                                 CHANGED(stockProp###detail(detail)) OR
-                                 CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(VAT###detail(detail)));
+    ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime, pricePriceListTypeBatchStockDateTime { // цены берем на начало сессии, а не этого event'а
+        LOCAL changedPriceListType = BOOLEAN (detail);
+        SET changedPriceListType(detail) <- TRUE IF priceListType###detail(detail) AND
+                                            (CHANGED(priceListType###detail(detail)) OR
+                                             CHANGED(batch###detail(detail)) OR
+                                             CHANGED(sku###detail(detail)) OR
+                                             CHANGED(stockProp###detail(detail)) OR
+                                             CHANGED(dateTime###detail(detail)) OR
+                                             CHANGED(valueVAT###detail(detail)));
+
+        FOR [GROUP MAX(changedPriceListType(detail)) BY priceListType###detail(detail)](priceListType) DO {
+            IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
+            SET price###detail(detail) <- prevListPriceMVAT###detail (priceListType, detail)
+                WHERE changedPriceListType(detail) AND priceListType###detail(detail) == priceListType;
+            SET invoicePrice###detail(detail) <- prevListPricePVAT###detail (priceListType, detail)
+                WHERE changedPriceListType(detail) AND priceListType###detail(detail) == priceListType;
+        }
+    }
 
 END
 

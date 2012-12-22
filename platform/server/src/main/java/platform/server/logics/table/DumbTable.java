@@ -1,14 +1,14 @@
 package platform.server.logics.table;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.SystemClass;
-import platform.server.data.KeyField;
 import platform.server.data.GlobalTable;
+import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
-
-import java.util.Map;
 
 public class DumbTable extends GlobalTable {
 
@@ -19,7 +19,7 @@ public class DumbTable extends GlobalTable {
     private DumbTable() {
         super("dumb");
         key = new KeyField("id", SystemClass.instance);
-        keys.add(key);
+        keys = SetFact.singletonOrder(key);
 
         classes = new ClassWhere<KeyField>(key, SystemClass.instance);
     }
@@ -28,7 +28,7 @@ public class DumbTable extends GlobalTable {
         throw new RuntimeException("not supported");
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

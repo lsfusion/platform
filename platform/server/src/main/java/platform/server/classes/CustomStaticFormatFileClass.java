@@ -1,12 +1,13 @@
 package platform.server.classes;
 
 import platform.interop.Data;
-import platform.server.caches.IdentityLazy;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CustomStaticFormatFileClass extends StaticFormatFileClass {
 

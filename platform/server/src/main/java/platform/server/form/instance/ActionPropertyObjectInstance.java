@@ -1,24 +1,25 @@
 package platform.server.form.instance;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ActionPropertyObjectInstance<P extends PropertyInterface> extends PropertyObjectInstance<P, ActionProperty<P>> {
 
-    public ActionPropertyObjectInstance(ActionProperty<P> property, Map<P, ? extends PropertyObjectInterfaceInstance> mapping) {
+    public ActionPropertyObjectInstance(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceInstance> mapping) {
         super(property, mapping);
     }
 
     @IdentityLazy
-    public ActionPropertyObjectInstance<P> getRemappedPropertyObject(Map<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    public ActionPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }
 

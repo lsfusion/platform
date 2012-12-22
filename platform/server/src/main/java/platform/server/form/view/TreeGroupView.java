@@ -30,7 +30,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         this.entity = entity;
 
-        for (GroupObjectEntity group : entity.groups) {
+        for (GroupObjectEntity group : entity.getGroups()) {
             groups.add(form.getGroupObject(group));
         }
 

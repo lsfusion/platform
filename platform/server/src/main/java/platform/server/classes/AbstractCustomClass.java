@@ -1,6 +1,6 @@
 package platform.server.classes;
 
-import platform.server.classes.sets.ConcreteCustomClassSet;
+import platform.base.col.interfaces.mutable.MSet;
 
 public class AbstractCustomClass extends CustomClass {
 
@@ -8,9 +8,9 @@ public class AbstractCustomClass extends CustomClass {
         super(sID, caption, parents);
     }
 
-    public void fillNextConcreteChilds(ConcreteCustomClassSet classSet) {
+    public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {
         for(CustomClass child : children)
-            child.fillNextConcreteChilds(classSet);        
+            child.fillNextConcreteChilds(mClassSet);
     }
 
     public static ConcreteCustomClass getSingleClass(CustomClass[] children) {

@@ -1,22 +1,31 @@
 package platform.base;
 
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.MOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ListPermutations<T> extends Permutations<List<T>> {
+public class ListPermutations<T> extends Permutations<ImOrderSet<T>> {
 
-    List<T> to;
+    ImOrderSet<T> to;
 
-    public ListPermutations(Collection<T> toCollection) {
+    public ListPermutations(ImOrderSet<T> toCollection) {
         super(toCollection.size());
-        to = new ArrayList<T>(toCollection);
+        to = toCollection;
     }
 
-    List<T> getPermute(PermuteIterator permute) {
-        List<T> result = new ArrayList<T>();
-        for(int i=0;i<size;i++)
-            result.add(to.get(permute.nums[i]));
-        return result;
+    ImOrderSet<T> getPermute(final PermuteIterator permute) {
+        return SetFact.toOrderExclSet(size, new GetIndex<T>() {
+            public T getMapValue(int i) {
+                return to.get(permute.nums[i]);
+            }});
     }
 }

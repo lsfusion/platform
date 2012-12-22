@@ -1,11 +1,9 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.server.logics.property.*;
-import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 
 public class CancelActionProperty extends ChangeFlowActionProperty {
 

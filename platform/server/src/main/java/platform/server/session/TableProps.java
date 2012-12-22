@@ -1,6 +1,8 @@
 package platform.server.session;
 
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.SQLSession;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
@@ -14,10 +16,10 @@ public class TableProps {
     public TableProps() {
     }
 
-    private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
+    private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = MapFact.mAddRemoveMap(); // mutable с remove поведение
 
-    public QuickSet<CalcProperty> getProperties() {
-        return new QuickSet<CalcProperty>(tables.keySet());
+    public ImSet<CalcProperty> getProperties() {
+        return SetFact.fromJavaSet(tables.keySet());
     }
 
     public boolean contains(CalcProperty property) {
@@ -46,6 +48,6 @@ public class TableProps {
     public void clear(SQLSession session) throws SQLException {
         for (Map.Entry<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet())
             addTable.getValue().drop(session);
-        tables = new HashMap<CalcProperty, SinglePropertyTableUsage<PropertyInterface>>();
+        tables.clear();
     }
 }

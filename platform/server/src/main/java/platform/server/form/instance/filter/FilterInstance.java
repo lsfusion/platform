@@ -1,5 +1,6 @@
 package platform.server.form.instance.filter;
 
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.FilterType;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
@@ -16,7 +17,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public abstract class FilterInstance implements Updated {
@@ -66,7 +66,7 @@ public abstract class FilterInstance implements Updated {
 
     public abstract GroupObjectInstance getApplyObject();
 
-    public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier);
+    public abstract Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier);
 
     public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }

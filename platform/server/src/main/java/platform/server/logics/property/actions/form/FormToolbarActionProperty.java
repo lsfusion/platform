@@ -1,5 +1,8 @@
 package platform.server.logics.property.actions.form;
 
+import platform.base.col.ListFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.mutable.MList;
 import platform.interop.form.GlobalConstants;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
@@ -12,7 +15,6 @@ import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 
 import static platform.server.logics.property.derived.DerivedProperty.*;
 
@@ -62,19 +64,18 @@ public abstract class FormToolbarActionProperty extends SystemActionProperty {
             return;
         }
 
-        ArrayList<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
-        List<CalcPropertyInterfaceImplement<PropertyInterface>> ands = new ArrayList<CalcPropertyInterfaceImplement<PropertyInterface>>();
-        List<Boolean> nots = new ArrayList<Boolean>();
+        MList<CalcPropertyInterfaceImplement<PropertyInterface>> mAnds = ListFact.mList(showIfs.length);
+        MList<Boolean> mNots = ListFact.mList(showIfs.length);
 
         for (int i = 0; i < showIfs.length; ++i) {
-            ands.add(showIfs[i].getImplement());
-            nots.add(showIfNots[i]);
+            mAnds.add(showIfs[i].getImplement());
+            mNots.add(showIfNots[i]);
         }
 
-        CalcPropertyMapImplement showIfImplement = createAnd(interfaces, createTrue(), ands, nots);
+        CalcPropertyMapImplement showIfImplement = createAnd(SetFact.<PropertyInterface>EMPTY(), createTrue(), mAnds.immutableList(), mNots.immutableList());
 
         propertyDraw.propertyCaption = form.addPropertyObject(
-                new LCP(createAnd(new ArrayList(), createStatic(GlobalConstants.CAPTION_ORIGINAL), showIfImplement).property)
+                new LCP(createAnd(SetFact.<PropertyInterface>EMPTY(), createStatic(GlobalConstants.CAPTION_ORIGINAL), showIfImplement).property)
         );
     }
 

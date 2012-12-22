@@ -1,8 +1,14 @@
 package platform.server.form.entity;
 
-import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Pair;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.LongMutable;
+import platform.base.col.interfaces.mutable.MOrderExclSet;
+import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -27,7 +33,8 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
 
@@ -40,7 +47,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String mouseBinding;
     public Map<KeyStroke, String> keyBindings;
     public OrderedMap<String, String> contextMenuBindings;
-    public Map<String, ActionPropertyObjectEntity<?>> editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+    public Map<String, ActionPropertyObjectEntity<?>> editActions;
 
     private boolean drawToToolbar = false;
 
@@ -52,7 +59,27 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String eventID = null;
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
-    public List<GroupObjectEntity> columnGroupObjects = new ArrayList<GroupObjectEntity>();
+    public Object columnGroupObjects = SetFact.mOrderExclSet();
+    private boolean finalizedColumnGroupObjects;
+    @LongMutable
+    public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
+        if(!finalizedColumnGroupObjects) {
+            finalizedColumnGroupObjects = true;
+            columnGroupObjects = ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).immutableOrder();
+        }
+
+        return (ImOrderSet<GroupObjectEntity>)columnGroupObjects;
+    }
+    public void setColumnGroupObjects(ImOrderSet<GroupObjectEntity> columnGroupObjects) {
+        assert !finalizedColumnGroupObjects;
+        finalizedColumnGroupObjects = true;
+        this.columnGroupObjects = columnGroupObjects;
+    }
+    public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
+        assert !finalizedColumnGroupObjects;
+        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).add(columnGroupObject);
+    }
+
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public CalcPropertyObjectEntity<?> propertyCaption;
@@ -102,9 +129,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return null;
         }
 
-        ActionPropertyObjectEntity editAction = editActions.get(actionId);
-        if (editAction != null) {
-            return editAction;
+        if(editActions!=null) {
+            ActionPropertyObjectEntity editAction = editActions.get(actionId);
+            if (editAction != null) {
+                return editAction;
+            }
         }
 
         Property<P> property = propertyObject.property;
@@ -119,13 +148,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private ActionPropertyObjectEntity<?> getSelectorAction(Property<P> property, FormEntity entity) {
-        Map<P, ObjectEntity> groupObjects = BaseUtils.filterValues(propertyObject.mapping, getToDraw(entity).objects); // берем нижний объект в toDraw
-        for (ObjectEntity objectInstance : groupObjects.values()) {
+        ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(getToDraw(entity).getObjects()); // берем нижний объект в toDraw
+        for (ObjectEntity objectInstance : groupObjects.valueIt()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 CustomActionProperty dialogAction = objectInstance.getChangeAction(property);
                 return new ActionPropertyObjectEntity<ClassPropertyInterface>(
                         dialogAction,
-                        Collections.singletonMap(BaseUtils.single(dialogAction.interfaces), (PropertyObjectInterfaceEntity) objectInstance)
+                        MapFact.singleton(dialogAction.interfaces.single(), (PropertyObjectInterfaceEntity) objectInstance)
                 );
             }
         }
@@ -156,6 +185,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
+        if(editActions==null) {
+            editActions = new HashMap<String, ActionPropertyObjectEntity<?>>();
+        }
         editActions.put(actionSID, editAction);
     }
 
@@ -180,10 +212,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void setContextMenuEditAction(String caption, String actionSID, ActionPropertyObjectEntity<?> editAction) {
         setContextMenuAction(caption, actionSID);
         setEditAction(actionSID, editAction);
-    }
-
-    public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
-        columnGroupObjects.add(columnGroupObject);
     }
 
     public void setPropertyCaption(CalcPropertyObjectEntity propertyCaption) {
@@ -229,7 +257,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
-        pool.serializeCollection(outStream, columnGroupObjects);
+        pool.serializeCollection(outStream, getColumnGroupObjects().toJavaList());
         pool.serializeObject(outStream, propertyCaption);
         pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
@@ -260,7 +288,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         propertyObject = pool.deserializeObject(inStream);
         toDraw = pool.deserializeObject(inStream);
-        columnGroupObjects = pool.deserializeList(inStream);
+        setColumnGroupObjects(SetFact.fromJavaOrderSet(pool.<GroupObjectEntity>deserializeList(inStream)));
         propertyCaption = pool.deserializeObject(inStream);
         propertyReadOnly = pool.deserializeObject(inStream);
         propertyFooter = pool.deserializeObject(inStream);

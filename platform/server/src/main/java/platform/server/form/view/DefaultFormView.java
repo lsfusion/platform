@@ -232,7 +232,7 @@ public class DefaultFormView extends FormView {
         setComponentSID(treeSet.getFilterContainer(), treeSet.getFilterContainer().getSID());
 
         //вставляем перед первым groupObject в данной treeGroup
-        mainContainer.addBefore(treeSet.getTreeContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.groups.get(0))));
+        mainContainer.addBefore(treeSet.getTreeContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.getGroups().get(0))));
     }
 
     private void addPropertyDrawView(PropertyDrawView propertyDraw) {

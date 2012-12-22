@@ -39,7 +39,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
         this.entity = entity;
 
-        for (ObjectEntity object : this.entity.objects)
+        for (ObjectEntity object : this.entity.getObjects())
             add(new ObjectView(idGen, object, this));
 
         grid = new GridView(idGen.idShift(), this);
@@ -51,7 +51,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, GridView grid, ShowTypeView showType, ToolbarView toolbar, FilterView filter) {
         this.entity = entity;
 
-        for (ObjectEntity object : this.entity.objects)
+        for (ObjectEntity object : this.entity.getObjects())
             add(new ObjectView(idGen, object, this, false));
 
         this.grid = grid;

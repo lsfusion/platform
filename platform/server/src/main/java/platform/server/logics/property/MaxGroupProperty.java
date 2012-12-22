@@ -1,5 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
@@ -7,9 +10,6 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
-
-import java.util.Collection;
-import java.util.Map;
 
 public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {
 
@@ -19,7 +19,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return min?GroupType.MIN:GroupType.MAX;
     }
 
-    public MaxGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
+    public MaxGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
         super(sID, caption, innerInterfaces, groupInterfaces, property);
 
         this.min = min;
@@ -27,7 +27,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
 
-    public MaxGroupProperty(String sID, String caption, Collection<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
+    public MaxGroupProperty(String sID, String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
         super(sID, caption, interfaces, property);
 
         this.min = min;
@@ -40,7 +40,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return super.noIncrement() || Settings.instance.isNoIncrementMaxGroupProperty();
     }
 
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         Where outWhere = changedExpr.compare(prevExpr, min).or(changedExpr.getWhere().and(prevExpr.getWhere().not()));
         Where inWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
         if(noIncrement()) {

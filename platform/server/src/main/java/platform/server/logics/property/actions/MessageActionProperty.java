@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
@@ -14,7 +13,7 @@ public class MessageActionProperty extends SystemActionProperty {
 
     public MessageActionProperty(String sID, String caption, int length) {
         super(sID, caption, new ValueClass[]{StringClass.get(length)});
-        msgInterface = BaseUtils.single(interfaces);
+        msgInterface = interfaces.single();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

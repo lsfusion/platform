@@ -1,7 +1,8 @@
 package platform.server.data;
 
-import platform.base.TwinImmutableInterface;
 import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
@@ -9,18 +10,28 @@ import platform.server.data.type.TypeSerializer;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
 public abstract class Field extends TwinImmutableObject {
     public String name;
     public Type type;
 
+    private final static Type.Getter<Field> typeGetter = new Type.Getter<Field>() {
+        public Type getType(Field key) {
+            return key.type;
+        }
+    };
     public static <F extends Field> Type.Getter<F> typeGetter() {
-        return new Type.Getter<F> () {
-            public Type getType(F key) {
-                return key.type;
-            }
-        };
+        return (Type.Getter<F>) typeGetter;
+    }
+    
+    private final static GetValue<String, Field> nameGetter = new GetValue<String, Field>() {
+        public String getMapValue(Field value) {
+            return value.name;
+        }
+    };
+
+    public static <F extends Field> GetValue<String, F> nameGetter() {
+        return (GetValue<String, F>) nameGetter;
     }
 
     protected Field(String name,Type type) {
@@ -28,11 +39,11 @@ public abstract class Field extends TwinImmutableObject {
         this.type = type;
     }
 
-    public static String getDeclare(Map<String, Type> map, SQLSyntax syntax) {
-        String result = "";
-        for(Map.Entry<String, Type> entry : map.entrySet())
-            result = (result.length()==0?"":result + ',') + entry.getKey() + " " + entry.getValue().getDB(syntax);
-        return result;
+    public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax) {
+        return map.mapOrderValues(new GetValue<String, Type>() {
+            public String getMapValue(Type value) {
+                return value.getDB(syntax);
+            }}).toString(" ", ",");
     }
     
     public String getDeclare(SQLSyntax syntax) {
@@ -64,7 +75,7 @@ public abstract class Field extends TwinImmutableObject {
 
     abstract byte getType();
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return name.equals(((Field)o).name) && type.equals(((Field)o).type);
     }
 

@@ -1,42 +1,47 @@
 package platform.server.caches;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.GlobalObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashMapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends AbstractTranslateContext<U, MapValuesTranslate, HashValues> implements ValuesContext<U> {
 
-    public static Map<Value, Value> getBigValues(QuickSet<Value> values) {
-        QuickSet<Value> usedValues = new QuickSet<Value>(values);
+    public static ImRevMap<Value, Value> getBigValues(ImSet<Value> values) {
+        MAddSet<Value> usedValues = SetFact.mAddSet(values);
 
-        Map<Value, Value> result = new HashMap<Value, Value>();
-        for(Value value : values) {
+        boolean removed = false;
+
+        ImRevValueMap<Value, Value> result = values.mapItRevValues(); // есть промежуточная коллекция
+        for(int i=0,size=values.size();i<size;i++) {
+            Value value = values.get(i);
             Value removeValue = value.removeBig(usedValues);
             if(removeValue!=null) {
-                result.put(value, removeValue);
+                removed = true;
+                result.mapValue(i, removeValue);
                 usedValues.add(removeValue);
-            }
+            } else
+                result.mapValue(i, value);
         }
-        if(result.isEmpty())
+        if(!removed)
             return null;
-
-        for(Value value : values)
-            if(!result.containsKey(value))
-                result.put(value, value);
-        return result;
+        return result.immutableValueRev();
     }
 
     protected U aspectContextTranslate(MapValuesTranslate translator) {
-        QuickSet<Value> values = aspectGetValues();
+        ImSet<Value> values = aspectGetValues();
 
-        QuickSet<Value> transValues = translator.translateValues(values);
+        ImSet<Value> transValues = translator.translateValues(values);
         if(transValues.equals(values))
             return (U) this;
         else {
@@ -62,7 +67,7 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return aspectHash(hashValues);
     }
 
-    public QuickSet<Value> getContextValues() {
+    public ImSet<Value> getContextValues() {
         return aspectGetValues();
     }
 
@@ -70,22 +75,24 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
         return hashValues(HashCodeValues.instance);
     }
 
-    public static QuickMap<Value, GlobalObject> getParamClasses(QuickSet<Value> values) {
-        QuickMap<Value, GlobalObject> result = new SimpleMap<Value, GlobalObject>();
-        for(Value value : values)
-            result.add(value, value.getValueClass());
-        return result;
+    private final static GetValue<GlobalObject, Value> paramClasses = new GetValue<GlobalObject, Value>() {
+        public GlobalObject getMapValue(Value value) {
+            return value.getValueClass();
+        }
+    };
+    public static ImMap<Value, GlobalObject> getParamClasses(ImSet<Value> values) {
+        return values.mapValues(paramClasses);
     }
 
     // множественные наследование
     public static BaseUtils.HashComponents<Value> getComponents(final ValuesContext<?> valuesContext) {
         return BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
-            public QuickMap<Value, GlobalObject> getParams() {
+            public ImMap<Value, GlobalObject> getParams() {
                 return getParamClasses(valuesContext.getContextValues());
             }
 
-            public int hashParams(QuickMap<Value, ? extends GlobalObject> map) {
-                return valuesContext.hashValues(map.size>0?new HashMapValues(map): HashCodeValues.instance);
+            public int hashParams(ImMap<Value, ? extends GlobalObject> map) {
+                return valuesContext.hashValues(map.size()>0?new HashMapValues(map): HashCodeValues.instance);
             }
         });
     }
@@ -110,13 +117,6 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
     }
     public BaseUtils.HashComponents<Value> calculateValueComponents() {
         return getComponents(this);
-    }
-
-    public static int hashValues(Collection<? extends Value> set, HashValues hashValues) {
-        int hash = 0;
-        for(Value element : set)
-            hash += hashValues.hash(element);
-        return hash;
     }
 
     protected HashValues reverseTranslate(HashValues hash, MapValuesTranslate translator) {

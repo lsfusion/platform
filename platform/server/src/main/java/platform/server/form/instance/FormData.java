@@ -1,19 +1,24 @@
 package platform.server.form.instance;
 
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 // считанные данные (должен быть интерфейс Serialize)
 public class FormData {
 
-    public List<FormRow> rows = new ArrayList<FormRow>();
+    public final ImOrderSet<FormRow> rows;
 
-    public void add(Map<ObjectInstance,Object> keys,Map<PropertyDrawInstance,Object> properties) {
-        rows.add(new FormRow(keys,properties));
+    public FormData(ImOrderMap<ImMap<ObjectInstance,Object>, ImMap<PropertyDrawInstance,Object>> rows) {
+        this.rows = rows.mapOrderSetValues(new GetKeyValue<FormRow, ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>>() {
+            public FormRow getMapValue(ImMap<ObjectInstance, Object> key, ImMap<PropertyDrawInstance, Object> value) {
+                return new FormRow(key,value);
+            }});
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -23,14 +28,14 @@ public class FormData {
 
         FormRow firstRow = rows.iterator().next();
 
-        Set<ObjectInstance> objects = firstRow.keys.keySet();
+        ImSet<ObjectInstance> objects = firstRow.keys.keys();
         outStream.writeInt(objects.size());
         for(ObjectInstance object : objects) {
             outStream.writeUTF(object.getsID());
             outStream.writeInt(object.getID());
         }
 
-        Set<PropertyDrawInstance> properties = firstRow.values.keySet();
+        ImSet<PropertyDrawInstance> properties = firstRow.values.keys();
         outStream.writeInt(properties.size());
         for(PropertyDrawInstance propertyView : properties) {
             outStream.writeUTF(propertyView.getsID());

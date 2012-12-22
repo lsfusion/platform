@@ -1,7 +1,14 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MRevMap;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -10,25 +17,28 @@ import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.logics.DataObject;
 import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LAP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertySet;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.TreeSet;
 
-import static platform.base.BaseUtils.*;
+import static platform.base.BaseUtils.toListFromArray;
 
 public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends SystemActionProperty {
 
     private final GroupObjectEntity filterGroupObject;
     private final ActionProperty<P> mainProperty;
 
-    private HashSet<P> grouping;
+    private ImSet<P> grouping;
 
-    private Map<P, ClassPropertyInterface> mapMainToThis;
+    private ImRevMap<P, ClassPropertyInterface> mapMainToThis;
     private boolean removeGroupingInterfaces;
 
     public static ValueClass[] getValueClasses(LAP<?> mainLP, int[] mainInts, int[] groupInts, boolean removeGroupingInterfaces) {
@@ -66,26 +76,27 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
         this.filterGroupObject = filterGroupObject;
         this.mainProperty = mainLP.property;
 
-        List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>) interfaces;
+        ImOrderSet<ClassPropertyInterface> listInterfaces = getOrderInterfaces();
 
         this.mapMainToThis = getInterfacesMapping(mainLP, mainInts, groupIntsSet);
 
         if (!removeGroupingInterfaces) {
-            grouping = new HashSet<P>();
+            MSet<P> mGrouping = SetFact.mSet();
             for (int gi : groupInts) {
                 //Добавляем все интерфейсы главного свойства, которые указывают на группирующие интерфейсы
-                grouping.addAll(filterValues(mapMainToThis, listInterfaces.get(gi)));
+                mGrouping.addAll(mapMainToThis.filterValues(SetFact.singleton(listInterfaces.get(gi))).keys());
             }
+            grouping = mGrouping.immutable();
         }
     }
 
     /**
      * получает мэппинг интерфейсов property на интерфейсы этого результирующего свойтсва
      */
-    private <P extends PropertyInterface> Map<P, ClassPropertyInterface> getInterfacesMapping(LAP<P> property, int[] ifacesMapping, TreeSet<Integer> groupIntsSet) {
-        List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>) interfaces;
+    private <P extends PropertyInterface> ImRevMap<P, ClassPropertyInterface> getInterfacesMapping(LAP<P> property, int[] ifacesMapping, TreeSet<Integer> groupIntsSet) {
+        ImOrderSet<ClassPropertyInterface> listInterfaces = getOrderInterfaces();
 
-        HashMap<P, ClassPropertyInterface> result = new HashMap<P, ClassPropertyInterface>();
+        MRevMap<P, ClassPropertyInterface> mResult = MapFact.mRevMap(ifacesMapping.length); // лень разбираться в это бреде, потом все равно уйдет
         for (int i = 0; i < ifacesMapping.length; ++i) {
             int pi = ifacesMapping[i];
 
@@ -99,21 +110,21 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
                 pi -= groupIntsSet.headSet(pi).size();
             }
 
-            result.put(property.listInterfaces.get(i), listInterfaces.get(pi));
+            mResult.revAdd(property.listInterfaces.get(i), listInterfaces.get(pi));
         }
 
-        return result;
+        return mResult.immutableRev();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        Map<P, KeyExpr> mainKeys = mainProperty.getMapKeys();
+        ImRevMap<P, KeyExpr> mainKeys = mainProperty.getMapKeys();
 
-        Map<P, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
+        ImRevMap<P, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
 
         //включаем в сравнение на конкретные значения те интерфейсы главноего свойства, которые мэпятся на интерфейсы текущего свойства
         Where changeWhere = CompareWhere.compareValues(
-                removeGroupingInterfaces ? filterKeys(mainKeys, mapMainToThis.keySet()) : filterNotKeys(mainKeys, grouping),
-                join(mapMainToThis, context.getKeys())
+                removeGroupingInterfaces ? mainKeys.filter(mapMainToThis.keys()) : mainKeys.removeRev(grouping),
+                mapMainToThis.join(context.getKeys())
         );
 
         if (filterGroupObject != null) {
@@ -122,29 +133,27 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
             GroupObjectInstance groupInstance = context.getFormInstance().instanceFactory.getInstance(filterGroupObject);
             changeWhere = changeWhere.and(
                     groupInstance.getWhere(
-                            filterKeys(crossJoin(mainMapObjects, mainKeys), groupInstance.objects),
+                            mainMapObjects.crossJoin(mainKeys).filterRev(groupInstance.objects),
                             context.getModifier()));
         }
 
         executeAction(context, mainProperty, mainKeys, mainMapObjects, changeWhere);
     }
 
-    private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, Map<P, KeyExpr> keys, Map<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
-        context.getEnv().execute(property, new PropertySet<P>(keys, where, new OrderedMap<Expr, Boolean>(), false),
+    private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, ImRevMap<P, KeyExpr> keys, ImMap<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
+        context.getEnv().execute(property, new PropertySet<P>(keys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false),
                                     new FormEnvironment<P>(objects, context.getForm().getDrawInstance()));
     }
     
-    private Map<P, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+    private ImRevMap<P, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(final ImMap<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
         if (mapObjects == null) {
             return null;
         }
 
-        Map<P, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<P, PropertyObjectInterfaceInstance>();
-        for (P mainIFace : (List<P>) mainProperty.interfaces) {
-            execMapObjects.put(mainIFace, mapMainToThis.containsKey(mainIFace) ? mapObjects.get(mapMainToThis.get(mainIFace)) : null);
-        }
-
-        return execMapObjects;
+        return mainProperty.interfaces.mapRevValues(new GetValue<PropertyObjectInterfaceInstance, P>() {
+            public PropertyObjectInterfaceInstance getMapValue(P value) {
+                return mapObjects.get(mapMainToThis.get(value));
+            }});
 //        return join(mapMainToThis, mapObjects);
     }
 

@@ -1,7 +1,5 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.ManualLazy;
-
 public enum KeyStat {
     INFINITE, MANY, FEW;
 

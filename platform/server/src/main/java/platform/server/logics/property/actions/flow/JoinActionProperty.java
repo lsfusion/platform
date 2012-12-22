@@ -1,6 +1,11 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.base.BaseUtils;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
+import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -10,33 +15,30 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.*;
-
-import static platform.base.BaseUtils.reverse;
 
 public class JoinActionProperty<T extends PropertyInterface> extends KeepContextActionProperty {
 
     public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, List<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
+    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
         super(sID, caption, listInterfaces.size());
 
-        action = DerivedProperty.mapActionImplements(implement, reverse(getMapInterfaces(listInterfaces)));
+        action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
 
         finalizeInit();
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
-        Map<T, DataObject> readValues = new HashMap<T, DataObject>();
-        for (Map.Entry<T, CalcPropertyInterfaceImplement<PropertyInterface>> mapProp : action.mapping.entrySet()) {
-            ObjectValue value = mapProp.getValue().readClasses(context, context.getKeys());
+        ImFilterValueMap<T, DataObject> mvReadValues = action.mapping.mapFilterValues();
+        for (int i=0,size=action.mapping.size();i<size;i++) {
+            ObjectValue value = action.mapping.getValue(i).readClasses(context, context.getKeys());
             if (value instanceof DataObject) {
-                readValues.put(mapProp.getKey(), (DataObject) value);
+                mvReadValues.mapValue(i, (DataObject) value);
             } else {
                 return FlowResult.FINISH;
             }
         }
-        action.property.execute(context.override(readValues, action.mapping));
+        action.property.execute(context.override(mvReadValues.immutableValue(), action.mapping));
         return FlowResult.FINISH;
     }
 
@@ -64,18 +66,16 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         return type != ChangeFlowType.RETURN && super.hasFlow(type);
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return Collections.singleton((ActionProperty)action.property);
+    public ImSet<ActionProperty> getDependActions() {
+        return SetFact.singleton((ActionProperty)action.property);
     }
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
-        Set<CalcProperty> used = new HashSet<CalcProperty>();
-        for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.values())
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        MSet<CalcProperty> used = SetFact.mSet();
+        for(CalcPropertyInterfaceImplement<PropertyInterface> value : action.mapping.valueIt())
             value.mapFillDepends(used);
-        PropsNewSession result = new PropsNewSession(used);
-        result.addAll(super.aspectUsedExtProps());
-        return result;
+        return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
 
     @IdentityLazy
@@ -84,16 +84,16 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @Override
-    public List<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
         // если все интерфейсы однозначны и нет return'ов - inlin'им
         if(action.property.hasFlow(ChangeFlowType.RETURN))
             return super.getList();
         
-        Set<PropertyInterface> checked = new HashSet<PropertyInterface>();
-        for(CalcPropertyInterfaceImplement<PropertyInterface> propImplement : action.mapping.values())
+        MAddSet<PropertyInterface> checked = SetFact.mAddSet();
+        for(CalcPropertyInterfaceImplement<PropertyInterface> propImplement : action.mapping.valueIt())
             if(!(propImplement instanceof PropertyInterface && checked.add((PropertyInterface) propImplement)))
                 return super.getList();
 
-        return DerivedProperty.mapActionImplements(BaseUtils.<Map<T, PropertyInterface>>immutableCast(action.mapping), action.property.getList());
+        return DerivedProperty.mapActionImplements(BaseUtils.<ImRevMap<T, PropertyInterface>>immutableCast(action.mapping), action.property.getList());
     }
 }

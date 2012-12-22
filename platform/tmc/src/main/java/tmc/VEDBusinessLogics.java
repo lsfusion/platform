@@ -96,7 +96,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         permitCachRegister.navigator.permit(VEDLM.cachRegManagementForm);
 
         //админ игнорит настройки в базе, ему разрешено всё
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
+        policyManager.userPolicies.add(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
     }
 
     @Override

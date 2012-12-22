@@ -1,10 +1,14 @@
 package platform.server.logics.property.derived;
 
-import platform.base.QuickSet;
+import platform.base.Result;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -15,9 +19,10 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
-import platform.server.session.*;
-
-import java.util.*;
+import platform.server.session.DataChanges;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 
@@ -28,12 +33,12 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     final CalcProperty<P> toChange;
 
-    public CycleGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
+    public CycleGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
         super(sID, caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
 
-    public CycleGroupProperty(String sID, String caption, Collection<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
+    public CycleGroupProperty(String sID, String caption, ImCol<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
         super(sID, caption, interfaces, property, false);
         this.toChange = toChange;
     }
@@ -43,28 +48,21 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
         CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
-                getMapInterfaces().values(), groupProperty, new HashMap<I, JoinProperty.Interface>(), Compare.GREATER);
+                getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
         constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
         return constraint;
     }
 
     @Override
-    public Set<CalcProperty> getDataChangeProps() {
-        if(toChange!=null)
-            return Collections.<CalcProperty>singleton(toChange);
-        return super.getDataChangeProps();
-    }
-
-    @Override
-    protected QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         if(toChange!=null)
             return MaxChangeProperty.getUsedChanges(this,toChange, propChanges);
         else
-            return QuickSet.EMPTY();
+            return SetFact.EMPTY();
     }
 
     @Override
-    public Collection<DataProperty> getChangeProps() {
+    public ImSet<DataProperty> getChangeProps() {
         if(toChange!=null)
             return toChange.getChangeProps();
         return super.getChangeProps();
@@ -74,7 +72,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
     protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
 
         if(toChange!=null) {
-            Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
+            ImRevMap<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
             DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
             if(changedWhere!=null) {
@@ -85,12 +83,12 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             }
             return dataChanges;
         } else
-            return new DataChanges();
+            return DataChanges.EMPTY;
 
     }
 
-    private Expr getChangeExpr(PropertyChange<Interface<I>> change, PropertyChanges propChanges, Map<P,KeyExpr> toChangeKeys) {
-        Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
+    private Expr getChangeExpr(PropertyChange<Interface<I>> change, PropertyChanges propChanges, ImRevMap<P,KeyExpr> toChangeKeys) {
+        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         
         // для G=newValue - изменением toChange
         // сделать чтобы все\хоть один I1=M1 AND I2=M2 AND … In=Mn AND G=newValue выполнялось - !FALSE - была хоть одна
@@ -101,11 +99,11 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         // группируем по новому значению, интерфейсам, а также по изменению toChange
         Where compareWhere = groupProperty.mapExpr(mapKeys, changeModifier, changedWhere).compare(changeJoin.getExpr("value"), Compare.EQUALS).and(changeJoin.getWhere());
 
-        return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), getGroupType(), toChangeKeys, (PullExpr)toChange.changeExpr);
+        return GroupExpr.create(toChange.getChangeExprs(), toChange.getChangeExpr(), changedWhere.toWhere().and(compareWhere), getGroupType(), toChangeKeys, (PullExpr)toChange.getChangeExpr());
     }
 
-    private Where getNullWhere(PropertyChange<Interface<I>> change, PropertyChanges propChanges, Map<P,KeyExpr> toChangeKeys) {
-        Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
+    private Where getNullWhere(PropertyChange<Interface<I>> change, PropertyChanges propChanges, ImRevMap<P,KeyExpr> toChangeKeys) {
+        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
 
         // для G!=newValue, изменением toChange на null
         // сделать чтобы I1=M1 AND I2=M2 … In=Mn не выполнялось == FALSE - не было вообще

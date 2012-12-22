@@ -8,6 +8,12 @@ import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.add.MAddCol;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.server.data.Value;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.MapQuery;
@@ -15,24 +21,19 @@ import platform.server.data.query.Query;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 @Aspect
 public class QueryCacheAspect {
     private final static Logger logger = Logger.getLogger(QueryCacheAspect.class);
 
     public interface QueryCacheInterface {
-        Map getJoinCache();
+        MAddExclMap getJoinCache();
         
         IQuery getCacheTwin();
         void setCacheTwin(IQuery query);
     }
     public static class QueryCacheInterfaceImplement implements QueryCacheInterface {
-        Map joinCache = new HashMap();
-        public Map getJoinCache() { return joinCache; }
+        MAddExclMap joinCache = MapFact.mSmallAddExclMap();
+        public MAddExclMap getJoinCache() { return joinCache; }
 
         IQuery cacheTwin;
         public IQuery getCacheTwin() {
@@ -51,29 +52,29 @@ public class QueryCacheAspect {
         Query.MultiParamsContext<?, ?> multiParams = cache.getMultiParamsContext().mapInner(query.getMultiParamsContext(), true, translator);
         if(multiParams!=null) {
             Query<K,V> mapCache = (Query<K, V>)multiParams.getQuery();
-            Map<CV,V> mapProps = BaseUtils.mapValues(query.properties, mapCache.properties);
-            return new MapQuery<CK,CV,K,V>(cache, mapProps,BaseUtils.crossValues(query.mapKeys, mapCache.mapKeys),translator.result.mapValues());
+            ImRevMap<CV,V> mapProps = MapFact.mapValues(query.properties, mapCache.properties);
+            return new MapQuery<CK,CV,K,V>(cache, mapProps, query.mapKeys.crossValuesRev(mapCache.mapKeys),translator.result.mapValues());
         }
         return null;
     }
 
-    final static Map<Integer, Collection<Query>> hashTwins = new HashMap<Integer, Collection<Query>>();
+    final static MAddExclMap<Integer, MAddCol<Query>> hashTwins = MapFact.mAddExclMap();
     <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
         IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
         if(result!=null)
             return result;
 
-        Collection<Query> hashCaches;
+        MAddCol<Query> hashCaches;
         synchronized(hashTwins) {
             int hashQuery = query.getMultiParamsContext().getInnerComponents(true).hash;
             hashCaches = hashTwins.get(hashQuery);
             if(hashCaches==null) {
-                hashCaches = new ArrayList<Query>();
-                hashTwins.put(hashQuery, hashCaches);
+                hashCaches = ListFact.mAddCol();
+                hashTwins.exclAdd(hashQuery, hashCaches);
             }
         }
         synchronized(hashCaches) {
-            for(Query<?,?> cache : hashCaches) {
+            for(Query<?,?> cache : hashCaches.it()) {
                 IQuery<K,V> packed = cacheTwinQuery(cache, query);
                 if(packed !=null) {
                     logger.debug("cached");
@@ -94,16 +95,15 @@ public class QueryCacheAspect {
     }
 
     private <K,V> IQuery<K,V> cacheNoBigTwin(Query<K, V> query, Result<Query> cacheTwin) throws Throwable {
-        Map<Value, Value> bigValues = AbstractValuesContext.getBigValues(query.getContextValues());
-        if(BaseUtils.onlyObjects(query.mapKeys.keySet()) && BaseUtils.onlyObjects(query.properties.keySet()) && bigValues == null) {
+        ImRevMap<Value, Value> bigValues = AbstractValuesContext.getBigValues(query.getContextValues());
+        if(BaseUtils.onlyObjects(query.mapKeys.keyIt()) && BaseUtils.onlyObjects(query.properties.keyIt()) && bigValues == null) {
             cacheTwin.set(query);
             return query;
         } else { // чтобы не было утечки памяти, "заменяем" компилируемый запрос на объекты, а все большие значения на поменьше
-            Map<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keySet());
-            Map<V,Object> genProps = BaseUtils.generateObjects(query.properties.keySet());
+            ImRevMap<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keys());
+            ImRevMap<V,Object> genProps = BaseUtils.generateObjects(query.properties.keys());
 
-            Query<Object, Object> cache = new Query<Object, Object>(BaseUtils.crossJoin(genKeys, query.mapKeys), BaseUtils.crossJoin(genProps, query.properties),
-                    query.where);
+            Query<Object, Object> cache = new Query<Object, Object>(genKeys.crossJoin(query.mapKeys), genProps.crossJoin(query.properties), query.where);
 
             if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
                 cache = cache.translateQuery(new MapValuesTranslator(bigValues));
@@ -111,7 +111,7 @@ public class QueryCacheAspect {
             cacheTwin.set(cache);
 
             return new MapQuery<K, V, Object, Object>(cache, genProps, genKeys,
-                    bigValues == null ? MapValuesTranslator.noTranslate : new MapValuesTranslator(BaseUtils.reverse(bigValues)));
+                    bigValues == null ? MapValuesTranslator.noTranslate : new MapValuesTranslator(bigValues.reverse()));
         }
     }
 
@@ -142,9 +142,9 @@ public class QueryCacheAspect {
         Query.MultiParamsContext<?, ?> multiParams = cache.getMultiParamsContext().mapInner(query.getMultiParamsContext(), true, translator);
         if(multiParams!=null) {
             Query<K,V> mapCache = (Query<K, V>)multiParams.getQuery();
-            Map<CV,V> mapProps = BaseUtils.mapValues(query.properties,mapCache.properties);
+            Map<CV,V> mapProps = BaseUtils.mapColValues(query.properties,mapCache.properties);
             assert cache.packed!=null;
-            return new MapQuery<CK,CV,K,V>(cache.pack(),mapProps,BaseUtils.crossValues(query.mapKeys, mapCache.mapKeys),translator.result.mapValues());
+            return new MapQuery<CK,CV,K,V>(cache.pack(),mapProps,BaseUtils.crossValues(query.mapKeys, mapCache.mapKeys),translator.result.mapColValues());
         }
         return null;
     }

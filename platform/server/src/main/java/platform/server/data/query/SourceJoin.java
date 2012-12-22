@@ -1,15 +1,9 @@
 package platform.server.data.query;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
-import platform.server.caches.PackInterface;
-import platform.server.data.Value;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
-
-import java.util.Set;
 
 public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T>, AndContext<T> {
 
@@ -18,5 +12,5 @@ public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T>, An
     T translateQuery(QueryTranslator translator);
 
     //    void fillJoins(List<? extends JoinSelect> Joins);
-    void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere);
+    void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere);
 }

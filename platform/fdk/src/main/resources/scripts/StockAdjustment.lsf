@@ -242,7 +242,7 @@ needToInLedgerAdjustment (adjustment) = GROUP SUM needToInLedgerAdjustmentDetail
 @defineAggregation(adjustmentDetail, outAdjustmentSkuDetail, needToOutLedgerAdjustmentDetail);
 @defineAggregation(adjustmentDetail, inAdjustmentSkuDetail, needToInLedgerAdjustmentDetail);
 
-adjustmentDetailAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail),
+adjustmentDetailAdjustmentSkuDetail(adjustmentSkuDetail) = UNION CLASS adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                                 adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail);
 
 @defineDocumentDetailTime(adjustmentDetail, adjustmentSkuDetail);
@@ -250,34 +250,34 @@ adjustmentDetailAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE adjus
 
 stockInAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
 stockOutAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
-stockAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE stockInAdjustmentSkuDetail(adjustmentSkuDetail),
+stockAdjustmentSkuDetail(adjustmentSkuDetail) = UNION CLASS stockInAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                 stockOutAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
 batchInAdjustmentSkuDetail(adjustmentSkuDetail) = batchAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
 batchOutAdjustmentSkuDetail(adjustmentSkuDetail) = batchAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
-batchAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE batchInAdjustmentSkuDetail(adjustmentSkuDetail),
+batchAdjustmentSkuDetail(adjustmentSkuDetail) = UNION CLASS batchInAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                 batchOutAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
 quantityOutAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
 quantityInAdjustmentSkuDetail (adjustmentSkuDetail) = quantityAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));   // -
-quantityAdjustmentSkuDetail 'Кол-во изменения' (adjustmentSkuDetail) = UNION EXCLUSIVE quantityOutAdjustmentSkuDetail(adjustmentSkuDetail),
+quantityAdjustmentSkuDetail 'Кол-во изменения' (adjustmentSkuDetail) = UNION CLASS quantityOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                                        quantityInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
 sumOutAdjustmentSkuDetail (adjustmentSkuDetail) = sumAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
 sumInAdjustmentSkuDetail (adjustmentSkuDetail) = sumAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));        // -
-sumAdjustmentSkuDetail 'Сумма изменения' (adjustmentSkuDetail) = UNION EXCLUSIVE sumOutAdjustmentSkuDetail(adjustmentSkuDetail),
+sumAdjustmentSkuDetail 'Сумма изменения' (adjustmentSkuDetail) = UNION CLASS sumOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                                  sumInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
 skuOutAdjustmentSkuDetail (adjustmentSkuDetail) = skuAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
 skuInAdjustmentSkuDetail (adjustmentSkuDetail) = skuAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
-skuAdjustmentSkuDetail(adjustmentSkuDetail) = UNION EXCLUSIVE skuOutAdjustmentSkuDetail(adjustmentSkuDetail),
+skuAdjustmentSkuDetail(adjustmentSkuDetail) = UNION CLASS skuOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                               skuInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 nameSkuAdjustmentSkuDetail 'Товар' (adjustmentSkuDetail) = nameSku(skuAdjustmentSkuDetail(adjustmentSkuDetail)) MINCHARWIDTH 15 PREFCHARWIDTH 15;
 idBarcodeAdjustmentSkuDetail 'Штрих-код' (adjustmentSkuDetail) =  idBarcodeSku(skuAdjustmentSkuDetail(adjustmentSkuDetail));
 
 descriptionOutAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = descriptionAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));
 descriptionInAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = descriptionAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
-descriptionAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = UNION EXCLUSIVE descriptionOutAdjustmentSkuDetail(adjustmentSkuDetail),
+descriptionAdjustmentSkuDetail 'Название документа' (adjustmentSkuDetail) = UNION CLASS descriptionOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                                             descriptionInAdjustmentSkuDetail(adjustmentSkuDetail) PERSISTENT;
 
 @implementSkuLedger(adjustmentSkuDetail, sku, stock);

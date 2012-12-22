@@ -29,22 +29,22 @@ fromPriceInterval 'от' = DATA NUMERIC[14,3](priceInterval) IN base;
 toPriceInterval 'до' = DATA NUMERIC[14,3](priceInterval) IN base;
 modifierPriceInterval 'Округлённая цена интервала' = DATA NUMERIC[14,3](priceInterval) IN base;
 
-integerPriceRoundCondition 'Целое' (price, roundCondition) = divideInteger((price AS NUMERIC[14,3]), denominatorPriceRoundCondition(roundCondition));
+integerPriceRoundCondition 'Целое' (price, roundCondition) = divideInteger((price AS NUMERIC[17,3]), denominatorPriceRoundCondition(roundCondition));
 
-fractionPriceRoundCondition 'Дробное' (price, roundCondition) = (price AS NUMERIC[14,3]) -
+fractionPriceRoundCondition 'Дробное' (price, roundCondition) = (price AS NUMERIC[17,3]) -
     integerPriceRoundCondition(price, roundCondition)* denominatorPriceRoundCondition(roundCondition);
 
 inPriceIntervalPrice(priceInterval, price) = fractionPriceRoundCondition(price, roundConditionPriceInterval(priceInterval)) >= fromPriceInterval(priceInterval)
     AND fractionPriceRoundCondition(price, roundConditionPriceInterval(priceInterval)) <= toPriceInterval(priceInterval);
 
 priceIntervalPriceRoundCondition (price, roundCondition) = GROUP MAX priceInterval IF inPriceIntervalPrice(priceInterval, price)
-    BY price AS NUMERIC[14,3], roundConditionPriceInterval(priceInterval);
+    BY price AS NUMERIC[17,3], roundConditionPriceInterval(priceInterval);
 
 
-roundPriceRoundCondition (price, roundCondition) = IF (price AS NUMERIC[14,3]) > minPriceRoundCondition(roundCondition) AND priceIntervalPriceRoundCondition (price, roundCondition)
+roundPriceRoundCondition (price, roundCondition) = IF (price AS NUMERIC[17,3]) > minPriceRoundCondition(roundCondition) AND priceIntervalPriceRoundCondition (price, roundCondition)
     THEN integerPriceRoundCondition(price, roundCondition)*denominatorPriceRoundCondition(roundCondition)
         + modifierPriceInterval(priceIntervalPriceRoundCondition (price, roundCondition))
-    ELSE round(price AS NUMERIC[14,3], priceRoundRoundCondition(roundCondition));
+    ELSE round(price AS NUMERIC[17,3], priceRoundRoundCondition(roundCondition));
 
 // -------------------- Группы для округления --------------- //
 

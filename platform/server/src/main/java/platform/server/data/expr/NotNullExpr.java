@@ -1,18 +1,20 @@
 package platform.server.data.expr;
 
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.*;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 
 public abstract class NotNullExpr extends VariableClassExpr {
@@ -71,11 +73,11 @@ public abstract class NotNullExpr extends VariableClassExpr {
                 return translateExpr.getWhere();
         }
 
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(getExpr());
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return SetFact.<OuterContext>singleton(getExpr());
         }
 
-        protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+        protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
             getExpr().fillAndJoinWheres(joins,andWhere);
         }
 
@@ -83,34 +85,81 @@ public abstract class NotNullExpr extends VariableClassExpr {
             return getExpr().hashOuter(hashContext);
         }
 
-        protected DataWhereSet calculateFollows() {
-            return new DataWhereSet(getExprFollows(false, true));
+        protected ImSet<DataWhere> calculateFollows() {
+            return NotNullExpr.getFollows(getExprFollows(false, true));
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return getExpr().equals(((NotNull) o).getExpr());
         }
     }
 
-    private NotNullExprSet exprThisFollows = null;
+    private ImSet<NotNullExpr> exprThisFollows = null;
     @ManualLazy
-    public NotNullExprSet getExprFollows(boolean includeThis, boolean recursive) {
+    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean recursive) {
         assert includeThis || recursive;
         if(recursive) {
             if(includeThis && hasNotNull()) {
-                if(exprThisFollows==null) {
-                    exprThisFollows = new NotNullExprSet(getExprFollows(true));
-                    exprThisFollows.add(this);
-                }
+                if(exprThisFollows==null)
+                    exprThisFollows = SetFact.addExcl(getExprFollows(true), this);
                 return exprThisFollows;
             } else
                 return getExprFollows(true);
         } else // не кэшируем так как редко используется
-            return new NotNullExprSet(this);
+            return SetFact.singleton(this);
     }
 
-    public void fillFollowSet(DataWhereSet fillSet) {
+    public void fillFollowSet(MSet<DataWhere> fillSet) {
         assert hasNotNull();
         fillSet.add((DataWhere)getNotNullWhere());
     }
+
+    public static ImSet<NotNullExpr> getExprFollows(ImCol<BaseExpr> exprs, boolean recursive) {
+        MSet<NotNullExpr> set = SetFact.mSet();
+        for(int i=0,size=exprs.size();i<size;i++)
+            set.addAll(exprs.get(i).getExprFollows(true, recursive));
+        return set.immutable();
+    }
+
+    public static ImSet<DataWhere> getFollows(ImSet<NotNullExpr> exprFollows) {
+        MSet<DataWhere> result = SetFact.mSet();
+        for(int i=0,size=exprFollows.size();i<size;i++)
+            exprFollows.get(i).fillFollowSet(result);
+        return result.immutable();
+    }
+
+    public static ImSet<InnerExpr> getInnerExprs(ImSet<NotNullExpr> set, Result<ImSet<UnionJoin>> unionJoins) {
+        boolean hasNotInner = false;
+        for(int i=0,size=set.size();i<size;i++) // оптимизация
+            if(!(set.get(i) instanceof InnerExpr)) {
+                hasNotInner = true;
+                break;
+            }
+        if(!hasNotInner) {
+            if(unionJoins!=null)
+                unionJoins.set(SetFact.<UnionJoin>EMPTY());
+            return BaseUtils.immutableCast(set);
+        }
+
+        MSet<UnionJoin> mUnionJoins = null;
+        if(unionJoins!=null)
+            mUnionJoins = SetFact.mSetMax(set.size());
+
+        MSet<InnerExpr> mResult = SetFact.mSet();
+        for(int i=0,size=set.size();i<size;i++) {
+            NotNullExpr expr = set.get(i);
+            if(expr instanceof InnerExpr)
+                mResult.add((InnerExpr)expr);
+            else {
+                if(mUnionJoins!=null && !(expr instanceof CurrentEnvironmentExpr))
+                    mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
+                mResult.addAll(getInnerExprs(expr.getExprFollows(false), unionJoins));
+            }
+        }
+
+        if(unionJoins!=null)
+            unionJoins.set(mUnionJoins.immutable());
+        return mResult.immutable();
+    }
+
 }

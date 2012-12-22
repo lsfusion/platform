@@ -1,14 +1,12 @@
 package platform.server.data.expr.where.cases;
 
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.AbstractJoin;
-import platform.server.data.translator.MapTranslate;
+import platform.server.data.query.Join;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.data.query.Join;
-
-import java.util.Collection;
 
 public class CaseJoin<U> extends AbstractJoin<U> {
 
@@ -32,16 +30,11 @@ public class CaseJoin<U> extends AbstractJoin<U> {
         return cases.getExpr(property);
     }
 
-    public Collection<U> getProperties() {
+    public ImSet<U> getProperties() {
         return cases.properties;
     }
 
     public Join<U> translateRemoveValues(MapValuesTranslate translate) {
-        MapTranslate translator = translate.mapKeys();
-
-        JoinCaseList<U> transCaseList = new JoinCaseList<U>(cases.properties);
-        for(JoinCase<U> joinCase : cases)
-            transCaseList.add(new JoinCase<U>(joinCase.where.translateOuter(translator), joinCase.data.translateRemoveValues(translate)));
-        return new CaseJoin<U>(transCaseList);
+        return new CaseJoin<U>(cases.translateRemoveValues(translate));
     }
 }

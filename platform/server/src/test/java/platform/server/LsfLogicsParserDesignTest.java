@@ -11,7 +11,10 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.GroupObjectView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LP;
-import platform.server.logics.scripted.*;
+import platform.server.logics.scripted.ScriptingBusinessLogics;
+import platform.server.logics.scripted.ScriptingErrorLog;
+import platform.server.logics.scripted.ScriptingFormView;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import javax.swing.*;
 import java.awt.*;

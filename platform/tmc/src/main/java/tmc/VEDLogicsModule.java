@@ -4,6 +4,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.FormEventType;
@@ -2708,7 +2709,7 @@ public class VEDLogicsModule extends LogicsModule {
             
             if(toAdd)
                 applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
-                   new PrintCommitSaleCheckActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
+                   new PrintCommitSaleCheckActionProperty(), MapFact.<ClassPropertyInterface, PropertyObjectInterfaceEntity>EMPTY()));
         }
 
         @Override
@@ -3150,7 +3151,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             if(toAdd)
                 applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
-                        new ReturnSaleCheckActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
+                        new ReturnSaleCheckActionProperty(), MapFact.<ClassPropertyInterface, PropertyObjectInterfaceEntity>EMPTY()));
         }
 
         @Override
@@ -3798,7 +3799,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             if(toAdd)
                 applyActionPropertyDraw.setPropertyObject(new ActionPropertyObjectEntity<ClassPropertyInterface>(
-                        new PrintSaleCheckCertActionProperty(), new HashMap<ClassPropertyInterface, PropertyObjectInterfaceEntity>()));
+                        new PrintSaleCheckCertActionProperty(), MapFact.<ClassPropertyInterface, PropertyObjectInterfaceEntity>EMPTY()));
         }
 
         private class PrintSaleCheckCertActionProperty extends PrintFiscalAroundApplyActionProperty {

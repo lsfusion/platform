@@ -1,13 +1,15 @@
 package platform.server.caches;
 
 import platform.base.*;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.hash.*;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
-public abstract class AbstractInnerContext<I extends InnerContext<I>> extends AbstractKeysValuesContext<I> implements InnerContext<I>, TwinImmutableInterface {
+public abstract class AbstractInnerContext<I extends InnerContext<I>> extends AbstractKeysValuesContext<I> implements InnerContext<I> {
 
     public I translateInner(MapTranslate translate) {
         return aspectTranslate(translate);
@@ -17,11 +19,11 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return aspectHash(hashContext);
     }
 
-    public QuickSet<Value> getInnerValues() {
+    public ImSet<Value> getInnerValues() {
         return aspectGetValues();
     }
 
-    public QuickSet<KeyExpr> getInnerKeys() {
+    public ImSet<KeyExpr> getInnerKeys() {
         return aspectGetKeys();
     }
 
@@ -29,7 +31,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         public int hashInner(HashContext hashContext) {
             return AbstractInnerContext.this.hashInner(hashContext);
         }
-        public QuickSet<KeyExpr> getInnerKeys() {
+        public ImSet<KeyExpr> getInnerKeys() {
             return AbstractInnerContext.this.getInnerKeys();
         }
     };
@@ -116,19 +118,19 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
     }
     private final static GlobalInteger keyValueHash = new GlobalInteger(5);
     public BaseUtils.HashComponents<Value> calculateValueComponents() {
-        final HashMapKeys hashKeys = new HashMapKeys(getInnerKeys().toQuickMap(keyValueHash));
+        final HashMapKeys hashKeys = new HashMapKeys(getInnerKeys().toMap(keyValueHash));
         return BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
-            public QuickMap<Value, GlobalObject> getParams() {
+            public ImMap<Value, GlobalObject> getParams() {
                 return AbstractValuesContext.getParamClasses(getInnerValues());
             }
 
-            public int hashParams(QuickMap<Value, ? extends GlobalObject> map) {
-                return hashInner(new HashContext(hashKeys, map.size>0?new HashMapValues(map):HashCodeValues.instance));
+            public int hashParams(ImMap<Value, ? extends GlobalObject> map) {
+                return hashInner(new HashContext(hashKeys, map.size()>0?new HashMapValues(map):HashCodeValues.instance));
             }
         });
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return mapInner((I) o,false)!=null;
     }
 
@@ -136,7 +138,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return getInnerComponents(false).hash;
     }
 
-    public QuickSet<Value> getContextValues() {
+    public ImSet<Value> getContextValues() {
         return getInnerValues();
     }
 }

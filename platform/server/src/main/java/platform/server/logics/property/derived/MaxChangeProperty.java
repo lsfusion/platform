@@ -1,5 +1,9 @@
 package platform.server.logics.property.derived;
 
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
@@ -13,8 +17,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.PropertyChanges;
 
-import java.util.*;
-
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
 public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends PullChangeProperty<T, P, MaxChangeProperty.Interface<P>> {
 
@@ -26,7 +28,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         public abstract Expr getExpr();
 
-        public abstract PropertyObjectInterfaceEntity getInterface(Map<P,DataObject> mapValues, ObjectEntity valueObject);
+        public abstract PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject);
     }
 
     public static class KeyInterface<P extends PropertyInterface> extends Interface<P> {
@@ -40,10 +42,10 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
 
         public Expr getExpr() {
-            return propertyInterface.changeExpr;
+            return propertyInterface.getChangeExpr();
         }
 
-        public PropertyObjectInterfaceEntity getInterface(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject) {
             return mapValues.get(propertyInterface);
         }
     }
@@ -59,20 +61,20 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         }
 
         public Expr getExpr() {
-            return toChange.changeExpr;
+            return toChange.getChangeExpr();
         }
 
-        public PropertyObjectInterfaceEntity getInterface(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject) {
             return valueObject;
         }
     }
 
-    public static <P extends PropertyInterface> List<Interface<P>> getInterfaces(CalcProperty<P> property) {
-        List<Interface<P>> result = new ArrayList<Interface<P>>();
-        for(P propertyInterface : property.interfaces)
-            result.add(new KeyInterface<P>(propertyInterface));
-        result.add(new ValueInterface<P>(property));
-        return result;
+    public static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(CalcProperty<P> property) {
+        return property.getOrderInterfaces().mapOrderSetValues(new GetValue<Interface<P>, P>() {
+            public Interface<P> getMapValue(P value) {
+                return new KeyInterface<P>(value);
+            }
+        }).addOrderExcl(new ValueInterface<P>(property));
     }
 
     public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
@@ -81,18 +83,19 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         finalizeInit();
     }
 
-    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add(onChange);
         depends.add(toChange);
     }
 
-    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(propClasses) // пока так
             propClasses = false;
 
-        Map<Interface<P>, Expr> mapExprs = new HashMap<Interface<P>, Expr>();
-        for(Interface<P> propertyInterface : interfaces)
-            mapExprs.put(propertyInterface, propertyInterface.getExpr());
+        ImMap<Interface<P>, Expr> mapExprs = interfaces.mapValues(new GetValue<Expr, Interface<P>>() {
+            public Expr getMapValue(Interface<P> value) {
+                return value.getExpr();
+            }});
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
@@ -101,10 +104,11 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return resultExpr;
     }
 
-    public CalcPropertyObjectEntity<Interface<P>> getPropertyObjectEntity(Map<P, DataObject> mapValues, ObjectEntity valueObject) {
-        Map<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = new HashMap<Interface<P>, PropertyObjectInterfaceEntity>();
-        for(Interface<P> propertyInterface : interfaces)
-            interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
+    public CalcPropertyObjectEntity<Interface<P>> getPropertyObjectEntity(final ImMap<P, DataObject> mapValues, final ObjectEntity valueObject) {
+        ImMap<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceEntity, Interface<P>>() {
+            public PropertyObjectInterfaceEntity getMapValue(Interface<P> value) {
+                return value.getInterface(mapValues, valueObject);
+            }});
         return new CalcPropertyObjectEntity<Interface<P>>(this,interfaceImplement);
     }
 }

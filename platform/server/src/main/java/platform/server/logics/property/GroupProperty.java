@@ -1,14 +1,17 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
-
-import java.util.*;
 
 abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
 
@@ -21,94 +24,96 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         }
     }
 
-    private static <I extends PropertyInterface> List<Interface<I>> getInterfaces(Collection<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
-        List<Interface<I>> interfaces = new ArrayList<Interface<I>>();
-        for(CalcPropertyInterfaceImplement<I> implement : interfaceImplements)
-            interfaces.add(new Interface<I>(interfaces.size(),implement));
-        return interfaces;
+    private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getInterfaces(ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
+        return ((ImCol<CalcPropertyInterfaceImplement<I>>)interfaceImplements).mapColSetValues(new GetIndexValue<Interface<I>, CalcPropertyInterfaceImplement<I>>() {
+            public Interface<I> getMapValue(int i, CalcPropertyInterfaceImplement<I> value) {
+                return new Interface<I>(i, value);
+            }}).toOrderSet();
     }
 
     protected abstract GroupType getGroupType();
 
-    protected GroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+    protected GroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
         super(sID, caption, getInterfaces(groupInterfaces));
         this.innerInterfaces = innerInterfaces;
     }
 
-    public Map<Interface<I>,CalcPropertyInterfaceImplement<I>> getMapInterfaces() {
-        Map<Interface<I>,CalcPropertyInterfaceImplement<I>> mapInterfaces = new HashMap<Interface<I>, CalcPropertyInterfaceImplement<I>>();
-        for(GroupProperty.Interface<I> propertyInterface : interfaces)
-            mapInterfaces.put(propertyInterface,propertyInterface.implement);
-        return mapInterfaces;
+    public ImMap<Interface<I>,CalcPropertyInterfaceImplement<I>> getMapInterfaces() {
+        return interfaces.mapValues(new GetValue<CalcPropertyInterfaceImplement<I>, Interface<I>>() {
+            public CalcPropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
+                return value.implement;
+            }});
     }
 
-    protected abstract List<CalcPropertyInterfaceImplement<I>> getProps();
-    protected abstract OrderedMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
-    protected final Collection<I> innerInterfaces;
+    protected abstract ImList<CalcPropertyInterfaceImplement<I>> getProps();
+    protected abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
+    protected final ImSet<I> innerInterfaces;
 
-    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, PropertyChanges changes) {
+    protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
         return getGroupImplements(mapKeys, false, changes);
     }
 
-    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes) {
+    protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes) {
         return getGroupImplements(mapKeys, propClasses, changes, null);
     }
 
-    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, PropertyChanges changes, WhereBuilder changedWhere) {
+    protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes, WhereBuilder changedWhere) {
         return getGroupImplements(mapKeys, false, changes, changedWhere);
     }
 
-    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        Map<Interface<I>, Expr> group = new HashMap<Interface<I>, Expr>();
-        for(Interface<I> propertyInterface : interfaces)
-            group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, propClasses, changes, changedWhere));
-        return group;
+    protected ImMap<Interface<I>, Expr> getGroupImplements(final ImMap<I, ? extends Expr> mapKeys, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+        return interfaces.mapItValues(new GetValue<Expr, Interface<I>>() {
+            public Expr getMapValue(Interface<I> value) {
+                return value.implement.mapExpr(mapKeys, propClasses, changes, changedWhere);
+            }});
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes) {
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(ImMap<I, ? extends Expr> joinImplement, PropertyChanges changes) {
         return getOrderImplements(joinImplement, false, changes);
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(ImMap<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
         return getOrderImplements(joinImplement, propClasses, changes, null);
     }
 
-    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>();
-        for(Map.Entry<CalcPropertyInterfaceImplement<I>, Boolean> order : getOrders().entrySet())
-            result.put(order.getKey().mapExpr(joinImplement, propClasses, changes, changedWhere), order.getValue());
-        return result;
+    protected ImOrderMap<Expr, Boolean> getOrderImplements(final ImMap<I, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+        return getOrders().mapMergeItOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
+            public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
+                return value.mapExpr(joinImplement, propClasses, changes, changedWhere);
+            }
+        });
     }
 
-    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, PropertyChanges changes) {
+    protected ImList<Expr> getExprImplements(ImMap<I, ? extends Expr> joinImplement, PropertyChanges changes) {
         return getExprImplements(joinImplement, false, changes, null);
     }
 
-    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
+    protected ImList<Expr> getExprImplements(ImMap<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes) {
         return getExprImplements(joinImplement, propClasses, changes, null);
     }
 
-    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
-        List<Expr> exprs = new ArrayList<Expr>();
-        for(CalcPropertyInterfaceImplement<I> expr : getProps())
-            exprs.add(expr.mapExpr(joinImplement, propClasses, changes, changedWhere));
-        return exprs;
+    protected ImList<Expr> getExprImplements(final ImMap<I, ? extends Expr> joinImplement, final boolean propClasses, final PropertyChanges changes, final WhereBuilder changedWhere) {
+        return getProps().mapItListValues(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
+            public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
+                return value.mapExpr(joinImplement, propClasses, changes, changedWhere);
+            }});
     }
 
     // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
-    protected Map<I, Expr> getGroupKeys(Map<Interface<I>, ? extends Expr> joinImplement) {
-        Map<CalcPropertyInterfaceImplement<I>, Expr> interfaceValues = new HashMap<CalcPropertyInterfaceImplement<I>, Expr>();
-        for(Map.Entry<Interface<I>, ? extends Expr> entry : joinImplement.entrySet())
-            if(entry.getValue().isValue())
-                interfaceValues.put(entry.getKey().implement, entry.getValue());
-        return BaseUtils.replace(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
+    protected ImMap<I, Expr> getGroupKeys(ImMap<Interface<I>, ? extends Expr> joinImplement) {
+        ImMap<I, ? extends Expr> interfaceValues = BaseUtils.immutableCast(getMapInterfaces().toRevExclMap().reverse().join((ImMap<Interface<I>, Expr>)joinImplement).filterFn(new GetKeyValue<Boolean, CalcPropertyInterfaceImplement<I>, Expr>() {
+            public Boolean getMapValue(CalcPropertyInterfaceImplement<I> key, Expr value) {
+                return value.isValue() && key instanceof PropertyInterface;
+            }
+        }));
+        return MapFact.override(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
 
     @Override
-    public void fillDepends(Set<CalcProperty> depends, boolean events) {
+    public void fillDepends(MSet<CalcProperty> depends, boolean events) {
         for(Interface interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
-        fillDepends(depends, getProps());
-        fillDepends(depends, getOrders().keySet());
+        fillDepends(depends, getProps().getCol());
+        fillDepends(depends, getOrders().keys());
     }
 }

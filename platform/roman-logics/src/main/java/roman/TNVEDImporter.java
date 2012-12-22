@@ -3,9 +3,13 @@ package roman;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
@@ -40,14 +44,14 @@ public abstract class TNVEDImporter {
 
     protected List<String> getFullCategory10() throws SQLException {
         List<String> list = new ArrayList<String>();
-        Map<PropertyInterface, KeyExpr> keys = LM.sidCustomCategory10.getMapKeys();
+        ImRevMap<PropertyInterface, KeyExpr> keys = LM.sidCustomCategory10.getMapKeys();
         Expr expr = LM.sidCustomCategory10.property.getExpr(keys, session.getModifier());
-        Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(keys);
-        query.properties.put("sid", expr);
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+        query.addProperty("sid", expr);
         query.and(expr.getWhere());
-        query.and(LM.customCategory4CustomCategory10.getExpr(session.getModifier(), BaseUtils.singleValue(keys)).getWhere());
-        OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql);
-        for (Map<PropertyInterface, Object> key : result.keySet()) {
+        query.and(LM.customCategory4CustomCategory10.getExpr(session.getModifier(), keys.singleValue()).getWhere());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
+        for (ImMap<PropertyInterface, Object> key : result.keyIt()) {
             list.add(result.get(key).get("sid").toString());
         }
         return list;

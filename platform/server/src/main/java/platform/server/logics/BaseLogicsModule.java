@@ -1,6 +1,16 @@
 package platform.server.logics;
 
 import org.apache.log4j.Logger;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
@@ -576,20 +586,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         protected LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
         @Override
-        public List<Property> getProperties() {
-            return new ArrayList<Property>(properties.values());
+        public ImOrderSet<Property> getProperties() {
+            return SetFact.fromJavaOrderSet(new ArrayList<Property>(properties.values()));
         }
 
         @Override
-        protected List<CalcPropertyClassImplement> getProperties(List<ValueClassWrapper> classes) {
-            ValueClass[] valueClasses = getClasses(classes);
+        protected ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes) {
+            ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
+            ValueClass[] valueClasses = getClasses(orderClasses);
             V property = getProperty(valueClasses);
 
-            List<?> interfaces = getPropertyInterfaces(property, valueClasses);
-            return Collections.singletonList(new CalcPropertyClassImplement(property, classes, interfaces));
+            ImOrderSet<?> interfaces = getPropertyInterfaces(property, valueClasses);
+            return ListFact.singleton(new CalcPropertyClassImplement(property, orderClasses, interfaces));
         }
 
-        private ValueClass[] getClasses(List<ValueClassWrapper> classes) {
+        private ValueClass[] getClasses(ImOrderSet<ValueClassWrapper> classes) {
             ValueClass[] valueClasses = new ValueClass[classes.size()];
             for (int i = 0; i < classes.size(); i++) {
                 valueClasses[i] = classes.get(i).valueClass;
@@ -608,23 +619,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             }
         }
 
-        protected abstract List<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
+        protected abstract ImOrderSet<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
 
         protected abstract V createProperty(ValueClass[] classes);
 
         protected abstract K createKey(ValueClass[] classes);
     }
 
-    public class SelectionPropertySet extends MapClassesPropertySet<Map<ValueClass, Integer>, SelectionProperty> {
+    public class SelectionPropertySet extends MapClassesPropertySet<ImMap<ValueClass, Integer>, SelectionProperty> {
         static private final String prefix = "SelectionProperty_";
-        private Map<String, LP> selectionLP = new HashMap<String, LP>();
+        private MAddExclMap<String, LP> selectionLP = MapFact.mAddExclMap();
 
         protected Class<?> getPropertyClass() {
             return SelectionProperty.class;
         }
 
         @Override
-        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
             return classes.size() >= 1;
         }
 
@@ -643,7 +654,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        protected List<? extends PropertyInterface> getPropertyInterfaces(SelectionProperty property, ValueClass[] classes) {
+        protected ImOrderSet<?> getPropertyInterfaces(SelectionProperty property, ValueClass[] classes) {
             int intNum = classes.length;
             PropertyInterface[] interfaces = new PropertyInterface[intNum];
             boolean[] was = new boolean[intNum];
@@ -656,19 +667,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                     }
                 }
             }
-            return Arrays.asList(interfaces);
+            return SetFact.toOrderExclSet(interfaces);
         }
 
-        protected Map<ValueClass, Integer> createKey(ValueClass[] classes) {
-            Map<ValueClass, Integer> key = new HashMap<ValueClass, Integer>();
-            for (ValueClass valueClass : classes) {
-                if (key.containsKey(valueClass)) {
-                    key.put(valueClass, key.get(valueClass) + 1);
-                } else {
-                    key.put(valueClass, 1);
-                }
-            }
-            return key;
+        protected ImMap<ValueClass, Integer> createKey(ValueClass[] classes) {
+            MMap<ValueClass, Integer> key = MapFact.mMap(MapFact.<ValueClass>addLinear());
+            for (ValueClass valueClass : classes)
+                key.add(valueClass, 1);
+            return key.immutable();
         }
 
         private String getSID(ValueClass[] classes) {
@@ -692,7 +698,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             SelectionProperty property = new SelectionProperty(sid, classArray, baseLM);
             LCP lp = new LCP<ClassPropertyInterface>(property);
             registerProperty(lp);
-            selectionLP.put(sid, lp);
+            selectionLP.exclAdd(sid, lp);
             setParent(property);
             return property;
         }
@@ -719,7 +725,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
             return classes.size() >= 1;
         }
 
@@ -736,8 +742,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        protected List<?> getPropertyInterfaces(JoinProperty property, ValueClass[] valueClasses) {
-            return new ArrayList(property.interfaces);
+        protected ImOrderSet<?> getPropertyInterfaces(JoinProperty property, ValueClass[] valueClasses) {
+            return property.getOrderInterfaces();
         }
 
         @Override
@@ -766,7 +772,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             LCP stringConcat = getStringConcatanationProperty(intNum);
 
-            List<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(intNum);
+            ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(intNum);
             JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")",
                     listInterfaces, false, mapCalcImplement(stringConcat, readCalcImplements(listInterfaces, joinParams)));
             LCP listJoinProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
@@ -782,7 +788,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private static final String prefix = "objectValueProperty_";
 
         @Override
-        protected boolean isInInterface(List<ValueClassWrapper> classes) {
+        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
             return classes.size() == 1;
         }
 
@@ -801,8 +807,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        protected List<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
-            return Arrays.asList(property.interfaces.iterator().next());
+        protected ImOrderSet<?> getPropertyInterfaces(ObjectValueProperty property, ValueClass[] valueClasses) {
+            return SetFact.singletonOrder(property.getOrderInterfaces().get(0));
         }
 
         @Override
@@ -1124,7 +1130,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addRegularFilterGroup(filterGroup);
         }
 
-        public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance) {
+        public void postProcessSelfInstance(ImMap<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance) {
             for (FilterEntity filterEntity : remapFilters) {
                 selfFormInstance.addFixedFilter(
                         filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.instanceFactory)

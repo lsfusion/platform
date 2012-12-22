@@ -1,9 +1,15 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.SFunctionSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
@@ -11,25 +17,19 @@ import platform.server.form.instance.CalcPropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.*;
 
-import static platform.base.BaseUtils.crossJoin;
-import static platform.base.BaseUtils.reverse;
-import static platform.base.BaseUtils.rightCrossJoin;
-
-public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
+public class CalcPropertyMapImplement<P extends PropertyInterface, T extends PropertyInterface> extends CalcPropertyRevImplement<P, T> implements CalcPropertyInterfaceImplement<T> {
 
     public CalcPropertyMapImplement(CalcProperty<P> property) {
-        super(property);
+        super(property, MapFact.<P, T>EMPTYREV());
     }
-
-    public CalcPropertyMapImplement(CalcProperty<P> property, Map<P, T> mapping) {
+    
+    public CalcPropertyMapImplement(CalcProperty<P> property, ImRevMap<P, T> mapping) {
         super(property, mapping);
-        
-        assert !mapping.containsValue(null);
     }
 
     public DataChanges mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
@@ -44,19 +44,19 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyMapImplement<P, T>(property.getChanged(type), mapping);
     }
 
-    public CalcPropertyValueImplement<P> mapValues(Map<T, DataObject> mapValues) {
-        return new CalcPropertyValueImplement<P>(property, BaseUtils.join(mapping, mapValues));
+    public CalcPropertyValueImplement<P> mapValues(ImMap<T, DataObject> mapValues) {
+        return new CalcPropertyValueImplement<P>(property, mapping.join(mapValues));
     }
 
-    public void change(Map<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
         change(keys, env, env.getSession().getObjectValue(value, property.getType()));
     }
 
-    public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(Map<T, K> remap) {
-        return new CalcPropertyMapImplement<P, K>(property, BaseUtils.join(mapping, remap));
+    public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {
+        return new CalcPropertyMapImplement<P, K>(property, mapping.join(remap));
     }
 
-    public void change(Map<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException {
         env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
     }
 
@@ -64,11 +64,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         env.change(property, change.map(mapping));
     }
 
-    public Map<T,ValueClass> mapInterfaceClasses() {
+    public ImMap<T,ValueClass> mapInterfaceClasses() {
         return mapInterfaceClasses(false);
     }
-    public Map<T,ValueClass> mapInterfaceClasses(boolean full) {
-        return rightCrossJoin(mapping, property.getInterfaceClasses(full));
+    public ImMap<T,ValueClass> mapInterfaceClasses(boolean full) {
+        return mapping.rightCrossJoin(property.getInterfaceClasses(full));
     }
     public ClassWhere<T> mapClassWhere() {
         return mapClassWhere(false);
@@ -77,60 +77,57 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new ClassWhere<T>(property.getClassWhere(full),mapping);
     }
 
-    public boolean mapIsFull(Collection<T> interfaces) {
+    public boolean mapIsFull(ImSet<T> interfaces) {
         if(interfaces.isEmpty()) // оптимизация
             return true;
 
-        Collection<P> checkInterfaces = new ArrayList<P>();
-        for(Map.Entry<P, T> entry : mapping.entrySet())
-            if(interfaces.contains(entry.getValue()))
-                checkInterfaces.add(entry.getKey());
+        ImSet<P> checkInterfaces = mapping.filterValues(interfaces).keys();
 
         // если все собрали интерфейсы
         return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces);
     }
 
-    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, Modifier modifier) {
-        return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier);
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) {
+        return property.getExpr(mapping.join(joinImplement), modifier);
     }
-    public Expr mapExpr(Map<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
-        return property.getExpr(BaseUtils.join(mapping, joinImplement), propChanges);
-    }
-
-    public Expr mapExpr(Map<T, ? extends Expr> joinImplement) {
-        return property.getExpr(BaseUtils.join(mapping, joinImplement));
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
+        return property.getExpr(mapping.join(joinImplement), propChanges);
     }
 
-    public void mapFillDepends(Set<CalcProperty> depends) {
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement) {
+        return property.getExpr(mapping.join(joinImplement));
+    }
+
+    public void mapFillDepends(MSet<CalcProperty> depends) {
         depends.add(property);
     }
 
-    public Set<OldProperty> mapOldDepends() {
+    public ImSet<OldProperty> mapOldDepends() {
         return property.getOldDepends();
     }
 
-    public Object read(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
-        return property.read(context.getSession().sql, BaseUtils.join(mapping, interfaceValues), context.getModifier(), context.getQueryEnv());
+    public Object read(ExecutionContext context, ImMap<T, DataObject> interfaceValues) throws SQLException {
+        return property.read(context.getSession().sql, mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
-    public ObjectValue readClasses(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
-        return property.readClasses(context.getSession(), BaseUtils.join(mapping, interfaceValues), context.getModifier(), context.getQueryEnv());
+    public ObjectValue readClasses(ExecutionContext context, ImMap<T, DataObject> interfaceValues) throws SQLException {
+        return property.readClasses(context.getSession(), mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
-    public Collection<DataProperty> mapChangeProps() {
+    public ImSet<DataProperty> mapChangeProps() {
         return property.getChangeProps();
     }
 
-    public DataChanges mapJoinDataChanges(Map<T, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return property.getJoinDataChanges(BaseUtils.join(mapping, mapKeys), expr, where, propChanges, changedWhere);
+    public DataChanges mapJoinDataChanges(ImMap<T, ? extends Expr> mapKeys, Expr expr, Where where, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        return property.getJoinDataChanges(mapping.join(mapKeys), expr, where, propChanges, changedWhere);
     }
 
-    public void fill(Set<T> interfaces, Set<CalcPropertyMapImplement<?, T>> properties) {
+    public void fill(MSet<T> interfaces, MSet<CalcPropertyMapImplement<?, T>> properties) {
         properties.add(this);
     }
 
-    public Collection<T> getInterfaces() {
-        return mapping.values();
+    public ImSet<T> getInterfaces() {
+        return mapping.valuesSet();
     }
 
     @Override
@@ -139,28 +136,20 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return editAction == null ? null : editAction.map(mapping);
     }
     
-    public Map<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
-        Map<P, ValueClass> commonClasses = property.getInterfaceCommonClasses(commonValue);
-
-        Map<T, ValueClass> result = new HashMap<T, ValueClass>();
-        for (Map.Entry<P, T> entry : mapping.entrySet()) {
-            ValueClass commonClass = CalcProperty.or(commonClasses.get(entry.getKey()), result.get(entry.getValue()));
-            if(commonClass!=null)
-                result.put(entry.getValue(), commonClass);
-        }
-        return result;
+    public ImMap<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
+        return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue));
     }
 
-    public CalcPropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
-        return new CalcPropertyObjectInstance<P>(property, BaseUtils.join(mapping, mapObjects));
+    public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
+        return new CalcPropertyObjectInstance<P>(property, mapping.join(mapObjects));
     }
     
     public ClassWhere<Object> mapClassValueWhere() {
-        return property.getClassValueWhere().remap(BaseUtils.<Object, P, String, Object>merge(mapping, Collections.singletonMap("value", "value")));
+        return property.getClassValueWhere().remap(MapFact.<Object, Object>addRevExcl(mapping, "value", "value"));
     }
 
     public <I extends PropertyInterface> boolean mapIntersect(CalcPropertyMapImplement<I, T> implement) {
-        return property.intersectFull(implement.property, BaseUtils.rightCrossValues(implement.mapping, mapping));
+        return property.intersectFull(implement.property, implement.mapping.rightCrossValuesRev(mapping));
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
@@ -168,5 +157,29 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         if(action!=null)
             return action.map(mapping);
         return null;
+    }
+    
+    public static <T extends PropertyInterface> ImCol<CalcPropertyMapImplement<?, T>> filter(ImCol<CalcPropertyInterfaceImplement<T>> col) {
+        return BaseUtils.immutableCast(col.filterCol(new SFunctionSet<CalcPropertyInterfaceImplement<T>>() {
+            public boolean contains(CalcPropertyInterfaceImplement<T> element) {
+                return element instanceof CalcPropertyMapImplement;
+            }}));
+    }
+
+    public <L> CalcPropertyImplement<P, L> mapImplement(ImMap<T, L> mapImplement) {
+        return new CalcPropertyImplement<P, L>(property, mapping.join(mapImplement));
+    }
+
+    public <L> CalcPropertyRevImplement<P, L> mapRevImplement(ImRevMap<T, L> mapImplement) {
+        return new CalcPropertyRevImplement<P, L>(property, mapping.join(mapImplement));
+    }
+
+    public CalcPropertyInterfaceImplement<T> mapClassProperty() {
+        return property.getClassProperty().mapPropertyImplement(mapping);
+    }
+
+    // временно
+    public CalcPropertyMapImplement<?, T> cloneProp() {
+        return DerivedProperty.createJoin(new CalcPropertyImplement<P, CalcPropertyInterfaceImplement<T>>(property, BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<T>>>immutableCast(mapping)));
     }
 }

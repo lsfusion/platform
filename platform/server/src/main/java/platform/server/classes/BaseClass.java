@@ -2,9 +2,14 @@ package platform.server.classes;
 
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.Table;
@@ -15,7 +20,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
-import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -70,14 +75,15 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public ConcreteCustomClass getConcrete() {
-        ConcreteCustomClassSet concrete = new ConcreteCustomClassSet();
-        fillNextConcreteChilds(concrete);
-        return concrete.get(0);
+        MSet<ConcreteCustomClass> mConcrete = SetFact.mSet();
+        fillNextConcreteChilds(mConcrete);
+        return mConcrete.immutable().get(0);
     }
 
     public void initObjectClass() { // чтобы сохранить immutability классов
-        Set<CustomClass> allClasses = new HashSet<CustomClass>();
-        fillChilds(allClasses);
+        MSet<CustomClass> mAllClasses = SetFact.mSet();
+        fillChilds(mAllClasses); // именно так, а не getChilds, потому как добавление objectClass - тоже влияет на getChilds, и их нельзя кэшировать
+        ImSet<CustomClass> allClasses = mAllClasses.immutable();
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
         List<String> sidClasses = new ArrayList<String>();
@@ -91,8 +97,7 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges) throws SQLException {
-        Set<CustomClass> allClasses = new HashSet<CustomClass>();
-        fillChilds(allClasses);
+        Set<CustomClass> allClasses = getChilds().toJavaSet();
         allClasses.remove(objectClass);
 
         Map<String, StaticCustomClass> usedSIds = new HashMap<String, StaticCustomClass>();
@@ -147,31 +152,31 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void updateClassStat(SQLSession session) throws SQLException {
-        Query<Integer, Integer> classes = new Query<Integer, Integer>(Collections.singleton(0));
+        QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
         KeyExpr countKeyExpr = new KeyExpr("count");
-        Expr countExpr = GroupExpr.create(Collections.singletonMap(0, countKeyExpr.classExpr(this)),
-                new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(this.getUpSet()), GroupType.SUM, classes.mapKeys);
+        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(this)),
+                new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(this.getUpSet()), GroupType.SUM, classes.getMapExprs());
 
-        classes.properties.put(0, countExpr);
-        classes.and(classes.mapKeys.get(0).isClass(objectClass));
+        classes.addProperty(0, countExpr);
+        classes.and(classes.getMapExprs().get(0).isClass(objectClass));
 
-        OrderedMap<Map<Integer, Object>, Map<Integer, Object>> classStats = classes.execute(session);
-        for(Map.Entry<Map<Integer, Object>, Map<Integer, Object>> classStat : classStats.entrySet()) {
-            CustomClass customClass = findClassID((int) (Integer) classStat.getKey().get(0));
+        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+        for(int i=0,size=classStats.size();i<size;i++) {
+            CustomClass customClass = findClassID((int) (Integer) classStats.getKey(i).get(0));
             if(customClass instanceof CustomObjectClass) {
-                Integer count = BaseUtils.nvl((Integer) classStat.getValue().get(0), 0);
+                Integer count = BaseUtils.nvl((Integer) classStats.getValue(i).get(0), 0);
                 ((CustomObjectClass)customClass).stat = count==0?1:count;
             }
         }
     }
 
     public Integer getClassID(Integer value, SQLSession session) throws SQLException {
-        Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
-        Join<PropertyField> joinTable = table.joinAnd(Collections.singletonMap(table.key,new ValueExpr(value,getConcrete())));
+        QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
+        Join<PropertyField> joinTable = table.joinAnd(MapFact.singleton(table.key, new ValueExpr(value, getConcrete())));
         query.and(joinTable.getWhere());
-        query.properties.put("classid", joinTable.getExpr(table.objectClass));
-        OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.execute(session);
+        query.addProperty("classid", joinTable.getExpr(table.objectClass));
+        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(session);
         if(result.size()==0)
             return null;
         else {
@@ -182,7 +187,7 @@ public class BaseClass extends AbstractCustomClass {
 
     public Table.Join.Expr getJoinExpr(SingleClassExpr expr) {
         return (Table.Join.Expr) table.joinAnd(
-                Collections.singletonMap(table.key, expr)).getExpr(table.objectClass);
+                MapFact.singleton(table.key, expr)).getExpr(table.objectClass);
     }
 
     public int getCount() {
@@ -198,11 +203,11 @@ public class BaseClass extends AbstractCustomClass {
         return new DataObject(value,type.getDataClass(value, sql, this));
     }
 
-    public <K> Map<K, DataObject> getDataObjects(SQLSession sql, Map<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
-        Map<K, DataObject> result = new HashMap<K, DataObject>();
-        for(Map.Entry<K, Object> value : values.entrySet())
-            result.put(value.getKey(), getDataObject(sql, value.getValue(), typeGetter.getType(value.getKey())));
-        return result;
+    public <K> ImMap<K, DataObject> getDataObjects(SQLSession sql, ImMap<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+        ImValueMap<K, DataObject> mvResult = values.mapItValues(); // exception кидается
+        for(int i=0,size=values.size();i<size;i++)
+            mvResult.mapValue(i, getDataObject(sql, values.getValue(i), typeGetter.getType(values.getKey(i))));
+        return mvResult.immutableValue();
     }
 
     public ObjectValue getObjectValue(SQLSession sql, Object value, Type type) throws SQLException {
@@ -212,11 +217,11 @@ public class BaseClass extends AbstractCustomClass {
             return getDataObject(sql, value, type);
     }
 
-    public <K> Map<K, ObjectValue> getObjectValues(SQLSession sql, Map<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
-        Map<K, ObjectValue> result = new HashMap<K, ObjectValue>();
-        for(Map.Entry<K, Object> value : values.entrySet())
-            result.put(value.getKey(), getObjectValue(sql, value.getValue(), typeGetter.getType(value.getKey())));
-        return result;
+    public <K> ImMap<K, ObjectValue> getObjectValues(SQLSession sql, ImMap<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+        ImValueMap<K, ObjectValue> mvResult = values.mapItValues(); // exception кидается
+        for(int i=0,size=values.size();i<size;i++)
+            mvResult.mapValue(i, getObjectValue(sql, values.getValue(i), typeGetter.getType(values.getKey(i))));
+        return mvResult.immutableValue();
     }
 
     @IdentityLazy

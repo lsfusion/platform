@@ -1,10 +1,10 @@
 package platform.server.logics.property;
 
-import java.util.List;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 
 public abstract class ChangeProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    public ChangeProperty(String SID, String caption, List<T> interfaces) {
+    public ChangeProperty(String SID, String caption, ImOrderSet<T> interfaces) {
         super(SID, caption, interfaces);
     }
 

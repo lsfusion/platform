@@ -1,19 +1,18 @@
 package platform.server.data.expr.where.pull;
 
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.where.Where;
 
-import java.util.Collections;
-import java.util.Map;
-
 public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {
 
-    protected Stat proceedBase(Where data, Map<Integer, BaseExpr> map) {
+    protected Stat proceedBase(Where data, ImMap<Integer, BaseExpr> map) {
         BaseExpr baseExpr = map.get(0);
-        return data.getStatKeys(new QuickSet<BaseExpr>(baseExpr)).rows;
+        return data.getStatKeys(SetFact.<BaseExpr>singleton(baseExpr)).rows;
     }
 
     protected Stat initEmpty() {
@@ -25,6 +24,6 @@ public class StatPullWheres extends ExclPullWheres<Stat, Integer, Where> {
     }
 
     public Stat proceed(Where where, Expr expr) {
-        return proceed(where, Collections.singletonMap(0, expr));
+        return proceed(where, MapFact.singleton(0, expr));
     }
 }

@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -54,7 +55,7 @@ public class FormGroupHierarchyCreator {
             if (property.getToDraw(form) == property.propertyObject.getApplyObject(form.groups)) {
                 Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.propertyObject.getObjectInstances());
                 // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки
-                propObjects.removeAll(property.columnGroupObjects);
+                propObjects.removeAll(property.getColumnGroupObjects().toJavaList());
                 addDependencies(graph, propObjects, true);
 
                 if (property.propertyCaption != null) {
@@ -93,9 +94,10 @@ public class FormGroupHierarchyCreator {
         // добавляем дополнительные зависимости для свойств с группами в колонках
         for (GroupObjectEntity targetGroup : form.groups) { // перебираем группы в этом порядке, чтобы не пропустить зависимости
             for (PropertyDrawEntity<?> property : form.propertyDraws) {
-                if (property.getToDraw(form) == property.propertyObject.getApplyObject(form.groups) && !property.columnGroupObjects.isEmpty()) {
+                ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
+                if (property.getToDraw(form) == property.propertyObject.getApplyObject(form.groups) && !columnGroupObjects.isEmpty()) {
                     if (targetGroup == property.getToDraw(form)) {
-                        for (GroupObjectEntity columnGroup : property.columnGroupObjects) {
+                        for (GroupObjectEntity columnGroup : columnGroupObjects) {
                             graph.get(targetGroup).addAll(graph.get(columnGroup));
                         }
                     }

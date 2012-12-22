@@ -1,6 +1,8 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
@@ -8,19 +10,17 @@ import platform.server.logics.property.*;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
     private final BusinessLogics BL;
-    private final Set<SessionDataProperty> sessionUsed;
-    private final Set<SessionDataProperty> localUsed;
+    private final ImSet<SessionDataProperty> sessionUsed;
+    private final ImSet<SessionDataProperty> localUsed;
     private final boolean singleApply;
 
-    public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, List<I> innerInterfaces,
+    public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply, 
-                                                                  Set<SessionDataProperty> sessionUsed, Set<SessionDataProperty> localUsed, BusinessLogics BL) {
+                                                                  ImSet<SessionDataProperty> sessionUsed, ImSet<SessionDataProperty> localUsed, BusinessLogics BL) {
         super(sID, caption, innerInterfaces, action);
 
         this.BL = BL;
@@ -33,13 +33,13 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    protected PropsNewSession aspectChangeExtProps() {
-        return super.aspectChangeExtProps().wrapNewSession();
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        return super.aspectChangeExtProps().replaceValues(true);
     }
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
-        return super.aspectChangeExtProps().wrapNewSession();
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        return super.aspectChangeExtProps().replaceValues(true);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     @IdentityLazy
-    private Set<SessionDataProperty> getUsed() {
-        return BaseUtils.mergeSet(CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()), sessionUsed);
+    private ImSet<SessionDataProperty> getUsed() {
+        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(sessionUsed);
     }
 
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {

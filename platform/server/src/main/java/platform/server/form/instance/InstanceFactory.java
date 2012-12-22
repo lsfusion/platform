@@ -1,11 +1,16 @@
 package platform.server.form.instance;
 
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.add.MAddMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.filter.*;
 import platform.server.logics.property.PropertyInterface;
-
-import java.util.*;
 
 public class InstanceFactory {
 
@@ -13,16 +18,16 @@ public class InstanceFactory {
         this.computer = computer;
     }
 
-    private final Map<ObjectEntity, ObjectInstance> objectInstances = new HashMap<ObjectEntity, ObjectInstance>();
-    private final Map<GroupObjectEntity, GroupObjectInstance> groupInstances = new HashMap<GroupObjectEntity, GroupObjectInstance>();
-    private final Map<TreeGroupEntity, TreeGroupInstance> treeInstances = new HashMap<TreeGroupEntity, TreeGroupInstance>();
-    private final Map<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = new HashMap<PropertyObjectEntity, PropertyObjectInstance>();
-    private final Map<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = new HashMap<PropertyDrawEntity, PropertyDrawInstance>();
+    private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallAddExclMap();
+    private final MAddExclMap<GroupObjectEntity, GroupObjectInstance> groupInstances = MapFact.mSmallAddExclMap();
+    private final MAddExclMap<TreeGroupEntity, TreeGroupInstance> treeInstances = MapFact.mSmallAddExclMap();
+    private final MAddExclMap<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = MapFact.mSmallAddExclMap();
+    private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallAddExclMap();
 
 
     public ObjectInstance getInstance(ObjectEntity entity) {
         if (!objectInstances.containsKey(entity)) {
-            objectInstances.put(entity, entity.baseClass.newInstance(entity));
+            objectInstances.exclAdd(entity, entity.baseClass.newInstance(entity));
         }
         return objectInstances.get(entity);
     }
@@ -35,19 +40,24 @@ public class InstanceFactory {
 
         if (!groupInstances.containsKey(entity)) {
 
-            Collection<ObjectInstance> objects = new ArrayList<ObjectInstance>();
-            for (ObjectEntity object : entity.objects) {
-                objects.add(getInstance(object));
-            }
+            ImOrderSet<ObjectInstance> objects = entity.getOrderObjects().mapOrderSetValues(new GetValue<ObjectInstance, ObjectEntity>() { // последействие есть, но "статичное"
+                public ObjectInstance getMapValue(ObjectEntity value) {
+                    return getInstance(value);
+                }
+            });
 
-            Map<ObjectInstance, CalcPropertyObjectInstance> parentInstances = null;
+            ImMap<ObjectInstance, CalcPropertyObjectInstance> parentInstances = null;
             if(entity.isParent !=null) {
-                parentInstances = new HashMap<ObjectInstance, CalcPropertyObjectInstance>();
-                for(Map.Entry<ObjectEntity,CalcPropertyObjectEntity> parentObject : entity.isParent.entrySet())
-                    parentInstances.put(getInstance(parentObject.getKey()), getInstance(parentObject.getValue()));
+                parentInstances = entity.isParent.mapKeyValues(new GetValue<ObjectInstance, ObjectEntity>() {
+                    public ObjectInstance getMapValue(ObjectEntity value) {
+                        return getInstance(value);
+                    }}, new GetValue<CalcPropertyObjectInstance, CalcPropertyObjectEntity<?>>() {
+                    public CalcPropertyObjectInstance<?> getMapValue(CalcPropertyObjectEntity value) {
+                        return getInstance(value);
+                    }});
             }
 
-            groupInstances.put(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
+            groupInstances.exclAdd(entity, new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
                     entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances));
         }
 
@@ -62,29 +72,28 @@ public class InstanceFactory {
 
         if (!treeInstances.containsKey(entity)) {
 
-            List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
-            for (GroupObjectEntity group : entity.groups) {
-                groups.add(getInstance(group));
-            }
-
-            treeInstances.put(entity, new TreeGroupInstance(entity, groups));
+            ImOrderSet<GroupObjectInstance> groups = entity.getGroups().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() { // тут как бы с последействием, но "статичным"
+                public GroupObjectInstance getMapValue(GroupObjectEntity value) {
+                    return getInstance(value);
+                }
+            });
+            treeInstances.exclAdd(entity, new TreeGroupInstance(entity, groups));
         }
 
         return treeInstances.get(entity);
     }
 
-    private <P extends PropertyInterface> Map<P, PropertyObjectInterfaceInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
-        Map<P, PropertyObjectInterfaceInstance> propertyMap = new HashMap<P, PropertyObjectInterfaceInstance>();
-        for (Map.Entry<P, PropertyObjectInterfaceEntity> propertyImplement : entity.mapping.entrySet()) {
-            propertyMap.put(propertyImplement.getKey(), propertyImplement.getValue().getInstance(this));
-        }
-        return propertyMap;
+    private <P extends PropertyInterface> ImMap<P, PropertyObjectInterfaceInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
+        return entity.mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity>() {
+            public PropertyObjectInterfaceInstance getMapValue(PropertyObjectInterfaceEntity value) {
+                return value.getInstance(InstanceFactory.this);
+            }});
     }
 
     public <P extends PropertyInterface> CalcPropertyObjectInstance<P> getInstance(CalcPropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.put(entity, new CalcPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new CalcPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
 
         return (CalcPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
@@ -100,7 +109,7 @@ public class InstanceFactory {
     public <P extends PropertyInterface> ActionPropertyObjectInstance<P> getInstance(ActionPropertyObjectEntity<P> entity) {
 
         if (!propertyObjectInstances.containsKey(entity))
-            propertyObjectInstances.put(entity, new ActionPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
+            propertyObjectInstances.exclAdd(entity, new ActionPropertyObjectInstance<P>(entity.property, getInstanceMap(entity)));
 
         return (ActionPropertyObjectInstance<P>) propertyObjectInstances.get(entity);
     }
@@ -108,12 +117,13 @@ public class InstanceFactory {
     public <T extends PropertyInterface> PropertyDrawInstance getInstance(PropertyDrawEntity<T> entity) {
 
         if (!propertyDrawInstances.containsKey(entity)) {
-            List<GroupObjectInstance> columnGroupObjects = new ArrayList<GroupObjectInstance>();
-            for (GroupObjectEntity columnGroupObject : entity.columnGroupObjects) {
-                columnGroupObjects.add(getInstance(columnGroupObject));
-            }
+            ImOrderSet<GroupObjectInstance> columnGroupObjects = entity.getColumnGroupObjects().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
+                public GroupObjectInstance getMapValue(GroupObjectEntity value) {
+                    return getInstance(value);
+                }
+            });
 
-            propertyDrawInstances.put(entity, new PropertyDrawInstance<T>(
+            propertyDrawInstances.exclAdd(entity, new PropertyDrawInstance<T>(
                     entity,
                     getInstance(entity.propertyObject),
                     getInstance(entity.toDraw),

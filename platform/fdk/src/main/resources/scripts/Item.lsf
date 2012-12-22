@@ -199,13 +199,15 @@ META defineItemAttribute (attribute, caption, group)
 END
 
 // Объявление
-valueItemAttribute = ABSTRACT STRING[100] (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueItemAttribute = ABSTRACT STRING[255] (item, itemAttribute) PERSISTENT;
 
 META implementItemAttribute(attribute, caption, itemType, attributeClass)
     EXTEND CLASS itemType##ItemAttribute { attributeClass caption }
-    value###attribute##ItemAttribute(item, attribute) = attribute##Item(item) AND attribute == itemType##ItemAttribute.##attributeClass;
-    value###itemType##ItemAttribute(item, attribute) += value###attribute##ItemAttribute(item, attribute);
+    value###itemType##ItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == itemType##ItemAttribute.##attributeClass;
 END
+
+//    value###attribute##ItemAttribute(item, attribute) = attribute##Item(item) AND attribute == itemType##ItemAttribute.##attributeClass;
+//    value###itemType##ItemAttribute(item, attribute) += value###attribute##ItemAttribute(item, attribute);
 
 META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
     @defineItemAttribute(attribute, caption, group);
@@ -263,7 +265,7 @@ END
 // Строка
 CLASS STATIC stringItemAttribute 'Строковый атрибут' : itemAttribute;
 
-valueStringItemAttribute = ABSTRACT STRING[100] (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueStringItemAttribute = ABSTRACT STRING[100] (item, stringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
 
 META defineStringItemAttribute(attribute, type, caption, group)
@@ -273,7 +275,7 @@ END
 // Целое число
 CLASS STATIC integerItemAttribute 'Целочисленный атрибут' : itemAttribute;
 
-valueIntegerItemAttribute = ABSTRACT INTEGER (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueIntegerItemAttribute = ABSTRACT INTEGER (item, integerItemAttribute) EXCLUSIVE PERSISTENT;
 stringIntegerItemAttribute(item, attribute) = toString255(valueIntegerItemAttribute(item, attribute));
 valueItemAttribute(item, attribute) += stringIntegerItemAttribute(item, attribute);
 
@@ -284,7 +286,7 @@ END
 // Дробное число
 CLASS STATIC doubleItemAttribute 'Дробный атрибут' : itemAttribute;
 
-valueDoubleItemAttribute = ABSTRACT DOUBLE (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueDoubleItemAttribute = ABSTRACT DOUBLE (item, doubleItemAttribute) EXCLUSIVE PERSISTENT;
 stringDoubleItemAttribute(item, attribute) = toString255(valueDoubleItemAttribute(item, attribute));
 valueItemAttribute(item, attribute) += stringDoubleItemAttribute(item, attribute);
 
@@ -295,7 +297,7 @@ END
 // Объектный атрибут
 CLASS STATIC objectItemAttribute 'Объектный атрибут' : itemAttribute;
 
-valueObjectItemAttribute = ABSTRACT named (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueObjectItemAttribute = ABSTRACT named (item, objectItemAttribute) EXCLUSIVE PERSISTENT;
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
 valueItemAttribute(item, attribute) += nameObjectItemAttribute(item, attribute);
 
@@ -312,15 +314,16 @@ END
 // Краткое наименование атрибута
 CLASS STATIC objectShortItemAttribute 'Объектный краткий атрибут' : itemAttribute;
 
-valueObjectShortItemAttribute = ABSTRACT doubleNamed (item, itemAttribute) EXCLUSIVE PERSISTENT;
+valueObjectShortItemAttribute = ABSTRACT doubleNamed (item, objectShortItemAttribute) EXCLUSIVE PERSISTENT;
 shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));
 valueItemAttribute(item, attribute) += shortNameObjectItemAttribute(item, attribute);
 
 META implementObjectShortItemAttribute(attribute, caption)
     EXTEND CLASS objectShortItemAttribute { shortItem###attribute caption }
-    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
-    valueObjectShortItemAttribute(item, attribute) += value###attribute##ItemShortAttribute(item, attribute);
+    valueObjectShortItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == objectShortItemAttribute.shortItem###attribute;
 END
+
+//    value###attribute##ItemShortAttribute(item, attribute) = attribute##Item(item) AND attribute == objectShortItemAttribute.shortItem###attribute;
 
 // ---------------------------- Конкретные свойства -------------------------------- //
 

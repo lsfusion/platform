@@ -1,35 +1,36 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.*;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-import java.util.Map;
-
 public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
 
     public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
         private final StatKeys<Expr> stats;
-        private final Map<KeyExpr, Type> keyTypes; // чтобы не сливало группировки с разными типами
+        private final ImMap<KeyExpr, Type> keyTypes; // чтобы не сливало группировки с разными типами
 
-        public Query(Where where, StatKeys<Expr> stats, Map<KeyExpr, Type> keyTypes) {
+        public Query(Where where, StatKeys<Expr> stats, ImMap<KeyExpr, Type> keyTypes) {
             this.where = where;
             this.stats = stats;
             this.keyTypes = keyTypes;
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes);
         }
 
@@ -44,8 +45,8 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
             return new Query(where.translateOuter(translator), StatKeys.translateOuter(stats, translator), translator.translateMapKeys(keyTypes));
         }
 
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(keyTypes.keySet(),where).merge(BaseUtils.<QuickSet<OuterContext>>immutableCast(stats.getKeys()));
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return BaseUtils.<ImSet<OuterContext>>immutableCast(stats.getKeys()).merge(keyTypes.keys()).merge(where);
         }
     }
 
@@ -67,15 +68,15 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         super(join, translator);
     }
 
-    public GroupJoin(Map<KeyExpr, Type> keyTypes, QuickSet<Value> values, Where where, StatKeys<Expr> joins, Map<Expr, BaseExpr> group) {
-        super(new QuickSet<KeyExpr>(keyTypes.keySet()),values,new Query(where, joins, keyTypes),group);
+    public GroupJoin(ImMap<KeyExpr, Type> keyTypes, ImSet<Value> values, Where where, StatKeys<Expr> joins, ImMap<Expr, BaseExpr> group) {
+        super(keyTypes.keys(),values,new Query(where, joins, keyTypes),group);
     }
 
-    private GroupJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<Expr, BaseExpr> group) {
+    private GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<Expr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected GroupJoin createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query query, Map<Expr, BaseExpr> group) {
+    protected GroupJoin createThis(ImSet<KeyExpr> keys, ImSet<Value> values, Query query, ImMap<Expr, BaseExpr> group) {
         return new GroupJoin(keys, values, query, group);
     }
 

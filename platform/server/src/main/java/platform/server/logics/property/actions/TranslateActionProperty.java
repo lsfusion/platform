@@ -1,7 +1,6 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.base.Result;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
@@ -40,7 +39,7 @@ public class TranslateActionProperty extends UserActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
+        List<ClassPropertyInterface> interfacesList = getOrderInterfaces().toJavaList();
         DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
         Boolean insensitive = insensitiveDictionary.read(context.getSession(), dictionary) != null;
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());

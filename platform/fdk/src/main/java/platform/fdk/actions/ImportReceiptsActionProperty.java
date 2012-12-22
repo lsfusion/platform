@@ -1,17 +1,17 @@
 package platform.fdk.actions;
 
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import platform.base.BaseUtils;
-import platform.base.DateConverter;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -25,23 +25,12 @@ import platform.server.session.DataSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ImportReceiptsActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface zReportInterface;
@@ -77,14 +66,13 @@ public class ImportReceiptsActionProperty extends ScriptingActionProperty {
 
                     Integer receiptNumber = 0;
                     KeyExpr receiptExpr = new KeyExpr("receipt");
-                    Map<Object, KeyExpr> receiptKeys = new HashMap<Object, KeyExpr>();
-                    receiptKeys.put("receipt", receiptExpr);
-                    Query<Object, Object> receiptQuery = new Query<Object, Object>(receiptKeys);
-                    receiptQuery.properties.put("numberReceipt", getLCP("numberReceipt").getExpr(context.getModifier(), receiptExpr));
-                    receiptQuery.and(getLCP("zReportReceipt").getExpr(context.getModifier(), receiptQuery.mapKeys.get("receipt")).compare(zReportObject.getExpr(), Compare.EQUALS));
-                    OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptResult = receiptQuery.execute(session.sql);
-                    for (Map.Entry<Map<Object, Object>, Map<Object, Object>> receiptRows : receiptResult.entrySet()) {
-                        Integer number = (Integer) receiptRows.getValue().get("numberReceipt");
+                    ImRevMap<Object, KeyExpr> receiptKeys = MapFact.singletonRev((Object)"receipt", receiptExpr);
+                    QueryBuilder<Object, Object> receiptQuery = new QueryBuilder<Object, Object>(receiptKeys);
+                    receiptQuery.addProperty("numberReceipt", getLCP("numberReceipt").getExpr(context.getModifier(), receiptExpr));
+                    receiptQuery.and(getLCP("zReportReceipt").getExpr(context.getModifier(), receiptQuery.getMapExprs().get("receipt")).compare(zReportObject.getExpr(), Compare.EQUALS));
+                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptResult = receiptQuery.execute(session.sql);
+                    for (ImMap<Object, Object> receiptRows : receiptResult.valueIt()) {
+                        Integer number = (Integer) receiptRows.get("numberReceipt");
                         if (number != null && number > receiptNumber)
                             receiptNumber = number;
                     }

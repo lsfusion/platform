@@ -1,7 +1,6 @@
 package platform.server.data.type;
 
 import platform.server.classes.DataClass;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;

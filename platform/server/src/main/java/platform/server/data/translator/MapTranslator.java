@@ -1,23 +1,21 @@
 package platform.server.data.translator;
 
-import platform.base.*;
+import platform.base.TwinImmutableObject;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 
-import java.util.Map;
-
 public class MapTranslator extends AbstractMapTranslator {
 
     // какой есть - какой нужен
-    private final Map<KeyExpr,KeyExpr> keys;
+    private final ImRevMap<KeyExpr,KeyExpr> keys;
     private final MapValuesTranslate values;
 
-    public MapTranslator(Map<KeyExpr, KeyExpr> keys, MapValuesTranslate values) {
+    public MapTranslator(ImRevMap<KeyExpr, KeyExpr> keys, MapValuesTranslate values) {
         this.keys = keys;
         this.values = values;
-
-        assert !keys.containsValue(null);
     }
 
     public KeyExpr translate(KeyExpr key) {
@@ -33,16 +31,12 @@ public class MapTranslator extends AbstractMapTranslator {
         return values.translate(expr);
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return keys.equals(((MapTranslator)o).keys) && values.equals(((MapTranslator)o).values);
     }
 
     public int immutableHashCode() {
         return keys.hashCode()*31+values.hashCode();
-    }
-
-    public <K> Map<K, KeyExpr> translateKey(Map<K, KeyExpr> map) {
-        return BaseUtils.join(map, keys);
     }
 
     public MapValuesTranslate mapValues() {
@@ -54,20 +48,32 @@ public class MapTranslator extends AbstractMapTranslator {
     }
 
     public MapTranslate reverseMap() {
-        return new MapTranslator(BaseUtils.reverse(keys), values.reverse());
+        return new MapTranslator(keys.reverse(), values.reverse());
     }
 
-    public boolean identityKeys(QuickSet<KeyExpr> keys) {
-        return BaseUtils.identity(BaseUtils.filterKeys(this.keys, keys));
+    public boolean identityKeys(ImSet<KeyExpr> keys) {
+        return this.keys.filterInclRev(keys).identity();
     }
-    public boolean identityValues(QuickSet<? extends Value> values) {
+    public boolean identityValues(ImSet<? extends Value> values) {
         return this.values.identityValues(values);
     }
-    public boolean identityKeysValues(QuickSet<KeyExpr> keys, QuickSet<? extends Value> values) {
+    public boolean identityKeysValues(ImSet<KeyExpr> keys, ImSet<? extends Value> values) {
         return identityKeys(keys) && identityValues(values);
     }
 
     public MapTranslate mapValues(MapValuesTranslate translate) {
-        return new MapTranslator(keys, values.map(translate));
+        MapValuesTranslate mapValues = values.map(translate);
+        if(mapValues==values)
+            return this;
+
+        return new MapTranslator(keys, mapValues);
+    }
+
+    public MapTranslate filterValues(ImSet<? extends Value> values) {
+        MapValuesTranslate filterValues = this.values.filter(values);
+        if(filterValues==this.values)
+            return this;
+
+        return new MapTranslator(keys, filterValues);
     }
 }

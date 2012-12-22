@@ -1,8 +1,11 @@
 package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
-import platform.base.QuickSet;
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.AddValue;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
@@ -11,6 +14,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
@@ -18,15 +22,16 @@ import platform.server.data.where.Where;
 
 public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> implements OuterContext<MeanClassWheres> {
 
+    protected AddValue<MeanClassWhere, CheckWhere> getAddValue() {
+        return AbstractWhere.addOrCheck();
+    }
+
     protected CheckWhere andValue(MeanClassWhere key, CheckWhere prevValue, CheckWhere newValue) {
         return prevValue.andCheck(newValue);
     }
-    protected CheckWhere addValue(MeanClassWhere key, CheckWhere prevValue, CheckWhere newValue) {
-        return prevValue.orCheck(newValue);
-    }
 
-    protected MeanClassWheres createThis() {
-        return new MeanClassWheres();
+    protected MeanClassWheres createThis(ImMap<MeanClassWhere, CheckWhere> map) {
+        return new MeanClassWheres(map);
     }
 
     @Override
@@ -44,27 +49,23 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
 
     public ClassExprWhere calculateClassWhere() {
         ClassExprWhere result = ClassExprWhere.FALSE;
-        for(int i=0;i<size;i++)
+        for(int i=0,size=size();i<size;i++)
             if(!getValue(i).not().checkTrue())
                 result = result.or(getKey(i).getClassWhere());
         return result;
     }
 
-    public MeanClassWheres() {
+    public MeanClassWheres(ImMap<MeanClassWhere, CheckWhere> map) {
+        super(map);
     }
 
     public MeanClassWheres(MeanClassWhere join,Where where) {
-        add(join,where);
-    }
-
-    private MeanClassWheres(MeanClassWheres wheres, MapTranslate translator) {
-        for(int i=0;i<size;i++)
-            add(getKey(i).translateOuter(translator),getValue(i).translateOuter(translator));
+        super(join, where);
     }
 
     public class OuterContext extends AbstractOuterContext<OuterContext> {
         protected OuterContext translate(MapTranslate translator) {
-            return new MeanClassWheres(getThis(), translator).getOuter();
+            return new MeanClassWheres(translator.translateMap(map)).getOuter();
         }
 
         protected boolean isComplex() {
@@ -73,20 +74,19 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
 
         protected int hash(HashContext hash) {
             int result = 0;
-            for(int i=0;i<size;i++)
+            for(int i=0,size=size();i<size;i++)
                 result += getKey(i).hashOuter(hash) ^ ((Where)getValue(i)).hashOuter(hash);
             return result;
         }
 
-        public QuickSet<platform.server.caches.OuterContext> calculateOuterDepends() {
-            return new QuickSet<platform.server.caches.OuterContext>(keyIt()).merge(
-                    new QuickSet<platform.server.caches.OuterContext>(BaseUtils.<Iterable<platform.server.caches.OuterContext>>immutableCast(valueIt())));
+        public ImSet<platform.server.caches.OuterContext> calculateOuterDepends() {
+            return SetFact.<platform.server.caches.OuterContext>merge(keys(), BaseUtils.<ImSet<OuterContext>>immutableCast(values().toSet()));
         }
 
         public MeanClassWheres getThis() {
             return MeanClassWheres.this;
         }
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return getThis().equals(((OuterContext)o).getThis());
         }
     }
@@ -96,16 +96,16 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
             outer = new OuterContext();
         return outer;
     }
-    public QuickSet<KeyExpr> getOuterKeys() {
+    public ImSet<KeyExpr> getOuterKeys() {
         return getOuter().getOuterKeys();
     }
-    public QuickSet<Value> getOuterValues() {
+    public ImSet<Value> getOuterValues() {
         return getOuter().getOuterValues();
     }
     public int hashOuter(HashContext hashContext) {
         return getOuter().hashOuter(hashContext);
     }
-    public QuickSet<platform.server.caches.OuterContext> getOuterDepends() {
+    public ImSet<platform.server.caches.OuterContext> getOuterDepends() {
         return getOuter().getOuterDepends();
     }
     public boolean enumerate(ExprEnumerator enumerator) {

@@ -1,6 +1,15 @@
 package platform.server.data.expr.query;
 
-import platform.base.*;
+import platform.base.BaseUtils;
+import platform.base.Result;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
@@ -10,18 +19,15 @@ import platform.server.data.PropertyField;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.RemapJoin;
-import platform.server.data.query.stat.*;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-
-import java.util.*;
-
-import static platform.base.BaseUtils.reverse;
 
 public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, RecursiveJoin, RecursiveJoin.QueryOuterContext> {
 
@@ -30,9 +36,9 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         private final Where stepWhere;
         private final boolean cyclePossible;
         private final boolean isLogical;
-        private final Map<KeyExpr, KeyExpr> mapIterate;
+        private final ImRevMap<KeyExpr, KeyExpr> mapIterate;
 
-        public Query(Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical) {
+        public Query(Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical) {
             this.initialWhere = initialWhere;
             this.stepWhere = stepWhere;
             this.mapIterate = mapIterate;
@@ -40,7 +46,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             this.isLogical = isLogical;
         }
 
-        public boolean twins(TwinImmutableInterface o) {
+        public boolean twins(TwinImmutableObject o) {
             return initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
         }
 
@@ -51,10 +57,10 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             return 31 * (31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
         }
         protected Query translate(MapTranslate translator) {
-            return new Query(initialWhere.translateOuter(translator),stepWhere.translateOuter(translator), translator.translateMap(mapIterate), cyclePossible, isLogical);
+            return new Query(initialWhere.translateOuter(translator),stepWhere.translateOuter(translator), translator.translateRevMap(mapIterate), cyclePossible, isLogical);
         }
-        public QuickSet<OuterContext> calculateOuterDepends() {
-            return new QuickSet<OuterContext>(initialWhere, stepWhere);
+        public ImSet<OuterContext> calculateOuterDepends() {
+            return SetFact.<OuterContext>toSet(initialWhere, stepWhere);
         }
     }
 
@@ -62,14 +68,14 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         super(join, translator);
     }
 
-    public RecursiveJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Where initialWhere, Where stepWhere, Map<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, Map<KeyExpr, BaseExpr> group) {
+    public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group) {
         super(keys, values, new Query(initialWhere, stepWhere, mapIterate, cyclePossible, isLogical), group);
     }
 
-    public RecursiveJoin(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query inner, Map<KeyExpr, BaseExpr> group) {
+    public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
-    protected RecursiveJoin createThis(QuickSet<KeyExpr> keys, QuickSet<Value> values, Query query, Map<KeyExpr, BaseExpr> group) {
+    protected RecursiveJoin createThis(ImSet<KeyExpr> keys, ImSet<Value> values, Query query, ImMap<KeyExpr, BaseExpr> group) {
         return new RecursiveJoin(keys, values, query, group);
     }
 
@@ -92,7 +98,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }*/
 
     private ClassExprWhere getClassWhere(Where where) {
-        return where.getClassWhere().keep(group.keySet());
+        return where.getClassWhere().filterInclKeys(group.keys());
     }
 
     @IdentityLazy
@@ -106,7 +112,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     private StatKeys<KeyExpr> getStatKeys(Where where) {
-        return where.getStatKeys(group.keySet());
+        return where.getStatKeys(group.keys());
     }
 
     @IdentityLazy
@@ -121,40 +127,39 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     @IdentityLazy
     public Where getFullStepWhere() {
-        return getStepWhere().and(getRecJoin(new HashMap<String, Type>(), "recursivetable", new HashMap<String, KeyExpr>(),
+        return getStepWhere().and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", new Result<ImRevMap<String, KeyExpr>>(),
                 getInitialClassWhere(), getInitialStatKeys()).getWhere());
     }
     
-    public Join<String> getRecJoin(Map<String, Type> props, String name, Map<String, KeyExpr> keys) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, Result<ImRevMap<String, KeyExpr>> keys) {
         return getRecJoin(props, name, keys, getClassWhere(), getStatKeys());
     }
 
-    public Join<String> getRecJoin(Map<String, Type> props, String name, Map<String, KeyExpr> keys, ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, Result<ImRevMap<String, KeyExpr>> keys, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
 
-        // создаем рекурсивную таблиц
-        int i=0;
-        Map<KeyExpr, KeyField> recKeys = new HashMap<KeyExpr, KeyField>();
-        for(KeyExpr key : group.keySet()) { // подготавливаем ключи
-            String keyName = "rk" + (i++);
-            recKeys.put(key, new KeyField(keyName, classWhere.getKeyType(key)));
-            keys.put(keyName, key);
-        }
+        // генерируем имена
+        ImRevMap<String, KeyExpr> keyNames = group.keys().mapRevKeys(new CompiledQuery.GenNameIndex("rk", ""));
+        keys.set(keyNames);
+        // генерируем поля таблицы
+        ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys(new GetKeyValue<KeyField, KeyExpr, String>() {
+            public KeyField getMapValue(KeyExpr keyExpr, String name) {
+                return new KeyField(name, classWhere.getKeyType(keyExpr));
+            }});
+        ImRevMap<String, PropertyField> recProps = props.mapRevValues(new GetKeyValue<PropertyField, String, Type>() { // assert что пустое если logical рекурсия
+            public PropertyField getMapValue(String key, Type value) {
+                return new PropertyField(key, value);
+            }});
 
-        Map<PropertyField, String> recProps = new HashMap<PropertyField, String>();
-        for(Map.Entry<String, Type> query : props.entrySet()) // assert что пустое если logical рекурсия
-            recProps.put(new PropertyField(query.getKey(), query.getValue()), query.getKey());
+        RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
+                classWhere.map(recKeys), statKeys.mapBack(recKeys));
 
-        RecursiveTable recTable = new RecursiveTable(name, recKeys.values(), recProps.keySet(),
-                classWhere.map(recKeys), statKeys.map(recKeys));
+        final ImRevMap<KeyExpr, KeyExpr> mapIterate = getMapIterate();
+        ImMap<KeyField, KeyExpr> joinKeys = recKeys.mapValues(new GetValue<KeyExpr, KeyExpr>() {
+            public KeyExpr getMapValue(KeyExpr recKey) {
+                return BaseUtils.nvl(mapIterate.get(recKey), recKey);
+            }});
 
-        Map<KeyExpr, KeyExpr> mapIterate = getMapIterate();
-        Map<KeyField, KeyExpr> joinKeys = new HashMap<KeyField, KeyExpr>();
-        for(Map.Entry<KeyExpr, KeyField> recKey : recKeys.entrySet()) {
-            KeyExpr prevKey = mapIterate.get(recKey.getKey());
-            joinKeys.put(recKey.getValue(), prevKey!=null?prevKey:recKey.getKey());
-        }
-
-        return new RemapJoin<String, PropertyField>(recTable.join(joinKeys), reverse(recProps)); // mapp'им на предыдушие ключи
+        return new RemapJoin<String, PropertyField>(recTable.join(joinKeys), recProps); // mapp'им на предыдушие ключи
     }
 
     public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
@@ -170,7 +175,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     public boolean isLogical() {
         return query.isLogical;
     }
-    public Map<KeyExpr, KeyExpr> getMapIterate() {
+    public ImRevMap<KeyExpr, KeyExpr> getMapIterate() {
         return query.mapIterate;
     }
     public boolean isCyclePossible() {

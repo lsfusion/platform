@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.base.TwinImmutableInterface;
+import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticClass;
@@ -44,7 +44,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
         return object.hashCode() * 31 + objectClass.hashCode() + 6;
     }
 
-    public boolean twins(TwinImmutableInterface o) {
+    public boolean twins(TwinImmutableObject o) {
         return object.equals(((StaticValueExpr)o).object) && objectClass.equals(((StaticValueExpr)o).objectClass) && sID==((StaticValueExpr)o).sID;
     }
 

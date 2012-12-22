@@ -1,8 +1,6 @@
 package platform.server.logics.property;
 
-import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.SQLSession;
 import platform.server.logics.ServerResourceBundle;
 
 public class CurrentSessionDataProperty extends SessionDataProperty {

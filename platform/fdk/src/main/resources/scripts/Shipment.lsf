@@ -28,7 +28,7 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки';
 
 @defineDocumentHeaderGrossWeight(shipment);
 
-quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,2] (order, shipment);
+quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,3] (order, shipment);
 
 editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 

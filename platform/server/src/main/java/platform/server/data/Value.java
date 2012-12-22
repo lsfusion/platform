@@ -1,16 +1,14 @@
 package platform.server.data;
 
-import platform.base.QuickSet;
-import platform.server.data.type.TypeObject;
-import platform.server.data.type.ParseInterface;
 import platform.base.GlobalObject;
-
-import java.util.Set;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
+import platform.server.data.type.ParseInterface;
 
 public interface Value {
 
     ParseInterface getParseInterface();
     GlobalObject getValueClass();
 
-    public Value removeBig(QuickSet<Value> usedValues);
+    public Value removeBig(MAddSet<Value> usedValues);
 }

@@ -1,14 +1,25 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.server.classes.DataClass;
 import platform.server.classes.IntegerClass;
-import platform.server.data.*;
+import platform.server.data.GlobalTable;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.SerializedTable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.*;
-import platform.server.data.query.Query;
+import platform.server.data.expr.query.DistinctKeys;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
@@ -16,7 +27,6 @@ import platform.server.logics.ReflectionLogicsModule;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.*;
 
 public abstract class DataTable extends GlobalTable {
 
@@ -25,7 +35,7 @@ public abstract class DataTable extends GlobalTable {
     }
 
     private StatKeys<KeyField> statKeys = null;
-    private Map<PropertyField, Stat> statProps = null;
+    private ImMap<PropertyField, Stat> statProps = null;
 
     public StatKeys<KeyField> getStatKeys() {
         if(statKeys!=null)
@@ -34,7 +44,7 @@ public abstract class DataTable extends GlobalTable {
             return SerializedTable.getStatKeys(this);
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         if(statProps!=null)
             return statProps;
         else
@@ -42,31 +52,31 @@ public abstract class DataTable extends GlobalTable {
     }
 
     public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException {
-        Query<Object, Object> query = new Query<Object, Object>(new ArrayList<Object>());
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
 
         if (!("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")))) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 
-            Map<KeyField, KeyExpr> mapKeys = KeyExpr.getMapKeys(keys);
+            ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
             platform.server.data.query.Join<PropertyField> join = join(mapKeys);
 
             Where inWhere = join.getWhere();
             for(KeyField key : keys) {
-                Map<Object, Expr> map = Collections.<Object, Expr>singletonMap(0, mapKeys.get(key));
-                query.properties.put(key, GroupExpr.create(new HashMap<Integer, Expr>(), one,
-                        GroupExpr.create(map, inWhere, map).getWhere(), GroupType.SUM, new HashMap<Integer, Expr>()));
+                ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
+                query.addProperty(key, GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
+                        GroupExpr.create(map, inWhere, map).getWhere(), GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
             }
 
             for(PropertyField prop : properties) {
                 if (!(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
-                    query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
-                            GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
+                    query.addProperty(prop, GroupExpr.create(MapFact.<Object, KeyExpr>EMPTY(), one,
+                            GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, MapFact.<Object, Expr>EMPTY()));
             }
 
-            query.properties.put(0, GroupExpr.create(new HashMap<Object, Expr>(), one, inWhere, GroupType.SUM, new HashMap<Object, Expr>()));
+            query.addProperty(0, GroupExpr.create(MapFact.<Object, Expr>EMPTY(), one, inWhere, GroupType.SUM, MapFact.<Object, Expr>EMPTY()));
             query.and(Where.TRUE);
 
-            Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
+            ImMap<Object, Object> result = query.execute(session).singleValue();
 
             DataObject tableObject = session.getDataObject(reflectionLM.tableSID.read(session, new DataObject(name)), reflectionLM.table.getType());
             reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
@@ -82,29 +92,23 @@ public abstract class DataTable extends GlobalTable {
             }
 
             // не null значения и разреженность колонок
-            Query<Object, Object> notNullQuery = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
+            QueryBuilder<Object, Object> notNullQuery = new QueryBuilder<Object, Object>(MapFact.<Object, KeyExpr>EMPTYREV());
+            for (PropertyField property : properties)
+                notNullQuery.addProperty(property, GroupExpr.create(MapFact.<Object, Expr>EMPTY(), one, join.getExpr(property).getWhere(), GroupType.SUM, MapFact.<Object, Expr>EMPTY()));
+            ImMap<Object, Object> notNulls = notNullQuery.execute(session).singleValue();
+            int sparseColumns = 0;
             for (PropertyField property : properties) {
-                Expr exprQuant = GroupExpr.create(new HashMap<Object, Expr>(), one, join.getExpr(property).getWhere(), GroupType.SUM, new HashMap<Object, Expr>());
-                notNullQuery.getWhere().or(exprQuant.getWhere());
-                notNullQuery.properties.put(property, exprQuant);
-            }
-            Map<Map<Object, Object>, Map<Object, Object>> notNullResult = notNullQuery.execute(session);
-            if (notNullResult.size() != 0){
-                Map<Object, Object> notNulls = BaseUtils.singleValue(notNullResult);
-                int sparseColumns = 0;
-                for (PropertyField property : properties) {
-                    DataObject propertyObject = session.getDataObject(reflectionLM.tableColumnSID.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
-                    int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
-                    int total = (Integer) BaseUtils.nvl(result.get(0), 0);
-                    double perCent = total != 0 ? 100 * (double) notNull / total : 100;
-                    reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
-                    reflectionLM.perсentNotNullTableColumn.change(perCent, session, propertyObject);
-                    if (perCent < 50) {
-                        sparseColumns++;
-                    }
+                DataObject propertyObject = session.getDataObject(reflectionLM.tableColumnSID.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
+                int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
+                int total = (Integer) BaseUtils.nvl(result.get(0), 0);
+                double perCent = total != 0 ? 100 * (double) notNull / total : 100;
+                reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
+                reflectionLM.perсentNotNullTableColumn.change(perCent, session, propertyObject);
+                if (perCent < 50) {
+                    sparseColumns++;
                 }
-                reflectionLM.sparseColumnsTable.change(sparseColumns, session, tableObject);
             }
+            reflectionLM.sparseColumnsTable.change(sparseColumns, session, tableObject);
         }
     }
 
@@ -118,32 +122,33 @@ public abstract class DataTable extends GlobalTable {
             rowStat = new Stat(BaseUtils.nvl((Integer) reflectionLM.rowsTable.read(session, tableObject), 0));
         }
 
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
-        for(KeyField key : keys) {
+        ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
+        for(int i=0,size=keys.size();i<size;i++) {
             Object keyValue;
-            if (statDefault || (keyValue = reflectionLM.tableKeySID.read(session, new DataObject(name + "." + key.name))) == null) {
-                distinctKeys.add(key, Stat.DEFAULT);
+            if (statDefault || (keyValue = reflectionLM.tableColumnSID.read(session, new DataObject(name + "." + keys.get(i).name))) == null) {
+                mvDistinctKeys.mapValue(i, Stat.DEFAULT);
             } else {
                 DataObject keyObject = new DataObject(keyValue, reflectionLM.tableKey);
-                distinctKeys.add(key, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableKey.read(session, keyObject), 0)));
+                mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableKey.read(session, keyObject), 0)));
             }
         }
-        statKeys = new StatKeys<KeyField>(rowStat, distinctKeys);
+        statKeys = new StatKeys<KeyField>(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
-        Map<PropertyField, Stat> updateStatProps = new HashMap<PropertyField, Stat>();
-        for(PropertyField prop : properties) {
+        ImValueMap<PropertyField, Stat> mvUpdateStatProps = properties.mapItValues();
+        for(int i=0,size=properties.size();i<size;i++) {
+            PropertyField prop = properties.get(i);
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
-                updateStatProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
+                mvUpdateStatProps.mapValue(i, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else {
                 Object propertyValue;
                 if (statDefault || (propertyValue = reflectionLM.tableColumnSID.read(session, new DataObject(prop.name))) == null) {
-                    updateStatProps.put(prop, Stat.DEFAULT);
+                    mvUpdateStatProps.mapValue(i, Stat.DEFAULT);
                 } else {
                     DataObject propertyObject = new DataObject(propertyValue, reflectionLM.tableColumn);
-                    updateStatProps.put(prop, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableColumn.read(session, propertyObject), 0)));
+                    mvUpdateStatProps.mapValue(i, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableColumn.read(session, propertyObject), 0)));
                 }
             }
         }
-        statProps = updateStatProps;
+        statProps = mvUpdateStatProps.immutableValue();
     }
 }

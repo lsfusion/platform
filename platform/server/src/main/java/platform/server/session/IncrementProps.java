@@ -1,7 +1,7 @@
 package platform.server.session;
 
-import platform.base.QuickSet;
 import platform.base.WeakIdentityHashSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
@@ -38,5 +38,5 @@ public abstract class IncrementProps {
     }
     
     public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
-    public abstract QuickSet<CalcProperty> getProperties();
+    public abstract ImSet<CalcProperty> getProperties();
 }

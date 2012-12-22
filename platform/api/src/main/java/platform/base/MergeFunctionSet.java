@@ -1,5 +1,7 @@
 package platform.base;
 
+import platform.base.col.interfaces.immutable.ImSet;
+
 public class MergeFunctionSet<T> implements FunctionSet<T> {
 
     private final FunctionSet<T> set1;
@@ -7,6 +9,7 @@ public class MergeFunctionSet<T> implements FunctionSet<T> {
 
     public MergeFunctionSet(FunctionSet<T> set1, FunctionSet<T> set2) {
         assert !set1.isFull() && !set1.isEmpty() && !set2.isFull() && !set2.isEmpty();
+//        assert !(set1 instanceof ImSet && set2 instanceof ImSet);
         this.set1 = set1;
         this.set2 = set2;
     }

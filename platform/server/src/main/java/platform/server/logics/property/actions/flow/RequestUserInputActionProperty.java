@@ -1,16 +1,18 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.classes.StaticCustomClass;
 import platform.server.data.type.Type;
 import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
+import platform.server.logics.property.ActionPropertyMapImplement;
+import platform.server.logics.property.AnyValuePropertyHolder;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final Type requestValueType;
@@ -25,7 +27,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final StaticCustomClass formResultClass;
     private final LCP formResultProperty;
 
-    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LCP formResultProperty) {

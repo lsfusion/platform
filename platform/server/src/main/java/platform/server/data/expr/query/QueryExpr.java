@@ -1,7 +1,15 @@
 package platform.server.data.expr.query;
 
-import platform.base.*;
-import platform.server.caches.*;
+import platform.base.BaseUtils;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.caches.AbstractInnerContext;
+import platform.server.caches.AbstractInnerHashContext;
+import platform.server.caches.IdentityLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.data.Value;
@@ -15,14 +23,12 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.*;
-
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
 public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends InnerExpr {
 
     public I query;
-    Map<K, BaseExpr> group; // вообще гря не reverseable
+    public ImMap<K, BaseExpr> group; // вообще гря не reverseable
 
     public Type getType() {
         return getInner().getType();
@@ -37,18 +43,18 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         return getInner().getStatValue();
     }
     @Override
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return super.getValues().merge(getInner().getInnerValues());
     }
 
     protected long calculateComplexity(boolean outer) {
         long result = super.calculateComplexity(outer);
         if(!outer)
-            result += query.getComplexity(outer) + getComplexity(group.keySet(), outer);
+            result += query.getComplexity(outer) + getComplexity(group.keys(), outer);
         return result;
     }
 
-    protected QueryExpr(I query, Map<K, BaseExpr> group) {
+    protected QueryExpr(I query, ImMap<K, BaseExpr> group) {
         this.query = query;
         this.group = group;
 
@@ -60,18 +66,16 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     }
 
     // трансляция
-    protected QueryExpr(T queryExpr, MapTranslate translator) {
+    protected QueryExpr(T queryExpr, final MapTranslate translator) {
         // надо еще транслировать "внутренние" values
         MapValuesTranslate mapValues = translator.mapValues().filter(queryExpr.getInner().getInnerValues());
-        MapTranslate valueTranslator = mapValues.mapKeys();
+        final MapTranslate valueTranslator = mapValues.mapKeys();
         query = queryExpr.query.translateOuter(valueTranslator);
-        group = new HashMap<K, BaseExpr>();
-        for(Map.Entry<K, BaseExpr> keyJoin : queryExpr.group.entrySet())
-            group.put((K)keyJoin.getKey().translateOuter(valueTranslator),keyJoin.getValue().translateOuter(translator));
+        group = valueTranslator.translateExprKeys(translator.translateDirect(queryExpr.group));
         assert checkExpr();
     }
 
-    protected abstract T createThis(I query, Map<K,BaseExpr> group);
+    protected abstract T createThis(I query, ImMap<K, BaseExpr> group);
 
     protected abstract static class QueryInnerHashContext<K extends Expr,I extends OuterContext<I>, J extends QueryJoin<?, ?, ?, ?>,
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends AbstractInnerHashContext {
@@ -85,12 +89,12 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
 
         public int hashInner(HashContext hashContext) {
             int hash = 0;
-            for(Map.Entry<K,BaseExpr> groupExpr : thisObj.group.entrySet())
-                hash += groupExpr.getKey().hashOuter(hashContext) ^ hashOuterExpr(groupExpr.getValue());
+            for(int i=0,size=thisObj.group.size();i<size;i++)
+                hash += thisObj.group.getKey(i).hashOuter(hashContext) ^ hashOuterExpr(thisObj.group.getValue(i));
             return thisObj.query.hashOuter(hashContext) * 31 + hash;
         }
 
-        public QuickSet<KeyExpr> getInnerKeys() {
+        public ImSet<KeyExpr> getInnerKeys() {
             return thisObj.getInner().getInnerKeys();
         }
     }
@@ -120,16 +124,16 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return true;
         }
 
-        public QuickSet<KeyExpr> getKeys() {
-            return getOuterKeys(thisObj.group.keySet()).merge(thisObj.query.getOuterKeys());
+        public ImSet<KeyExpr> getKeys() {
+            return getOuterKeys(thisObj.group.keys()).merge(thisObj.query.getOuterKeys());
         }
 
-        public QuickSet<Value> getValues() {
-            return getOuterValues(thisObj.group.keySet()).merge(thisObj.query.getOuterValues());
+        public ImSet<Value> getValues() {
+            return getOuterValues(thisObj.group.keys()).merge(thisObj.query.getOuterValues());
         }
 
         protected IC translate(MapTranslate translate) {
-            return thisObj.createThis(thisObj.query.translateOuter(translate), (Map<K, BaseExpr>) translate.translateExprKeys(thisObj.group)).getInner();
+            return thisObj.createThis(thisObj.query.translateOuter(translate), (ImMap<K, BaseExpr>) translate.translateExprKeys(thisObj.group)).getInner();
         }
 
         private T getThis() {
@@ -175,14 +179,14 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }.hashValues(hashContext.values);
     }
 
-    public boolean twins(TwinImmutableInterface obj) {
+    public boolean twins(TwinImmutableObject obj) {
         return getInner().equals(((QueryExpr)obj).getInner());
     }
 
     public abstract J getInnerJoin();
 
-    public QuickSet<OuterContext> calculateOuterDepends() { // для оптимизации
-        return new QuickSet<OuterContext>(group.values());
+    public ImSet<OuterContext> calculateOuterDepends() { // для оптимизации
+        return BaseUtils.immutableCast(group.values().toSet());
     }
 
     protected boolean hasDuplicateOuter() {
@@ -204,7 +208,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             Where fullWhere = getInner().getFullWhere();
             if(fullWhere.isFalse()) return ClassExprWhere.FALSE; // нужен потому как вызывается до create
 
-            Map<BaseExpr, K> outerInner;
+            ImRevMap<BaseExpr, K> outerInner;
 /*            if(hasDuplicateOuter()) {
                 ReversedMap<BaseExpr, K> reversed = new ReversedHashMap<BaseExpr, K>();
                 Where equalsWhere = GroupExpr.getEqualsWhere(GroupExpr.groupMap(group, fullWhere.getExprValues(), reversed));
@@ -212,16 +216,16 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 outerInner = reversed;
             } else
                 outerInner = BaseUtils.reverse(group);*/
-            outerInner = BaseUtils.reverse(group, true);
+            outerInner = group.toRevMap().reverse();
 
             ClassExprWhere result;
             if(getInner().isSelect()) {
                 Expr mainExpr = getInner().getMainExpr();
-                Map<BaseExpr, Expr> valueMap = Collections.<BaseExpr, Expr>singletonMap(QueryExpr.this, mainExpr);
+                ImRevMap<BaseExpr, Expr> valueMap = MapFact.<BaseExpr, Expr>singletonRev(QueryExpr.this, mainExpr);
                 if(getInner().isSelectNotInWhere())
                     result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere.and(mainExpr.getWhere())));
                 else
-                    result = ClassExprWhere.mapBack(BaseUtils.merge(valueMap, outerInner), fullWhere);
+                    result = ClassExprWhere.mapBack(valueMap.addExcl(outerInner), fullWhere);
             } else
                 result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this,(DataClass) getInner().getType()));
             return result.and(getWhere(group).getClassWhere());

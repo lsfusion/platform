@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
 import platform.server.classes.LogicalClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.SQLSession;
 import platform.server.logics.ServerResourceBundle;
 

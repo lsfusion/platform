@@ -2,6 +2,9 @@ package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.ListFact;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -21,10 +24,7 @@ import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static platform.server.logics.PropertyUtils.mapCalcImplement;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
@@ -35,15 +35,8 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         super(property);
     }
 
-    public LCP(CalcProperty<T> property, List<T> listInterfaces) {
+    public LCP(CalcProperty<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
-    }
-
-    public static List<CalcProperty> toPropertyArray(LCP[] properties) {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
-        for (LCP<?> property : properties)
-            result.add(property.property);
-        return result;
     }
 
     public void makeUserLoggable(BaseLogicsModule LM) {
@@ -67,7 +60,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
-        Map<T, DataObject> mapValues = getMapValues(objects);
+        ImMap<T, DataObject> mapValues = getMapValues(objects);
         return property.readClasses(session, mapValues, modifier, env);
     }
 
@@ -88,7 +81,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         change(value, context.getEnv(), objects);
     }
 
-    public void change(Object value, ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
+    public void change(Object value, ExecutionContext context, ImMap<T, DataObject> keys) throws SQLException {
         change(value, context.getEnv(), keys);
     }
 
@@ -96,7 +89,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         change(value, env, getMapValues(objects));
     }
 
-    public void change(Object value, ExecutionEnvironment env, Map<T, DataObject> keys) throws SQLException {
+    public void change(Object value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
@@ -166,65 +159,60 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 
     private <D extends PropertyInterface> void setEventChange(boolean valueChanged, boolean setChanged, LCP<D> valueProperty, int whereNum, Object... params) {
         int intValue = valueProperty.listInterfaces.size();
-        List<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
+        ImList<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
         property.setEventChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapCalcImplement(valueProperty, defImplements.subList(0, intValue)),
-                BaseUtils.<CalcPropertyInterfaceImplement<T>, CalcPropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
-                BaseUtils.<CalcPropertyInterfaceImplement<T>, CalcPropertyMapImplement<?, T>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())));
+                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
+                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())).getCol());
     }
 
     public <D extends PropertyInterface> void setEventChange(Object... params) {
-        List<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
+        ImList<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
         property.setEventChange(listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
-    public List<T> listGroupInterfaces;
+    public ImOrderSet<T> listGroupInterfaces;
     public void setDG(boolean ascending, Object... params) {
         setDG(ascending, false, params);
     }
     public void setDG(boolean ascending, boolean over, Object... params) {
         setDG(ascending, over, readCalcImplements(listGroupInterfaces, params));
     }
-    public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, List<CalcPropertyInterfaceImplement<T>> listImplements) {
-        ((SumGroupProperty<T>)property).setDataChanges(new OrderedMap<CalcPropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),
+    public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+        ((SumGroupProperty<T>)property).setDataChanges(listImplements.subList(1, listImplements.size()).toOrderSet().toOrderMap(ascending),
                 (CalcPropertyMapImplement<?, T>) listImplements.get(0), over);
     }
 
-    public void addOperand(Object... params) {
-        CalcPropertyMapImplement<?, UnionProperty.Interface> operand = (CalcPropertyMapImplement<?, UnionProperty.Interface>) readCalcImplements(listInterfaces, params).get(0);
-        ((ExclusiveUnionProperty)property).addOperand(operand);
+    public void addOperand(boolean hasWhen, Object... params) {
+        ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
+        CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = (CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);
+        if(hasWhen)
+            ((CaseUnionProperty)property).addCase((CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand);
+        else
+            ((CaseUnionProperty)property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand);
     }
 
-    public OrderedMap<T, KeyExpr> getMapKeys() {
-        return BaseUtils.orderMap(property.getMapKeys(), listInterfaces);
+    public ImRevMap<T, KeyExpr> getMapKeys() {
+        return property.getMapKeys();
     }
 
-    public Expr getExpr(Modifier modifier, Expr... exprs) {
-        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapExprs.put(listInterfaces.get(i),exprs[i]);
-        return property.getExpr(mapExprs,modifier);
+    public Expr getExpr(Modifier modifier, final Expr... exprs) {
+        return property.getExpr(getMap(exprs),modifier);
     }
 
-    public Expr getExpr(Expr... exprs) {
-        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapExprs.put(listInterfaces.get(i),exprs[i]);
-        return property.getExpr(mapExprs);
+    public Expr getExpr(final Expr... exprs) {
+        return property.getExpr(getMap(exprs));
     }
 
     public <U> CalcPropertyImplement<T, U> getMapping(U... mapping) {
         return new CalcPropertyImplement<T, U>(property, getMap(mapping));
     }
     public <U extends PropertyInterface> CalcPropertyMapImplement<T, U> getImplement(U... mapping) {
-        return new CalcPropertyMapImplement<T, U>(property, getMap(mapping));
+        return new CalcPropertyMapImplement<T, U>(property, getRevMap(mapping));
     }
 
     public PropertyChange<T> getChange(Expr expr, Where where, KeyExpr... keys) {
-        Map<T, KeyExpr> mapKeys = new HashMap<T, KeyExpr>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapKeys.put(listInterfaces.get(i), keys[i]);
-        return new PropertyChange<T>(mapKeys, expr, where);
+        return new PropertyChange<T>(getRevMap(keys), expr, where);
     }
 
     public void setAutoset(boolean autoset) {
@@ -241,7 +229,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public <A extends PropertyInterface> void setEditAction(String editActionSID, LAP<A> editAction) {
-        property.setEditAction(editActionSID, new ActionPropertyMapImplement<A, T>(editAction.property, editAction.getMap(listInterfaces)));
+        property.setEditAction(editActionSID, new ActionPropertyMapImplement<A, T>(editAction.property, editAction.getRevMap(listInterfaces)));
     }
     
     public LCP<T> getOld() {

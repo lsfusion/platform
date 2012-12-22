@@ -1,25 +1,24 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.logics.property.*;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import static platform.base.BaseUtils.reverse;
 
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
     protected final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
 
-    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, List<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
+    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
         super(sID, caption, innerInterfaces.size());
 
-        this.aspectActionImplement = action.map(reverse(getMapInterfaces(innerInterfaces)));
+        this.aspectActionImplement = action.map(getMapInterfaces(innerInterfaces).reverse());
     }
 
-    public Set<ActionProperty> getDependActions() {
-        return Collections.singleton((ActionProperty)aspectActionImplement.property);
+    public ImSet<ActionProperty> getDependActions() {
+        return SetFact.singleton((ActionProperty) aspectActionImplement.property);
     }
 
     public final FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {

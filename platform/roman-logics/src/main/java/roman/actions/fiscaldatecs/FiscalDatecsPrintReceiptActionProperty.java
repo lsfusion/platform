@@ -1,12 +1,17 @@
 package roman.actions.fiscaldatecs;
 
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -14,7 +19,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -45,17 +49,16 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
             Double sumCash = null;
 
             KeyExpr paymentExpr = new KeyExpr("payment");
-            Map<Object, KeyExpr> paymentKeys = new HashMap<Object, KeyExpr>();
-            paymentKeys.put("payment", paymentExpr);
+            ImRevMap<Object, KeyExpr> paymentKeys = MapFact.singletonRev((Object) "payment", paymentExpr);
 
-            Query<Object, Object> paymentQuery = new Query<Object, Object>(paymentKeys);
-            paymentQuery.properties.put("sumPayment", getLCP("sumPayment").getExpr(context.getModifier(), paymentExpr));
-            paymentQuery.properties.put("paymentMeansPayment", getLCP("paymentMeansPayment").getExpr(context.getModifier(), paymentExpr));
+            QueryBuilder<Object, Object> paymentQuery = new QueryBuilder<Object, Object>(paymentKeys);
+            paymentQuery.addProperty("sumPayment", getLCP("sumPayment").getExpr(context.getModifier(), paymentExpr));
+            paymentQuery.addProperty("paymentMeansPayment", getLCP("paymentMeansPayment").getExpr(context.getModifier(), paymentExpr));
 
-            paymentQuery.and(getLCP("receiptPayment").getExpr(context.getModifier(), paymentQuery.mapKeys.get("payment")).compare(receiptObject.getExpr(), Compare.EQUALS));
+            paymentQuery.and(getLCP("receiptPayment").getExpr(context.getModifier(), paymentQuery.getMapExprs().get("payment")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
-            for (Map<Object, Object> paymentValues : paymentResult.values()) {
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
+            for (ImMap<Object, Object> paymentValues : paymentResult.valueIt()) {
                 DataObject paymentMeansCashObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCash");
                 DataObject paymentMeansCardObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCard");
                 if (paymentMeansCashObject.getValue().equals(paymentValues.get("paymentMeansPayment"))) {
@@ -66,26 +69,25 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
             }
 
             KeyExpr receiptDetailExpr = new KeyExpr("receiptDetail");
-            Map<Object, KeyExpr> receiptDetailKeys = new HashMap<Object, KeyExpr>();
-            receiptDetailKeys.put("receiptDetail", receiptDetailExpr);
+            ImRevMap<Object, KeyExpr> receiptDetailKeys = MapFact.singletonRev((Object) "receiptDetail", receiptDetailExpr);
 
-            Query<Object, Object> receiptDetailQuery = new Query<Object, Object>(receiptDetailKeys);
-            receiptDetailQuery.properties.put("nameSkuReceiptDetail", getLCP("nameSkuReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("quantityReceiptSaleDetail", getLCP("quantityReceiptSaleDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("quantityReceiptReturnDetail", getLCP("quantityReceiptReturnDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("priceReceiptDetail", getLCP("priceReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("idBarcodeReceiptDetail", getLCP("idBarcodeReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("sumReceiptDetail", getLCP("sumReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("discountPercentReceiptSaleDetail", getLCP("discountPercentReceiptSaleDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("discountSumReceiptDetail", getLCP("discountSumReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
-            receiptDetailQuery.properties.put("numberVATReceiptDetail", getLCP("numberVATReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            QueryBuilder<Object, Object> receiptDetailQuery = new QueryBuilder<Object, Object>(receiptDetailKeys);
+            receiptDetailQuery.addProperty("nameSkuReceiptDetail", getLCP("nameSkuReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("quantityReceiptSaleDetail", getLCP("quantityReceiptSaleDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("quantityReceiptReturnDetail", getLCP("quantityReceiptReturnDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("priceReceiptDetail", getLCP("priceReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("idBarcodeReceiptDetail", getLCP("idBarcodeReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("sumReceiptDetail", getLCP("sumReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("discountPercentReceiptSaleDetail", getLCP("discountPercentReceiptSaleDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("discountSumReceiptDetail", getLCP("discountSumReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
+            receiptDetailQuery.addProperty("numberVATReceiptDetail", getLCP("numberVATReceiptDetail").getExpr(context.getModifier(), receiptDetailExpr));
 
-            receiptDetailQuery.and(getLCP("receiptReceiptDetail").getExpr(context.getModifier(), receiptDetailQuery.mapKeys.get("receiptDetail")).compare(receiptObject.getExpr(), Compare.EQUALS));
+            receiptDetailQuery.and(getLCP("receiptReceiptDetail").getExpr(context.getModifier(), receiptDetailQuery.getMapExprs().get("receiptDetail")).compare(receiptObject.getExpr(), Compare.EQUALS));
 
-            OrderedMap<Map<Object, Object>, Map<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(context.getSession().sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = receiptDetailQuery.execute(context.getSession().sql);
             List<ReceiptItem> receiptSaleItemList = new ArrayList<ReceiptItem>();
             List<ReceiptItem> receiptReturnItemList = new ArrayList<ReceiptItem>();
-            for (Map<Object, Object> receiptDetailValues : receiptDetailResult.values()) {
+            for (ImMap<Object, Object> receiptDetailValues : receiptDetailResult.valueIt()) {
                 Double price = (Double) receiptDetailValues.get("priceReceiptDetail");
                 Double quantitySale = (Double) receiptDetailValues.get("quantityReceiptSaleDetail");
                 Double quantityReturn = (Double) receiptDetailValues.get("quantityReceiptReturnDetail");

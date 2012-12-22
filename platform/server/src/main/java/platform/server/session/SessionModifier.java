@@ -1,9 +1,14 @@
 package platform.server.session;
 
-import platform.base.EmptyFunctionSet;
+import platform.base.BaseUtils;
 import platform.base.FunctionSet;
-import platform.base.QuickSet;
 import platform.base.WeakIdentityHashSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
@@ -13,8 +18,8 @@ import platform.server.logics.property.OverrideSessionModifier;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+
+import static platform.base.BaseUtils.merge;
 
 // поддерживает hint'ы, есть информация о сессии
 public abstract class SessionModifier implements Modifier {
@@ -34,21 +39,21 @@ public abstract class SessionModifier implements Modifier {
             eventDataChange(property);
     }
 
-    private QuickSet<CalcProperty> changed = new QuickSet<CalcProperty>();
+    private MSet<CalcProperty> mChanged = SetFact.mSet();
 
     protected void eventDataChange(CalcProperty property) {
-        changed.add(property);
+        mChanged.add(property);
 
         // если increment использовал property drop'аем hint
         try {
-            for(CalcProperty<?> incrementProperty : new QuickSet<CalcProperty>(increment.getProperties())) {
+            for(CalcProperty<?> incrementProperty : increment.getProperties()) {
                 if(CalcProperty.depends(incrementProperty, property)) {
                     increment.remove(incrementProperty, getSQL());
                     eventSourceChange(incrementProperty);
                 }
             }
-            QuickSet<CalcProperty> removedNoUpdate = new QuickSet<CalcProperty>();
-            for(CalcProperty<?> incrementProperty : noUpdate)
+            MAddSet<CalcProperty> removedNoUpdate = SetFact.mAddSet();
+            for(CalcProperty<?> incrementProperty : noUpdate.it())
                 if(CalcProperty.depends(incrementProperty, property))
                     eventNoUpdate(incrementProperty);
                 else
@@ -63,14 +68,14 @@ public abstract class SessionModifier implements Modifier {
     }
 
     protected void eventNoUpdate(CalcProperty property) {
-        changed.add(property);
+        mChanged.add(property);
 
         for(OverrideSessionModifier view : views)
             view.eventDataChange(property);
     }
 
     protected void eventSourceChange(CalcProperty property) {
-        changed.add(property);
+        mChanged.add(property);
 
         for(OverrideSessionModifier view : views)
             view.eventSourceChange(property);
@@ -86,27 +91,31 @@ public abstract class SessionModifier implements Modifier {
     protected PropertyChanges propertyChanges = PropertyChanges.EMPTY;
     @ManualLazy
     public PropertyChanges getPropertyChanges() {
-        if(changed.size>0) {
-            Map<CalcProperty, ModifyChange> replace = new HashMap<CalcProperty, ModifyChange>();
-            for(int i=0;i<changed.size;i++) {
-                CalcProperty property = changed.get(i);
-                replace.put(property, getModifyChange(property));
-            }
+        ImSet<CalcProperty> changed = mChanged.immutable();
+        if(changed.size()>0) {
+            ImMap<CalcProperty, ModifyChange> replace = changed.mapValues(new GetValue<ModifyChange, CalcProperty>() {
+                public ModifyChange getMapValue(CalcProperty value) {
+                    return getModifyChange(value);
+                }});
 
 //            if(!calculatePropertyChanges().equals(propertyChanges.replace(replace)))
-//                changed = changed;
+//                mChanged = mChanged;
 
             propertyChanges = propertyChanges.replace(replace);
-            changed = new QuickSet<CalcProperty>();
+            mChanged = SetFact.mSet();
         }
         return propertyChanges;
     }
 
-    public QuickSet<CalcProperty> getHintProps() {
-        return noUpdate.merge(increment.getProperties());
+    public ImSet<CalcProperty> getHintProps() {
+        return noUpdate.immutableCopy().merge(increment.getProperties());
+    }
+    
+    public FunctionSet<CalcProperty> getUsedHints() { // для кэширования
+        return merge(noUpdate.immutableCopy(), increment.getProperties(), readProperty != null ? SetFact.singleton(readProperty) : SetFact.<CalcProperty>EMPTY());
     }
 
-    CalcProperty readProperty;
+    private CalcProperty readProperty;
 
     // hint'ы хранит
     private TableProps increment = new TableProps();
@@ -114,8 +123,8 @@ public abstract class SessionModifier implements Modifier {
     public void clearHints(SQLSession session) throws SQLException {
         eventSourceChanges(increment.getProperties());
         increment.clear(session);
-        eventDataChanges(noUpdate);
-        noUpdate = new QuickSet<CalcProperty>();
+        eventDataChanges(noUpdate.it());
+        noUpdate = SetFact.mAddSet();
     }
 
     public abstract SQLSession getSQL();
@@ -136,6 +145,18 @@ public abstract class SessionModifier implements Modifier {
         return false;
     }
 
+    public boolean allowNoUpdate(CalcProperty property) {
+        return !noUpdate.contains(property) && !forceDisableNoUpdate(property);
+    }
+
+    public boolean forceNoUpdate(CalcProperty property) {
+        return false;
+    }
+
+    public boolean forceDisableNoUpdate(CalcProperty property) {
+        return true;
+    }
+
     public void addHintIncrement(CalcProperty property) {
         assert allowHintIncrement(property);
 
@@ -150,19 +171,7 @@ public abstract class SessionModifier implements Modifier {
         eventSourceChange(property);
     }
 
-    public boolean allowNoUpdate(CalcProperty property) {
-        return !noUpdate.contains(property) && !forceDisableNoUpdate(property);
-    }
-
-    public boolean forceNoUpdate(CalcProperty property) {
-        return false;
-    }
-
-    public boolean forceDisableNoUpdate(CalcProperty property) {
-        return true;
-    }
-
-    private QuickSet<CalcProperty> noUpdate = new QuickSet<CalcProperty>();
+    private MAddSet<CalcProperty> noUpdate = SetFact.mAddSet();
     public void addNoUpdate(CalcProperty property) {
         assert allowNoUpdate(property);
 
@@ -172,7 +181,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property) {
-        return getModifyChange(property, EmptyFunctionSet.<CalcProperty>instance());
+        return getModifyChange(property, SetFact.<CalcProperty>EMPTY());
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> disableHint) {
@@ -188,11 +197,11 @@ public abstract class SessionModifier implements Modifier {
 
     protected abstract <P extends PropertyInterface> ModifyChange<P> calculateModifyChange(CalcProperty<P> property, FunctionSet<CalcProperty> overrided);
 
-    public QuickSet<CalcProperty> getProperties() {
+    public ImSet<CalcProperty> getProperties() {
         return getHintProps().merge(calculateProperties());
     }
 
-    public abstract QuickSet<CalcProperty> calculateProperties();
+    public abstract ImSet<CalcProperty> calculateProperties();
 
     public PropertyChanges calculatePropertyChanges() {
         PropertyChanges result = PropertyChanges.EMPTY;

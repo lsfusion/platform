@@ -3,6 +3,7 @@ package platform.server.logics.scripted;
 import com.google.common.base.Throwables;
 import org.antlr.runtime.RecognitionException;
 import platform.base.BaseUtils;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.MessageClientAction;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -27,19 +28,19 @@ import java.util.concurrent.atomic.AtomicLong;
 public class EvalActionProperty<P extends PropertyInterface> extends SystemActionProperty {
     private final LCP<P> source;
     private final BusinessLogics<?> BL;
-    private final Map<P, ClassPropertyInterface> mapSource;
+    private final ImMap<P, ClassPropertyInterface> mapSource;
     private static AtomicLong counter = new AtomicLong(0);
 
     public EvalActionProperty(String sID, String caption, BusinessLogics<?> BL, LCP<P> source) {
         super(sID, caption, source.getInterfaceClasses());
-        mapSource = BaseUtils.buildMap(source.listInterfaces, interfaces);
+        mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
         this.BL = BL;
     }
 
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        Map<P, DataObject> sourceToData = BaseUtils.join(mapSource, context.getKeys());
-        return (String) source.read(context, BaseUtils.mapList(source.listInterfaces, sourceToData).toArray(new DataObject[interfaces.size()]));
+        ImMap<P, DataObject> sourceToData = mapSource.join(context.getKeys());
+        return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new DataObject[interfaces.size()]));
     }
 
     private String getUniqueName() {

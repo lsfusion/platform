@@ -2,10 +2,16 @@ package roman;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.data.Modify;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.Type;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -120,27 +126,27 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         //читаем данные из прайса по импортированным из инвойса штрихкодам
         Type keyType = BL.RomanLM.barcode.property.getType();
-        SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, new ArrayList<ResultField>(), null);
+        SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, SetFact.<ResultField>EMPTYORDER(), null);
 
         for (int i = 0; i < invoiceTable.rowsCnt(); i++) {
             String barcodeStr = transformBarcode(invoiceTable.getCellString(i, invoiceFields.indexOf(ResultField.BARCODE)));
-            table.modifyRecord(sqlSession, new DataObject(barcodeStr), new HashMap<ResultField, ObjectValue>(), Modify.MODIFY);
+            table.modifyRecord(sqlSession, new DataObject(barcodeStr), MapFact.<ResultField, ObjectValue>EMPTY(), Modify.MODIFY);
         }
 
-        Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.RomanLM.barcodePricat.getMapKeys();
-        Query<PropertyInterface, ResultField> query = new Query<PropertyInterface, ResultField>(mapKeys);
+        ImRevMap<PropertyInterface, KeyExpr> mapKeys = (ImRevMap<PropertyInterface,KeyExpr>) BL.RomanLM.barcodePricat.getMapKeys();
+        QueryBuilder<PropertyInterface, ResultField> query = new QueryBuilder<PropertyInterface, ResultField>(mapKeys);
         query.and(table.join(BL.RomanLM.barcodePricat.property.getExpr(mapKeys)).getWhere());
 
         for (ResultField propertyName : propertyMap.keySet()) {
-            CalcPropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));
-            query.properties.put(propertyName, ((LCP<PropertyInterface>)propertyMap.get(propertyName)).property.getExpr(propertyImplement.mapping));
+            CalcPropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(mapKeys.singleValue());
+            query.addProperty(propertyName, ((LCP<PropertyInterface>) propertyMap.get(propertyName)).property.getExpr(propertyImplement.mapping));
         }
 
-        OrderedMap<Map<PropertyInterface, Object>, Map<ResultField, Object>> result = query.execute(sqlSession);
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<ResultField, Object>> result = query.execute(sqlSession);
         Map<String, Map<ResultField, Object>> pricatResult = new HashMap<String, Map<ResultField, Object>>();
-        for (Map<PropertyInterface, Object> key : result.keySet()) {
-            Map<ResultField, Object> value = result.get(key);
-            pricatResult.put((String) value.get(ResultField.BARCODE), value);
+        for (ImMap<PropertyInterface, Object> key : result.keyIt()) {
+            ImMap<ResultField, Object> value = result.get(key);
+            pricatResult.put((String) value.get(ResultField.BARCODE), value.toJavaMap());
         }
         return pricatResult;
     }

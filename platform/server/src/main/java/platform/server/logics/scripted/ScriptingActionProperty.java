@@ -4,7 +4,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;

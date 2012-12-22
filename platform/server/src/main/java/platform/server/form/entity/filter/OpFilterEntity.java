@@ -1,9 +1,6 @@
 package platform.server.form.entity.filter;
 
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.InstanceFactory;
-import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.filter.OrFilterInstance;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;

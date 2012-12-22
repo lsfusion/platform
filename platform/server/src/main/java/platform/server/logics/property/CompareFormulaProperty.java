@@ -1,5 +1,9 @@
 package platform.server.logics.property;
 
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.Compare;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
@@ -7,10 +11,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.PropertyChanges;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
@@ -36,14 +37,14 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         }
     }
 
-    static List<Interface> getInterfaces(int paramCount) {
-        List<Interface> interfaces = new ArrayList<Interface>();
-        for(int i=0;i<paramCount;i++)
-            interfaces.add(new Interface(i));
-        return interfaces;
+    static ImOrderSet<Interface> getInterfaces(int paramCount) {
+        return SetFact.toOrderExclSet(paramCount, new GetIndex<Interface>() {
+            public Interface getMapValue(int i) {
+                return new Interface(i);
+            }});
     }
 
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

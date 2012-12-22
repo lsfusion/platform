@@ -3,16 +3,19 @@ package skolkovo.actions;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
+import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import skolkovo.SkolkovoLogicsModule;
@@ -72,19 +75,19 @@ public class ExportProjectDocumentsActionProperty extends UserActionProperty {
                 putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)" ,true);
 
                 LCP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
-                Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
-                KeyExpr key = BaseUtils.singleValue(keys);
-                Query<Object, Object> query = new Query<Object, Object>(keys);
-                query.properties.put("fullNameNonRussianSpecialist", LM.fullNameNonRussianSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("fileForeignResumeNonRussianSpecialist", LM.fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("fileNativeResumeNonRussianSpecialist", LM.fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("filePassportNonRussianSpecialist", LM.filePassportNonRussianSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("fileStatementNonRussianSpecialist", LM.fileStatementNonRussianSpecialist.getExpr(context.getModifier(), key));
+                ImRevMap<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
+                KeyExpr key = keys.singleValue();
+                QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+                query.addProperty("fullNameNonRussianSpecialist", LM.fullNameNonRussianSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("fileForeignResumeNonRussianSpecialist", LM.fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("fileNativeResumeNonRussianSpecialist", LM.fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("filePassportNonRussianSpecialist", LM.filePassportNonRussianSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("fileStatementNonRussianSpecialist", LM.fileStatementNonRussianSpecialist.getExpr(context.getModifier(), key));
                 query.and(isNonRussianSpecialist.getExpr(key).getWhere());
                 query.and(LM.projectNonRussianSpecialist.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
 
-                for (Map<Object, Object> values : result.values()) {
+                for (ImMap<Object, Object> values : result.valueIt()) {
                     String fullName = values.get("fullNameNonRussianSpecialist").toString().trim().replace("/", "-").replace("\\", "-");
                     putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), fullName + " resume foreign" ,true);
                     putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), fullName + " resume native" ,true);
@@ -94,33 +97,33 @@ public class ExportProjectDocumentsActionProperty extends UserActionProperty {
 
                 LCP isAcademic = LM.is(LM.academic);
                 keys = isAcademic.getMapKeys();
-                key = BaseUtils.singleValue(keys);
-                query = new Query<Object, Object>(keys);
-                query.properties.put("fullNameAcademic", LM.fullNameAcademic.getExpr(context.getModifier(), key));
-                query.properties.put("fileDocumentConfirmingAcademic", LM.fileDocumentConfirmingAcademic.getExpr(context.getModifier(), key));
-                query.properties.put("fileDocumentEmploymentAcademic", LM.fileDocumentEmploymentAcademic.getExpr(context.getModifier(), key));
+                key = keys.singleValue();
+                query = new QueryBuilder<Object, Object>(keys);
+                query.addProperty("fullNameAcademic", LM.fullNameAcademic.getExpr(context.getModifier(), key));
+                query.addProperty("fileDocumentConfirmingAcademic", LM.fileDocumentConfirmingAcademic.getExpr(context.getModifier(), key));
+                query.addProperty("fileDocumentEmploymentAcademic", LM.fileDocumentEmploymentAcademic.getExpr(context.getModifier(), key));
                 query.and(isAcademic.getExpr(key).getWhere());
                 query.and(LM.projectAcademic.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
                 result = query.execute(session.sql);
 
-                for (Map<Object, Object> values : result.values()) {
+                for (ImMap<Object, Object> values : result.valueIt()) {
                     putFileIfNotNull(files, values.get("fileDocumentConfirmingAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл трудового договора" ,true);
                     putFileIfNotNull(files, values.get("fileDocumentEmploymentAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл заявления специалиста" ,true);
                 }
             } else {
 
                 LCP isSpecialist = LM.is(LM.specialist);
-                Map<Object, KeyExpr> keys = isSpecialist.getMapKeys();
-                KeyExpr key = BaseUtils.singleValue(keys);
-                Query<Object, Object> query = new Query<Object, Object>(keys);
-                query.properties.put("nameNativeSpecialist", LM.nameNativeSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("filePassportSpecialist", LM.filePassportSpecialist.getExpr(context.getModifier(), key));
-                query.properties.put("fileStatementSpecialist", LM.fileStatementSpecialist.getExpr(context.getModifier(), key));
+                ImRevMap<Object, KeyExpr> keys = isSpecialist.getMapKeys();
+                KeyExpr key = keys.singleValue();
+                QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+                query.addProperty("nameNativeSpecialist", LM.nameNativeSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("filePassportSpecialist", LM.filePassportSpecialist.getExpr(context.getModifier(), key));
+                query.addProperty("fileStatementSpecialist", LM.fileStatementSpecialist.getExpr(context.getModifier(), key));
                 query.and(isSpecialist.getExpr(key).getWhere());
                 query.and(LM.projectSpecialist.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+                ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
 
-                for (Map<Object, Object> values : result.values()) {
+                for (ImMap<Object, Object> values : result.valueIt()) {
                     putFileIfNotNull(files, values.get("filePassportSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл документа, удостоверяющего личность" ,true);
                     putFileIfNotNull(files, values.get("fileStatementSpecialist"), values.get("nameNativeSpecialist").toString().trim() + " Файл заявления участника команды" ,true);
                 }

@@ -1,6 +1,8 @@
 package platform.server.form.view;
 
 import platform.base.Pair;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
@@ -132,7 +134,7 @@ public class PropertyDrawView extends ComponentView {
             reportField.pattern = ((SimpleDateFormat) format).toPattern();
         }
 
-        reportField.hasColumnGroupObjects = !entity.columnGroupObjects.isEmpty();
+        reportField.hasColumnGroupObjects = !entity.getColumnGroupObjects().isEmpty();
         reportField.hasCaptionProperty = (entity.propertyCaption != null);
         reportField.hasFooterProperty = (entity.propertyFooter != null);
 
@@ -225,8 +227,9 @@ public class PropertyDrawView extends ComponentView {
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
                 SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));
 
-        outStream.writeInt(entity.columnGroupObjects.size());
-        for (GroupObjectEntity groupEntity : entity.columnGroupObjects) {
+        ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
+        outStream.writeInt(columnGroupObjects.size());
+        for (GroupObjectEntity groupEntity : columnGroupObjects) {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
@@ -237,8 +240,8 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
 
-        Map<? extends PropertyInterface, ValueClass> interfaceClasses = entity.propertyObject.property.getInterfaceClasses(true);
-        Map<? extends PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = entity.propertyObject.mapping;
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(true);
+        ImMap<PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = (ImMap<PropertyInterface, PropertyObjectInterfaceEntity>) entity.propertyObject.mapping;
         outStream.writeInt(entity.propertyObject.property.interfaces.size());
         for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
             pool.writeString(outStream, interfaceEntities.get(iFace).toString());

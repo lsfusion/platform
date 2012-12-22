@@ -1,6 +1,9 @@
 package platform.server.form.instance.filter;
 
 import platform.base.FunctionSet;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.form.instance.FormInstance;
@@ -12,8 +15,6 @@ import platform.server.session.Modifier;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Set;
 
 public class NotFilterInstance extends FilterInstance {
 
@@ -28,11 +29,11 @@ public class NotFilterInstance extends FilterInstance {
         filter = deserialize(inStream, form);
     }
 
-    public boolean classUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return filter.classUpdated(gridGroups);
     }
 
-    public boolean objectUpdated(Set<GroupObjectInstance> gridGroups) {
+    public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {
         return filter.objectUpdated(gridGroups);
     }
 
@@ -40,7 +41,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.dataUpdated(changedProps);
     }
 
-    public void fillProperties(Set<CalcProperty> properties) {
+    public void fillProperties(MSet<CalcProperty> properties) {
         filter.fillProperties(properties);
     }
 
@@ -48,7 +49,7 @@ public class NotFilterInstance extends FilterInstance {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         return filter.getWhere(mapKeys, modifier).not();
     }
 

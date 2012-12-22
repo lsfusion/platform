@@ -3,6 +3,7 @@ package platform.server.data.query;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.data.expr.query.QueryJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
@@ -11,9 +12,6 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 
@@ -26,10 +24,6 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
 
     public InnerJoins(InnerJoin[] wheres) {
         super(wheres);
-    }
-
-    public InnerJoins(Collection<InnerJoin> wheres) {
-        super(wheres.toArray(new InnerJoin[wheres.size()]));
     }
 
     protected InnerJoins createThis(InnerJoin[] wheres) {
@@ -55,11 +49,11 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return add(joins);
     }
 
-    public Map<InnerJoin, Where> andUpWheres(Map<InnerJoin, Where> up1, Map<InnerJoin, Where> up2) {
+    public ImMap<InnerJoin, Where> andUpWheres(ImMap<InnerJoin, Where> up1, ImMap<InnerJoin, Where> up2) {
         return WhereJoins.andUpWheres(wheres, up1, up2);
     }
 
-    public WhereJoins removeJoin(QueryJoin removeJoin, Map<WhereJoin, Where> upWheres, Result<Map<WhereJoin, Where>> resultWheres) {
+    public WhereJoins removeJoin(QueryJoin removeJoin, ImMap<WhereJoin, Where> upWheres, Result<ImMap<WhereJoin, Where>> resultWheres) {
         return WhereJoins.removeJoin(removeJoin, wheres, upWheres, resultWheres);
     }
 

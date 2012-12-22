@@ -1,9 +1,8 @@
 package platform.server.data.translator;
 
-import platform.base.OrderedMap;
-import platform.base.QuickMap;
-import platform.base.QuickSet;
-import platform.server.caches.hash.HashKeys;
+import platform.base.col.interfaces.immutable.*;
+import platform.server.caches.OuterContext;
+import platform.server.caches.TranslateContext;
 import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -11,14 +10,14 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.logics.DataObject;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface MapTranslate extends MapObject {
 
     KeyExpr translate(KeyExpr expr);
     <V extends Value> V translate(V expr);
+
+    MapTranslate filterValues(ImSet<? extends Value> values);
 
     // аналог mapKeys в HashValues - оставляет только трансляцию выражений
     MapValuesTranslate mapValues();
@@ -26,51 +25,47 @@ public interface MapTranslate extends MapObject {
     MapTranslate mapValues(MapValuesTranslate translate);
 
     // для кэша classWhere на самом деле надо
-    <K> Map<K, VariableClassExpr> translateVariable(Map<K, ? extends VariableClassExpr> map);
+    <K> ImRevMap<K, VariableClassExpr> translateVariable(ImRevMap<K, ? extends VariableClassExpr> map);
 
-    <K> Map<K, BaseExpr> translateDirect(Map<K, ? extends BaseExpr> map);
+    <K> ImMap<K, BaseExpr> translateDirect(ImMap<K, ? extends BaseExpr> map);
 
-    <K> Map<K, KeyExpr> translateKey(Map<K, KeyExpr> map);
+    <K> ImRevMap<K, KeyExpr> translateKey(ImRevMap<K, KeyExpr> map);
 
-    <K> Map<BaseExpr,K> translateKeys(Map<? extends BaseExpr, K> map);
+    <K> ImMap<BaseExpr, K> translateKeys(ImMap<? extends BaseExpr, K> map);
 
-    <K> Map<Expr,K> translateExprKeys(Map<? extends Expr, K> map);
+    <K, E extends Expr> ImMap<E, K> translateExprKeys(ImMap<E, K> map);
 
-    <K> Map<KeyExpr,K> translateMapKeys(Map<KeyExpr, K> map);
+    <K extends TranslateContext, V extends TranslateContext> ImMap<K, V> translateMap(ImMap<? extends K, ? extends V> map);
 
-    <K extends BaseExpr> Map<KeyExpr,K> translateMap(Map<KeyExpr, K> map);
+    <K extends BaseExpr> ImRevMap<KeyExpr, K> translateRevMap(ImRevMap<KeyExpr, K> map); // по аналогии с верхним
 
-    <K> QuickMap<KeyExpr,K> translateMapKeys(QuickMap<KeyExpr, K> map);
+    <K> ImMap<KeyExpr,K> translateMapKeys(ImMap<KeyExpr, K> map);
 
-    <K> Map<K, Expr> translate(Map<K, ? extends Expr> map);
+    <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map);
 
-    <K> OrderedMap<Expr, K> translate(OrderedMap<? extends Expr, K> map);
+    <K> ImOrderMap<Expr, K> translate(ImOrderMap<? extends Expr, K> map);
 
-    List<BaseExpr> translateDirect(List<BaseExpr> list);
+    ImList<BaseExpr> translateDirect(ImList<BaseExpr> list);
 
-    Set<BaseExpr> translateDirect(Set<BaseExpr> set);
+    ImSet<BaseExpr> translateDirect(ImSet<BaseExpr> set);
 
-    Set<KeyExpr> translateKeys(Set<KeyExpr> set);
+    ImSet<KeyExpr> translateKeys(ImSet<KeyExpr> set);
 
-    QuickSet<KeyExpr> translateKeys(QuickSet<KeyExpr> set);
+    ImSet<VariableClassExpr> translateVariable(ImSet<VariableClassExpr> set);
 
-    QuickSet<VariableClassExpr> translateVariable(QuickSet<VariableClassExpr> set);
+    <V extends Value> ImSet<V> translateValues(ImSet<V> set);
 
-    <V extends Value> Set<V> translateValues(Set<V> set);
+    <K extends Value, V> ImMap<K, V> translateValuesMapKeys(ImMap<K, V> map);
 
-    <V extends Value> QuickSet<V> translateValues(QuickSet<V> set);
-    
-    <K extends Value, V> QuickMap<K,V> translateValuesMapKeys(QuickMap<K, V> map);
+    <K> ImMap<K, DataObject> translateDataObjects(ImMap<K, DataObject> map);
 
-    <K> Map<K, DataObject> translateDataObjects(Map<K, DataObject> map);
+    ImList<Expr> translate(ImList<Expr> list);
 
-    List<Expr> translate(List<Expr> list);
-
-    Set<Expr> translate(Set<Expr> set);
+    ImSet<Expr> translate(ImSet<Expr> set);
 
     MapTranslate reverseMap();
 
-    boolean identityKeysValues(QuickSet<KeyExpr> keys, QuickSet<? extends Value> values);
-    boolean identityKeys(QuickSet<KeyExpr> keys);
-    boolean identityValues(QuickSet<? extends Value> values);
+    boolean identityKeysValues(ImSet<KeyExpr> keys, ImSet<? extends Value> values);
+    boolean identityKeys(ImSet<KeyExpr> keys);
+    boolean identityValues(ImSet<? extends Value> values);
 }

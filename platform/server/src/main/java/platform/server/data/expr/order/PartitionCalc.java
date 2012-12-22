@@ -1,58 +1,63 @@
 package platform.server.data.expr.order;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.base.col.ListFact;
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclMap;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
-
-import java.util.*;
 
 public class PartitionCalc extends PartitionToken {
 
     public static class Aggr {
         public String func;
 
-        public List<PartitionToken> exprs;
-        public OrderedMap<PartitionToken, Boolean> orders;
-        public Set<PartitionToken> partitions;
+        public ImList<PartitionToken> exprs;
+        public ImOrderMap<PartitionToken, Boolean> orders;
+        public ImSet<PartitionToken> partitions;
 
-        public Aggr(String func, List<PartitionToken> exprs, OrderedMap<PartitionToken, Boolean> orders, Set<PartitionToken> partitions) {
+        public Aggr(String func, ImList<PartitionToken> exprs, ImOrderMap<PartitionToken, Boolean> orders, ImSet<PartitionToken> partitions) {
             this.func = func;
             this.exprs = exprs;
             this.orders = orders;
             this.partitions = partitions;
         }
 
-        public Aggr(String func, List<PartitionToken> exprs, Set<PartitionToken> partitions) {
-            this(func, exprs, new OrderedMap<PartitionToken, Boolean>(), partitions);
+        public Aggr(String func, ImList<PartitionToken> exprs, ImSet<PartitionToken> partitions) {
+            this(func, exprs, MapFact.<PartitionToken, Boolean>EMPTYORDER(), partitions);
         }
 
-        public Aggr(String func, Set<PartitionToken> partitions) {
-            this(func, new ArrayList<PartitionToken>(), partitions);
+        public Aggr(String func, ImSet<PartitionToken> partitions) {
+            this(func, ListFact.<PartitionToken>EMPTY(), partitions);
         }
 
-        public Aggr(String func, OrderedMap<PartitionToken, Boolean> orders, Set<PartitionToken> partitions) {
-            this(func, new ArrayList<PartitionToken>(), orders, partitions);
+        public Aggr(String func, ImOrderMap<PartitionToken, Boolean> orders, ImSet<PartitionToken> partitions) {
+            this(func, ListFact.<PartitionToken>EMPTY(), orders, partitions);
         }
 
-        public String getSource(Map<PartitionToken, String> sources, SQLSyntax syntax) {
-            return "(" + func + "(" + BaseUtils.toString(BaseUtils.mapList(exprs, sources), ",") + ") OVER ("+BaseUtils.toString(" ",
-                    BaseUtils.clause("PARTITION BY ",BaseUtils.toString(BaseUtils.filterKeys(sources, partitions).values(),",")) +
-                    BaseUtils.clause("ORDER BY ", Query.stringOrder(BaseUtils.mapOrder(orders, sources), new HashSet<String>(), syntax))) + ")" + ")";
+        public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {
+            return "(" + func + "(" + exprs.map(sources).toString(",") + ") OVER ("+BaseUtils.toString(" ",
+                    BaseUtils.clause("PARTITION BY ",partitions.map(sources).toString(",")) +
+                    BaseUtils.clause("ORDER BY ", Query.stringOrder(orders.map(sources), SetFact.<String>EMPTY(), syntax))) + ")" + ")";
         }
     }
 
     public final String formula;
-    public final Map<String, PartitionToken> params;
-    public final Map<String, Aggr> aggrParams;
+    public final ImMap<String, PartitionToken> params;
+    public final ImMap<String, Aggr> aggrParams;
 
     @Override
-    public String getSource(Map<PartitionToken, String> sources, SQLSyntax syntax) {
+    public String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax) {
         String sourceString = formula;
-        for(Map.Entry<String, PartitionToken> prm : params.entrySet())
-            sourceString = sourceString.replace(prm.getKey(), sources.get(prm.getValue()));
-        for(Map.Entry<String, Aggr> prm : aggrParams.entrySet())
-            sourceString = sourceString.replace(prm.getKey(), prm.getValue().getSource(sources, syntax));
+        for(int i=0,size=params.size();i<size;i++)
+            sourceString = sourceString.replace(params.getKey(i), sources.get(params.getValue(i)));
+        for(int i=0,size=aggrParams.size();i<size;i++)
+            sourceString = sourceString.replace(aggrParams.getKey(i), aggrParams.getValue(i).getSource(sources, syntax));
          return "("+sourceString+")";
     }
 
@@ -63,23 +68,25 @@ public class PartitionCalc extends PartitionToken {
     public PartitionCalc(String formula, PartitionToken[] listParams, Aggr... listAggrParams) {
         this.formula = formula;
 
-        params = new HashMap<String, PartitionToken>();
+        MExclMap<String, PartitionToken> mParams = MapFact.mExclMap(listParams.length); // массивы
         for(int i=0;i<listParams.length;i++)
-            params.put("prm"+(i+1), listParams[i]);
+            mParams.exclAdd("prm" + (i + 1), listParams[i]);
+        params = mParams.immutable();
 
-        aggrParams = new HashMap<String, Aggr>();
+        MExclMap<String, Aggr> mAggrParams = MapFact.mExclMap(listAggrParams.length); // массивы
         for(int i=0;i<listAggrParams.length;i++)
-            aggrParams.put("prm"+(listParams.length+i+1), listAggrParams[i]);
+            mAggrParams.exclAdd("prm" + (listParams.length + i + 1), listAggrParams[i]);
+        aggrParams = mAggrParams.immutable();
 
-        for(PartitionToken param : params.values())
-            param.next.add(this);
-        for(Aggr aggrParam : aggrParams.values()) {
+        for(PartitionToken token : params.valueIt())
+            token.addNext(this);
+        for(Aggr aggrParam : aggrParams.valueIt()) {
             for(PartitionToken token : aggrParam.exprs)
-                token.next.add(this);
-            for(PartitionToken token : aggrParam.orders.keySet())
-                token.next.add(this);
+                token.addNext(this);
+            for(PartitionToken token : aggrParam.orders.keyIt())
+                token.addNext(this);
             for(PartitionToken token : aggrParam.partitions)
-                token.next.add(this);
+                token.addNext(this);
         }
     }
 
@@ -89,7 +96,7 @@ public class PartitionCalc extends PartitionToken {
 
     public int getLevel() {
         int level = 0;
-        for(PartitionToken param : params.values())
+        for(PartitionToken param : params.valueIt())
             level = BaseUtils.max(level, param.getLevel());
         return level + 1;
     }

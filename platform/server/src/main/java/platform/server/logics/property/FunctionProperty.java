@@ -1,25 +1,24 @@
 package platform.server.logics.property;
 
-import platform.base.QuickSet;
+import platform.base.col.interfaces.immutable.ImCol;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.session.StructChanges;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    protected FunctionProperty(String sID, String caption, List<T> interfaces) {
+    protected FunctionProperty(String sID, String caption, ImOrderSet<T> interfaces) {
         super(sID, caption, interfaces);
     }
 
-    public static void fillDepends(Set<CalcProperty> depends, Collection<? extends CalcPropertyInterfaceImplement> propImplements) {
+    public static void fillDepends(MSet<CalcProperty> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {
         for(CalcPropertyInterfaceImplement propImplement : propImplements)
             propImplement.mapFillDepends(depends);
     }
 
-    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.getUsedChanges(getDepends(), cascade);
     }
 }

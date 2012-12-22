@@ -1,7 +1,13 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.base.QuickSet;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
@@ -10,9 +16,10 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.*;
-
-import java.util.*;
+import platform.server.session.DataChanges;
+import platform.server.session.PropertyChange;
+import platform.server.session.PropertyChanges;
+import platform.server.session.StructChanges;
 
 public class ShiftChangeProperty<P extends PropertyInterface, R extends PropertyInterface> extends ChangeProperty<ShiftChangeProperty.Interface<P>> {
 
@@ -33,11 +40,12 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     final CalcProperty<P> property;
     final CalcPropertyMapImplement<R,P> reverse;
 
-    private static <P extends PropertyInterface> List<Interface<P>> getInterfaces(CalcProperty<P> property) {
-        List<Interface<P>> result = new ArrayList<Interface<P>>();
-        for(P propertyInterface : property.interfaces)
-            result.add(new Interface<P>(result.size(),propertyInterface));
-        return result;
+    private static <P extends PropertyInterface> ImOrderSet<Interface<P>> getInterfaces(CalcProperty<P> property) {
+        return property.getOrderInterfaces().mapOrderSetValues(new GetIndexValue<Interface<P>, P>() {
+            public Interface<P> getMapValue(int i, P value) {
+                return new Interface<P>(i, value);
+            }
+        });
     }
 
     // дебилизм из-за конструкторов
@@ -50,27 +58,27 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         finalizeInit();
     }
 
-    public Map<P, Interface<P>> getMapInterfaces() {
-        Map<P, Interface<P>> result = new HashMap<P, Interface<P>>();
-        for(Interface<P> propertyInterface : interfaces)
-            result.put(propertyInterface.mapInterface,propertyInterface);
-        return result;
+    public ImRevMap<P, Interface<P>> getMapInterfaces() {
+        return interfaces.mapRevKeys(new GetValue<P, Interface<P>>() {
+            public P getMapValue(Interface<P> value) {
+                return value.mapInterface;
+            }});
     }
 
     @IdentityLazy
-    private CalcPropertyImplement<?, Interface<P>> getIsClassProperty() {
-        return IsClassProperty.getProperty(BaseUtils.crossJoin(getMapInterfaces(), property.getInterfaceClasses()));
+    private CalcPropertyRevImplement<?, Interface<P>> getIsClassProperty() {
+        return IsClassProperty.getProperty(getMapInterfaces().crossJoin(property.getInterfaceClasses()));
     }
 
-    protected void fillDepends(Set<CalcProperty> depends, boolean events) {
+    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add((CalcProperty) getIsClassProperty().property);
     }
 
-    protected QuickSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.getUsedChanges(getDepends());
     }
 
-    protected Expr calculateExpr(Map<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(ImMap<Interface<P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.TRUE.and(getIsClassProperty().mapExpr(joinImplement, propClasses, propChanges, changedWhere).getWhere());
 //        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
 
@@ -84,26 +92,22 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         return resultExpr;*/
     }
 
-    public Set<CalcProperty> getDataChangeProps() {
-        return BaseUtils.toSet((CalcProperty)property, (CalcProperty)reverse.property);
-    }
-
     // без решения reverse'а и timeChanges не включишь этот механизм
     @Override
-    public QuickSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
-        return QuickSet.add(property.getUsedDataChanges(propChanges), ((CalcProperty<R>)reverse.property).getUsedDataChanges(propChanges), property.getUsedChanges(propChanges), reverse.property.getUsedChanges(propChanges));
+    public ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        return SetFact.add(property.getUsedDataChanges(propChanges), ((CalcProperty<R>) reverse.property).getUsedDataChanges(propChanges), property.getUsedChanges(propChanges), reverse.property.getUsedChanges(propChanges));
     }
 
     @Override
-    public Collection<DataProperty> getChangeProps() {
+    public ImSet<DataProperty> getChangeProps() {
         return property.getChangeProps();
     }
 
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface<P>> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        Map<P, Interface<P>> mapInterfaces = getMapInterfaces();
+        ImRevMap<P, Interface<P>> mapInterfaces = getMapInterfaces();
         PropertyChange<P> mapChange = change.map(mapInterfaces);
-        Map<P, Expr> mapExprs = mapChange.getMapExprs();
+        ImMap<P, Expr> mapExprs = mapChange.getMapExprs();
 
         Where reverseWhere = reverse.mapExpr(mapExprs, propChanges).getWhere();
         Expr propertyExpr = property.getExpr(mapExprs, propChanges);

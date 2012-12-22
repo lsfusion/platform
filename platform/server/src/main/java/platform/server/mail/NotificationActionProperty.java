@@ -3,15 +3,18 @@ package platform.server.mail;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
+import platform.base.col.ListFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.CalcPropertyMapImplement;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import javax.mail.Message;
@@ -35,8 +38,8 @@ public class NotificationActionProperty extends SystemActionProperty {
     private final BusinessLogics<?> BL;
 
     @Override
-    public PropsNewSession aspectUsedExtProps() {
-        return getUsedProps(recipients.keySet());
+    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        return getUsedProps(ListFact.fromJavaCol(recipients.keySet()));
     }
 
     public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
@@ -96,9 +99,9 @@ public class NotificationActionProperty extends SystemActionProperty {
                 for (int i = 0; i < interfacesCount; i++) {
                     for (int j = 0; j < context.getKeyCount(); j++) {
                         String sidFromReplaceProperty = getValueClasses(replaceProperty)[i].getSID();
-                        String sidFromContext = ((ClassPropertyInterface) (context.getKeys().keySet().toArray()[j])).interfaceClass.getSID();
+                        String sidFromContext = ((ClassPropertyInterface) (context.getKeys().getKey(j))).interfaceClass.getSID();
                         if (sidFromReplaceProperty.equals(sidFromContext))
-                            objects[i] = (DataObject) context.getKeys().values().toArray()[j];
+                            objects[i] = (DataObject) context.getKeys().getValue(j);
                     }
                 }
                 replacePropertyValue = replaceProperty.read(context, objects);

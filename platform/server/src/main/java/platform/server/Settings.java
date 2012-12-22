@@ -17,7 +17,7 @@ public class Settings {
         this.innerGroupExprs = innerGroupExprs;
     }
 
-    public int packOnCacheComplexity = 300;
+    public int packOnCacheComplexity = 3000;
 
     public int getPackOnCacheComplexity() {
         return packOnCacheComplexity;
@@ -333,7 +333,7 @@ public class Settings {
 
     private int limitIncrementCoeff = 1;
     private int limitHintIncrementComplexity = 50;
-    private int limitGrowthIncrementComplexity = 1;
+    private int limitGrowthIncrementComplexity = 2;
     private int limitHintIncrementStat = 1000;
     private int limitHintNoUpdateComplexity = 4000;
     private int limitWrapComplexity = 200;
@@ -471,6 +471,16 @@ public class Settings {
         this.disableWrapComplexity = disableWrapComplexity;
     }
 
+    private boolean enablePrevWrapComplexity = false;
+
+    public boolean isEnablePrevWrapComplexity() {
+        return enablePrevWrapComplexity;
+    }
+
+    public void setEnablePrevWrapComplexity(boolean enablePrevWrapComplexity) {
+        this.enablePrevWrapComplexity = enablePrevWrapComplexity;
+    }
+
     public boolean applyNoIncrement = true;
 
     public boolean isApplyNoIncrement() {
@@ -532,6 +542,16 @@ public class Settings {
 
     public void setDisableChangeModifierAllHints(boolean disableChangeModifierAllHints) {
         this.disableChangeModifierAllHints = disableChangeModifierAllHints;
+    }
+
+    private boolean disableValueAllHints = true; // если есть change modifier то disable'ить hint'ы - временное решение
+
+    public boolean isDisableValueAllHints() {
+        return disableValueAllHints;
+    }
+
+    public void setDisableValueAllHints(boolean disableValueAllHints) {
+        this.disableValueAllHints = disableValueAllHints;
     }
 
     public boolean defaultOrdersNotNull = true; // временно

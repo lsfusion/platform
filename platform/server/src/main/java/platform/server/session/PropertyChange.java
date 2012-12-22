@@ -1,9 +1,15 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.Pair;
-import platform.base.QuickSet;
+import platform.base.col.MapFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractInnerContext;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
@@ -17,6 +23,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.query.IQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.KeyEqual;
@@ -29,74 +36,68 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static platform.base.BaseUtils.hashEquals;
-import static platform.base.BaseUtils.rightJoin;
 
 public class PropertyChange<T extends PropertyInterface> extends AbstractInnerContext<PropertyChange<T>> {
-    private final Map<T, DataObject> mapValues; // для оптимизации в общем-то, важно чтобы проходили через ветку execute
+    private final ImMap<T, DataObject> mapValues; // для оптимизации в общем-то, важно чтобы проходили через ветку execute
 
-    private final Map<T,KeyExpr> mapKeys;
+    private final ImRevMap<T,KeyExpr> mapKeys;
     public final Expr expr;
     public final Where where;
 
-    public static <T extends PropertyInterface> Map<T, Expr> getMapExprs(Map<T, KeyExpr> mapKeys, Map<T, DataObject> mapValues) {
+    public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues) {
         return getMapExprs(mapKeys, mapValues, Where.TRUE);
     }
 
-    public static <T extends PropertyInterface> Map<T, Expr> getMapExprs(Map<T, KeyExpr> mapKeys, Map<T, DataObject> mapValues, Where where) {
-        Map<T, Expr> keyValues = new HashMap<T, Expr>(DataObject.getMapExprs(mapValues));
-
-        Map<BaseExpr, BaseExpr> exprValues = where.getExprValues();
-        for(Map.Entry<T, KeyExpr> mapKey : mapKeys.entrySet()) {
-            BaseExpr exprValue = exprValues.get(mapKey.getValue());
-            keyValues.put(mapKey.getKey(), exprValue!=null ? exprValue : mapKey.getValue());
-        }
-        return keyValues;
-
+    public static <T extends PropertyInterface> ImMap<T, Expr> getMapExprs(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues, Where where) {
+        final ImMap<BaseExpr, BaseExpr> exprValues = where.getExprValues();
+        return DataObject.getMapExprs(mapValues).addExcl(mapKeys.mapValues(new GetValue<BaseExpr, KeyExpr>() {
+            public BaseExpr getMapValue(KeyExpr value) {
+                BaseExpr exprValue = exprValues.get(value);
+                return exprValue != null ? exprValue : value;
+            }
+        }));
     }
 
-    public static <T> Map<T, KeyExpr> getFullMapKeys(Map<T, KeyExpr> mapKeys, Map<T, DataObject> mapValues) {
-        assert Collections.disjoint(mapKeys.keySet(), mapValues.keySet());
-        return BaseUtils.merge(mapKeys, KeyExpr.getMapKeys(mapValues.keySet()));
+    public static <T> ImRevMap<T, KeyExpr> getFullMapKeys(ImRevMap<T, KeyExpr> mapKeys, ImMap<T, DataObject> mapValues) {
+        assert mapKeys.keys().disjoint(mapValues.keys());
+        return mapKeys.addRevExcl(KeyExpr.getMapKeys(mapValues.keys()));
     }
 
-    public static <C> Map<C, ? extends Expr> simplifyExprs(Map<C, ? extends Expr> implementExprs, Where andWhere) {
+    public static <C> ImMap<C, ? extends Expr> simplifyExprs(ImMap<C, ? extends Expr> implementExprs, Where andWhere) {
         KeyEquals keyEquals = andWhere.getKeyEquals(); // оптимизация
         KeyEqual keyEqual;
-        if(keyEquals.size == 1 && !(keyEqual=keyEquals.getKey(0)).isEmpty())
+        if(keyEquals.size() == 1 && !(keyEqual=keyEquals.getKey(0)).isEmpty())
             implementExprs = keyEqual.getTranslator().translate(implementExprs);
         return implementExprs;
     }
 
-    public Map<T, Expr> getMapExprs() {
+    public ImMap<T, Expr> getMapExprs() {
         return getMapExprs(mapKeys, mapValues, where);
     }
 
-    public Map<T, KeyExpr> getMapKeys() {
+    public ImMap<T, KeyExpr> getMapKeys() {
         return mapKeys;
     }
 
-    public Map<T, DataObject> getMapValues() {
+    public ImMap<T, DataObject> getMapValues() {
         return mapValues;
     }
 
-    public PropertyChange(Expr expr, Map<T, DataObject> mapValues) {
-        this(mapValues, new HashMap<T, KeyExpr>(), expr, Where.TRUE);
+    public PropertyChange(Expr expr, ImMap<T, DataObject> mapValues) {
+        this(mapValues, MapFact.<T, KeyExpr>EMPTYREV(), expr, Where.TRUE);
     }
 
     public PropertyChange(ObjectValue value) {
-        this(value.getExpr(), new HashMap<T, DataObject>());
+        this(value.getExpr(), MapFact.<T, DataObject>EMPTY());
     }
 
     public PropertyChange(ObjectValue value, T propInterface, DataObject intValue) {
-        this(value.getExpr(), Collections.singletonMap(propInterface, intValue));
+        this(value.getExpr(), MapFact.singleton(propInterface, intValue));
     }
 
-    public PropertyChange(Map<T, DataObject> mapValues, Map<T, KeyExpr> mapKeys, Expr expr, Where where) {
+    public PropertyChange(ImMap<T, DataObject> mapValues, ImRevMap<T, KeyExpr> mapKeys, Expr expr, Where where) {
         this.mapValues = mapValues;
         this.mapKeys = mapKeys;
         this.expr = expr;
@@ -111,26 +112,28 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         this(change.mapValues, change.mapKeys, expr, where);
     }
 
-    public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr, Where where) {
-        this(new HashMap<T, DataObject>(), mapKeys, expr, where);
+    public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Expr expr, Where where) {
+        this(MapFact.<T, DataObject>EMPTYREV(), mapKeys, expr, where);
     }
 
+    private final static PropertyChange TRUE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.TRUE);
+    private final static PropertyChange FALSE = new PropertyChange(MapFact.EMPTYREV(), ValueExpr.TRUE, Where.FALSE);
     public static <P extends PropertyInterface> PropertyChange<P> STATIC(boolean isTrue) {
-        return new PropertyChange<P>(new HashMap<P, KeyExpr>(), ValueExpr.TRUE, isTrue? Where.TRUE : Where.FALSE);
+        return isTrue ? TRUE : FALSE;
     }
-    public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr) {
+    public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Expr expr) {
         this(mapKeys, expr, expr.getWhere());
     }
 
-    public PropertyChange(Map<T, KeyExpr> mapKeys, Where where) {
+    public PropertyChange(ImRevMap<T, KeyExpr> mapKeys, Where where) {
         this(mapKeys, Expr.NULL, where);
     }
 
-    public QuickSet<KeyExpr> getKeys() {
-        return new QuickSet<KeyExpr>(mapKeys.values());
+    public ImSet<KeyExpr> getKeys() {
+        return mapKeys.valuesSet();
     }
 
-    public QuickSet<Value> getValues() {
+    public ImSet<Value> getValues() {
         return expr.getOuterValues().merge(where.getOuterValues()).merge(AbstractOuterContext.getOuterValues(DataObject.getMapExprs(mapValues).values()));
     }
 
@@ -141,8 +144,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return new PropertyChange<T>(mapValues, mapKeys, expr, where.and(andWhere));
     }
 
-    public <P extends PropertyInterface> PropertyChange<P> map(Map<P,T> mapping) {
-        return new PropertyChange<P>(rightJoin(mapping, mapValues), rightJoin(mapping, mapKeys),expr,where);
+    public <P extends PropertyInterface> PropertyChange<P> map(ImRevMap<P,T> mapping) {
+        return new PropertyChange<P>(mapping.rightJoin(mapValues), mapping.rightJoin(mapKeys),expr,where);
     }
 
     public boolean isEmpty() {
@@ -162,7 +165,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             Join<String> addJoin = change.join(mapKeys);
             return new PropertyChange<T>(mapKeys, expr.ifElse(where, addJoin.getExpr("value")), where.or(addJoin.getWhere()));
         } else {
-            Map<T, KeyExpr> addKeys = getFullMapKeys(mapKeys, mapValues); // тут по хорошему надо искать общие и потом частично join'ить
+            ImRevMap<T, KeyExpr> addKeys = getFullMapKeys(mapKeys, mapValues); // тут по хорошему надо искать общие и потом частично join'ить
             
             Join<String> thisJoin = join(addKeys);
             Join<String> addJoin = change.join(addKeys);
@@ -171,26 +174,39 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             return new PropertyChange<T>(addKeys, thisJoin.getExpr("value").ifElse(thisWhere, addJoin.getExpr("value")), thisWhere.or(addJoin.getWhere()));
         }
     }
+    
+    public final static AddValue<Object, PropertyChange<PropertyInterface>> addValue = new SimpleAddValue<Object, PropertyChange<PropertyInterface>>() {
+        public PropertyChange<PropertyInterface> addValue(Object key, PropertyChange<PropertyInterface> prevValue, PropertyChange<PropertyInterface> newValue) {
+            return prevValue.add(newValue);
+        }
 
-    public Where getWhere(Map<T, ? extends Expr> joinImplement) {
+        public boolean symmetric() {
+            return false;
+        }
+    };
+    public static <M, K extends PropertyInterface> AddValue<M, PropertyChange<K>> addValue() {
+        return BaseUtils.immutableCast(addValue);
+    }
+
+    public Where getWhere(ImMap<T, ? extends Expr> joinImplement) {
         return join(joinImplement).getWhere();
     }
 
-    public Join<String> join(Map<T, ? extends Expr> joinImplement) {
+    public Join<String> join(ImMap<T, ? extends Expr> joinImplement) {
         return getQuery().join(joinImplement);
     }
 
-    public Pair<Map<T, DataObject>, ObjectValue> getSimple() {
+    public Pair<ImMap<T, DataObject>, ObjectValue> getSimple() {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            return new Pair<Map<T, DataObject>, ObjectValue>(mapValues, exprValue);
+            return new Pair<ImMap<T, DataObject>, ObjectValue>(mapValues, exprValue);
         return null;
     }
 
-    public OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
+    public ImOrderMap<ImMap<T, DataObject>, ImMap<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            return new OrderedMap<Map<T, DataObject>, Map<String, ObjectValue>>(mapValues, Collections.singletonMap("value", exprValue));
+            return MapFact.singletonOrder(mapValues, MapFact.<String, ObjectValue>singleton("value", exprValue));
 
         return getQuery().executeClasses(env);
     }
@@ -206,16 +222,14 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
-            table.writeRows(session, Collections.singletonMap(mapValues, Collections.singletonMap("value", exprValue)));
+            table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)));
         else
             table.writeRows(session, getQuery(), baseClass, queryEnv);
     }
 
     @IdentityLazy
-    public Query<T,String> getQuery() {
-        Query<T,String> query = new Query<T, String>(getFullMapKeys(mapKeys, mapValues), where, mapValues); // через query для кэша
-        query.properties.put("value",expr);
-        return query;
+    public IQuery<T,String> getQuery() { // важно потому как aspect может на IQuery изменить
+        return new Query<T, String>(getFullMapKeys(mapKeys, mapValues), where, mapValues, MapFact.singleton("value", expr)); // через query для кэша
    }
 
     protected boolean isComplex() {
@@ -243,7 +257,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return new PropertyChange<T>(mapValues, mapKeys, expr.followFalse(packWhere.not(), true), packWhere);
     }
 
-    public Expr getExpr(Map<T, ? extends Expr> joinImplement, WhereBuilder where) {
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, WhereBuilder where) {
         Join<String> join = join(joinImplement);
         if(where !=null) where.add(join.getWhere());
         return join.getExpr("value");
@@ -258,6 +272,6 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
 /*    public StatKeys<T> getStatKeys() {
-        return where.getStatKeys(getInnerKeys()).mapBack(mapKeys).and(new StatKeys<T>(mapValues.keySet(), Stat.ONE));
+        return where.getStatKeys(getInnerKeys()).mapBack(mapKeys).and(new StatKeys<T>(mapColValues.keySet(), Stat.ONE));
     }*/
 }

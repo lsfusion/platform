@@ -1,5 +1,11 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.base.col.ListFact;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MList;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -7,52 +13,60 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import static platform.base.BaseUtils.reverse;
 
 public class ListActionProperty extends KeepContextActionProperty {
 
-    private final List<ActionPropertyMapImplement<?, PropertyInterface>> actions;
-    private boolean isAbstract = false;
-
-    // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
-        this(sID, caption, false, innerInterfaces, actions);
+    private Object actions;
+    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action) {
+        ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
     }
 
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, boolean isAbstract, List<I> innerInterfaces, List<ActionPropertyMapImplement<?, I>> actions)  {
+    private ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
+        return (ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions;
+    }
+    
+    private final boolean isAbstract;
+
+    // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
+    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions)  {
         super(sID, caption, innerInterfaces.size());
 
-        this.actions = DerivedProperty.mapActionImplements(reverse(getMapInterfaces(innerInterfaces)), actions);
-        this.isAbstract = isAbstract;
+        this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
+        this.isAbstract = false;
 
         finalizeInit();
     }
 
+    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces)  {
+        super(sID, caption, innerInterfaces.size());
+
+        this.isAbstract = true;
+        actions = ListFact.mList();
+    }
+
     @IdentityLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        List<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = new ArrayList<CalcPropertyInterfaceImplement<PropertyInterface>>();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
-            listWheres.add(action.mapWhereProperty());
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
+            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                return value.mapWhereProperty();
+            }});
         return DerivedProperty.createUnion(interfaces, listWheres);
     }
 
-    public Set<ActionProperty> getDependActions() {
-        Set<ActionProperty> depends = new HashSet<ActionProperty>();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
-            depends.add(action.property);
-        return depends;
+    public ImSet<ActionProperty> getDependActions() {
+        return getActions().getCol().mapColValues(new GetValue<ActionProperty, ActionPropertyMapImplement<?, PropertyInterface>>() {
+            public ActionProperty getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
+                return value.property;
+            }}).toSet();
     }
 
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
         FlowResult result = FlowResult.FINISH;
 
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
             FlowResult actionResult = action.execute(context);
             if (actionResult != FlowResult.FINISH) {
                 result =  actionResult;
@@ -66,7 +80,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public Type getSimpleRequestInputType() {
         Type type = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
             Type actionRequestType = action.property.getSimpleRequestInputType();
             if (actionRequestType != null) {
                 if (type == null) {
@@ -85,7 +99,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public CustomClass getSimpleAdd() {
         CustomClass result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
             CustomClass simpleAdd = action.property.getSimpleAdd();
             if (simpleAdd != null) {
                 if (result == null) {
@@ -101,7 +115,7 @@ public class ListActionProperty extends KeepContextActionProperty {
     @Override
     public PropertyInterface getSimpleDelete() {
         PropertyInterface result = null;
-        for (ActionPropertyMapImplement<?, PropertyInterface> action : actions) {
+        for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {
             PropertyInterface simpleDelete = action.mapSimpleDelete();
             if (simpleDelete != null) {
                 if (result == null) {
@@ -118,15 +132,19 @@ public class ListActionProperty extends KeepContextActionProperty {
         return isAbstract;
     }
 
-    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action) {
-        actions.add(action);
+    @Override
+    public void finalizeInit() {
+        super.finalizeInit();
+
+        if(isAbstract())
+            actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
     }
 
     @Override
-    public List<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
-        List<ActionPropertyMapImplement<?, PropertyInterface>> result = new ArrayList<ActionPropertyMapImplement<?, PropertyInterface>>();
-        for(ActionPropertyMapImplement<?, PropertyInterface> action : actions)
-            result.addAll(action.getList());
-        return result;
+    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getList() {
+        MList<ActionPropertyMapImplement<?, PropertyInterface>> mResult = ListFact.mList();
+        for(ActionPropertyMapImplement<?, PropertyInterface> action : getActions())
+            mResult.addAll(action.getList());
+        return mResult.immutableList();
     }
 }

@@ -4,21 +4,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.server.Settings;
-import platform.server.data.expr.Expr;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.session.PropertyChanges;
-
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
 
 @Aspect
 public class PackComplexityAspect {

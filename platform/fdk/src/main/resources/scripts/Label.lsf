@@ -294,7 +294,7 @@ loadDefaultLabelType 'Добавить тип ценника' = ACTION(name, wid
         SET orientationLabelType(lt) <- orientation;
         SET fileTemplateLabelType(lt) <-file AS STRING[200];
 
-        FOR storeDepartmentStore(departmentStore) != 0 DO {
+        FOR storeDepartmentStore(departmentStore) DO {
             SET inLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;
             IF byDefault == TRUE THEN {
                 SET isDefaultLabelTypeDepartmentStore(lt, departmentStore) <- TRUE;

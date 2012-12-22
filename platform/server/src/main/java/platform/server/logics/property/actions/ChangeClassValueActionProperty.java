@@ -1,6 +1,9 @@
 package platform.server.logics.property.actions;
 
-import platform.server.classes.*;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ValueClass;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
@@ -21,8 +24,8 @@ public class ChangeClassValueActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public PropsNewSession aspectChangeExtProps() {
-        return new PropsNewSession(getBaseClass().getChildProps());
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        return getBaseClass().getChildProps().toMap(false);
     }
 
     private BaseClass getBaseClass() {

@@ -1,11 +1,12 @@
 package platform.server.data;
 
+import platform.base.col.MapFact;
+import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.ByteArrayClass;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
-
-import java.util.Map;
 
 public class StructTable extends GlobalTable {
 
@@ -17,18 +18,18 @@ public class StructTable extends GlobalTable {
         super("global");
 
         struct = new PropertyField("struct", ByteArrayClass.instance);
-        properties.add(struct);
+        properties = SetFact.singleton(struct);
 
         classes = ClassWhere.TRUE();
         
-        propertyClasses.put(struct,new ClassWhere<Field>(struct, ByteArrayClass.instance));
+        propertyClasses = MapFact.singleton(struct, new ClassWhere<Field>(struct, ByteArrayClass.instance));
     }
 
     public StatKeys<KeyField> getStatKeys() {
         return getStatKeys(this, 1);
     }
 
-    public Map<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField, Stat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }
