@@ -170,8 +170,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
-    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
-                            namePositionAccountantStock, nameAuditorStock, namePositionAuditorStock
+    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock
 
     PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
                sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
@@ -201,42 +200,8 @@ FORM sumStockDocumentLedger 'Товарный отчет'
 
 
 DESIGN sumStockDocumentLedger FROM DEFAULT {
-    NEW row{
-        childConstraints = TO THE RIGHT;
-        title = 'Комиссия';
-        NEW row1 {
-            title = 'МОЛ';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameMRPStock(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionMRPStock(ds)){
-                caption = 'Должность';
-            }
-        }
-        NEW row2 {
-            title = 'Проверяющий';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameAuditorStock(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionAuditorStock(ds)){
-                caption = 'Должность';
-            }
-        }
-        NEW row3{
-            title = 'Бухгалтер';
-            childConstraints = TO THE RIGHT;
-            ADD PROPERTY (nameAccountantStock(ds)){
-                caption = 'Имя';
-            }
-            ADD PROPERTY (namePositionAccountantStock(ds)){
-                caption = 'Должность';
-            }
-        }
-    }
 
-    NEW HeaderCase BEFORE row{
+    NEW HeaderCase{
         title = 'Суммы';
         childConstraints = TO THE RIGHT;
         ADD ds.ledgerItemGroup;

@@ -4,14 +4,50 @@ REQUIRE StockDocument, StockBy;
 
 NAMESPACE StockDocument;
 
+FORM printSumStockDocumentLedgerBy 'Товарный отчет' PRINT
+    OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
+            ds = stock FIXED PANEL
+    PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
+    PROPERTIES(ds) SELECTOR name, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
+                            namePositionAccountantStock, nameAuditorStock, namePositionAuditorStock, UNPStock
+
+    PROPERTIES sumAccountBDocumentLedgerDate(ds, dtFrom), sumItemAccountBDocumentLedgerDate(ds, dtFrom), sumContainerAccountBDocumentLedgerDate(ds, dtFrom),
+               sumItemAccountADocumentLedgerDate(ds, dtTo), sumContainerAccountADocumentLedgerDate(ds, dtTo), sumAccountADocumentLedgerDate(ds, dtTo)
+    PROPERTIES(ds, dtFrom, dtTo) countIncStockDocumentStockDateInterval, countOutStockDocumentStockDateInterval,
+               sumItemIncStockDocumentStockDateInterval, sumContainerIncStockDocumentStockDateInterval,
+               subtotalItemIncStockDocumentStockDateInterval, subtotalContainerIncStockDocumentStockDateInterval,
+               sumItemOutStockDocumentStoreDateInterval, sumContainerOutStockDocumentStockDateInterval
+
+    OBJECTS il = incStockDocumentLedger
+    PROPERTIES(il) SELECTOR iDateTime = dateTimeStockDocumentLedger, iObjName = objectClassName, iDescription = descriptionStockDocumentLedger,
+                   sumItemIncStockDocumentLedger, sumContainerIncStockDocumentLedger, sumIncStockDocumentLedger
+    FILTERS isPostedStockDocumentLedger(il),
+            stockStockDocumentLedger(il) == ds,
+            dateStockDocumentLedger(il) >= dtFrom,
+            dateStockDocumentLedger(il) <= dtTo
+    ORDER BY iDateTime
+
+    OBJECTS ol = outStockDocumentLedger
+    PROPERTIES(ol) SELECTOR oDateTime = dateTimeStockDocumentLedger, oObjName = objectClassName, oDescription = descriptionStockDocumentLedger,
+                   sumItemOutStockDocumentLedger, sumContainerOutStockDocumentLedger, sumOutStockDocumentLedger
+    FILTERS isPostedStockDocumentLedger(ol),
+            stockStockDocumentLedger(ol) == ds,
+            dateStockDocumentLedger(ol) >= dtFrom,
+            dateStockDocumentLedger(ol) <= dtTo
+    ORDER BY oDateTime
+;
+
+printSumStockDocumentLedgerBy 'Распечатать' () =
+    ACTION FORM printSumStockDocumentLedgerBy IMAGE 'print.png' IN printGroup;
+
 EXTEND FORM sumStockDocumentLedger
 
-    PROPERTIES(ds) UNPStock
+    PROPERTIES printSumStockDocumentLedgerBy() TODRAW params FORCE PANEL
 ;
 
 EXTEND DESIGN sumStockDocumentLedger{
 
-    container12 {
-        ADD PROPERTY (UNPStock(ds));
+    container11{
+        ADD PROPERTY(printSumStockDocumentLedgerBy);
     }
 }

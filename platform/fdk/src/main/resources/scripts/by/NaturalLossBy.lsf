@@ -4,7 +4,7 @@ REQUIRE NaturalLoss;
 
 NAMESPACE NaturalLoss;
 
-FORM naturalLossPrintBy 'Ведомость естественной убыли' PRINT
+FORM printNaturalLossBy 'Ведомость естественной убыли' PRINT
     OBJECTS s=naturalLoss FIXED PANEL
     PROPERTIES(s) READONLY SELECTOR numberObject, nameStockNaturalLoss, timeNaturalLoss, seriesObject,
                            dateNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
@@ -18,11 +18,11 @@ FORM naturalLossPrintBy 'Ведомость естественной убыли'
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
 
-printNaturalLoss 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM naturalLossPrintBy OBJECTS s IMAGE 'print.png' IN printGroup;
+printNaturalLossBy 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM printNaturalLossBy OBJECTS s IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM naturalLosses
 
-    PROPERTIES(s) printNaturalLoss FORCE PANEL
+    PROPERTIES(s) printNaturalLossBy FORCE PANEL
 ;
 
 EXTEND DESIGN naturalLosses {

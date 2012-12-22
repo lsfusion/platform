@@ -5,10 +5,10 @@ REQUIRE SaleOrder, OrderBy;
 NAMESPACE Sale;
 
 EXTEND FORM orders
-    PROPERTIES (o) printOrder FORCE PANEL;
+    PROPERTIES (o) printOrderBy FORCE PANEL;
 
 EXTEND DESIGN orders {
     printContainer {
-        ADD PROPERTY(printOrder);
+        ADD PROPERTY(printOrderBy);
     }
 }

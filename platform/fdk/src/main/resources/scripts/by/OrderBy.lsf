@@ -2,6 +2,7 @@ MODULE OrderBy;
 
 REQUIRE LegalEntityBy, Order;
 
+NAMESPACE Order;
 
 @defineDocumentUNPLegalEntity(order, supplier, ' поставщика');
 @defineDocumentUNPLegalEntity(order, customer, ' покупателя');
@@ -9,7 +10,7 @@ REQUIRE LegalEntityBy, Order;
 @defineDocumentAccountPhoneContact(order, supplier, ' поставщика');
 @defineDocumentAccountPhoneContact(order, customer, ' покупателя');
 
-FORM orderPrint 'Счет-фактура (печать)' PRINT
+FORM printOrderBy 'Счет-фактура (печать)' PRINT
     OBJECTS o = order FIXED PANEL
     PROPERTIES (o) READONLY nameSupplierOrder, nameSupplierStockOrder, addressSupplierOrder, UNPSupplierOrder,
                    numberAccountSupplierOrder, nameBankSupplierOrder, addressBankSupplierOrder,
@@ -29,4 +30,4 @@ FORM orderPrint 'Счет-фактура (печать)' PRINT
     FILTERS orderOrderDetail(d) == o
 ;
 
-printOrder 'Счет-фактура' (order) = ACTION FORM orderPrint OBJECTS o IMAGE 'print.png' IN printGroup;
+printOrderBy 'Счет-фактура' (order) = ACTION FORM printOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;

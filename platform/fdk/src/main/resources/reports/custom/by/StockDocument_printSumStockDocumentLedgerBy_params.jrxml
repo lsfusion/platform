@@ -43,7 +43,7 @@
 	<field name="sumAccountADocumentLedgerDate" class="java.lang.Double"/>
 	<field name="countIncStockDocumentStockDateInterval" class="java.lang.Integer"/>
 	<field name="countOutStockDocumentStockDateInterval" class="java.lang.Integer"/>
-	<field name="nameCompanyStock" class="java.lang.String"/>
+	<field name="nameLegalEntityStock" class="java.lang.String"/>
 	<field name="UNPStock" class="java.lang.String"/>
 	<field name="sumItemIncStockDocumentStockDateInterval" class="java.lang.Double"/>
 	<field name="sumContainerIncStockDocumentStockDateInterval" class="java.lang.Double"/>
@@ -381,7 +381,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyStock}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityStock}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="494" y="0" width="43" height="10"/>

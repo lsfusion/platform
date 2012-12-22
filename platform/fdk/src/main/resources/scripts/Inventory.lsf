@@ -740,138 +740,6 @@ quantityInLIFOSkuLedger (ledger) += quantityInInventoryBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) +=  quantityInInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
 sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);
 
-//------------------------------------------ Печатные формы -------------------------------------------------//
-
-//------------------------------------ Опись ------------------------------------------//
-
-FORM printListInventory 'Опись' PRINT
-
-    OBJECTS         li=listInventory FIXED PANEL
-    PROPERTIES (li) dateListInventory, nameLegalEntityStockListInventory, nameStockListInventory,
-                    nameInventoryListInventory, nameListInventory, noteListInventory, committeeListInventory,
-                    nameCommitteeListInventory, nameChairmanCommitteeListInventory, namePositionChairmanListInventory, nameEmployeeListInventory,
-                    countPageInventoryListInventory, countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory,
-                    sumPageInventoryDetailListInventory, countIndexListInventory, countIndexBatchListInventory, isBatchListInventory, isSkuListInventory
-
-    OBJECTS t=DATETIME FIXED PANEL
-    PROPERTIES(t) OBJVALUE
-
-    OBJECTS         i=sku
-    PROPERTIES (li,i) indexListInventorySku
-    PROPERTIES (i)    idBarcodeSku, nameSku
-    PROPERTIES (li,i) quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku, sumPageInventoryDetailListInventorySku
-    FILTERS           quantityPageInventoryDetailListInventorySku(li,i) > 0
-    ORDER BY indexListInventorySku
-
-    OBJECTS         b=batch
-    PROPERTIES (li,b) indexListInventoryBatch
-    PROPERTIES (b)    idBarcodeSkuBatch, nameSkuBatch, descriptionBatch
-    PROPERTIES (li,b) quantityPageInventoryDetailListInventoryBatch, pricePageInventoryDetailListInventoryBatch, sumPageInventoryDetailListInventoryBatch
-    FILTERS           quantityPageInventoryDetailListInventoryBatch(li,b) > 0
-    ORDER BY indexListInventoryBatch
-
-    OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, namePositionEmployee
-    FILTERS        inListInventoryEmployee(li, e)
-;
-
-DESIGN printListInventory FROM DEFAULT {
-    main {
-        preferredSize = (1024, 768);
-        childConstraints = TO THE BOTTOM;
-        ADD li.box {
-            childConstraints = TO THE RIGHTBOTTOM;
-            NEW row {
-                childConstraints = TO THE BOTTOM;
-                ADD li.documentHeaderGroup {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    ADD PROPERTY(nameInventoryListInventory);
-                    ADD PROPERTY(nameListInventory);
-                }
-                ADD li.inventoryCommitteeGroup {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                }
-                ADD li.documentPrmGroup;
-
-
-            }
-            ADD li.documentSumGroup {
-                childConstraints = TO THE BOTTOM;
-                PROPERTY(countPageInventoryListInventory) {
-                    caption = 'Количество страниц';
-                }
-
-            }
-        }
-
-        ADD i.box;
-        ADD b.box;
-        ADD e.box;
-        ADD functions.box;
-    }
-}
-
-printListInventory 'Опись' (listInventory) =
-    ACTION FORM printListInventory OBJECTS li=(listInventory AS listInventory), t=currentDateTime()
-    IMAGE 'print.png' IN printGroup;
-
-
-//------------------------------------ Сличительная ведомость (итоги) ------------------------------------------//
-
-FORM printTotalCollationSheet 'Сличительная ведомость (итоги)' PRINT
-
-    OBJECTS          cs=collationSheet FIXED PANEL
-
-    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
-                              nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,
-                              timeFromCollationSheet, timeToCollationSheet, dateCollationSheet, nameHeadManCollationSheet
-    PROPERTIES (cs)  SELECTOR nameTypeOfAdditionCollationSheet, nameStockCollationSheet,
-                              quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
-                              sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet,
-                              countListInventoryCollationSheet, countPageInventoryCollationSheet, prevDateCollationSheet
-    PROPERTIES (cs)  SELECTOR sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet, sumItemPageInventoryDetailCollationSheet,
-                              sumContainerPageInventoryDetailCollationSheet, sumItemShortageCollationSheet, sumContainerShortageCollationSheet
-;
-
-printTotalCollationSheet 'Сличительная ведомость (итоги)' (collationSheet) =
-    ACTION FORM printTotalCollationSheet OBJECTS cs = collationSheet IMAGE 'print.png' IN printGroup;
-
-//------------------------------------ Сличительная ведомость ------------------------------------------//
-
-FORM printCollationSheet 'Сличительная ведомость' PRINT
-
-    OBJECTS          cs=collationSheet FIXED PANEL
-    PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
-                              nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,
-                              nameTypeOfAdditionCollationSheet, nameStockCollationSheet, dateCollationSheet,
-                              quantityPageInventoryDetailCollationSheet, quantityBalanceCollationSheet, quantityShortageCollationSheet,
-                              sumPageInventoryDetailCollationSheet, sumBalanceCollationSheet, sumShortageCollationSheet,
-                              countListInventoryCollationSheet, countPageInventoryCollationSheet, prevDateCollationSheet,
-                              sumItemPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
-                              sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
-                              sumItemShortageCollationSheet, sumContainerShortageCollationSheet, isBatchCollationSheet, isSkuCollationSheet
-
-    OBJECTS          i=sku
-    PROPERTIES(i)     SELECTOR nameSku, idBarcodeSku
-    PROPERTIES(cs, i) SELECTOR quantityPageInventoryDetailCollationSheetSku, quantityBalanceCollationSheetSku, quantityShortageCollationSheetSku
-    PROPERTIES(cs, i)          pricePageInventoryDetailCollationSheetSku, priceBalanceCollationSheetSku
-    PROPERTIES(cs, i) SELECTOR sumPageInventoryDetailCollationSheetSku, sumBalanceCollationSheetSku, sumShortageCollationSheetSku
-    FILTERS                    includeCollationSheetSku(cs, i)
-    ORDER BY nameSku
-
-    OBJECTS         b=batch
-    PROPERTIES(b)    SELECTOR nameSkuBatch, idBarcodeSkuBatch, descriptionBatch
-    PROPERTIES(cs,b) SELECTOR quantityPageInventoryDetailCollationSheetBatch, quantityBalanceCollationSheetBatch, quantityShortageCollationSheetBatch
-    PROPERTIES(cs,b) SELECTOR pricePageInventoryDetailCollationSheetBatch, priceBalanceCollationSheetBatch
-    PROPERTIES(cs,b) READONLY sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch
-    FILTERS                   includeCollationSheetBatch(cs,b),
-                              quantityPageInventoryDetailCollationSheetBatch(cs,b) OR quantityBalanceCollationSheetBatch(cs,b)
-    ORDER BY nameSkuBatch
-;
-
-printCollationSheet 'Сличительная ведомость' (collationSheet) =
-    ACTION FORM printCollationSheet OBJECTS cs = collationSheet IMAGE 'print.png' IN printGroup;
-
 //------------------------------------ Выбор складов для инвентаризации------------------------------------------//
 
 FORM dialogStockInventory 'Выбор складов для инвентаризации'
@@ -1281,7 +1149,6 @@ FORM inventories 'Инвентаризации'
     OBJECTS li=listInventory
     PROPERTIES(li) READONLY nameListInventory, nameStockListInventory, countIndexListInventory SHOWIF isSkuListInventory(li), countIndexBatchListInventory SHOWIF isBatchListInventory(li),
                             quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory
-    PROPERTIES(li)          printListInventory
     FILTERS                 inventoryListInventory(li) == in
     ORDER BY                nameStockListInventory
 
@@ -1309,7 +1176,6 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(cs)  FORCE PANEL READONLY sumItemPageInventoryDetailCollationSheet, sumContainerPageInventoryDetailCollationSheet,
                                          sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
                                          sumItemShortageCollationSheet, sumContainerShortageCollationSheet
-    PROPERTIES(cs)                       printTotalCollationSheet, printCollationSheet
     FILTERS                              inventoryCollationSheet(cs) == in
     ORDER BY                             nameStockCollationSheet
 

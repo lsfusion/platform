@@ -20,7 +20,7 @@ FORM printOutcomeCashOrderBy 'РКО' PRINT
 
 ;
 
-printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
+printIncomeCashOrderBy 'Распечатать' (incomeCashOrder) = [ACTION (incomeCashOrder) {
 
     FORM printIncomeCashOrderBy OBJECTS i = incomeCashOrder;
     SET isPrintedIncomeCashOrder(incomeCashOrder) <- TRUE;
@@ -28,7 +28,7 @@ printIncomeCashOrder 'Распечатать' (incomeCashOrder) = [ACTION (incom
 
 }](incomeCashOrder) CONFIRM;
 
-printAllIncomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
+printAllIncomeCashOrderBy 'Распечатать все непечатанные' = ACTION(date1, date2) {
 
     FOR isNotPrintedIncomeCashOrder(incomeCashOrder) AND
         dateCashDocument(incomeCashOrder) >= (date1 AS DATE) AND
@@ -40,7 +40,7 @@ printAllIncomeCashOrder 'Распечатать все непечатанные'
 
 } CONFIRM TOOLBAR;
 
-printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
+printOutcomeCashOrderBy 'Распечатать' (outcomeCashOrder) = [ACTION (outcomeCashOrder) {
 
     FORM printOutcomeCashOrderBy OBJECTS o = outcomeCashOrder;
     SET isPrintedOutcomeCashOrder(outcomeCashOrder) <- TRUE;
@@ -48,7 +48,7 @@ printOutcomeCashOrder 'Распечатать' (outcomeCashOrder) = [ACTION (out
 
 }](outcomeCashOrder) CONFIRM;
 
-printAllOutcomeCashOrder 'Распечатать все непечатанные' = ACTION(date1, date2) {
+printAllOutcomeCashOrderBy 'Распечатать все непечатанные' = ACTION(date1, date2) {
 
     FOR isNotPrintedOutcomeCashOrder(outcomeCashOrder) AND
         dateCashDocument(outcomeCashOrder) >= (date1 AS DATE) AND
@@ -62,8 +62,8 @@ printAllOutcomeCashOrder 'Распечатать все непечатанные
 
 EXTEND FORM centralCashRegister
 
-    PROPERTIES(i) printIncomeCashOrder
-    PROPERTIES printAllIncomeCashOrder(dFrom, dTo) TODRAW i
-    PROPERTIES(o) printOutcomeCashOrder, isCompleteCashOperation FORCE GRID
-    PROPERTIES printAllOutcomeCashOrder(dFrom, dTo) TODRAW o
+    PROPERTIES(i) printIncomeCashOrderBy
+    PROPERTIES printAllIncomeCashOrderBy(dFrom, dTo) TODRAW i
+    PROPERTIES(o) printOutcomeCashOrderBy, isCompleteCashOperation FORCE GRID
+    PROPERTIES printAllOutcomeCashOrderBy(dFrom, dTo) TODRAW o
 ;
