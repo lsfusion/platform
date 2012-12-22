@@ -316,7 +316,7 @@ printMarksSkuFreightUnit 'Печать маркировок товаров' (WHf
     SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
     SET shouldBePrintSku(sku) <- TRUE IF quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF);
-    SET countSku(sku) <- castToInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
+    SET countSku(sku) <- toInteger(quantitySkuFreightUnitWHfromRF(sku, currentFreightUnit(WHfromRF), WHfromRF));
     FORM printMarksDocument OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = overCompanyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 
 } CONFIRM;
@@ -333,10 +333,10 @@ printMarksSkuWHfromRF 'Печать маркировок товаров' (WHfrom
 
     IF selectWHfromRF (WHfromRF) THEN {
         SET shouldBePrintSku(sku) <- TRUE IF selectQuantitySkuInWHfromRF(WHfromRF, sku);
-        SET countSku(sku) <- castToInteger(selectQuantitySkuInWHfromRF(WHfromRF, sku));
+        SET countSku(sku) <- toInteger(selectQuantitySkuInWHfromRF(WHfromRF, sku));
     } ELSE {
         SET shouldBePrintSku(sku) <- TRUE IF quantitySkuInWHfromRF(WHfromRF, sku);
-        SET countSku(sku) <- castToInteger(quantitySkuInWHfromRF(WHfromRF, sku));
+        SET countSku(sku) <- toInteger(quantitySkuInWHfromRF(WHfromRF, sku));
     }
     FORM printMarksDocument OBJECTS dt = dateTimeWHfromRF(WHfromRF), imp = overCompanyWHfromRF(WHfromRF), c = currencyStock(stockWHfromRF(WHfromRF)) MODAL;
 

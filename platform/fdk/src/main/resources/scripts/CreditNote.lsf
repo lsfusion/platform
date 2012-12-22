@@ -320,8 +320,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     priceCreditNoteDetail(creditNoteDetail) += priceInvoiceCreditNoteDetail(creditNoteDetail);
 
-    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) =  roundCurrency((toShipInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
-        priceInvoiceCreditNoteDetail(invoiceCreditNoteDetail)), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
+    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) = toNumeric16p2(roundCurrency((toShipInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+        priceInvoiceCreditNoteDetail(invoiceCreditNoteDetail)), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
 
     sumCreditNoteDetail(creditNoteDetail) += sumInvoiceCreditNoteDetail(creditNoteDetail);
 
@@ -333,8 +333,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, numberVAT, 'НДС, номер');
     @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
 
-    VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
-        valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
+    VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = toNumeric16p2(roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+        valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
 
     VATSumCreditNoteDetail (creditNoteDetail) += VATSumInvoiceCreditNoteDetail(creditNoteDetail);
 

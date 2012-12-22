@@ -1017,7 +1017,7 @@ quantityStockPriceSetDocument (stock, priceSetDocument) =
     IF overInPriceSetDocumentSku(priceSetDocument, sku)
     BY stock, priceSetDocument;
     
-countStockPriceSetDocumentArticle(stock, priceSetDocument, article) = castToInteger(quantityStockPriceSetDocumentArticle(stock, priceSetDocument, article));
+countStockPriceSetDocumentArticle(stock, priceSetDocument, article) = toInteger(quantityStockPriceSetDocumentArticle(stock, priceSetDocument, article));
 
 shouldBePrintArticle(article) = SESSION DATA BOOLEAN (article);
 
@@ -1051,7 +1051,7 @@ quantityStockPriceSetDocumentSku 'Кол-во' (stock, priceSetDocument, sku) =
     GROUP SUM balanceBSkuStockDateTime(sku, stock, dateTimePriceSetDocument(priceSetDocument))
     BY stock, priceSetDocument, sku;
 
-countStockPriceSetDocumentSku(stock, priceSetDocument, sku) = castToInteger(quantityStockPriceSetDocumentSku(stock, priceSetDocument, sku));
+countStockPriceSetDocumentSku(stock, priceSetDocument, sku) = toInteger(quantityStockPriceSetDocumentSku(stock, priceSetDocument, sku));
 
 shouldBePrintSku(sku) = SESSION DATA BOOLEAN (sku);
 
@@ -1279,7 +1279,7 @@ printMarksSkuPriceSetDocument 'Печать маркировок товаров'
     SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
     SET shouldBePrintSku(sku) <- TRUE IF quantityFreightSku(freightBasePriceSetDocument(priceSetDocument), sku);
-    SET countSku(sku) <- castToInteger(quantityFreightSku(freightBasePriceSetDocument(priceSetDocument), sku));
+    SET countSku(sku) <- toInteger(quantityFreightSku(freightBasePriceSetDocument(priceSetDocument), sku));
     FORM printMarksDocument OBJECTS dt = dateTimePriceSetDocument(priceSetDocument), c = currencyPriceSetDocument(priceSetDocument) MODAL;            //imp = companyStock(stockWHfromCSR(WHfromCSR)),
 
 } CONFIRM;
@@ -1290,7 +1290,7 @@ printMarksSkuFreight 'Печать маркировок товаров' (freight
     SET shouldBePrintSku(sku) <- NULL;
     SET countSku(sku) <- NULL;
     SET shouldBePrintSku(sku) <- TRUE IF quantityImporterFreightSku(importer, freight, sku);
-    SET countSku(sku) <- castToInteger(quantityImporterFreightSku(importer, freight, sku));
+    SET countSku(sku) <- toInteger(quantityImporterFreightSku(importer, freight, sku));
     FORM printMarksDocument OBJECTS dt = dateTimePriceSetDocument (basePriceSetDocumentFreightImporter(freight, importer)),
         imp = importer, c = currencyPriceSetDocument(basePriceSetDocumentFreightImporter(freight, importer)) MODAL;
 

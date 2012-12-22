@@ -586,7 +586,7 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
             SET disparityBatchADisparityOutBatchADetail(d) <- disparityBatchA;
             SET skuDisparityOutBatchADetail(d) <- skuBatch(batch);
             SET batchDisparityOutBatchADetail(d) <- batch;
-            SET quantityDisparityOutBatchADetail(d) <- castToNumeric14p3(integerQuantityNegativeBatchDisparityBatchA(batch, disparityBatchA));
+            SET quantityDisparityOutBatchADetail(d) <- toNumeric14p3(integerQuantityNegativeBatchDisparityBatchA(batch, disparityBatchA));
             SET priceDisparityOutBatchADetail(d) <- priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
         }
     }
@@ -597,7 +597,7 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
             SET disparityBatchADisparityInBatchADetail(d) <- disparityBatchA;
             SET skuDisparityInBatchADetail(d) <- skuBatch(batch);
             SET batchDisparityInBatchADetail(d) <- batch;
-            SET quantityDisparityInBatchADetail(d) <- castToNumeric14p3(integerQuantityPositiveBatchDisparityBatchA(batch, disparityBatchA));
+            SET quantityDisparityInBatchADetail(d) <- toNumeric14p3(integerQuantityPositiveBatchDisparityBatchA(batch, disparityBatchA));
             SET priceDisparityInBatchADetail(d) <- priceBatchStockDateTime(batch, stockDisparityBatchA(disparityBatchA), dateTimeDisparityBatchA(disparityBatchA));
         }
     }

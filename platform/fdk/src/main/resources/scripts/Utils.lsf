@@ -41,9 +41,10 @@ divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST
 divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
 subtractIntegerIncl = FORMULA INTEGER '(($1)-($2)+1)';
 
-castToInteger = FORMULA INTEGER 'CAST($1 AS integer)';
-castToNumeric14p2 = FORMULA NUMERIC[14,3] 'CAST($1 AS numeric(14,2))';
-castToNumeric14p3 = FORMULA NUMERIC[14,3] 'CAST($1 AS numeric(14,3))';
+toInteger = FORMULA INTEGER 'CAST($1 AS integer)';
+toNumeric14p2 = FORMULA NUMERIC[14,2] 'CAST($1 AS numeric(14,2))';
+toNumeric14p3 = FORMULA NUMERIC[14,3] 'CAST($1 AS numeric(14,3))';
+toNumeric16p2 = FORMULA NUMERIC[16,2] 'CAST($1 AS numeric(16,2))';
 
 iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
 count(i, count) = iterate(i, 1, count);

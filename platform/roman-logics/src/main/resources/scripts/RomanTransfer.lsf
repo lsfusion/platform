@@ -85,7 +85,7 @@ quantitySoldSkuTransferTable 'Продано за интервал (кол-во)
 
 changeQuantitySkuStockTransferTable = ACTION (sku, stock, transferTable) {
     REQUEST STRING[20] INPUT;
-    SET quantitySkuStockTransferTable(sku, stock, transferTable) <- castToNumeric14p2(requestedString());
+    SET quantitySkuStockTransferTable(sku, stock, transferTable) <- toNumeric14p2(requestedString());
 }
 
 //--Внутренний заказ

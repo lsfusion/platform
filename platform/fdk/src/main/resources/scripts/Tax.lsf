@@ -352,7 +352,7 @@ END
 // ------------ derive
 META deriveDocumentDetailVATDataSumCustom(detail, currencyProp)
     VATSum###detail (detail)  <- roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
-                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (VAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
+                    WHEN CHANGED(sum###detail(detail)) OR CHANGED (valueVAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
 END
 META deriveDocumentDetailVATDataSum(object, currencyProp)
     @deriveDocumentDetailVATDataSumCustom(object##Detail, currencyProp);

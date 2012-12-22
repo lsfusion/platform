@@ -73,7 +73,7 @@ META implementContractPrepaymentLedger(object, sumProp, contractProp)
     contractContractLedger(object##ContractLedger) += contractProp###object(object###object##ContractLedger(object##ContractLedger));
     descriptionContractLedger(object##ContractLedger) += description###object(object###object##ContractLedger(object##ContractLedger));
     sumContractLedger(object##ContractLedger) +=
-        sumProp(object###object##ContractLedger(object##ContractLedger)) * percentPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)) / 100.0;
+        toNumeric16p2(sumProp(object###object##ContractLedger(object##ContractLedger)) * percentPaymentPeriod(paymentPeriod###object##ContractLedger(object##ContractLedger)) / 100.0);
 
 END
 
@@ -204,29 +204,30 @@ TABLE payment(payment);
 @defineDocumentHeaderPosted(payment);
 @defineNumeratedObjectDefault(payment, 'Нумератор для платежей', 'ПЛ');
 
-datePayment 'Дата' (payment) = DATA DATE (payment) PERSISTENT;
+datePayment 'Дата' (payment) = DATA DATE (payment);
 datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS payment);
-timePayment 'Время' (payment) = DATA TIME (payment) PERSISTENT;
+timePayment 'Время' (payment) = DATA TIME (payment);
 timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS payment);
 dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
 
-contractPayment 'Контракт' (payment) = DATA contract (payment) AUTOSET  PERSISTENT;
+contractPayment 'Контракт' (payment) = DATA contract (payment) AUTOSET;
 numberContractPayment 'Номер контракта' (payment) = numberContract(contractPayment(payment));
 
-notePayment 'Примечение' (payment) = DATA STRING[200] (payment) PERSISTENT;
+notePayment 'Примечение' (payment) = DATA STRING[200] (payment);
 
-payerPayment(payment) = DATA legalEntity (payment) PERSISTENT;
+payerPayment(payment) = DATA legalEntity (payment);
 payerPayment(payment) <- partyBContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
 namePayerPayment 'Сторона Б(Плательщик)' (payment) = name(payerPayment(payment));
-beneficiaryPayment(payment) = DATA legalEntity (payment) PERSISTENT;
+beneficiaryPayment(payment) = DATA legalEntity (payment);
 beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
 nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
 
-currencyPayment 'Валюта платежа' (payment) = DATA currency (payment) PERSISTENT;
+currencyPayment 'Валюта платежа' (payment) = DATA currency (payment);
 nameCurrencyPayment 'Валюта платежа' (payment) = name(currencyPayment(payment));
-typeExchangePayment (payment) = DATA typeExchange (payment) PERSISTENT;
+
+typeExchangePayment (payment) = DATA typeExchange (payment);
 nameTypeExchangePayment 'Тип обмена' (payment) = name(typeExchangePayment(payment));
-rateExchangePayment 'Курс' (payment) = DATA NUMERIC[15,8] (payment) PERSISTENT;
+rateExchangePayment 'Курс' (payment) = DATA NUMERIC[15,8] (payment);
 rateExchangePayment (payment) <- UNION OVERRIDE 1.0 IF payment IS payment, rateTypeExchangeCurrencyDate(typeExchangePayment(payment), currencyPayment(payment), datePayment(payment))
     WHEN CHANGED (currencyPayment(payment)) OR
          CHANGED (typeExchangePayment(payment)) OR
@@ -235,8 +236,8 @@ rateExchangePayment (payment) <- UNION OVERRIDE 1.0 IF payment IS payment, rateT
 CONSTRAINT currencyTypeExchange(typeExchangePayment(payment)) != currencyContract(contractPayment(payment))
     CHECKED BY typeExchangePayment MESSAGE 'Валюта типа обмена должны соответствовать валюте договора+';
 
-sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment) PERSISTENT;
-sumRateExchangePayment 'Сумма платежа(конверт.)' (payment) = sumPayment(payment) / rateExchangePayment(payment);
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+sumRateExchangePayment 'Сумма платежа(конверт.)' (payment) = toNumeric16p2(sumPayment(payment) / rateExchangePayment(payment));
 
 isNotSameCurrencyPayment (payment) = currencyContract(contractPayment(payment)) != currencyPayment(payment);
 
@@ -342,25 +343,25 @@ TABLE paymentRequest(paymentRequest);
 @defineDocumentHeaderPosted(paymentRequest);
 @defineNumeratedObjectDefault(paymentRequest, 'Нумератор для платежных требований', 'ПТ');
 
-datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (paymentRequest) PERSISTENT;
+datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (paymentRequest);
 datePaymentRequest(paymentRequest) <- currentDate() WHEN ASSIGNED(paymentRequest IS paymentRequest);
-timePaymentRequest 'Время' (paymentRequest) = DATA TIME (paymentRequest) PERSISTENT;
+timePaymentRequest 'Время' (paymentRequest) = DATA TIME (paymentRequest);
 timePaymentRequest(paymentRequest) <- currentTime() WHEN ASSIGNED(paymentRequest IS paymentRequest);
 dateTimePaymentRequest 'Дата время' (paymentRequest) = dateTimeToDateTime(datePaymentRequest(paymentRequest), timePaymentRequest(paymentRequest));
 
-contractPaymentRequest 'Контракт' (paymentRequest) = DATA contract (paymentRequest) AUTOSET PERSISTENT;
+contractPaymentRequest 'Контракт' (paymentRequest) = DATA contract (paymentRequest) AUTOSET;
 numberContractPaymentRequest 'Номер контракта' (paymentRequest) = numberContract(contractPaymentRequest(paymentRequest));
 
-notePaymentRequest 'Примечание' (paymentRequest) = DATA STRING[200] (paymentRequest) PERSISTENT;
+notePaymentRequest 'Примечание' (paymentRequest) = DATA STRING[200] (paymentRequest);
 
-payerPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest) PERSISTENT;
+payerPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
 payerPaymentRequest(paymentRequest) <- partyBContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
 namePayerPaymentRequest 'Сторона Б' (paymentRequest) = name(payerPaymentRequest(paymentRequest));
-lenderPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest) PERSISTENT;
+lenderPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
 lenderPaymentRequest(paymentRequest) <- partyAContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
 nameLenderPaymentRequest 'Сторона А' (paymentRequest) = name(lenderPaymentRequest(paymentRequest));
 
-sumPaymentRequest 'Сумма' (paymentRequest) = DATA NUMERIC[16,2] (paymentRequest) PERSISTENT;
+sumPaymentRequest 'Сумма' (paymentRequest) = DATA NUMERIC[16,2] (paymentRequest);
 
 descriptionPaymentRequest 'Название документа' =
     [FORMULA STRING[200] '\'Платежное требование \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -438,27 +439,27 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     @defineDocumentHeaderPosted(creditMemo###prefix);
     @defineNumeratedObjectDefault(creditMemo###prefix, 'Нумератор для кредитных нот', 'КН');
 
-    dateCreditMemo###prefix 'Дата' (creditMemo###prefix) = DATA DATE (creditMemo###prefix) PERSISTENT;
+    dateCreditMemo###prefix 'Дата' (creditMemo###prefix) = DATA DATE (creditMemo###prefix);
     dateCreditMemo###prefix(creditMemo###prefix) <- currentDate() WHEN ASSIGNED(creditMemo###prefix IS creditMemo###prefix);
-    timeCreditMemo###prefix 'Время' (creditMemo###prefix) = DATA TIME (creditMemo###prefix) PERSISTENT;
+    timeCreditMemo###prefix 'Время' (creditMemo###prefix) = DATA TIME (creditMemo###prefix);
     timeCreditMemo###prefix(creditMemo###prefix) <- currentTime() WHEN ASSIGNED(creditMemo###prefix IS creditMemo###prefix);
     dateTimeCreditMemo###prefix 'Дата время' (creditMemo###prefix) = dateTimeToDateTime(dateCreditMemo###prefix(creditMemo###prefix), timeCreditMemo###prefix(creditMemo###prefix));
 
-    contractCreditMemo###prefix 'Контракт' (creditMemo###prefix) = DATA contract (creditMemo###prefix) AUTOSET PERSISTENT;
+    contractCreditMemo###prefix 'Контракт' (creditMemo###prefix) = DATA contract (creditMemo###prefix) AUTOSET;
     numberContractCreditMemo###prefix 'Номер контракта' (creditMemo###prefix) = numberContract(contractCreditMemo###prefix(creditMemo###prefix));
 
-    noteCreditMemo###prefix 'Примечание' (creditMemo###prefix) = DATA STRING[200] (creditMemo###prefix) PERSISTENT;
+    noteCreditMemo###prefix 'Примечание' (creditMemo###prefix) = DATA STRING[200] (creditMemo###prefix);
 
-    partyBCreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix) PERSISTENT;
+    partyBCreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix);
     partyBCreditMemo###prefix(creditMemo###prefix) <- partyBContract(contractCreditMemo###prefix(creditMemo###prefix))
         WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
     namePartyBCreditMemo###prefix 'Сторона Б' (creditMemo###prefix) = name(partyBCreditMemo###prefix(creditMemo###prefix));
-    partyACreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix) PERSISTENT;
+    partyACreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix);
     partyACreditMemo###prefix(creditMemo###prefix) <- partyAContract(contractCreditMemo###prefix(creditMemo###prefix))
         WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
     namePartyACreditMemo###prefix 'Сторона А' (creditMemo###prefix) = name(partyACreditMemo###prefix(creditMemo###prefix));
 
-    sumCreditMemo###prefix 'Сумма' (creditMemo###prefix) = DATA NUMERIC[16,2] (creditMemo###prefix) PERSISTENT;
+    sumCreditMemo###prefix 'Сумма' (creditMemo###prefix) = DATA NUMERIC[16,2] (creditMemo###prefix);
 
     descriptionCreditMemo###prefix 'Название документа' =
         [FORMULA STRING[200] '\''###caption###' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](

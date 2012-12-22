@@ -470,7 +470,7 @@ priceBalanceCollationSheetBatch(collationSheet, batch) <- priceLedgerPriceListTy
 // ------------------------------------ Итоги по сличительной ведомости (Sku) ------------------------------------ //
 
 sumBalanceCollationSheetSku 'Сумма по остаткам' (collationSheet, sku) =
-    quantityBalanceCollationSheetSku(collationSheet, sku) * priceBalanceCollationSheetSku(collationSheet, sku);
+    toNumeric16p2(quantityBalanceCollationSheetSku(collationSheet, sku) * priceBalanceCollationSheetSku(collationSheet, sku));
 
 quantitySkuBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
     GROUP SUM quantityBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) BY collationSheet PERSISTENT;
@@ -506,7 +506,7 @@ sumContainerSkuShortageCollationSheet 'Сумма недостачи, тара' 
 // ------------------------------------ Итоги по сличительной ведомости (Batch) ------------------------------------ //
 
 sumBalanceCollationSheetBatch 'Сумма по остаткам' (collationSheet, batch) =
-    quantityBalanceCollationSheetBatch(collationSheet, batch) * priceBalanceCollationSheetBatch(collationSheet, batch);
+    toNumeric16p2(quantityBalanceCollationSheetBatch(collationSheet, batch) * priceBalanceCollationSheetBatch(collationSheet, batch));
 
 quantityBatchBalanceCollationSheet 'Кол-во по остаткам' (collationSheet) =
     GROUP SUM quantityBalanceCollationSheetBatch(collationSheet, batch) IF includeCollationSheetBatch(collationSheet, batch) BY collationSheet PERSISTENT;

@@ -933,7 +933,7 @@ META defineDocumentInterfaceDetailPrice (object)
 END
 
 META defineDocumentDetailSumCustom (detail, currencyProp)
-    sum###detail 'Сумма' (detail) = roundCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail));
+    sum###detail 'Сумма' (detail) = toNumeric16p2(roundCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail)));
 END
 META defineDocumentDetailSumCustom (detail)
     @defineDocumentDetailSumCustom(detail, currency);
