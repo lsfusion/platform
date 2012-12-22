@@ -1138,6 +1138,7 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
     ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime, pricePriceListTypeBatchStockDateTime { // цены берем на начало сессии, а не этого event'а
         LOCAL changedPriceListType = BOOLEAN (detail);
         SET changedPriceListType(detail) <- TRUE IF priceListType###detail(detail) AND
+                                                    skuUserInvoiceDetail(detail) AND
                                             (CHANGED(priceListType###detail(detail)) OR
                                              CHANGED(batch###detail(detail)) OR
                                              CHANGED(sku###detail(detail)) OR

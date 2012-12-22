@@ -41,7 +41,9 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
     LOCAL changedPriceListType = BOOLEAN (userInvoiceDetail);
     SET changedPriceListType(detail) <- TRUE IF retailPriceListTypeUserInvoiceDetail(detail) AND
+                                                skuUserInvoiceDetail(detail) AND
                                         (CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
+                                         CHANGED(priceUserInvoiceDetail(detail)) OR
                                          CHANGED(skuUserInvoiceDetail(detail)) OR
                                          CHANGED(customerStockUserInvoiceDetail(detail)) OR
                                          CHANGED(dateTimeUserInvoiceDetail(detail)) OR
