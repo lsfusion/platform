@@ -15,14 +15,10 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
 
 @defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
-EXTEND FORM userInvoice PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail;
-EXTEND FORM invoices PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupInvoiceDetail;
-
-retailPriceListTypeUserInvoice(userInvoice) <- priceListTypeDepartmentStore(customerStockUserInvoice(userInvoice)) IF customerStockUserInvoice(userInvoice) IS departmentStore
-    WHEN CHANGED(customerStockUserInvoice(userInvoice));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoice
+    PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerRow14 {
@@ -31,46 +27,50 @@ EXTEND DESIGN userInvoice {
         }
     }
 }
+EXTEND FORM invoices PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupInvoiceDetail;
+
+retailPriceListTypeUserInvoice(userInvoice) <- priceListTypeDepartmentStore(customerStockUserInvoice(userInvoice))
+    WHEN CHANGED(customerStockUserInvoice(userInvoice));
 
 retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
                                                 WHEN CHANGED(retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
-retailPriceUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail(detail) IS basePriceListType
-    THEN prevPricePriceListTypeSkuStockDateTime(retailPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail), customerStockUserInvoiceDetail(detail), dateTimeUserInvoiceDetail(detail))
-        ELSE roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
-            priceUserInvoiceDetail(detail),
-            retailMarkupUserInvoiceDetail(detail),
-            valueRetailVATUserInvoiceDetail(detail)), roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(detail)))
 
-    WHEN CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
-         CHANGED(skuUserInvoiceDetail(detail)) OR
-         CHANGED(customerStockUserInvoiceDetail(detail)) OR
-         CHANGED(dateTimeUserInvoiceDetail(detail)) OR
-         CHANGED(priceUserInvoiceDetail(detail)) OR
-         CHANGED(retailMarkupUserInvoiceDetail(detail)) OR
-         CHANGED(valueRetailVATUserInvoiceDetail(detail)) OR
-         CHANGED(retailPriceListTypeUserInvoiceDetail(detail));
+retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED(VATUserInvoiceDetail(detail));
 
-retailMarkupUserInvoiceDetail(detail)  <- IF retailPriceListTypeUserInvoiceDetail(detail) IS calcPriceListType
-    THEN markupCalcPriceListTypePriceGroupOver(retailPriceListTypeUserInvoiceDetail(detail), priceGroupSku(skuUserInvoiceDetail(detail)))
-        ELSE [round2(((X/Z*100/(100+Y))-1)*100)](
-            prevPricePriceListTypeSkuStockDateTime(retailPriceListTypeUserInvoiceDetail(detail),
-                                                   skuUserInvoiceDetail(detail),
-                                                   customerStockUserInvoiceDetail(detail),
-                                                   dateTimeUserInvoiceDetail(detail)),
-            priceUserInvoiceDetail(detail),
-            valueRetailVATUserInvoiceDetail(detail))
+// расчет надбавок и цены при изменении priceListType
+ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
+    LOCAL changedPriceListType = BOOLEAN (userInvoiceDetail);
+    SET changedPriceListType(detail) <- TRUE IF retailPriceListTypeUserInvoiceDetail(detail) AND
+                                        (CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
+                                         CHANGED(skuUserInvoiceDetail(detail)) OR
+                                         CHANGED(customerStockUserInvoiceDetail(detail)) OR
+                                         CHANGED(dateTimeUserInvoiceDetail(detail)) OR
+                                         CHANGED(valueRetailVATUserInvoiceDetail(detail)));
 
-
-    WHEN CHANGED(retailPriceListTypeUserInvoiceDetail(detail)) OR
-         CHANGED(skuUserInvoiceDetail(detail)) OR
-         CHANGED(customerStockUserInvoiceDetail(detail)) OR
-         CHANGED(dateTimeUserInvoiceDetail(detail)) OR
-         CHANGED(priceUserInvoiceDetail(detail)) OR
-         CHANGED(valueRetailVATUserInvoiceDetail(detail));
-
-
-
-retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN ASSIGNED(VATUserInvoiceDetail(detail));
+    FOR [GROUP MAX(changedPriceListType(detail)) BY retailPriceListTypeUserInvoiceDetail(detail)](priceListType) DO {
+        IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
+        IF priceListType IS calcPriceListType THEN {
+            SET retailMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypePriceGroupOver(priceListType, priceGroupSku(skuUserInvoiceDetail(detail)))
+                                                         WHERE changedPriceListType(detail) AND retailPriceListTypeUserInvoiceDetail(detail) == priceListType;
+            SET retailPriceUserInvoiceDetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+                                                                    priceUserInvoiceDetail(detail),
+                                                                    retailMarkupUserInvoiceDetail(detail),
+                                                                    valueRetailVATUserInvoiceDetail(detail)), roundConditionCalcPriceListType(priceListType))
+                                                         WHERE changedPriceListType(detail) AND retailPriceListTypeUserInvoiceDetail(detail) == priceListType;
+        } ELSE {
+            SET retailPriceUserInvoiceDetail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType,
+                                                                                               skuUserInvoiceDetail(detail),
+                                                                                               customerStockUserInvoiceDetail(detail),
+                                                                                               dateTimeUserInvoiceDetail(detail))
+                                                         WHERE changedPriceListType(detail) AND retailPriceListTypeUserInvoiceDetail(detail) == priceListType;
+            SET retailMarkupUserInvoiceDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
+                                                                     retailPriceUserInvoiceDetail(detail),
+                                                                     priceUserInvoiceDetail(detail),
+                                                                     valueRetailVATUserInvoiceDetail(detail))
+                                                         WHERE changedPriceListType(detail) AND retailPriceListTypeUserInvoiceDetail(detail) == priceListType;
+        }
+    }
+}
 
 CONSTRAINT supplierUserPricing(userPricing) AND NOT isSupplierLegalEntity(supplierUserPricing(userPricing))
     CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика организация, не являющаяся поставщиком';

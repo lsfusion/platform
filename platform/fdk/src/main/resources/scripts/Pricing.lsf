@@ -550,6 +550,8 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
                       retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
         PROPERTIES(d) pricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
+
+        HINTTABLE LIST retailMarkupUserInvoiceDetail, valueRetailVATUserInvoiceDetail, retailPriceUserInvoiceDetail
     ;
     EXTEND DESIGN userInvoice {
         headerRow14 {

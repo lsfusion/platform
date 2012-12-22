@@ -1,6 +1,5 @@
 package platform.server.data.query;
 
-import platform.base.BaseUtils;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -44,7 +43,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         this.mapKeys = mapKeys;
         this.mapValues = mapValues;
 
-        assert mapValues.assertValuesEquals(query.getInnerValues()); // все должны быть параметры
+//        assert mapValues.assertValuesEquals(query.getInnerValues()); // все должны быть параметры
     }
 
     public CompiledQuery<K, V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive) {
