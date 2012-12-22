@@ -1,0 +1,15 @@
+package platform.gwt.form.shared.view.classes;
+
+public class GCustomStaticFormatFileType extends GFileType {
+    public static GCustomStaticFormatFileType instance = new GCustomStaticFormatFileType();
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth) {
+        return 15;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth) {
+        return 15;
+    }
+}

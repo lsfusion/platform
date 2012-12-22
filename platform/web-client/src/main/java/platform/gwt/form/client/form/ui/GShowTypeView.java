@@ -49,21 +49,9 @@ public class GShowTypeView extends HorizontalPanel {
 
             setVisible(banClassViews.size() < 2);
 
-            if (classView == GClassViewType.HIDE) {
-                needToBeHidden();
-            } else {
-                needToBeShown();
-            }
-
             return true;
         }
         return false;
-    }
-
-    protected void needToBeShown() {
-    }
-
-    protected void needToBeHidden() {
     }
 
     public void setBanClassViews(List<String> banClassViewNames) {

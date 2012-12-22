@@ -65,6 +65,16 @@ public class GPanelController {
         }
     }
 
+    private boolean visible = true;
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            for (GPropertyController propertyController : propertyControllers.values()) {
+                propertyController.getView().setVisible(visible);
+            }
+        }
+    }
+
     public boolean containsProperty(GPropertyDraw property) {
         return properties.contains(property);
     }
@@ -214,7 +224,7 @@ public class GPanelController {
         }
 
         public boolean focusFirstWidget() {
-            if (renderers.isEmpty()) {
+            if (renderers == null || renderers.isEmpty()) {
                 return false;
             }
 

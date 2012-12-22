@@ -30,7 +30,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GGridController grid;
     private GShowTypeView showTypeView;
 
-    private GClassViewType classViewType = GClassViewType.HIDE;
+    private GClassViewType classViewType = GClassViewType.GRID;
 
     // пустая панель внизу контейнера группы, которая расширяется при спрятанном гриде, прижимая тулбар и панельный контейнер кверху
     private SimplePanel blankElement = new SimplePanel();
@@ -51,15 +51,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", true);
             formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
 
-            showTypeView = new GShowTypeView(formController, groupObject) {
-                protected void needToBeShown() {
-                    showViews();
-                }
-
-                protected void needToBeHidden() {
-                    hideViews();
-                }
-            };
+            showTypeView = new GShowTypeView(formController, groupObject);
             showTypeView.addToLayout(formLayout);
             showTypeView.setBanClassViews(groupObject.banClassView);
 
@@ -293,44 +285,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     public void setClassView(GClassViewType newClassView) {
         if (newClassView != null && newClassView != classViewType) {
             classViewType = newClassView;
-
-            if (showTypeView != null && showTypeView.setClassView(newClassView)) {
-                updateToolbar();
-            }
         }
-    }
-
-    private void updateToolbar() {
-        if (groupObject != null) {
-            GContainer gridContainer = groupObject.grid.container;
-            if (isInGridClassView()) {
-                grid.show();
-                toolbar.setVisible(true);
-                if (filter != null) {
-                    filter.setVisible(true);
-                }
-                formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
-                formLayout.setTableCellSize(gridContainer.container, blankElement, "auto", false);
-            } else {
-                grid.hide();
-                toolbar.setVisible(false);
-                if (filter != null) {
-                    filter.setVisible(false);
-                }
-                formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
-                formLayout.setTableCellSize(gridContainer.container, blankElement, "100%", false);
-            }
-        }
-    }
-
-    private void hideViews() {
-        grid.hide();
-        panel.hide();
-    }
-
-    private void showViews() {
-        grid.show();
-        panel.show();
     }
 
     private void removeProperty(GPropertyDraw property) {
@@ -366,11 +321,32 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         formLayout.add(filterGroup, filterWidget);
     }
 
-    private void update() {
-        if (grid != null) {
+    private void updateGrid() {
+        if (groupObject != null) {
             grid.update();
+            toolbar.setVisible(grid.isVisible());
+            if (filter != null) {
+                filter.setVisible(grid.isVisible());
+            }
+
+            GContainer gridContainer = groupObject.grid.container;
+            if (grid.isVisible()) {
+                formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+                formLayout.setTableCellSize(gridContainer.container, blankElement, "auto", false);
+            } else {
+                formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
+                formLayout.setTableCellSize(gridContainer.container, blankElement, "100%", false);
+            }
+            if (showTypeView != null) {
+                showTypeView.setClassView(classViewType);
+            }
         }
+    }
+
+    private void update() {
+        updateGrid();
         panel.update();
+        panel.setVisible(classViewType != GClassViewType.HIDE);
     }
 
     void flushTable() {

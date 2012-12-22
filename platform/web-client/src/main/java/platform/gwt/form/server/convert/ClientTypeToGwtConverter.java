@@ -88,6 +88,16 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GExcelType.instance;
     }
 
+    @Converter(from = ClientCustomStaticFormatFileClass.class)
+    public GCustomStaticFormatFileType convertCustomStaticFormatFileClass(ClientCustomStaticFormatFileClass customClass) {
+        return GCustomStaticFormatFileType.instance;
+    }
+
+    @Converter(from = ClientDynamicFormatFileClass.class)
+    public GCustomDynamicFormatFileType convertCustomDynamicFormatClass(ClientDynamicFormatFileClass customClass) {
+        return GCustomDynamicFormatFileType.instance;
+    }
+
     @Converter(from = ClientStringClass.class)
     public GStringType convertStringClass(ClientStringClass clientStringClass) {
         return new GStringType(clientStringClass.length);

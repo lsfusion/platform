@@ -43,11 +43,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private final ArrayList<GridDataRecord> currentRecords = new ArrayList<GridDataRecord>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
+    private GGridController gridController;
 
-    public GGridTable(GFormController iform, GGroupObjectController igroupController) {
+    public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
         super(iform);
 
         this.groupObject = igroupController.groupObject;
+        this.gridController = gridController;
 
         setKeyboardSelectionHandler(new GridTableKeyboardSelectionHandler(this));
         editBindingMap.setKeyAction(new GKeyStroke(GKeyStroke.KEY_F12), GEditBindingMap.GROUP_CHANGE);
@@ -173,6 +175,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 } else {
                     column = insertGridColumn(i);
                     setColumnWidth(column, property.getMinimumWidth());
+                    // если колонка появилась через showif без обновления данных
+                    if (!updatedProperties.contains(property)) {
+                        updatedProperties.add(property);
+                    }
                 }
 
                 GGridPropertyTableHeader header = headers.get(i);
@@ -192,6 +198,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             columnsMap = newColumnsMap;
 
             refreshHeaders();
+
+            gridController.setForceHidden(columnProperties.isEmpty());
 
             columnsUpdated = false;
             dataUpdated = true;

@@ -84,6 +84,7 @@ public class GFormController extends SimplePanel {
     private Timer asyncTimer;
     private PanelRenderer asyncView;
     private final int ASYNC_TIME_OUT = 50;
+    private boolean needToResize = false;
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
@@ -114,7 +115,7 @@ public class GFormController extends SimplePanel {
         initializeDefaultOrders();
 
         formLayout.hideEmptyContainerViews();
-        formLayout.totalResize();
+        totalResize();
 
         processRemoteChanges();
     }
@@ -234,6 +235,15 @@ public class GFormController extends SimplePanel {
         defaultOrdersInitialized = true;
     }
 
+    public void totalResize() {
+        formLayout.totalResize();
+        needToResize = false;
+    }
+
+    public void setNeedToResize(boolean needToResize) {
+        this.needToResize = needToResize;
+    }
+
     private void applyOrders(LinkedHashMap<GPropertyDraw, Boolean> orders) {
         Set<GGroupObject> wasOrder = new HashSet<GGroupObject>();
         for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet()) {
@@ -298,8 +308,8 @@ public class GFormController extends SimplePanel {
         flushTables();
 
         formLayout.hideEmptyContainerViews();
-        if (!fc.classViews.isEmpty()) {
-            formLayout.totalResize();
+        if (!fc.classViews.isEmpty() || needToResize) {
+            totalResize();
         }
 
         // в конце скроллим все таблицы к текущим ключам

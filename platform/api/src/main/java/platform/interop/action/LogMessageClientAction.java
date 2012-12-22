@@ -12,8 +12,7 @@ public class LogMessageClientAction extends ExecuteClientAction {
     public List<String> titles;
 
     public LogMessageClientAction(String message, boolean failed) {
-        this.message = message;
-        this.failed = failed;
+        this(message, new ArrayList<String>(), new ArrayList<List<String>>(), failed);
     }
 
     public LogMessageClientAction(String message, List<String> titles, List<List<String>> data, boolean failed) {

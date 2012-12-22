@@ -15,11 +15,14 @@ public class GGridController {
     private GGrid grid;
     private CellPanel gridView;
     private GGridTable table;
+    private GGroupObjectController groupController;
+    private boolean forceHidden = false;
 
     public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
         grid = igrid;
+        groupController = igroupObject;
         gridView = new VerticalPanel();
-        table = new GGridTable(iformController, igroupObject);
+        table = new GGridTable(iformController, igroupObject, this);
 
         ResizeLayoutPanel panel = new ResizeLayoutPanel();
         panel.setStyleName("gridResizePanel");
@@ -43,8 +46,21 @@ public class GGridController {
         return table.getSelectedValue(property);
     }
 
+    public void setForceHidden(boolean hidden) {
+        forceHidden = hidden;
+    }
+
+    public boolean isVisible() {
+        return !forceHidden && groupController.isInGridClassView();
+    }
+
     public void update() {
         table.update();
+        boolean oldGridVisibilityState = gridView.isVisible();
+        if (oldGridVisibilityState != isVisible()) {
+            gridView.setVisible(isVisible());
+            groupController.formController.setNeedToResize(true);
+        }
     }
 
     void flushTable() {
@@ -58,14 +74,6 @@ public class GGridController {
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(grid, gridView);
 //        formLayout.setTableCellSize(grid.container, gridView, "100%", false);
-    }
-
-    public void hide() {
-        gridView.setVisible(false);
-    }
-
-    public void show() {
-        gridView.setVisible(true);
     }
 
     public void relayoutTable() {
