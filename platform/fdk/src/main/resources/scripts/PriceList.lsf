@@ -444,10 +444,6 @@ FORM userPriceList 'Прайс'
     PROPERTIES(t) READONLY name
     PROPERTIES(p, t) inPriceListDataPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
 
-//    OBJECTS st = dataPriceListType
-//    PROPERTIES(st) READONLY name
-//    FILTERS inPriceListDataPriceListType(p, st)
-
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
@@ -490,7 +486,7 @@ FORM userPriceList 'Прайс'
     FILTERS inPriceListStockOver(p, ts2),
             isCompanyStock(ts2)
 
-    OBJECTS t2 = dataPriceListType FIXED PANEL
+    OBJECTS t2 = priceListType FIXED PANEL
     PROPERTIES(t2) SELECTOR name
 
     OBJECTS s2=sku
