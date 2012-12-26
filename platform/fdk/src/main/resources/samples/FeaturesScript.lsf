@@ -826,7 +826,7 @@ NAVIGATOR {
         ADD testModalForm;
 
         //если задано имя действия, то создаться элемент для запуска этого действия
-        NEW testNavigatorAction 'Показать "По документам" 3 раза' ACTION testAction;
+        NEW testNavigatorAction ACTION testAction 'Показать "По документам" 3 раза';
     }
     // так можно отдельно настроить окно, в которое будет рисоваться элемент
     root TO mainToolbar;
