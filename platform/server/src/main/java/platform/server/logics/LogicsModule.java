@@ -291,6 +291,8 @@ public abstract class LogicsModule {
         AbstractGroup group = new AbstractGroup(transformNameToSID(name), caption);
         if (parent != null) {
             parent.add(group);
+        } else {
+            privateGroup.add(group);
         }
         group.createContainer = toCreateContainer;
         addModuleGroup(group);
