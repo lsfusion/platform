@@ -2248,15 +2248,13 @@ NAVIGATOR {
         ADD costSkuLedger;
         ADD costSkuBatchLedger;
     }
-    NEW stockBalance 'Остатки' {
-        NEW balanceItem 'Остатки по товару' {
-            ADD currentBalanceSkuStock;
-            ADD balanceSkuStock;
-        }
-        NEW balanceBatch 'Остатки по партиям' {
-            ADD currentBalanceBatchStock;
-            ADD balanceBatchStock;
-        }
+    NEW balanceSku 'Остатки по товару' {
+        ADD currentBalanceSkuStock;
+        ADD balanceSkuStock;
+    }
+    NEW balanceBatch 'Остатки по партиям' {
+        ADD currentBalanceBatchStock;
+        ADD balanceBatchStock;
     }
 }
 

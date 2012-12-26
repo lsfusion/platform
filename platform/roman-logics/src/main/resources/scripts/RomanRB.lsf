@@ -192,7 +192,8 @@ NAVIGATOR {
             ADD surplusOuts;
         }
         ADD stockCost;
-        ADD stockBalance;
+        ADD balanceSku;
+        ADD balanceBatch;
     }
 
     logistics {

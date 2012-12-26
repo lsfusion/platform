@@ -382,6 +382,13 @@ DESIGN naturalLosses FROM DEFAULT {
     ADD functions.box;
 }
 
+NAVIGATOR {
+    NEW naturalLossNavigator 'Естественная убыль' {
+        ADD naturalLosses;
+        ADD naturalLossGroups;
+    }
+}
+
 //------------------- Справочник норм естественной убыли----------------------------//
 
 loadDefaultNaturalLossGroup 'Добавить нормы естественной убыли' = ACTION (idCountry, string)  {

@@ -501,16 +501,15 @@ NAVIGATOR {
     }
 
     NEW warehouse 'Управление складом' TO toolbar {
-        ADD inventoryNavigator {
-            ADD naturalLosses;
-            ADD naturalLossGroups;
-        }
+        ADD inventoryNavigator;
+        ADD naturalLossNavigator;
         ADD writeOffNavigator;
         ADD adjustmentNavigator;
         ADD disparityNavigator;
 
+        ADD balanceSku;
+        ADD balanceBatch;
         ADD stockCost;
-        ADD stockBalance;
         NEW stockDocuments 'Бухгалтерские документы' {
             ADD sumStockDocumentLedger;
             ADD containerMovement;
