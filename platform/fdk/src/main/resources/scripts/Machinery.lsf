@@ -339,6 +339,7 @@ FORM machineryPriceTransactions 'Загрузки прайса в оборудо
     PROPERTIES(e)  FORCE PANEL  errorTraceMachineryPriceTransactionError
     FILTERS machineryPriceTransactionMachineryPriceTransactionError(e) == t
 ;
+@extendFormFilterStockAccess(stock, s, machineryPriceTransactions);
 
 DESIGN machineryPriceTransactions FROM DEFAULT {
     main {

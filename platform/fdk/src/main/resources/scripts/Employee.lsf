@@ -40,7 +40,27 @@ positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40
 TABLE employeeDivisionEmployee (employeeDivision, employee);
 inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (employeeDivision, employee);
 
+accessEmployee 'Доступ разрешен' = DATA BOOLEAN (employee);
 accessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
+accessEmployeeDivisionGroupEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivisionGroup, employee);
+
+levelParentEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) = GROUP MIN levelEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroup, parent) IF accessEmployeeDivisionGroupEmployee(parent, employee)
+                                                               BY employee, employeeDivisionGroup PERSISTENT;
+nearestParentEmployeeDivisionGroup (employee, employeeDivisionGroup) = employeeDivisionGroupEmployeeDivisionGroupLevel(employeeDivisionGroup, levelParentEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup));
+nearestInEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) =
+    accessEmployeeDivisionGroupEmployee(nearestParentEmployeeDivisionGroup (employee, employeeDivisionGroup), employee);
+
+
+accessEmployeeEmployeeDivisionGroupOver 'Доступ разрешен' (employee, employeeDivisionGroup) =
+    UNION OVERRIDE accessEmployee(employee) AND employeeDivisionGroup IS employeeDivisionGroup,
+                   nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup),
+                   accessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee);
+
+accessEmployeeEmployeeDivisionOver 'Доступ разрешен' (employee, employeeDivision) =
+    (UNION OVERRIDE accessEmployee(employee) AND employeeDivision IS employeeDivision,
+                   nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)),
+                   accessEmployeeDivisionEmployee(employeeDivision, employee));
+
 restrictAccessEmployee 'Запретить доступ' = DATA BOOLEAN (employee);
 
 FORM employee 'Сотрудник'
@@ -48,17 +68,21 @@ FORM employee 'Сотрудник'
     PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
                        userLogin, userPassword, emailContact, nameMainRoleUser, restrictAccessEmployee
 
-    TREE treeEmployeeDivision dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup, dd = employeeDivision
-    PROPERTIES READONLY  dgTreeName = name(dg), ddTreeName = name(dd)
-    FILTERS                    employeeDivisionGroupEmployeeDivision(dd) == dg
+    TREE treeEmployeeDivision a=STRING[3], dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup
+    PROPERTIES READONLY  OBJVALUE(a), dgTreeName = name(dg)
+    FILTERS stringEqualsAll(a)
+    PROPERTIES(e)     accessEmployee TODRAW a FORCE GRID
+    PROPERTIES(e, dg) accessEmployeeEmployeeDivisionGroupOver
 
-    OBJECTS                    d=employeeDivision
-    PROPERTIES(d)              name
-    PROPERTIES(d, e)           inEmployeeDivisionEmployee, accessEmployeeDivisionEmployee
+    OBJECTS           d=employeeDivision
+    PROPERTIES(d)     name
+    PROPERTIES(d, e)  inEmployeeDivisionEmployee
+    PROPERTIES(e, d)  accessEmployeeEmployeeDivisionOver
 
-    FILTERS           dd == d AND dg IS employeeDivisionGroup OR
-                      isParentEmployeeDivisionGroupEmployeeDivision(dg, d) AND NOT dd
+    FILTERS (d IS employeeDivision AND NOT dg IS employeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
 
+    FILTERGROUP filters
+            FILTER 'Склады с доступом' 'F10' accessEmployeeEmployeeDivisionOver(e, d) DEFAULT
     EDIT employee OBJECT e
 ;
 

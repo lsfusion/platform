@@ -157,6 +157,7 @@ FORM labelTransactions 'Печать ценников'
     PROPERTIES(l, b) READONLY quantityLabelTransactionBarcode, nameLabelTransactionBarcode, priceLabelTransactionBarcode
     FILTERS inLabelTransactionBarcode(l, b)
 ;
+@extendFormFilterStockAccess(departmentStore, d, labelTransactions);
 
 DESIGN labelTransactions FROM DEFAULT {
     NEW topContainer{

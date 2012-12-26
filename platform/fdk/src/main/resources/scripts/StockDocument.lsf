@@ -197,6 +197,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
             dateStockDocumentLedger(ol) <= dtTo
     ORDER BY oDateTime
 ;
+@extendFormFilterStockAccess(stock, ds, sumStockDocumentLedger);
 
 
 DESIGN sumStockDocumentLedger FROM DEFAULT {

@@ -42,6 +42,7 @@ FORM printContainerMovement 'Отчет по таре' PRINT
             isContainerBatch(bt),
             overMovementContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
+@extendFormFilterStockAccess(departmentStore, dep, printContainerMovement);
 
 
 
