@@ -741,6 +741,7 @@ DESIGN dataPriceListType FROM DEFAULT {
     }
 }
 
+addDataPriceListType 'Добавить пользовательскую цену' = ACTION ADDFORM dataPriceListType;
 editDataPriceListType 'Редактировать' = ACTION EDITFORM dataPriceListType;
 editPriceListType(priceListType) += editDataPriceListType(priceListType);
 
@@ -766,6 +767,7 @@ DESIGN calcPriceListType FROM DEFAULT{
     ADD functions.box;
 }
 
+addCalcPriceListType 'Добавить расчетную цену' = ACTION ADDFORM calcPriceListType;
 editCalcPriceListType 'Редактировать' = ACTION EDITFORM calcPriceListType;
 editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 
@@ -786,7 +788,8 @@ FORM priceListTypes 'Виды цен'
 
     OBJECTS pt = priceListType
     PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
-    PROPERTIES(pt) ADDFORM, editPriceListType, delete
+    PROPERTIES() TODRAW pt FORCE PANEL addDataPriceListType, addCalcPriceListType
+    PROPERTIES(pt) editPriceListType, delete
     ORDER BY objectClassName
 
     OBJECTS p = userPriceList

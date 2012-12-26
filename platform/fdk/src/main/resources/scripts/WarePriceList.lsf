@@ -43,5 +43,11 @@ DESIGN warePriceListType FROM DEFAULT {
     }
 }
 
+addWarePriceListType 'Добавить цену cо стеклопосудой' = ACTION ADDFORM warePriceListType;
 editWarePriceListType 'Редактировать' = ACTION EDITFORM warePriceListType;
 editPriceListType(priceListType) += editWarePriceListType(priceListType);
+
+EXTEND FORM priceListTypes
+
+    PROPERTIES() addWarePriceListType AFTER addCalcPriceListType TODRAW pt FORCE PANEL
+;
