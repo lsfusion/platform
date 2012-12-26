@@ -14,12 +14,12 @@ NAMESPACE Purchase;
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger) IF isPostedInvoice(contractALedger);
+sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
 
 @implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
 
 @implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
-sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger) IF isPostedInvoice(inContractLedger);
+sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';

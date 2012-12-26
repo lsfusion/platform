@@ -15,13 +15,13 @@ NAMESPACE SaleReturn;
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(, userInvoice, contractSku);
-sumContractLedger(contractLedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractLedger) IF isPostedInvoice(contractLedger);
+sumContractLedger(contractLedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractLedger);
 
 @implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractALedger) IF isPostedInvoice(contractALedger);
+sumContractALedger(contractALedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
 
 @implementOutContractLedgerInContractLedgerPrefix(out, userInvoice, contractSku);
-sumOutContractLedger(outContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(outContractLedger) IF isPostedInvoice(outContractLedger);
+sumOutContractLedger(outContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(outContractLedger);
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';

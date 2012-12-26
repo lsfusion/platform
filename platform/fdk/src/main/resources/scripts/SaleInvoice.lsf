@@ -85,12 +85,12 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger) IF isPostedInvoice(contractALedger);
+sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
 
 @implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
 
 @implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
-sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger) IF isPostedInvoice(inContractLedger);
+sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
 
 @defineDocumentContactSkuStock (userInvoice, userInvoice, customer, 'Покупатель', i, s);
 customerEntityUserInvoice(userInvoice) <- customerUserInvoice(userInvoice) WHEN CHANGED(customerUserInvoice(userInvoice));

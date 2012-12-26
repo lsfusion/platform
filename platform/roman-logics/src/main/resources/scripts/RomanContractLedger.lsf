@@ -195,10 +195,10 @@ descriptionCommercialInvoice 'Название документа' (commercialIn
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),
     nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS commercialInvoice;
 @implementContractLedger(a, commercialInvoice, contract);
-sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger) IF isPostedCommercialInvoice(contractALedger);;
+sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 
 @implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice, contract);
 //sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
 
 @implementOutContractLedgerInContractLedgerPrefix(in, commercialInvoice, contract);
-sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger) IF isPostedCommercialInvoice(inContractLedger);;
+sumInContractLedger(inContractLedger) += sumCommercialInvoice(inContractLedger);
