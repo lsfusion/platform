@@ -326,7 +326,7 @@ META defineScheduleOrder(sign, stockProp)
 
     editScheduleOrderDetail 'Редактировать' (detail) = editScheduleOrder(scheduleOrderScheduleOrderDetail(detail)) TOOLBAR;
 
-    addScheduleOrderSupplierCustomer 'Добавить'##sign =  ACTION (supplier, customer) {
+    addScheduleOrderSupplierCustomer 'Добавить'##sign = ACTION (supplier, customer) {
         FOR ADDOBJ s = scheduleOrder DO {
             SET supplierScheduleOrder(s) <- supplier;
             SET customerScheduleOrder(s) <- customer;
@@ -447,20 +447,26 @@ META defineScheduleOrder(sign, stockProp)
 
 END
 
+filterCompanySupplier(legalEntity, supplier) = (isCompanyLegalEntity(legalEntity) AND isSupplierLegalEntity(supplier)) OR
+                                               (isCustomerLegalEntity(legalEntity) AND isCompanyLegalEntity(supplier));
+
+filterCompanyCustomer(legalEntity, customer) = (isCompanyLegalEntity(legalEntity) AND isCustomerLegalEntity(customer)) OR
+                                               (isSupplierLegalEntity(legalEntity) AND isCompanyLegalEntity(customer));
+
 EXTEND FORM legalEntity
 
     OBJECTS ss=scheduleOrder
-    PROPERTIES(ss) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
+    PROPERTIES(ss) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
     PROPERTIES(ss) delete, editScheduleOrder
-    //PROPERTIES(s, l) addScheduleOrderSupplierCustomer TODRAW ss
 
+    FILTERS filterCompanySupplier(l, s)
     FILTERS supplierScheduleOrder(ss) == s, customerScheduleOrder(ss) == l
 
     OBJECTS sc=scheduleOrder
-    PROPERTIES(sc) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
+    PROPERTIES(sc) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
     PROPERTIES(sc) delete, editScheduleOrder
-    //PROPERTIES(l, c) addScheduleOrderSupplierCustomer TODRAW sc
 
+    FILTERS filterCompanyCustomer(l, c)
     FILTERS customerScheduleOrder(sc) == c, supplierScheduleOrder(sc) == l
 
 
