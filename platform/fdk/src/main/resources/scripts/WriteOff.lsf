@@ -183,34 +183,6 @@ sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 @implementStockDocumentLedgerOut(writeOff, stock);
 sumOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 
-// --------------------------- Печатная форма ---------------------------------
-
-
-FORM writeOffPrint 'Акт списания' PRINT
-    OBJECTS w=writeOff FIXED PANEL
-    PROPERTIES (w)  SELECTOR numberWriteOff, seriesWriteOff, nameStockWriteOff,
-                   dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
-                   sumWriteOffDetailWriteOff,
-                   nameLegalEntityStockWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
-                   commonNameEmployeeCommitteeWriteOff, writeOffCommitteeWriteOff
-
-    OBJECTS d=writeOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
-                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
-
-
-    OBJECTS e=employee
-
-    PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
-
-    FILTERS inWriteOffWriteOffDetail(w, d),
-            inCommitteeWriteOffEmployee(w, e)
-
-    EDIT writeOff OBJECT w
-;
-
-printWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
-
 // --------------------------- Формы списания ---------------------------------
 
 FORM userWriteOff 'Списание'
@@ -290,8 +262,6 @@ FORM writeOffs 'Списания'
     PROPERTIES (w) editUserWriteOff
     PROPERTIES (w) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserWriteOff(w)
 
-    PROPERTIES (w) FORCE PANEL printWriteOff
-
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
@@ -329,7 +299,6 @@ DESIGN writeOffs FROM DEFAULT {
                     title = 'Печать';
                     childConstraints = TO THE BOTTOM;
                     fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
-                    ADD PROPERTY(printWriteOff);
                 }
             }
         }

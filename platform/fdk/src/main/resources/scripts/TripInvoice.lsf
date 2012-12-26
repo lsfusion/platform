@@ -93,9 +93,3 @@ EXTEND DESIGN trips {
         };
     }
 }
-
-EXTEND FORM waybill
-    OBJECTS i=invoice
-    PROPERTIES (i) seriesNumberObject, dateInvoice, addressSupplierStockInvoice, addressCustomerStockInvoice
-    FILTERS inTripInvoice(t, i)
-;

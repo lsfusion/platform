@@ -6,6 +6,41 @@ NAMESPACE WriteOff;
 
 UNPLegalEntityStockWriteOff 'УНП' (writeOff) = UNPLegalEntity(legalEntityStockWriteOff(writeOff));
 
-EXTEND FORM writeOffPrint
-    PROPERTIES(w) UNPLegalEntityStockWriteOff
+// --------------------------- Печатная форма ---------------------------------
+
+FORM printWriteOffBy 'Акт списания' PRINT
+    OBJECTS w=writeOff FIXED PANEL
+    PROPERTIES (w)  SELECTOR numberWriteOff, seriesWriteOff, nameStockWriteOff,
+                   dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
+                   sumWriteOffDetailWriteOff,
+                   nameLegalEntityStockWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
+                   commonNameEmployeeCommitteeWriteOff, writeOffCommitteeWriteOff, UNPLegalEntityStockWriteOff
+
+    OBJECTS d=writeOffDetail
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
+                   quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
+
+
+    OBJECTS e=employee
+
+    PROPERTIES(e) SELECTOR   commonName, namePositionEmployee
+
+    FILTERS inWriteOffWriteOffDetail(w, d),
+            inCommitteeWriteOffEmployee(w, e)
+
+    EDIT writeOff OBJECT w
 ;
+
+printWriteOffBy 'Акт списания' (writeOff) = ACTION FORM printWriteOffBy OBJECTS w IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM writeOffs
+
+    PROPERTIES (w) FORCE PANEL printWriteOffBy
+;
+
+EXTEND DESIGN writeOffs{
+
+    printContainer{
+        ADD PROPERTY(printWriteOffBy);
+    }
+}

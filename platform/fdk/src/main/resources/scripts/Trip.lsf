@@ -97,26 +97,6 @@ createPathTrip 'Рассчитать путь' (trip) = ACTION (trip) {
     SET numberStockTrip(stock, trip) <- numberPathPOI(stock);
 } TOOLBAR;
 
-
-
-FORM waybill PRINT
-
-    OBJECTS t=trip FIXED PANEL
-    PROPERTIES(t) dateTrip, seriesNumberObject, sidTruckTrip, nameDriverTrip, nameTruckModelTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
-
-    OBJECTS st=stock
-    PROPERTIES(st) name, addressStock, nameLegalEntityStock
-    PROPERTIES(t, st) addressStockPrevTripStock, grossWeightTripToStock
-    PROPERTIES (st, t) numberStockTrip
-    ORDER BY numberStockTrip(st, t)
-    FILTERS quantityTripStock(t, st)>0, stockPrevTripStock(t, st)
-;
-
-printWaybill 'Печать путевого листа' (trip) = ACTION (trip) {
-    FORM waybill OBJECTS t = trip;
-} TOOLBAR;
-
-
 FORM ordersTrip PRINT
 
     OBJECTS t=trip FIXED PANEL
@@ -215,7 +195,6 @@ FORM trip 'Рейс'
     PROPERTIES(t, st) grossWeightTripToStock
     PROPERTIES(st, t) numberStockTrip, isFirstStockTrip
     FILTERS quantityTripStock (t, st)>0
-    PROPERTIES (t) printWaybill TODRAW st
     PROPERTIES (t) showPointsTrip TODRAW st
     PROPERTIES (t) createPathTrip TODRAW st
 

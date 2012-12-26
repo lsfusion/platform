@@ -1,0 +1,11 @@
+MODULE PurchaseWriteOffBy;
+
+REQUIRE PurchaseWriteOff, WriteOffBy;
+
+NAMESPACE PurchaseWriteOff;
+
+printWriteOffInvoiceBy 'Акт списания' (invoice) = printWriteOffBy(shipmentWriteOffShipment(invoiceShipmentInvoice(invoice))) IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM invoices
+    PROPERTIES(i) FORCE PANEL printWriteOffInvoiceBy SHOWIF createPurchaseWriteOffInvoice(i)
+;

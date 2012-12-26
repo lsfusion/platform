@@ -21,7 +21,7 @@ overMovementContainerBatchStockDateFromTo (batch, stock, dateFrom, dateTo) = UNI
     costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo),
     costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
-FORM printContainerMovement 'Отчет по таре' PRINT
+FORM containerMovement 'Отчет по таре' PRINT
 
     OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
@@ -42,7 +42,18 @@ FORM printContainerMovement 'Отчет по таре' PRINT
             isContainerBatch(bt),
             overMovementContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
-@extendFormFilterStockAccess(departmentStore, dep, printContainerMovement);
 
+DESIGN containerMovement FROM DEFAULT{
+    NEW mainContainer{
+        childConstraints = TO THE BOTTOM;
+        NEW topContainer{
+            childConstraints = TO THE RIGHT;
+            ADD params.box;
+        }
+        ADD dep.box{childConstraints = TO THE RIGHTBOTTOM;}
+        ADD bt.box;
+    }
+    ADD functions.box;
+}
 
-
+@extendFormFilterStockAccess(departmentStore, dep, containerMovement);

@@ -49,7 +49,7 @@ REQUIRE System,
         PurchaseReturnShipment,
         PurchaseReturnCreditNote,
         PurchaseReturnPricing,
-        PurchaseWriteOff,
+        PurchaseWriteOffBy,
         PurchaseSaleShipment,
         PurchaseSaleInvoice,
         PurchaseSaleOrder,
@@ -70,7 +70,7 @@ REQUIRE System,
         StockDocumentBy,
         StockDocumentWarehouse,
         StockDocumentStore,
-        ContainerMovement,
+        ContainerMovementBy,
         POSPricing,
         Sales,
         Supply,
@@ -79,7 +79,7 @@ REQUIRE System,
         Scales,
         StockReserve,
         PriceChecker,
-        WriteOff,
+        WriteOffBy,
         Terminal,
         Label,
         RetailCRM,
@@ -99,7 +99,7 @@ REQUIRE System,
         PriceList,
         Transport,
         Route,
-        Trip,
+        TripBy,
         Warehouse,
         ShipmentWarehouse,
         StockTax,
@@ -513,7 +513,7 @@ NAVIGATOR {
         ADD stockBalance;
         NEW stockDocuments 'Бухгалтерские документы' {
             ADD sumStockDocumentLedger;
-            ADD printContainerMovement;
+            ADD containerMovement;
         }
         NEW warehouseCatalog 'Справочники' {
             ADD warehouses;

@@ -375,12 +375,6 @@ sumWriteOffDetail(writeOffDetail) += writeOffShipmentWriteOffDetail(writeOffDeta
 
 shipmentDetailWriteOffDetail(writeOffDetail) += shipmentDetailShipmentWriteOffDetail(writeOffDetail);
 
-printWriteOff 'Акт списания' (writeOff) = ACTION FORM writeOffPrint OBJECTS w IMAGE 'print.png' IN printGroup;
-printWriteOffInvoice 'Акт списания' (invoice) = printWriteOff(shipmentWriteOffShipment(invoiceShipmentInvoice(invoice))) IMAGE 'print.png' IN printGroup;
-
-EXTEND FORM invoices
-    PROPERTIES(i) FORCE PANEL printWriteOffInvoice SHOWIF createPurchaseWriteOffInvoice(i)
-;
 NAVIGATOR {
     writeOffNavigator  {
         ADD writeOffRateDialog;

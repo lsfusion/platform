@@ -4,7 +4,7 @@ REQUIRE StockDocument, StockBy;
 
 NAMESPACE StockDocument;
 
-FORM printSumStockDocumentLedgerBy 'Товарный отчет' PRINT
+FORM printStockDocumentBy 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
             ds = stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
@@ -37,17 +37,17 @@ FORM printSumStockDocumentLedgerBy 'Товарный отчет' PRINT
     ORDER BY oDateTime
 ;
 
-printSumStockDocumentLedgerBy 'Распечатать' () =
-    ACTION FORM printSumStockDocumentLedgerBy IMAGE 'print.png' IN printGroup;
+printStockDocumentBy 'Распечатать' () =
+    ACTION FORM printStockDocumentBy IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM sumStockDocumentLedger
 
-    PROPERTIES printSumStockDocumentLedgerBy() TODRAW params FORCE PANEL
+    PROPERTIES printStockDocumentBy() TODRAW params FORCE PANEL
 ;
 
 EXTEND DESIGN sumStockDocumentLedger{
 
     container11{
-        ADD PROPERTY(printSumStockDocumentLedgerBy);
+        ADD PROPERTY(printStockDocumentBy);
     }
 }
