@@ -358,8 +358,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
 printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы --------------------------------- //
-isAccessGrantedRepricing (repricing) = accessEmployeeDivisionEmployee(departmentStoreRepricing(repricing), currentUser());
-    
+
 FORM userRepricing 'Акт переоценки'
     OBJECTS p=userRepricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
@@ -471,11 +470,12 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
                numberVATRepricingDetail, valueVATRepricingDetail, VATSumRepricingDetail,
                retailPriceRepricingDetail, retailSumRepricingDetail
 
-    FILTERS repricingRepricingDetail(d) == p,
-            isAccessGrantedRepricing(p)
+    FILTERS repricingRepricingDetail(d) == p
 
     DIALOG repricing OBJECT p
 ;
+@extendFormFilterAccess(repricing, p, repricings, departmentStore);
+
 DESIGN repricings FROM DEFAULT {
     PROPERTY (delete(p)) {
         askConfirm = TRUE;

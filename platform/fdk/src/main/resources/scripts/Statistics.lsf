@@ -303,8 +303,7 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
 
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameS=nameSku(s), name(st)
-    FILTERS           st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts,
-                      isAccessGrantedStock(st)
+    FILTERS           st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          nameS
     FILTERGROUP filters
@@ -318,6 +317,7 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateFromTo(g, ts, dFrom, dTo), valueResidentByStatisticGroupDateFromTo(g, ts, dFrom, dTo)
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ts, dTo), valueResidentByStatisticGroupDateTo(g, ts, dTo)
 ;
+@extendFormFilterStockAccess(stock, st, statisticalReport);
 
 DESIGN statisticalReport FROM DEFAULT {
 

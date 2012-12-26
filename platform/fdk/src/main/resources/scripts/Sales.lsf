@@ -139,8 +139,6 @@ EXTEND DESIGN options {
 }
 
 //---------------------------------------------- Формы продаж -------------------------------------//
-isAccessGrantedSalesLedger (ledger) = accessEmployeeDivisionEmployee(stockSalesLedger(ledger), currentUser());
-
 FORM salesLedger 'Продажи по позициям'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
@@ -150,10 +148,11 @@ FORM salesLedger 'Продажи по позициям'
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameCustomerSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
                            quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
     PROPERTIES    READONLY sumSoldTypeExchangeSalesLedger (te, s)
-    FILTERS isPostedSalesLedger(s),
-            isAccessGrantedSalesLedger(s)
+    FILTERS isPostedSalesLedger(s)
     FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
 ;
+@extendFormFilterAccess(salesLedger, s, salesLedger, stock);
+
 DESIGN salesLedger FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
@@ -192,7 +191,6 @@ FORM salesSkuStock 'Продажи по SKU'
     PROPERTIES        READONLY nameSku(s), stockName = name(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isAccessGrantedStock(st),
                       (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
 
     ORDER BY          nameSku
@@ -208,6 +206,7 @@ FORM salesSkuStock 'Продажи по SKU'
         FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
 
 ;
+@extendFormFilterStockAccess(stock, st, salesSkuStock);
 
 DESIGN salesSkuStock FROM DEFAULT {
 

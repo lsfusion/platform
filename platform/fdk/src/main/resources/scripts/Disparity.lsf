@@ -94,7 +94,6 @@ sumInSkuLedger (ledger) += sumInputDisparityDetail(ledger);
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
 quantityDisparityDetailSkuDisparity 'Кол-во для закачки в оборудование (приход)' (sku, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputSkuDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
-isAccessGrantedDisparity (disparity) = accessEmployeeDivisionEmployee(stockDisparity(disparity), currentUser());
 
 FORM disparity 'Изменение сортности'
 
@@ -187,9 +186,10 @@ FORM disparities 'Изменения сортности'
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
                     inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail
 
-    FILTERS         disparityDisparityDetail(d) == dis,
-                    isAccessGrantedDisparity(dis)
+    FILTERS         disparityDisparityDetail(d) == dis
 ;
+@extendFormFilterAccess(disparity, dis, disparities, stock);
+
 DESIGN disparities FROM DEFAULT {
     main {
         preferredSize = (1024, 768);

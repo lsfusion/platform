@@ -135,7 +135,6 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     addUserCreditNote 'Добавить' = ACTION ADDFORM userCreditNote;
     editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM userCreditNote;
-    isAccessGrantedCreditNote (creditNote) = accessEmployeeDivisionEmployee(stockProp###creditNote(creditNote), currentUser());
 
     FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
         OBJECTS c = creditNote
@@ -154,11 +153,11 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
                                 quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
                                  VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, name###stockProp###creditNoteDetail
-        FILTERS creditNoteCreditNoteDetail(d) == c,
-                isAccessGrantedCreditNote(c)
+        FILTERS creditNoteCreditNoteDetail(d) == c
 
         DIALOG creditNote OBJECT c
     ;
+    @extendFormFilterAccess(creditNote, c, creditNotes, stockProp);
 
     DESIGN creditNotes FROM DEFAULT {
         PROPERTY (delete(c)) {

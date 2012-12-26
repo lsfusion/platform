@@ -39,14 +39,14 @@ positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40
 
 TABLE employeeDivisionEmployee (employeeDivision, employee);
 inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (employeeDivision, employee);
-accessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
-isAccessGrantedStock 'Доступ разрешен' (stock) = accessEmployeeDivisionEmployee(stock, currentUser());
 
+accessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
+restrictAccessEmployee 'Запретить доступ' = DATA BOOLEAN (employee);
 
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
     PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
-                       userLogin, userPassword, emailContact, nameMainRoleUser
+                       userLogin, userPassword, emailContact, nameMainRoleUser, restrictAccessEmployee
 
     TREE treeEmployeeDivision dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup, dd = employeeDivision
     PROPERTIES READONLY  dgTreeName = name(dg), ddTreeName = name(dd)
@@ -83,6 +83,11 @@ DESIGN employee FROM DEFAULT {
                 ADD PROPERTY(emailContact(e));
                 ADD PROPERTY(nameMainRoleUser(e));
             };
+            NEW row {
+                title = 'Доступ';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(restrictAccessEmployee);
+            }
 
         }
         POSITION treeEmployeeDivision.tree.box TO THE LEFT d.box;

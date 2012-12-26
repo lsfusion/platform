@@ -329,8 +329,6 @@ printPricing 'Акт расценки' (pricing) = ACTION FORM pricing OBJECTS p
 // --------------------------- Формы --------------------------------- //
 
 backgroundRetailPricing 'Цвет' (pricing) = RGB(224, 255, 255) IF pricing IS pricing;
-isAccessGrantedPricing (pricing) = accessEmployeeDivisionEmployee(departmentStorePricing(pricing), currentUser());
-
 FORM userPricing 'Акт расценки'
     OBJECTS p = userPricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameDepartmentStoreUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
@@ -425,11 +423,12 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
                    retailPricePricingDetail, retailSumPricingDetail
     PROPERTIES (d) nameDepartmentStorePricingDetail
 
-    FILTERS pricingPricingDetail(d) == p,
-            isAccessGrantedPricing(p)
+    FILTERS pricingPricingDetail(d) == p
 
     DIALOG pricing OBJECT p
 ;
+@extendFormFilterAccess(pricing, p, pricings, departmentStore);
+
 DESIGN pricings FROM DEFAULT {
     PROPERTY (delete(p)) {
         askConfirm = TRUE;

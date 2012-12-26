@@ -512,7 +512,20 @@ costOutBalanceBatchStockDateFromTo 'Расход' (batch, stock, dateFrom, dateT
 costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
     costBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
-// ---------------------------------------------- Макросы ------------------------------------------------- //
+// ---------------------------------------------- Доступ ------------------------------------------------- //
+
+META extendFormFilterAccess(object, concrete, form, stockProp)
+    EXTEND FORM form
+    FILTERS
+    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeDivisionEmployee(stockProp###object(concrete), currentUser());
+END
+META extendFormFilterStockAccess(object, concrete, form)
+    EXTEND FORM form
+    FILTERS
+    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeDivisionEmployee(concrete, currentUser());
+END
+
+// ---------------------------------------------- Макросы ------------------------------------------------ //
 
 META implementSkuLedger(object, skuProp, stockProp)
     dateTimeDataSkuLedger (ledger) += dateTime###object(ledger);
@@ -1852,7 +1865,6 @@ DESIGN dialogBatch FROM DEFAULT {
 }
 
 // ------------------------------------------------- Себестоимость --------------------------- //
-isAccessGrantedSkuLedger (skuLedger) = accessEmployeeDivisionEmployee(stockSkuLedger(skuLedger), currentUser());
 
 FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bil = skuLedger
@@ -1867,8 +1879,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
     OBJECTS bt = batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
     PROPERTIES(bil, bt)     costSkuLedgerBatch FORCE GRID
-    FILTERS isAccessGrantedSkuLedger(bil),
-            skuBatch(bt) == skuSkuLedger(bil)
+    FILTERS skuBatch(bt) == skuSkuLedger(bil)
     ORDER BY dateTimeBatch DESC
 
     FILTERGROUP inSkuLedgerBatch
@@ -1876,6 +1887,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
 
     PROPERTIES() setDataSkuLedgerBatchCost, resetDataSkuLedgerBatchCost, clearDataSkuLedgerBatchCost
 ;
+@extendFormFilterAccess(skuLedger, bil, costSkuLedger, stock);
 
 
 DESIGN costSkuLedger FROM DEFAULT {
@@ -1952,7 +1964,6 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          nameSku
@@ -1977,6 +1988,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
 ;
+@extendFormFilterStockAccess(stock, st, currentBalanceSkuStock);
 
 DESIGN currentBalanceSkuStock FROM DEFAULT {
     main{
@@ -2029,7 +2041,6 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
@@ -2046,6 +2057,7 @@ FORM balanceSkuStock 'Остатки на дату'
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 ;
+@extendFormFilterStockAccess(stock, st, balanceSkuStock);
 
 DESIGN balanceSkuStock FROM DEFAULT {
     main{
@@ -2106,7 +2118,6 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     ORDER BY          dateTimeBatch
@@ -2128,6 +2139,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
         FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDate(bt, currentDate(), 7)
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
 ;
+@extendFormFilterStockAccess(stock, st, currentBalanceBatchStock);
 
 DESIGN currentBalanceBatchStock FROM DEFAULT {
     main{
@@ -2182,7 +2194,6 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      isAccessGrantedStock(st),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
     ORDER BY          dateTimeBatch
 
@@ -2198,6 +2209,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
         FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDateTime(bt, t, 7)
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDateTime(bt, t, 30)
 ;
+@extendFormFilterStockAccess(stock, st, balanceBatchStock);
 
 DESIGN balanceBatchStock FROM DEFAULT {
     main{

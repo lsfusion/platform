@@ -373,8 +373,6 @@ META implementStockDocumentLedgerZReportCustom (sumProp)
 END
 //----------------------------------- Формы -------------------------------------------------//
 
-isAccessGrantedZReport (zReport) = accessEmployeeDivisionEmployee(departmentStoreZReport(zReport), currentUser());
-
 FORM zReport 'Z-отчет'
     OBJECTS z=zReport FIXED PANEL
     PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
@@ -456,14 +454,14 @@ FORM zReports 'Z-отчеты'
     PROPERTIES(d) READONLY  typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
                             costSumSkuLedger, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail
 
-    FILTERS receiptReceiptDetail(d)==b,
-            isAccessGrantedZReport(z)
+    FILTERS receiptReceiptDetail(d)==b
 
     OBJECTS p=payment
     PROPERTIES(p) READONLY  namePaymentTypePayment, namePaymentMeansPayment, sumPayment
 
     FILTERS receiptPayment(p)==b
 ;
+@extendFormFilterAccess(zReport, z, zReports, departmentStore);
 
 DESIGN zReports FROM DEFAULT{
 

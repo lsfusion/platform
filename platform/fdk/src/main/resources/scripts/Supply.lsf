@@ -144,7 +144,6 @@ EXTEND DESIGN options {
 }
 
 //---------------------------------------------- Формы закупки -------------------------------------//
-isAccessGrantedSupplyLedger (ledger) = accessEmployeeDivisionEmployee(stockSupplyLedger(ledger), currentUser());
 
 FORM supplyLedger 'Поступления по позициям'
 
@@ -155,10 +154,12 @@ FORM supplyLedger 'Поступления по позициям'
     PROPERTIES(s) READONLY dateSupplyLedger, dateTimeSupplyLedger, nameStockSupplyLedger, nameSupplierSupplyLedger, nameSkuSupplyLedger, descriptionSupplyLedger,
                            quantitySupplyLedger, sumVATSupplyLedger, sumSupplyLedger, averagePriceSupplyLedger
     PROPERTIES    READONLY sumPurchaseTypeExchangeSupplyLedger (te, s)
-    FILTERS isPostedSupplyLedger(s),
-            isAccessGrantedSupplyLedger(s)
+    FILTERS isPostedSupplyLedger(s)
+
     FILTERS dateSupplyLedger(s) >= dFrom, dateSupplyLedger(s) <= dTo
 ;
+@extendFormFilterAccess(supplyLedger, s, supplyLedger, stock);
+
 DESIGN supplyLedger FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
@@ -197,7 +198,6 @@ FORM supplySkuStock 'Поступления по SKU'
     PROPERTIES        READONLY nameSku(s), stockName = name(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
-                      isAccessGrantedStock(st),
                       (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
 
     ORDER BY          nameSku
@@ -213,6 +213,7 @@ FORM supplySkuStock 'Поступления по SKU'
         FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
 
 ;
+@extendFormFilterStockAccess(stock, st, supplySkuStock);
 
 DESIGN supplySkuStock FROM DEFAULT {
 

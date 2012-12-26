@@ -208,8 +208,6 @@ dateToNaturalLoss 'по' = DATA DATE (naturalLoss) IN documentPrmGroup;
 dateFromNaturalLossDetail 'с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 dateToNaturalLossDetail 'по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 
-isAccessGrantedNaturalLoss (naturalLoss) = accessEmployeeDivisionEmployee(stockNaturalLoss(naturalLoss), currentUser());
-
 subNaturalLossGroupNaturalLossDetail = DATA subNaturalLossGroup (naturalLossDetail);
 nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
     name(subNaturalLossGroupNaturalLossDetail(naturalLossDetail));
@@ -352,9 +350,9 @@ FORM naturalLosses 'Ведомости естественной убыли'
                            nameSubNaturalLossGroupNaturalLossDetail, codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail,
                            percentNaturalLossDetail, quantityNaturalLossDetail, priceNaturalLossDetail, sumNaturalLossDetail
 
-    FILTERS inNaturalLossNaturalLossDetail(s, d),
-            isAccessGrantedNaturalLoss(s)
+    FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
+@extendFormFilterAccess(naturalLoss, s, naturalLosses, stock);
 
 DESIGN naturalLosses FROM DEFAULT {
 
