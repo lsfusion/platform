@@ -1,0 +1,49 @@
+MODULE Receipt;
+
+REQUIRE Stock, Item, LegalEntity;
+
+CLASS receipt 'Приходная накладная';
+CLASS receiptDetail 'Строка приходной накладной';
+
+receiptReceiptDetail 'Документ строки' (receiptDetail) = DATA receipt(receiptDetail);
+
+indexReceiptDetail 'Номер строки' (receiptDetail) =
+        PARTITION SUM 1 IF receiptDetail IS receiptDetail BY receiptReceiptDetail(receiptDetail)
+        ORDER receiptDetail;
+
+numberReceipt 'Номер накладной' (receipt) = DATA STRING[10](receipt);
+dateReceipt 'Дата накладной' (receipt) = DATA DATE(receipt);
+
+supplierReceipt 'Поставщик' (receipt) = DATA legalEntity(receipt);
+nameSupplierReceipt 'Наименование поставщика' (receipt) = nameLegalEntity(supplierReceipt(receipt));
+
+stockReceipt 'Склад' (receipt) = DATA stock(receipt);
+nameStockReceipt 'Наименование склада' (receipt) = nameStock(stockReceipt(receipt));
+
+itemReceiptDetail 'Товар' (receiptDetail) = DATA item(receiptDetail);
+nameItemReceiptDetail 'Наименование товара' (receiptDetail) = nameItem(itemReceiptDetail(receiptDetail));
+
+quantityReceiptDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,2](receiptDetail);
+priceReceiptDetail 'Цена поставщика' (receiptDetail) = DATA NUMERIC[17,2](receiptDetail);
+sumReceiptDetail 'Сумма поставщика' (receiptDetail) = quantityReceiptDetail(receiptDetail)*priceReceiptDetail(receiptDetail);
+
+FORM receipt 'Приходная накладная'
+	OBJECTS r=receipt FIXED PANEL
+	PROPERTIES(r) numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
+
+	OBJECTS d=receiptDetail
+	PROPERTIES(d) indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail READONLY, ADDOBJ, delete
+	FILTERS receiptReceiptDetail(d) == r
+
+	EDIT receipt OBJECT r
+;
+
+FORM receipts 'Приходные накладные'
+	OBJECTS r=receipt
+	PROPERTIES(r) READONLY numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
+	PROPERTIES(r) ADDFORM, EDITFORM, delete
+
+	OBJECTS d=receiptDetail
+	PROPERTIES(d) READONLY indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail
+	FILTERS receiptReceiptDetail(d) == r
+ ;

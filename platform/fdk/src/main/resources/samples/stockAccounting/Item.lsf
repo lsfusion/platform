@@ -1,0 +1,15 @@
+MODULE Item;
+
+REQUIRE System;
+
+CLASS item 'Товар';
+
+nameItem 'Наименование' (item) = DATA STRING[100](item) IN base;
+barcodeItem 'Штрих-код' (item) = DATA STRING[13](item) IN base;
+
+salePriceItem 'Оптовая цена' (item) = DATA NUMERIC[17,2](item) IN base;
+
+FORM items 'Товары'
+	OBJECTS i=item
+	PROPERTIES(i) nameItem, barcodeItem, salePriceItem, ADDOBJ, delete
+;

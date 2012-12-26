@@ -1,0 +1,16 @@
+MODULE LegalEntity;
+
+REQUIRE System;
+
+CLASS legalEntity 'Организация';
+
+nameLegalEntity 'Наименование' (legalEntity) = DATA STRING[100](legalEntity) IN base;
+addressLegalEntity 'Адрес' (legalEntity) = DATA STRING[150](legalEntity) IN base;
+innLegalEntity 'ИНН' (legalEntity) = DATA STRING[9](legalEntity) IN base;
+
+legalEntityINN (inn) = GROUP UNIQUE legalEntity BY innLegalEntity(legalEntity);
+
+FORM legalEntities 'Организации'
+	OBJECTS l=legalEntity
+	PROPERTIES(l) nameLegalEntity, innLegalEntity, addressLegalEntity, ADDOBJ, delete
+;
