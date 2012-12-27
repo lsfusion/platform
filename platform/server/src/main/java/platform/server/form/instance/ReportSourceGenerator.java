@@ -300,15 +300,11 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         for (GroupObjectInstance group : groups) {
             query.and(group.getWhere(query.getMapExprs(), modifier));
 
-            for (int i=0,size=group.orders.size();i<size;i++) {
-                OrderInstance order = group.orders.getKey(i);
+            ImOrderMap<OrderInstance, Boolean> groupOrders = group.orders.mergeOrder(group.getOrderObjects().toOrderMap(false));
+            for (int i=0,size=groupOrders.size();i<size;i++) {
+                OrderInstance order = groupOrders.getKey(i);
                 query.addProperty(order, order.getExpr(query.getMapExprs(), modifier));
-                mQueryOrders.add(order, group.orders.getValue(i));
-            }
-
-            for (ObjectInstance object : group.objects) {
-                query.addProperty(object, object.getExpr(query.getMapExprs(), modifier));
-                mQueryOrders.add(object, false);
+                mQueryOrders.add(order, groupOrders.getValue(i));
             }
 
             if (group.curClassView != ClassViewType.GRID) {
@@ -340,20 +336,20 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     // получает все группы, от которых зависит (не только непосредственно) свойство
     private ImOrderSet<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
         Set<GroupObjectInstance> initialGroups = getPropertyDependencies(property);
-        MExclSet<GroupObjectInstance> groups = SetFact.mExclSet();
+        MSet<GroupObjectInstance> groups = SetFact.mSet();
         
         for (GroupObjectInstance group : initialGroups) {
             ReportNode curNode = fullFormHierarchy.getReportNode(group.entity);
             List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
             int groupIndex = nodeGroups.indexOf(group.entity);
             for (int i = 0; i <= groupIndex; i++) {
-                groups.exclAdd(idToInstance.get(nodeGroups.get(i).getID()));
+                groups.add(idToInstance.get(nodeGroups.get(i).getID()));
             }
 
             curNode = fullFormHierarchy.getParentNode(curNode);
             while (curNode != null) {
                 for (GroupObjectEntity nodeGroup : curNode.getGroupList()) {
-                    groups.exclAdd(idToInstance.get(nodeGroup.getID()));
+                    groups.add(idToInstance.get(nodeGroup.getID()));
                 }
                 curNode = fullFormHierarchy.getParentNode(curNode);
             }

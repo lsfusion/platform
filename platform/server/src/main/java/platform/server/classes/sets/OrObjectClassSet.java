@@ -178,9 +178,8 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
                 return baseClass.unknown;
         } else {
             if(!set.isEmpty()) {
-                ConcreteCustomClass single;
-                if(up.isEmpty() && (single = set.single())!=null)
-                    return single;
+                if(up.isEmpty() && set.size()==1)
+                    return set.single();
             } else
                 return up.getSingleClass();
         }
