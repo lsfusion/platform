@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="params" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="397"/>
+	<property name="ireport.x" value="233"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -34,7 +34,7 @@
 	<field name="dep" class="java.lang.Integer"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="nameStoreDepartmentStore" class="java.lang.String"/>
-	<field name="nameCompanyDepartmentStore" class="java.lang.String"/>
+	<field name="nameLegalEntityDepartmentStore" class="java.lang.String"/>
 	<field name="costSumContainerStockDateFrom" class="java.lang.Double"/>
 	<field name="costSumContainerStockDateTo" class="java.lang.Double"/>
 	<field name="bt" class="java.lang.Integer"/>
@@ -140,7 +140,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+$F{nameCompanyDepartmentStore}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+$F{nameLegalEntityDepartmentStore}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="62" width="537" height="12"/>
