@@ -1487,11 +1487,8 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
         PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
         FILTERGROUP filter
-            FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
-            FILTER 'Товары в заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
-        FILTERGROUP filter1
-            FILTER 'Товары с ценой ' 'F11' priceSkuStock###object(s, st, concrete)
-//            FILTER 'Товары с реализацией ' 'F8' quantitySoldSkuStock###object(s, st, concrete)
+            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'В заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
     ;
 
     EXTEND DESIGN form {
@@ -1588,11 +1585,9 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         ORDER BY inputName
 
         FILTERGROUP filter
-            FILTER 'Товары с остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
-            FILTER 'Товары в документе ' 'F9' quantity###detail###skuProp###object(s, concrete)
+            FILTER 'С остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
+            FILTER 'В документе ' 'F9' quantity###detail###skuProp###object(s, concrete)
 
-        FILTERGROUP filter1
-            FILTER 'Товары с ценой ' 'F11' priceSku###object(s, concrete)
     ;
 
     EXTEND DESIGN form {
@@ -1699,11 +1694,9 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
-            FILTER 'Товары с остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
-            FILTER 'Товар в заказе' 'F9' quantitySku###object###stockProp(s, concrete, st)
+            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'В заказе' 'F9' quantitySku###object###stockProp(s, concrete, st)
 
-        FILTERGROUP filter1
-            FILTER 'Товары с ценой ' 'F11' priceSkuStock###object###contactStock(s, st, concrete, cc)
 
     ;
 
@@ -1742,8 +1735,8 @@ META defineDocumentContactSkuStock (object, form, contact, contactCaption, concr
     relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS sku AND NOT contact###entity###object(object));
 
     EXTEND FORM form
-    PROPERTIES name###contact###entity###object(concrete) FORCE PANEL
-    FILTERS           relation###contact###object###sku(concrete, s)
+        PROPERTIES name###contact###entity###object(concrete) FORCE PANEL
+        FILTERS           relation###contact###object###sku(concrete, s)
     ;
     EXTEND DESIGN form {
         row {

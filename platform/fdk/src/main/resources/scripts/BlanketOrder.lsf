@@ -135,9 +135,6 @@ META defineBlanketOrder(sign)
 
         FILTERS blanketOrderBlanketOrderDetail(d) == o,
                 inCustomerBlanketOrderStock(o,c)
-        FILTERGROUP filtr1
-            FILTER 'В заказе' 'F11' inBlanketOrderStock(o,c)
-
 
         EVENTS
             ON OK EXEC prePostBlanketOrder(o)

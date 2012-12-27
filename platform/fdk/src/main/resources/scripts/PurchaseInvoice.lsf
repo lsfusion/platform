@@ -31,15 +31,12 @@ numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberO
 sidUserInvoiceDetail (userInvoiceDetail) = DATA STRING[200] (userInvoiceDetail);
 userInvoiceDetailSID (sidUserInvoiceDetail) = GROUP MAX userInvoiceDetail BY sidUserInvoiceDetail(userInvoiceDetail) WHERE userInvoiceDetail IS userInvoice;
 
-@defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
-supplierEntityUserInvoice(userInvoice) <- supplierUserInvoice(userInvoice) WHEN CHANGED(supplierUserInvoice(userInvoice));
-
 inAssortmentSkuUserInvoice (sku, userInvoice)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
 inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice
        FILTERGROUP filter2
-            FILTER 'Товары с поступлением ' 'F7' inUserInvoiceSku(i, s)
-            FILTER 'Товары в ассортименте ' 'F6' inAssortmentSkuUserInvoice(s, i)
+            FILTER 'С поступлением ' 'F8' inUserInvoiceSku(i, s)
+            FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
 ;
 
 // Проводим по регистру закупок

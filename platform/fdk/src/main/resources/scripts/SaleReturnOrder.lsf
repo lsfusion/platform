@@ -19,12 +19,12 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 @defineDocumentPackageSkuStock(userOrder, sku, supplierStock, salePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, showSalePack);
 
-@defineDocumentContactSkuStock (userOrder, userOrder, customer, 'Покупатель', o, sts);
-customerEntityUserOrder(userOrder) <- customerUserOrder(userOrder) WHEN CHANGED(supplierUserOrder(userOrder));
+@defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
 
 inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku);
 EXTEND FORM userOrder
-       FILTERGROUP filter2
-            FILTER 'Товары с продажей ' 'F7' inUserOrderSku(o, s)
+    FILTERGROUP filter1
+        FILTER 'С продажей' 'F8' inUserOrderSku(o, s)
+        FILTER'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o)
 
 ;
