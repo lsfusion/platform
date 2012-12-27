@@ -292,7 +292,8 @@ public abstract class LogicsModule {
         if (parent != null) {
             parent.add(group);
         } else {
-            privateGroup.add(group);
+            if (privateGroup != null)
+                privateGroup.add(group);
         }
         group.createContainer = toCreateContainer;
         addModuleGroup(group);
