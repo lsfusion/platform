@@ -607,6 +607,7 @@ FORM centralCashRegister 'Центральная касса'
             isPostedCashDocument(i),
             isPostedCashDocument(o)
 ;
+@extendFormFilterStockAccess(departmentStore, d, centralCashRegister);
 
 DESIGN centralCashRegister FROM DEFAULT {
 

@@ -524,6 +524,11 @@ META extendFormFilterStockAccess(object, concrete, form)
     FILTERS
     (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeDivisionEmployee(concrete, currentUser());
 END
+META extendFormFilterStockGroupAccess(object, concrete, form, prop)
+    EXTEND FORM form
+    FILTERS
+    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR prop(currentUser(), concrete);
+END
 
 // ---------------------------------------------- Макросы ------------------------------------------------ //
 
@@ -1984,6 +1989,8 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY dateTimeBatch DESC
 ;
 @extendFormFilterStockAccess(stock, st, currentBalanceSkuStock);
+@extendFormFilterStockGroupAccess(stock, ts, currentBalanceSkuStock, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceSkuStock, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceSkuStock FROM DEFAULT {
     main{
@@ -2053,6 +2060,8 @@ FORM balanceSkuStock 'Остатки на дату'
     ORDER BY dateTimeSkuLedger DESC
 ;
 @extendFormFilterStockAccess(stock, st, balanceSkuStock);
+@extendFormFilterStockGroupAccess(stock, ts, balanceSkuStock, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, balanceSkuStock, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceSkuStock FROM DEFAULT {
     main{
@@ -2135,6 +2144,8 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
 ;
 @extendFormFilterStockAccess(stock, st, currentBalanceBatchStock);
+@extendFormFilterStockGroupAccess(stock, ts, currentBalanceBatchStock, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceBatchStock, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceBatchStock FROM DEFAULT {
     main{
@@ -2205,6 +2216,8 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDateTime(bt, t, 30)
 ;
 @extendFormFilterStockAccess(stock, st, balanceBatchStock);
+@extendFormFilterStockGroupAccess(stock, ts, balanceBatchStock, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, balanceBatchStock, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceBatchStock FROM DEFAULT {
     main{

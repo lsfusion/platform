@@ -294,7 +294,8 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), name(ts)
     ORDER BY sgTreeName
-    FILTERS stringEqualsAll(a)
+    FILTERS stringEqualsAll(a),
+            stockGroupStock(ts) == sg
 
     TREE treeGroups g=statisticGroup PARENT parentStatisticGroup
     PROPERTIES READONLY gname = name(g),  sidStatisticGroup(g), nameUOMStatisticGroup(g)
@@ -318,6 +319,8 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ts, dTo), valueResidentByStatisticGroupDateTo(g, ts, dTo)
 ;
 @extendFormFilterStockAccess(stock, st, statisticalReport);
+@extendFormFilterStockGroupAccess(stock, ts, statisticalReport, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, statisticalReport, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN statisticalReport FROM DEFAULT {
 

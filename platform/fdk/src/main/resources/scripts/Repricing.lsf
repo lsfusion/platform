@@ -56,6 +56,10 @@ FORM repricingCommittee 'Комиссия переоценки'
 
     EDIT repricingCommittee OBJECT c
 ;
+@extendFormFilterStockAccess(departmentStore, dep, repricingCommittee);
+@extendFormFilterStockGroupAccess(chainStores, t, repricingCommittee, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, repricingCommittee, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, repricingCommittee, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN repricingCommittee FROM DEFAULT {
     main {

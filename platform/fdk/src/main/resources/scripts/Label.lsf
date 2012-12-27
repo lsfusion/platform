@@ -43,6 +43,10 @@ FORM labelType 'Тип ценника'
 
     EDIT labelType OBJECT l
 ;
+@extendFormFilterStockAccess(departmentStore, d, labelType);
+@extendFormFilterStockGroupAccess(chainStores, t, labelType, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, labelType, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, labelType, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN labelType FROM DEFAULT {
     POSITION treeStore.tree.box TO THE LEFT d.box;

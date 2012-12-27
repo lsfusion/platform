@@ -50,6 +50,8 @@ FORM inventoryCommittee 'Комиссия для инвентаризации'
 
     EDIT inventoryCommittee OBJECT c
 ;
+@extendFormFilterStockAccess(stock, ts, inventoryCommittee);
+@extendFormFilterStockGroupAccess(stockGroup, sg, inventoryCommittee, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN inventoryCommittee FROM DEFAULT {
     main {
@@ -755,6 +757,8 @@ FORM dialogStockInventory 'Выбор складов для инвентариз
     FILTERS isParentStockGroupStock(sg, ts)
     ORDER BY tsTreeName
 ;
+@extendFormFilterStockAccess(stock, ts, dialogStockInventory);
+@extendFormFilterStockGroupAccess(stockGroup, sg, dialogStockInventory, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN dialogStockInventory FROM DEFAULT {
     main{

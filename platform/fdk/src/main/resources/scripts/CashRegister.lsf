@@ -116,6 +116,7 @@ FORM groupsCashRegister 'Группы касс'
                            dateCashRegister, nameLegalEntityCashRegister
     FILTERS groupCashRegisterCashRegister(c) == grc
 ;
+@extendFormFilterAccess(groupMachinery, grc, groupsCashRegister, stock);
 
 DESIGN groupsCashRegister FROM DEFAULT {
     NEW topContainer {

@@ -823,6 +823,7 @@ FORM priceListTypes 'Виды цен'
     FILTERS pricePriceListTypeSkuStockDateTime(pt, sk, s, dt),
             pricePriceListTypeBatchStockDateTime(pt, b, s, dt)
 ;
+@extendFormFilterStockAccess(stock, s, priceListTypes);
 
 DESIGN priceListTypes FROM DEFAULT{
     NEW mainContainer{

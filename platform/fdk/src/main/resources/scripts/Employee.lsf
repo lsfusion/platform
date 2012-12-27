@@ -63,6 +63,10 @@ accessEmployeeEmployeeDivisionOver 'Доступ разрешен' (employee, em
 
 restrictAccessEmployee 'Запретить доступ' = DATA BOOLEAN (employee);
 
+accessEmployeeEmployeeDivisionGroup 'Кол-во складов' (employee, employeeDivisionGroup) = GROUP SUM 1 IF accessEmployeeEmployeeDivisionOver(employee, employeeDivision)
+    AND isParentEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroupEmployeeDivision(employeeDivision), employeeDivisionGroup)
+    BY employee, employeeDivisionGroup PERSISTENT;
+
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
     PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
@@ -82,7 +86,7 @@ FORM employee 'Сотрудник'
     FILTERS (d IS employeeDivision AND NOT dg IS employeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
 
     FILTERGROUP filters
-            FILTER 'Склады с доступом' 'F10' accessEmployeeEmployeeDivisionOver(e, d) DEFAULT
+            FILTER 'Склады с доступом' 'F10' accessEmployeeEmployeeDivisionOver(e, d)
     EDIT employee OBJECT e
 ;
 

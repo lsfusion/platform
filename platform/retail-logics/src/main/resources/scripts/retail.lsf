@@ -256,6 +256,10 @@ EXTEND FORM item
 
     EDIT item OBJECT i
 ;
+@extendFormFilterStockAccess(departmentStore, d, item);
+@extendFormFilterStockGroupAccess(chainStores, t, item, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, item, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, item, accessEmployeeEmployeeDivisionGroup);
 
 EXTEND DESIGN item {
     main {

@@ -57,6 +57,8 @@ FORM stockReserve 'Страховые запасы'
         FILTER 'Только с реализацией' 'F10' quantitySoldSkuStockDateFromTo(s,st,dFrom,dTo)
 
 ;
+@extendFormFilterStockAccess(stock, st, stockReserve);
+
 DESIGN stockReserve FROM DEFAULT {
     main {
         NEW row2 BEFORE functions.box {

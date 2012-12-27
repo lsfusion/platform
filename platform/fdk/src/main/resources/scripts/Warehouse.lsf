@@ -97,6 +97,8 @@ FORM warehouses 'Склады'
     ORDER BY name
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)
 ;
+@extendFormFilterStockAccess(warehouse, w, warehouses);
+@extendFormFilterStockGroupAccess(warehouseGroup, wg, warehouses, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN warehouses FROM DEFAULT{
 

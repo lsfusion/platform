@@ -141,8 +141,11 @@ EXTEND DESIGN options {
 //---------------------------------------------- Формы продаж -------------------------------------//
 FORM salesLedger 'Продажи по позициям'
 
-    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
-    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS te = typeExchange FIXED PANEL
+    PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS s = salesLedger
     PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameCustomerSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
@@ -157,6 +160,11 @@ DESIGN salesLedger FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
         ADD dates.box {
+            childConstraints = TO THE RIGHT;
+            PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
+            PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
+        }
+        ADD te.box {
             childConstraints = TO THE RIGHT;
             PROPERTY(nameCurrencyTypeExchange(te)) { caption = 'Валюта'; preferredCharWidth = 20;}
             PROPERTY(nameType) { caption = 'Тип обмена'; preferredCharWidth = 20;}
@@ -207,6 +215,8 @@ FORM salesSkuStock 'Продажи по SKU'
 
 ;
 @extendFormFilterStockAccess(stock, st, salesSkuStock);
+@extendFormFilterStockGroupAccess(stock, ts, salesSkuStock, accessEmployeeEmployeeDivisionOver);
+@extendFormFilterStockGroupAccess(stockGroup, sg, salesSkuStock, accessEmployeeEmployeeDivisionGroup);
 
 DESIGN salesSkuStock FROM DEFAULT {
 
