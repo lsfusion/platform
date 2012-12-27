@@ -26,12 +26,12 @@ FORM printContainerMovementBy 'Отчет по таре' PRINT
             overMovementContainerBatchStockDateFromTo(bt, dep, dFrom, dTo)!=0
 ;
 
-printContainerMovementBy 'Распечатать' () =
-    ACTION FORM printContainerMovementBy IMAGE 'print.png' IN printGroup;
+printContainerMovementBy 'Распечатать' (dateFrom, dateTo, departmentStore) =
+    ACTION FORM printContainerMovementBy OBJECTS dFrom = dateFrom, dTo = dateTo, dep = departmentStore IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM containerMovement
 
-    PROPERTIES printContainerMovementBy() TODRAW params FORCE PANEL
+    PROPERTIES printContainerMovementBy(dFrom, dTo, dep) TODRAW params FORCE PANEL
 ;
 
 EXTEND DESIGN containerMovement{

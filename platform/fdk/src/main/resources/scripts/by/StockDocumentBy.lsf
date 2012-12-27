@@ -37,12 +37,12 @@ FORM printStockDocumentBy 'Товарный отчет' PRINT
     ORDER BY oDateTime
 ;
 
-printStockDocumentBy 'Распечатать' () =
-    ACTION FORM printStockDocumentBy IMAGE 'print.png' IN printGroup;
+printStockDocumentBy 'Распечатать' (dateFrom, dateTo, stock) =
+    ACTION FORM printStockDocumentBy OBJECTS dtFrom = dateFrom, dtTo = dateTo, ds = stock  IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM sumStockDocumentLedger
 
-    PROPERTIES printStockDocumentBy() TODRAW params FORCE PANEL
+    PROPERTIES printStockDocumentBy(dtFrom, dtTo, ds) TODRAW params FORCE PANEL
 ;
 
 EXTEND DESIGN sumStockDocumentLedger{
