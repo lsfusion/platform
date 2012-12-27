@@ -1,6 +1,6 @@
 MODULE TripInvoiceConsignmentBy;
 
-REQUIRE Shipment, Invoice, TripInvoice, InvoiceConsignmentBy;
+REQUIRE Shipment, Invoice, TripInvoiceBy, InvoiceConsignmentBy;
 
 truckConsignment(invoice) += truckTrip(tripInvoice(invoice));
 driverConsignment(invoice) += driverTrip(tripInvoice(invoice));
