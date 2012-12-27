@@ -334,7 +334,7 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
             EXEC delete(ag);
         }
     }
-} TOOLBAR;
+} IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
 FORM agreements 'Соглашения'
 
@@ -390,6 +390,7 @@ EXTEND DESIGN legalEntity {
         docContainer{
             ADD ags.box;
         }
+
         docContainer2{
             ADD agc.box;
         }
