@@ -34,7 +34,7 @@ scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA s
 messageScheduledClientTaskLog 'Сообщение'= DATA STRING[200] (scheduledClientTaskLog);
 
 
-FORM ScheduledTaskFormEntity 'Планировщик'
+FORM scheduledTask 'Планировщик'
 
     OBJECTS st=scheduledTask
     PROPERTIES (st) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask, runAtStartScheduledTask
@@ -57,7 +57,7 @@ FORM ScheduledTaskFormEntity 'Планировщик'
             FILTER 'Только отмеченные' 'F9' inScheduledTaskProperty(st, p)
 ;
 
-EXTEND DESIGN ScheduledTaskFormEntity {
+EXTEND DESIGN scheduledTask {
     main {
        NEW specContainer {
             type = SPLITV;
@@ -78,6 +78,6 @@ EXTEND DESIGN ScheduledTaskFormEntity {
 
 NAVIGATOR {
     configuration {
-        ADD Scheduler.ScheduledTaskFormEntity;
+        ADD Scheduler.scheduledTask;
     }
 }

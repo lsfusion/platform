@@ -1,0 +1,108 @@
+MODULE SystemEvents;
+
+REQUIRE System, Reflection;
+
+CLASS ABSTRACT exception 'Исключение';
+CLASS clientException 'Исключение на клиенте' : exception;
+CLASS serverException 'Исключение на сервере' : exception;
+TABLE exception (exception);
+
+messageException 'Сообщение исключения' = DATA STRING[250] (exception);
+dateException 'Время возникновения' = DATA DATETIME (exception);
+erTraceException 'След исключения'= DATA TEXT (exception) PREFCHARWIDTH 500;
+typeException 'Тип исключения' = DATA STRING[250] (exception);
+clientClientException 'Клиент' = DATA STRING[100] (clientException);
+loginClientException 'Логин' = DATA STRING[100] (clientException);
+
+CLASS launch 'Запуск';
+TABLE launch (launch);
+
+computerLaunch 'Компьютер' = DATA computer (launch);
+hostnameLaunch (launch) = hostname(computerLaunch(launch));
+timeLaunch 'Время запуска'= DATA DATETIME (launch);
+revisionLaunch 'Версия'= DATA STRING[10] (launch);
+
+CLASS connection 'Подключение';
+CLASS STATIC connectionStatus 'Статус подключения' {
+    connectedConnection 'Подключён',
+    disconnectedConnection 'Отключён'
+};
+TABLE connection (connection);
+TABLE connectionNavigatorElement (connection, navigatorElement);
+
+computerConnection 'Компьютер' = DATA computer (connection);
+hostnameComputerConnection (connection) = hostname(computerConnection(connection));
+
+userConnection 'Пользователь' = DATA customUser (connection);
+userLoginConnection (connection) = userLogin(userConnection(connection));
+
+connectionStatusConnection 'Статус подключения' =  DATA connectionStatus (connection);
+nameConnectionStatusConnection (connection) = name(connectionStatusConnection(connection));
+
+connectTimeConnection 'Время подключения' = DATA DATETIME (connection);
+disconnectTimeConnection 'Время отключения' = DATA DATETIME (connection);
+disconnectTimeConnection (connection) <- currentDateTime() WHEN ASSIGNED(connectionStatusConnection(connection) == connectionStatus.disconnectedConnection);
+
+userSession 'Пользователь сессии' = DATA user (session);
+nameUserSession (session) = commonName(userSession(session));
+userSession (session) <- currentUser() WHEN ASSIGNED(session IS session);
+
+dateSession 'Дата сессии' = DATA DATETIME (session);
+dateSession (session) <- currentDateTime() WHEN ASSIGNED(session IS session);
+
+connectionFormCount 'Количество открытых форм' = DATA INTEGER (connection, navigatorElement);
+
+FORM connections 'Журнал подключений'
+
+    OBJECTS c=connection
+    OBJECTS n=navigatorElement
+    PROPERTIES (c, n) connectionFormCount
+
+    FILTERS connectionFormCount(c, n)>0
+
+    FILTERGROUP filtersConnection
+                FILTER 'Активные подключения' 'F8' connectionStatusConnection(c) == connectionStatus.connectedConnection
+;
+
+
+FORM  exceptions 'Журнал ошибок'
+
+    OBJECTS e=exception
+    PROPERTIES(e) READONLY messageException, clientClientException, loginClientException, typeException, dateException
+    PROPERTIES(e) READONLY erTraceException FORCE PANEL
+;
+
+EXTEND DESIGN exceptions {
+    main {
+        NEW specContainer {
+            ADD e.box;
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(erTraceException(e));
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (erTraceException(e)) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
+FORM launches 'Журнал запусков'
+
+   OBJECTS l=launch
+   PROPERTIES(l) READONLY OBJVALUE, computerLaunch, hostnameLaunch, timeLaunch, revisionLaunch, OBJVALUE
+;
+
+NAVIGATOR {
+    systemEvents {
+        ADD SystemEvents.exceptions;
+        ADD SystemEvents.connections;
+        ADD SystemEvents.launches;
+    }
+}

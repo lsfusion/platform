@@ -1,0 +1,224 @@
+MODULE Security;
+
+REQUIRE System, Reflection, Email;
+
+CLASS userRole 'Роль' : named;
+TABLE userRole (userRole);
+TABLE customUserRole (customUser, userRole);
+TABLE customUser (customUser);
+TABLE userRoleProperty (userRole, property);
+TABLE userRoleNavigatorElement (userRole, navigatorElement);
+
+sidUserRole 'Идентификатор' = DATA STRING[30] (userRole);
+userRoleSID (sid) = GROUP UNIQUE userRole BY sidUserRole (userRole) WHERE userRole IS userRole;
+mainRoleUser = DATA userRole (user);
+mainRoleCustomUser (user) = mainRoleUser (user) IF user IS customUser;
+sidMainRoleCustomUser 'Идентификатор главной роли' (user) = sidUserRole (mainRoleCustomUser(user));
+nameMainRoleUser 'Главная роль' (user) = commonName (mainRoleUser(user));
+inUserRole 'Вкл.' = DATA BOOLEAN (customUser, userRole);
+
+inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
+
+permitViewProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (property);
+forbidViewProperty 'Запретить просмотр свойства' = DATA BOOLEAN (property);
+permitChangeProperty 'Разрешить изменение свойства' = DATA BOOLEAN (property);
+forbidChangeProperty 'Запретить изменение свойства' = DATA BOOLEAN (property);
+
+permitViewAllPropertyUserRole 'Разрешить просмотр всех свойств' = DATA BOOLEAN (userRole);
+permitViewAllPropertyUser 'Разрешить просмотр всех свойств' (user) = permitViewAllPropertyUserRole (mainRoleUser(user));
+forbidViewAllPropertyUserRole 'Запретить просмотр всех свойств' = DATA BOOLEAN (userRole);
+forbidViewAllPropertyUser 'Запретить просмотр всех свойств' (user) = forbidViewAllPropertyUserRole (mainRoleUser(user));
+
+permitChangeAllPropertyUserRole 'Разрешить изменение всех свойств' = DATA BOOLEAN (userRole);
+permitChangeAllPropertyUser 'Разрешить изменение всех свойств' (user) = permitChangeAllPropertyUserRole(mainRoleUser(user));
+forbidChangeAllPropertyUserRole 'Запретить изменение всех свойств' = DATA BOOLEAN (userRole);
+forbidChangeAllPropertyRole 'Запретить изменение всех свойств' (user) = forbidChangeAllPropertyUserRole(mainRoleUser(user));
+
+permitViewUserRoleProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (userRole, property);
+permitViewUserProperty 'Разрешить просмотр свойства' (user, property) = permitViewUserRoleProperty(mainRoleUser(user), property);
+forbidViewUserRoleProperty 'Запретить просмотр свойства' = DATA BOOLEAN (userRole, property);
+forbidViewUserProperty 'Запретить просмотр свойства' (user, property) = forbidViewUserRoleProperty(mainRoleUser(user), property);
+
+permitChangeUserRoleProperty 'Разрешить изменение свойства' = DATA BOOLEAN (userRole, property);
+permitChangeUserProperty 'Разрешить изменение свойства' (user, property) = permitChangeUserRoleProperty (mainRoleUser(user), property);
+forbidChangeUserRoleProperty 'Запретить изменение свойства' = DATA BOOLEAN (userRole, property);
+forbidChangeUserProperty 'Запретить изменение свойства' (user, property) = forbidChangeUserRoleProperty (mainRoleUser(user), property);
+
+notNullPermissionUserProperty (user, property) = permitViewUserProperty(user, property) OR forbidViewUserProperty(user, property) OR permitChangeUserProperty(user, property) OR forbidChangeUserProperty(user, property);
+
+defaultFormsUserRole 'Отображение форм по умолчанию' = DATA BOOLEAN (userRole);
+defaultNumberUserRoleNavigatorElement 'Номер по умолчанию' = DATA INTEGER (userRole, navigatorElement);
+defaultNumberUserNavigatorElement 'Номер по умолчанию' (user, navigatorElement) = defaultNumberUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+defaultFormsUser 'Отображение форм по умолчанию' (user) = defaultFormsUserRole(mainRoleUser(user));
+
+permitNavigatorElement 'Разрешить форму' = DATA BOOLEAN (navigatorElement);
+forbidNavigatorElement 'Запретить форму' = DATA BOOLEAN (navigatorElement);
+
+permitAllFormsUserRole 'Разрешить отображение всех форм' = DATA BOOLEAN (userRole);
+permitAllFormsUser 'Разрешить отображение всех форм' (user) = permitAllFormsUserRole(mainRoleUser(user));
+forbidAllFormsUserRole 'Запретить отображение всех форм' = DATA BOOLEAN (userRole);
+forbidAllFormsUser 'Запретить отображение всех форм' (user) = forbidAllFormsUserRole(mainRoleUser(user));
+
+permitUserRoleNavigatorElement 'Разрешить форму' = DATA BOOLEAN (userRole, navigatorElement);
+permitUserNavigatorElement 'Разрешить форму' = permitUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+forbidUserRoleNavigatorElement 'Запретить форму' = DATA BOOLEAN (userRole, navigatorElement);
+forbidUserNavigatorElement 'Запретить форму' = forbidUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+
+CLASS policy 'Политика безопасности' : named;
+TABLE policy (policy);
+TABLE userRolePolicy (userRole, policy);
+
+policyName 'Политика' (name) = GROUP UNIQUE policy BY name(policy) WHERE policy IS policy;
+descriptionPolicy 'Описание' = DATA STRING[100] (policy);
+orderUserRolePolicy 'Порядок политики' = DATA INTEGER (userRole, policy);
+orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);
+
+FORM customUser 'Пользователь'
+    OBJECTS u=customUser FIXED PANEL
+    PROPERTIES(u) userFirstName, userLastName, userLogin, userPassword, emailContact, nameMainRoleUser
+    OBJECTS ur=userRole FIXED PANEL
+    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(u, ur) inMainRoleCustomUser
+
+    EDIT customUser OBJECT u
+;
+
+EXTEND DESIGN customUser {
+    main{
+        childConstraints = TO THE RIGHT;
+    }
+}
+
+FORM securityPolicy 'Политика безопасности'
+
+    OBJECTS ur=userRole
+    PROPERTIES(ur) name, OBJVALUE, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
+                   permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
+                   defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole, delete, ADDOBJ
+
+    OBJECTS p=policy
+    PROPERTIES(p)  commonName, OBJVALUE, descriptionPolicy
+
+    OBJECTS f=navigatorElement
+    PROPERTIES(f) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(f) numberNavigatorElement
+    PROPERTIES(ur, f) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
+
+    OBJECTS pr=property
+    PROPERTIES(pr) captionProperty, SIDProperty
+    PROPERTIES(ur, pr) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
+    ORDER BY SIDProperty(pr)
+
+    OBJECTS df=navigatorElement
+    PROPERTIES(df) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement
+    ORDER BY SIDProperty(pr)
+
+    OBJECTS dpr=property
+    PROPERTIES(dpr) captionProperty, SIDProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
+
+    TREE treeFormObject tf = navigatorElement PARENT parentNavigatorElement
+    PROPERTIES(tf) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(tf) numberNavigatorElement
+    PROPERTIES(ur, tf) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
+    ORDER BY numberNavigatorElement(tf)
+
+    TREE treePropertyObject tprs = abstractGroup, prs = property PARENT parentAbstractGroup
+    PROPERTIES(tprs) captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup
+    ORDER BY numberAbstractGroup(tprs)
+    PROPERTIES(prs) captionProperty, SIDProperty, numberProperty
+    PROPERTIES(ur, prs) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
+    ORDER BY numberProperty(prs)
+
+    TREE treeDefaultForm tdf = navigatorElement PARENT parentNavigatorElement
+    PROPERTIES(tdf) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement
+    ORDER BY numberNavigatorElement(tdf)
+
+    TREE treeDefaultProperty tdprs = abstractGroup, dprs = property PARENT parentAbstractGroup
+    PROPERTIES (tdprs) captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup
+    ORDER BY numberAbstractGroup(tdprs)
+    PROPERTIES (dprs) captionProperty, SIDProperty, numberProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
+    ORDER BY numberProperty(dprs)
+
+    PROPERTIES(ur, p) orderUserRolePolicy COLUMNS (ur) HEADER sidUserRole(ur)
+
+    FILTERS parentProperty(prs)==tprs, parentProperty(dprs)==tdprs
+;
+
+EXTEND DESIGN securityPolicy {
+    main {
+        NEW container BEFORE functions.box {
+            type = TABBED;
+
+            NEW defaultPolicyContainer {
+                type = TABBED;
+                title = 'Политика по умолчанию';
+
+                NEW defaultFormsContainer {
+                    type = TABBED;
+                    title = 'Формы';
+                    ADD treeDefaultForm.tree.box;
+                    ADD df.box {
+                        title = 'Таблица';
+                    };
+                }
+
+                NEW defaultPropertyContainer {
+                    type = TABBED;
+                    title = 'Свойства';
+                    ADD treeDefaultProperty.tree.box;
+                    ADD dpr.box {
+                        title = 'Таблица';
+                    };
+                }
+            }
+
+            NEW rolesContainer {
+                title = 'Роли';
+                ADD ur.box;
+
+                NEW rolePolicyContainer {
+                    type = TABBED;
+
+                    NEW formsContainer {
+                        type = TABBED;
+                        title = 'Формы';
+                        ADD treeFormObject.tree.box;
+                        ADD f.box {
+                            title = 'Таблица';
+                        };
+                    }
+
+                    NEW propertiesContainer {
+                        type = TABBED;
+                        title = 'Свойства';
+                        ADD treePropertyObject.tree.box;
+                        ADD pr.box {
+                            title = 'Таблица';
+                        };
+                    }
+                }
+            }
+
+            ADD p.box {
+                title = 'Дополнительные политики';
+            };
+        }
+    }
+}
+
+FORM customUsers 'Пользователи'
+    OBJECTS u=customUser
+    PROPERTIES(u) READONLY nameMainRoleUser, commonName, userLogin, emailContact
+    PROPERTIES(u) delete, ADDOBJ, EDITFORM FORCE PANEL
+
+    DIALOG customUser OBJECT u
+;
+
+NAVIGATOR {
+    security {
+        ADD Security.securityPolicy;
+        ADD Security.customUsers;
+    }
+}

@@ -1,0 +1,96 @@
+MODULE Email;
+
+REQUIRE System, Reflection;
+
+GROUP emailGroup 'Настройки почтового сервера' : public;   //rootGroup
+
+CLASS STATIC encryptedConnectionTypeStatus 'Тип шифрованного подключения' {
+    SSL 'SSL', TLS 'TLS'
+};
+
+encryptedConnectionType 'Тип шифрованного подключения' = DATA encryptedConnectionTypeStatus();
+nameEncryptedConnectionType 'Тип шифрованного подключения' = commonName(encryptedConnectionType()) PREFCHARWIDTH 3;
+
+CLASS notification 'Уведомление';
+TABLE notification (notification);
+TABLE notificationProperty (notification, property);
+
+isEventNotification 'При любом изменении' = DATA BOOLEAN (notification);
+emailFromNotification 'Адрес отправителя' = DATA STRING[50] (notification);
+emailToNotification 'Адрес получателя' = DATA STRING[50] (notification);
+emailToCCNotification 'Копия' = DATA STRING[50] (notification);
+emailToBCNotification 'Скрытая копия' = DATA STRING[50] (notification);
+textNotification 'Текст письма' = DATA TEXT (notification);
+subjectNotification 'Тема письма'= DATA STRING[100] (notification);
+inNotificationProperty 'Вкл.' = DATA BOOLEAN (notification, property);
+
+emailContact 'E-mail'= DATA STRING[50] (contact);
+contactEmail (email) = GROUP UNIQUE contact BY emailContact(contact) WHERE contact IS contact;
+
+smtpHost 'SMTP хост' = DATA STRING[50]() IN emailGroup;
+smtpPort 'SMTP порт' = DATA STRING[10]() IN emailGroup;
+
+emailAccount 'Имя аккаунта' = DATA STRING[50]() IN emailGroup;
+emailPassword 'Пароль' = DATA STRING[50]() IN emailGroup;
+emailBlindCarbonCopy 'Копия (BCC)'= DATA STRING[50]() IN emailGroup;
+disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN emailGroup;
+
+
+FORM remindUserPass 'Напоминание пароля'
+
+    OBJECTS u=customUser FIXED PANEL
+    PROPERTIES(u) READONLY userLogin, userPassword, name
+;
+
+emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL
+                               SUBJECT 'Напоминание пароля' AND user IS customUser
+                               TO emailContact(user)
+                               INLINE remindUserPass OBJECTS u = user;
+
+FORM notification 'Почта'
+
+    PROPERTIES() smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
+                                     emailBlindCarbonCopy, disableEmail
+
+    OBJECTS n=notification
+    OBJECTS p=property
+
+    PROPERTIES(n, p) inNotificationProperty
+    PROPERTIES(n) subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
+    PROPERTIES(p) READONLY captionProperty, SIDProperty
+    ORDER BY SIDProperty
+    PROPERTIES(n) textNotification FORCE PANEL
+
+    FILTERGROUP emailFilter
+        FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
+;
+
+EXTEND DESIGN notification {
+     main {
+            NEW specContainer {
+                type = TABBED;
+                ADD n.box;
+                ADD p.box;
+                NEW textContainer {
+                    title = 'Текст письма';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(textNotification(n));
+                    fillHorizontal = 1;
+                    fillVertical = 1;
+                    PROPERTY (textNotification(n)) {
+                        fillHorizontal = 1;
+                        preferredSize = ( -1, 300);
+                        panelLabelAbove = TRUE;
+                    }
+                }
+                ADD functions.box;
+            }
+        }
+}
+
+NAVIGATOR {
+    //ADD remindUserPass;
+    configuration {
+        ADD Email.notification;
+    }
+}

@@ -103,7 +103,7 @@ public abstract class DataTable extends GlobalTable {
                 int total = (Integer) BaseUtils.nvl(result.get(0), 0);
                 double perCent = total != 0 ? 100 * (double) notNull / total : 100;
                 reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
-                reflectionLM.perсentNotNullTableColumn.change(perCent, session, propertyObject);
+                reflectionLM.percentNotNullTableColumn.change(perCent, session, propertyObject);
                 if (perCent < 50) {
                     sparseColumns++;
                 }

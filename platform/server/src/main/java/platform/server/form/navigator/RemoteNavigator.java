@@ -388,8 +388,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
                 DataObject formObject = new DataObject(formId, BL.reflectionLM.navigatorElement);
 
-                int count = 1 + nvl((Integer) BL.reflectionLM.connectionFormCount.read(session, connection, formObject), 0);
-                BL.reflectionLM.connectionFormCount.change(count, session, connection, formObject);
+                int count = 1 + nvl((Integer) BL.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
+                BL.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
 
                 session.apply(BL);
                 session.close();

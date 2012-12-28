@@ -92,11 +92,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
 
     public final BaseLogicsModule<T> LM;
-    public final ServiceLogicsModule<T> serviceLM;
-    public final ReflectionLogicsModule<T> reflectionLM;
-    public final SecurityLogicsModule<T> securityLM;
-    public final SystemEventsLogicsModule<T> systemEventsLM;
-    public final EmailLogicsModule<T> emailLM;
+    public final ServiceLogicsModule serviceLM;
+    public final ReflectionLogicsModule reflectionLM;
+    public final SecurityLogicsModule securityLM;
+    public final SystemEventsLogicsModule systemEventsLM;
+    public final EmailLogicsModule emailLM;
     public SchedulerLogicsModule schedulerLM;
     private String dbName;
 
@@ -313,7 +313,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             qf.and(expr.getWhere());
             qf.addProperty("sid", expr);
             qf.addProperty("permit", securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId")));
-            qf.addProperty("forbid", securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId")));
+            qf.addProperty("forbid", securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId")));
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : formValues) {
@@ -390,7 +390,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             qf.addProperty("sid", formExpr);
             qf.addProperty("permit", securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
-            qf.addProperty("forbid", securityLM.forbidUserNavigarorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
+            qf.addProperty("forbid", securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : formValues) {
@@ -852,15 +852,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM = new BaseLogicsModule(this, logger);
 
-        serviceLM = new ServiceLogicsModule(this, this.LM, logger);
+        serviceLM = new ServiceLogicsModule(this, this.LM);
 
-        reflectionLM = new ReflectionLogicsModule(this, this.LM, logger);
+        reflectionLM = new ReflectionLogicsModule(this, this.LM);
 
-        securityLM = new SecurityLogicsModule(this, this.LM, logger);
+        securityLM = new SecurityLogicsModule(this, this.LM);
 
-        systemEventsLM = new SystemEventsLogicsModule(this, this.LM, logger);
+        systemEventsLM = new SystemEventsLogicsModule(this, this.LM);
 
-        emailLM = new EmailLogicsModule(this, this.LM, logger);
+        emailLM = new EmailLogicsModule(this, this.LM);
 
         schedulerLM = new SchedulerLogicsModule(this, this.LM);
 
@@ -1136,14 +1136,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
 
         ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.PropertyDrawSIDNavigatorElementSIDPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
-        ImportKey<?> keyGroupObject = new ImportKey(securityLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
+        ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
+        ImportKey<?> keyGroupObject = new ImportKey(reflectionLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
 
         List<ImportProperty<?>> propsPropertyDraw = new ArrayList<ImportProperty<?>>();
         propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, reflectionLM.captionPropertyDraw.getMapping(keyPropertyDraw)));
         propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, reflectionLM.sidPropertyDraw.getMapping(keyPropertyDraw)));
         propsPropertyDraw.add(new ImportProperty(sidNavigatorElementField, reflectionLM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
-        propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(securityLM.groupObject).getMapping(keyGroupObject)));
+        propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.groupObject).getMapping(keyGroupObject)));
 
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
@@ -1183,14 +1183,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
 
         ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyGroupObject = new ImportKey(securityLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
+        ImportKey<?> keyGroupObject = new ImportKey(reflectionLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
 
         List<ImportProperty<?>> propsGroupObject = new ArrayList<ImportProperty<?>>();
         propsGroupObject.add(new ImportProperty(sidGroupObjectField, reflectionLM.sidGroupObject.getMapping(keyGroupObject)));
         propsGroupObject.add(new ImportProperty(sidNavigatorElementField, reflectionLM.navigatorElementGroupObject.getMapping(keyGroupObject), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyGroupObject, LM.is(securityLM.groupObject).getMapping(keyGroupObject), false));
+        deletes.add(new ImportDelete(keyGroupObject, LM.is(reflectionLM.groupObject).getMapping(keyGroupObject), false));
 
         ImportTable table = new ImportTable(asList(sidNavigatorElementField, sidGroupObjectField), dataGroupObjectList);
 
@@ -2518,11 +2518,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void dropColumn(String tableName, String columnName) throws SQLException {
         SQLSession sql = getThreadLocalSql();
         sql.startTransaction();
-        sql.dropColumn(tableName, columnName);
-        ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
-        if (table != null)
-            sql.packTable(table);
-        sql.commitTransaction();
+        try {
+            sql.dropColumn(tableName, columnName);
+            ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
+            if (table != null)
+                sql.packTable(table);
+            sql.commitTransaction();
+        } catch(SQLException e) {
+            sql.rollbackTransaction();
+            throw e;
+        }
     }
 
     protected LP getLP(String sID) {
@@ -2598,7 +2603,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
     }
 
-    void packTables(SQLSession session, ImCol<ImplementTable> tables) throws SQLException {
+    public void packTables(SQLSession session, ImCol<ImplementTable> tables) throws SQLException {
         for (Table table : tables) {
             logger.debug(getString("logics.info.packing.table") + " (" + table + ")... ");
             session.packTable(table);
@@ -2615,7 +2620,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LAP addGarbageCollectorActionProp() {
-        return LM.addProperty(null, new LAP(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
+        return LM.addProperty(null, new LAP(new GarbageCollectorActionProperty("runGarbageCollector", getString("logics.garbage.collector"))));
     }
 
     private void updateRestartProperty() throws SQLException {

@@ -542,9 +542,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Управление сервером приложений
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
 
-        restartServerAction = addIfAProp(getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
+        restartServerAction = addIfAProp(baseGroup, "restartServerAction", getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
         runGarbageCollector = addGarbageCollectorActionProp();
-        cancelRestartServerAction = addIfAProp(getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
+        cancelRestartServerAction = addIfAProp(baseGroup, "cancelRestartServerAction", getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
