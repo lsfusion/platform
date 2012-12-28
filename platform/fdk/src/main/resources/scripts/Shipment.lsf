@@ -129,6 +129,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceBarcodeSkuPrefix (shipment, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (shipmentDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userShipmentDetail, sku, prop, toShowProp);
+    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail);
+    @deriveDocumentQuantityDetailOnAmountPack(userShipmentDetail);
+    @deriveDocumentQuantityDetailOnChangeQuantityPack (userShipmentDetail);
 //    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail, prop);
 
     Shipment.quantityPackShipmentDetail(detail) += quantityPackShipmentDetail(detail);
@@ -148,8 +151,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
         PROPERTIES (d) SHOWIF toShowProp###userShipment(s) idBarcodePackUserShipmentDetail, shortNameUOMPackUserShipmentDetail,
-                       amountPackUserShipmentDetail, quantityPackUserShipmentDetail
-        PROPERTIES (d) quantityUserShipmentDetail, priceUserShipmentDetail, sumUserShipmentDetail,
+                       amountPackUserShipmentDetail ON CHANGE EXEC changeAmountPackUserShipmentDetail(d),
+                       quantityPackUserShipmentDetail ON CHANGE EXEC changeQuantityPackUserShipmentDetail(d)
+        PROPERTIES (d) quantityUserShipmentDetail ON CHANGE EXEC changeQuantityUserShipmentDetail(d), priceUserShipmentDetail, sumUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
