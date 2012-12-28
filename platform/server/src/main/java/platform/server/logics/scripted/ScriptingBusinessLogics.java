@@ -36,7 +36,7 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
             if (new File(filePath).isFile())
                 addModule(new ScriptingLogicsModule(filePath, LM, this));
             else {
-                Pattern pattern = Pattern.compile(".*" + modifySlashes(filePath) + ".*\\.lsf");
+                Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
                 Collection<String> list = ResourceList.getResources(pattern);
                 for (String name : list) {
                     addModule(new ScriptingLogicsModule(name, LM, this));
@@ -45,9 +45,9 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
         }
     }
 
-    private String modifySlashes(String regexp) {
-        return regexp.replace("/", "\\\\");
-    }
+    //private String modifySlashes(String regexp) {
+    //    return regexp.replace("/", "\\\\");
+    //}
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         User admin = addUser("admin", "fusion");

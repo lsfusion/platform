@@ -75,7 +75,7 @@ public class ResourceList{
                 retval.addAll(getResourcesFromDirectory(file, pattern));
             } else{
                 try{
-                    final String fileName = file.getCanonicalPath();
+                    final String fileName = OSUtils.convertPath(file.getCanonicalPath(), true);
                     final boolean accept = pattern.matcher(fileName).matches();
                     if(accept){
                         retval.add(fileName);

@@ -114,4 +114,11 @@ public class OSUtils {
         }
         return name;
     }
+
+    public static String convertPath(String path, Boolean convertFirst) {
+        if (path.startsWith("\\") && convertFirst)
+            return "\\" + path.substring(2, path.length()).replace("\\", "/");
+        else
+            return path.replace("\\", "/");
+    }
 }
