@@ -109,6 +109,11 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         LOCAL dialogBarcodeSku = sku ();
         SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, date###object(object));
 
+        IF TRUE AND NOT dialogBarcodeSku() IS sku THEN {
+            EXEC createSkuBarcodeDate(barcode, date###object(object));
+            SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, date###object(object));
+        }
+
         IF dialogBarcodeSku() IS sku THEN {
             LOCAL dialogBarcodeDetail = idetail();
             SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
@@ -123,15 +128,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
                 }
             }
         } ELSE {
-            SET sessionSku() <- NULL;
-            EXEC createSkuBarcodeDate(barcode, date###object(object));
-            IF sessionSku() IS sku THEN {
-                FOR ADDOBJ w = idetail DO {
-                    SET object###idetail(w) <- object;
-                    SET skuProp###idetail(w) <- sessionSku();
-                    SET quantity###idetail(w) <- 1.0;
-                }
-            }
+            MESSAGE 'Штрих-код не найден';
         }
     }
 
