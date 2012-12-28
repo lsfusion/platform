@@ -214,17 +214,21 @@ META defineScheduleOrder(sign, stockProp)
                        dateOrder(userOrder)==dateOrderScheduleOrderDetail(scheduleOrderDetail)
                BY scheduleOrderDetail PERSISTENT;
 
+    overCreateOrder = ABSTRACT ACTION (userOrder);
 
     createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) {
         FOR ADDOBJ o = userOrder DO {
             SET scheduleOrderDetailUserOrder(o) <- scheduleOrderDetail;
             SET dateOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);
             SET shipmentDateUserOrder(o) <- dateSupplyScheduleOrderDetail(scheduleOrderDetail);
+            SET shipmentTimeUserOrder(o) <- currentTime();
             SET nextShipmentDateUserOrder(o) <- dateSupplyNextScheduleOrderDetail(scheduleOrderDetail);
             SET supplierOrder(o) <- supplierScheduleOrderDetail(scheduleOrderDetail);
             SET customerOrder(o) <- customerScheduleOrderDetail(scheduleOrderDetail);
             SET supplierStockOrder(o) <- supplierStockScheduleOrderDetail(scheduleOrderDetail);
             SET customerStockOrder(o) <- customerStockScheduleOrderDetail(scheduleOrderDetail);
+
+            EXEC overCreateOrder(o);
 
             FORM userOrder OBJECTS o = o MANAGESESSION DOCKED_MODAL;
         };

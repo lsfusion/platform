@@ -39,13 +39,13 @@ fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуем
     }
 } TOOLBAR CONFIRM;
 
+overCreateOrder(userOrder) += fillRecommendedQuantityStockUserOrder(userOrder);
 
 EXTEND FORM userOrder
     PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o), stockReserveSkuStockUserOrder(s,st,o)
     PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
     PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
 ;
-
 
 NAVIGATOR {
 
