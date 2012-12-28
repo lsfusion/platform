@@ -270,8 +270,9 @@ FORM legalEntities 'Организации'
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
     FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS legalEntity AND lg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))
-;
 
+    DIALOG legalEntity OBJECT l
+;
 
 DESIGN legalEntities FROM DEFAULT{
     NEW topContainer{
