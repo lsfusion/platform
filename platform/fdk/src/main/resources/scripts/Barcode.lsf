@@ -98,11 +98,15 @@ DESIGN barcodeInput FROM DEFAULT {
 
 // ------------------------------------ Добавление сканированием строк в документ ----------------------//
 
+sessionSku = SESSION DATA sku();
+
+createSkuBarcodeDate = ABSTRACT ACTION (barcode, date);
+
 META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
     idetail###object##Sku(object, sku) = GROUP MAX detail BY object###idetail(detail), skuProp###idetail(detail);
 
     addDetailBarcode###idetail###object = ACTION (object, barcode) {
-        LOCAL dialogBarcodeSku = sku();
+        LOCAL dialogBarcodeSku = sku ();
         SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, date###object(object));
 
         IF dialogBarcodeSku() IS sku THEN {
@@ -118,8 +122,17 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
                     SET quantity###idetail(w) <- 1.0;
                 }
             }
-        } ELSE
-            MESSAGE 'Не найден штрих-код';
+        } ELSE {
+            SET sessionSku() <- NULL;
+            EXEC createSkuBarcodeDate(barcode, date###object(object));
+            IF sessionSku() IS sku THEN {
+                FOR ADDOBJ w = idetail DO {
+                    SET object###idetail(w) <- object;
+                    SET skuProp###idetail(w) <- sessionSku();
+                    SET quantity###idetail(w) <- 1.0;
+                }
+            }
+        }
     }
 
     addDetailDialogBarcode###idetail###object 'Ввод штрих-кода' = ACTION (object) {

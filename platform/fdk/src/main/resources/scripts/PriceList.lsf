@@ -230,6 +230,8 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 //    castPriceList(seriesNumberObject(priceList), datePriceList(priceList)) IN documentPrmGroup;
 
 @defineDocumentInterfaceLegalEntity(priceList, company, 'Организация');
+@defineDocumentInterfaceDetailQuantity(priceList);
+@defineAddDetailDialogBarcode(userPriceList, sku);
 
 toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
@@ -447,7 +449,7 @@ FORM userPriceList 'Прайс'
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
-    PROPERTIES(p) addUnderPriceListUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p) TODRAW d FORCE PANEL DRAWTOTOOLBAR addUnderPriceListUserPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
 
     TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)

@@ -408,3 +408,23 @@ titleCashRegisterBarcode 'Наименование для касс' = UNION OVER
 @defineItemAttributeName(scales, ' (весы)', public);
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
+createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
+
+    FOR ADDOBJ bc = barcode DO {
+        SET idBarcode(bc) <- (barcode AS STRING[14]);
+        SET dateBarcode(bc) <- (date AS DATE);
+        FOR ADDOBJ s = item DO {
+            SET skuBarcode(bc) <- s AS item;
+            SET activeBarcode(bc) <- TRUE;
+            SET primaryBarcode(bc) <- TRUE;
+            FORM item OBJECTS i = s, b = bc MODAL;
+            IF formResult() == formResult.ok THEN {
+                SET sessionSku() <- s AS item AND barcode IS barcode AND date IS DATE;
+                EXEC apply();
+            }
+        }
+    }
+}
+
+createSkuBarcodeDate(barcode, date) += createItemBarcodeDate(barcode, date);
