@@ -2,7 +2,6 @@ MODULE Purchase;
 
 REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing, PurchaseScheduleOrder
 ;
-//PRIORITY Purchase;
 
 //-----------------------------------------------------------------------------------------------------------//
 
@@ -33,7 +32,7 @@ recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate
 recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупке кол-во' (sku, stock, userOrder) = recQuantitySkuStockUserOrder(sku, stock, userOrder) IF recQuantitySkuStockUserOrder(sku, stock, userOrder) >0;
 stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
 
-fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым количеством' = ACTION (userOrder) {
+fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым для ассортимента' = ACTION (userOrder) {
     FOR inAssortmentSkuStockUserOrder(sku, customerStockUserOrder(userOrder), userOrder) AND recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder) DO {
         SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder);
         EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, customerStockUserOrder(userOrder));

@@ -171,7 +171,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, prop, toShowProp);
-//    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail, prop);
+    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail);
+    @deriveDocumentQuantityDetailOnAmountPack(userInvoiceDetail);
+    @deriveDocumentQuantityDetailOnChangeQuantityPack (userInvoiceDetail);
     Invoice.quantityPackInvoiceDetail(detail) += quantityPackInvoiceDetail(detail);
 
 
@@ -416,8 +418,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
-                       amountPackUserInvoiceDetail, quantityPackUserInvoiceDetail
-        PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
+                       amountPackUserInvoiceDetail ON CHANGE EXEC changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE EXEC changeQuantityPackUserInvoiceDetail(d)
+        PROPERTIES (d) quantityUserInvoiceDetail ON CHANGE EXEC changeQuantityUserInvoiceDetail(d), namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
                        valueVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceValueVATUserInvoiceDetail(d),
@@ -705,4 +707,43 @@ META defineInvoiceStockDestination(fromStock, toStock)
     Invoice.toStockInvoice(invoice) += toStock##Invoice(invoice);
     Invoice.dataFromStockInvoiceDetail(detail) += data###fromStock##InvoiceDetail(detail);
     Invoice.dataToStockInvoiceDetail(detail) += data###toStock##InvoiceDetail(detail);
+END
+
+//-- Расширение формы подбора упаковкой (один склад)
+META defineDocumentPackageSkuCustom(object, detail, skuProp, stockProp)
+    quantityPackSku###object 'Кол-во упаковок в документе' (sku, object) = GROUP SUM quantityPack###detail(detail)
+        BY skuProp###detail(detail), object###detail(detail);
+
+    changeQuantityPackSku###object = ACTION (sku, object) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object(sku, object) THEN {
+            IF requestedNumeric() THEN {
+                SET quantityPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object(sku, object);
+            } ELSE {
+                EXEC delete(detail###Sku###object(sku, object));
+
+            }
+        } ELSE {
+            IF requestedNumeric() THEN
+                FOR ADDOBJ d = detail DO {
+                SET object###detail(d) <- object;
+                SET stockProp###detail (d) <- stockProp###object(object);
+                SET skuProp###detail(d) <- sku;
+                SET quantityPack###detail (d) <- requestedNumeric();
+            }
+        }
+    }
+END
+META defineDocumentPackageSku(object, skuProp, stockProp)
+    @defineDocumentPackageSkuCustom(object, object##Detail, skuProp, stockProp);
+END
+
+
+META extendFormDocumentPackageSkuCustom(object, form, concrete, toShowProp)
+
+    EXTEND FORM form
+        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantity###object##Detail###sku###object(s, concrete) idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY, amountPackSku(s) READONLY,
+        quantityPackSku###object(s, concrete) ON CHANGE EXEC changeQuantityPackSku###object(s, concrete)
+    ;
 END

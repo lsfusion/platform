@@ -31,6 +31,15 @@ numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberO
 sidUserInvoiceDetail (userInvoiceDetail) = DATA STRING[200] (userInvoiceDetail);
 userInvoiceDetailSID (sidUserInvoiceDetail) = GROUP MAX userInvoiceDetail BY sidUserInvoiceDetail(userInvoiceDetail) WHERE userInvoiceDetail IS userInvoice;
 
+@defineDocumentPackageSku(userInvoice, sku, customerStock);
+@extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showPurchasePack);
+
+overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+    IF  purchasePackBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+        SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+
 inAssortmentSkuUserInvoice (sku, userInvoice)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
 inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice

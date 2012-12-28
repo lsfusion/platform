@@ -1437,11 +1437,13 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
 
     priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
 
+    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
     changeQuantityValueSku###object###Stock = ACTION (sku, object, stock) {
 
         IF detail###Sku###object###stockProp(sku, object, stock) THEN {
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                EXEC overChangeQuantityValueSku###object##Detail(detail###Sku###object###stockProp(sku, object, stock));
             } ELSE {
                 EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
             }
@@ -1454,6 +1456,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
                SET quantity###detail (d) <- requestedNumeric();
                SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
                SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+               EXEC overChangeQuantityValueSku###object##Detail(d);
             }
         }
     }
@@ -1492,7 +1495,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, stockProp)
 
         PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
         FILTERGROUP filter
-            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st)
             FILTER 'В заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
     ;
 
@@ -1543,10 +1546,12 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
 
+    overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
     changeQuantityValueSku###object = ACTION (sku, object) {
         IF detail###Sku###object(sku, object) THEN {
             IF requestedNumeric() THEN {
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
+                EXEC overChangeQuantityValueSku###object##Detail(detail###Sku###object(sku, object));
             } ELSE {
                 FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND skuProp###detail(detail) == sku DO {    //AND NOT quantity###detail(detail)
                     EXEC delete(detail###Sku###object(sku, object));
@@ -1555,10 +1560,11 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
         } ELSE {
             ADDOBJ detail;
             FOR d == addedObject() DO {
-               SET object###detail(d) <- object;
-               SET stockProp###detail (d) <- stockProp###object(object);
-               SET skuProp###detail(d) <- sku;
-               SET quantity###detail (d) <- requestedNumeric();
+                SET object###detail(d) <- object;
+                SET stockProp###detail (d) <- stockProp###object(object);
+                SET skuProp###detail(d) <- sku;
+                SET quantity###detail (d) <- requestedNumeric();
+                EXEC overChangeQuantityValueSku###object##Detail(d);
             }
         }
     }
@@ -1590,7 +1596,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         ORDER BY inputName
 
         FILTERGROUP filter
-            FILTER 'С остатком ' 'F10' currentBalanceSku###object(s, concrete) DEFAULT
+            FILTER 'С остатком ' 'F10' currentBalanceSku###object(s, concrete)
             FILTER 'В документе ' 'F9' quantity###detail###skuProp###object(s, concrete)
 
     ;
@@ -1699,7 +1705,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, stockPro
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
-            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st)
             FILTER 'В заказе' 'F9' quantitySku###object###stockProp(s, concrete, st)
 
 

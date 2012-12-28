@@ -190,6 +190,9 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (orderDetail, , ' упаковок');
     @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
+    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userOrderDetail);
+    @deriveDocumentQuantityDetailOnAmountPack(userOrderDetail);
+    @deriveDocumentQuantityDetailOnChangeQuantityPack (userOrderDetail);
 //-- Дата следующей поставки
     @defineDocumentInterfaceDatePrefix (order, nextShipment, ' следующей поставки');
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
@@ -212,8 +215,8 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
         PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
-                       amountPackUserOrderDetail, quantityPackUserOrderDetail
-        PROPERTIES (d) quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
+                       amountPackUserOrderDetail ON CHANGE EXEC changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE EXEC changeQuantityPackUserOrderDetail(d)
+        PROPERTIES (d) quantityUserOrderDetail  ON CHANGE EXEC changeQuantityUserOrderDetail(d), namePriceListTypeUserOrderDetail,
                        priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
                        numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
                        valueVATUserOrderDetail, invoicePriceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d),
@@ -386,7 +389,7 @@ META defineOrderStockDestination(fromStock, toStock)
 END
 
 
-META deriveDocumentQuantityPackageDetailOnChangeQuantity(detail);
+META deriveDocumentQuantityPackageDetailOnChangeQuantity (detail);
     changeQuantity###detail = ACTION (detail) {
         REQUEST NUMERIC[14,3] INPUT;
         IF requestedNumeric() THEN {
@@ -394,6 +397,20 @@ META deriveDocumentQuantityPackageDetailOnChangeQuantity(detail);
 
             IF  barcodePack###detail(detail) THEN {
                 SET quantityPack###detail(detail) <- quantity###detail(detail)/amountPack###detail(detail);
+            }
+        } ELSE {
+            EXEC delete(detail);
+        }
+    }
+END
+META deriveDocumentQuantityDetailOnAmountPack (detail);
+    changeAmountPack###detail = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            SET amountPack###detail(detail) <- requestedNumeric();
+
+            IF  barcodePack###detail(detail) THEN {
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail);
             }
         } ELSE {
             EXEC delete(detail);
@@ -415,8 +432,8 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
         IF detail###Sku###object###stockProp(sku, object, stock) THEN {
             IF requestedNumeric() THEN {
                 SET quantityPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-                SET barcodePack###detail(detail) <- prop###barcodeSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-                SET amountPack###detail(detail) <- amountPackSku(sku) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+
             } ELSE {
                 EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
 

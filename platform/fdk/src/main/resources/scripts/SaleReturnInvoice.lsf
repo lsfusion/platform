@@ -30,6 +30,15 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(custom
 
 @defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
 
+@defineDocumentPackageSku(userInvoice, sku, supplierStock);
+@extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showSalePack);
+
+overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+    IF  salePackBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+        SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+
 inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice
        FILTERGROUP filter2

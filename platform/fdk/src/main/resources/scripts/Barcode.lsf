@@ -223,3 +223,18 @@ META deriveDocumentDetailQuantityBarcodeCustom (detail, skuProp, prop, toShowPro
     quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail)
         WHEN CHANGED(quantityPack###detail(detail)) OR CHANGED(amountPack###detail(detail));
 END
+
+META deriveDocumentQuantityDetailOnChangeQuantityPack (detail);
+    changeQuantityPack###detail = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            SET quantityPack###detail(detail) <- requestedNumeric();
+
+            IF  barcodePack###detail(detail) THEN {
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail);
+            }
+        } ELSE {
+            EXEC delete(detail);
+        }
+    }
+END
