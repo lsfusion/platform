@@ -35,30 +35,12 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUse
 @defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
 
-quantitySoldSkuStockUserOrder 'Закуплено' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
-recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-) (currentBalanceSkuStock(sku, stock) AND userOrder IS userOrder);
-recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупке кол-во' (sku, stock, userOrder) = recQuantitySkuStockUserOrder(sku, stock, userOrder) IF recQuantitySkuStockUserOrder(sku, stock, userOrder) >0;
-stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
-
-fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым количеством' = ACTION (stock, userOrder) {
-    FOR inSupplierSku(supplierUserOrder(userOrder), sku) DO {
-        SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, stock, userOrder);
-        EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, stock);
-    }
-} TOOLBAR CONFIRM;
-
-
-EXTEND FORM userOrder
-    PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o), stockReserveSkuStockUserOrder(s,st,o)
-    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
-    PROPERTIES  fillRecommendedQuantityStockUserOrder(st,o) TODRAW s
-;
-
 inAssortmentSkuStockUserOrder (sku, stock, userOrder)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserOrderSku(userOrder, sku), sku, stock, dateTimeUserOrder(userOrder)) == supplierUserOrder(userOrder);
 inUserOrderSku (userOrder, sku)= inSupplierSku(supplierUserOrder(userOrder), sku);
+
 EXTEND FORM userOrder
 
-   FILTERGROUP filter1
+    FILTERGROUP filter1
         FILTER 'С поступлением' 'F8' inUserOrderSku(o, s)
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o)
 ;

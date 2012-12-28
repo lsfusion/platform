@@ -2,6 +2,7 @@ MODULE Purchase;
 
 REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing, PurchaseScheduleOrder
 ;
+//PRIORITY Purchase;
 
 //-----------------------------------------------------------------------------------------------------------//
 
@@ -24,6 +25,28 @@ reservePurchaseBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) 
 // с учетом текущей даты/времени
 reservePurchaseASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Purchase.reserveASkuStockDateTime(sku, stock, dateTime) (-)
     PurchaseReturn.reserveASkuStockDateTime(sku, stock, dateTime);
+
+quantitySoldSkuStockUserOrder 'Закуплено' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-)
+                                                        (currentReservePurchaseSkuStock(sku, stock) AND userOrder IS userOrder)  (-) (currentBalanceSkuStock(sku, stock) AND userOrder IS userOrder);
+
+recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупке кол-во' (sku, stock, userOrder) = recQuantitySkuStockUserOrder(sku, stock, userOrder) IF recQuantitySkuStockUserOrder(sku, stock, userOrder) >0;
+stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
+
+fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым количеством' = ACTION (userOrder) {
+    FOR inAssortmentSkuStockUserOrder(sku, customerStockUserOrder(userOrder), userOrder) AND recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder) DO {
+        SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder);
+        EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, customerStockUserOrder(userOrder));
+    }
+} TOOLBAR CONFIRM;
+
+
+EXTEND FORM userOrder
+    PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o), stockReserveSkuStockUserOrder(s,st,o)
+    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
+    PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
+;
+
 
 NAVIGATOR {
 
