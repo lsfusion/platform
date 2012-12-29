@@ -23,20 +23,6 @@ PRIORITY Stock, RomanLogicsModule;
 @extendFormDocumentSkipSkuLedgerCustom(userWriteOff, w, writeOff);
 @extendFormDocumentSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
 
-isPostedSkipSkuLedgerWriteOff (writeOff) = isPostedWriteOff(writeOff) AND NOT skipSkuLedgerWriteOff(writeOff);
-
-
-EXTEND FORM writeOffs
-    PROPERTIES FORCE PANEL skipPrintWriteOff = printWriteOff(w) SHOWIF isPostedSkipSkuLedgerWriteOff(w)
-;
-
-EXTEND DESIGN writeOffs {
-    printContainer {
-        REMOVE PROPERTY(printWriteOff);
-        ADD PROPERTY (skipPrintWriteOff);
-    }
-}
-
 // Проводим по регистру
 
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN

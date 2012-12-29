@@ -939,7 +939,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addTAProp(LCP sourceProperty, LCP targetProperty) {
-        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", baseLM.translationDictionaryTerm, baseLM.insensitiveTranslationDictionaryTerm, baseLM.insensitiveDictionary, sourceProperty, targetProperty, baseLM.dictionary)));
+        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", baseLM.BL.i18nLM.translationDictionaryEntryDictionaryTerm, baseLM.BL.i18nLM.insensitiveTranslationDictionaryEntryDictionaryTerm, baseLM.BL.i18nLM.insensitiveDictionary, sourceProperty, targetProperty, baseLM.BL.i18nLM.dictionary)));
     }
 
     protected <P extends PropertyInterface> LCP addSCProp(LCP<P> lp) {
@@ -2065,7 +2065,7 @@ public abstract class LogicsModule {
     }
 
     public LAP addAProp(ActionProperty property) {
-        return addAProp(baseLM.publicGroup, property);
+        return addAProp(baseLM.privateGroup, property);
     }
 
     public LAP addAProp(AbstractGroup group, ActionProperty property) {

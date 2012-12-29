@@ -4,7 +4,6 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.IOUtils;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -16,7 +15,6 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.type.ObjectType;
@@ -38,7 +36,6 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.nullTrim;
 import static platform.base.BaseUtils.nvl;
 
@@ -56,7 +53,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addModulesFromResource(
                 "/scripts/Currency.lsf",
                 "/scripts/Utils.lsf",
-                "/scripts/I18n.lsf",
                 "/scripts/Country.lsf",
                 "/scripts/DefaultData.lsf",
                 "/scripts/Historizable.lsf");

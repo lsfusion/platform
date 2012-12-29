@@ -97,7 +97,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final SecurityLogicsModule securityLM;
     public final SystemEventsLogicsModule systemEventsLM;
     public final EmailLogicsModule emailLM;
-    public SchedulerLogicsModule schedulerLM;
+    public final SchedulerLogicsModule schedulerLM;
+    public final I18nLogicsModule i18nLM;
     private String dbName;
 
     public final NavigatorsController navigatorsController;
@@ -555,6 +556,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(systemEventsLM);
         addModule(emailLM);
         addModule(schedulerLM);
+        addModule(i18nLM);
     }
 
     protected void addModulesFromResource(String... paths) throws IOException {
@@ -863,6 +865,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         emailLM = new EmailLogicsModule(this, this.LM);
 
         schedulerLM = new SchedulerLogicsModule(this, this.LM);
+
+        i18nLM = new I18nLogicsModule(this, this.LM);
 
         navigatorsController = new NavigatorsController(this);
 

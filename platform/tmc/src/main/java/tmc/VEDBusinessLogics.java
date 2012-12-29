@@ -38,7 +38,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 "/scripts/Country.lsf",
                 "/scripts/Utils.lsf",
                 "/scripts/DefaultData.lsf",
-                "/scripts/I18n.lsf",
                 "/scripts/Currency.lsf",
                 "/scripts/Backup.lsf");
     }

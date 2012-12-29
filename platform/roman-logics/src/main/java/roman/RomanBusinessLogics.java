@@ -34,7 +34,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule ContractStock;
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
-    public ScriptingLogicsModule I18n;
     public ScriptingLogicsModule Utils;
     public ScriptingLogicsModule Country;
     EquipmentServer equipmentServer;
@@ -61,7 +60,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         Utils = addModuleFromResource("/scripts/Utils.lsf");
-        I18n = addModuleFromResource("/scripts/I18n.lsf");
         Country = addModuleFromResource("/scripts/Country.lsf");
 
         addModulesFromResource(

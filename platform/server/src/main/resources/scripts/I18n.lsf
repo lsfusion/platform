@@ -4,6 +4,25 @@ REQUIRE System;
 
 // ------------------------------------------------ Язык ---------------------------------------------- //
 
+CLASS dictionary 'Словарь' : named;
+TABLE dictionary (dictionary);
+
+insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (dictionary);
+
+CLASS dictionaryEntry 'Слова';
+TABLE dictionaryEntry (dictionaryEntry);
+
+dictionaryDictionaryEntry 'Словарь' = DATA dictionary (dictionaryEntry);
+termDictionaryEntry 'Термин' = DATA STRING[50] (dictionaryEntry);
+insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
+translationDictionaryEntry 'Перевод' = DATA STRING[50] (dictionaryEntry);
+
+dictionaryEntryDictionaryTerm = GROUP UNIQUE dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS dictionaryEntry;
+translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
+nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = name (dictionaryDictionaryEntry(dictionaryEntry));
+insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS dictionaryEntry;
+insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
+
 CLASS language 'Язык' : named;
 TABLE language(language);
 
@@ -49,8 +68,8 @@ FORM dictionary 'Словарь'
     PROPERTIES(d) name, insensitiveDictionary
 
     OBJECTS e = dictionaryEntry
-    PROPERTIES(e) termDictionary, translationDictionary, ADDOBJ, delete
-    FILTERS       entryDictionary(e) == d
+    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, ADDOBJ, delete
+    FILTERS       dictionaryDictionaryEntry(e) == d
 
     EDIT dictionary OBJECT d
 ;

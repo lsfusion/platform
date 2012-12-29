@@ -76,3 +76,10 @@ V0.6 {
     PROPERTY propertyDrawSID -> sidPropertyDraw
     PROPERTY email -> emailContact
 }
+
+V0.6.1 {
+    PROPERTY entryDictionary -> I18n_dictionaryDictionaryEntry
+    PROPERTY termDictionary -> I18n_termDictionaryEntry
+    PROPERTY insensitiveTermDictionary -> I18n_insensitiveTermDictionaryEntry
+    PROPERTY translationDictionary -> I18n_translationDictionaryEntry
+}

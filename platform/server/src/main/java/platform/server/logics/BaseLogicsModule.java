@@ -86,8 +86,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass multiLanguageNamed;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
-    public ConcreteCustomClass dictionary;
-    public ConcreteCustomClass dictionaryEntry;
 
     public StaticCustomClass month;
     public StaticCustomClass DOW;
@@ -211,15 +209,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
 
-    protected LCP termDictionary;
-    protected LCP translationDictionary;
-    public LCP insensitiveDictionary;
-    public LCP insensitiveTermDictionary;
-    protected LCP entryDictionary;
-    protected LCP nameEntryDictionary;
-    public LCP translationDictionaryTerm;
-    public LCP insensitiveTranslationDictionaryTerm;
-
     public LCP dumb1;
 
     public SelectionPropertySet selection;
@@ -280,9 +269,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact/*, BL.LM.barcodeObject*/);
         computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
 
-        dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
-        dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
-
         month = addStaticClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
                 new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")});
@@ -326,8 +312,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
-        addTable("dictionary", dictionary);
-        addTable("dictionaryEntry", dictionaryEntry);
+
 
         addTable("session", session);
 
@@ -551,19 +536,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         defaultOverrideBackgroundColor = addSUProp("defaultOverrideBackgroundColor", true, getString("logics.default.background.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.YELLOW), defaultBackgroundColor);
         defaultForegroundColor = addDProp("defaultForegroundColor", getString("logics.default.foreground.color"), ColorClass.instance);
         defaultOverrideForegroundColor = addSUProp("defaultOverrideForegroundColor", true, getString("logics.default.foreground.color"), Union.OVERRIDE, addCProp(ColorClass.instance, Color.RED), defaultForegroundColor);
-
-        // Словари
-        insensitiveDictionary = addDProp(recognizeGroup, "insensitiveDictionary", getString("logics.dictionary.insensitive"), LogicalClass.instance, dictionary);
-        entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
-        termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
-        insensitiveTermDictionary = addJProp(baseGroup, "insensitiveTermDictionary", upper, termDictionary, 1);
-        translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
-        translationDictionaryTerm = addCGProp(null, "translationDictionaryTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
-        nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
-
-        insensitiveTranslationDictionaryTerm = addMGProp(baseGroup, "insensitiveTranslationDictionaryTerm", getString("logics.dictionary.translation.insensitive"), translationDictionary, entryDictionary, 1, insensitiveTermDictionary, 1);
-
-        //todo : инлайнить в свои модули
 
         initNavigators();
     }
