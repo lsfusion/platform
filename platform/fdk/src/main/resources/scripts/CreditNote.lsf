@@ -23,6 +23,15 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад поставщика', supplier);
     @defineDocumentInterfaceDataStock(creditNote, stock, 'Склад покупателя', customer);
 
+    CONSTRAINT supplierUserCreditNote(userCreditNote) AND supplierStockUserCreditNote(userCreditNote) AND NOT
+               inLegalEntityStock(supplierUserCreditNote(userCreditNote), supplierStockUserCreditNote(userCreditNote))
+        CHECKED BY supplierStockUserCreditNote
+            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+    CONSTRAINT customerUserCreditNote(userCreditNote) AND customerStockUserCreditNote(userCreditNote) AND NOT
+               inLegalEntityStock(customerUserCreditNote(userCreditNote), customerStockUserCreditNote(userCreditNote))
+        CHECKED BY customerStockUserCreditNote
+            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+
     @defineDocumentInterfacePosted(creditNote);
 
     @defineDocumentInterfaceDescription(creditNote, 'Акт расхождения'###sign);
@@ -39,7 +48,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @defineDocumentInterfaceDetailDataSum(creditNote);
     @deriveDocumentDetailSum(userCreditNote, quantity);
 
-    @defineDocumentInterfaceDetailVAT(creditNote, country###stockProp);
+    @defineDocumentInterfaceDetailVAT(creditNote, country###stockProp);         //  derive см. ниже в "Связь акта и накладной"
     @defineDocumentInterfaceDetailVATDataSumCustom(creditNoteDetail, invoice);
 
     @defineDocumentInterfaceHeaderQuantity(creditNote);
@@ -225,7 +234,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES(c) READONLY invoicesCreditNote
         PROPERTIES(d) READONLY descriptionIndexInvoiceInvoiceCreditNoteDetail
     ;
-
+    // Записываем значения из накладной
     quantityUserCreditNoteDetail (detail)  <- toShipInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
@@ -239,18 +248,17 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     VATUserCreditNoteDetail (detail)  <- VATInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
+    valueVATUserCreditNoteDetail (detail)  <- valueVATInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
+        WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
+
     VATSumUserCreditNoteDetail (detail) <- roundCurrency((sumUserCreditNoteDetail(detail) *
         valueVATUserCreditNoteDetail (detail) / 100), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
         WHEN CHANGED(sumUserCreditNoteDetail(detail)) OR CHANGED(VATUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
+    @deriveDocumentDetailVATPrefixSum (userCreditNote, invoice);
 
 //-- аггр.объект
 
     @defineDocumentInterfaceCreate (invoice, createCreditNote, 'Создать акт расхождения');
-//    createCreditNoteInvoice 'Создать акт расхождения' = ABSTRACT BOOLEAN (invoice) PERSISTENT IN documentPrmGroup;
-//    createCreditNoteUserInvoice 'Создать акт расхождения' = DATA BOOLEAN (userInvoice) IN documentPrmGroup;
-//    createCreditNoteInvoice (invoice) += createCreditNoteUserInvoice(invoice);
-//    createCreditNoteInvoiceDetail 'Создать акт расхождения' (invoiceDetail) = createCreditNoteInvoice(invoiceInvoiceDetail(invoiceDetail));
-
     needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
         toShipInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail) PERSISTENT;
 
@@ -333,12 +341,16 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, numberVAT, 'НДС, номер');
     @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
+    valueVATCreditNoteDetail (creditNoteDetail) += valueVATInvoiceCreditNoteDetail(creditNoteDetail);
 
     VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = toNumeric16p2(roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
-        valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
+    valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
+
+    invoiceSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = VATSumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) (+)
+        sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail);
 
     VATSumCreditNoteDetail (creditNoteDetail) += VATSumInvoiceCreditNoteDetail(creditNoteDetail);
-
+    invoiceSumCreditNoteDetail (creditNoteDetail) += invoiceSumInvoiceCreditNoteDetail(creditNoteDetail);
 END
 
 META defineCreditNoteBatch(dumb)

@@ -5,7 +5,7 @@ REQUIRE System, Reflection;
 NAMESPACE Service;
 
 checkAggregationsAction 'Проверить аггрегации' = ACTION CUSTOM 'platform.server.logics.service.CheckAggregationsActionProperty';
-recalculateAction 'Проверить аггрегации' = ACTION CUSTOM 'platform.server.logics.service.RecalculateActionProperty';
+recalculateAction 'Пересчитать аггрегации' = ACTION CUSTOM 'platform.server.logics.service.RecalculateActionProperty';
 recalculateFollowsAction 'Пересчитать следствия' = ACTION CUSTOM 'platform.server.logics.service.RecalculateFollowsActionProperty';
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'platform.server.logics.service.AnalyzeDBActionProperty';
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'platform.server.logics.service.PackActionProperty';
