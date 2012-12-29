@@ -150,6 +150,11 @@ priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceL
 
 includeVATBasePriceListType(type) += includeVATLedgerPriceListType(type);
 
+// ------ оптимизация для ассортиментов
+ledgerPriceListTypePriceListType = ABSTRACT ledgerPriceListType (priceListType);
+
+ledgerPriceListTypePriceListType(type) += type AS ledgerPriceListType;
+
 // --------------------------- Системные виды цен, на основе Ledger'ов ------------------ //
 
 CLASS STATIC systemLedgerPriceListType 'Системный вид цены (регистр)' {
@@ -672,6 +677,8 @@ CLASS calcPriceListType 'Расчетный вид цены' : priceListType;
 
 basePriceListTypeCalcPriceListType(type) = DATA basePriceListType (calcPriceListType);
 nameBasePriceListTypeCalcPriceListType 'Базовый вид цены' (type) = name(basePriceListTypeCalcPriceListType(type));
+
+ledgerPriceListTypePriceListType(type) += basePriceListTypeCalcPriceListType(type) AS ledgerPriceListType;
 
 includeVATCalcPriceListType 'Цена с НДС' = DATA BOOLEAN (calcPriceListType);
 

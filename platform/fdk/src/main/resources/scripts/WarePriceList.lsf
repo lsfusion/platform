@@ -9,6 +9,8 @@ CLASS warePriceListType 'Цена cо стеклопосудой' : priceListTyp
 basePriceListTypeWarePriceListType(type) = DATA basePriceListType (warePriceListType);
 nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = name(basePriceListTypeWarePriceListType(type));
 
+ledgerPriceListTypePriceListType(type) += basePriceListTypeWarePriceListType(type) AS ledgerPriceListType;
+
 includeVATPriceListType(type) += TRUE IF type IS warePriceListType;
 
 @defineDocumentHeaderCurrency(warePriceListType);
