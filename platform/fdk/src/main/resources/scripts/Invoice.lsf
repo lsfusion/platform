@@ -658,26 +658,40 @@ META defineInvoiceReturn(NS, NSR, stockProp)
     descriptionInvoiceDetailInvoiceDetail 'Основание' (invoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailInvoiceDetail(invoiceDetail));
     descriptionInvoiceDetailUserInvoiceDetail 'Основание' (userInvoiceDetail) = NS.descriptionInvoiceDetail(invoiceDetailUserInvoiceDetail(userInvoiceDetail));
 
-    NSR.priceUserInvoiceDetail(detail) <- IF invoiceDetailUserInvoiceDetail(detail) THEN
-                                                    NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
-                                                 ELSE IF batchUserInvoiceDetail(detail) THEN
-                                                    prevPricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
-                                                                                             NSR.batchInvoiceDetail(detail),
-                                                                                             NSR.stockProp###invoiceDetail(detail),
-                                                                                             NSR.dateTimeInvoiceDetail(detail))
-                                                 ELSE
-                                                    prevPricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
-                                                                                           NSR.skuInvoiceDetail(detail),
-                                                                                           NSR.stockProp###invoiceDetail(detail),
-                                                                                           NSR.dateTimeInvoiceDetail(detail))
-                                        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
-                                             CHANGED(NSR.batchInvoiceDetail(detail)) OR
-                                             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
-                                             CHANGED(NSR.skuInvoiceDetail(detail)) OR
-                                             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
-                                             CHANGED(NSR.dateTimeInvoiceDetail(detail));
+//    NSR.priceUserInvoiceDetail(detail) <- IF invoiceDetailUserInvoiceDetail(detail) THEN
+//                                                    NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+//                                                 ELSE IF batchUserInvoiceDetail(detail) THEN
+//                                                    prevPricePriceListTypeBatchStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+//                                                                                             NSR.batchInvoiceDetail(detail),
+//                                                                                             NSR.stockProp###invoiceDetail(detail),
+//                                                                                             NSR.dateTimeInvoiceDetail(detail))
+//                                                 ELSE
+//                                                    prevPricePriceListTypeSkuStockDateTime(NSR.priceListTypeInvoiceDetail(detail),
+//                                                                                           NSR.skuInvoiceDetail(detail),
+//                                                                                           NSR.stockProp###invoiceDetail(detail),
+//                                                                                           NSR.dateTimeInvoiceDetail(detail))
+//                                        WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.batchInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.skuInvoiceDetail(detail)) OR
+//                                             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
+//                                             CHANGED(NSR.dateTimeInvoiceDetail(detail));
 
-    NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) WHEN CHANGED(invoiceDetailUserInvoiceDetail(detail));
+    recalculatedPriceUserInvoiceDetail(detail) = ACTION (detail) {    //todo: необходимо сделать, чтобы ACTION вызывался после пересчета цены от партии
+        IF invoiceDetailUserInvoiceDetail(detail) THEN {
+            SET NSR.priceUserInvoiceDetail(detail) <-  NS.priceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+            SET NSR.invoicePriceUserInvoiceDetail(detail) <-  NS.invoicePriceInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+            SET NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+        }
+    }
+        WHEN (CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+            CHANGED(NSR.batchInvoiceDetail(detail)) OR
+            CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
+            CHANGED(NSR.skuInvoiceDetail(detail)) OR
+            CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
+            CHANGED(NSR.dateTimeInvoiceDetail(detail)))
+            DO EXEC recalculatedPriceUserInvoiceDetail(detail) SESSION;
+
 
     EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;
     EXTEND FORM NS.userInvoice PROPERTIES (d) READONLY returnQuantityInvoiceDetail BEFORE namePriceListTypeUserInvoiceDetail;
