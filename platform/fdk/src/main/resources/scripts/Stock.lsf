@@ -1435,7 +1435,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
 
     priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
-    priceSkuStock###object 'Цена' (sku, stock, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
+    priceSkuStock###object 'Цена' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
 
     overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
     changeQuantityValueSku###object###Stock = ACTION (sku, object, stock) {

@@ -121,5 +121,5 @@ inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku
 EXTEND FORM userOrder
     FILTERGROUP filter1
         FILTER 'С продажей' 'F8' inUserOrderSku(o, s)
-        FILTER'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o) DEFAULT
+        FILTER 'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o) DEFAULT
 ;

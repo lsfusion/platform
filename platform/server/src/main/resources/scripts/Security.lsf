@@ -19,6 +19,21 @@ inUserRole 'Вкл.' = DATA BOOLEAN (customUser, userRole);
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
 
+FORM customUser 'Пользователь'
+    OBJECTS u=customUser FIXED PANEL
+    PROPERTIES(u) userFirstName, userLastName, userLogin, userPassword, emailContact, nameMainRoleUser
+
+    EDIT customUser OBJECT u
+;
+
+FORM customUsers 'Пользователи'
+    OBJECTS u=customUser
+    PROPERTIES(u) READONLY nameMainRoleUser, commonName, userLogin, emailContact
+    PROPERTIES(u) ADDFORM, EDITFORM FORCE PANEL, delete
+
+    DIALOG customUser OBJECT u
+;
+
 permitViewProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (property);
 forbidViewProperty 'Запретить просмотр свойства' = DATA BOOLEAN (property);
 permitChangeProperty 'Разрешить изменение свойства' = DATA BOOLEAN (property);
@@ -72,16 +87,6 @@ policyName 'Политика' (name) = GROUP UNIQUE policy BY name(policy) WHERE
 descriptionPolicy 'Описание' = DATA STRING[100] (policy);
 orderUserRolePolicy 'Порядок политики' = DATA INTEGER (userRole, policy);
 orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);
-
-FORM customUser 'Пользователь'
-    OBJECTS u=customUser FIXED PANEL
-    PROPERTIES(u) userFirstName, userLastName, userLogin, userPassword, emailContact, nameMainRoleUser
-    OBJECTS ur=userRole FIXED PANEL
-    PROPERTIES(ur) READONLY name, sidUserRole
-    PROPERTIES(u, ur) inMainRoleCustomUser
-
-    EDIT customUser OBJECT u
-;
 
 EXTEND DESIGN customUser {
     main{
@@ -207,14 +212,6 @@ EXTEND DESIGN securityPolicy {
         }
     }
 }
-
-FORM customUsers 'Пользователи'
-    OBJECTS u=customUser
-    PROPERTIES(u) READONLY nameMainRoleUser, commonName, userLogin, emailContact
-    PROPERTIES(u) delete, ADDOBJ, EDITFORM FORCE PANEL
-
-    DIALOG customUser OBJECT u
-;
 
 NAVIGATOR {
     security {

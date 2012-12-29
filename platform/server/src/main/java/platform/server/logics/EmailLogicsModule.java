@@ -1,34 +1,14 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-import platform.interop.ClassViewType;
-import platform.interop.PropertyEditType;
-import platform.interop.form.layout.ContainerType;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.classes.*;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
-import platform.server.form.entity.filter.RegularFilterEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.StringClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
-import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -94,7 +74,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         emailPassword = getLCPByName("emailPassword");
         emailBlindCarbonCopy = getLCPByName("emailBlindCarbonCopy");
 
-        disableEmail = getLCPByName("disableEMail");
+        disableEmail = getLCPByName("disableEmail");
 
         // Пользователи
         generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(emailContact, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));

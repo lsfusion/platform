@@ -916,7 +916,7 @@ META defineDocumentHeaderPriceListType (object, type, prefix, caption)
     name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 META defineDocumentAbstractHeaderPriceListType (object, type, prefix, caption)
-    prefix###type###object (object) = ABSTRACT type (object);
+    prefix###type###object (object) = ABSTRACT type (object) PERSISTENT;
     name###prefix###type###object 'Вид цен'###caption (object)= name(prefix###type###object(object)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 META defineDocumentInterfaceHeaderPriceListType (object, type, prefix, caption)
@@ -943,7 +943,7 @@ META defineDocumentDetailPriceListType (object, detail, type, prefix, caption)
 END
 
 META defineDocumentAbstractDetailPriceListType (object, detail, type, prefix, caption)
-    prefix###type###detail =  ABSTRACT type (detail);
+    prefix###type###detail =  ABSTRACT type (detail) PERSISTENT;
     name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 
