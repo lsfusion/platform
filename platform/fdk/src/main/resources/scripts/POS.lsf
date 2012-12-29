@@ -133,6 +133,9 @@ zReportReceiptToReceipt (zReport, receipt, cashRegister) = GROUP UNIQUE receipt 
 GROUP receiptDiscountGroup 'Дисконтная карта' : public;
 
 discountCardReceipt (receipt) = DATA discountCard (receipt);
+
+CONSTRAINT dateToDiscountCard(discountCardReceipt(receipt)) < dateReceipt(receipt) CHECKED BY discountCardReceipt MESSAGE 'Закончился срок действия карты';
+
 numberDiscountCardReceipt 'Номер дисконтной карты' (receipt) = seriesNumberObject(discountCardReceipt(receipt)) IN receiptDiscountGroup;
 nameClientDiscountCardReceipt 'Держатель дисконтной карты' (receipt) = nameClientDiscountCard(discountCardReceipt(receipt)) IN receiptDiscountGroup;
 numberDiscountCardReceiptDetail 'Номер дисконтной карты' (receiptDetail) = numberDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
@@ -847,13 +850,22 @@ inputDiscountCardNumberReceipt 'Ввести номер' = ACTION (receipt) {
     FORM inputDiscountCardNumberReceipt MODAL;
     IF formResult() == formResult.ok THEN {
         IF TRUE AND NOT chosenString('s') == '' THEN {
-            IF discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))) THEN
-                SET discountCardReceipt(receipt) <- discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n')))
+            IF discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))) THEN {
+                IF dateToDiscountCard(discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n'))))<dateReceipt(receipt) THEN
+                    MESSAGE 'Закончился срок действия карты'
+                ELSE
+                    SET discountCardReceipt(receipt) <- discountCardSeriesNumber(ustring2(chosenString('s'),chosenString('n')));
+            }
             ELSE
                 MESSAGE 'Дисконтная карта с такой серией и номером не найдена';
-        } ELSE {
-            IF discountCardNumber(chosenString('n')) THEN
-                SET discountCardReceipt(receipt) <- discountCardNumber(chosenString('n'))
+        }
+        ELSE {
+            IF discountCardNumber(chosenString('n')) THEN {
+                IF dateToDiscountCard(discountCardNumber(chosenString('n')))<dateReceipt(receipt) THEN
+                    MESSAGE 'Закончился срок действия карты'
+                ELSE
+                    SET discountCardReceipt(receipt) <- discountCardNumber(chosenString('n'));
+            }
             ELSE
                 MESSAGE 'Дисконтная карта с таким номером не найдена';
         }
