@@ -18,6 +18,10 @@ nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
 isCompanyStock(stock) = isCompanyLegalEntity(legalEntityStock(stock));
 
+quantityStocksStockGroup 'Кол-во складов' (stockGroup) = GROUP SUM 1 IF isCompanyStock(stock)
+    AND isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup)
+    BY stockGroup PERSISTENT;
+
 userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock);
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;

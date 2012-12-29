@@ -219,15 +219,8 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 @defineDocumentInterfaceDescription(priceList, 'Прайс');
 
 @defineDocumentInterfaceCurrency(priceList);
-//@deriveDocumentCurrency(userPriceList, dataPriceListType);
 
 @defineDocumentInterfaceDetailSku(priceList, sku);
-//@defineDocumentInterfaceDetailPrice(priceList);
-
-//castPriceList =
-//    FORMULA STRING[100] '\'Прайс №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
-//descriptionPriceList 'Описание' (priceList) =
-//    castPriceList(seriesNumberObject(priceList), datePriceList(priceList)) IN documentPrmGroup;
 
 @defineDocumentInterfaceLegalEntity(priceList, company, 'Организация');
 @defineDocumentInterfaceDetailQuantity(priceList);
@@ -242,8 +235,6 @@ userPriceListDetailSkuUserPriceList (sku, userPriceList) = GROUP UNIQUE userPric
 pricePriceListDetailDataPriceListType 'Цена (новая)' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType) PERSISTENT;
 priceUserPriceListDetailDataPriceListType 'Цена (новая)' = DATA NUMERIC[14,2] (priceListDetail, dataPriceListType);
 pricePriceListDetailDataPriceListType (priceListDetail, dataPriceListType) += priceUserPriceListDetailDataPriceListType(priceListDetail, dataPriceListType);
-
-//@defineAddDetailDialogSkuStock(userPriceList, sku, stock, dialogSku);
 
 TABLE priceListPriceListType (priceList, priceListType);
 TABLE priceListDetailPriceListType (priceListDetail, priceListType);
@@ -474,7 +465,8 @@ FORM userPriceList 'Прайс'
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS skuGroup AND d IS priceListDetail AND NOT skuPriceListDetail(d)),
             inStockGroupStock(sg, ts),
             currencyUserPriceList(p) == currencyDataPriceListType(t),
-            isCompanyStock(ts)
+            isCompanyStock(ts),
+            quantityStocksStockGroup(sg)
 
     FILTERGROUP filters
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT

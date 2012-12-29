@@ -419,10 +419,6 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
             SET activeBarcode(bc) <- TRUE;
             SET primaryBarcode(bc) <- TRUE;
             FORM item OBJECTS i = s, b = bc MANAGESESSION DOCKED_MODAL;
-//            IF formResult() == formResult.ok THEN {
-//                SET sessionSku() <- s AS item;
-//                EXEC apply();
-//            }
         }
     }
 }

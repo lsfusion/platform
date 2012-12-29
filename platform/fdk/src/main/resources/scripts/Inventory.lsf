@@ -755,6 +755,9 @@ FORM dialogStockInventory 'Выбор складов для инвентариз
     PROPERTIES (ts) READONLY tsTreeName = name
     PROPERTIES (ts, in)      includeStockInventory, nameUserTypeOfAdditionStockInventory
     FILTERS isParentStockGroupStock(sg, ts)
+    FILTERGROUP filters
+        FILTER 'Только склады компании' 'F10' isCompanyStock(ts) DEFAULT
+
     ORDER BY tsTreeName
 ;
 @extendFormFilterStockAccess(stock, ts, dialogStockInventory);
