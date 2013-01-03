@@ -97,12 +97,12 @@ EXTEND DESIGN customUser {
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=userRole
-    PROPERTIES(ur) name, OBJVALUE, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
+    PROPERTIES(ur) name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
                    permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
                    defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole, delete, ADDOBJ
 
     OBJECTS p=policy
-    PROPERTIES(p)  commonName, OBJVALUE, descriptionPolicy
+    PROPERTIES(p)  commonName, descriptionPolicy
 
     OBJECTS f=navigatorElement
     PROPERTIES(f) READONLY captionNavigatorElement, sidNavigatorElement

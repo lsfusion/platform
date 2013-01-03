@@ -144,17 +144,17 @@ groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объе�
 
 FORM physicalModel 'Физическая модель'
     OBJECTS t=table
-    PROPERTIES(t) sidTable, OBJVALUE, rowsTable, sparseColumnsTable
+    PROPERTIES(t) sidTable, rowsTable, sparseColumnsTable
 
     OBJECTS tk=tableKey
-    PROPERTIES(tk) OBJVALUE, classTableKey, nameTableKey, quantityTableKey
+    PROPERTIES(tk) classTableKey, nameTableKey, quantityTableKey
 
     OBJECTS tc=tableColumn
-    PROPERTIES(tc) OBJVALUE, sidTableColumn, namePropertyTableColumn READONLY, quantityTableColumn, notNullQuantityTableColumn,
+    PROPERTIES(tc) sidTableColumn, namePropertyTableColumn READONLY, quantityTableColumn, notNullQuantityTableColumn,
                    percentNotNullTableColumn, recalculateAggregationTableColumn
 
     OBJECTS dc=dropColumn
-    PROPERTIES(dc) READONLY OBJVALUE, sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
+    PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
     PROPERTIES(dc) dropDropColumn
 
     PROPERTIES() recalculateStats

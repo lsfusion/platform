@@ -18,7 +18,7 @@ CLASS launch 'Запуск';
 TABLE launch (launch);
 
 computerLaunch 'Компьютер' = DATA computer (launch);
-hostnameLaunch (launch) = hostname(computerLaunch(launch));
+hostnameLaunch 'Имя компьютера' (launch) = hostname(computerLaunch(launch));
 timeLaunch 'Время запуска'= DATA DATETIME (launch);
 revisionLaunch 'Версия'= DATA STRING[10] (launch);
 
@@ -31,13 +31,13 @@ TABLE connection (connection);
 TABLE connectionNavigatorElement (connection, navigatorElement);
 
 computerConnection 'Компьютер' = DATA computer (connection);
-hostnameComputerConnection (connection) = hostname(computerConnection(connection));
+hostnameComputerConnection 'Имя компьютера'(connection) = hostname(computerConnection(connection));
 
 userConnection 'Пользователь' = DATA customUser (connection);
-userLoginConnection (connection) = userLogin(userConnection(connection));
+userLoginConnection 'Логин пользователя' (connection) = userLogin(userConnection(connection));
 
 connectionStatusConnection 'Статус подключения' =  DATA connectionStatus (connection);
-nameConnectionStatusConnection (connection) = name(connectionStatusConnection(connection));
+nameConnectionStatusConnection 'Статус подключения' (connection) = name(connectionStatusConnection(connection));
 
 connectTimeConnection 'Время подключения' = DATA DATETIME (connection);
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (connection);
@@ -56,6 +56,9 @@ FORM connections 'Журнал подключений'
 
     OBJECTS c=connection
     OBJECTS n=navigatorElement
+
+    PROPERTIES (c) hostnameComputerConnection, userLoginConnection, nameConnectionStatusConnection,
+    connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
     PROPERTIES (c, n) connectionFormCount
 
     FILTERS connectionFormCount(c, n)>0
@@ -96,7 +99,7 @@ EXTEND DESIGN exceptions {
 FORM launches 'Журнал запусков'
 
    OBJECTS l=launch
-   PROPERTIES(l) READONLY OBJVALUE, computerLaunch, hostnameLaunch, timeLaunch, revisionLaunch, OBJVALUE
+   PROPERTIES(l) READONLY hostnameLaunch, timeLaunch, revisionLaunch
 ;
 
 NAVIGATOR {
