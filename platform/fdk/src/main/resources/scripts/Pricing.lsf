@@ -257,6 +257,8 @@ CLASS userPricingPosted 'Проведенный акт расценки (пол�
 @deriveDocumentCurrency(userPricing, departmentStore);
 
 @defineDocumentInterfaceLegalEntity (pricing, supplier, 'Поставщик');
+CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplierUserPricing(userPricing))
+    CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика организация, не являющаяся поставщиком или компанией';
 
 @defineDocumentInterfaceDetailSku(pricing, sku);
 

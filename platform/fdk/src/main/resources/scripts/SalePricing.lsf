@@ -42,10 +42,3 @@ EXTEND FORM invoices
     supplierPriceInvoiceDetail, supplierSumInvoiceDetail
 ;
 //--
-CONSTRAINT supplierUserPricing(userPricing) AND NOT isCompanyLegalEntity(supplierUserPricing(userPricing))
-    CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика организация, не являющаяся компанией';
-
-CONSTRAINT supplierUserPricing(userPricing) AND departmentStoreUserPricing(userPricing) AND NOT
-inLegalEntityStock(supplierUserPricing(userPricing), departmentStoreUserPricing(userPricing))
-    CHECKED BY supplierUserPricing, departmentStoreUserPricing
-        MESSAGE 'Для акта расценки поставщик и склад не имеют связи';
