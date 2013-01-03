@@ -59,7 +59,7 @@ FORM connections 'Журнал подключений'
                    connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
 
     OBJECTS n=navigatorElement
-    PROPERTIES (n) captionNavigatorElement, sidNavigatorElement, parentNavigatorElement
+    PROPERTIES (n) captionNavigatorElement, sidNavigatorElement
 
     PROPERTIES (c, n) connectionFormCount
 

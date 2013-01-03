@@ -193,7 +193,7 @@ EXTEND DESIGN physicalModel {
 FORM forms 'Формы'
 
     TREE treeFormObject tf=navigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tf) READONLY sidNavigatorElement, captionNavigatorElement, parentNavigatorElement
+    PROPERTIES(tf) READONLY sidNavigatorElement, captionNavigatorElement
 
     OBJECTS u=customUser FIXED PANEL
     PROPERTIES(u) READONLY userFirstName, userLastName, userLogin
