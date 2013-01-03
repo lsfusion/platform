@@ -401,7 +401,16 @@ DESIGN userRepricing FROM DEFAULT {
     main {
         preferredSize = (1024, 768);
 
-        NEW header.box BEFORE d.box {
+        NEW specification.box BEFORE functions.box{
+
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+            }
+        }
+        NEW header.box BEFORE specification.box {
             childConstraints = TO THE RIGHT;
 
             NEW headerCol1 {
@@ -442,6 +451,10 @@ DESIGN userRepricing FROM DEFAULT {
         }
     }
 }
+
+//-- SKU
+@defineDocumentSkuSystemLedgerPriceListType(userRepricing, accountPriceListType, departmentStore);
+@extendFormDocumentSku(userRepricing, userRepricing, p);
 
 addUserRepricing 'Добавить' = ACTION ADDFORM userRepricing;
 editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM userRepricing;
