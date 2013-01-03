@@ -18,7 +18,7 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoice
-    PROPERTIES(d) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
+    PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerRow14 {
