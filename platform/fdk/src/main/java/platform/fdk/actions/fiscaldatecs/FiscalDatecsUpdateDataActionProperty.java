@@ -1,6 +1,5 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -10,7 +9,6 @@ import platform.interop.action.MessageClientAction;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;

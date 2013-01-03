@@ -1,11 +1,9 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionDispatcher;
-import platform.interop.action.MessageClientAction;
 
 import java.io.IOException;
-import java.util.List;
 
 
 public class FiscalDatecsServiceInOutClientAction implements ClientAction {

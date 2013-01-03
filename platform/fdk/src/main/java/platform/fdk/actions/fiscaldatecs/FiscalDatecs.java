@@ -1,12 +1,8 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.Dispatch;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.util.Date;
 
 public class FiscalDatecs {

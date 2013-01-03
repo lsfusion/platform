@@ -1,4 +1,4 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionDispatcher;

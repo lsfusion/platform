@@ -1,4 +1,4 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import java.io.Serializable;
 import java.util.List;

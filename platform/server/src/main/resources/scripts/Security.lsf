@@ -26,6 +26,12 @@ FORM customUser 'Пользователь'
     EDIT customUser OBJECT u
 ;
 
+EXTEND DESIGN customUser {
+    main{
+        childConstraints = TO THE RIGHT;
+    }
+}
+
 FORM customUsers 'Пользователи'
     OBJECTS u=customUser
     PROPERTIES(u) READONLY nameMainRoleUser, commonName, userLogin, emailContact
@@ -88,18 +94,22 @@ descriptionPolicy 'Описание' = DATA STRING[100] (policy);
 orderUserRolePolicy 'Порядок политики' = DATA INTEGER (userRole, policy);
 orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);
 
-EXTEND DESIGN customUser {
-    main{
-        childConstraints = TO THE RIGHT;
-    }
-}
+FORM userRole 'Роль'
+    OBJECTS ur = userRole FIXED PANEL
+    PROPERTIES(ur) name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
+                                      permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
+                                      defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
+    EDIT userRole OBJECT ur
+;
 
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=userRole
-    PROPERTIES(ur) name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
+    PROPERTIES(ur) READONLY name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
                    permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
-                   defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole, delete, ADDOBJ
+                   defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
+    PROPERTIES(ur) ADDFORM, EDITFORM, delete
+    DIALOG userRole OBJECT ur
 
     OBJECTS p=policy
     PROPERTIES(p)  commonName, descriptionPolicy

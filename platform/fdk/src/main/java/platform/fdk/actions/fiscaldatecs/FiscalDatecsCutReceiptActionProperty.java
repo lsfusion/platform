@@ -1,4 +1,4 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
@@ -10,9 +10,9 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public class FiscalDatecsXReportActionProperty extends ScriptingActionProperty {
+public class FiscalDatecsCutReceiptActionProperty extends ScriptingActionProperty {
 
-    public FiscalDatecsXReportActionProperty(ScriptingLogicsModule LM) {
+    public FiscalDatecsCutReceiptActionProperty(ScriptingLogicsModule LM) {
         super(LM, new ValueClass[]{});
     }
 
@@ -21,10 +21,9 @@ public class FiscalDatecsXReportActionProperty extends ScriptingActionProperty {
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
-            String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(1, baudRate, comPort));
-            if (result == null) {
+            String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(4, baudRate, comPort));
+            if (result == null)
                 context.apply(LM.getBL());
-            }
             else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (SQLException e) {

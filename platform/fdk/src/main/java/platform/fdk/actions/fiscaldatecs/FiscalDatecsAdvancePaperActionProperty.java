@@ -1,4 +1,4 @@
-package roman.actions.fiscaldatecs;
+package platform.fdk.actions.fiscaldatecs;
 
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
@@ -10,9 +10,9 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public class FiscalDatecsCancelReceiptActionProperty extends ScriptingActionProperty {
+public class FiscalDatecsAdvancePaperActionProperty extends ScriptingActionProperty {
 
-    public FiscalDatecsCancelReceiptActionProperty(ScriptingLogicsModule LM) {
+    public FiscalDatecsAdvancePaperActionProperty(ScriptingLogicsModule LM) {
         super(LM, new ValueClass[]{});
     }
 
@@ -21,9 +21,12 @@ public class FiscalDatecsCancelReceiptActionProperty extends ScriptingActionProp
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
-            String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(5, baudRate, comPort));
-            if (result != null)
+            String result = (String)context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(3, baudRate, comPort));
+            if (result == null)
+                context.apply(LM.getBL());
+            else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
