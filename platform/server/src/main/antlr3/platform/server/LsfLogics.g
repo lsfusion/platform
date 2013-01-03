@@ -1120,8 +1120,8 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, sessionProp, innerPD);
 	}
 }
-	:	('SESSION' { sessionProp = true; } )?
-		'DATA'
+	:	'DATA'
+		('SESSION' { sessionProp = true; } )?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList

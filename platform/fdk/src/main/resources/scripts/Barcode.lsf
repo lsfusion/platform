@@ -76,7 +76,7 @@ FORM barcodeDialog 'Штрих код'
 
 // ----------------------------------- Форма по вводу штрих-кода ---------------------------- //
 
-barcodeInput 'Штрих-код' = SESSION DATA STRING[13] () EVENTID 'SCANNER';
+barcodeInput 'Штрих-код' = DATA SESSION STRING[13] () EVENTID 'SCANNER';
 changeBarcodeInput = ACTION () {
     REQUEST STRING[13] INPUT;
     SET barcodeInput() <- requestedString();
@@ -98,7 +98,7 @@ DESIGN barcodeInput FROM DEFAULT {
 
 // ------------------------------------ Добавление сканированием строк в документ ----------------------//
 
-sessionSku = SESSION DATA sku();
+sessionSku = DATA SESSION sku();
 
 createSkuBarcodeDate = ABSTRACT ACTION (barcode, date);
 
@@ -143,7 +143,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         REQUEST STRING[14] INPUT;
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
-    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = SESSION DATA STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
+    addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = DATA SESSION STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
                                                                             ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
 END
 

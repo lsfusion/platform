@@ -189,9 +189,9 @@ priceLabelBarcodeDepartmentStore (barcode, departmentStore) = pricePriceListType
 labelTypeBarcodeDepartmentStoreDate = ABSTRACT labelType (barcode, departmentStore, DATE);
 countLabelBarcodeDepartmentStoreDate = ABSTRACT INTEGER (barcode, departmentStore, DATE);
 
-createLabelTransactionSku = SESSION DATA BOOLEAN (sku);
-createLabelTransactionDocument = SESSION DATA priceTransactionDocument();
-createLabelTransactionSnapshot = SESSION DATA BOOLEAN();
+createLabelTransactionSku = DATA SESSION BOOLEAN (sku);
+createLabelTransactionDocument = DATA SESSION priceTransactionDocument();
+createLabelTransactionSnapshot = DATA SESSION BOOLEAN();
 
 createAttributeLabelTransaction = ABSTRACT ACTION (labelTransaction);
 

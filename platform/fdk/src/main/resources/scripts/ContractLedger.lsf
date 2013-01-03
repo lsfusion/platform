@@ -329,9 +329,9 @@ DESIGN payment FROM DEFAULT{
     ADD functions.box;
 }
 
-partyA = SESSION DATA legalEntity();
+partyA = DATA SESSION legalEntity();
 namePartyA 'Сторона А(поставщик)' = name(partyA());
-partyB = SESSION DATA legalEntity();
+partyB = DATA SESSION legalEntity();
 namePartyB 'Сторона Б(покупатель)' = name(partyB());
 
 //--------------------------------------------- Платежное требование ------------------------------------------------------//

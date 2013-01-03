@@ -34,7 +34,7 @@ EXTEND FORM zReports PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, s
 
 // --------------------------------------- Подбор строк для изъятия денег --------------------------- //
 
-selectSkipAReceiptDetailZReportSumSelected = SESSION DATA NUMERIC[16,2] ();
+selectSkipAReceiptDetailZReportSumSelected = DATA SESSION NUMERIC[16,2] ();
 
 selectSkipAReceiptDetailZReport 'Подобрать строки' = ACTION (zReport, sumSelect) {
     LOCAL sumLeft = NUMERIC[16,2] ();

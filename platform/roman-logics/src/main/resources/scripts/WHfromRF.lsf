@@ -116,7 +116,7 @@ isNotShippedSkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFre
     AND NOT quantityWHfromRFDetailsSkuFreightUnit(sku, freightUnit, WHfromRF);
 
 //приемка по коробам
-currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = SESSION DATA freightUnit (WHfromRF);
+currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = DATA SESSION freightUnit (WHfromRF);
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromRF) = barcode(currentFreightUnit(WHfromRF));
 
 withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
@@ -261,7 +261,7 @@ changeAddDetailInputBarcodeWHfromRFDetailWHfromRF = ACTION (WHfromRF) {
     REQUEST STRING[14] INPUT;
     EXEC addDialogSkuFreightUnitWHfromRFBarcode(WHfromRF, requestedString());
 };
-addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = SESSION DATA STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
+addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = DATA SESSION STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
                                                                         ON CHANGE EXEC changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {

@@ -117,7 +117,7 @@ declarationsCStoWH 'Декларации' (CStoWH) =
           BY CStoWH
           ORDER declaration IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = SESSION DATA NUMERIC[14,3] (freightUnit, declarationDetail);
+quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = DATA SESSION NUMERIC[14,3] (freightUnit, declarationDetail);
 
 quantityInputDeclarationFreightUnit 'Кол-во подобрано' (declaration, freightUnit) = GROUP SUM quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), freightUnit;
@@ -126,7 +126,7 @@ quantityInputDeclaration 'Кол-во подобрано' (declaration) =  GROUP
     BY declaration;
 
 
-isInputDeclarationDetail 'Вкл' = SESSION DATA BOOLEAN (declarationDetail);
+isInputDeclarationDetail 'Вкл' = DATA SESSION BOOLEAN (declarationDetail);
 
 toFillQuantityInputAllDeclarationDetails 'Проставить количество' (declaration) = ACTION (declaration) {
     FOR currentBalanceDeclarationFreightUnit(declaration, freightUnit) AND currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {

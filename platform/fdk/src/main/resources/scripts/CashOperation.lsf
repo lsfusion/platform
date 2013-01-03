@@ -104,8 +104,8 @@ sumCashOutcomeCashOrder(collection) += sumCashCollection(collection);
 basisCashDocument(collection) += basisCollection(collection);
 isPostedCashDocument(collection) += TRUE AND collection IS collection;
 
-sumCashForCollection 'Сумма инкассации' = SESSION DATA NUMERIC[16,2] (departmentStore);
-sessionDepartmentStore 'Отдел' = SESSION DATA departmentStore ();
+sumCashForCollection 'Сумма инкассации' = DATA SESSION NUMERIC[16,2] (departmentStore);
+sessionDepartmentStore 'Отдел' = DATA SESSION departmentStore ();
 
 FORM addCollection 'Инкассация'
 
@@ -318,7 +318,7 @@ cashRegisterCashOperation(outcomeCashOperation) += cashRegisterOutcomeCashOperat
 
 //------------------------------ Формы ---------------------------------------------------------------------------//
 
-sumCashForIncomeCashOperation 'Сумма внесения денег' = SESSION DATA NUMERIC[16,2] (cashRegister);
+sumCashForIncomeCashOperation 'Сумма внесения денег' = DATA SESSION NUMERIC[16,2] (cashRegister);
 
 FORM addIncomeCashOperation 'Внесение денег'
 
@@ -419,7 +419,7 @@ addIncomeCashOperationForm 'Внесение денег' () = ACTION () NEWSESSI
 
 editIncomeCashOperation 'Редактировать' (incomeCashOperation) = ACTION EDITFORM incomeCashOperation;
 
-sumCashForOutcomeCashOperation 'Сумма изъятия денег' = SESSION DATA NUMERIC[16,2] (cashRegister);
+sumCashForOutcomeCashOperation 'Сумма изъятия денег' = DATA SESSION NUMERIC[16,2] (cashRegister);
 
 FORM addOutcomeCashOperation 'Изъятие денег'
 

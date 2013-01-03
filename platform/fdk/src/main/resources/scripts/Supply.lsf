@@ -286,7 +286,7 @@ EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averagePurchaseSkuStock REA
 //---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
 META defineSupplierDialogStockSku (form)
 
-    form###supplier = SESSION DATA legalEntity ();
+    form###supplier = DATA SESSION legalEntity ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
     form###suppliersFilter (sku) =  (TRUE AND inSupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
 

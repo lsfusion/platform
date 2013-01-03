@@ -1019,7 +1019,7 @@ quantityStockPriceSetDocument (stock, priceSetDocument) =
     
 countStockPriceSetDocumentArticle(stock, priceSetDocument, article) = toInteger(quantityStockPriceSetDocumentArticle(stock, priceSetDocument, article));
 
-shouldBePrintArticle(article) = SESSION DATA BOOLEAN (article);
+shouldBePrintArticle(article) = DATA SESSION BOOLEAN (article);
 
 FORM priceArticlePriceSetDocumentPrint 'Цены для маркировки' PRINT
 
@@ -1053,7 +1053,7 @@ quantityStockPriceSetDocumentSku 'Кол-во' (stock, priceSetDocument, sku) =
 
 countStockPriceSetDocumentSku(stock, priceSetDocument, sku) = toInteger(quantityStockPriceSetDocumentSku(stock, priceSetDocument, sku));
 
-shouldBePrintSku(sku) = SESSION DATA BOOLEAN (sku);
+shouldBePrintSku(sku) = DATA SESSION BOOLEAN (sku);
 
 FORM priceSkuPriceSetDocumentPrint 'Цены для маркировки' PRINT
 
@@ -1244,7 +1244,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
 //Печать марккировки
 imageLabelSku (sku) = imageLabel() IF sku IS sku;
 
-countSku = SESSION DATA INTEGER (sku);
+countSku = DATA SESSION INTEGER (sku);
 
 FORM printMarksDocument 'Печать маркировок товара' PRINT
 

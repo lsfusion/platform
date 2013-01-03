@@ -78,7 +78,7 @@ showPointsTrip 'Показать путь на карте' (trip) = ACTION (trip
 
 } TOOLBAR;
 
-selectTripOrder 'Отмечен' = SESSION DATA BOOLEAN(trip, order);
+selectTripOrder 'Отмечен' = DATA SESSION BOOLEAN(trip, order);
 
 quantityAllFromTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, fromStockOrder(order);
 quantityAllToTripStock (trip, stock) = GROUP SUM 1 IF selectTripOrder(trip, order) BY trip, toStockOrder(order);

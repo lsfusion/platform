@@ -354,7 +354,7 @@ countSupplierSku 'Кол-во партий' (supplier, sku) = GROUP SUM 1 BY sup
 // --------------------------------- Добавляем фильтр в подбор товаров -------------------------------------------- //
 
 META defineDialogSkuSupplier (form)
-    form###supplier = SESSION DATA supplier ();
+    form###supplier = DATA SESSION supplier ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
     form###supplierFilter = (TRUE AND countSupplierSku(form###supplier(), sku)) OR (sku IS sku AND NOT form###supplier());
 

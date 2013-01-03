@@ -271,7 +271,7 @@ nppsMachineryPriceTransaction 'Номера устройств' (transaction) =
           ORDER machinery MINCHARWIDTH 10 PREFCHARWIDTH 20 PERSISTENT;
 
 // перезагрузка прайса целиком
-selectedMachinery 'Вкл' = SESSION DATA BOOLEAN (machinery);
+selectedMachinery 'Вкл' = DATA SESSION BOOLEAN (machinery);
 
 GROUP snapshotMachineryPriceGroup 'Перезагрузка прайса' : public;
 
@@ -418,16 +418,16 @@ priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = pricePriceList
                                                                                                  stockGroupMachinery(groupMachinery),
                                                                                                  currentDateTime());
 
-createMachineryPriceTransactionSnapshot = SESSION DATA BOOLEAN ();
+createMachineryPriceTransactionSnapshot = DATA SESSION BOOLEAN ();
 
-createMachineryPriceTransactionSku = SESSION DATA BOOLEAN (sku);
+createMachineryPriceTransactionSku = DATA SESSION BOOLEAN (sku);
 createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionSku(skuBarcode(barcode)) // если передали параметром
                                                                                  AND inGroupMachinerySku(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
                                                                                  AND activeBarcode(barcode) // если активный штрих-код
                                                                                  AND priceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
 
-createMachineryPriceTransactionDocument = SESSION DATA priceTransactionDocument();
-createMachineryPriceTransactionComment = SESSION DATA STRING[20] ();
+createMachineryPriceTransactionDocument = DATA SESSION priceTransactionDocument();
+createMachineryPriceTransactionComment = DATA SESSION STRING[20] ();
 
 createAttributeMachineryPriceTransaction = ABSTRACT ACTION (machineryPriceTransaction);
 createAttributeMachineryPriceTransactionStock = ABSTRACT ACTION (machineryPriceTransaction, stock);

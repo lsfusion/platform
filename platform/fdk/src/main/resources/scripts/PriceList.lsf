@@ -355,7 +355,7 @@ changeInSkuUserPriceList = ACTION (sku, price) {
     }
 }
 
-isSelectedPriceListDetail 'Отм' = SESSION DATA BOOLEAN (priceListDetail);
+isSelectedPriceListDetail 'Отм' = DATA SESSION BOOLEAN (priceListDetail);
 sumSelectedPriceList (priceList) =
     GROUP SUM 1 IF isSelectedPriceListDetail(priceListDetail)
           BY priceListPriceListDetail(priceListDetail);
@@ -414,7 +414,7 @@ addUnderPriceListUserPriceList 'Заполнить на основании' = AC
     }
 }
 
-sessionDataPriceListType 'Вид цены' = SESSION DATA dataPriceListType();
+sessionDataPriceListType 'Вид цены' = DATA SESSION dataPriceListType();
 
 changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
 

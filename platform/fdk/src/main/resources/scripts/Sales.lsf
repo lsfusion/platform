@@ -263,7 +263,7 @@ NAVIGATOR {
 //---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
 META defineCustomerDialogStockSku (form)
 
-    form###customer = SESSION DATA legalEntity ();
+    form###customer = DATA SESSION legalEntity ();
     form###nameCustomer 'Покупатель' () = name(form###customer()) PREFCHARWIDTH 30;
     form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS sku AND NOT form###customer());
 

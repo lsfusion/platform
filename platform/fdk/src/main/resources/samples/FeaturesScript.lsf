@@ -87,14 +87,14 @@ EXTEND CLASS Features.storeSize
 
 // Data property
 // Expression syntax:
-// [SESSION] DATA returnClass ( [paramClass1, ..., paramClassN] )
-// If SESSION modifier is spesified, than session data property will be created.
+// DATA [SESSION] returnClass ( [paramClass1, ..., paramClassN] )
+// If SESSION modifier is specified, than session data property will be created.
 // Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME, WORDFILE, IMAGEFILE, PDFFILE, CUSTOMFILE, EXCELFILE, NUMERIC, COLOR
 store(document) = DATA store (document) IN base;
 quantity(document, article) = DATA DOUBLE (document, article) IN base;
 storeSize(store) = DATA storeSize (store) IN base;
 
-sessionObj() = SESSION DATA object ();
+sessionObj() = DATA SESSION object ();
 
 // Join property
 // Expression syntax:
@@ -389,9 +389,9 @@ createNewStore 'Добавить большой склад' = ACTION () {
 
 //////////////// TEST PUSHING FOR //////
 
-selCur = SESSION DATA BOOLEAN (document, article);
-selAll = SESSION DATA BOOLEAN (document, article);
-selArt = SESSION DATA BOOLEAN (article);
+selCur = DATA SESSION BOOLEAN (document, article);
+selAll = DATA SESSION BOOLEAN (document, article);
+selArt = DATA SESSION BOOLEAN (article);
 
 testExec = ACTION (document, article) {
     IF quantity(document, article) > 3 THEN
@@ -591,7 +591,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
     };
 };
 
-i() = SESSION DATA INTEGER ();
+i() = DATA SESSION INTEGER ();
 testAction 'Показать "По документам" 3 раза' = ACTION() {
     SET i() <- 0;
     WHILE (i() < 3) DO {
@@ -623,10 +623,10 @@ remindPasswordEmail 'Выслать пароль на этот email' (u, to) = 
     TO (to IF to IS STRING[200])
     CC 'some@someserv.net'
 //    BCC 'luxsoft@adsl.by'
-    INLINE remindPasswordLetter OBJECTS customUser=(u AS customUser)
+    INLINE remindUserPass OBJECTS u=(u AS customUser)
     ATTACH PDF
            NAME [FORMULA STRING[60] '\'ATTACH: Напоминание пароля для \' || $1'](emailContact(u))
-           remindPasswordLetter OBJECTS customUser=(u AS customUser)
+           remindUserPass OBJECTS u=(u AS customUser)
     ;
 
 FORM testEmailForm 'Тестирование EMAIL'
@@ -799,9 +799,9 @@ NAVIGATOR {
     // для создания нового элемента используется команда:
     // NEW <имя> '<заголовок>' [(IN | AFTER | BEFORE) <имя>] [TO <имя окна>] [ACTION <имя экшена>];
 
-    NEW element1 'Element 1' AFTER userPolicyForm;
+    NEW element1 'Element 1' AFTER securityPolicy;
 
-    NEW element2 'Element 2' BEFORE userPolicyForm;
+    NEW element2 'Element 2' BEFORE securityPolicy;
     ADD storeArticle IN element2;
 
     NEW outer 'Outer element' IN element1 {
@@ -813,7 +813,7 @@ NAVIGATOR {
     }
 
     //при создании элемента можно указать окно для него
-    NEW testNavigators '-Тестовые навигаторы-' AFTER adminForm TO mainToolbar;
+    NEW testNavigators '-Тестовые навигаторы-' AFTER securityPolicy TO mainToolbar;
 
     // также можно просто настраивать существующий элемент без его перемещения
     testNavigators 'Тестовые навигаторы' {

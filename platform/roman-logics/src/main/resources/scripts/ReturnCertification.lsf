@@ -72,7 +72,7 @@ quantityReturnCertificationStoreSku 'Кол-во возвращёное' (store,
 
 quantityForReturnCertificationStoreSku 'Остаток' (store, sku) = quantityCertificatedCustomStoreSku(store, sku) (-) quantityReturnCertificationStoreSku(store, sku);
 
-dialogCertificatedSkuCustomStore = SESSION DATA customStore();
+dialogCertificatedSkuCustomStore = DATA SESSION customStore();
 dialogCertificatedSkuNameCustomStore 'Склад' () = name(dialogCertificatedSkuCustomStore());
 
 addDetailDialogSkuReturnCertification 'Подбор товаров' = ACTION (returnCertification) {
@@ -91,9 +91,9 @@ EXTEND FORM dialogCertificatedSku
 ;
 
 
-//returnCertificationQuantity 'Кол-во' = SESSION DATA NUMERIC[14,3] (sku);
+//returnCertificationQuantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (sku);
 //
-//returnCertificationStock = SESSION DATA stock ();
+//returnCertificationStock = DATA SESSION stock ();
 //returnCertificationNameStock 'Склад' () = name(returnCertificationStock()) PREFCHARWIDTH 30;
 //
 //returnCertificationBalance 'Остаток' (sku) = quantityForReturnCertificationStoreSku(returnCertificationStock(), sku);

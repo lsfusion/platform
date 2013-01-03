@@ -117,9 +117,9 @@ META defineScheduleOrder(sign, stockProp)
     customerStockScheduleOrderDetail(scheduleOrderDetail) = customerStockScheduleOrder(scheduleOrderScheduleOrderDetail(scheduleOrderDetail));
     nameCustomerStockScheduleOrderDetail 'Склад покупателя' (scheduleOrderDetail) = name(customerStockScheduleOrderDetail(scheduleOrderDetail));
 
-    tmpDate = SESSION DATA DATE();
-    tmpDateP = SESSION DATA DATE();
-    tmpDateS = SESSION DATA DATE();
+    tmpDate = DATA SESSION DATE();
+    tmpDateP = DATA SESSION DATE();
+    tmpDateS = DATA SESSION DATE();
 
     createScheduleOrder 'Генерировать предварительные заказы' = ACTION (scheduleOrder) {
         // генерация через N дней
@@ -354,13 +354,13 @@ META defineScheduleOrder(sign, stockProp)
 
     ScheduleOrder.addScheduleOrderSupplierCustomer(supplier, customer) += addScheduleOrderSupplierCustomer(supplier, customer);
 
-    supplier = SESSION DATA legalEntity();
+    supplier = DATA SESSION legalEntity();
     nameSupplier 'Поставщик' = name(supplier());
-    customer = SESSION DATA legalEntity();
+    customer = DATA SESSION legalEntity();
     nameCustomer 'Покупатель' = name(customer());
-    supplierStock = SESSION DATA stock();
+    supplierStock = DATA SESSION stock();
     nameSupplierStock 'Склад поставщика' = name(supplierStock());
-    customerStock = SESSION DATA stock();
+    customerStock = DATA SESSION stock();
     nameCustomerStock 'Склад покупателя' = name(customerStock());
 
     CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())

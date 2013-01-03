@@ -283,7 +283,7 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 
 // мгновенный расчет себестоимости
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
-changedCostDataSkuLedger 'Перерасчитывалась себестоимость' = SESSION DATA BOOLEAN (dataSkuLedger);
+changedCostDataSkuLedger 'Перерасчитывалась себестоимость' = DATA SESSION BOOLEAN (dataSkuLedger);
 
 ON APPLY {
     LOCAL changedLedger = BOOLEAN (dataSkuLedger);
@@ -1753,7 +1753,7 @@ END
 //-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
 
 META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)  //  defineDocumentSupplierSkuStock
-    contact###entity###object = SESSION DATA legalEntity (object);
+    contact###entity###object = DATA SESSION legalEntity (object);
     name###contact###entity###object contactCaption (object) = name(contact###entity###object(object));
     relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS sku AND NOT contact###entity###object(object));
 
@@ -2287,7 +2287,7 @@ NAVIGATOR {
 
 META defineDialogSku (form)
 
-    form###quantity 'Кол-во' = SESSION DATA NUMERIC[14,3] (sku);
+    form###quantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (sku);
 
 
     FORM form 'Подбор SKU'
@@ -2346,8 +2346,8 @@ META defineDialogStockSku (form)
 
     @defineDialogSku (form);
 
-    form###stock = SESSION DATA stock ();
-    form###all 'Весь остаток' = SESSION DATA BOOLEAN (sku);
+    form###stock = DATA SESSION stock ();
+    form###all 'Весь остаток' = DATA SESSION BOOLEAN (sku);
     form###nameStock 'Склад' () = name(form###stock()) PREFCHARWIDTH 30;
 
     form###balance 'Остаток' (sku) = currentBalanceSkuStock(sku, form###stock());
