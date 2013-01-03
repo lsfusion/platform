@@ -55,10 +55,12 @@ connectionFormCount 'Количество открытых форм' = DATA INTE
 FORM connections 'Журнал подключений'
 
     OBJECTS c=connection
-    OBJECTS n=navigatorElement
-
     PROPERTIES (c) hostnameComputerConnection, userLoginConnection, nameConnectionStatusConnection,
-    connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
+                   connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
+
+    OBJECTS n=navigatorElement
+    PROPERTIES (n) captionNavigatorElement, sidNavigatorElement, parentNavigatorElement
+
     PROPERTIES (c, n) connectionFormCount
 
     FILTERS connectionFormCount(c, n)>0
