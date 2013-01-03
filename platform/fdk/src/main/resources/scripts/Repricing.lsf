@@ -455,6 +455,30 @@ DESIGN userRepricing FROM DEFAULT {
 //-- SKU
 @defineDocumentSkuSystemLedgerPriceListType(userRepricing, accountPriceListType, departmentStore);
 @extendFormDocumentSku(userRepricing, userRepricing, p);
+allSkuUserRepricing 'Весь остаток' = DATA BOOLEAN (sku, userRepricing);
+
+overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
+    REQUEST BOOLEAN INPUT;
+
+    IF requestedLogical() THEN {
+        SET allSkuUserRepricing(sku, userRepricing) <- TRUE;
+
+        IF currentBalanceSkuUserRepricing(sku, userRepricing) AND allSkuUserRepricing (sku, userRepricing) THEN {
+            SET requestedNumeric() <- currentBalanceSkuUserRepricing(sku, userRepricing) ;
+            EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
+        }
+    }ELSE {
+        SET allSkuUserRepricing(sku, userRepricing) <- NULL;
+        SET requestedNumeric() <- NULL;
+        EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
+    }
+}
+
+
+
+EXTEND FORM userRepricing
+    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE EXEC overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
+;
 
 addUserRepricing 'Добавить' = ACTION ADDFORM userRepricing;
 editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM userRepricing;

@@ -1454,14 +1454,16 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
             }
 
         } ELSE {
-            FOR ADDOBJ d = detail DO {
-               SET object###detail(d) <- object;
-               SET data###stockProp###detail (d) <- stock;
-               SET skuProp###detail(d) <- sku;
-               SET quantity###detail (d) <- requestedNumeric();
-               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
-               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
-               EXEC overChangeQuantityValueSku###object##Detail(d);
+            IF requestedNumeric() THEN {
+                FOR ADDOBJ d = detail DO {
+                   SET object###detail(d) <- object;
+                   SET data###stockProp###detail (d) <- stock;
+                   SET skuProp###detail(d) <- sku;
+                   SET quantity###detail (d) <- requestedNumeric();
+                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+                   EXEC overChangeQuantityValueSku###object##Detail(d);
+                }
             }
         }
     }
@@ -1552,6 +1554,7 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
 
     overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
+
     changeQuantityValueSku###object = ACTION (sku, object) {
         IF detail###Sku###object(sku, object) THEN {
             IF requestedNumeric() THEN {
@@ -1563,13 +1566,15 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
                 }
             }
         } ELSE {
-            ADDOBJ detail;
-            FOR d == addedObject() DO {
-                SET object###detail(d) <- object;
-                SET stockProp###detail (d) <- stockProp###object(object);
-                SET skuProp###detail(d) <- sku;
-                SET quantity###detail (d) <- requestedNumeric();
-                EXEC overChangeQuantityValueSku###object##Detail(d);
+            IF requestedNumeric() THEN {
+                ADDOBJ detail;
+                FOR d == addedObject() DO {
+                    SET object###detail(d) <- object;
+                    SET stockProp###detail (d) <- stockProp###object(object);
+                    SET skuProp###detail(d) <- sku;
+                    SET quantity###detail (d) <- requestedNumeric();
+                    EXEC overChangeQuantityValueSku###object##Detail(d);
+                }
             }
         }
     }
@@ -1657,15 +1662,17 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
                 }
             }
         } ELSE {
-            FOR ADDOBJ d = detail DO {
+            IF requestedNumeric() THEN {
+                FOR ADDOBJ d = detail DO {
 
-               SET object###detail(d) <- object;
-               SET data###stockProp###detail (d) <- stockProp;
-               SET skuProp###detail(d) <- sku;
-               SET contactStock###detail(d) <- contactStock ;
-               SET quantity###detail (d) <- requestedNumeric();
-               SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
-               SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+                   SET object###detail(d) <- object;
+                   SET data###stockProp###detail (d) <- stockProp;
+                   SET skuProp###detail(d) <- sku;
+                   SET contactStock###detail(d) <- contactStock ;
+                   SET quantity###detail (d) <- requestedNumeric();
+                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
+                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
+                }
             }
         }
     }

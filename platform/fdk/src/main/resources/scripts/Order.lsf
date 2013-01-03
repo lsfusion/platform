@@ -443,7 +443,7 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
 
             }
         } ELSE {
-            IF requestedNumeric() THEN
+            IF requestedNumeric() THEN  {
                 FOR ADDOBJ d = detail DO {
                    SET object###detail(d) <- object;
                    SET data###stockProp###detail (d) <- stock;
@@ -452,6 +452,7 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
                    SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
                    SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
                 }
+            }
         }
     }
 END
