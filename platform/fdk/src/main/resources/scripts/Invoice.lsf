@@ -120,12 +120,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentDetailGrossWeight(invoice, sku);
 
-    @defineDocumentInterfaceDetailPrice(invoice);
+    @defineDocumentInterfaceDetailPrice(invoice); // объявляем цену без НДС
     Invoice.priceInvoiceDetail(detail) += priceInvoiceDetail(detail);
-
-    @defineDocumentInterfaceDetailDataSum(invoice);
-    @deriveDocumentDetailSum(userInvoice, quantity);
-    Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, , ); // объявляем шкалу
     @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp); // записываем ставку
@@ -136,15 +132,19 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС'); // объявляем цену с НДС
 
+    // объявляем Action'ы для ON CHANGE EXEC по изменению цен
+    @defineDocumentDetailPriceVATOnChange(userInvoice);
+    @defineDocumentDetailNumberVATOnChange(userInvoice, stockProp);
+    @defineDocumentDetailValueVATOnChange(userInvoice);
+    @defineDocumentDetailInvoicePriceVATOnChange(userInvoice);
+
     @defineDocumentInterfacePriceListType(invoice); // объявляем вид цены
     @deriveDocumentDetailPriceListTypeAgreement(invoice); // записываем вид цены из соглашения
 //    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
 
-    // объявляем Action'ы для ON CHANGE EXEC
-    @deriveDocumentPriceDetailOnChangeInvoicePrice(userInvoice);
-    @deriveDocumentInvoicePriceDetailOnChangePrice(userInvoice);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(userInvoice, stockProp);
-    @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userInvoice);
+    @defineDocumentInterfaceDetailDataSum(invoice); // объявляем сумму без НДС
+    @deriveDocumentDetailSum(userInvoice, quantity);
+    Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVATDataSum (invoice, invoice); // объявляем свойства суммы НДС и суммы с НДС
     @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
@@ -420,10 +420,10 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
                        amountPackUserInvoiceDetail ON CHANGE EXEC changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE EXEC changeQuantityPackUserInvoiceDetail(d)
         PROPERTIES (d) quantityUserInvoiceDetail ON CHANGE EXEC changeQuantityUserInvoiceDetail(d), namePriceListTypeUserInvoiceDetail,
-                       priceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
-                       numberVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceVATUserInvoiceDetail(d),
-                       valueVATUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceValueVATUserInvoiceDetail(d),
-                       invoicePriceUserInvoiceDetail ON CHANGE EXEC changePriceUserInvoiceDetail(d),
+                       priceUserInvoiceDetail ON CHANGE EXEC changePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail ON CHANGE EXEC changeNumberVATUserInvoiceDetail(d),
+                       valueVATUserInvoiceDetail ON CHANGE EXEC changeValueVATUserInvoiceDetail(d),
+                       invoicePriceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d),
                        VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
@@ -617,7 +617,7 @@ END
 META defineInvoiceBatch(stockProp)
     @defineDocumentInterfaceDetailBatch(invoice, batch);
     //@deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
-    @deriveDocumentDetailPricePriceListTypeBatchVAT(userInvoice, stockProp);
+    @deriveDocumentDetailPricePriceListTypeVATBatch(userInvoice, stockProp);
 
     batchDialogUserInvoiceDetail = ACTION (userInvoiceDetail) {
         FORM dialogBatch OBJECTS st = stockProp###userInvoiceDetail(userInvoiceDetail), t = dateTimeUserInvoiceDetail(userInvoiceDetail),

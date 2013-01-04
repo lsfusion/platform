@@ -1158,94 +1158,11 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
 
 END
 
-META deriveDocumentPriceDetailOnChangeInvoicePriceCustom (detail)
-    changePrice###detail (detail) = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
-                THEN {
-                    SET invoicePrice###detail (detail) <- requestedNumeric();
-                    SET price###detail (detail) <- invoicePrice###detail (detail) * (100-valueVAT###detail(detail))/100;
-                }
-                ELSE {
-                    SET invoicePrice###detail (detail) <- requestedNumeric();
-                    SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
-                }
-            }
-        };
-END
-
-META deriveDocumentPriceDetailOnChangeInvoicePrice (object)
-    @deriveDocumentPriceDetailOnChangeInvoicePriceCustom(object###Detail);
-END
-
-META deriveDocumentInvoicePriceDetailOnChangePriceCustom (detail)
-    changeInvoicePrice###detail (detail) = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
-                THEN {
-                    SET price###detail (detail) <- requestedNumeric();
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
-                }
-                ELSE{
-                    SET price###detail (detail) <- requestedNumeric();
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
-            }
-        }
-    };
-END
-
-META deriveDocumentInvoicePriceDetailOnChangePrice (object)
-    @deriveDocumentInvoicePriceDetailOnChangePriceCustom(object###Detail);
-END
-
-META deriveDocumentInvoicePriceDetailOnChangeValueVATCustom (detail)
-    changeInvoicePriceValueVAT###detail (detail) = ACTION (detail) {
-        REQUEST NUMERIC[10,5] INPUT;
-        IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units
-                THEN {
-                    SET valueVAT###detail (detail) <- requestedNumeric();
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - requestedNumeric());
-                }
-                ELSE{
-                    SET valueVAT###detail (detail) <- requestedNumeric();
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + requestedNumeric())/100;
-            }
-        }
-    };
-END
-
-META deriveDocumentInvoicePriceDetailOnChangeValueVAT (object)
-    @deriveDocumentInvoicePriceDetailOnChangeValueVATCustom(object###Detail);
-END
-
-META deriveDocumentInvoicePriceDetailOnChangeVATCustom (detail, stockProp)
-    changeInvoicePriceVAT###detail (detail) = ACTION (detail) {
-        FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL;
-        IF formResult() == formResult.ok THEN {
-            IF rangeTypeRange(chosenObject('r')) == rangeType.units
-                THEN {
-                    SET VAT###detail (detail) <- chosenObject('r');
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
-                }
-                ELSE{
-                    SET VAT###detail (detail) <- chosenObject('r');
-                    SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
-            }
-        }
-    };
-END
-
-META deriveDocumentInvoicePriceDetailOnChangeVAT (object, stockProp)
-    @deriveDocumentInvoicePriceDetailOnChangeVATCustom(object###Detail, stockProp);
-END
-
-META deriveDocumentDetailPricePriceListTypeBatchVAT (object, stockProp)
+META deriveDocumentDetailPricePriceListTypeVATBatch (object, stockProp)
     @deriveDocumentDetailPricePriceListTypeVATBatchCustom (object##Detail, stockProp);
 END
 
+// Системные ledger'ы
 META deriveDocumentDetailPriceSystemLedgerPriceListType (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
     prefixP###price###concrete##Detail (detail)  <- prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp,
                                                                                            skuProp###concrete##Detail(detail),
@@ -1275,4 +1192,86 @@ END
 
 META deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, skuProp, stockProp)
     @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (concrete, priceListTypeProp, prefixP, , skuProp, stockProp);
+END
+
+// ----------------------------- Action'ы для ON CHANGE ------------------------- //
+
+// Изменение цены без НДС
+META defineDocumentDetailPriceVATOnChangeCustom (detail)
+    changePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units THEN {
+                SET price###detail (detail) <- requestedNumeric();
+                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+            } ELSE {
+                SET price###detail (detail) <- requestedNumeric();
+                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+            }
+        }
+    }
+END
+
+META defineDocumentDetailPriceVATOnChange (object)
+    @defineDocumentDetailPriceVATOnChangeCustom(object###Detail);
+END
+
+// Изменение щкалы НДС
+META defineDocumentDetailNumberVATOnChangeCustom (detail, stockProp)
+    changeNumberVAT###detail (detail) = ACTION (detail) {
+        FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL;
+        IF formResult() == formResult.ok THEN {
+            IF rangeTypeRange(chosenObject('r')) == rangeType.units THEN {
+                SET VAT###detail (detail) <- chosenObject('r');
+                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+            } ELSE {
+                SET VAT###detail (detail) <- chosenObject('r');
+                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+            }
+        }
+    }
+END
+
+META defineDocumentDetailNumberVATOnChange (object, stockProp)
+    @defineDocumentDetailNumberVATOnChangeCustom(object###Detail, stockProp);
+END
+
+// Изменение ставки НДС
+META defineDocumentDetailValueVATOnChangeCustom (detail)
+    changeValueVAT###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[10,5] INPUT;
+        IF requestedNumeric() THEN {
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units THEN {
+                SET valueVAT###detail (detail) <- requestedNumeric();
+                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - requestedNumeric());
+            } ELSE {
+                SET valueVAT###detail (detail) <- requestedNumeric();
+                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + requestedNumeric())/100;
+            }
+        }
+    }
+END
+
+META defineDocumentDetailValueVATOnChange (object)
+    @defineDocumentDetailValueVATOnChangeCustom(object###Detail);
+END
+
+// Изменение цены с НДС
+META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
+    changeInvoicePrice###detail (detail) = ACTION (detail) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF requestedNumeric() THEN {
+            IF rangeTypeRange(VAT###detail(detail)) == rangeType.units THEN {
+                SET invoicePrice###detail (detail) <- requestedNumeric();
+                SET price###detail (detail) <- invoicePrice###detail (detail) * (100-valueVAT###detail(detail))/100;
+            } ELSE {
+                SET invoicePrice###detail (detail) <- requestedNumeric();
+                SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
+            }
+        }
+    }
+END
+
+META defineDocumentDetailInvoicePriceVATOnChange (object)
+    @defineDocumentDetailInvoicePriceVATOnChangeCustom(object###Detail);
 END

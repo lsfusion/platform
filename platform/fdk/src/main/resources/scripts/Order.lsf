@@ -135,12 +135,8 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     @defineDocumentInterfaceDetailQuantity(order);
     Order.quantityOrderDetail(detail) += quantityOrderDetail(detail);
 
-    @defineDocumentInterfaceDetailPrice(order);
+    @defineDocumentInterfaceDetailPrice(order); // объявляем цену без НДС
     Order.priceOrderDetail(detail) += priceOrderDetail(detail);
-
-    @defineDocumentInterfaceDetailDataSum(order);
-    @deriveDocumentDetailSum(userOrder, quantity);
-    Order.sumOrderDetail(detail) += sumOrderDetail(detail);
 
     @defineDocumentInterfaceDetailVAT(order, country###stockProp, , ); // объявляем шкалу
     @deriveDocumentDetailVAT (userOrder, , date,  sku, stockProp); // записываем ставку
@@ -151,15 +147,20 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 
     @defineDocumentInterfaceDetailPricePrefix (order, invoice, ' с НДС'); // объявляем цену с НДС
 
+    // объявляем Action'ы для ON CHANGE EXEC
+    @defineDocumentDetailPriceVATOnChange(userOrder);
+    @defineDocumentDetailNumberVATOnChange(userOrder, stockProp);
+    @defineDocumentDetailValueVATOnChange(userOrder);
+    @defineDocumentDetailInvoicePriceVATOnChange(userOrder);
+
     @defineDocumentInterfacePriceListType(order); // объявляем вид цены
     @deriveDocumentDetailPriceListTypeAgreement(order); // записываем вид цены из соглашения
     @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp); // записываем цены с НДС и без НДС на основе priceListType
 
-    // объявляем Action'ы для ON CHANGE EXEC
-    @deriveDocumentPriceDetailOnChangeInvoicePrice(userOrder);
-    @deriveDocumentInvoicePriceDetailOnChangePrice(userOrder);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(userOrder, stockProp);
-    @deriveDocumentInvoicePriceDetailOnChangeValueVAT(userOrder);
+    // суммма без НДС
+    @defineDocumentInterfaceDetailDataSum(order);
+    @deriveDocumentDetailSum(userOrder, quantity);
+    Order.sumOrderDetail(detail) += sumOrderDetail(detail);
 
     // суммы НДС и с НДС
     @defineDocumentInterfaceDetailVATDataSum (order, invoice); // объявляем свойства суммы НДС и суммы с НДС
@@ -217,9 +218,10 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
         PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
                        amountPackUserOrderDetail ON CHANGE EXEC changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE EXEC changeQuantityPackUserOrderDetail(d)
         PROPERTIES (d) quantityUserOrderDetail  ON CHANGE EXEC changeQuantityUserOrderDetail(d), namePriceListTypeUserOrderDetail,
-                       priceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d), sumUserOrderDetail,
-                       numberVATUserOrderDetail ON CHANGE EXEC changeInvoicePriceVATUserOrderDetail(d),
-                       valueVATUserOrderDetail, invoicePriceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d),
+                       priceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d), sumUserOrderDetail,
+                       numberVATUserOrderDetail ON CHANGE EXEC changeNumberVATUserOrderDetail(d),
+                       valueVATUserOrderDetail ON CHANGE EXEC changeValueVATUserOrderDetail(d),
+                       invoicePriceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d),
                        VATSumUserOrderDetail, invoiceSumUserOrderDetail,
                        name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete

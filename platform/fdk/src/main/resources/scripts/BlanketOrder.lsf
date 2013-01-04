@@ -39,9 +39,6 @@ META defineBlanketOrder(sign)
     customerStockBlanketOrderDetail (blanketOrderDetail) = DATA stock (blanketOrderDetail);
     nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
 
-    userPriceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
-    @defineDocumentDetailPriceListType(blanketOrder, blanketOrderDetail);
-
     @defineDocumentDetailSku(blanketOrder, sku);
     @defineDocumentDetailQuantity(blanketOrder);
 
@@ -57,38 +54,41 @@ META defineBlanketOrder(sign)
 
     @defineDocumentHeaderAgreement (blanketOrder);
     @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
+
+    userPriceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
     @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
 
+    @defineDocumentDetailPrice(blanketOrder); // объявляем цену без НДС
+
+    @defineDocumentDetailVAT(blanketOrder, countrySupplierStock); // объявляем шкалу
+    @deriveDocumentDetailVAT(blanketOrder, , date,  sku, supplierStock); // записываем ставку
+    @deriveDocumentDetailValueVAT(blanketOrder, ); // записываем значение ставки
+
+    @defineDocumentDetailPriceCustomPrefix (blanketOrderDetail, invoice, ' с НДС'); // объявляем цену с НДС
+
+    // объявляем Action'ы для ON CHANGE EXEC по изменению цен
+    @defineDocumentDetailPriceVATOnChange(blanketOrder);
+    @defineDocumentDetailNumberVATOnChange(blanketOrder, supplierStock);
+    @defineDocumentDetailValueVATOnChange(blanketOrder);
+    @defineDocumentDetailInvoicePriceVATOnChange(blanketOrder);
+
+    //  объявляем виды цен
+    @defineDocumentDetailPriceListType(blanketOrder, blanketOrderDetail);
+
+    // записываем вид цены из соглашения
     priceListTypeBlanketOrderDetail (detail) <-
         IF TRUE AND NOT supplierStockBlanketOrder (blanketOrderBlanketOrderDetail(detail))
             THEN priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
             ELSE priceListTypeBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
         WHEN CHANGED(supplierStockBlanketOrderDetail(detail)) OR CHANGED(customerStockBlanketOrderDetail(detail)) OR CHANGED(skuBlanketOrderDetail(detail));
+    @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock); // записываем цены с НДС и без НДС на основе priceListType
 
-//    dataPriceListTypeBlanketOrderDetail (detail) <-
-//        priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
-//        WHEN ASSIGNED(detail IS blanketOrderDetail);
-
-    @defineDocumentDetailPrice(blanketOrder);
-    @deriveDocumentDetailPricePriceListType(blanketOrder, supplierStock);
-
-    @defineDocumentDetailDataSum (blanketOrder);
+    @defineDocumentDetailDataSum (blanketOrder); // объявляем сумму без НДС
     @deriveDocumentDetailSum(blanketOrder, quantity);
 
-    @defineDocumentDetailVAT(blanketOrder, countrySupplierStock);
-    @defineDocumentDetailVATDataSum (blanketOrder, invoice);
-    @deriveDocumentDetailVATPrefixSum (blanketOrder, invoice);
-    @deriveDocumentDetailVATDataSum(blanketOrder);
-
-
-    @defineDocumentDetailPriceCustomPrefix (blanketOrderDetail, invoice, ' с НДС');
-    @deriveDocumentDetailVAT (blanketOrder, , date,  sku, supplierStock);
-    @deriveDocumentDetailValueVAT(blanketOrder, );
-    @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock);
-    @deriveDocumentPriceDetailOnChangeInvoicePrice(blanketOrder);
-    @deriveDocumentInvoicePriceDetailOnChangePrice(blanketOrder);
-    @deriveDocumentInvoicePriceDetailOnChangeVAT(blanketOrder, supplierStock);
-//    @deriveDocumentRangeDetailOnChange (blanketOrderDetail, supplierStock);
+    @defineDocumentDetailVATDataSum (blanketOrder, invoice); // объявляем суммы НДС и с НДС
+    @deriveDocumentDetailVATDataSum(blanketOrder); // записываем сумму НДС
+    @deriveDocumentDetailVATPrefixSum (blanketOrder, invoice); // записываем сумму с НДС
 
     @defineDocumentHeaderVATSum (blanketOrder, blanketOrderDetail, invoice);
 
@@ -119,9 +119,10 @@ META defineBlanketOrder(sign)
         PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
 
-                       priceBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceBlanketOrderDetail(d), sumBlanketOrderDetail,
-                       numberVATBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceVATBlanketOrderDetail(d),
-                       valueVATBlanketOrderDetail, invoicePriceBlanketOrderDetail ON CHANGE EXEC changePriceBlanketOrderDetail(d),
+                       priceBlanketOrderDetail ON CHANGE EXEC changePriceBlanketOrderDetail(d), sumBlanketOrderDetail,
+                       numberVATBlanketOrderDetail ON CHANGE EXEC changeNumberVATBlanketOrderDetail(d),
+                       valueVATBlanketOrderDetail ON CHANGE EXEC changeValueVATBlanketOrderDetail(d),
+                       invoicePriceBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceBlanketOrderDetail(d),
                        VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
 
