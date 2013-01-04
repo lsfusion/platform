@@ -189,7 +189,7 @@ META defineScheduleOrder(sign, stockProp)
             };
         };
 
-        EXEC apply();
+        //EXEC apply();
     } TOOLBAR;
 
 
@@ -216,7 +216,7 @@ META defineScheduleOrder(sign, stockProp)
 
     overCreateOrder = ABSTRACT ACTION (userOrder);
 
-    createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) {
+    createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) NEWSESSION {
         FOR ADDOBJ o = userOrder DO {
             SET scheduleOrderDetailUserOrder(o) <- scheduleOrderDetail;
             SET dateOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);

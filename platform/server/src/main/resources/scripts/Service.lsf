@@ -15,7 +15,7 @@ serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'platform.server
 FORM admin 'Администрирование'
     PROPERTIES() defaultBackgroundColor, defaultForegroundColor, restartServerAction, cancelRestartServerAction,
                  checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction,
-                 analyzeDBAction, serviceDBAction, runGarbageCollector
+                 analyzeDBAction, serviceDBAction, runGarbageCollector, currentDate
 ;
 
 NAVIGATOR {

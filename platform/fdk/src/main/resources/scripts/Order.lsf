@@ -321,6 +321,9 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
     editOrder(order) += editUserOrder(order);
 
+    isClosedOrder(userOrder) <- TRUE IF toDateUserOrder(userOrder) <= subtractDate(currentDate(), 1) AND isPostedOrder(userOrder)
+        WHEN CHANGED(currentDate() AND userOrder IS userOrder) OR CHANGED(toDateUserOrder(userOrder));
+
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,

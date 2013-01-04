@@ -66,6 +66,10 @@ GROUP managementGroup 'Управление' : public;
 
 GROUP docGroup 'Для договора' : public;
 
+GROUP orderGroup 'Для заказов' : public;
+
+quantityDaysCloseOrdersLegalEntity 'Срок автоматического закрытия заказов' = DATA INTEGER(legalEntity) IN orderGroup;
+
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
 CLASS legalEntityGroup 'Группа организаций' : named;
@@ -199,7 +203,8 @@ FORM legalEntity 'Организация'
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(l),
                    emailLegalEntity, siteLegalEntity,
                    isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity,
-                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
+                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l),
+                   quantityDaysCloseOrdersLegalEntity
 
     OBJECTS a=account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
@@ -246,6 +251,7 @@ DESIGN legalEntity FROM DEFAULT {
 
                 ADD l.contactGroup;
                 ADD l.managementGroup;
+                ADD l.orderGroup;
             }
        }
 

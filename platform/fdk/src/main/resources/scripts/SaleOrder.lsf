@@ -115,6 +115,8 @@ overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
     }
 }
 
+toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(supplierUserOrder(userOrder))) WHEN CHANGED(supplierUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
+
 @defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
 
 inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku);
