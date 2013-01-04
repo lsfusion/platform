@@ -23,6 +23,10 @@ FORM customUser 'Пользователь'
     OBJECTS u=customUser FIXED PANEL
     PROPERTIES(u) userFirstName, userLastName, userLogin, userPassword, emailContact, nameMainRoleUser
 
+    OBJECTS ur=userRole
+    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(u,ur) inUserRole
+
     EDIT customUser OBJECT u
 ;
 
@@ -96,20 +100,16 @@ orderUserPolicy 'Порядок политики' (user, policy) = orderUserRole
 
 FORM userRole 'Роль'
     OBJECTS ur = userRole FIXED PANEL
-    PROPERTIES(ur) name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
-                                      permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
-                                      defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
+    PROPERTIES(ur) name, sidUserRole
     EDIT userRole OBJECT ur
 ;
 
 FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=userRole
-    PROPERTIES(ur) READONLY name, sidUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole,
-                   permitChangeAllPropertyUserRole, forbidChangeAllPropertyUserRole,
-                   defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
-    PROPERTIES(ur) ADDFORM, EDITFORM, delete
-    DIALOG userRole OBJECT ur
+    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
+                   forbidChangeAllPropertyUserRole, defaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
 
     OBJECTS p=policy
     PROPERTIES(p)  commonName, descriptionPolicy
@@ -223,9 +223,18 @@ EXTEND DESIGN securityPolicy {
     }
 }
 
+FORM userRoles 'Роли'
+
+    OBJECTS ur=userRole
+    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur) ADDFORM, EDITFORM, delete
+    DIALOG userRole OBJECT ur
+;
+
 NAVIGATOR {
     security {
-        ADD Security.securityPolicy;
         ADD Security.customUsers;
+        ADD Security.userRoles;
+        ADD Security.securityPolicy;
     }
 }
