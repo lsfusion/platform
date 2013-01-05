@@ -34,9 +34,9 @@ curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @defineDocumentDetailMarkupSumCustomPrefix (disparityDetail, curInput, ' до');
 @deriveDocumentDetailMarkupSumPrefix(disparity, curInput, curInputRetail, curInput);
 
-@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, supplierPricingPriceListType, curInput, inputSku, stock);
-@deriveDocumentDetailVAT (disparity, curInput, dateBefore, inputSku, stock);
-@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, retailPricingPriceListType, curInputRetail, inputSku, stock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, supplierPricingPriceListType, curInput, sku, stock);
+@deriveDocumentDetailVAT (disparity, curInput, dateBefore, sku, stock);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, retailPricingPriceListType, curInputRetail, sku, stock);
 
 @changeDocumentDetailMarkupCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput);
 @changeDocumentDetailPriceCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput, currency);
@@ -131,9 +131,12 @@ numberDisposalRepricing(repricing) += numberDisposalDisparity(disparityDisparity
 descriptionRepricing (repricing) += descriptionDisparityRepricing(repricing);
 
 //skipChangeLedgerRepricing(repricing) += repricing IS disparityRepricing;
+skuDisparityRepricingDetail (repricingDetail) = inputSkuDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
 
+skuRepricingDetail(repricingDetail) +=  skuDisparityRepricingDetail(repricingDetail);
 
-skuRepricingDetail(repricingDetail) +=  inputSkuDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
+@implementSkuLedger(disparityRepricingDetail, sku, stock);
+//sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 
 backgroundCurDisparity 'Цвет' (disparity) = RGB(255, 255, 224) IF disparity IS disparity;
 backgroundAfterDisparity 'Цвет' (disparity) = RGB(255, 255, 200) IF disparity IS disparity;

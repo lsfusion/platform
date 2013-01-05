@@ -131,7 +131,7 @@ END
 //----------------------------------------------- Переоценка ---------------------------------------------------//
 
 CLASS ABSTRACT repricing 'Акт переоценки';
-CLASS ABSTRACT repricingDetail 'Строка акта переоценки';
+CLASS ABSTRACT repricingDetail 'Строка акта переоценки': inLIFOSkuLedger;
 
 CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historizable, numeratedDocument;
 CLASS userRepricingDetail 'Строка акта переоценки (польз.)' : repricingDetail;
@@ -252,6 +252,8 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, curRetail, cur, cur, cur);
 @changeDocumentDetailPriceCustomPrefix(userRepricingDetail, curRetail, cur, cur, cur, currency);
 
+@implementSkuLedger(userRepricingDetail, sku, departmentStore);
+sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 //--
 
 CLASS STATIC changePriceType 'Тип изменения цены' {
@@ -719,6 +721,8 @@ META defineRepricing(sign, stockProp)
 
     @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
     skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
+
+    @implementSkuLedger(invoiceRepricingDetail, sku, stockProp);
 
     backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS invoice;
     backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS invoice;
