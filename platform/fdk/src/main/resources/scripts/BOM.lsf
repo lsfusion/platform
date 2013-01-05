@@ -1,0 +1,363 @@
+MODULE  BOM;
+
+REQUIRE Stock,
+        Numerator,
+        Barcode,
+        Document,
+        Utils;
+
+
+// ---------------- Материалы ------------------- //
+CLASS ABSTRACT material 'Материал';
+TABLE material(material);
+
+nameMaterial 'Наименование' (material) = ABSTRACT STRING[255] (material) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80;
+
+UOMMaterial (material) = ABSTRACT UOM (material) PERSISTENT;
+shortNameUOMMaterial 'Ед. изм.' (material) = shortName(UOMMaterial(material)) IN recognize;
+
+editMaterial 'Редактировать' = ABSTRACT ACTION (material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
+
+skuGroupMaterial (material) = ABSTRACT skuGroup (material) PERSISTENT;
+isParentSkuGroupMaterial (skuGroup, material) = isParentSkuGroupSkuGroup(skuGroupMaterial(material), skuGroup) PERSISTENT;
+
+FORM materials 'Материалы'
+
+    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = name(sg)
+
+    OBJECTS m = material
+    PROPERTIES(m) READONLY nameMaterial, shortNameUOMMaterial
+    PROPERTIES() addMaterial TODRAW m
+    PROPERTIES(m) editMaterial
+    FILTERS isParentSkuGroupMaterial(sg, m)
+    ORDER BY nameMaterial
+
+    DIALOG material OBJECT m
+;
+
+DESIGN materials FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD skuTree.tree.box {
+                title = 'Группы Материалов';
+            }
+
+            ADD m.box {
+                m.grid {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 4;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
+
+// --------------- Товары ----------------- //
+EXTEND CLASS sku : material;
+
+nameMaterial(material) += nameSku(material);
+UOMMaterial(material) += UOMSku(material);
+
+editMaterial(sku) += editSku(sku);
+addMaterial () += addSku();
+
+skuGroupMaterial(material) += skuGroupSku(material);
+
+// -----------  Технологии -------------- //
+CLASS technology 'Технология' : named;
+TABLE technology (technology);
+
+wastageTechnologyMaterial '% потерь' = DATA NUMERIC[8,3] (technology, material);
+
+FORM technology 'Технология'
+    OBJECTS t=technology FIXED PANEL
+    PROPERTIES(t) name
+
+    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = name(sg)
+
+    OBJECTS m = material
+    PROPERTIES(m) nameMaterial, shortNameUOMMaterial
+    PROPERTIES(t,m) wastageTechnologyMaterial
+
+    FILTERS isParentSkuGroupMaterial(sg, m)
+    ORDER BY nameMaterial
+
+    FILTERGROUP filters
+        FILTER 'С % потерь' 'F11' wastageTechnologyMaterial(t,m)
+
+    EDIT technology OBJECT t
+;
+
+DESIGN technology FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box {
+            childConstraints = TO THE RIGHT;
+            ADD skuTree.tree.box {title = 'Группа материалов'; fillHorizontal=1; }
+            ADD m.box {title = 'Материал'; fillHorizontal=2; }
+
+        }
+        ADD t.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+        }
+    }
+}
+
+FORM technologies 'Технологии'
+
+    OBJECTS t=technology
+    PROPERTIES(t)  READONLY name
+
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+
+    OBJECTS m=material
+    PROPERTIES     READONLY nameMaterial(m), shortNameUOMMaterial(m), wastageTechnologyMaterial(t,m)
+    ORDER BY nameMaterial
+
+    FILTERS        wastageTechnologyMaterial(t,m)
+;
+
+// ---------------------- BOM'ы ----------------------
+
+CLASS BOM 'Спецификация' : named, numeratedObject, historizable;
+TABLE BOM (BOM);
+
+@defineDocumentHeaderNote(BOM);
+
+inTechnologyBOM 'Вкл.' = DATA BOOLEAN (technology, BOM);
+
+// ------------- Изделия ----------- //
+CLASS product 'Изделие' : externalizable, material;
+TABLE product (product);
+
+skuProduct = DATA sku (product);
+nameSkuProduct 'SKU' (product) = nameSku(skuProduct(product)) IN recognize;
+UOMProduct = DATA UOM (product);
+shortNameUOMSkuProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN recognize;
+UOMProduct(product) <-UOMSku(skuProduct(product)) WHEN CHANGED (skuProduct(product));
+
+
+@defineDocumentRelation (BOM, product, ' (изделие)');
+@defineDocumentDetailIndex (BOM, product);
+@defineDocumentDetailActionsCustom (BOM, product);
+
+@defineDocumentDetailQuantityCustomPrefix (product, , ' (нетто)');
+
+@defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
+
+nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
+                                      name(BOMProduct(material)),
+                                      nameSkuProduct(material));
+
+UOMMaterial(material) += UOMSku(skuProduct(material));
+skuGroupMaterial(material) += skuGroupSku(skuProduct(material));
+
+//FORM product 'Изделие'
+//    OBJECTS p=product FIXED PANEL
+//    PROPERTIES(p) nameSkuProduct, nameSkuGroupProduct
+//
+//    EDIT product OBJECT p
+//;
+//
+//FORM products 'Изделия'
+//    OBJECTS p=product
+//    PROPERTIES(p) READONLY nameSkuProduct, nameSkuGroupProduct
+//    PROPERTIES(p)          ADDFORM, EDITFORM, delete
+//
+//    DIALOG product OBJECT p
+//;
+
+
+// ------------- Компоненты ----------- //
+CLASS component 'Компонент' : named;
+TABLE component (component);
+
+@defineDocumentRelation (BOM, component, ' (компонент)');
+@defineDocumentDetailIndex (BOM, component);
+@defineDocumentDetailActionsCustom (BOM, component);
+
+materialComponent = DATA material (component);
+nameMaterialComponent 'SKU' (component) = nameMaterial(materialComponent(component));
+
+UOMComponent = DATA UOM (component);
+shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
+UOMComponent(component) <-UOMSku(materialComponent(component)) WHEN CHANGED (materialComponent(component));
+
+@defineDocumentDetailQuantityCustomPrefix (component, , ' (нетто)');
+@defineDocumentHeaderQuantityCustomPrefix (BOM, component, , ' (компонент)');
+
+dataWastageTechnologyComponent = DATA NUMERIC[8,3] (technology, component);
+
+wastageTechnologyComponent '% потерь' (technology, component) = wastageTechnologyMaterial(technology, materialComponent(component)) OR
+                                                                dataWastageTechnologyComponent(technology, component);
+
+
+bttoTechnologyComponent 'Вес брутто' (technology, component) = quantityComponent(component)*100 / ((100 IF technology IS technology AND component IS component) (-) wastageTechnologyComponent(technology, component));
+
+wastageNameTechnology (technology)= [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', \' ||  \'(% потерь) \''](name(technology)) PREFCHARWIDTH 30 MAXCHARWIDTH 50;
+bttoNameTechnology (technology)= [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', \' ||  \'(кол-во брутто) \''](name(technology)) PREFCHARWIDTH 30 MAXCHARWIDTH 50;
+
+//------------------------------- Формы -------------------------------------//
+FORM BOM 'Спецификация'
+
+    OBJECTS b=BOM FIXED PANEL
+
+    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM, quantityProductBOM, quantityComponentBOM
+
+    OBJECTS t=technology
+    PROPERTIES(t) READONLY name
+    PROPERTIES(t,b) inTechnologyBOM
+
+    FILTERGROUP filters
+        FILTER 'Включенные' 'F11' inTechnologyBOM(t,b)
+
+    OBJECTS p = product
+    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
+
+    PROPERTIES(p) ADDOBJ, delete
+    PROPERTIES(p) TODRAW p deleteProductBOM
+    FILTERS       BOMProduct(p) == b
+
+    OBJECTS tt = technology
+    FILTERS inTechnologyBOM(tt,b)
+
+    OBJECTS c = component
+    PROPERTIES(c) indexComponent, nameMaterialComponent, shortNameUOMComponent, quantityComponent
+    PROPERTIES    wastageTechnologyComponent(tt,c)  COLUMNS (tt) HEADER wastageNameTechnology (tt),
+                  bttoTechnologyComponent(tt,c)  COLUMNS (tt) HEADER bttoNameTechnology (tt)
+
+    PROPERTIES(c) ADDOBJ, delete
+    PROPERTIES(c) TODRAW c deleteComponentBOM
+    FILTERS       BOMComponent(c) == b
+
+    EDIT BOM OBJECT b
+;
+
+DESIGN BOM FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            type = TABBED;
+            NEW spec1 {
+                title = 'Параметры';
+                childConstraints = TO THE BOTTOM;
+                ADD t.box;
+            }
+            ADD p.box {title = 'Изделие';}
+            ADD c.box {title = 'Компонент';}
+            REMOVE tt.box;
+        }
+
+        ADD b.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                NEW headerRow11 {
+                    title = 'Шапка';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(name) { preferredCharWidth = 20; }
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                }
+
+                ADD b.documentPrmGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
+
+            }
+            ADD b.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+    }
+}
+
+FORM BOMs 'Спецификации'
+
+    OBJECTS b=BOM
+
+    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, quantityComponentBOM
+    PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
+
+    OBJECTS p = product
+    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
+    FILTERS       BOMProduct(p) == b
+
+    OBJECTS c = component
+    PROPERTIES(c) READONLY indexComponent, nameMaterialComponent, shortNameUOMComponent, quantityComponent
+    FILTERS       BOMComponent(c) == b
+;
+
+DESIGN BOMs FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        PROPERTY (delete(b)) {
+            askConfirm = TRUE;
+        }
+
+        NEW documentContainer BEFORE functions.box {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD b.box;
+
+            NEW documentDetail {
+                type = TABBED;
+
+                ADD p.box {
+                    title = 'Изделие';
+                }
+                ADD c.box {
+                    title = 'Компонент';
+                }
+
+                NEW documentHistory {
+                    title = 'История';
+
+                    ADD b.historyGroup;
+//                    ADD dis.postedGroup;
+                }
+//                NEW printTab {
+//                    title = 'Печатные формы';
+//                    NEW printContainer {
+//                        title = 'Печать';
+//                        childConstraints = TO THE BOTTOM;
+//                        fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+//                    }
+//                }
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW BOMNavigator 'Управление производством' {
+        NEW priceListDocuments 'Документы' {
+        }
+        NEW priceListCatalog 'Справочники' {
+            ADD technologies;
+            ADD BOMs;
+//            ADD products;
+        }
+    }
+}
+
+
+
+

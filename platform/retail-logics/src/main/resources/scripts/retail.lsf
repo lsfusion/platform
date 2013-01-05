@@ -85,6 +85,7 @@ REQUIRE System,
         RetailCRM,
         CashOperationBy,
         POS,
+        BOM,
         ContractStock,
         ContractLedger,
         InventoryBy,
@@ -542,6 +543,9 @@ NAVIGATOR {
         NEW retailCatalog 'Справочники' {
             ADD stores;
         }
+    }
+    NEW billOfMaterial 'Производство' TO toolbar {
+        ADD BOMNavigator;
     }
 
     ADD priceListNavigator TO toolbar;
