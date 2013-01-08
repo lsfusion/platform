@@ -485,18 +485,18 @@ EXTEND DESIGN integrationData {
 
 NAVIGATOR {
 
-    NEW catalogs 'Справочники' TO toolbar {
-        NEW itemCatalog 'Товары' {
-            ADD items;
-            ADD itemGroups;
-            ADD UOMs;
-            ADD wares;
-        }
-        NEW contragents 'Контрагенты' {
-            ADD legalEntities;
-            ADD contractSkus;
-        }
-    }
+//    NEW catalogs 'Справочники' TO toolbar {
+//             NEW itemCatalog 'Товары' {
+//                 ADD items;
+//                 ADD itemGroups;
+//                 ADD UOMs;
+//                 ADD wares;
+//             }
+//             NEW contragents 'Контрагенты' {
+//                 ADD legalEntities;
+//                 ADD contractSkus;
+//             }
+//         }
 
     NEW purchase 'Управление закупками' TO toolbar {
         ADD purchasePurchaseNavigator;
@@ -564,6 +564,20 @@ NAVIGATOR {
         ADD employees;
     }
 
+    ADD masterData TO toolbar {
+
+             NEW itemCatalog 'Товары' {
+                 ADD items;
+                 ADD itemGroups;
+                 ADD UOMs;
+                 ADD wares;
+             }
+             NEW contragents 'Контрагенты' {
+                 ADD legalEntities;
+                 ADD contractSkus;
+             }
+
+    };
     ADD account TO toolbar;
     ADD administration TO toolbar;
 }

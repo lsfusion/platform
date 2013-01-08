@@ -126,7 +126,7 @@ DESIGN typeExchangeCurrencyDate FROM DEFAULT{
 }
 
 NAVIGATOR {
-    catalogs {
+    masterData {
         NEW currencyNavigator 'Валюты и курсы' {
             ADD currencies;
             ADD typeExchangeCurrencyDate;

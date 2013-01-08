@@ -52,7 +52,7 @@ FORM languages 'Языки'
 ;
 
 NAVIGATOR {
-    catalogs {
+    masterData {
         ADD languages;
     }
 }
@@ -86,7 +86,7 @@ FORM dictionaries 'Словари'
 ;
 
 NAVIGATOR {
-    catalogs {
+    masterData {
         ADD dictionaries;
     }
 }

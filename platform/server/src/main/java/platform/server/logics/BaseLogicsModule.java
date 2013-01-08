@@ -825,7 +825,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> security;
     public NavigatorElement<T> systemEvents;
     public NavigatorElement<T> configuration;
-    public NavigatorElement<T> catalogs;
+    public NavigatorElement<T> masterData;
 
     public FormEntity<T> objectForm;
 
@@ -873,9 +873,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
         addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
 
-        catalogs = addNavigatorElement(administration, "catalogs", getString("logics.administration.catalogs"));
+        masterData = addNavigatorElement(administration, "masterData", getString("logics.administration.masterData"));
 
-        objects = addNavigatorElement(catalogs, "objects", getString("logics.object"));
+        objects = addNavigatorElement(masterData, "objects", getString("logics.object"));
         objects.window = windows.tree;
 
         security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
