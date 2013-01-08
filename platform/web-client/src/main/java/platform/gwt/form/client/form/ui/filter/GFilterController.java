@@ -128,7 +128,7 @@ public abstract class GFilterController {
         }
 
         if (replace) {
-            allRemovedPressed();
+            removeAllConditions();
         }
 
         GPropertyFilter filter = new GPropertyFilter();
@@ -149,9 +149,13 @@ public abstract class GFilterController {
         }
     }
 
-    public void allRemovedPressed() {
+    public void removeAllConditions() {
         conditions.clear();
         filterView.removeAllConditions();
+    }
+
+    public void allRemovedPressed() {
+        removeAllConditions();
         applyQuery();
         changeState(State.REMOVED);
     }
@@ -170,7 +174,7 @@ public abstract class GFilterController {
     }
 
     public void setVisible(boolean visible) {
-        filterDialog.setVisible(visible && hiddenState != State.COLLAPSED);
+        filterDialog.setVisible(visible && state != State.COLLAPSED && state != State.REMOVED);
         if (!visible) {
             if (state != State.HIDDEN) {
                 hiddenState = state;
