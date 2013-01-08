@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -16,9 +15,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclSet;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ModalityType;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
@@ -1578,13 +1575,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         addTable(name, classes);
     }
 
-    public void addScriptedIndices(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedIndices(" + propNames + ");");
-
-        for (String name : propNames) {
-            LCP lp = (LCP) findLPByCompoundName(name);
-            addIndex(lp);
+    public void addScriptedIndex(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedIndex(" + propNames + ");");
+        LCP[] lps = new LCP[propNames.size()];
+        for (int i = 0; i < propNames.size(); i++) {
+            lps[i] = (LCP) findLPByCompoundName(propNames.get(i));
         }
+        addIndex(lps);
     }
 
     public void addScriptedLoggable(List<String> propNames) throws ScriptingErrorLog.SemanticErrorException {

@@ -1480,7 +1480,7 @@ echoSymbolsSetting [LP property]
 indexSetting [String propName]
 @after {
 	if (inIndexParseState()) {
-		self.addScriptedIndices(Arrays.asList(propName));
+		self.addScriptedIndex(Arrays.asList(propName));
 	}
 }
 	:	'INDEXED'
@@ -2133,7 +2133,7 @@ loggableStatement
 indexStatement
 @after {
 	if (inIndexParseState()) {
-		self.addScriptedIndices($list.ids);
+		self.addScriptedIndex($list.ids);
 	}	
 }
 	:	'INDEX' list=nonEmptyCompoundIdList ';'
