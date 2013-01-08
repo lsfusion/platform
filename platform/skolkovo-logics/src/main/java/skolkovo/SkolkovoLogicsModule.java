@@ -210,6 +210,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass applicationPreliminary;
     ConcreteCustomClass applicationStatus;
 
+    private ConcreteCustomClass multiLanguageNamed;
+
     AbstractGroup projectInformationGroup;
     AbstractGroup additionalInformationGroup;
     AbstractGroup innovationGroup;
@@ -271,6 +273,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
+        multiLanguageNamed = (ConcreteCustomClass) BL.i18nLM.getClassByName("multiLanguageNamed");
+
         projectType = addStaticClass("projectType", "Тип проекта",
                 new String[]{"comparable", "surpasses", "russianbenchmark", "certainadvantages", "significantlyoutperforms", "nobenchmarks"},
                 new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
@@ -305,14 +309,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         transaction = addAbstractClass("transaction", "Транзакция", baseClass);
 
-        project = addConcreteClass("project", "Проект", baseLM.multiLanguageNamed, transaction);
+        project = addConcreteClass("project", "Проект", multiLanguageNamed, transaction);
         expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
-        cluster = addConcreteClass("cluster", "Кластер", baseLM.multiLanguageNamed);
-        foresight = addConcreteClass("foresight", "Форсайт", baseLM.multiLanguageNamed);
+        cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
+        foresight = addConcreteClass("foresight", "Форсайт", multiLanguageNamed);
 
         clusterUser = addConcreteClass("clusterUser", "Сотрудник кластера", baseLM.customUser);
 
-        claimer = addConcreteClass("claimer", "Заявитель", baseLM.multiLanguageNamed);
+        claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed);
         claimer.dialogReadOnly = false;
 
         claimerExpert = addConcreteClass("claimerExpert", "Заявитель/эксперт", claimer, expert);
@@ -401,7 +405,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initTables() {
         addTable("transaction", transaction);
         addTable("property", BL.reflectionLM.property);
-        addTable("multiLanguageNamed", baseLM.multiLanguageNamed);
+        addTable("multiLanguageNamed", multiLanguageNamed);
         addTable("project", project);
         addTable("expert", expert);
         addTable("cluster", cluster);
@@ -1676,11 +1680,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.numberMonthInDate, addJProp(baseLM.sumDate, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
         isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, baseLM.currentMonth, monthInPreviousDate);
 
-        nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), baseLM.multiLanguageNamed);
+        nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
         ((CalcProperty)nameNative.property).aggProp = true;
         nameNative.setMinimumWidth(10);
         nameNative.setPreferredWidth(50);
-        nameForeign = addDProp(recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), baseLM.multiLanguageNamed);
+        nameForeign = addDProp(recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         ((CalcProperty)nameForeign.property).aggProp = true;
         nameForeign.setMinimumWidth(10);
         nameForeign.setPreferredWidth(50);

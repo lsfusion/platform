@@ -231,10 +231,141 @@ FORM userRoles 'Роли'
     DIALOG userRole OBJECT ur
 ;
 
+// ---------------- Действия по изменению пользователя ------------------- //
+
+// Смена пользователя по логину и паролю
+FORM reloginLoginUser 'Сменить пользователя'
+    OBJECTS data = (login = STRING[30], password = STRING[30]) FIXED PANEL
+    PROPERTIES valueLogin = OBJVALUE(login), valuePassword = OBJVALUE(password)
+;
+
+EXTEND DESIGN reloginLoginUser {
+    main{
+        data.box {
+            title = 'Смена пользователя';
+            PROPERTY(valueLogin){
+                caption = 'Логин';
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE leftControls;
+    }
+}
+
+reloginLoginUser = ACTION () {
+    FORM reloginLoginUser MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL user = customUser();
+        SET user() <- loginToUser(chosenString('login'));
+        IF user() THEN {
+            IF userPassword(user())==chosenString('password') THEN {
+                EXEC reloginUser(user());
+                MESSAGE 'Пользователь изменён';
+            } ELSE {
+                MESSAGE 'Неверный пароль';
+            }
+        } ELSE {
+            MESSAGE 'Пользователь не найден';
+        }
+    }
+}
+
+// Смена пользователя по паролю
+FORM reloginPasswordUser 'Сменить пользователя'
+    OBJECTS password = STRING[30] FIXED PANEL
+    PROPERTIES valuePassword = OBJVALUE(password)
+;
+
+EXTEND DESIGN reloginPasswordUser {
+    main{
+        password.box {
+            title = 'Смена пользователя';
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE leftControls;
+    }
+}
+
+reloginPasswordUser = ACTION (user) {
+    FORM reloginPasswordUser MODAL;
+    IF formResult() == formResult.ok THEN {
+        IF userPassword(user)==chosenString('password') THEN {
+            EXEC reloginUser(user);
+            MESSAGE 'Пользователь изменён';
+        } ELSE {
+            MESSAGE 'Неверный пароль';
+        }
+    }
+}
+
+// ---------------- Действия по изменению даннных пользователя ------------------- //
+
+FORM changePasswordUser 'Сменить пароль'
+    OBJECTS u=customUser FIXED PANEL
+    PROPERTIES(u) READONLY userLogin
+
+    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) FIXED PANEL
+    PROPERTIES valueOld = OBJVALUE(old), valueNew1 = OBJVALUE(new1), valueNew2 = OBJVALUE(new2)
+
+    FILTERS u==currentUser()
+;
+
+EXTEND DESIGN changePasswordUser {
+    main{
+        passwords.box {
+            ADD PROPERTY(userLogin(u)) BEFORE PROPERTY(valueOld);
+            PROPERTY(valueOld){
+                caption = 'Старый пароль';
+                echoSymbols = TRUE;
+            }
+            PROPERTY(valueNew1){
+                caption = 'Новый пароль';
+                echoSymbols = TRUE;
+            }
+            PROPERTY(valueNew2){
+                caption = 'Повторите новый пароль';
+                echoSymbols = TRUE;
+            }
+        }
+    }
+}
+
+changePasswordUser = ACTION (customUser) {
+    FORM changePasswordUser MODAL;
+    IF formResult() == formResult.ok THEN {
+        IF chosenString('old') != userPassword(customUser) THEN {
+            MESSAGE 'Неверный старый пароль';
+            BREAK;
+        }
+        IF chosenString('new1') != chosenString('new2') THEN {
+            MESSAGE 'Введённые пароли не совпадают';
+            BREAK;
+        }
+        SET userPassword(customUser) <- chosenString('new1');
+        MESSAGE 'Пароль изменён';
+    }
+}
+
+changePassword = ACTION () {
+      EXEC changePasswordUser(currentUser());
+}
+
 NAVIGATOR {
     security {
         ADD Security.customUsers;
         ADD Security.userRoles;
         ADD Security.securityPolicy;
+    }
+    account {
+        NEW reloginLoginUserAction ACTION reloginLoginUser 'Сменить пользователя';
+        NEW changePasswordAction ACTION changePassword 'Сменить пароль';
     }
 }

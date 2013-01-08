@@ -10,16 +10,12 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
-import platform.interop.action.LogOutClientAction;
-import platform.interop.action.UserChangedClientAction;
-import platform.interop.action.UserReloginClientAction;
 import platform.interop.form.layout.ContainerType;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -44,7 +40,6 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.actions.flow.ApplyActionProperty;
@@ -55,6 +50,9 @@ import platform.server.logics.property.actions.form.*;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
+import platform.server.logics.scripted.ScriptingErrorLog;
+import platform.server.logics.security.ReloginUserActionProperty;
+import platform.server.logics.security.LogOutActionProperty;
 import platform.server.logics.table.TableFactory;
 
 import javax.swing.*;
@@ -83,7 +81,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass session;
-    public ConcreteCustomClass multiLanguageNamed;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
 
@@ -169,7 +166,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentUser;
     public LCP currentSession;
     public LCP currentComputer, hostnameCurrentComputer;
-    public LAP changeUser;
+    public LAP reloginUser;
     public LAP logOut;
     protected LCP isServerRestarting;
     public LAP restartServerAction;
@@ -280,8 +277,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"Неизвестно", "Принять", "Закрыть"});
 
         // todo : раскидать по модулям
-
-        multiLanguageNamed = addConcreteClass("multiLanguageNamed", "Мультиязычный объект", baseClass);
     }
 
     @Override
@@ -323,7 +318,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     @Override
-    public void initProperties() {
+    public void initProperties() throws ScriptingErrorLog.SemanticErrorException {
 
         dumb1 = dumb(1);
 
@@ -521,9 +516,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
         // Действия по авторизация
-        changeUser = addProperty(null, new LAP(new ChangeUserActionProperty("changeUser", customUser)));
-        logOut = addProperty(null, new LAP(new LogOutActionProperty("logOut")));
-
+        reloginUser = addProperty(null, new LAP(new ReloginUserActionProperty(BL.securityLM)));
+        logOut = addProperty(null, new LAP(new LogOutActionProperty(BL.securityLM)));
         // Управление сервером приложений
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
 
@@ -990,36 +984,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             maxValue += 1;
 
             dataProperty.change(maxValue, context, dataPropertyInput);
-        }
-    }
-
-    private static class ChangeUserActionProperty extends AdminActionProperty {
-
-        private ChangeUserActionProperty(String sID, ConcreteValueClass userClass) {
-            super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            context.emitExceptionIfNotInFormSession();
-
-            DataObject user = context.getSingleKeyValue();
-            if (context.getFormInstance().BL.requiredPassword) {
-                context.delayUserInterfaction(new UserReloginClientAction(context.getFormInstance().BL.getUserName(user).trim()));
-            } else {
-                context.getSession().user.changeCurrentUser(user);
-                context.delayUserInterfaction(new UserChangedClientAction());
-            }
-        }
-    }
-
-    private class LogOutActionProperty extends AdminActionProperty {
-        private LogOutActionProperty(String sID) {
-            super(sID, getString("logics.logout"), new ValueClass[]{});
-        }
-
-        @Override
-        protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            context.delayUserInteraction(new LogOutClientAction());
         }
     }
 

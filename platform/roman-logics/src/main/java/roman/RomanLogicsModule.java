@@ -161,6 +161,7 @@ public class RomanLogicsModule extends LogicsModule {
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
+    private ConcreteCustomClass multiLanguageNamed;
     LCP addressOriginSubject;
     LCP addressSubject;
     LCP supplierDocument;
@@ -1525,6 +1526,8 @@ public class RomanLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
+        multiLanguageNamed = (ConcreteCustomClass) BL.i18nLM.getClassByName("multiLanguageNamed");
+        
         destination = addAbstractClass("destination", "Пункт назначения", baseClass);
 
         store = addConcreteClass("store", "Магазин", destination, (CustomClass) BL.Store.getClassByName("store"));//  baseClass.named
@@ -1608,18 +1611,18 @@ public class RomanLogicsModule extends LogicsModule {
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
         importer = addConcreteClass("importer", "Импортер", subject, (CustomClass) BL.Company.getClassByName("company"));
-        exporter = addConcreteClass("exporter", "Экспортер", subject, seller, (CustomClass) BL.Company.getClassByName("company"), baseLM.multiLanguageNamed);
+        exporter = addConcreteClass("exporter", "Экспортер", subject, seller, (CustomClass) BL.Company.getClassByName("company"), multiLanguageNamed);
 
         commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
 
-        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, baseLM.multiLanguageNamed);
+        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, multiLanguageNamed);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
-        gender = addConcreteClass("gender", "Пол", baseClass.named, baseLM.multiLanguageNamed);
+        gender = addConcreteClass("gender", "Пол", baseClass.named, multiLanguageNamed);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
         seasonSupplier = addConcreteClass("seasonSupplier", "Сезон поставщика", baseClass);
 
-        typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, baseLM.multiLanguageNamed);
+        typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, multiLanguageNamed);
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
 
@@ -1634,7 +1637,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
 
-        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, baseLM.multiLanguageNamed,
+        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, multiLanguageNamed,
                                                                          (CustomClass) BL.Stock.getClassByName("skuGroup"));
 
         customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
@@ -1689,8 +1692,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeLabel = addConcreteClass("typeLabel", "Тип этикетки", baseClass.named);
 
-        typeContainer = addStaticClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"});
-
+        typeContainer = addStaticClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"});        
     }
 
     @Override
