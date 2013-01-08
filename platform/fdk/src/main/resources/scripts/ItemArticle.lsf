@@ -25,4 +25,11 @@ TABLE size(size);
 @defineObjectItemAttribute(size, name, 'Размер', itemArticleGroup);
 @implementObjectShortItemAttribute(size, 'Размер (сокр.)');
 
+
+overCopyProperty(s, d) += ACTION (s, d) {
+    SET articleItem(d) <- articleItem(s);
+    SET colorItem(d) <- colorItem(s);
+    SET sizeItem(d) <- sizeItem(s);
+}
+
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemArticleGroup; } }

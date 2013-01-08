@@ -44,5 +44,16 @@ TABLE pack(pack);
 // Кол-во компонентов
 @defineIntegerItemAttribute(numberComponents, 'Кол-во компонентов', itemDescriptionGroup);
 
+overCopyProperty(s, d) += ACTION (s, d) {
+    SET typeItem(d) <- typeItem(s);
+    SET sortItem(d) <- sortItem(s);
+    SET formItem(d) <- formItem(s);
+    SET featureItem(d) <- featureItem(s);
+    SET packItem(d) <- packItem(s);
+    SET propertyItem(d) <- propertyItem(s);
+    SET numberComponentsItem(d) <- numberComponentsItem(s);
+}
+
+
 EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemDescriptionGroup; } }
 

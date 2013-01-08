@@ -10,6 +10,10 @@ CONSTRAINT countrySubNaturalLossGroup(subNaturalLossGroupCountryItem(country, it
 
 subNaturalLossGroupCountrySku (country, sku) += subNaturalLossGroupCountryItem (country, sku);
 
+overCopyProperty(s, d) += ACTION (s, d) {
+    SET subNaturalLossGroupCountryItem(country, d) <- subNaturalLossGroupCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
+}
+
 EXTEND FORM item
     PROPERTIES(c,i) nameSubNaturalLossGroupCountryItem
 ;

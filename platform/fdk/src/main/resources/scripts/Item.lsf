@@ -393,12 +393,6 @@ nameSku(item) += nameAttributeItem(item);
 // для оптимизации запросов
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
 
-EXTEND FORM items
-    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItemGroupItem(g, i)
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-;
-
 // Кассы
 @defineItemAttributeName(cashRegister, ' (кассы)', public);
 dataTitleCashRegisterBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -408,6 +402,44 @@ titleCashRegisterBarcode 'Наименование для касс' = UNION OVER
 @defineItemAttributeName(scales, ' (весы)', public);
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
+
+// копирование товара
+overCopyProperty = ABSTRACT ACTION (s, d);
+
+copyItem 'Копировать' = ACTION (item) NEWSESSION {
+    FOR ADDOBJ i = item DO {
+        SET itemGroupItem(i) <- itemGroupItem(item);
+        SET captionItem(i) <- captionItem(item);
+        SET UOMItem(i) <- UOMItem(item);
+        SET brandItem(i) <- brandItem(item);
+        SET netWeightItem(i) <- netWeightItem(item);
+        SET grossWeightItem(i) <- grossWeightItem(item);
+        SET countryItem(i) <- countryItem(item);
+        SET imageItem(i) <- imageItem(item);
+
+        FOR skuBarcode(barcode) == item DO {
+            FOR ADDOBJ b = barcode DO {
+                SET skuBarcode(b) <- i;
+                SET dataDateBarcode(b) <- dataDateBarcode(barcode);
+                SET dataUOMBarcode(b) <- dataUOMBarcode(barcode);
+                SET dataAmountBarcode(b) <- dataAmountBarcode(barcode);
+                SET dataTitleScalesBarcode(b) <- dataTitleScalesBarcode(barcode);
+                SET dataTitleCashRegisterBarcode(b) <- dataTitleCashRegisterBarcode(barcode);
+            }
+        }
+
+        EXEC overCopyProperty(item, i);
+
+        FORM item OBJECTS i = i MANAGESESSION DOCKED_MODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM items
+    PROPERTIES (i) copyItem
+    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItemGroupItem(g, i)
+    FILTERS nameAttributeItemGroupItem(g, i)
+    ORDER BY nameAttributeItemGroupItem
+;
 
 createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
 

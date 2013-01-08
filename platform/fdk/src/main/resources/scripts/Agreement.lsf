@@ -336,6 +336,33 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
     }
 } IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
+copySessionAgreement 'Копировать' = ACTION (agreement) {
+    FOR ADDOBJ a = agreement DO {
+        SET dateAgreement(a) <- dateAgreement(agreement);
+        SET timeAgreement(a) <- timeAgreement(agreement);
+        SET fromDateAgreement(a) <- fromDateAgreement(agreement);
+        SET fromTimeAgreement(a) <- fromTimeAgreement(agreement);
+        SET toDateAgreement(a) <- toDateAgreement(agreement);
+        SET toTimeAgreement(a) <- toTimeAgreement(agreement);
+        SET supplierAgreement(a) <- supplierAgreement(agreement);
+        SET currencyAgreement(a) <- currencyAgreement(agreement);
+        SET priceListTypeAgreement(a) <- priceListTypeAgreement(agreement);
+        SET noteAgreement(a) <- noteAgreement(agreement);
+        SET inCustomerAgreement(a) <- inCustomerAgreement(agreement);
+
+        SET inAgreementCustomer(a, customer) <- inAgreementCustomer (agreement, customer);
+        SET priceListTypeAgreementPriceGroup(a, priceGroup) <- priceListTypeAgreementPriceGroup(agreement, priceGroup);
+        SET priceListTypeAgreementSku(a, sku) <- priceListTypeAgreementSku(agreement, sku);
+
+        FORM agreement OBJECTS a = a DOCKED_MODAL;
+
+        IF TRUE AND NOT formResult() == formResult.ok THEN {
+            EXEC delete(a);
+        }
+    };
+} TOOLBAR;
+
+
 FORM agreements 'Соглашения'
 
     OBJECTS a = agreement
@@ -356,7 +383,7 @@ EXTEND FORM legalEntity
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
-    PROPERTIES(ags) EDITSESSIONFORM
+    PROPERTIES(ags) EDITSESSIONFORM, copySessionAgreement
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(ags, l),
             supplierAgreement(ags) == s,
@@ -372,7 +399,7 @@ EXTEND FORM legalEntity
     PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                              nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
-    PROPERTIES(agc) EDITSESSIONFORM
+    PROPERTIES(agc) EDITSESSIONFORM, copySessionAgreement
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(agc, c),

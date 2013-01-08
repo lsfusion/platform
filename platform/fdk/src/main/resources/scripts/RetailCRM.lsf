@@ -247,6 +247,7 @@ inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OV
                                                                                     AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
                                                                                inDataPromotionConditionSku(promotionCondition, sku);
 
+
 FORM promotion 'Акция'
     OBJECTS sh=promotion   FIXED PANEL
     PROPERTIES(sh)     name, namePromotionGroupPromotion, userSetPromotion,
@@ -408,7 +409,49 @@ DESIGN promotion FROM DEFAULT {
     }
 }
 
+copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
+    FOR ADDOBJ p = promotion DO {
+        SET promotionGroupPromotion(p) <- promotionGroupPromotion(promotion);
+        SET dateFromPromotion(p) <- dateFromPromotion(promotion);
+        SET dateToPromotion(p) <- dateToPromotion(promotion);
+        SET timeOfFromPromotion(p) <- timeOfFromPromotion(promotion);
+        SET timeOfToPromotion(p) <- timeOfToPromotion(promotion);
+        SET minSumBillPromotion(p) <- minSumBillPromotion(promotion);
+        SET maxSumBillPromotion(p) <-  maxSumBillPromotion(promotion);
+        SET hasDiscountCardPromotion(p) <- hasDiscountCardPromotion(promotion);
+        SET minCumulativeSumPromotion(p) <- minCumulativeSumPromotion(promotion);
+        SET maxCumulativeSumPromotion(p) <- maxCumulativeSumPromotion(promotion);
+        SET useCurrentReceiptPromotion(p) <- useCurrentReceiptPromotion(promotion);
+        SET allDiscountCardPromotion(p) <- allDiscountCardPromotion(promotion);
 
+        FOR promotionPromotionCondition(promotionCondition) == promotion DO {
+            FOR ADDOBJ pc = promotionCondition DO {
+                SET promotionPromotionCondition(pc) <- p AS promotion;
+                SET minQuantityPromotionCondition(pc) <- minQuantityPromotionCondition(promotionCondition);
+                SET minSumPromotionCondition(pc) <- minSumPromotionCondition(promotionCondition);
+                SET quantityDiscountPromotionCondition(pc) <- quantityDiscountPromotionCondition(promotionCondition);
+                SET percentPromotionCondition(pc) <- percentPromotionCondition(promotionCondition);
+                SET resultPricePromotionCondition(pc) <- resultPricePromotionCondition(promotionCondition);
+                SET sumDiscountPromotionCondition(pc) <- sumDiscountPromotionCondition(promotionCondition);
+                SET sumReceiptPromotionCondition(pc) <- sumReceiptPromotionCondition(promotionCondition);
+
+                SET allDiscountSkuGroupPromotionCondition(pc) <- allDiscountSkuGroupPromotionCondition(promotionCondition);
+
+                FOR inDataPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup) DO {
+                    SET inDataPromotionConditionDiscountSkuGroup(pc, discountSkuGroup) <- TRUE;
+                };
+                FOR inDataPromotionConditionSkuGroup(promotionCondition, skuGroup) DO {
+                    SET inDataPromotionConditionSkuGroup(pc, skuGroup) <- TRUE;
+                };
+                FOR inDataPromotionConditionSku(promotionCondition, sku) DO {
+                    SET inDataPromotionConditionSku(pc, sku) <- TRUE;
+                };
+            };
+        };
+
+        FORM promotion OBJECTS sh = p MANAGESESSION DOCKED_MODAL;
+    };
+} TOOLBAR;
 
 FORM promotions 'Акции'
     OBJECTS sh=promotion
@@ -416,7 +459,7 @@ FORM promotions 'Акции'
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
-    PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+    PROPERTIES(sh)    copyPromotion, ADDFORM, EDITFORM, delete
 
     PROPERTIES (sh) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 

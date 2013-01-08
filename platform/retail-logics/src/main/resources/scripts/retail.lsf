@@ -219,6 +219,42 @@ valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION O
                                                                                multiplierItemDepartmentStoreDate(item, departmentStore, date);
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
 
+overCopyProperty(s, d) += ACTION (s, d) {
+
+    SET isContainerItem(d) <- isContainerItem(s);
+    SET isWeightItem(d) <- isWeightItem(s);
+    SET lengthPackItem(d) <- lengthPackItem(s);
+    SET widthPackItem(d) <- widthPackItem(s);
+    SET heightPackItem(d) <- heightPackItem(s);
+    SET grossWeightPackItem(d) <- grossWeightPackItem(s);
+
+    FOR dataInactiveItemDate(s, dt) DO {
+        SET dataInactiveItemDate(d, dt) <- dataInactiveItemDate(s, dt);
+    }
+
+    SET passScalesItem(d) <- passScalesItem(s);
+    SET compositionScalesItem(d) <- compositionScalesItem(s);
+    SET labelFormatPackItem(d) <- labelFormatPackItem(s);
+
+    SET nutritionalValueItem(d) <- nutritionalValueItem(s);
+    SET energyItem(d) <- energyItem(s);
+    SET fatsItem(d) <- fatsItem(s);
+    SET carbohydratesItem(d) <- carbohydratesItem(s);
+    SET proteinsItem(d) <- proteinsItem(s);
+    SET containsGMOItem(d) <- containsGMOItem(s);
+    SET daysExpiryPackItem(d) <- daysExpiryPackItem(s);
+    SET hoursExpiryPackItem(d) <- hoursExpiryPackItem(s);
+
+    FOR dataLabelItemDepartmentStoreDate(s, ds, dt) DO {
+        SET dateLabelItemDepartmentStoreDate(d, ds, dt) <- dataLabelItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
+    }
+
+    FOR dataMultiplierItemDepartmentStoreDate(s, ds, dt) DO {
+        SET dataMultiplierItemDepartmentStoreDate(d, ds, dt) <- dataMultiplierItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
+    }
+}
+
+
 EXTEND FORM item
 
     PROPERTIES(i) isContainerItem,

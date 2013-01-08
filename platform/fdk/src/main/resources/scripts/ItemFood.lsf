@@ -25,4 +25,11 @@ TABLE coolingDegree(coolingDegree);
 // Алкоголь
 @defineDoubleItemAttribute(percentAlcohol, NUMERIC[5,1], '% алкоголя', itemFoodGroup);
 
+overCopyProperty(s, d) += ACTION (s, d) {
+    SET tasteItem(d) <- tasteItem(s);
+    SET coolingDegreeItem(d) <- coolingDegreeItem(s);
+    SET percentFatItem(d) <- percentFatItem(s);
+    SET percentAlcoholItem(d) <- percentAlcoholItem(s);
+}
+
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemFoodGroup; } }

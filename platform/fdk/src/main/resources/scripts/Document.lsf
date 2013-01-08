@@ -119,8 +119,8 @@ META defineDocumentHeaderTimePrefix (object, prefix, caption)
     prefix###dateTime###object 'Дата/время'##caption (object) = dateTimeToDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
 
     WHEN ASSIGNED(o AS object) DO {
-        SET prefix###date###object(o) <- currentDate();
-        SET prefix###time###object(o) <- currentTime();
+        IF o IS object AND NOT prefix###date###object(o) THEN SET prefix###date###object(o) <- currentDate();
+        IF o IS object AND NOT prefix###time###object(o) THEN SET prefix###time###object(o) <- currentTime();
     } SESSION;
 END
 META defineDocumentAbstractHeaderTimePrefix (object, prefix, caption)

@@ -55,8 +55,6 @@ NAVIGATOR {
         ADD Purchase.invoices;
         ADD Purchase.shipments;
         ADD Purchase.creditNotes;
-        //ADD Purchase.scheduleOrders;
-
     }
     NEW purchaseReturnNavigator 'Возвраты' {
         ADD PurchaseReturn.orders;
