@@ -725,9 +725,9 @@ public class SQLSession extends MutableObject {
 
     public Object readRecord(Table table, ImMap<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
         // по сути пустое кол-во ключей
-        return new Query<KeyField, String>(MapFact.<KeyField, KeyExpr>EMPTYREV(),
-                table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result").
-                 execute(this).singleValue().get("result");
+        ImOrderMap<ImMap<KeyField, Object>, ImMap<String, Object>> result =
+                new Query<KeyField, String>(MapFact.<KeyField, KeyExpr>EMPTYREV(), table.join(DataObject.getMapExprs(keyFields)).getExpr(field), "result").execute(this);
+        return result.size() == 1 ? result.singleValue().get("result") : null;
     }
 
     public void truncate(String table) throws SQLException {
