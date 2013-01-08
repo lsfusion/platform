@@ -1183,7 +1183,7 @@ DESIGN POS FROM DEFAULT {
             NEW currentContainer {
                 title = 'Текущие значения';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(formRefreshAction) { focusable = FALSE; }
+                ADD PROPERTY(formRefresh) { focusable = FALSE; }
                 ADD PROPERTY(hostnameCurrentComputer) { focusable = FALSE; }
                 ADD PROPERTY(currentDateTime) { focusable = FALSE; }
                 ADD PROPERTY(currentUserName) { focusable = FALSE; }

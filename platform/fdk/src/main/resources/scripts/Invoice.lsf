@@ -520,7 +520,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     childConstraints = TO THE BOTTOM;
                 }
             }
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

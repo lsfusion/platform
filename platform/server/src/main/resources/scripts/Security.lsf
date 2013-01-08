@@ -254,6 +254,7 @@ EXTEND DESIGN reloginLoginUser {
             }
         }
         REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
     }
 }
 
@@ -291,6 +292,7 @@ EXTEND DESIGN reloginPasswordUser {
             }
         }
         REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
     }
 }
 
@@ -321,20 +323,27 @@ FORM changePasswordUser 'Сменить пароль'
 EXTEND DESIGN changePasswordUser {
     main{
         passwords.box {
-            ADD PROPERTY(userLogin(u)) BEFORE PROPERTY(valueOld);
+            ADD PROPERTY(userLogin(u)) BEFORE PROPERTY(valueOld) {
+               font = 'Tahoma 36';
+            };
             PROPERTY(valueOld){
                 caption = 'Старый пароль';
                 echoSymbols = TRUE;
+                font = 'Tahoma 36';
             }
             PROPERTY(valueNew1){
                 caption = 'Новый пароль';
                 echoSymbols = TRUE;
+                font = 'Tahoma 36';
             }
             PROPERTY(valueNew2){
                 caption = 'Повторите новый пароль';
                 echoSymbols = TRUE;
+                font = 'Tahoma 36';
             }
         }
+        REMOVE leftControls;
+        REMOVE PROPERTY(formRefresh);
     }
 }
 

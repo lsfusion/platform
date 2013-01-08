@@ -199,7 +199,7 @@ META defineBlanketOrder(sign)
             }
 
 
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

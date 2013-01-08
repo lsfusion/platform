@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class XlsActionProperty extends FormToolbarActionProperty {
 
     public XlsActionProperty() {
-        super("formXlsAction", ApiResourceBundle.getString("form.layout.xls"), false, null,
+        super("formXls", ApiResourceBundle.getString("form.layout.xls"), false, null,
               new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDialog}, new boolean[] {false, true});
     }
 

@@ -309,7 +309,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
                 }
             }
 
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

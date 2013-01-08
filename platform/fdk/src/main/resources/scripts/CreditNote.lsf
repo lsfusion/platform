@@ -136,7 +136,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
             d.panel{
                 childConstraints = TO THE BOTTOM;
             }
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

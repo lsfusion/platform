@@ -163,7 +163,7 @@ DESIGN disparityBatch FROM DEFAULT {
                 }
             }
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }
@@ -515,7 +515,7 @@ DESIGN disparityBatchA FROM DEFAULT {
                 }
             }
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

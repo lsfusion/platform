@@ -81,7 +81,7 @@ META defineDocumentFormTransferOut(object, formCaption)
                 }
             }
 
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class OkActionProperty extends FormToolbarActionProperty {
 
     public OkActionProperty() {
-        super("formOkAction", ApiResourceBundle.getString("form.layout.ok"), null, FormEntity.isModal);
+        super("formOk", ApiResourceBundle.getString("form.layout.ok"), null, FormEntity.isModal);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

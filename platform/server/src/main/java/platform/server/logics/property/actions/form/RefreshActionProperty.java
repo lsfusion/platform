@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class RefreshActionProperty extends FormToolbarActionProperty {
 
     public RefreshActionProperty() {
-        super("formRefreshAction", ApiResourceBundle.getString("form.layout.refresh"), false);
+        super("formRefresh", ApiResourceBundle.getString("form.layout.refresh"), false);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

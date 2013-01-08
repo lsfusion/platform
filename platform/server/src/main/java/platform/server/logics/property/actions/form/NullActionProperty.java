@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class NullActionProperty extends FormToolbarActionProperty {
 
     public NullActionProperty() {
-        super("formNullAction", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
+        super("formNull", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

@@ -448,7 +448,7 @@ DESIGN userRepricing FROM DEFAULT {
         PROPERTY(retailPriceUserRepricingDetail) { background = #FFFFCC; }
         PROPERTY(retailSumUserRepricingDetail) { background = #FFFFCC; }
 
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

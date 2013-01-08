@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class PrintActionProperty extends FormToolbarActionProperty {
 
     public PrintActionProperty() {
-        super("formPrintAction", ApiResourceBundle.getString("form.layout.print"), false, null,
+        super("formPrint", ApiResourceBundle.getString("form.layout.print"), false, null,
               new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDialog}, new boolean[] {false, true});
     }
 

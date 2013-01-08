@@ -277,7 +277,7 @@ DESIGN orderPicking FROM DEFAULT {
             POSITION s.box TO THE LEFT d.box;
         }
         PROPERTY (quantityInnerOrderDetailSkuInnerOrder(s, o))  {caption = 'Количество товара в заказе'; }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

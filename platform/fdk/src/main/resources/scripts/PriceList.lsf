@@ -577,7 +577,7 @@ DESIGN userPriceList FROM DEFAULT {
                 }
            }
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

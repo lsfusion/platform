@@ -322,7 +322,7 @@ DESIGN payment FROM DEFAULT{
 
     POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
 
-    PROPERTY(formOkAction) {
+    PROPERTY(formOk) {
         caption = 'Провести';
     }
 
@@ -419,7 +419,7 @@ DESIGN paymentRequest FROM DEFAULT{
         POSITION sumContainer TO THE RIGHT paramContainer;
     }
 
-    PROPERTY(formOkAction) {
+    PROPERTY(formOk) {
         caption = 'Провести';
     }
 
@@ -573,7 +573,7 @@ DESIGN creditMemo FROM DEFAULT{
 
     POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
 
-    PROPERTY(formOkAction) {
+    PROPERTY(formOk) {
         caption = 'Провести';
     }
 

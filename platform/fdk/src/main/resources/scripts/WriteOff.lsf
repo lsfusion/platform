@@ -244,7 +244,7 @@ DESIGN userWriteOff FROM DEFAULT{
         d.panel{
             childConstraints = TO THE BOTTOM;
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

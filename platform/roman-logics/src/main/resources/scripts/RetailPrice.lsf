@@ -936,11 +936,11 @@ DESIGN priceSetDocument FROM DEFAULT {
     PROPERTY(timePriceSetDocument) { background = #FFEEEE; }
     PROPERTY(nameCurrencyPriceSetDocument) { background = #FFEEEE; }
 
-    PROPERTY(formOkAction) {
+    PROPERTY(formOk) {
         caption = 'Провести';
     }
 
-    PROPERTY(formCloseAction) {
+    PROPERTY(formClose) {
         askConfirm = TRUE;
     }
     PROPERTY(balanceBArticleDate) {

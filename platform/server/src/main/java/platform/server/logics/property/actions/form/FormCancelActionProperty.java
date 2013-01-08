@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 public class FormCancelActionProperty extends FormToolbarActionProperty {
     public FormCancelActionProperty() {
-        super("formCancelAction", ApiResourceBundle.getString("form.layout.cancel"), DataSession.isDataChanged,
+        super("formCancel", ApiResourceBundle.getString("form.layout.cancel"), DataSession.isDataChanged,
               new CalcProperty[] {FormEntity.manageSession, FormEntity.isReadOnly}, new boolean[] {false, true});
     }
 

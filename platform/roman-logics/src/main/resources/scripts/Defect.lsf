@@ -166,7 +166,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
                 }
             }
 
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

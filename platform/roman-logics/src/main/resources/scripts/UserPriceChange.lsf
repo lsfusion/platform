@@ -191,7 +191,7 @@ DESIGN userPriceChange FROM DEFAULT {
         PROPERTY(valueWareRangeUserPriceChangeDetail) { background = #FFFFCC; }
         PROPERTY(retailPriceUserPriceChangeDetail) { background = #FFFFCC; }
 
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

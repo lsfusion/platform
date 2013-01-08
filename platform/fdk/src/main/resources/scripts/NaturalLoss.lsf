@@ -331,7 +331,7 @@ DESIGN naturalLoss FROM DEFAULT{
         ADD s.documentSumGroup {
             childConstraints = TO THE BOTTOM;
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

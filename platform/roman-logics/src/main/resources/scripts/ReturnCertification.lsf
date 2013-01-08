@@ -176,7 +176,7 @@ DESIGN returnCertification FROM DEFAULT {
         }
         ADD d.box;
 
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
         ADD functions.box;

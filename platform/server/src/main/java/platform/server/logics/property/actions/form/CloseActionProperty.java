@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class CloseActionProperty extends FormToolbarActionProperty {
     public CloseActionProperty() {
-        super("formCloseAction", ApiResourceBundle.getString("form.layout.close"), null, FormEntity.isModal);
+        super("formClose", ApiResourceBundle.getString("form.layout.close"), null, FormEntity.isModal);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

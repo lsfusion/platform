@@ -162,7 +162,7 @@ DESIGN disparity FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
             }
         }
-        PROPERTY(formOkAction) {
+        PROPERTY(formOk) {
             caption = 'Провести';
         }
     }

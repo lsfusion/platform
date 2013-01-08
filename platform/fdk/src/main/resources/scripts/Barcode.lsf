@@ -80,7 +80,7 @@ barcodeInput 'Штрих-код' = DATA SESSION STRING[13] () EVENTID 'SCANNER';
 changeBarcodeInput = ACTION () {
     REQUEST STRING[13] INPUT;
     SET barcodeInput() <- requestedString();
-    EXEC formOkAction();
+    EXEC formOk();
 }
 FORM barcodeInput 'Ввод штрих-кода'
     PROPERTIES() barcodeInput ON CHANGE EXEC changeBarcodeInput()

@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class EditActionProperty extends FormToolbarActionProperty {
 
     public EditActionProperty() {
-        super("formEditAction", ApiResourceBundle.getString("form.layout.edit"), false, null,
+        super("formEdit", ApiResourceBundle.getString("form.layout.edit"), false, null,
               new CalcProperty[] {FormEntity.isFullClient, FormEntity.isDebug, FormEntity.isDialog}, new boolean[] {false, false, true});
     }
 

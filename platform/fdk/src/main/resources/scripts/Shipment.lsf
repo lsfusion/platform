@@ -218,7 +218,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
             d.panel{
                 childConstraints = TO THE BOTTOM;
             }
-            PROPERTY(formOkAction) {
+            PROPERTY(formOk) {
                 caption = 'Провести';
             }
         }

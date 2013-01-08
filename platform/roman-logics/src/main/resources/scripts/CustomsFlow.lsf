@@ -278,7 +278,7 @@ DESIGN CStoWH FROM DEFAULT {
             }
         }
     }
-    PROPERTY(formOkAction) {
+    PROPERTY(formOk) {
         caption = 'Провести';
     }
 
