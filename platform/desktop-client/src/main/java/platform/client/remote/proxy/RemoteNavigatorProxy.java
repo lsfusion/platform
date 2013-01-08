@@ -107,19 +107,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return result;
     }
 
-    public void relogin(String login) throws RemoteException {
-        target.relogin(login);
-    }
-
-    public String getCurrentUserLogin() throws RemoteException {
-        return target.getCurrentUserLogin();
-    }
-
-    @Override
-    public void changePassword(String login, String newPassword) throws RemoteException {
-        target.changePassword(login, newPassword);
-    }
-
     public void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException {
         target.clientExceptionLog(info, client, message, type, erTrace);
     }

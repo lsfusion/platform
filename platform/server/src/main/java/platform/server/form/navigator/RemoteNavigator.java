@@ -117,53 +117,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             session.updateProperties(SetFact.singleton(property));
     }
 
-    public void relogin(String login) throws RemoteException {
-        try {
-            changeCurrentUser(getCurrentUser(login));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public SecurityPolicy getUserSecurityPolicy() {
         try {
             return BL.readUser(getUserLogin(), createSession()).getSecurityPolicy();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public DataObject getCurrentUser(String login) {
-        try {
-            DataSession session = createSession();
-            Integer userId = (Integer) BL.LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
-            DataObject user = session.getDataObject(userId, ObjectType.instance);
-            session.close();
-            return user;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    public void changePassword(String login, String newPassword) throws RemoteException {
-        try {
-            DataSession session = createSession();
-            BL.LM.userPassword.change(newPassword, session, getCurrentUser(login));
-            session.apply(BL);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String getCurrentUserLogin() throws RemoteException {
-        try {
-            DataSession session = createSession();
-            Integer userId = (Integer)BL.LM.currentUser.read(session);
-            DataObject currentUser = session.getDataObject(userId, ObjectType.instance);
-            String userLogin = (String)BL.LM.userLogin.read(session, currentUser);
-            session.close();
-            return userLogin.trim();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

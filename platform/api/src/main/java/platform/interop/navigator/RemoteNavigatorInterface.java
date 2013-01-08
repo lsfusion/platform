@@ -48,12 +48,6 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
     // аутентификация
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 
-    void relogin(String login) throws RemoteException;
-
-    String getCurrentUserLogin() throws RemoteException;
-
-    void changePassword(String login, String newPassword) throws RemoteException;
-
     // релевантные элементы
     byte[] getElementsByteArray(String groupSID) throws RemoteException;
 

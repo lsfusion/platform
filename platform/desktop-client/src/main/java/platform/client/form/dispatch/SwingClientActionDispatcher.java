@@ -331,38 +331,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(UserReloginClientAction action) {
-        try {
-            final JPasswordField jpf = new JPasswordField();
-            JOptionPane jop = new JOptionPane(jpf, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = jop.createDialog(getDialogParentContainer(), ClientResourceBundle.getString("form.enter.password"));
-            dialog.addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentShown(ComponentEvent e) {
-                    jpf.requestFocusInWindow();
-                }
-            });
-            dialog.setVisible(true);
-            int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
-            dialog.dispose();
-            String password = null;
-            if (result == JOptionPane.OK_OPTION) {
-                password = new String(jpf.getPassword());
-                boolean check = Main.remoteLogics.checkUser(action.login, password);
-                if (check) {
-                    Main.frame.remoteNavigator.relogin(action.login);
-                    Main.frame.updateUser();
-                } else {
-                    throw new RuntimeException();
-                }
-            }
-        } catch (LoginException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void execute(MessageClientAction action) {
         if (!action.extended) {
             JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);

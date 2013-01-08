@@ -20,8 +20,6 @@ public interface ClientActionDispatcher {
     public Object execute(ChooseClassClientAction action);
 
     public void execute(UserChangedClientAction action);
-    
-    public void execute(UserReloginClientAction action);
 
     public void execute(MessageClientAction action);
 
