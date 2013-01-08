@@ -9,7 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorElement<T> {
-    private static ImageIcon image = new ImageIcon(NavigatorAction.class.getResource("/images/action.png"));
+    private ImageIcon image;
 
     private ActionProperty property;
 
@@ -18,7 +18,12 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     public NavigatorAction(NavigatorElement<T> parent, String sID, String caption) {
-        super(parent, sID, caption);
+        this(parent, sID, caption, null);
+    }
+
+    public NavigatorAction(NavigatorElement<T> parent, String sID, String caption, String icon) {
+        super(parent, sID, caption, icon);
+        image = new ImageIcon(NavigatorAction.class.getResource(icon!=null ? icon : "/images/action.png"));
     }
 
     @Override

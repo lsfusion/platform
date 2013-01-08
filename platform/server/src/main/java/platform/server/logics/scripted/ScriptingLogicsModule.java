@@ -366,11 +366,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, String caption, String title) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormEntity createScriptedForm(String formName, String caption, String title, String icon) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ", " + title + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        return new ScriptingFormEntity(this, new FormEntity(null, formName, caption, title));
+        return new ScriptingFormEntity(this, new FormEntity(null, formName, caption, title, icon));
     }
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
@@ -1706,7 +1706,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindowByCompoundName(name).visible = false;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName, String icon) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
 
         assert name != null && caption != null && anchorElement != null;
@@ -1719,9 +1719,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             LAP<?> actionProperty = (LAP<?>) findLPByCompoundName(actionName);
             checkActionProperty(actionProperty);
 
-            newElement = addNavigatorAction(name, caption, actionProperty);
+            newElement = addNavigatorAction(name, caption, actionProperty, icon);
         } else {
-            newElement = addNavigatorElement(name, caption);
+            newElement = addNavigatorElement(name, caption, icon);
         }
 
 

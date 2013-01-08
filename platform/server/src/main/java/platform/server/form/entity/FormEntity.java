@@ -56,7 +56,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
-    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.png"));
+    private ImageIcon image;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
@@ -97,27 +97,40 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected FormEntity(String sID, String caption) {
-        this(sID, caption, false);
+        this(sID, caption, null);
+    }
+    
+    protected FormEntity(String sID, String caption, String icon) {
+        this(sID, caption, icon, false);
     }
 
-    FormEntity(String sID, String caption, boolean iisPrintForm) {
-        this(null, sID, caption, null, iisPrintForm);
+    FormEntity(String sID, String caption, String icon, boolean iisPrintForm) {
+        this(null, sID, caption, null, icon, iisPrintForm);
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption) {
-        this(parent, sID, caption, null, false);
+        this(parent, sID, caption, null, null, false);
     }
 
-    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String title) {
-        this(parent, sID, caption, title, false);
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String icon) {
+        this(parent, sID, caption, null, icon, false);
+    }
+
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption, String title, String icon) {
+        this(parent, sID, caption, title, icon, false);
     }
 
     public FormEntity(NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
-        this(parent, sID, caption, null, iisPrintForm);
+        this(parent, sID, caption, null, null, iisPrintForm);
     }
 
-    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, boolean iisPrintForm) {
-        super(parent, sID, caption);
+    public FormEntity(NavigatorElement<T> parent, String sID, String caption,  String icon, boolean iisPrintForm) {
+        this(parent, sID, caption, null, icon, iisPrintForm);
+    }
+
+    protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon, boolean iisPrintForm) {
+        super(parent, sID, caption, null);
+        image = new ImageIcon(NavigatorElement.class.getResource(icon!=null ? icon :"/images/form.png"));
         logger.debug("Initializing form " + caption + "...");
 
         title = ititle;

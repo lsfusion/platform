@@ -2665,26 +2665,30 @@ public abstract class LogicsModule {
         return addCProp(privateGroup, "dumb" + interfaces, false, "dumbProperty" + interfaces, StringClass.get(1), "", params);
     }
 
-    protected NavigatorElement addNavigatorElement(String name, String caption) {
-        return addNavigatorElement(null, name, caption);
+    protected NavigatorElement addNavigatorElement(String name, String caption, String icon) {
+        return addNavigatorElement(null, name, caption, icon);
     }
 
     protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption) {
-        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption);
+        return addNavigatorElement(parent, name, caption, null);
+    }
+
+    protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption, String icon) {
+        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption, icon);
         addModuleNavigator(elem);
         return elem;
     }
 
-    protected NavigatorAction addNavigatorAction(String name, String caption, LAP property) {
-        return addNavigatorAction(null, name, caption, property);
+    protected NavigatorAction addNavigatorAction(String name, String caption, LAP property, String icon) {
+        return addNavigatorAction(null, name, caption, property, icon);
     }
 
-    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, LAP property) {
-        return addNavigatorAction(parent, name, caption, (ActionProperty) property.property);
+    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, LAP property, String icon) {
+        return addNavigatorAction(parent, name, caption, (ActionProperty) property.property, icon);
     }
 
-    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, ActionProperty property) {
-        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption);
+    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, ActionProperty property, String icon) {
+        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption, icon);
         navigatorAction.setProperty(property);
         addModuleNavigator(navigatorAction);
         return navigatorAction;

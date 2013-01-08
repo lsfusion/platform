@@ -364,7 +364,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $path.val);
 		$form.setIsPrintForm(isPrint);
 		$form.setModalityType(modalityType);
 	}
@@ -374,6 +374,7 @@ formDeclaration returns [ScriptingFormEntity form]
 		('TITLE' title=stringLiteral)?
 		('PRINT' { isPrint = true; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
+		('IMAGE' path=stringLiteral)?
 	;
 
 extendingFormDeclaration returns [ScriptingFormEntity form]
@@ -2256,10 +2257,10 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID ('ACTION' aid=compoundID)? caption=stringLiteral posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)?
+	:	'NEW' id=ID ('ACTION' aid=compoundID)? caption=stringLiteral posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)? ('IMAGE' path=stringLiteral)?
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid, $aid.sid);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid, $aid.sid, $path.val);
 			}
 		}
 		navigatorElementStatementBody[newElement]

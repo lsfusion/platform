@@ -52,7 +52,6 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.security.ReloginUserActionProperty;
-import platform.server.logics.security.LogOutActionProperty;
 import platform.server.logics.table.TableFactory;
 
 import javax.swing.*;
@@ -166,8 +165,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentUser;
     public LCP currentSession;
     public LCP currentComputer, hostnameCurrentComputer;
-    public LAP reloginUser;
-    public LAP logOut;
     protected LCP isServerRestarting;
     public LAP restartServerAction;
     public LAP runGarbageCollector;
@@ -515,9 +512,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
-        // Действия по авторизация
-        reloginUser = addProperty(null, new LAP(new ReloginUserActionProperty(BL.securityLM)));
-        logOut = addProperty(null, new LAP(new LogOutActionProperty(BL.securityLM)));
         // Управление сервером приложений
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
 
@@ -865,11 +859,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
-        root = addNavigatorElement("root", getString("logics.forms"));
+        root = addNavigatorElement("root", getString("logics.forms"), null);
         root.window = windows.root;
 
         account = addNavigatorElement(root, "account", getString("logics.account"));
-        addNavigatorAction(account, "logout", getString("logics.logout"), logOut);
         account.window = windows.toolbar;
 
         administration = addNavigatorElement(root, "administration", getString("logics.administration"));

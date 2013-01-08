@@ -18,7 +18,7 @@ public class DateIntervalFormEntity<T extends BusinessLogics<T>> extends FormEnt
     }
 
     public DateIntervalFormEntity(BaseLogicsModule<?> LM, NavigatorElement<T> parent, String sID, String caption, boolean iisPrintForm) {
-        super(parent, sID, caption, iisPrintForm);
+        super(parent, sID, caption, null, iisPrintForm);
 
         addIntervalGroupObject(LM);
     }

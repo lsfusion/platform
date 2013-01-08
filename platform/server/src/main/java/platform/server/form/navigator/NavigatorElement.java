@@ -19,7 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
-    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/open.png"));
+    private ImageIcon image;
 
     public String caption = "";
 
@@ -30,18 +30,18 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
 
     public NavigatorElement() {
-
+        image = new ImageIcon(NavigatorElement.class.getResource("/images/open.png"));
     }
 
     public NavigatorElement(String sID, String caption) {
-        this(null, sID, caption);
+        this(null, sID, caption, null);
     }
 
-    public NavigatorElement(NavigatorElement<T> parent, String sID, String caption) {
+    public NavigatorElement(NavigatorElement<T> parent, String sID, String caption, String icon) {
         this.sID = sID;
         setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
-
+        image = new ImageIcon(NavigatorElement.class.getResource(icon!=null ? icon : "/images/open.png"));
         if (parent != null) {
             this.parent = parent;
             parent.add(this);
