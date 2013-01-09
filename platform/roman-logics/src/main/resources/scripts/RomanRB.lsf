@@ -120,13 +120,6 @@ NAVIGATOR {
         ADD taxes;
     }
 
-    classifier {
-        NEW translations 'Переводы'{
-            ADD languages;
-            ADD dictionaries;
-        }
-        ADD currencyNavigator;
-    }
     purchaseClassifier {
         ADD contractSkus;
     }

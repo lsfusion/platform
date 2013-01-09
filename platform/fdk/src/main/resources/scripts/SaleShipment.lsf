@@ -19,10 +19,7 @@ NAMESPACE Sale;
 // Проводим по регистру
 @implementSkuLedgerOutFIFO(shipmentDetail, sku, supplierStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
-                                                quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
-                                                ELSE currentBalanceBatchStock(batch, supplierStockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
-changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
+@implementSkuLedgerOutFIFOBatchBalance(shipmentDetail, supplierStock);
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 costShipmentDetailBatch(detail, batch) += costSkuLedgerBatch(detail, batch) IF detail IS shipmentDetail;

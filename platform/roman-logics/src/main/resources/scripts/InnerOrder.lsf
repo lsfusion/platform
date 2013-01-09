@@ -893,7 +893,7 @@ skipASkuLedger (ledger) += ledger IS innerOrderDiffEDetail;
 
 @implementSkuLedgerOutFIFO(innerOrderDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityInnerOrderDiffSDetail(ledger);
-@implementSkuLedgerOutFIFOBalance (innerOrderDiffSDetail, sku, stock);
+@implementSkuLedgerOutFIFOBalance (innerOrderDiffSDetail, stock);
 orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS innerOrderDiffSDetail;
 
 //accountPriceInnerOrderRecBatchA (innerOrderRec, batchA) = GROUP MAX accountPriceInnerOrderDetailBatchA(detail, batchA) BY innerOrderRecInnerOrderDetail(detail), batchA;

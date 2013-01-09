@@ -24,19 +24,4 @@ PRIORITY Stock, RomanLogicsModule;
 @extendFormDocumentSkipSkuLedgerCustomReadonly(writeOffs, w, writeOff);
 
 // Проводим по регистру
-
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
-                                                quantityWriteOffDetail(ledger) AND batch == batchWriteOffDetail(ledger)
-                                             ELSE
-                                                IF skipSkuLedgerWriteOffDetail(ledger) THEN
-                                                    currentBalanceBatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchB
-                                                ELSE
-                                                    currentBalanceABatchStock(batch, stockWriteOffDetail(ledger)) AND batch IS batchA ;
-
-changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
 skipASkuLedger (ledger) += skipSkuLedgerWriteOffDetail(ledger);
-
-//---------------------------------------- Товарный отчет ------------------------- //
-
-sumItemOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS writeOff;

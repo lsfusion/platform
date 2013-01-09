@@ -174,16 +174,18 @@ reasonUserWriteOff 'Причина списания (ИД)' = DATA reason (userW
 reasonWriteOff(writeOff) += reasonUserWriteOff(writeOff);
 nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWriteOff (writeOff)) IN documentPrmGroup;
 nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
-// Проводим по регистру
 
+// Проводим по регистру
 @implementSkuLedgerOutFIFO(writeOffDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
+@implementSkuLedgerOutFIFOBatchBalance(writeOffDetail, stock);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 
 // Товарный отчет
-
 @implementStockDocumentLedgerOut(writeOff, stock);
 sumOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
 
 // --------------------------- Формы списания ---------------------------------
 

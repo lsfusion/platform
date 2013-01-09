@@ -16,7 +16,6 @@ skipAReceiptSaleDetail 'Не бухг.' (receiptDetail) = UNION OVERRIDE diffCom
 EXTEND FORM zReport PROPERTIES (d) skipAReceiptSaleDetail;
 EXTEND FORM zReports PROPERTIES (d) READONLY FORCE GRID skipAReceiptSaleDetail;
 
-@implementSkuLedgerReceiptDetail();
 skipASkuLedger (ledger) += skipAReceiptSaleDetail (ledger);
 
 // ------------------------------------------------- Бухгалтерские суммы ---------------------------------------- //
@@ -29,8 +28,6 @@ sumAccountReceiptDetailZReport 'Сумма учетная' (zReport) = sumReceip
 
 EXTEND FORM zReport PROPERTIES (z) sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
 EXTEND FORM zReports PROPERTIES (z) READONLY sumSkipAReceiptSaleDetailZReport, sumAccountReceiptDetailZReport;
-
-@implementStockDocumentLedgerZReportCustom(sumAccountReceiptDetailZReport);
 
 // --------------------------------------- Подбор строк для изъятия денег --------------------------- //
 

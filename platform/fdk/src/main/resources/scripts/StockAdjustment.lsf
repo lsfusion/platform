@@ -285,19 +285,11 @@ descriptionAdjustmentSkuDetail 'Название документа' (adjustment
 @implementSkuLedger(adjustmentSkuDetail, sku, stock);
 
 EXTEND CLASS outAdjustmentSkuDetail : outFIFOSkuLedger;
-quantityOutFIFOSkuLedger (ledger) += - quantityOutAdjustmentSkuDetail(ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchOutAdjustmentSkuDetail(ledger) THEN
-                                                quantityOutAdjustmentSkuDetail (ledger) AND batchOutAdjustmentSkuDetail(ledger) == batch
-                                                ELSE currentBalanceBatchStock(batch, stockOutAdjustmentSkuDetail(ledger));
-sumOutSkuLedger (ledger) += - sumOutAdjustmentSkuDetail(ledger);
-changedDataSkuLedger(ledger) += CHANGED(batchOutAdjustmentSkuDetail(ledger));
+quantityOutFIFOSkuLedger (ledger) += -quantityOutAdjustmentSkuDetail(ledger);
+@implementSkuLedgerOutFIFOBatchBalance(outAdjustmentSkuDetail, stock);
+sumOutSkuLedger (ledger) += -sumOutAdjustmentSkuDetail(ledger);
 
 EXTEND CLASS inAdjustmentSkuDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInAdjustmentSkuDetail(ledger);
-limitInLIFOSkuLedgerBatch(ledger, batch) += IF batchInAdjustmentSkuDetail(ledger) THEN
-                                               quantityInAdjustmentSkuDetail(ledger) IF batchInAdjustmentSkuDetail(ledger) == batch
-                                               ELSE (quantityBatch(batch) (-) currentBalanceBatch(batch)) AND
-                                                    countLedgerSkuStock(skuInAdjustmentSkuDetail(ledger), stockInAdjustmentSkuDetail(ledger));
+@implementSkuLedgerInLIFOBatchBalance(inAdjustmentSkuDetail, stock);
 sumInSkuLedger (ledger) += sumInAdjustmentSkuDetail(ledger);
-changedDataSkuLedger(ledger) += CHANGED(batchInAdjustmentSkuDetail(ledger));
-

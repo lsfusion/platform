@@ -664,12 +664,12 @@ descriptionInventorySkuDetail 'Название документа' (inventorySk
 
 EXTEND CLASS outInventorySkuDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventorySkuDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(outInventorySkuDetail, sku, stock);
+@implementSkuLedgerOutFIFOBalance(outInventorySkuDetail, stock);
 sumOutSkuLedger (ledger) += sumOutInventorySkuDetail(ledger);
 
 EXTEND CLASS inInventorySkuDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventorySkuDetail(ledger);
-@implementSkuLedgerInLIFOBalance(inInventorySkuDetail, sku, stock);
+@implementSkuLedgerInLIFOBalance(inInventorySkuDetail, stock);
 sumInSkuLedger (ledger) += sumInInventorySkuDetail(ledger);
 
 //---------------------------- Изменение остатка инвентаризации batch----------------------------//
@@ -731,6 +731,7 @@ descriptionInInventoryBatchDetail 'Название документа' (invento
 descriptionInventoryBatchDetail 'Название документа' (inventoryBatchDetail) = descriptionOutInventoryBatchDetail(inventoryBatchDetail) OR descriptionInInventoryBatchDetail(inventoryBatchDetail);
 
 @implementSkuLedger(inventoryBatchDetail, sku, stock);
+changedDataSkuLedger(ledger) += CHANGED(batchInventoryBatchDetail(ledger));
 
 EXTEND CLASS outInventoryBatchDetail : outFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += quantityOutInventoryBatchDetail(ledger);
@@ -739,7 +740,7 @@ sumOutSkuLedger (ledger) += sumOutInventoryBatchDetail(ledger);
 
 EXTEND CLASS inInventoryBatchDetail : inLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInInventoryBatchDetail(ledger);
-limitInLIFOSkuLedgerBatch (ledger, batch) +=  quantityInInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
+limitInLIFOSkuLedgerBatch (ledger, batch) += quantityInInventoryBatchDetail(ledger) AND batchInventoryBatchDetail(ledger) == batch;
 sumInSkuLedger (ledger) += sumInInventoryBatchDetail(ledger);
 
 //------------------------------------ Выбор складов для инвентаризации------------------------------------------//

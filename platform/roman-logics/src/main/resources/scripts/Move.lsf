@@ -42,7 +42,7 @@ EXTEND DESIGN moveOut {
 // Проводим по регистру
 @implementSkuLedgerOutFIFO(moveOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityMoveOutDetail (ledger);
-@implementSkuLedgerOutFIFOBalanceB(moveOutDetail, sku, stock);
+@implementSkuLedgerOutFIFOBalanceB(moveOutDetail, stock);
 sumOutSkuLedger(ledger) += costSumSkuLedger(ledger) IF ledger IS moveOutDetail;
 skipASkuLedger (ledger) += ledger IS moveOutDetail;
 

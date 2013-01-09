@@ -60,7 +60,7 @@ inputPriceDisparityDetail(detail) <- priceDisparityDetail(detail) WHEN CHANGED(p
 
 @implementSkuLedgerOutFIFO(disparityDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
-@implementSkuLedgerOutFIFOBalance(disparityDetail, sku, stock);
+@implementSkuLedgerOutFIFOBalance(disparityDetail, stock);
 sumOutSkuLedger (ledger) += sumDisparityDetail(ledger);
 
 

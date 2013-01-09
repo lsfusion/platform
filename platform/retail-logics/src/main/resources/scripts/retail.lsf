@@ -278,10 +278,6 @@ EXTEND DESIGN item {
     }
 }
 
-// -------------------------------------------- Подключение модуля POS -------------------------------------- //
-@implementSkuLedgerReceiptDetail();
-@implementStockDocumentLedgerZReport();
-
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
 @defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
@@ -329,21 +325,6 @@ createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachine
     IF groupMachinery IS groupTerminal THEN
         SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
 }
-
-//----------------------------------------------- Списание товара ---------------------------------------------------//
-
-// Проводим по регистру
-
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchWriteOffDetail(ledger) THEN
-                                                quantityWriteOffDetail(ledger) AND batch == batchWriteOffDetail(ledger)
-                                             ELSE
-                                                currentBalanceBatchStock(batch, stockWriteOffDetail(ledger));
-
-changedDataSkuLedger(ledger) += CHANGED(batchWriteOffDetail(ledger));
-
-// Товарный отчет
-sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
-sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
 
 // --------------------------------------- Печать ценников ---------------------------------------- //
 
@@ -443,19 +424,6 @@ EXTEND DESIGN integrationData {
 //---------------------------- Настройка навигатора ----------------------------------------//
 
 NAVIGATOR {
-
-//    NEW catalogs 'Справочники' TO toolbar {
-//             NEW itemCatalog 'Товары' {
-//                 ADD items;
-//                 ADD itemGroups;
-//                 ADD UOMs;
-//                 ADD wares;
-//             }
-//             NEW contragents 'Контрагенты' {
-//                 ADD legalEntities;
-//                 ADD contractSkus;
-//             }
-//         }
 
     NEW purchase 'Управление закупками' TO toolbar {
         ADD purchasePurchaseNavigator;

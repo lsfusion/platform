@@ -276,17 +276,15 @@ descriptionReceiptDetail (receiptDetail) = descriptionReceiptReturnDetail(receip
 
 // -------------------------------------------- Проведение по регистрам --------------------------------------- //
 
-META implementSkuLedgerReceiptDetail(dumb)
-    @implementSkuLedgerOutFIFO(receiptSaleDetail, sku, departmentStore);
-    quantityOutFIFOSkuLedger (ledger) += quantityReceiptSaleDetail(ledger);
-    @implementSkuLedgerOutFIFOBalance(receiptSaleDetail, sku, departmentStore);
-    sumOutSkuLedger (ledger) += sumReceiptSaleDetail(ledger);
+@implementSkuLedgerOutFIFO(receiptSaleDetail, sku, departmentStore);
+quantityOutFIFOSkuLedger (ledger) += quantityReceiptSaleDetail(ledger);
+@implementSkuLedgerOutFIFOBalance(receiptSaleDetail, departmentStore);
+sumOutSkuLedger (ledger) += sumReceiptSaleDetail(ledger);
 
-    @implementSkuLedgerInLIFO(receiptReturnDetail, sku, departmentStore);
-    quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
-    @implementSkuLedgerInLIFOBalance(receiptReturnDetail, sku, departmentStore);
-    sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
-END
+@implementSkuLedgerInLIFO(receiptReturnDetail, sku, departmentStore);
+quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
+@implementSkuLedgerInLIFOBalance(receiptReturnDetail, departmentStore);
+sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 
 @implementSalesLedger(receiptSale, sku, departmentStore);
 quantitySalesLedger (ledger) += quantityReceiptSaleDetail(ledger);
@@ -364,16 +362,11 @@ sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentSto
 
 // ----------------------------------- Проведение по товарному отчету -------------------------- //
 
-META implementStockDocumentLedgerZReport(dumb)
-    @implementStockDocumentLedgerZReportCustom(sumReceiptDetailZReport);
-END
+@implementStockDocumentLedgerOut(zReport, departmentStore);
+sumOutStockDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
 
-META implementStockDocumentLedgerZReportCustom (sumProp)
-    @implementStockDocumentLedgerOut(zReport, departmentStore);
-    sumOutStockDocumentLedger (ledger) += sumProp (ledger);
-    sumItemOutStockDocumentLedger (ledger) += sumProp (ledger);
-    sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
-END
 //----------------------------------- Формы -------------------------------------------------//
 
 FORM zReport 'Z-отчет'

@@ -52,6 +52,7 @@ priceShipmentSkuLedger (ledger) = priceShipmentDetail(shipmentDetailShipmentSkuL
 @implementSkuLedgerInLIFO(shipmentSkuLedger, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 limitInLIFOSkuLedgerBatch(ledger, batch) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) IF batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) == batch;
+changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)));
 sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
 costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) THEN

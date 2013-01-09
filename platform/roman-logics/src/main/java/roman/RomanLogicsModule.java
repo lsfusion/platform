@@ -4189,16 +4189,13 @@ public class RomanLogicsModule extends LogicsModule {
         generateToolbar.setDockPosition(20, 6, 80, 4);
         baseLM.windows.forms.setDockPosition(20, 10, 80, 89);
 
-        NavigatorElement classifier = addNavigatorElement(baseLM.root, "classifier", "Справочники");
-        classifier.window = baseLM.windows.toolbar;
-
-        NavigatorElement itemClassifier = addNavigatorElement(classifier, "itemClassifier", "Номенклатура");
+        NavigatorElement itemClassifier = addNavigatorElement(baseLM.masterData, "itemClassifier", "Номенклатура");
 
         addFormEntity(new SkuFormEntity(itemClassifier, "skus", "Товары"));
 
-        NavigatorElement contragentClassifier = addNavigatorElement(classifier, "contragentClassifier", "Контрагенты");
+        NavigatorElement contragentClassifier = addNavigatorElement(baseLM.masterData, "contragentClassifier", "Контрагенты");
 
-        NavigatorElement taxClassifier = addNavigatorElement(classifier, "taxClassifier", "Налоги");
+        NavigatorElement taxClassifier = addNavigatorElement(baseLM.masterData, "taxClassifier", "Налоги");
 
         ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
         articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);

@@ -365,12 +365,12 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
     active##postfix##SkuLedger 'Активен'###caption (ledger) = isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
 
-    signedQuantityActiveSkuLedger(ledger) = signedQuantitySkuLedger(ledger) AND active##postfix##SkuLedger(ledger) PERSISTENT;
+    signedQuantityActive##postfix##SkuLedger(ledger) = signedQuantitySkuLedger(ledger) AND active##postfix##SkuLedger(ledger) PERSISTENT;
 
     currentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) =
-        GROUP SUM signedQuantitySkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+        GROUP SUM signedQuantityActive##postfix##SkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
     countLedger##postfix##SkuStock 'Кол-во движений'###caption (sku, stock) =
-        GROUP SUM 1 AND signedQuantityActiveSkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+        GROUP SUM 1 AND signedQuantityActive##postfix##SkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
     quantityInActiveSkuLedger(ledger) = quantityInSkuLedger(ledger) AND isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
     quantityIn##postfix##SkuStockDate (sku, stock, date) =
@@ -400,20 +400,24 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
 
     // без учета текущей даты/времени
     balanceB##postfix##SkuStockDateTime 'Остаток (до)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                              (-) [GROUP SUM signedQuantityActiveSkuLedger(ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME)
+                                                                              (-) [GROUP SUM signedQuantityActive##postfix##SkuLedger(ledger) AND dateTimeSkuLedger(ledger) >= (dateTime AS DATETIME)
                                                                                          BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
     // с учетом текущей даты/времени
     balanceA##postfix##SkuStockDateTime 'Остаток (после)'###caption (sku, stock, dateTime) = (currentBalance##postfix##SkuStock(sku, stock) AND dateTime AS DATETIME)
-                                                                             (-) [GROUP SUM signedQuantityActiveSkuLedger(ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME)
+                                                                             (-) [GROUP SUM signedQuantityActive##postfix##SkuLedger(ledger) AND dateTimeSkuLedger(ledger) > (dateTime AS DATETIME)
                                                                                         BY skuSkuLedger(ledger), stockSkuLedger(ledger), dateTime](sku, stock, dateTime);
 
     currentBalance##postfix##Sku 'Остаток (всего)'###caption (sku) = GROUP SUM currentBalance##postfix##SkuStock(sku, stock) BY sku PERSISTENT;
 
-    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedCostSkuLedgerBatch (ledger, batch) AND active##postfix##SkuLedger(ledger)
+    signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch) = signedCostSkuLedgerBatch(ledger, batch) AND active##postfix##SkuLedger(ledger) PERSISTENT;
+    currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch)
                                                                                            BY batch, stockSkuLedger(ledger) PERSISTENT;
+    countLedger##postfix##BatchStock 'Кол-во движений'###caption (batch, stock) =
+        GROUP SUM 1 AND signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch) BY batch, stockSkuLedger(ledger) PERSISTENT;
 
     currentBalance##postfix##Batch 'Остаток (всего)'###caption (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
+    outcome##postfix##Batch 'Расходовано'###caption (batch) = quantityBatch(batch) (-) currentBalance##postfix##Batch(batch);
 
     // ---------------------------- Суммы по товару -------------------------------- //
 
@@ -560,13 +564,26 @@ META implementSkuLedgerInLIFO(object, skuProp, stockProp)
     @implementSkuLedger(object, skuProp, stockProp);
 END
 
-META implementSkuLedgerInLIFOBalancePostfix (object, skuProp, stockProp, postfix)
-    limitInLIFOSkuLedgerBatch(ledger, batch) += (quantityBatch(batch) (-) currentBalance##postfix##Batch(batch)) AND
-                                                countLedger##postfix##SkuStock(skuProp###object(ledger), stockProp###object(ledger));
+META implementSkuLedgerInLIFOBatchBalancePostfix (object, stockProp, postfix)
+    limitInLIFOSkuLedgerBatch(ledger, batch) += IF batch###object(ledger) THEN
+                                                    quantity###object(ledger) AND batch == batch###object(ledger)
+                                                 ELSE
+                                                    outcome##postfix##Batch(batch) AND
+                                                    countLedger##postfix##BatchStock(batch, stockProp###object(ledger));
+    changedDataSkuLedger(ledger) += CHANGED(batch###object(ledger));
 END
 
-META implementSkuLedgerInLIFOBalance (object, skuProp, stockProp)
-    @implementSkuLedgerInLIFOBalancePostfix(object, skuProp, stockProp, );
+META implementSkuLedgerInLIFOBatchBalance (object, stockProp)
+    @implementSkuLedgerInLIFOBatchBalancePostfix(object, stockProp, );
+END
+
+META implementSkuLedgerInLIFOBalancePostfix (object, stockProp, postfix)
+    limitInLIFOSkuLedgerBatch(ledger, batch) += outcome##postfix##Batch(batch) AND
+                                                countLedger##postfix##BatchStock(batch, stockProp###object(ledger));
+END
+
+META implementSkuLedgerInLIFOBalance (object, stockProp)
+    @implementSkuLedgerInLIFOBalancePostfix(object, stockProp, );
 END
 
 META implementSkuLedgerOutFIFO(object, skuProp, stockProp)
@@ -574,12 +591,24 @@ META implementSkuLedgerOutFIFO(object, skuProp, stockProp)
     @implementSkuLedger(object, skuProp, stockProp);
 END
 
-META implementSkuLedgerOutFIFOBalancePostfix (object, skuProp, stockProp, postfix)
+META implementSkuLedgerOutFIFOBatchBalancePostfix (object, stockProp, postfix)
+    limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batch###object(ledger) THEN
+                                                    quantity###object(ledger) AND batch == batch###object(ledger)
+                                                 ELSE
+                                                    currentBalance##postfix##BatchStock(batch, stockProp###object(ledger));
+    changedDataSkuLedger(ledger) += CHANGED(batch###object(ledger));
+END
+
+META implementSkuLedgerOutFIFOBatchBalance (object, stockProp)
+    @implementSkuLedgerOutFIFOBatchBalancePostfix(object, stockProp, );
+END
+
+META implementSkuLedgerOutFIFOBalancePostfix (object, stockProp, postfix)
     limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalance##postfix##BatchStock(batch, stockProp###object(ledger));
 END
 
-META implementSkuLedgerOutFIFOBalance (object, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalancePostfix(object, skuProp, stockProp, );
+META implementSkuLedgerOutFIFOBalance (object, stockProp)
+    @implementSkuLedgerOutFIFOBalancePostfix(object, stockProp, );
 END
 
 META implementBatchCustom(object, skuProp, stockProp, costProp)

@@ -99,13 +99,13 @@ typeBatch 'Тип партии' (batch) = IF batch IS batchA THEN 'А' AND batch
 orderABatch (batch) = IF batch IS batchA THEN 0 IF batch IS batchA ELSE 1 IF batch IS batchB PERSISTENT;
 orderBBatch (batch) = IF batch IS batchB THEN 0 IF batch IS batchB ELSE 1 IF batch IS batchA PERSISTENT;
 
-META implementSkuLedgerOutFIFOBalanceA (object, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalance (object, skuProp, stockProp);
+META implementSkuLedgerOutFIFOBalanceA (object, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, stockProp);
     orderOutFIFOSkuLedgerBatch (ledger, batch) += orderABatch(batch) IF ledger IS object;
 END
 
-META implementSkuLedgerOutFIFOBalanceB (object, skuProp, stockProp)
-    @implementSkuLedgerOutFIFOBalance (object, skuProp, stockProp);
+META implementSkuLedgerOutFIFOBalanceB (object, stockProp)
+    @implementSkuLedgerOutFIFOBalance (object, stockProp);
     orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS object;
 END
 

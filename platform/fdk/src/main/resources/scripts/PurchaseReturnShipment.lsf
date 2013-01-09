@@ -20,10 +20,7 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 @implementSkuLedgerOutFIFO(shipmentDetail, sku, customerStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
-limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchShipmentDetail(ledger) THEN
-                                                quantityShipmentDetail (ledger) AND batchShipmentDetail(ledger) == batch
-                                                ELSE currentBalanceBatchStock(batch, customerStockShipmentDetail(ledger)); //AND NOT commissionContractSkuBatchA(batch);
-changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(ledger));
+@implementSkuLedgerOutFIFOBatchBalance(shipmentDetail, customerStock);
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);
 
 @implementStockDocumentLedgerOut(shipment, customerStock);
