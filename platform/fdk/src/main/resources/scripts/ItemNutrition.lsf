@@ -1,0 +1,29 @@
+MODULE ItemNutrition;
+
+REQUIRE System, Item;
+
+NAMESPACE Item;
+
+GROUP itemNutritionGroup 'Энергетическая ценность' : public;
+
+nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN itemNutritionGroup MINCHARWIDTH 50;
+
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN itemNutritionGroup;
+
+fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
+proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
+
+containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN itemNutritionGroup;
+
+overCopyProperty(s, d) += ACTION (s, d) {
+    SET nutritionalValueItem(d) <- nutritionalValueItem(s);
+    SET energyItem(d) <- energyItem(s);
+    SET fatsItem(d) <- fatsItem(s);
+    SET carbohydratesItem(d) <- carbohydratesItem(s);
+    SET proteinsItem(d) <- proteinsItem(s);
+    SET containsGMOItem(d) <- containsGMOItem(s);
+}
+
+EXTEND FORM item PROPERTIES(i) nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, containsGMOItem;
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemNutritionGroup; } }

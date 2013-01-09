@@ -148,16 +148,6 @@ passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equ
 labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
 
-//substanceGroup
-GROUP substanceGroup 'Энергетическая ценность' : public;
-
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN substanceGroup MINCHARWIDTH 50;
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN substanceGroup;
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
-containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
-
 //expiryGroup
 GROUP expiryGroup 'Контроль сроков годности' : public;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
@@ -202,12 +192,6 @@ overCopyProperty(s, d) += ACTION (s, d) {
     SET compositionScalesItem(d) <- compositionScalesItem(s);
     SET labelFormatPackItem(d) <- labelFormatPackItem(s);
 
-    SET nutritionalValueItem(d) <- nutritionalValueItem(s);
-    SET energyItem(d) <- energyItem(s);
-    SET fatsItem(d) <- fatsItem(s);
-    SET carbohydratesItem(d) <- carbohydratesItem(s);
-    SET proteinsItem(d) <- proteinsItem(s);
-    SET containsGMOItem(d) <- containsGMOItem(s);
     SET daysExpiryPackItem(d) <- daysExpiryPackItem(s);
     SET hoursExpiryPackItem(d) <- hoursExpiryPackItem(s);
 
@@ -226,9 +210,6 @@ EXTEND FORM item
     PROPERTIES(i) // Дополнительные
                   passScalesItem,
                   compositionScalesItem, idLabelFormatPackItem,
-
-                  nutritionalValueItem, energyItem,
-                  fatsItem, carbohydratesItem, proteinsItem, containsGMOItem,
 
                   daysExpiryPackItem, hoursExpiryPackItem
 
@@ -272,9 +253,6 @@ EXTEND DESIGN item {
 
                 NEW containerARight {
                     childConstraints = TO THE BOTTOM;
-                    ADD i.substanceGroup{
-                        childConstraints = TO THE BOTTOM;
-                    };
                     ADD i.expiryGroup {
                         childConstraints = TO THE BOTTOM;
                     };
