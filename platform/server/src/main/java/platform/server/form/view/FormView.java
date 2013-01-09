@@ -63,7 +63,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     protected PropertyDrawView printButton;
     protected PropertyDrawView editButton;
     protected PropertyDrawView xlsButton;
-    protected PropertyDrawView nullButton;
+    protected PropertyDrawView dropButton;
     protected PropertyDrawView refreshButton;
     protected PropertyDrawView applyButton;
     protected PropertyDrawView cancelButton;
@@ -239,12 +239,12 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         printButton = setupFormButton(entity.printActionPropertyDraw, "print");
         editButton = setupFormButton(entity.editActionPropertyDraw, "edit");
         xlsButton = setupFormButton(entity.xlsActionPropertyDraw, "xls");
-        nullButton = setupFormButton(entity.nullActionPropertyDraw, "null");
         refreshButton = setupFormButton(entity.refreshActionPropertyDraw, "refresh");
         applyButton = setupFormButton(entity.applyActionPropertyDraw, "apply");
         cancelButton = setupFormButton(entity.cancelActionPropertyDraw, "cancel");
         okButton = setupFormButton(entity.okActionPropertyDraw, "ok");
         closeButton = setupFormButton(entity.closeActionPropertyDraw, "close");
+        dropButton = setupFormButton(entity.dropActionPropertyDraw, "drop");
     }
 
     public int getID() {
@@ -291,8 +291,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return xlsButton;
     }
 
-    public PropertyDrawView getNullButton() {
-        return nullButton;
+    public PropertyDrawView getDropButton() {
+        return dropButton;
     }
 
     public PropertyDrawView getRefreshButton() {

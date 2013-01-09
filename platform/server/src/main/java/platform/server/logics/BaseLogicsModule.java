@@ -144,7 +144,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LAP formPrint;
     public LAP formEdit;
     public LAP formXls;
-    public LAP formNull;
+    public LAP formDrop;
     public LAP formRefresh;
     public LAP formApply;
     public LAP formCancel;
@@ -433,7 +433,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         formPrint = addProperty(null, new LAP(new PrintActionProperty()));
         formEdit = addProperty(null, new LAP(new EditActionProperty()));
         formXls = addProperty(null, new LAP(new XlsActionProperty()));
-        formNull = addProperty(null, new LAP(new NullActionProperty()));
+        formDrop = addProperty(null, new LAP(new DropActionProperty()));
         formRefresh = addProperty(null, new LAP(new RefreshActionProperty()));
         formOk = addProperty(null, new LAP(new OkActionProperty()));
         formClose = addProperty(null, new LAP(new CloseActionProperty()));

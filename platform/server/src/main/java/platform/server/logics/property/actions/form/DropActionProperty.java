@@ -7,13 +7,13 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 
-public class NullActionProperty extends FormToolbarActionProperty {
+public class DropActionProperty extends FormToolbarActionProperty {
 
-    public NullActionProperty() {
-        super("formNull", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
+    public DropActionProperty() {
+        super("formDrop", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formNull();
+        context.getFormInstance().formDrop();
     }
 }

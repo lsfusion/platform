@@ -695,7 +695,7 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType t
 		|	'CLOSE'	 { $type = FormEventType.CLOSE; }
 		|	'INIT'	 { $type = FormEventType.INIT; }
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
-		|	'DROP'	 { $type = FormEventType.NULL; }
+		|	'DROP'	 { $type = FormEventType.DROP; }
 		)
 		faprop=formActionProperty { $action = $faprop.action; }
 	;

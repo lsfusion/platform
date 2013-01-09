@@ -117,7 +117,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         requestUserInteraction(new DialogClientAction(remoteDialog));
         if(dialogInstance.getFormResult() == FormCloseType.CLOSE)
             return null;
-        return dialogInstance.getFormResult() == FormCloseType.NULL ? NullValue.instance : dialogInstance.getDialogObjectValue();
+        return dialogInstance.getFormResult() == FormCloseType.DROP ? NullValue.instance : dialogInstance.getDialogObjectValue();
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {

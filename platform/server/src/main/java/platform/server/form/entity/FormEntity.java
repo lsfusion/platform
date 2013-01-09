@@ -68,7 +68,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
     public PropertyDrawEntity xlsActionPropertyDraw;
-    public PropertyDrawEntity nullActionPropertyDraw;
+    public PropertyDrawEntity dropActionPropertyDraw;
     public PropertyDrawEntity refreshActionPropertyDraw;
     public PropertyDrawEntity applyActionPropertyDraw;
     public PropertyDrawEntity cancelActionPropertyDraw;
@@ -141,12 +141,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         printActionPropertyDraw = addPropertyDraw(baseLM.formPrint);
         editActionPropertyDraw = addPropertyDraw(baseLM.formEdit);
         xlsActionPropertyDraw = addPropertyDraw(baseLM.formXls);
-        nullActionPropertyDraw = addPropertyDraw(baseLM.formNull);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.formRefresh);
         applyActionPropertyDraw = addPropertyDraw(baseLM.formApply);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.formCancel);
         okActionPropertyDraw = addPropertyDraw(baseLM.formOk);
         closeActionPropertyDraw = addPropertyDraw(baseLM.formClose);
+        dropActionPropertyDraw = addPropertyDraw(baseLM.formDrop);
     }
 
     public void addFixedFilter(FilterEntity filter) {
@@ -929,7 +929,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeObject(outStream, printActionPropertyDraw);
         pool.serializeObject(outStream, editActionPropertyDraw);
         pool.serializeObject(outStream, xlsActionPropertyDraw);
-        pool.serializeObject(outStream, nullActionPropertyDraw);
+        pool.serializeObject(outStream, dropActionPropertyDraw);
         pool.serializeObject(outStream, refreshActionPropertyDraw);
         pool.serializeObject(outStream, applyActionPropertyDraw);
         pool.serializeObject(outStream, cancelActionPropertyDraw);
@@ -977,7 +977,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         printActionPropertyDraw = pool.deserializeObject(inStream);
         editActionPropertyDraw = pool.deserializeObject(inStream);
         xlsActionPropertyDraw = pool.deserializeObject(inStream);
-        nullActionPropertyDraw = pool.deserializeObject(inStream);
+        dropActionPropertyDraw = pool.deserializeObject(inStream);
         refreshActionPropertyDraw = pool.deserializeObject(inStream);
         applyActionPropertyDraw = pool.deserializeObject(inStream);
         cancelActionPropertyDraw = pool.deserializeObject(inStream);

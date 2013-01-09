@@ -1455,9 +1455,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fireEvent(FormEventType.CLOSE);
     }
 
-    public void fireOnNull() throws SQLException {
-        formResult = FormCloseType.NULL;
-        fireEvent(FormEventType.NULL);
+    public void fireOnDrop() throws SQLException {
+        formResult = FormCloseType.DROP;
+        fireEvent(FormEventType.DROP);
     }
 
     private void fireEvent(Object eventObject) throws SQLException {
@@ -1474,7 +1474,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private FormCloseType formResult = FormCloseType.NULL;
+    private FormCloseType formResult = FormCloseType.DROP;
 
     public FormCloseType getFormResult() {
         return formResult;
@@ -1541,8 +1541,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         close();
     }
 
-    public void formNull() throws SQLException {
-        fireOnNull();
+    public void formDrop() throws SQLException {
+        fireOnDrop();
 
         Context.context.get().delayUserInteraction(new HideFormClientAction());
         close();

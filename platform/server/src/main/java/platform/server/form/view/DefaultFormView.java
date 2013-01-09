@@ -112,8 +112,8 @@ public class DefaultFormView extends FormView {
         PropertyDrawView editFunction = get(entity.editActionPropertyDraw);
         setupFormButton(editFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getEditKeyStroke(), "editReport.png");
 
-        PropertyDrawView nullFunction = get(entity.nullActionPropertyDraw);
-        setupFormButton(nullFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getNullKeyStroke(), null);
+        PropertyDrawView dropFunction = get(entity.dropActionPropertyDraw);
+        setupFormButton(dropFunction, new SimplexComponentDirections(0, 0.01, 0.01, 0), KeyStrokes.getNullKeyStroke(), null);
 
         PropertyDrawView refreshFunction = get(entity.refreshActionPropertyDraw);
         setupFormButton(refreshFunction, new SimplexComponentDirections(0, 0, 0.01, 0), KeyStrokes.getRefreshKeyStroke(), "refresh.png");
@@ -144,7 +144,7 @@ public class DefaultFormView extends FormView {
         leftControlsContainer.add(printFunction);
         leftControlsContainer.add(xlsFunction);
         leftControlsContainer.add(editFunction);
-        leftControlsContainer.add(nullFunction);
+        leftControlsContainer.add(dropFunction);
 
         rightControlsContainer.add(refreshFunction);
         rightControlsContainer.add(applyFunction);

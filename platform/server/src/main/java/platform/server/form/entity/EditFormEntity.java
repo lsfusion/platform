@@ -28,7 +28,7 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
     public FormView createDefaultRichDesign() {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-        design.getNullButton().removeFromParent();
+        design.getDropButton().removeFromParent();
 
         return design;
     }
