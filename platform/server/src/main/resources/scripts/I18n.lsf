@@ -34,8 +34,6 @@ nameDictionaryCompositionLanguage 'Словарь для составов' = nam
 dictionaryNameLanguage = DATA dictionary(language);
 nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN base;
 
-CLASS multiLanguageNamed 'Мультиязычный объект';
-
 FORM language 'Язык'
     OBJECTS l = language FIXED PANEL
     PROPERTIES(l) name, localeLanguage, nameDictionaryCompositionLanguage, nameDictionaryNameLanguage
@@ -52,13 +50,14 @@ FORM languages 'Языки'
 ;
 
 NAVIGATOR {
-    masterData {
+    regionalData {
         ADD languages;
     }
 }
 
 // ---------------------------------------------- Мультиязычный объект -------------------------------- //
 
+CLASS multiLanguageNamed 'Мультиязычный объект';
 
 TABLE multiLanguageNamedLanguage(multiLanguageNamed, language);
 languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLanguageNamed, language);
@@ -86,7 +85,7 @@ FORM dictionaries 'Словари'
 ;
 
 NAVIGATOR {
-    masterData {
+    regionalData {
         ADD dictionaries;
     }
 }

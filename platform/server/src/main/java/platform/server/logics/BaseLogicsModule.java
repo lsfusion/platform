@@ -51,7 +51,6 @@ import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.scripted.ScriptingErrorLog;
-import platform.server.logics.security.ReloginUserActionProperty;
 import platform.server.logics.table.TableFactory;
 
 import javax.swing.*;
@@ -817,15 +816,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     // Навигаторы
     public NavigatorElement<T> root;
-    public NavigatorElement<T> objects;
-    public NavigatorElement<T> account;
+
+    public NavigatorElement<T> masterData;
+    public NavigatorElement<T> regionalData;
+
     public NavigatorElement<T> administration;
+    public NavigatorElement<T> account;
+
+    public NavigatorElement<T> objects;
 
     public NavigatorElement<T> application;
     public NavigatorElement<T> security;
     public NavigatorElement<T> systemEvents;
     public NavigatorElement<T> configuration;
-    public NavigatorElement<T> masterData;
 
     public FormEntity<T> objectForm;
 
@@ -862,20 +865,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         root = addNavigatorElement("root", getString("logics.forms"), null);
         root.window = windows.root;
 
-        account = addNavigatorElement(root, "account", getString("logics.account"));
-        account.window = windows.toolbar;
+        masterData = addNavigatorElement(root, "masterData", getString("logics.administration.masterData"));
+        masterData.window = windows.toolbar;
+
+        regionalData = addNavigatorElement(masterData, "regionalData", getString("logics.administration.regionalData"));
 
         administration = addNavigatorElement(root, "administration", getString("logics.administration"));
         administration.window = windows.toolbar;
+
+        account = addNavigatorElement(root, "account", getString("logics.account"));
+        account.window = windows.toolbar;
 
         application = addNavigatorElement(administration, "application", getString("logics.administration.application"));
         addFormEntity(new OptionsFormEntity(application, "options"));
         addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
         addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
 
-        masterData = addNavigatorElement(administration, "masterData", getString("logics.administration.masterData"));
-
-        objects = addNavigatorElement(masterData, "objects", getString("logics.object"));
+        objects = addNavigatorElement(administration, "objects", getString("logics.object"));
         objects.window = windows.tree;
 
         security = addNavigatorElement(administration, "security", getString("logics.administration.access"));

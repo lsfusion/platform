@@ -67,7 +67,7 @@ FORM countries 'Страны'
 ;
 
 NAVIGATOR {
-    masterData {
+    regionalData {
         ADD countries;
     }
 }
@@ -103,7 +103,7 @@ DESIGN daysOffForm FROM DEFAULT {
 }
 
 NAVIGATOR {
-    masterData {
+    regionalData {
         ADD daysOffForm;
     }
 }

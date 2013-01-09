@@ -523,21 +523,19 @@ NAVIGATOR {
         ADD employees;
     }
 
-    ADD masterData TO toolbar {
-
-             NEW itemCatalog 'Товары' {
-                 ADD items;
-                 ADD itemGroups;
-                 ADD UOMs;
-                 ADD wares;
-             }
-             NEW contragents 'Контрагенты' {
-                 ADD legalEntities;
-                 ADD contractSkus;
-             }
-
-    };
-    ADD account TO toolbar;
-    ADD administration TO toolbar;
+    ADD masterData {
+         NEW itemMasterData 'Товары' BEFORE regionalData {
+             ADD items;
+             ADD itemGroups;
+             ADD UOMs;
+             ADD wares;
+         }
+         NEW contragents 'Контрагенты' AFTER itemMasterData {
+             ADD legalEntities;
+             ADD contractSkus;
+         }
+    }
+    ADD administration;
+    ADD account;
 }
 
