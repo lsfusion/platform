@@ -413,12 +413,12 @@ DESIGN userRepricing FROM DEFAULT {
             }
         }
         NEW header.box BEFORE specification.box {
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE RIGHTBOTTOM;
 
             NEW headerCol1 {
                 childConstraints = TO THE BOTTOM;
                 ADD p.documentHeaderGroup {
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                     ADD PROPERTY(objectClassName);
                     ADD PROPERTY(nameDepartmentStoreUserRepricing);
                     ADD PROPERTY(nameNumeratorObject);
@@ -429,7 +429,7 @@ DESIGN userRepricing FROM DEFAULT {
                     ADD PROPERTY(dateBeforeUserRepricing);
                 }
                 ADD p.documentPrmGroup {
-                    childConstraints = TO THE RIGHT;
+                    childConstraints = TO THE RIGHTBOTTOM;
                 }
             }
 

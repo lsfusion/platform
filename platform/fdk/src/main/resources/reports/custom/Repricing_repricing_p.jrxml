@@ -329,13 +329,13 @@
 					<textElement/>
 					<textFieldExpression><![CDATA["Сумма после переоценки"]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="10" y="44" width="149" height="13"/>
 					<box>
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA["Сумма наценки/уценки"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{diffRetailSumRepricingDetailRepricing}>=0?"Сумма дооценки":"Сумма уценки"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="159" y="18" width="643" height="13"/>
