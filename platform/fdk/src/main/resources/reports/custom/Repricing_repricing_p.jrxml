@@ -361,7 +361,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{diffRetailSumRepricingDetailRepricing})+
+					<textFieldExpression><![CDATA[platform.base.Words.toString(-$F{diffRetailSumRepricingDetailRepricing})+
 " "+"белорусских рублей"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
