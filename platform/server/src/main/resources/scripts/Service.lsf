@@ -11,11 +11,16 @@ analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'platform.server.logics.serv
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'platform.server.logics.service.PackActionProperty';
 serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'platform.server.logics.service.ServiceDBActionProperty';
 
+restartServerAction 'Остановить сервер' = ACTION CUSTOM 'platform.server.logics.service.RestartActionProperty';
+runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'platform.server.logics.service.GarbageCollectorActionProperty';
+cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'platform.server.logics.service.CancelRestartActionProperty';
+isNotServerRestarting () = TRUE AND NOT isServerRestarting();
 
 FORM admin 'Администрирование'
-    PROPERTIES() defaultBackgroundColor, defaultForegroundColor, restartServerAction, cancelRestartServerAction,
-                 checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction,
-                 analyzeDBAction, serviceDBAction, runGarbageCollector, currentDate
+    PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),
+                 cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, recalculateAction,
+                 recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction,
+                 runGarbageCollector
 ;
 
 NAVIGATOR {

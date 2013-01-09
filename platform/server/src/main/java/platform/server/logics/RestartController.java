@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-class RestartController {
+public class RestartController {
     private final static Logger logger = Logger.getLogger(RestartController.class);
 
     private static final int restartDelayMinutes = 15;

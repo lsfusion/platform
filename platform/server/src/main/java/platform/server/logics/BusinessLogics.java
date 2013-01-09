@@ -60,6 +60,9 @@ import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scripted.ScriptingLogicsModule;
+import platform.server.logics.service.CancelRestartActionProperty;
+import platform.server.logics.service.GarbageCollectorActionProperty;
+import platform.server.logics.service.RestartActionProperty;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
@@ -2615,55 +2618,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    protected LAP addRestartActionProp() {
-        return LM.addProperty(null, new LAP(new RestartActionProperty(LM.genSID(), "")));
-    }
-
-    protected LAP addCancelRestartActionProp() {
-        return LM.addProperty(null, new LAP(new CancelRestartActionProperty(LM.genSID(), "")));
-    }
-
-    protected LAP addGarbageCollectorActionProp() {
-        return LM.addProperty(null, new LAP(new GarbageCollectorActionProperty("runGarbageCollector", getString("logics.garbage.collector"))));
-    }
-
-    private void updateRestartProperty() throws SQLException {
+    public void updateRestartProperty() throws SQLException {
         Boolean isRestarting = restartController.isPendingRestart() ? Boolean.TRUE : null;
-        navigatorsController.updateEnvironmentProperty((CalcProperty) LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
-    }
-
-    public class RestartActionProperty extends AdminActionProperty {
-        private RestartActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            restartController.scheduleRestart();
-            updateRestartProperty();
-        }
-    }
-
-    public class CancelRestartActionProperty extends AdminActionProperty {
-        private CancelRestartActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{});
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-            restartController.cancelRestart();
-            updateRestartProperty();
-        }
-    }
-
-    public class GarbageCollectorActionProperty extends AdminActionProperty {
-        private GarbageCollectorActionProperty(String sid, String caption) {
-            super(sid, caption, new ValueClass[]{});
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
-            System.runFinalization();
-            System.gc();
-        }
-
+        navigatorsController.updateEnvironmentProperty((CalcProperty) serviceLM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
     }
 
     private Map<String, String> formSets;

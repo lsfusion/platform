@@ -164,10 +164,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP currentUser;
     public LCP currentSession;
     public LCP currentComputer, hostnameCurrentComputer;
-    protected LCP isServerRestarting;
-    public LAP restartServerAction;
-    public LAP runGarbageCollector;
-    public LAP cancelRestartServerAction;
 
     public LCP userLogin;
     public LCP userPassword;
@@ -510,13 +506,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
         currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
-
-        // Управление сервером приложений
-        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
-
-        restartServerAction = addIfAProp(baseGroup, "restartServerAction", getString("logics.server.stop"), true, isServerRestarting, addRestartActionProp());
-        runGarbageCollector = addGarbageCollectorActionProp();
-        cancelRestartServerAction = addIfAProp(baseGroup, "cancelRestartServerAction", getString("logics.server.cancel.stop"), isServerRestarting, addCancelRestartActionProp());
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
@@ -932,20 +921,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @IdentityLazy
     public LCP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
-    }
-
-    protected LAP addRestartActionProp() {
-        return BL.addRestartActionProp();
-//        return addProperty(null, new LP<ClassPropertyInterface>(new RestartActionProperty(genSID(), "")));
-    }
-
-    protected LAP addCancelRestartActionProp() {
-        return BL.addCancelRestartActionProp();
-//        return addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(genSID(), "")));
-    }
-
-    protected LAP addGarbageCollectorActionProp() {
-        return BL.addGarbageCollectorActionProp();
     }
 
     public static class IncrementActionProperty extends UserActionProperty {

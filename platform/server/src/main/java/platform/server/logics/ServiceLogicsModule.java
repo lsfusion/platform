@@ -23,8 +23,13 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.IsServerRestartingFormulaProperty;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
+import platform.server.logics.service.CancelRestartActionProperty;
+import platform.server.logics.service.GarbageCollectorActionProperty;
+import platform.server.logics.service.RestartActionProperty;
 import platform.server.session.DataSession;
 
 import javax.swing.*;
@@ -44,6 +49,11 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     private LAP packAction;
     private LAP serviceDBAction;
 
+    public LCP isServerRestarting;
+    public LAP restartServerAction;
+    public LAP runGarbageCollector;
+    public LAP cancelRestartServerAction;
+    
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/scripts/Service.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -51,6 +61,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initProperties() throws RecognitionException {
+        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
         super.initProperties();
         // Управление сервером базы данных
         checkAggregationsAction = getLAPByName("checkAggregationsAction");
@@ -59,5 +70,11 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         analyzeDBAction = getLAPByName("analyzeDBAction");
         packAction = getLAPByName("packAction");
         serviceDBAction = getLAPByName("serviceDBAction");
+
+        // Управление сервером приложений
+        restartServerAction = getLAPByName("RestartAction");
+        runGarbageCollector = getLAPByName("GarbageCollectorAction");
+        cancelRestartServerAction = getLAPByName("CancelRestartAction");
+
     }
 }
