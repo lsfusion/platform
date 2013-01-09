@@ -5,7 +5,7 @@ REQUIRE System;
 CLASS externalizable 'Внешний объект';
 TABLE externalizable (externalizable);
 
-sidExternalizable = DATA STRING[100] (externalizable);
+sidExternalizable 'Внешний код' = DATA STRING[100] (externalizable);
 externalizableSID (sid) = GROUP UNIQUE externalizable BY sidExternalizable (externalizable) WHERE externalizable IS externalizable;
 
 

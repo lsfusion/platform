@@ -138,15 +138,8 @@ EXTEND FORM itemGroups
 
 //-----------------------------------------------------------------------------------------------//
 
-isContainerItem 'Тара' = DATA BOOLEAN (item) IN itemBaseGroup;
-isContainerSku (sku) += isContainerItem(sku);
-//@defineItemAttribute(Container, 'Показывать явл-ся ли тарой', displayGroup);
-
 //equipmentGroup
 GROUP equipmentGroup 'Внешние устройства' : public;
-
-isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
-isWeightSku(sku) += isWeightItem(sku);
 
 compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
 
@@ -164,12 +157,6 @@ fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN substanceGroup;
 containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN substanceGroup;
-
-//sizeGroup
-lengthPackItem 'Длина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
-widthPackItem 'Ширина упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
-heightPackItem 'Высота упаковки' = DATA NUMERIC[8,2] (item) IN itemSizeGroup;
-grossWeightPackItem 'Вес брутто упаковки' = DATA NUMERIC[9,3] (item) IN itemSizeGroup;
 
 //expiryGroup
 GROUP expiryGroup 'Контроль сроков годности' : public;
@@ -189,16 +176,6 @@ pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
 weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
 
 barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
-
-//------------------------------------ Товар с историей -------------------------------------------------------------//
-
-GROUP activeGroup 'Активность товара' : public;
-@defineHistorizableCustom(inactiveItem, 'Неактивный товар', yesNo, name, item, nameAttributeItem, activeGroup);
-isActiveItem (item) = item IS item AND NOT inactiveItem(item) == yesNo.yes PERSISTENT;
-EXTEND FORM items
-    FILTERGROUP filters
-        FILTER 'Отображать только активные товары' 'F10' isActiveItem(i) DEFAULT
-;
 
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
 
@@ -220,17 +197,6 @@ valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION O
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
 
 overCopyProperty(s, d) += ACTION (s, d) {
-
-    SET isContainerItem(d) <- isContainerItem(s);
-    SET isWeightItem(d) <- isWeightItem(s);
-    SET lengthPackItem(d) <- lengthPackItem(s);
-    SET widthPackItem(d) <- widthPackItem(s);
-    SET heightPackItem(d) <- heightPackItem(s);
-    SET grossWeightPackItem(d) <- grossWeightPackItem(s);
-
-    FOR dataInactiveItemDate(s, dt) DO {
-        SET dataInactiveItemDate(d, dt) <- dataInactiveItemDate(s, dt);
-    }
 
     SET passScalesItem(d) <- passScalesItem(s);
     SET compositionScalesItem(d) <- compositionScalesItem(s);
@@ -257,17 +223,7 @@ overCopyProperty(s, d) += ACTION (s, d) {
 
 EXTEND FORM item
 
-    PROPERTIES(i) isContainerItem,
-                  isWeightItem,
-
-// убрал до след коммита
-//                  nameGroupNaturalLossItem, rateGroupNaturalLossItem, //nameStatisticGroupSku,
-
-                  lengthPackItem, widthPackItem, heightPackItem, grossWeightPackItem,
-
-                  nameInactiveItem, dialogInactiveItem,
-
-                  // Дополнительные
+    PROPERTIES(i) // Дополнительные
                   passScalesItem,
                   compositionScalesItem, idLabelFormatPackItem,
 
@@ -301,17 +257,6 @@ EXTEND FORM item
 EXTEND DESIGN item {
     main {
         itemDetail {
-            itemPrimary {
-                itemPrimaryColumn1 {
-                }
-
-                itemPrimaryColumn2 {
-//                    ADD i.rateGroup {
-//                        childConstraints = TO THE BOTTOM;
-//                    }
-                    ADD i.activeGroup;
-                }
-            }
 
             NEW itemAdditional AFTER itemPrimary {
                 title = 'Дополнительные';

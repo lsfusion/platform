@@ -363,6 +363,23 @@ TABLE manufacturer(manufacturer);
 
 @defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
 
+// Тара
+isContainerItem 'Тара' = DATA BOOLEAN (item) IN itemBaseGroup;
+isContainerSku (sku) += isContainerItem(sku);
+EXTEND FORM item PROPERTIES(i) isContainerItem;
+
+// Весовой
+isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
+isWeightSku(sku) += isWeightItem(sku);
+EXTEND FORM item PROPERTIES(i) isWeightItem;
+
+// Неактивный
+inactiveItem 'Неактивный' = DATA BOOLEAN (item) IN itemBaseGroup;
+activeItem 'Активный' (item) = item IS item AND NOT inactiveItem(item);
+inactiveSku(sku) += inactiveItem(sku);
+EXTEND FORM item PROPERTIES(i) inactiveItem;
+EXTEND FORM items FILTERGROUP inactive FILTER 'Активные' 'F10' activeItem(i) DEFAULT;
+
 EXTEND DESIGN item { itemPrimaryColumn1 { ADD i.itemBaseGroup; } }
 
 // ------ Габариты товара ------ //
@@ -416,6 +433,9 @@ copyItem 'Копировать' = ACTION (item) NEWSESSION {
         SET grossWeightItem(i) <- grossWeightItem(item);
         SET countryItem(i) <- countryItem(item);
         SET imageItem(i) <- imageItem(item);
+        SET isContainerItem(i) <- isContainerItem(item);
+        SET isWeightItem(i) <- isWeightItem(item);
+        SET inactiveItem(i) <- inactiveItem(item);
 
         FOR skuBarcode(barcode) == item DO {
             FOR ADDOBJ b = barcode DO {

@@ -117,11 +117,14 @@ nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognize;
 TABLE skuGroupSku(skuGroup, sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
-isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
 netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
-isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
 grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+
+isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
+isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
+
+inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (sku) PERSISTENT;
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
