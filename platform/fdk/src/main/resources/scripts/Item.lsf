@@ -24,7 +24,7 @@ FORM itemGroups 'Товарные группы'
     ORDER BY name
 
     OBJECTS g=itemGroup
-    PROPERTIES(g) READONLY canonicalNameItemGroup, sidExternalizable, delete
+    PROPERTIES(g) READONLY canonicalNameItemGroup, delete
     PROPERTIES(g)          ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
@@ -45,9 +45,6 @@ DESIGN itemGroups FROM DEFAULT {
 
         ADD g.box {
             fillHorizontal = 4;
-            PROPERTY(sidExternalizable) {
-                maximumCharWidth = 7;
-            }
         }
     }
 }
@@ -410,6 +407,12 @@ nameSku(item) += nameAttributeItem(item);
 // для оптимизации запросов
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
 
+EXTEND FORM items
+    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItemGroupItem(g, i)
+    FILTERS nameAttributeItemGroupItem(g, i)
+    ORDER BY nameAttributeItemGroupItem
+;
+
 // Кассы
 @defineItemAttributeName(cashRegister, ' (кассы)', public);
 dataTitleCashRegisterBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
@@ -422,7 +425,23 @@ titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE
 
 EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode;
 
-// копирование товара
+// --------------------------------------- Генерация штрих-кодов --------------------------------------------- //
+
+pieceNumeratorItemGroup = DATA numerator (itemGroup);
+namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
+
+weightNumeratorItemGroup = DATA numerator (itemGroup);
+nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
+
+EXTEND FORM itemGroup PROPERTIES(g) namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+EXTEND FORM itemGroups PROPERTIES(g) BEFORE delete namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+
+pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
+weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
+
+barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
+
+// ---------------------------------------- Копирование товара ----------------------- //
 overCopyItem = ABSTRACT ACTION (s, d);
 
 copyItem 'Копировать' = ACTION (item) NEWSESSION {
@@ -456,12 +475,7 @@ copyItem 'Копировать' = ACTION (item) NEWSESSION {
     }
 } TOOLBAR;
 
-EXTEND FORM items
-    PROPERTIES (i) copyItem
-    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItemGroupItem(g, i)
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
-;
+EXTEND FORM items PROPERTIES (i) copyItem;
 
 createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
 

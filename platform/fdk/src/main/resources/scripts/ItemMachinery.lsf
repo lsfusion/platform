@@ -1,0 +1,27 @@
+MODULE ItemMachinery;
+
+REQUIRE Item, Machinery, CashRegister, Scales, PriceChecker, Terminal;
+
+// Кассы
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
+    IF groupMachinery IS groupCashRegister THEN
+        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
+}
+
+// Весы
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
+    IF groupMachinery IS groupScales THEN
+        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleScalesBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
+}
+
+// Прайс-чекеры
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
+    IF groupMachinery IS groupPriceChecker THEN
+        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
+}
+
+// Терминалы сбора даных
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
+    IF groupMachinery IS groupTerminal THEN
+        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
+}

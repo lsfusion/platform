@@ -121,25 +121,6 @@ roundGroupSku(sku) += itemGroupItem(sku);
 EXTEND CLASS itemGroup : discountSkuGroup;
 inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
 
-pieceNumeratorItemGroup = DATA numerator (itemGroup);
-namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
-
-weightNumeratorItemGroup = DATA numerator (itemGroup);
-nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
-
-EXTEND FORM itemGroup
-    PROPERTIES(g) namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup
-;
-
-EXTEND FORM itemGroups
-    PROPERTIES(g) BEFORE delete namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup
-;
-
-pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
-weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
-
-barcodeNumeratorSku(item) += IF isWeightItem(item) THEN weightNumeratorItem(item) ELSE pieceNumeratorItem(item);
-
 //------------------------------------ Товар для подразделения с историей -------------------------------------------//
 
 TABLE itemDepartmentStore (item, departmentStore);
@@ -158,6 +139,9 @@ CONSTRAINT dataLabelItemDepartmentStoreDate(item, departmentStore, date) AND NOT
 valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
                                                                                multiplierItemDepartmentStoreDate(item, departmentStore, date);
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
+
+labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
+countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
 
 EXTEND FORM item
 
@@ -197,14 +181,6 @@ EXTEND DESIGN item {
     }
 }
 
-// --------------------------------------- Печать ценников ---------------------------------------- //
-
-labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
-countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
-
-nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
-@defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
-
 overCopyItem(s, d) += ACTION (s, d) {
     FOR dataLabelItemDepartmentStoreDate(s, ds, dt) DO {
         SET dateLabelItemDepartmentStoreDate(d, ds, dt) <- dataLabelItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
@@ -215,24 +191,54 @@ overCopyItem(s, d) += ACTION (s, d) {
     }
 }
 
+nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
+@defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
+
 // ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
 
 //equipmentGroup
 GROUP equipmentGroup 'Внешние устройства' : public;
 
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
-
+// Фильтрация для передачи на весы
 passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
+overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
 
+// Состав товара
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
+compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
+
+@defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
+
+synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
+    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS groupScales
+        AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
+        ADDOBJ c = cellScales DO {
+            SET groupScalesCellScales(c) <- groupMachinery;
+            SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (transaction, barcode);
+        }
+}
+
+snapshotAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
+
+// Формат этикетки
 labelFormatPackItem = DATA labelFormat(item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
+labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 
-//expiryGroup
+@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
+
+// Сроки годности для весов
 GROUP expiryGroup 'Контроль сроков годности' : public;
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
-// Расширение формы
+daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
+hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
+
+@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
+@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
+@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)', DATE);
 
 EXTEND FORM item
 
@@ -265,58 +271,6 @@ EXTEND DESIGN item {
             POSITION containerALeft TO THE LEFT containerARight;
         }
     }
-}
-
-// ---------------------------------- Передача в оборудование ------------------ //
-
-daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
-hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
-labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
-compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
-
-@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
-
-@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
-@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
-@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)', DATE);
-
-@defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
-
-// Кассы
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupCashRegister THEN
-        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
-}
-
-// Весы
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupScales THEN
-        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleScalesBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
-}
-overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
-
-synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
-    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS groupScales
-        AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
-        ADDOBJ c = cellScales DO {
-            SET groupScalesCellScales(c) <- groupMachinery;
-            SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (transaction, barcode);
-        }
-}
-
-snapshotAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
-
-// Прайс-чекеры
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupPriceChecker THEN
-        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
-}
-
-// Терминалы сбора даных
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupTerminal THEN
-        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
 }
 
 overCopyItem(s, d) += ACTION (s, d) {
