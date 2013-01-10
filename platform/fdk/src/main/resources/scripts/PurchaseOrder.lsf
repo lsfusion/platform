@@ -21,7 +21,7 @@ EXTEND FORM barcodeDialog
 ;
 //--
 
-@defineOrder(' (закупка)', customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
+@defineOrder(' (закупка)', customer, customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 

@@ -531,6 +531,7 @@ END
 
 // --------------- Атрибуты по умолчанию ------------------ //
 @defineMachineryPriceTransactionAttribute(skuGroup, 'Группа товара', skuGroup, canonicalName);
+@defineMachineryPriceTransactionAttribute(isWeight, 'Весовой товар', BOOLEAN);
 
 // Подключение свойств к документу
 META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)

@@ -20,7 +20,7 @@ EXTEND FORM barcodeDialog
     PROPERTIES (b) READONLY salePackBarcode
 ;
 //--
-@defineOrder(' (продажа)', supplierStock, salePack, showSalePack, 'Отображать упаковку');
+@defineOrder(' (продажа)', supplier, supplierStock, salePack, showSalePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 @defineDocumentInterfaceHeaderTAX(order, VAT, 'НДС расч.');

@@ -420,6 +420,8 @@ titleCashRegisterBarcode 'Наименование для касс' = UNION OVER
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
+EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode;
+
 // копирование товара
 overCopyItem = ABSTRACT ACTION (s, d);
 

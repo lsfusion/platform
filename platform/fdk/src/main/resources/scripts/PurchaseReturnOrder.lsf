@@ -4,7 +4,7 @@ REQUIRE Order, PurchaseShipment;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (закупка-возврат)', customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
+@defineOrder(' (закупка-возврат)', customer, customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(customerStock, supplierStock);
 

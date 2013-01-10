@@ -70,7 +70,7 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
+META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp)
 
     CLASS ABSTRACT order 'Заказ'###sign : Order.order;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
@@ -317,7 +317,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
 
 //-- SKU
     @defineDocumentSkuStock(userOrder, sku, stockProp);
-    @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, stockProp);
+    @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, legalEntityProp, stockProp);
 
     addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;

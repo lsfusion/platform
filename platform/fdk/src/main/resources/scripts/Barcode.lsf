@@ -50,9 +50,16 @@ dataUOMBarcode = DATA UOM (barcode);
 UOMBarcode = UOMSku(skuBarcode(barcode)) OR dataUOMBarcode(barcode) PERSISTENT;
 shortNameUOMBarcode 'Единица измерения' (barcode) = shortName(UOMBarcode(barcode));
 
-// Группа
+// Атрибуты вытянутые от sku
 
 skuGroupBarcode (barcode) = skuGroupSku(skuBarcode(barcode));
+
+isWeightBarcode(barcode) = isWeightSku(skuBarcode(barcode));
+
+countryBarcode (barcode) = countrySku(skuBarcode(barcode));
+nameCountryBarcode 'Страна' (barcode) = name(countryBarcode(barcode));
+
+expiryDateBarcodeStock 'Годен до (max.)' (barcode, stock) = expiryDateSkuStock(skuBarcode(barcode), stock);
 
 // Генерация штрих-кодов
 

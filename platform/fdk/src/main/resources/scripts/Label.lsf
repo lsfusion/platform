@@ -258,6 +258,7 @@ END
 // ---------- Атрибуты по умолчанию ------ //
 
 @defineLabelTransactionAttribute(shortNameUOM, 'Ед. изм.', STRING[5], shortNameUOM);
+@defineLabelTransactionAttribute(country, 'Страна', STRING[255], nameCountry);
 
 // ------------------------- Подключение печати ценников в документ --------------------- //
 META defineDocumentLabelTransaction (document, skuProp, stockProp)
