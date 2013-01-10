@@ -532,6 +532,7 @@ END
 // --------------- Атрибуты по умолчанию ------------------ //
 @defineMachineryPriceTransactionAttribute(skuGroup, 'Группа товара', skuGroup, canonicalName);
 @defineMachineryPriceTransactionAttribute(isWeight, 'Весовой товар', BOOLEAN);
+@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)', DATE);
 
 // Подключение свойств к документу
 META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)

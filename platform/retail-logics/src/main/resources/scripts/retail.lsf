@@ -194,17 +194,16 @@ overCopyItem(s, d) += ACTION (s, d) {
 nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
-// ------------------------------------------- Загрузка в ВУ --------------------------------------------- //
+// ------------------------------------------- Передача в весы --------------------------------------------- //
 
-//equipmentGroup
-GROUP equipmentGroup 'Внешние устройства' : public;
+GROUP scalesGroup 'Весы' : public;
 
 // Фильтрация для передачи на весы
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN equipmentGroup;
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN scalesGroup;
 overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
 
 // Состав товара
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN equipmentGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN scalesGroup;
 compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 
 @defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
@@ -223,13 +222,23 @@ createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachine
 
 // Формат этикетки
 labelFormatPackItem = DATA labelFormat(item);
-idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN equipmentGroup;
+idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN scalesGroup;
 labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 
 @defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
 
+EXTEND FORM item PROPERTIES(i) passScalesItem, idLabelFormatPackItem, compositionScalesItem;
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.scalesGroup; } }
+
+overCopyItem(s, d) += ACTION (s, d) {
+    SET passScalesItem(d) <- passScalesItem(s);
+    SET compositionScalesItem(d) <- compositionScalesItem(s);
+    SET labelFormatPackItem(d) <- labelFormatPackItem(s);
+}
+
 // Сроки годности для весов
-GROUP expiryGroup 'Контроль сроков годности' : public;
+GROUP expiryGroup 'Сроки годности' : public;
+
 daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
 hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
 
@@ -238,46 +247,11 @@ hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackIt
 
 @defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
 @defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
-@defineMachineryPriceTransactionAttributeStock(expiryDate, 'Срок годности (дата)', DATE);
 
-EXTEND FORM item
-
-    PROPERTIES(i) // Дополнительные
-                  passScalesItem,
-                  compositionScalesItem, idLabelFormatPackItem,
-
-                  daysExpiryPackItem, hoursExpiryPackItem
-;
-
-EXTEND DESIGN item {
-    itemDetail {
-        NEW itemAdditional AFTER itemPrimary {
-            title = 'Дополнительные';
-            fillVertical = 1.0;
-            fillHorizontal = 1.0;
-
-            NEW containerALeft {
-                childConstraints = TO THE BOTTOM;
-                ADD i.equipmentGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-            }
-            NEW containerARight {
-                childConstraints = TO THE BOTTOM;
-                ADD i.expiryGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-            }
-            POSITION containerALeft TO THE LEFT containerARight;
-        }
-    }
-}
+EXTEND FORM item PROPERTIES(i) daysExpiryPackItem, hoursExpiryPackItem;
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.expiryGroup; } }
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET passScalesItem(d) <- passScalesItem(s);
-    SET compositionScalesItem(d) <- compositionScalesItem(s);
-    SET labelFormatPackItem(d) <- labelFormatPackItem(s);
-
     SET daysExpiryPackItem(d) <- daysExpiryPackItem(s);
     SET hoursExpiryPackItem(d) <- hoursExpiryPackItem(s);
 }
