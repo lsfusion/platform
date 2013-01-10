@@ -365,7 +365,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     private FormEntity<T> getFormEntity(String formSID) {
-        FormEntity<T> formEntity = (FormEntity<T>) BL.getFormEntity(formSID)/*BL.LM.root.getNavigatorElement(formSID)*/;
+        FormEntity<T> formEntity = (FormEntity<T>) BL.getFormEntity(formSID);
 
         if (formEntity == null) {
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
