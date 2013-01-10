@@ -1066,7 +1066,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.navigatorElementSID.getMapping(sidField));
 
         List<List<Object>> elementsData = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> element : LM.root.getChildren(true)) {
+        for (NavigatorElement<T> element : getNavigatorElements()) {
             if (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
                 elementsData.add(asList((Object) element.getSID(), element.caption));
             }
@@ -1127,14 +1127,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizePropertyDraws() {
 
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> formElement : LM.root.getChildren(true)) {
-            if (formElement instanceof FormEntity) {
-                List<PropertyDrawEntity> propertyDraws = ((FormEntity<T>) formElement).propertyDraws;
+        for (FormEntity<T> formElement : getFormEntities()) {
+                List<PropertyDrawEntity> propertyDraws = formElement.propertyDraws;
                 for (PropertyDrawEntity drawEntity : propertyDraws) {
-                    GroupObjectEntity groupObjectEntity = drawEntity.getToDraw((FormEntity<T>) formElement);
+                    GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
                     dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity == null ? null : groupObjectEntity.getSID()));
                 }
-            }
         }
 
         ImportField captionPropertyDrawField = new ImportField(reflectionLM.propertyCaptionValueClass);
@@ -1176,10 +1174,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizeGroupObjects() {
 
         List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
-        for (NavigatorElement<T> formElement : LM.root.getChildren(true)) {
-            if (formElement instanceof FormEntity)  //formSID - sidGroupObject
-                for (PropertyDrawEntity property : ((FormEntity<T>) formElement).propertyDraws) {
-                    GroupObjectEntity groupObjectEntity = property.getToDraw((FormEntity<T>) formElement);
+        for (FormEntity<T> formElement : getFormEntities()) { //formSID - sidGroupObject
+                for (PropertyDrawEntity property : formElement.propertyDraws) {
+                    GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
                     if (groupObjectEntity != null)
                         dataGroupObjectList.add(Arrays.asList((Object) formElement.getSID(),
                                 groupObjectEntity.getSID()));
@@ -3112,6 +3109,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             session.apply(this);
         } catch (SQLException e) {
             return ServerResourceBundle.getString("logics.error.registration");
+        }
+        return null;
+    }
+
+    public Collection<FormEntity> getFormEntities(){
+        Collection<FormEntity> result = new ArrayList<FormEntity>();
+        for(LogicsModule logicsModule : logicModules) {
+           for(NavigatorElement entry : logicsModule.moduleNavigators.values())
+               if(entry instanceof FormEntity)
+                    result.add((FormEntity) entry);
+        }
+        return result;
+    }
+
+    public Collection<NavigatorElement> getNavigatorElements(){
+        Collection<NavigatorElement> result = new ArrayList<NavigatorElement>();
+        for(LogicsModule logicsModule : logicModules) {
+                result.addAll(logicsModule.moduleNavigators.values());
+        }
+        return result;
+    }
+
+    public FormEntity getFormEntity(String formSID){
+        for(LogicsModule logicsModule : logicModules) {
+            for(NavigatorElement entry : logicsModule.moduleNavigators.values())
+            if((formSID.equals(entry.getSID()))&& (entry instanceof FormEntity))
+                return (FormEntity) entry;
         }
         return null;
     }

@@ -115,7 +115,7 @@ public abstract class LogicsModule {
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
-    private final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
+    public final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
