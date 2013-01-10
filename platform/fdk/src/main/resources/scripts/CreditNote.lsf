@@ -262,6 +262,10 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     needToCreditNoteInvoiceDetail (invoiceDetail)= createCreditNoteInvoiceDetail(invoiceDetail)  AND
         toShipInvoiceDetail (invoiceDetail) AND isPostedInvoiceDetail(invoiceDetail) PERSISTENT;
 
+    overCopyInvoice(s, d) += ACTION (s, d) {
+        SET createCreditNoteUserInvoice(d) <- createCreditNoteUserInvoice(s);
+    }
+
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
 
     EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;

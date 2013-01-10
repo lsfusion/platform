@@ -115,6 +115,12 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 @defineDocumentInterfaceCreate (shipment, createPurchaseWriteOff, 'Создать акт списания');
 @deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, stock, customerStock);
 
+overCopyInvoice(s, d) += ACTION (s, d) {
+    SET createPurchaseWriteOffUserInvoice(d) <- createPurchaseWriteOffUserInvoice(s);
+    SET writeOffCommitteeUserInvoice(d) <- writeOffCommitteeUserInvoice(s);
+    SET reasonUserInvoice(d) <- reasonUserInvoice(s);
+}
+
 @defineDocumentInterfaceDetailQuantityPrefix (shipment, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(shipment, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailDataSumPrefix (shipment, writeOff, ' (списания)');

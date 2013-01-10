@@ -729,6 +729,13 @@ META defineRepricing(sign, stockProp)
 
     showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
 
+    overCopyInvoice(s, d) += ACTION (s, d) {
+        SET createRepricingUserInvoice(d) <- createRepricingUserInvoice(s);
+        SET repricingCommitteeUserInvoice(d) <- repricingCommitteeUserInvoice(s);
+        SET numberDisposalUserInvoice(d) <- numberDisposalUserInvoice(s);
+        SET dateBeforeUserInvoice(d) <- dateBeforeUserInvoice(s);
+    }
+
     EXTEND FORM userInvoice
         PROPERTIES(i)   SHOWIF showCreateRepricingInvoice(i) BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice, dateBeforeUserInvoice

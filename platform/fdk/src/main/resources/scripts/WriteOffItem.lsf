@@ -11,7 +11,7 @@ CONSTRAINT countryWriteOffRate(writeOffRateCountryItem(country, item)) != countr
 
 writeOffRateCountrySku (country, sku) += writeOffRateCountryItem (country, sku);
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
     SET writeOffRateCountryItem(country, d) <- writeOffRateCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
 }
 

@@ -534,6 +534,40 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
     editInvoice (invoice) += editUserInvoice(invoice);
 
+    overCopyInvoice = ABSTRACT ACTION (s, d);
+
+    copyInvoice 'Копировать' = ACTION (userInvoice) NEWSESSION {
+        FOR ADDOBJ i = userInvoice DO {
+            SET supplierUserInvoice(i) <- supplierUserInvoice(userInvoice);
+            SET supplierStockUserInvoice(i) <- supplierStockUserInvoice(userInvoice);
+            SET customerUserInvoice(i) <- customerUserInvoice(userInvoice);
+            SET customerStockUserInvoice(i) <- customerStockUserInvoice(userInvoice);
+            SET contractSkuUserInvoice(i) <- contractSkuUserInvoice(userInvoice);
+            SET isCommissionUserInvoice(i) <- isCommissionUserInvoice(userInvoice);
+            SET currencyUserInvoice(i) <- currencyUserInvoice(userInvoice);
+            SET agreementUserInvoice(i) <- agreementUserInvoice(userInvoice);
+            SET priceListTypeUserInvoice(i) <- priceListTypeUserInvoice(userInvoice);
+            SET noteUserInvoice(i) <- noteUserInvoice(userInvoice);
+            //SET createShipmentUserInvoice(i) <- createShipmentUserInvoice(userInvoice);
+            SET toShowProp###userInvoice(i) <- toShowProp###userInvoice(userInvoice);
+
+            EXEC overCopyInvoice(userInvoice, i);
+
+            FOR userInvoiceUserInvoiceDetail(userInvoiceDetail) == userInvoice DO {
+                FOR ADDOBJ d=userInvoiceDetail DO {
+                    SET userInvoiceUserInvoiceDetail(d) <- i;
+                    SET skuUserInvoiceDetail(d) <- skuUserInvoiceDetail(userInvoiceDetail);
+                    SET quantityUserInvoiceDetail(d) <- quantityUserInvoiceDetail(userInvoiceDetail);
+                    SET stockProp###userInvoiceDetail(d) <- stockProp###userInvoiceDetail(userInvoiceDetail);
+                }
+            }
+
+            FORM userInvoice OBJECTS i = i MANAGESESSION DOCKED_MODAL;
+        }
+    } TOOLBAR;
+
+
+
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
@@ -545,7 +579,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserInvoice TODRAW i
-        PROPERTIES (i) editInvoice
+        PROPERTIES (i) editInvoice, copyInvoice
         PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = invoiceDetail

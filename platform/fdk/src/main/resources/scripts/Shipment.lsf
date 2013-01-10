@@ -632,6 +632,10 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceHeaderCreateShipment (invoice, stockProp);
     @defineDocumentInterfaceHeaderSumPrefix (invoice, shipment, ' (учетная)');
 
+    overCopyInvoice(s, d) += ACTION (s, d) {
+        SET createShipmentUserInvoice(d) <- createShipmentUserInvoice(s);
+    }
+
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
     createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND NOT skipCreateShipmentInvoiceDetail(invoiceDetail) PERSISTENT;
     createShipmentUserInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail));

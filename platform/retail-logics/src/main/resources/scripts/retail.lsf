@@ -186,7 +186,7 @@ valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION O
                                                                                multiplierItemDepartmentStoreDate(item, departmentStore, date);
 valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
 
     SET passScalesItem(d) <- passScalesItem(s);
     SET compositionScalesItem(d) <- compositionScalesItem(s);

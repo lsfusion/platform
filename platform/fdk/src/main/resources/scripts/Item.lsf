@@ -421,7 +421,7 @@ dataTitleScalesBarcode 'Наименование для весов' = DATA STRIN
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
 // копирование товара
-overCopyProperty = ABSTRACT ACTION (s, d);
+overCopyItem = ABSTRACT ACTION (s, d);
 
 copyItem 'Копировать' = ACTION (item) NEWSESSION {
     FOR ADDOBJ i = item DO {
@@ -448,7 +448,7 @@ copyItem 'Копировать' = ACTION (item) NEWSESSION {
             }
         }
 
-        EXEC overCopyProperty(item, i);
+        EXEC overCopyItem(item, i);
 
         FORM item OBJECTS i = i MANAGESESSION DOCKED_MODAL;
     }

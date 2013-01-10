@@ -10,7 +10,7 @@ CONSTRAINT countryStatisticGroup(statisticGroupCountryItem(country, item)) != co
 
 statisticGroupCountrySku (country, sku) += statisticGroupCountryItem (country, sku);
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
     SET statisticGroupCountryItem(country, d) <- statisticGroupCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
 }
 

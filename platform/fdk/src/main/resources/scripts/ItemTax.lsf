@@ -18,7 +18,7 @@ CONSTRAINT taxRange(dataVATItemCountryDate(item, country, date)) != tax.taxVAT O
 valueVATItemCountryDate 'НДС, %' (item, country, date) = valueRateRangeDate(VATItemCountryDate(item, country, date), date);
 valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRange(VATItemCountry(item, country));
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
     FOR dataVATItemCountryDate(s, country, date) DO {
         SET dataVATItemCountryDate(d, country, date) <- dataVATItemCountryDate(s, country, date) IF country IS country AND s IS item AND d IS item;
     }

@@ -326,6 +326,32 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
     isClosedOrder(userOrder) <- TRUE IF toDateUserOrder(userOrder) <= subtractDate(currentDate(), 1) AND isPostedOrder(userOrder)
         WHEN CHANGED(currentDate() AND userOrder IS userOrder) OR CHANGED(toDateUserOrder(userOrder));
 
+    copyOrder 'Копировать' = ACTION (userOrder) NEWSESSION {
+        FOR ADDOBJ o = userOrder DO {
+            SET supplierUserOrder(o) <- supplierUserOrder(userOrder);
+            SET supplierStockUserOrder(o) <- supplierStockUserOrder(userOrder);
+            SET customerUserOrder(o) <- customerUserOrder(userOrder);
+            SET customerStockUserOrder(o) <- customerStockUserOrder(userOrder);
+            SET currencyUserOrder(o) <- currencyUserOrder(userOrder);
+            SET agreementUserOrder(o) <- agreementUserOrder(userOrder);
+            SET priceListTypeUserOrder(o) <- priceListTypeUserOrder(userOrder);
+            SET noteUserOrder(o) <- noteUserOrder(userOrder);
+            SET toShowProp###userOrder(o) <- toShowProp###userOrder(userOrder);
+
+            FOR userOrderUserOrderDetail(userOrderDetail) == userOrder DO {
+                FOR ADDOBJ d=userOrderDetail DO {
+                    SET userOrderUserOrderDetail(d) <- o;
+                    SET skuUserOrderDetail(d) <- skuUserOrderDetail(userOrderDetail);
+                    SET quantityOrderDetail(d) <- quantityUserOrderDetail(userOrderDetail);
+                    SET stockProp###userOrderDetail(d) <- stockProp###userOrderDetail(userOrderDetail);
+                }
+            }
+
+            FORM userOrder OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+        }
+    } TOOLBAR;
+
+
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
@@ -337,7 +363,7 @@ META defineOrder(sign, stockProp, prop, toShowProp, captionProp)
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserOrder TODRAW o
-        PROPERTIES (o) editOrder
+        PROPERTIES (o) editOrder, copyOrder
         PROPERTIES (o) closeOrder SHOWIF isOpenedOrder(o), openOrder SHOWIF isClosedOrder(o)
         PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
 

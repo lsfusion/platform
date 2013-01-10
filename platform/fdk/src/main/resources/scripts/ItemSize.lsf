@@ -13,7 +13,7 @@ NAMESPACE Item;
 @defineDoubleItemAttribute(volume, NUMERIC[9,3], 'Объем', itemSizeGroup);
 volumeSku(sku) += volumeItem(sku);
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
     SET lengthItem(d) <- lengthItem(s);
     SET widthItem(d) <- widthItem(s);
     SET heightItem(d) <- heightItem(s);

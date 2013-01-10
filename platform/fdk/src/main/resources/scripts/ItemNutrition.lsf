@@ -16,7 +16,7 @@ proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN itemNutritionGr
 
 containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN itemNutritionGroup;
 
-overCopyProperty(s, d) += ACTION (s, d) {
+overCopyItem(s, d) += ACTION (s, d) {
     SET nutritionalValueItem(d) <- nutritionalValueItem(s);
     SET energyItem(d) <- energyItem(s);
     SET fatsItem(d) <- fatsItem(s);
