@@ -1,5 +1,6 @@
 package platform.server.form.entity;
 
+import org.apache.poi.hssf.record.LeftMarginRecord;
 import platform.base.col.ListFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
@@ -68,7 +69,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        objSession = new ObjectEntity(classes.length + 2, "session", LM.session, ServerResourceBundle.getString("form.entity.session"));
+        objSession = new ObjectEntity(classes.length + 2, "session", LM.getBL().systemEventsLM.session, ServerResourceBundle.getString("form.entity.session"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
@@ -83,7 +84,6 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         for (ObjectEntity obj : entities) {
             addPropertyDraw(obj, LM.recognizeGroup, true);
         }
-        addPropertyDraw(objSession, LM.baseGroup);
 
         addPropertyDraw(logProperty, entities);
 

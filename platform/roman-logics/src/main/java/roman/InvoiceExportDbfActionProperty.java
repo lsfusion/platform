@@ -106,7 +106,7 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
         public void getPropertyDraws() throws SQLException {
             session = BL.createSession();
             map = new HashMap<Field, PropertyDrawInstance>();
-            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceExportForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer));
+            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceExportForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer), null);
             ObjectInstance objFreight = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objFreight);
             ObjectInstance objImporter = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objImporter);
             ObjectInstance objTypeInvoice = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objTypeInvoice);

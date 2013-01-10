@@ -37,7 +37,7 @@ public class CustomerCheckRetailImportActionProperty extends UserActionProperty 
             FormInstance formInstance = new FormInstance(
                     new ListFormEntity(BL.LM, BL.VEDLM.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
-                    new DataObject(context.getFormInstance().instanceFactory.computer, BL.LM.computer));
+                    new DataObject(context.getFormInstance().instanceFactory.computer, BL.LM.computer), null);
 
             for (int i = 0; i < recordCount; i++) {
 

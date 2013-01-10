@@ -1591,7 +1591,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return restartController.isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.session, LM.currentSession, getIDSql(), getSessionEvents());
+                LM.baseClass, systemEventsLM.session, systemEventsLM.currentSession, getIDSql(), getSessionEvents());
     }
 
     public ImOrderSet<Property> getOrderProperties() {
@@ -2883,7 +2883,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
-        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), mapObjects, isModal, sessionScope.isManageSession(), checkOnOk, interactive, null);
+        return new FormInstance(formEntity, this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), LM.computer), null, mapObjects, isModal, sessionScope.isManageSession(), checkOnOk, interactive, null);
     }
 
     @Override

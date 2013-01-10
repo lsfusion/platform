@@ -716,7 +716,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
         return new FormInstance<T>(formEntity, BL,
                                    sessionScope.isNewSession() ? session.createSession() : session,
-                                   securityPolicy, this, this, computer, mapObjects, isModal, sessionScope.isManageSession(),
+                                   securityPolicy, this, this, computer, connection, mapObjects, isModal, sessionScope.isManageSession(),
                                    checkOnOk, interactive, null);
     }
 

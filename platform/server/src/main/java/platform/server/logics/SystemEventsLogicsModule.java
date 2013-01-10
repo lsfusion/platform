@@ -21,6 +21,8 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.CurrentSessionDataProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.DisconnectActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
@@ -39,6 +41,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
 
     BusinessLogics BL;
+    BaseLogicsModule baseLM;
 
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
@@ -46,6 +49,7 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
     public ConcreteCustomClass launch;
     public ConcreteCustomClass connection;
     public StaticCustomClass connectionStatus;
+    public ConcreteCustomClass session;
 
     public LCP computerConnection;
     public LCP userConnection;
@@ -67,11 +71,20 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
     public LCP loginClientException;
 
     public LCP connectionFormCount;
-    
+
+    public LCP currentSession;
+    public LCP connectionSession;
+    public LCP navigatorElementSession;
+    public LCP quantityAddedClassesSession;
+    public LCP quantityRemovedClassesSession;
+    public LCP quantityChangedClassesSession;
+    public LCP changesSession;
+
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/scripts/SystemEvents.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
         this.BL = BL;
+        this.baseLM = baseLM;
     }
 
     @Override
@@ -83,6 +96,7 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
         launch = (ConcreteCustomClass) getClassByName("launch");
         connection = (ConcreteCustomClass) getClassByName("connection");
         connectionStatus = (StaticCustomClass) getClassByName("connectionStatus");
+        session = (ConcreteCustomClass) getClassByName("session");
     }
 
     @Override
@@ -114,6 +128,16 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
 
         // Открытые формы во время подключения
         connectionFormCount = getLCPByName("connectionFormCount");
+
+        // Сессия
+        currentSession = getLCPByName("currentSession");
+        connectionSession = getLCPByName("connectionSession");
+        navigatorElementSession = getLCPByName("navigatorElementSession");
+        quantityAddedClassesSession = getLCPByName("quantityAddedClassesSession");
+        quantityRemovedClassesSession = getLCPByName("quantityRemovedClassesSession");
+        quantityChangedClassesSession = getLCPByName("quantityChangedClassesSession");
+        changesSession = getLCPByName("changesSession");
+        baseLM.objectClassName.makeLoggable(baseLM, true);
     }
 
     protected void resetConnectionStatus() {

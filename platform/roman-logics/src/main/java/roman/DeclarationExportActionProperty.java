@@ -98,7 +98,7 @@ public class DeclarationExportActionProperty extends UserActionProperty {
         public void getPropertyDraws() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
             session = BL.createSession();
             map = new HashMap<Field, PropertyDrawInstance>();
-            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceFromFormEntity, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer));
+            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceFromFormEntity, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer), null);
             ObjectInstance importerObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objImporter);
             ObjectInstance freightObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objFreight);
             ObjectInstance articleObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objArticle);

@@ -52,6 +52,27 @@ dateSession (session) <- currentDateTime() WHEN ASSIGNED(session IS session);
 
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (connection, navigatorElement);
 
+CLASS session 'Сессия';
+TABLE session(session);
+TABLE sessionObject(session, object);
+
+currentSession = DATA SESSION session();
+
+quantityAddedClassesSession 'Количество добавленных классов' = DATA INTEGER (session);
+quantityRemovedClassesSession 'Количество удалённых классов' = DATA INTEGER (session);
+quantityChangedClassesSession 'Количество изменённых классов' = DATA INTEGER (session);
+changesSession 'Изменения' = DATA TEXT (session);
+
+dateTimeSession 'Время' = DATA DATETIME (session) IN recognize;
+dateTimeSession(session) <- currentDateTime() WHEN ASSIGNED (session IS session);
+
+navigatorElementSession 'Элемент навигатора сессии' = DATA navigatorElement (session);
+captionNavigatorElementSession 'Название формы' (session) = captionNavigatorElement(navigatorElementSession(session));
+
+connectionSession 'Подключение сессии' = DATA connection(session);
+hostnameComputerConnectionSession 'Имя компьютера' = hostnameComputerConnection(connectionSession(session))IN recognize;
+userLoginConnectionSession 'Логин пользователя' = userLoginConnection(connectionSession(session)) IN recognize;
+
 FORM connections 'Журнал подключений'
 
     OBJECTS c=connection
@@ -63,12 +84,20 @@ FORM connections 'Журнал подключений'
 
     PROPERTIES (c, n) connectionFormCount
 
-    FILTERS connectionFormCount(c, n)>0
+    OBJECTS s=session
+    PROPERTIES (s) READONLY captionNavigatorElementSession, dateTimeSession
 
+    FILTERS connectionFormCount(c, n)>0
+    FILTERS connectionSession(s)==c
     FILTERGROUP filtersConnection
                 FILTER 'Активные подключения' 'F8' connectionStatusConnection(c) == connectionStatus.connectedConnection
+    FILTERGROUP filtersNavigatorElement
+                FILTER 'Только выбранной формы' 'F9' navigatorElementSession(s)==n
 ;
 
+EXTEND DESIGN connections{
+    POSITION n.box TO THE LEFT s.box;
+}
 
 FORM  exceptions 'Журнал ошибок'
 
@@ -104,10 +133,40 @@ FORM launches 'Журнал запусков'
    PROPERTIES(l) READONLY hostnameLaunch, timeLaunch, revisionLaunch
 ;
 
+FORM changes 'Журнал изменений'
+
+    OBJECTS s=session
+    PROPERTIES (s) READONLY captionNavigatorElementSession, hostnameComputerConnectionSession,
+    userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
+    quantityChangedClassesSession, changesSession FORCE PANEL, dateTimeSession
+;
+
+EXTEND DESIGN changes {
+    main {
+        NEW specContainer {
+            ADD s.box;
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(changesSession(s));
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (changesSession(s)) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
 NAVIGATOR {
     systemEvents {
         ADD SystemEvents.exceptions;
         ADD SystemEvents.connections;
         ADD SystemEvents.launches;
+        ADD SystemEvents.changes;
     }
 }

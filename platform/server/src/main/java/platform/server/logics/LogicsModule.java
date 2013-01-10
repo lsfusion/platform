@@ -1933,7 +1933,7 @@ public abstract class LogicsModule {
 
     public LCP addLProp(LCP lp, ValueClass... classes) {
         return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
-                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
+                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, baseLM.getBL().systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
     }
 
     // XOR

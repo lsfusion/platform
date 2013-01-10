@@ -10,12 +10,14 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.filter.*;
+import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyInterface;
 
 public class InstanceFactory {
 
-    public InstanceFactory(PropertyObjectInterfaceInstance computer) {
+    public InstanceFactory(PropertyObjectInterfaceInstance computer, DataObject connection) {
         this.computer = computer;
+        this.connection = connection;
     }
 
     private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallAddExclMap();
@@ -139,6 +141,7 @@ public class InstanceFactory {
     }
 
     public final PropertyObjectInterfaceInstance computer;
+    public DataObject connection;
 
     public <P extends PropertyInterface> FilterInstance getInstance(CompareFilterEntity<P> entity) {
         return new CompareFilterInstance<P>(getInstance(entity.property), entity.compare, entity.value.getInstance(this), entity.resolveAdd);

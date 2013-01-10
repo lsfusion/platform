@@ -15,6 +15,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.CalcProperty;
@@ -41,8 +42,9 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
                           Object dialogValue,
-                          PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null, null);
+                          PropertyObjectInterfaceInstance computer,
+                          DataObject connection) throws SQLException {
+        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, connection, null, null);
     }
 
     private final ImSet<PullChangeProperty> pullProps;
@@ -55,6 +57,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
+                          DataObject connection,
                           ImSet<FilterEntity> additionalFilters,
                           ImSet<PullChangeProperty> pullProps) throws SQLException {
         super(entity,
@@ -64,6 +67,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               tFocusView,
               classListener,
               computer,
+              connection,
               MapFact.singleton(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
               true,
               false,

@@ -117,11 +117,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean interactive = true; // важно для assertion'а в endApply
 
     // для импорта конструктор, объекты пустые
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, MapFact.<ObjectEntity, DataObject>EMPTY(), false, true, false, false, null);
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, DataObject>EMPTY(), false, true, false, false, null);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
         this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -131,7 +131,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.BL = BL;
         this.securityPolicy = securityPolicy;
 
-        instanceFactory = new InstanceFactory(computer);
+        instanceFactory = new InstanceFactory(computer, connection);
 
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
@@ -947,7 +947,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean interactive) throws SQLException {
         return new FormInstance<T>(form, BL,
                 sessionScope.isNewSession() ? session.createSession() : session,
-                securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, isModal, sessionScope.isManageSession(),
+                securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects, isModal, sessionScope.isManageSession(),
                 checkOnOK, interactive, null);
     }
 
@@ -1375,7 +1375,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public DialogInstance<T> createObjectDialog(CustomClass objectClass) throws SQLException {
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
-        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer);
+        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer, instanceFactory.connection);
     }
 
     public DialogInstance<T> createObjectEditorDialog(CalcPropertyValueImplement propertyValues) throws SQLException {
@@ -1389,7 +1389,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         return currentObject == null
                 ? null
-                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer);
+                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer, instanceFactory.connection);
     }
 
     public DialogInstance<T> createChangeEditorDialog(CalcPropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
@@ -1399,7 +1399,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImSet<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, additionalFilters, pullProps.result);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, instanceFactory.connection, additionalFilters, pullProps.result);
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -1416,7 +1416,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImSet<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, additionalFilters, SetFact.<PullChangeProperty>EMPTY());
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, instanceFactory.connection, additionalFilters, SetFact.<PullChangeProperty>EMPTY());
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);

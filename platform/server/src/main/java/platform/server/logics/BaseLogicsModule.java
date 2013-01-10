@@ -78,7 +78,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractCustomClass contact;
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
-    public ConcreteCustomClass session;
     public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
 
@@ -162,7 +161,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LCP currentDateTime;
     protected LCP currentTime;
     public LCP currentUser;
-    public LCP currentSession;
     public LCP currentComputer, hostnameCurrentComputer;
 
     public LCP userLogin;
@@ -253,8 +251,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         user = addAbstractClass("user", getString("logics.user"), baseClass);
         systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
 
-        session = addConcreteClass("session", getString("logics.session"), baseClass);
-
         customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact/*, BL.LM.barcodeObject*/);
         computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
 
@@ -299,11 +295,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
-
-
-        addTable("session", session);
-
-        addTable("sessionObject", session, baseClass);
 
         addTable("month", month);
         addTable("dow", DOW);
@@ -451,9 +442,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
-        // Сессия
-        currentSession = addProperty(null, new LCP<ClassPropertyInterface>(new CurrentSessionDataProperty("currentSession", session)));
-
         // Компьютер
         // todo : переименовать в соответствии с naming policy
         hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
@@ -487,7 +475,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
-        objectClassName.makeLoggable(this, true);
 
         // записываем в имя имя класса + номер объекта
         dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1,

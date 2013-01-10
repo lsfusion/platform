@@ -998,7 +998,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
             applyObject = addObject(sessionClass);
+            Integer changed = data.size();
+            String dataChanged = "";
+            for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
+                dataChanged+=entry.getKey().getSID() + ": " + entry.getValue().getCount() + "\n";
+            }
+            BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
             currentSession.change(applyObject.object, DataSession.this);
+            if (form != null){
+                BL.systemEventsLM.connectionSession.change(form.instanceFactory.connection.getValue(), DataSession.this, applyObject);
+                Object ne = BL.reflectionLM.navigatorElementSID.read(form, new DataObject(form.entity.getSID(), StringClass.get(50)));
+                if(ne!=null) 
+                    BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement).getValue(), DataSession.this, applyObject);
+                BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
+                BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);
+                BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
+            }
         }
 
         executeSessionEvents(form);

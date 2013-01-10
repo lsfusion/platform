@@ -6032,7 +6032,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(project, nameNativeProject, nameNativeClaimerProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objSession = addSingleGroupObject(baseLM.session, baseLM.baseGroup);
+            objSession = addSingleGroupObject(BL.systemEventsLM.session, baseLM.baseGroup);
 
             addPropertyDraw(logNameStatusProject, objProject, objSession);
 
