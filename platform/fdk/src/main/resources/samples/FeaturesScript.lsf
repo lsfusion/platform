@@ -779,9 +779,7 @@ INDEX quantity, store;
 //              VALIGN( TOP | CENTER | BOTTOM ) |
 //              TEXTHALIGN( LEFT | CENTER | RIGHT ) |
 //              TEXTVALIGN( TOP | CENTER | BOTTOM )
-WINDOW TOOLBAR mainToolbar 'Навигатор' VERTICAL POSITION(0, 0, 20, 99) HIDETITLE HALIGN(CENTER) TEXTVALIGN(BOTTOM) TEXTHALIGN(CENTER);
-WINDOW TOOLBAR leftToolbar 'Список' VERTICAL POSITION(20, 0, 20, 70);
-WINDOW TREE objectsWindow 'Объекты' POSITION(20, 70, 20, 29) DRAWROOT;
+WINDOW TREE objectsWindow 'Объекты' POSITION(0, 6, 20, 64) DRAWROOT;
 
 //Hide window
 HIDE WINDOW System.log;
@@ -813,7 +811,7 @@ NAVIGATOR {
     }
 
     //при создании элемента можно указать окно для него
-    NEW testNavigators '-Тестовые навигаторы-' AFTER securityPolicy TO mainToolbar;
+    NEW testNavigators '-Тестовые навигаторы-' AFTER securityPolicy TO root;
 
     // также можно просто настраивать существующий элемент без его перемещения
     testNavigators 'Тестовые навигаторы' {
@@ -829,10 +827,10 @@ NAVIGATOR {
         NEW testNavigatorAction ACTION testAction 'Показать "По документам" 3 раза';
     }
     // так можно отдельно настроить окно, в которое будет рисоваться элемент
-    root TO mainToolbar;
-    testNavigators TO leftToolbar;
-    administration TO leftToolbar;
-    account TO leftToolbar;
+    root TO root;
+    testNavigators TO toolbar;
+    administration TO toolbar;
+    account TO toolbar;
     objects TO objectsWindow;
 
     ADD dictionaries 'Словари' AFTER daysOffForm;
