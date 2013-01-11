@@ -31,7 +31,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule PriceInterval;
     public ScriptingLogicsModule Currency;
     public ScriptingLogicsModule Contract;
-    public ScriptingLogicsModule ContractStock;
+    public ScriptingLogicsModule StockContract;
     public ScriptingLogicsModule ContractLedger;
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule Utils;
@@ -55,9 +55,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         RetailCRM = addModuleFromResource("/scripts/retail/RetailCRM.lsf");
         PriceInterval = addModuleFromResource("/scripts/pricelist/PriceInterval.lsf");
         Currency = addModuleFromResource("/scripts/masterdata/Currency.lsf");
-        Contract = addModuleFromResource("/scripts/Contract.lsf");
-        ContractStock = addModuleFromResource("/scripts/ContractStock.lsf");
-        ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
+        Contract = addModuleFromResource("/scripts/masterdata/Contract.lsf");
+        StockContract = addModuleFromResource("/scripts/stock/StockContract.lsf");
+        ContractLedger = addModuleFromResource("/scripts/finance/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         Utils = addModuleFromResource("/scripts/utils/Utils.lsf");
         Country = addModuleFromResource("/scripts/masterdata/Country.lsf");
@@ -68,16 +68,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             //"/scripts/Numerator.lsf",
                 "/scripts/utils/Document.lsf",
                 "/scripts/transport/Transport.lsf",
-            "/scripts/by/ConsignmentBy.lsf",
+                "/scripts/region/by/finance/ConsignmentBy.lsf",
                 "/scripts/hr/Employee.lsf",
                 "/scripts/finance/Tax.lsf",
-                "/scripts/by/ware/Ware.lsf",
+                "/scripts/region/by/ware/Ware.lsf",
                 "/scripts/utils/Geo.lsf",
                 "/scripts/stock/StockDocument.lsf",
             "/scripts/Declaration.lsf",
             "/scripts/WholesalePrice.lsf",
             "/scripts/RetailPrice.lsf",
-            "/scripts/Barcode.lsf",
+                "/scripts/stock/Barcode.lsf",
             "/scripts/RomanStock.lsf",
             "/scripts/RomanDocument.lsf",
             "/scripts/CustomsFlow.lsf",
@@ -124,14 +124,14 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/RomanPOS.lsf",
             "/scripts/RomanCashOperation.lsf",
             "/scripts/ReturnCertification.lsf",
-            "/scripts/by/StockBy.lsf",
-            "/scripts/by/StoreBy.lsf",
+                "/scripts/region/by/stock/StockBy.lsf",
+                "/scripts/region/by/stock/store/StoreBy.lsf",
             "/scripts/RomanSales.lsf",
-            "/scripts/by/WriteOffBy.lsf",
+                "/scripts/region/by/stock/writeoff/WriteOffBy.lsf",
             "/scripts/CustomerBy.lsf",
             "/scripts/SupplierBy.lsf",
-            "/scripts/by/StockDocumentBy.lsf",
-            "/scripts/by/LegalEntityBy.lsf",
+                "/scripts/region/by/stock/StockDocumentBy.lsf",
+                "/scripts/region/by/masterdata/LegalEntityBy.lsf",
                 "/scripts/utils/Backup.lsf",
                 "/scripts/pricelist/Agreement.lsf",
                 "/scripts/pricelist/PriceList.lsf",

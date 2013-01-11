@@ -1,4 +1,4 @@
-MODULE ItemMachinery;
+MODULE MachineryItem;
 
 REQUIRE Item, Machinery, CashRegister, Scales, PriceChecker, Terminal;
 

@@ -1,4 +1,4 @@
-MODULE ItemScales;
+MODULE ScalesItem;
 
 REQUIRE Item, Scales;
 

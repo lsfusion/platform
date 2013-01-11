@@ -1,4 +1,4 @@
-MODULE ContractStock;
+MODULE StockContract;
 
 REQUIRE Contract, Stock;
 

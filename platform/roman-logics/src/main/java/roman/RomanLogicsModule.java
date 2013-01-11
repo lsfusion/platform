@@ -24,8 +24,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.PanelNavigatorWindow;
-import platform.server.form.window.ToolBarNavigatorWindow;
-import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -46,10 +44,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -1547,7 +1543,7 @@ public class RomanLogicsModule extends LogicsModule {
         document = addAbstractClass("document", "Документ", transaction);
         list = addAbstractClass("list", "Список", baseClass);
 
-        contract = addConcreteClass("contract", "Договор", transaction, (CustomClass) BL.ContractStock.getClassByName("contractSku"));
+        contract = addConcreteClass("contract", "Договор", transaction, (CustomClass) BL.StockContract.getClassByName("contractSku"));
 
         priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
         destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
