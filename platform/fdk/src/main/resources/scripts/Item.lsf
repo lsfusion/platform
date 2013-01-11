@@ -36,19 +36,6 @@ FORM itemGroups 'Товарные группы'
 
 ;
 
-DESIGN itemGroups FROM DEFAULT {
-    NEW rootContainer BEFORE functions.box{
-        childConstraints = TO THE RIGHT;
-        type = SPLITH;
-
-        ADD treeGroups.tree.box ;
-
-        ADD g.box {
-            fillHorizontal = 4;
-        }
-    }
-}
-
 FORM dialogItemGroups 'Товарные группы'
     TREE treeGroups tg=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(tg)
@@ -59,8 +46,28 @@ FORM dialogItemGroups 'Товарные группы'
     PROPERTIES(g)          ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
+    FILTERS isParentItemGroupItemGroup(g, tg)
+
     DIALOG itemGroup OBJECT tg
 ;
+
+DESIGN dialogItemGroups FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+            NEW rootContainer BEFORE functions.box{
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+
+            ADD treeGroups.tree.box {
+                fillHorizontal = 2;
+            }
+
+            ADD g.box {
+                fillHorizontal = 4;
+            }
+        }
+    }
+}
 // ----------------------------------- Товары ----------------------------------- //
 
 CLASS item 'Товар' : sku, externalizable;
