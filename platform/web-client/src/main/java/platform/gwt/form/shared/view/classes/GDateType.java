@@ -12,12 +12,12 @@ public class GDateType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DateGridCellEditor(editManager);
+        return new DateGridCellEditor(editManager, editProperty);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer();
+        return new DateGridCellRenderer(property);
     }
 
     @Override

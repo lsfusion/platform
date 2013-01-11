@@ -6,8 +6,15 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TextAreaElement;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 
 public class TextGridCellRenderer extends AbstractGridCellRenderer {
+    private GPropertyDraw property;
+
+    public TextGridCellRenderer(GPropertyDraw property) {
+        this.property = property;
+    }
+
     @Override
     public void renderDom(platform.gwt.cellview.client.cell.Cell.Context context, DivElement cellElement, Object value) {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
@@ -27,6 +34,12 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
         textareaStyle.setWhiteSpace(Style.WhiteSpace.NORMAL);
         textareaStyle.setProperty("pointerEvents", "none");
         textareaStyle.setProperty("resize", "none");
+        if (property.fontSize != null) {
+            textareaStyle.setFontSize(property.fontSize, Style.Unit.PX);
+        }
+        if (property.fontFamily != null) {
+            textareaStyle.setProperty("fontFamily", property.fontFamily);
+        }
 
         updateTextArea(textArea, value);
     }
@@ -39,7 +52,7 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
     private void updateTextArea(TextAreaElement textArea, Object value) {
         if (value == null) {
             textArea.setValue(EscapeUtils.UNICODE_NBSP);
-            textArea.setTitle("");
+            textArea.getParentElement().setTitle("");
         } else {
             textArea.setValue((String) value);
             textArea.getParentElement().setTitle((String) value);

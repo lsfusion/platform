@@ -65,6 +65,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             component.foreground = new ColorDTO(Integer.toHexString(clientComponent.design.getForeground().getRGB()).substring(2, 8));
         }
 
+        if (clientComponent.design.getFont() != null) {
+            component.fontSize = clientComponent.design.getFont().getSize();
+            component.fontFamily = clientComponent.design.getFont().getFamily();
+        }
+
         return component;
     }
 

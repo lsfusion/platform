@@ -17,13 +17,15 @@ public abstract class GDataType extends GType implements GClass {
     public abstract String getPreferredMask();
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
-        return getMinimumCharWidth(minimumCharWidth) * 7;
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+        return fontSize == null ? minCharWidth * 7 : minCharWidth * fontSize / 2;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth) {
-        return getPreferredCharWidth(preferredCharWidth) * 7;
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+        return fontSize == null ? prefCharWidth * 7 : prefCharWidth * fontSize / 2;
     }
 
     public int getMinimumCharWidth(int definedMinimumCharWidth) {

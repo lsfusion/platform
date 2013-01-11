@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.*;
 import net.auroris.ColorPicker.client.ColorPicker;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.client.MainFrameMessages;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
@@ -18,8 +19,8 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
 
     private ColorPicker colorPicker;
 
-    public ColorGridCellEditor(EditManager editManager) {
-        super(editManager);
+    public ColorGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        super(editManager, property);
     }
 
     @Override

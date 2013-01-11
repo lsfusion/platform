@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
@@ -14,17 +15,19 @@ import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected String inputElementTagName = "input";
+    protected GPropertyDraw property;
 
     protected final class ParseException extends Exception {
     }
 
-    public TextBasedGridCellEditor(EditManager editManager) {
-        this(editManager, null);
+    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        this(editManager, property, null);
     }
 
-    public TextBasedGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
+    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
+        this.property = property;
     }
 
     protected EditManager editManager;
@@ -98,6 +101,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         InputElement input = Document.get().createTextInputElement();
         input.setTabIndex(-1);
         input.setValue(currentText);
+        input.addClassName("boxSized");
 
         Style inputStyle = input.getStyle();
         inputStyle.setBorderWidth(0, Style.Unit.PX);
@@ -108,7 +112,17 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         inputStyle.setPaddingLeft(4, Style.Unit.PX);
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
-        inputStyle.setFontSize(8, Style.Unit.PT);
+
+        if (property.fontSize != null) {
+            inputStyle.setFontSize(property.fontSize, Style.Unit.PX);
+        } else {
+            inputStyle.setFontSize(8, Style.Unit.PT);
+        }
+        if (property.fontFamily != null) {
+            inputStyle.setProperty("fontFamily", property.fontFamily);
+        }
+        cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
+
         if (textAlign != null) {
             inputStyle.setTextAlign(textAlign);
         }

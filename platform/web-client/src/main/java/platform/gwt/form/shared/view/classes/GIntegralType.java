@@ -7,7 +7,7 @@ import platform.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 public abstract class GIntegralType extends GDataType {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridCellRenderer();
+        return new NumberGridCellRenderer(property);
     }
 
     @Override

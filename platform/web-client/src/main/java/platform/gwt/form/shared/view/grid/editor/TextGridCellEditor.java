@@ -2,11 +2,12 @@ package platform.gwt.form.shared.view.grid.editor;
 
 import com.google.gwt.dom.client.*;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
 
 public class TextGridCellEditor extends TextBasedGridCellEditor {
-    public TextGridCellEditor(EditManager editManager) {
-        super(editManager);
+    public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        super(editManager, property);
         inputElementTagName = "textarea";
     }
 
@@ -28,6 +29,13 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
         textareaStyle.setProperty("resize", "none");
+        if (property.fontSize != null) {
+//            textareaStyle.setFontSize(property.fontSize, Style.Unit.PX);
+        }
+        if (property.fontFamily != null) {
+            textareaStyle.setProperty("fontFamily", property.fontFamily);
+        }
+        cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
 
         textArea.setValue(currentText);
     }

@@ -4,12 +4,12 @@ public class GCustomStaticFormatFileType extends GFileType {
     public static GCustomStaticFormatFileType instance = new GCustomStaticFormatFileType();
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
         return 15;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth) {
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
         return 15;
     }
 }

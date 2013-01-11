@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 
@@ -13,8 +14,8 @@ import java.sql.Time;
 public class TimeGridCellEditor extends TextBasedGridCellEditor {
     private DateTimeFormat format = GwtSharedUtils.getDefaultTimeFormat();
 
-    public TimeGridCellEditor(EditManager editManager) {
-        super(editManager, Style.TextAlign.RIGHT);
+    public TimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        super(editManager, property, Style.TextAlign.RIGHT);
     }
 
     @Override

@@ -21,27 +21,29 @@ public class GTextType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelHeight() {
-        return super.getMinimumPixelHeight() * 4;
+    public int getMinimumPixelHeight(Integer fontSize) {
+        return super.getMinimumPixelHeight(fontSize) * 4;
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new TextGridCellRenderer();
+        return new TextGridCellRenderer(property);
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new TextGridCellEditor(editManager);
+        return new TextGridCellEditor(editManager, editProperty);
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
-        return getMinimumCharWidth(minimumCharWidth) * 10;
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+        return fontSize == null ? minCharWidth * 10 : minCharWidth * fontSize * 5 / 8;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth) {
-        return getPreferredCharWidth(preferredCharWidth) * 10;
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+        return fontSize == null ? prefCharWidth * 10 : prefCharWidth * fontSize * 5 / 8;
     }
 }

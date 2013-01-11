@@ -9,24 +9,28 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 
 public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
     protected final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
 
+    protected GPropertyDraw property;
+
     private final EditManager editManager;
     private final Style.TextAlign textAlign;
 
     private final PopupPanel popup;
 
-    public PopupBasedGridCellEditor(EditManager editManager) {
-        this(editManager, null);
+    public PopupBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        this(editManager, property, null);
     }
 
-    public PopupBasedGridCellEditor(EditManager editManager, Style.TextAlign textAlign) {
+    public PopupBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
         this.editManager = editManager;
         this.textAlign = textAlign;
+        this.property = property;
 
         popup = new PopupPanel(false, true) {
             @Override
@@ -92,6 +96,12 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
+        if (property.fontSize != null) {
+            divStyle.setFontSize(property.fontSize, Style.Unit.PX);
+        }
+        if (property.fontFamily != null) {
+            divStyle.setProperty("fontFamily", property.fontFamily);
+        }
 
         if (text == null || text.trim().isEmpty()) {
             div.setInnerText(EscapeUtils.UNICODE_NBSP);

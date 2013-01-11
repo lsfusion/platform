@@ -334,7 +334,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
     public void setInitialSize(GAbstractWindow window, int width, int height) {
         WindowElement windowElement = allWindows.get(window);
-        if (windowElement.getView().isAttached()) {
+        if (windowElement != null && windowElement.getView().isAttached()) {
             if (width != 0 && height != 0) {
                 windowElement.changeInitialSize(width, height);
                 window.initialSizeSet = true;

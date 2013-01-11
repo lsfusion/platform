@@ -23,7 +23,7 @@ public abstract class GType implements Serializable {
     }
 
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new StringGridCellRenderer();
+        return new StringGridCellRenderer(property);
     }
 
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
@@ -38,15 +38,15 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    public abstract int getMinimumPixelWidth(int minimumCharWidth);
-    public abstract int getPreferredPixelWidth(int preferredCharWidth);
+    public abstract int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize);
+    public abstract int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize);
     public abstract GCompare[] getFilterCompares();
 
-    public int getMinimumPixelHeight() {
-        return 16;
+    public int getMinimumPixelHeight(Integer fontSize) {
+        return fontSize == null ? 16 : (int) (fontSize * 1.25);
     }
 
-    public int getPreferredPixelHeight() {
-        return getMinimumPixelHeight();
+    public int getPreferredPixelHeight(Integer fontSize) {
+        return getMinimumPixelHeight(fontSize);
     }
 }

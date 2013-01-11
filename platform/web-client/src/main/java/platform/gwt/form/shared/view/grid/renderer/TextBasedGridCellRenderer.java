@@ -5,15 +5,18 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected final Style.TextAlign textAlign;
+    protected GPropertyDraw property;
 
-    public TextBasedGridCellRenderer() {
-        this(null);
+    public TextBasedGridCellRenderer(GPropertyDraw property) {
+        this(property, null);
     }
 
-    public TextBasedGridCellRenderer(Style.TextAlign textAlign) {
+    public TextBasedGridCellRenderer(GPropertyDraw property, Style.TextAlign textAlign) {
+        this.property = property;
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
     }
 
@@ -29,6 +32,13 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingRight(4, Style.Unit.PX);
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
+
+        if (property.fontSize != null) {
+            divStyle.setFontSize(property.fontSize, Style.Unit.PX);
+        }
+        if (property.fontFamily != null) {
+            divStyle.setProperty("fontFamily", property.fontFamily);
+        }
 
         updateElement(div, value);
     }

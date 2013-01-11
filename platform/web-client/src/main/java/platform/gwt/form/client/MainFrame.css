@@ -178,7 +178,7 @@ textarea {
 .dataPanelRendererGridPanel {
     border: 1px solid #808080;
     margin: 2px;
-    min-height: 16px !important;
+    min-height: 1px !important;
 }
 
 .dataPanelRendererPanel {
@@ -342,6 +342,8 @@ textarea {
     float: right;
 }
 
-.mozBoxSized {
+.boxSized {
     -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }

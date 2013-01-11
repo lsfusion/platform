@@ -4,12 +4,12 @@ public class GCustomDynamicFormatFileType extends GFileType {
     public static GCustomDynamicFormatFileType instance = new GCustomDynamicFormatFileType();
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
         return 15;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth) {
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
         return 15;
     }
 }

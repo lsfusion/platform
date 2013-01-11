@@ -30,7 +30,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         DivElement innerDiv = div.appendChild(Document.get().createDivElement());
         innerDiv.setAttribute("align", "center");
         // здесь...
-        div.addClassName("mozBoxSized");
+        div.addClassName("boxSized");
         innerDiv.getStyle().setMarginBottom(-2, Style.Unit.PX);
 
         if (property.iconPath != null) {

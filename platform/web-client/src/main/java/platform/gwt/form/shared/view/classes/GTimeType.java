@@ -13,12 +13,12 @@ public class GTimeType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(GwtSharedUtils.getDefaultTimeFormat());
+        return new DateGridCellRenderer(property, GwtSharedUtils.getDefaultTimeFormat());
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new TimeGridCellEditor(editManager);
+        return new TimeGridCellEditor(editManager, editProperty);
     }
 
     @Override

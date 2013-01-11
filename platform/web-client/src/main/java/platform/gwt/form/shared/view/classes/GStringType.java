@@ -24,7 +24,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new StringGridCellEditor(editManager);
+        return new StringGridCellEditor(editManager, editProperty);
     }
 
     @Override
@@ -73,12 +73,14 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
-        return getMinimumCharWidth(minimumCharWidth) * 10;
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+        int minCharWidth = getMinimumCharWidth(minimumCharWidth);
+        return fontSize == null ? minCharWidth * 10 : minCharWidth * fontSize * 5 / 8;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth) {
-        return getPreferredCharWidth(preferredCharWidth) * 10;
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+        int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
+        return fontSize == null ? prefCharWidth * 10 : prefCharWidth * fontSize * 5 / 8;
     }
 }

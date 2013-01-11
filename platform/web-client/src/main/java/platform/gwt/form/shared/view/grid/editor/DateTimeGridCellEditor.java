@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
@@ -31,8 +32,8 @@ public class DateTimeGridCellEditor extends PopupBasedGridCellEditor {
     private DatePicker datePicker;
     private TextBox editBox;
 
-    public DateTimeGridCellEditor(EditManager editManager) {
-        super(editManager, Style.TextAlign.RIGHT);
+    public DateTimeGridCellEditor(EditManager editManager, GPropertyDraw property) {
+        super(editManager, property, Style.TextAlign.RIGHT);
 
         datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
             @Override

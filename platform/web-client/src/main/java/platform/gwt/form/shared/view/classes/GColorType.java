@@ -12,7 +12,7 @@ public class GColorType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new ColorGridCellEditor(editManager);
+        return new ColorGridCellEditor(editManager, editProperty);
     }
 
     @Override
@@ -26,11 +26,11 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth) {
+    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
         return 40;
     }
 
-    public int getPreferredPixelWidth(int preferredCharWidth) {
+    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
         return 40;
     }
 }
