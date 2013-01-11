@@ -1,7 +1,6 @@
 MODULE SaleReturnShipment;
 
-REQUIRE Shipment, SaleReturnInvoice
-;
+REQUIRE Shipment, SaleReturnInvoice;
 
 NAMESPACE SaleReturn;
 

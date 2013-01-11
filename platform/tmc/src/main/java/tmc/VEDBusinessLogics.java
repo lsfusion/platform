@@ -35,10 +35,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         VEDLM = addModule(new VEDLogicsModule(LM, this, logger));
         addModulesFromResource(
                 "/scripts/VEDScript.lsf",
-                "/scripts/Country.lsf",
+                "/scripts/masterdata/Country.lsf",
                 "/scripts/utils/Utils.lsf",
                 "/scripts/utils/DefaultData.lsf",
-                "/scripts/Currency.lsf",
+                "/scripts/masterdata/Currency.lsf",
                 "/scripts/utils/Backup.lsf");
     }
 

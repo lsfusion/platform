@@ -201,22 +201,21 @@ TABLE itemItemAttribute(item, itemAttribute);
 
 // Отображение
 META defineItemAttribute (attribute, caption, group)
-    show###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
-    show###attribute##ItemGroup(itemGroup) <- TRUE WHEN ASSIGNED(itemGroup IS itemGroup);
+    userShow###attribute##ItemGroup caption (itemGroup) = DATA BOOLEAN (itemGroup) IN group;
 
-    show###attribute##Item caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
-END
+    quantityChildWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF userShow###attribute##ItemGroup(childItemGroup) AND isParentItemGroupItemGroup(childItemGroup, itemGroup) BY itemGroup PERSISTENT;
+    quantityParentWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF userShow###attribute##ItemGroup(parentItemGroup) AND isParentItemGroupItemGroup(itemGroup, parentItemGroup) BY itemGroup PERSISTENT;
 
+    show###attribute##ItemGroup caption (itemGroup) = TRUE IF (quantityChildWith###attribute##ItemGroup (itemGroup) (+) quantityParentWith###attribute##ItemGroup (itemGroup)) > 0 PERSISTENT;
 
-META defineItemGroupAttributeShow (attribute, caption)
-    quantityChildWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(childItemGroup) AND isParentItemGroupItemGroup(childItemGroup, itemGroup) BY itemGroup PERSISTENT;
-    quantityParentWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(parentItemGroup) AND isParentItemGroupItemGroup(itemGroup, parentItemGroup) BY itemGroup PERSISTENT;
+    show###attribute##Item caption (item) = TRUE IF quantityParentWith###attribute##ItemGroup(itemGroupItem(item));
 
-    hasShow###attribute##ItemGroup caption (itemGroup) = TRUE IF (quantityChildWith###attribute##ItemGroup (itemGroup) (+) quantityParentWith###attribute##ItemGroup (itemGroup)) > 0 PERSISTENT;
-
-    hasShow###attribute##Item caption (item) = TRUE IF quantityParentWith###attribute##ItemGroup(itemGroupItem(item)) OR show###attribute##Item (item);
-
-    backgroundHasShow###attribute##ItemGroup (itemGroup) = RGB(203,203,206) AND quantityChildWith###attribute##ItemGroup (itemGroup) != isChildNumberItemGroup(itemGroup) AND NOT quantityParentWith###attribute##ItemGroup (itemGroup);
+    backgroundShow###attribute##ItemGroup (itemGroup) =
+        IF userShow###attribute##ItemGroup(itemGroup) THEN
+            RGB(0,0,0) IF itemGroup IS itemGroup
+        ELSE
+            RGB(203,203,206) AND quantityChildWith###attribute##ItemGroup (itemGroup) != descendantNumberItemGroup(itemGroup)
+                             AND NOT quantityParentWith###attribute##ItemGroup (itemGroup);
 
     setNullShow###attribute##ItemGroup 'Снять признак для всех потомков' = ACTION (itemGroup) {
         FOR isParentItemGroupItemGroup (childGroup, itemGroup) DO {
@@ -233,17 +232,13 @@ META implementItemAttribute(attribute, caption, itemType, attributeClass)
     value###itemType##ItemAttribute(item, attribute) += attribute##Item(item) WHEN attribute == itemType##ItemAttribute.##attributeClass;
 END
 
-//    value###attribute##ItemAttribute(item, attribute) = attribute##Item(item) AND attribute == itemType##ItemAttribute.##attributeClass;
-//    value###itemType##ItemAttribute(item, attribute) += value###attribute##ItemAttribute(item, attribute);
-
 META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
     @defineItemAttribute(attribute, caption, group);
-    @defineItemGroupAttributeShow(attribute, caption);
 
-    EXTEND FORM itemGroup PROPERTIES(g) show###attribute##ItemGroup, setNullShow###attribute##ItemGroup;
-    EXTEND FORM itemGroups PROPERTIES(g) READONLY hasShow###attribute##ItemGroup BACKGROUND backgroundHasShow###attribute##ItemGroup(g);
-    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF hasShow###attribute##Item(i);
-    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF hasShow###attribute##ItemGroup(g);
+    EXTEND FORM itemGroup PROPERTIES(g) userShow###attribute##ItemGroup, setNullShow###attribute##ItemGroup;
+    EXTEND FORM itemGroups PROPERTIES(g) READONLY show###attribute##ItemGroup BACKGROUND backgroundShow###attribute##ItemGroup(g);
+    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
+    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
 
     @implementItemAttribute(attribute, caption, itemType, attributeClass);
 END
@@ -458,12 +453,12 @@ EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegist
 // --------------------------------------- Генерация штрих-кодов --------------------------------------------- //
 
 pieceNumeratorItemGroup = DATA numerator (itemGroup);
-namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup));
+namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
 
 weightNumeratorItemGroup = DATA numerator (itemGroup);
-nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
+nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
 
-EXTEND FORM itemGroup PROPERTIES(g)  AFTER name namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+EXTEND FORM itemGroup PROPERTIES(g)  AFTER nameParentItemGroup namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
 EXTEND FORM itemGroups PROPERTIES(g) AFTER canonicalNameItemGroup READONLY namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
 
 pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));

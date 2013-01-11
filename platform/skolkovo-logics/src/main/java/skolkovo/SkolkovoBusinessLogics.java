@@ -51,9 +51,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         super.createModules();
         SkolkovoLM = addModule(new SkolkovoLogicsModule(LM, this));
         addModulesFromResource(
-                "/scripts/Currency.lsf",
+                "/scripts/masterdata/Currency.lsf",
                 "/scripts/utils/Utils.lsf",
-                "/scripts/Country.lsf",
+                "/scripts/masterdata/Country.lsf",
                 "/scripts/utils/DefaultData.lsf",
                 "/scripts/utils/Historizable.lsf");
     }

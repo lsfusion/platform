@@ -47,30 +47,30 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Stock = addModuleFromResource("/scripts/Stock.lsf");
-        LegalEntity = addModuleFromResource("/scripts/LegalEntity.lsf");
+        Stock = addModuleFromResource("/scripts/stock/Stock.lsf");
+        LegalEntity = addModuleFromResource("/scripts/masterdata/LegalEntity.lsf");
         Company = addModuleFromResource("/scripts/Company.lsf");
-        Store = addModuleFromResource("/scripts/Store.lsf");
+        Store = addModuleFromResource("/scripts/stock/store/Store.lsf");
         Numerator = addModuleFromResource("/scripts/utils/Numerator.lsf");
         RetailCRM = addModuleFromResource("/scripts/RetailCRM.lsf");
-        PriceInterval = addModuleFromResource("/scripts/PriceInterval.lsf");
-        Currency = addModuleFromResource("/scripts/Currency.lsf");
+        PriceInterval = addModuleFromResource("/scripts/pricelist/PriceInterval.lsf");
+        Currency = addModuleFromResource("/scripts/masterdata/Currency.lsf");
         Contract = addModuleFromResource("/scripts/Contract.lsf");
         ContractStock = addModuleFromResource("/scripts/ContractStock.lsf");
         ContractLedger = addModuleFromResource("/scripts/ContractLedger.lsf");
         Supplier = addModuleFromResource("/scripts/Supplier.lsf");
         Utils = addModuleFromResource("/scripts/utils/Utils.lsf");
-        Country = addModuleFromResource("/scripts/Country.lsf");
+        Country = addModuleFromResource("/scripts/masterdata/Country.lsf");
 
         addModulesFromResource(
                 "/scripts/utils/Hierarchy.lsf",
                 "/scripts/utils/Historizable.lsf",
             //"/scripts/Numerator.lsf",
-            "/scripts/Document.lsf",
-            "/scripts/Transport.lsf",
+                "/scripts/utils/Document.lsf",
+                "/scripts/transport/Transport.lsf",
             "/scripts/by/ConsignmentBy.lsf",
-            "/scripts/Employee.lsf",
-            "/scripts/Tax.lsf",
+                "/scripts/hr/Employee.lsf",
+                "/scripts/finance/Tax.lsf",
             "/scripts/Ware.lsf",
                 "/scripts/utils/Geo.lsf",
             "/scripts/StockDocument.lsf",
@@ -95,23 +95,23 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/StorePriceTransfer.lsf",
             "/scripts/CashOperation.lsf",
             "/scripts/POS.lsf",
-            "/scripts/Sales.lsf",
-            "/scripts/Machinery.lsf",
-            "/scripts/CashRegister.lsf",
+                "/scripts/sales/Sales.lsf",
+                "/scripts/machinery/Machinery.lsf",
+                "/scripts/machinery/cashregister/CashRegister.lsf",
             "/scripts/InnerOrder.lsf",
-            "/scripts/Terminal.lsf",
+                "/scripts/machinery/terminal/Terminal.lsf",
                 "/scripts/Customer.lsf",
 //            "/scripts/PriceInterval.lsf",
             "/scripts/WHtoLegalEntity.lsf",
             "/scripts/DisparityBatch.lsf",
-            "/scripts/WriteOff.lsf",
+                "/scripts/stock/writeoff/WriteOff.lsf",
             "/scripts/RomanWriteOff.lsf",
             "/scripts/PriceChange.lsf",
             "/scripts/UserPriceChange.lsf",
             "/scripts/Surplus.lsf",
-            "/scripts/Inventory.lsf",
+                "/scripts/stock/inventory/Inventory.lsf",
             "/scripts/RomanContractLedger.lsf",
-            "/scripts/Warehouse.lsf",
+                "/scripts/stock/warehouse/Warehouse.lsf",
             "/scripts/PriceChangeDiscount.lsf",
             "/scripts/CustomCategory.lsf",
             "/scripts/Freight.lsf",
@@ -119,7 +119,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Particulars.lsf",
             "/scripts/Defect.lsf",
                 "/scripts/utils/DefaultData.lsf",
-                "/scripts/FiscalDatecs.lsf",
+                "/scripts/machinery/cashregister/fiscal/FiscalDatecs.lsf",
             "/scripts/RomanTransfer.lsf",
             "/scripts/RomanPOS.lsf",
             "/scripts/RomanCashOperation.lsf",
@@ -134,8 +134,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/by/LegalEntityBy.lsf",
                 "/scripts/utils/Backup.lsf",
             "/scripts/Agreement.lsf",
-            "/scripts/PriceList.lsf",
-            "/scripts/Label.lsf",
+                "/scripts/pricelist/PriceList.lsf",
+                "/scripts/machinery/label/Label.lsf",
             "/scripts/ContractCompany.lsf",
                 "/scripts/utils/Integration.lsf",
             "/scripts/StockTax.lsf"
