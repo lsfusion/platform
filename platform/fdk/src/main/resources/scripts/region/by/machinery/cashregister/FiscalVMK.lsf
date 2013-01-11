@@ -1,0 +1,28 @@
+MODULE FiscalVMK;
+
+REQUIRE System,
+        POS;
+
+fiscalVMKPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKPrintReceiptActionProperty';
+postPrintReceipt(receipt) += fiscalVMKPrintReceipt(receipt) IF sidCashRegisterModelReceipt(receipt) == 'VMK';
+
+fiscalVMKAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKAdvancePaperActionProperty';
+fiscalAdvancePaper() += fiscalVMKAdvancePaper() IF sidModelCurrentCashRegister() == 'VMK';
+
+fiscalVMKXReport 'X-отчёт' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKXReportActionProperty';
+fiscalXReport() += fiscalVMKXReport() IF sidModelCurrentCashRegister() == 'VMK';
+
+fiscalVMKZReport 'Z-отчёт' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKZReportActionProperty';
+fiscalZReport() += fiscalVMKZReport() IF sidModelCurrentCashRegister() == 'VMK';
+
+fiscalVMKUpdateData 'Загрузить информацию' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKUpdateDataActionProperty';
+fiscalUpdateData() += fiscalVMKUpdateData() IF sidModelCurrentCashRegister() == 'VMK';
+
+fiscalVMKServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKServiceInOutActionProperty';
+fiscalServiceCashOperation(cashOperation) += fiscalVMKServiceCashOperation(cashOperation) IF sidCashRegisterModelCashOperation(cashOperation) == 'VMK';
+
+fiscalVMKDisplayTextReceiptDetail 'Вывести текст на дисплей' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKDisplayTextActionProperty';
+fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalVMKDisplayTextReceiptDetail(receiptDetail) IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'VMK';
+
+fiscalVMKCancelReceipt 'Отменить чек' = ACTION CUSTOM 'fdk.region.by.machinery.cashregister.fiscalvmk.FiscalVMKCancelReceiptActionProperty';
+fiscalCancelReceipt() += fiscalVMKCancelReceipt() IF sidModelCurrentCashRegister() == 'VMK';

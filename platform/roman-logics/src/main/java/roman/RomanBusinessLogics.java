@@ -119,7 +119,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/Particulars.lsf",
             "/scripts/Defect.lsf",
                 "/scripts/utils/DefaultData.lsf",
-                "/scripts/machinery/cashregister/fiscal/FiscalDatecs.lsf",
+                "/scripts/region/ua/machinery/cashregister/FiscalDatecs.lsf",
             "/scripts/RomanTransfer.lsf",
             "/scripts/RomanPOS.lsf",
             "/scripts/RomanCashOperation.lsf",

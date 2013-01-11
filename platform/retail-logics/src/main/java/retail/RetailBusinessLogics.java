@@ -151,7 +151,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/stock/warehouse/Warehouse.lsf",
                 "/scripts/stock/StockTax.lsf",
                 "/scripts/finance/TaxItem.lsf",
-                "/scripts/machinery/cashregister/fiscal/FiscalVMK.lsf",
+                "/scripts/region/by/machinery/cashregister/FiscalVMK.lsf",
                 "/scripts/stock/warehouse/ShipmentWarehouse.lsf",
                 "/scripts/region/by/ware/WarePriceList.lsf",
                 "/scripts/stock/order/ScheduleOrder.lsf",

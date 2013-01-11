@@ -76,7 +76,7 @@ NAVIGATOR {
 
 isDayOffCountryDate 'Выходной' (country, date) = DATA BOOLEAN (country, DATE) IN base; // logics.day.off
 
-fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'platform.fdk.actions.FillDaysOffActionProperty';
+fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'fdk.utils.FillDaysOffActionProperty';
 
 addDayOff 'Добавить выходной день' = ACTION (country) NEWSESSION {
     FORM dialogDate MODAL;

@@ -52,8 +52,8 @@ descriptionZReport (zReport) =
     [FORMULA STRING[200] '\'Продажа по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReport(zReport), nameDepartmentStoreZReport(zReport), dateZReport(zReport));
 
-exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'platform.fdk.actions.ExportReceiptsActionProperty';
-importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'platform.fdk.actions.ImportReceiptsActionProperty';
+exportReceiptsZReport 'Экспортировать чеки' = ACTION CUSTOM 'fdk.retail.ExportReceiptsActionProperty';
+importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'fdk.retail.ImportReceiptsActionProperty';
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
 CLASS receipt 'Чек' : historizable;

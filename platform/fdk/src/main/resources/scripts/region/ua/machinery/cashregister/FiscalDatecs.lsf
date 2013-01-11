@@ -1,0 +1,31 @@
+MODULE FiscalDatecs;
+
+REQUIRE System,
+        POS;
+
+fiscalDatecsPrintReceipt 'Напечатать фискальный чек' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsPrintReceiptActionProperty';
+postPrintReceipt(receipt) += fiscalDatecsPrintReceipt(receipt) IF sidCashRegisterModelReceipt(receipt) == 'DateCS';
+
+fiscalDatecsAdvancePaper 'Прогон ленты' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsAdvancePaperActionProperty';
+fiscalAdvancePaper() += fiscalDatecsAdvancePaper() IF sidModelCurrentCashRegister() == 'DateCS';
+
+fiscalDatecsCutReceipt 'Отрезать чек' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsCutReceiptActionProperty';
+fiscalCutReceipt() += fiscalDatecsCutReceipt() IF sidModelCurrentCashRegister() == 'DateCS';
+
+fiscalDatecsXReport 'X-отчёт' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsXReportActionProperty';
+fiscalXReport() += fiscalDatecsXReport() IF sidModelCurrentCashRegister() == 'DateCS';
+
+fiscalDatecsZReport 'Z-отчёт' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsZReportActionProperty';
+fiscalZReport() += fiscalDatecsZReport() IF sidModelCurrentCashRegister() == 'DateCS';
+
+fiscalDatecsUpdateData 'Загрузить информацию' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsUpdateDataActionProperty';
+fiscalUpdateData() += fiscalDatecsUpdateData() IF sidModelCurrentCashRegister() == 'DateCS';
+
+fiscalDatecsServiceCashOperation 'Перемещение денег' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsServiceInOutActionProperty';
+fiscalServiceCashOperation(cashOperation) += fiscalDatecsServiceCashOperation(cashOperation) IF sidCashRegisterModelCashOperation(cashOperation) == 'DateCS';
+
+fiscalDatecsDisplayTextReceiptDetail 'Вывести текст на дисплей' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsDisplayTextActionProperty';
+fiscalDisplayTextReceiptDetail (receiptDetail) += fiscalDatecsDisplayTextReceiptDetail(receiptDetail) IF sidCashRegisterModelReceiptDetail(receiptDetail) == 'DateCS';
+
+fiscalDatecsCancelReceipt 'Отменить чек' = ACTION CUSTOM 'fdk.region.ua.machinery.cashregister.fiscaldatecs.FiscalDatecsCancelReceiptActionProperty';
+fiscalCancelReceipt() += fiscalDatecsCancelReceipt() IF sidModelCurrentCashRegister() == 'DateCS';

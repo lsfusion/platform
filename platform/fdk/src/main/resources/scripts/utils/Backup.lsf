@@ -5,8 +5,8 @@ REQUIRE System;
 dumpDirBackupTask 'Директорий дампа' = DATA STRING[200] ();
 binPathBackupTask 'Директорий установки PostgreSQL' = DATA STRING[200] ();
 
-makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'platform.fdk.actions.BackupActionProperty' TOOLBAR;
-deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'platform.fdk.actions.DeleteBackupActionProperty' CONFIRM;
+makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'fdk.utils.backup.BackupActionProperty' TOOLBAR;
+deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'fdk.utils.backup.DeleteBackupActionProperty' CONFIRM;
 
 CLASS backup 'Резервная копия';
 TABLE backup(backup);

@@ -19,7 +19,7 @@ longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
 
-getCoordinatesAddress = ACTION CUSTOM 'platform.fdk.actions.geo.GetCoordinatesAddressActionProperty';
+getCoordinatesAddress = ACTION CUSTOM 'fdk.utils.geo.GetCoordinatesAddressActionProperty';
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 
@@ -31,7 +31,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 WHEN CHANGED(countryPOI(POI)) OR CHANGED(addressPOI(POI)) DO EXEC changeCoordinatesPOI(POI) SESSION;
 
 // Показать на карте одну точку
-showOnMap 'Показать на карте'= ACTION CUSTOM 'platform.fdk.actions.geo.ShowOnMapActionProperty';
+showOnMap 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
     EXEC showOnMap (latitudePOI (POI), longitudePOI (POI));
@@ -41,9 +41,9 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 numberPathPOI 'Номер' = DATA SESSION INTEGER (POI);
 descriptionPathPOI 'Описание' = DATA SESSION STRING[200] (POI);
 
-showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'platform.fdk.actions.geo.ShowOnMapPathActionProperty';
+showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapPathActionProperty';
 
 inPathPOI 'Вкл' = DATA SESSION BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA SESSION POI();
-calculatePath 'Рассчитать путь'= ACTION CUSTOM 'platform.fdk.actions.geo.CalculatePathActionProperty';
+calculatePath 'Рассчитать путь'= ACTION CUSTOM 'fdk.utils.geo.CalculatePathActionProperty';
 
