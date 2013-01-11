@@ -19,21 +19,21 @@ FORM itemGroup 'Товарная группа'
 ;
 
 FORM itemGroups 'Товарные группы'
-    TREE treeGroups tg=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(tg)
-    ORDER BY name
-
-    OBJECTS g=itemGroup
-    PROPERTIES(g) READONLY canonicalNameItemGroup, delete
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
     PROPERTIES(g)          ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
-    FILTERGROUP filters
-        FILTER 'Все листья' 'F10' isParentLeafItemGroupItemGroup(g, tg) DEFAULT
-        FILTER 'Всех потомков' 'F9' isParentItemGroupItemGroup(g, tg)
-        FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(g) == tg
+//    OBJECTS g=itemGroup
+//    PROPERTIES(g) canonicalNameItemGroup READONLY, delete
+//    PROPERTIES(g)          ADDFORM, EDITFORM
+//    ORDER BY canonicalNameItemGroup
+//
+//    FILTERGROUP filters
+//        FILTER 'Все листья' 'F10' isParentLeafItemGroupItemGroup(g, tg)
+//        FILTER 'Всех потомков' 'F9' isParentItemGroupItemGroup(g, tg) DEFAULT
+//        FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(g) == tg
 
-    DIALOG itemGroup OBJECT g
 ;
 
 DESIGN itemGroups FROM DEFAULT {
@@ -49,7 +49,18 @@ DESIGN itemGroups FROM DEFAULT {
     }
 }
 
+FORM dialogItemGroups 'Товарные группы'
+    TREE treeGroups tg=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(tg)
+    ORDER BY name
 
+    OBJECTS g=itemGroup
+    PROPERTIES(g) name READONLY, canonicalNameItemGroup READONLY, delete
+    PROPERTIES(g)          ADDFORM, EDITFORM
+    ORDER BY canonicalNameItemGroup
+
+    DIALOG itemGroup OBJECT tg
+;
 // ----------------------------------- Товары ----------------------------------- //
 
 CLASS item 'Товар' : sku, externalizable;
@@ -196,6 +207,24 @@ META defineItemAttribute (attribute, caption, group)
     show###attribute##Item caption (item) = show###attribute##ItemGroup(itemGroupItem(item));
 END
 
+
+META defineItemGroupAttributeShow (attribute, caption)
+    quantityChildWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(childItemGroup) AND isParentItemGroupItemGroup(childItemGroup, itemGroup) BY itemGroup PERSISTENT;
+    quantityParentWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(parentItemGroup) AND isParentItemGroupItemGroup(itemGroup, parentItemGroup) BY itemGroup PERSISTENT;
+
+    hasShow###attribute##ItemGroup caption (itemGroup) = TRUE IF (quantityParentWith###attribute##ItemGroup (itemGroup) (+) quantityParentWith###attribute##ItemGroup (itemGroup)) > 0 PERSISTENT;
+
+    hasShow###attribute##Item caption (item) = TRUE IF quantityParentWith###attribute##ItemGroup(itemGroupItem(item)) OR show###attribute##Item (item);
+
+    backgroundHasShow###attribute##ItemGroup (itemGroup) = RGB(203,203,206) AND quantityChildWith###attribute##ItemGroup (itemGroup) != isChildNumberItemGroup(itemGroup) AND NOT quantityParentWith###attribute##ItemGroup (itemGroup);
+
+    setNullShow###attribute##ItemGroup 'Снять признак для всех потомков' = ACTION (itemGroup) {
+        FOR isParentItemGroupItemGroup (childGroup, itemGroup) DO {
+            SET show###attribute##ItemGroup(childGroup) <- NULL;
+        }
+    } SHORTCUT show###attribute##ItemGroup CONFIRM;
+END
+
 // Объявление
 valueItemAttribute = ABSTRACT STRING[255] (item, itemAttribute) PERSISTENT;
 
@@ -209,11 +238,12 @@ END
 
 META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
     @defineItemAttribute(attribute, caption, group);
+    @defineItemGroupAttributeShow(attribute, caption);
 
-    EXTEND FORM itemGroup PROPERTIES(g) show###attribute##ItemGroup;
-    EXTEND FORM itemGroups PROPERTIES(g) BEFORE delete show###attribute##ItemGroup;
-    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
-    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
+    EXTEND FORM itemGroup PROPERTIES(g) show###attribute##ItemGroup, setNullShow###attribute##ItemGroup;
+    EXTEND FORM itemGroups PROPERTIES(g) READONLY hasShow###attribute##ItemGroup BACKGROUND backgroundHasShow###attribute##ItemGroup(g);
+    EXTEND FORM item PROPERTIES(i) formProperty SHOWIF hasShow###attribute##Item(i);
+    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF hasShow###attribute##ItemGroup(g);
 
     @implementItemAttribute(attribute, caption, itemType, attributeClass);
 END
@@ -433,8 +463,8 @@ namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для ш
 weightNumeratorItemGroup = DATA numerator (itemGroup);
 nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup));
 
-EXTEND FORM itemGroup PROPERTIES(g) namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
-EXTEND FORM itemGroups PROPERTIES(g) BEFORE delete namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+EXTEND FORM itemGroup PROPERTIES(g)  AFTER name namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+EXTEND FORM itemGroups PROPERTIES(g) AFTER canonicalNameItemGroup READONLY namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
 
 pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
 weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
