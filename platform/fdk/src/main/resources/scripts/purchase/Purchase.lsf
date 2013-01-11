@@ -1,0 +1,77 @@
+MODULE Purchase;
+
+REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing, PurchaseScheduleOrder;
+
+//-----------------------------------------------------------------------------------------------------------//
+
+
+currentReservePurchaseSkuStock 'Резерв закупка (всего)'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
+    PurchaseReturn.currentReserveSkuStock(sku, stock) PERSISTENT;
+
+// без учета текущей даты/времени
+reservePurchaseBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Purchase.reserveBSkuStockDate(sku, stock, date) (-)
+    PurchaseReturn.reserveBSkuStockDate(sku, stock, date);
+
+// с учетом текущей даты/времени
+reservePurchaseASkuStockDate 'Остаток на конец дня'(sku, stock, date) = Purchase.reserveASkuStockDate(sku, stock, date) (-)
+    PurchaseReturn.reserveASkuStockDate(sku, stock, date);
+
+// без учета текущей даты/времени
+reservePurchaseBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Purchase.reserveBSkuStockDateTime(sku, stock, dateTime) (-)
+    PurchaseReturn.reserveBSkuStockDateTime(sku, stock, dateTime);
+
+// с учетом текущей даты/времени
+reservePurchaseASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Purchase.reserveASkuStockDateTime(sku, stock, dateTime) (-)
+    PurchaseReturn.reserveASkuStockDateTime(sku, stock, dateTime);
+
+quantitySoldSkuStockUserOrder 'Закуплено' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
+recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-)
+                                                        (currentReservePurchaseSkuStock(sku, stock) AND userOrder IS userOrder)  (-) (currentBalanceSkuStock(sku, stock) AND userOrder IS userOrder);
+
+recommendedQuantitySkuStockUserOrder 'Рекомендуемое к закупке кол-во' (sku, stock, userOrder) = recQuantitySkuStockUserOrder(sku, stock, userOrder) IF recQuantitySkuStockUserOrder(sku, stock, userOrder) >0;
+stockReserveSkuStockUserOrder 'Страховой запас (кол-во)' (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder));
+
+fillRecommendedQuantityStockUserOrder 'Заполнить рекомендуемым для ассортимента' = ACTION (userOrder) {
+    FOR inAssortmentSkuStockUserOrder(sku, customerStockUserOrder(userOrder), userOrder) AND recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder) DO {
+        SET requestedNumeric() <- recommendedQuantitySkuStockUserOrder (sku, customerStockUserOrder(userOrder), userOrder);
+        EXEC changeQuantityValueSkuUserOrderStock(sku, userOrder, customerStockUserOrder(userOrder));
+    }
+} TOOLBAR CONFIRM;
+
+overCreateOrder(userOrder) += fillRecommendedQuantityStockUserOrder(userOrder);
+
+EXTEND FORM userOrder
+    PROPERTIES READONLY AFTER currentBalanceSkuStock(s,st) quantitySoldSkuStockUserOrder(s,st,o), stockReserveSkuStockUserOrder(s,st,o)
+    PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
+    PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
+;
+
+NAVIGATOR {
+
+    NEW purchasePurchaseNavigator 'Закупки' {
+        ADD Purchase.scheduleOrderDetails;
+        ADD Purchase.orders;
+        ADD Purchase.invoices;
+        ADD Purchase.shipments;
+        ADD Purchase.creditNotes;
+    }
+    NEW purchaseReturnNavigator 'Возвраты' {
+        ADD PurchaseReturn.orders;
+        ADD PurchaseReturn.invoices;
+        ADD PurchaseReturn.shipments;
+        ADD PurchaseReturn.creditNotes;
+    }
+}
+
+
+
+META defineDialogSkuPurchaseReserve (form)
+
+    form###PurchaseReserve 'Резерв (закупки)' (sku) = currentReservePurchaseSkuStock(sku, form###stock());
+
+    EXTEND FORM form
+        PROPERTIES(s) READONLY form###PurchaseReserve AFTER form###balance SHOWIF form###stock()
+    ;
+END
+
+@defineDialogSkuPurchaseReserve(dialogSku);

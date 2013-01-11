@@ -9,6 +9,11 @@ costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOL
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
 createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore) IN createGroup;
+EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
+
+EXTEND DESIGN departmentStore{
+    row21 { ADD PROPERTY(createPricingDepartmentStore);}
+}
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 

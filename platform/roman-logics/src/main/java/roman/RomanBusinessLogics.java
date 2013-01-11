@@ -52,7 +52,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Company = addModuleFromResource("/scripts/Company.lsf");
         Store = addModuleFromResource("/scripts/stock/store/Store.lsf");
         Numerator = addModuleFromResource("/scripts/utils/Numerator.lsf");
-        RetailCRM = addModuleFromResource("/scripts/RetailCRM.lsf");
+        RetailCRM = addModuleFromResource("/scripts/retail/RetailCRM.lsf");
         PriceInterval = addModuleFromResource("/scripts/pricelist/PriceInterval.lsf");
         Currency = addModuleFromResource("/scripts/masterdata/Currency.lsf");
         Contract = addModuleFromResource("/scripts/Contract.lsf");
@@ -94,7 +94,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "/scripts/ListRegister.lsf",
             "/scripts/StorePriceTransfer.lsf",
             "/scripts/CashOperation.lsf",
-            "/scripts/POS.lsf",
+                "/scripts/retail/POS.lsf",
                 "/scripts/sales/Sales.lsf",
                 "/scripts/machinery/Machinery.lsf",
                 "/scripts/machinery/cashregister/CashRegister.lsf",
