@@ -347,13 +347,11 @@ DESIGN BOMs FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW BOMNavigator 'Управление производством' {
-        NEW priceListDocuments 'Документы' {
-        }
-        NEW priceListCatalog 'Справочники' {
-            ADD technologies;
+    NEW manufacturingNavigator 'Производство' {
+        NEW manufacturingDocuments 'Документы';
+        NEW manufacturingCatalog 'Справочники' {
             ADD BOMs;
-//            ADD products;
+            ADD technologies;
         }
     }
 }

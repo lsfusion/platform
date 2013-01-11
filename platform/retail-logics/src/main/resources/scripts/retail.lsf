@@ -194,68 +194,6 @@ overCopyItem(s, d) += ACTION (s, d) {
 nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
 @defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
 
-// ------------------------------------------- Передача в весы --------------------------------------------- //
-
-GROUP scalesGroup 'Весы' : public;
-
-// Фильтрация для передачи на весы
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN scalesGroup;
-overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
-
-// Состав товара
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN scalesGroup;
-compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
-
-@defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
-
-synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
-    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS groupScales
-        AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
-        ADDOBJ c = cellScales DO {
-            SET groupScalesCellScales(c) <- groupMachinery;
-            SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (transaction, barcode);
-        }
-}
-
-snapshotAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
-createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
-
-// Формат этикетки
-labelFormatPackItem = DATA labelFormat(item);
-idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN scalesGroup;
-labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
-
-@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
-
-EXTEND FORM item PROPERTIES(i) passScalesItem, idLabelFormatPackItem, compositionScalesItem;
-EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.scalesGroup; } }
-
-overCopyItem(s, d) += ACTION (s, d) {
-    SET passScalesItem(d) <- passScalesItem(s);
-    SET compositionScalesItem(d) <- compositionScalesItem(s);
-    SET labelFormatPackItem(d) <- labelFormatPackItem(s);
-}
-
-// Сроки годности для весов
-GROUP expiryGroup 'Сроки годности' : public;
-
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN expiryGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN expiryGroup;
-
-daysExpiryBarcode 'Срок годности в днях' = daysExpiryPackItem(skuBarcode(barcode));
-hoursExpiryBarcode 'Срок годности в часах' = hoursExpiryPackItem(skuBarcode(barcode));
-
-@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
-@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
-
-EXTEND FORM item PROPERTIES(i) daysExpiryPackItem, hoursExpiryPackItem;
-EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.expiryGroup; } }
-
-overCopyItem(s, d) += ACTION (s, d) {
-    SET daysExpiryPackItem(d) <- daysExpiryPackItem(s);
-    SET hoursExpiryPackItem(d) <- hoursExpiryPackItem(s);
-}
-
 //---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 
 generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
@@ -390,10 +328,8 @@ NAVIGATOR {
             ADD stores;
         }
     }
-    NEW billOfMaterial 'Производство' TO toolbar {
-        ADD BOMNavigator;
-    }
 
+    ADD manufacturingNavigator TO toolbar;
     ADD priceListNavigator TO toolbar;
     ADD transportNavigator TO toolbar;
     ADD machineryNavigator TO toolbar;

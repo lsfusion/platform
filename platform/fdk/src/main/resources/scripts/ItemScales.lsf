@@ -1,0 +1,60 @@
+MODULE ItemScales;
+
+REQUIRE Item, Scales;
+
+NAMESPACE Item;
+
+GROUP scalesGroup 'Весы' : public;
+
+// Фильтрация для передачи на весы
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN scalesGroup;
+overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
+
+// Формат этикетки
+labelFormatPackItem = DATA labelFormat(item);
+idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN scalesGroup;
+labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
+
+@defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
+
+// Сроки годности
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN scalesGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN scalesGroup;
+
+daysExpiryBarcode 'Срок годности в днях с момента фасовки' = daysExpiryPackItem(skuBarcode(barcode));
+hoursExpiryBarcode 'Срок годности в часах с момента фасовки' = hoursExpiryPackItem(skuBarcode(barcode));
+
+@defineMachineryPriceTransactionAttribute(daysExpiry, 'Срок годности в днях с момента фасовки', NUMERIC[8,2]);
+@defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
+
+// Состав товара
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN scalesGroup;
+compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
+
+@defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
+
+synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
+    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS groupScales
+        AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
+        ADDOBJ c = cellScales DO {
+            SET groupScalesCellScales(c) <- groupMachinery;
+            SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (transaction, barcode);
+        }
+}
+
+snapshotAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += synchronizeCompositionMachineryPriceTransactionGroupScales(transaction, groupMachinery);
+
+EXTEND FORM item
+    PROPERTIES(i) passScalesItem
+    PROPERTIES(i) SHOWIF passScalesItem(i) idLabelFormatPackItem, daysExpiryPackItem, hoursExpiryPackItem, compositionScalesItem
+;
+EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.scalesGroup; } }
+
+overCopyItem(s, d) += ACTION (s, d) {
+    SET passScalesItem(d) <- passScalesItem(s);
+    SET labelFormatPackItem(d) <- labelFormatPackItem(s);
+    SET daysExpiryPackItem(d) <- daysExpiryPackItem(s);
+    SET hoursExpiryPackItem(d) <- hoursExpiryPackItem(s);
+    SET compositionScalesItem(d) <- compositionScalesItem(s);
+}
