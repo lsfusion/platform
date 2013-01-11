@@ -109,6 +109,11 @@ sessionSku = DATA SESSION sku();
 
 createSkuBarcodeDate = ABSTRACT ACTION (barcode, date);
 
+skuAddedUser = DATA sku(user);
+setSkuAddedUser = ACTION (sku) NEWSESSION AUTOAPPLY {
+    SET skuAddedUser(u) <- sku WHERE u == currentUser();
+}
+
 META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
     idetail###object##Sku(object, sku) = GROUP MAX detail BY object###idetail(detail), skuProp###idetail(detail);
 
@@ -126,14 +131,15 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
             SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
             IF dialogBarcodeDetail() IS idetail THEN {
                 SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
-                    quantity###idetail(detail) (+) (1.0 IF detail IS idetail);
+                    quantity###idetail(detail) (+) (amountBarcode(barcodeIdDate(barcode, date###object(object))) IF detail IS idetail);
             } ELSE {
                 FOR ADDOBJ w = idetail DO {
                     SET object###idetail(w) <- object;
                     SET skuProp###idetail(w) <- dialogBarcodeSku();
-                    SET quantity###idetail(w) <- 1.0;
+                    SET quantity###idetail(w) <- amountBarcode(barcodeIdDate(barcode, date###object(object)));
                 }
             }
+            EXEC setSkuAddedUser(dialogBarcodeSku());
         } ELSE {
             MESSAGE 'Штрих-код не найден';
         }
