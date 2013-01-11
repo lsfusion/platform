@@ -558,7 +558,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                         LM.object(getClass("userPriceList")).getMapping(userPriceListKey)));
                 props.add(new ImportProperty(currencyField, getLCP("currencyUserPriceList").getMapping(userPriceListKey),
                         LM.object(getClass("currency")).getMapping(currencyKey)));
-                props.add(new ImportProperty(inPriceListPriceListTypeField, getLCP("inUserPriceListPriceListType").getMapping(userPriceListKey, new DataObject(dataPriceListTypeObject.object, (ConcreteClass) getClass("dataPriceListType")))));
+                props.add(new ImportProperty(inPriceListPriceListTypeField, getLCP("inUserPriceListDataPriceListType").getMapping(userPriceListKey, new DataObject(dataPriceListTypeObject.object, (ConcreteClass) getClass("dataPriceListType")))));
                 props.add(new ImportProperty(pricePriceListDetailDataPriceListTypeField, getLCP("priceUserPriceListDetailDataPriceListType").getMapping(userPriceListDetailKey, new DataObject(dataPriceListTypeObject.object, (ConcreteClass) getClass("dataPriceListType"))/*, itemKey, departmentStoreKey, defaultDate*/)));
                 ImportTable table = new ImportTable(Arrays.asList(itemField, legalEntityField, userPriceListField, departmentStoreField, currencyField, pricePriceListDetailDataPriceListTypeField, inPriceListPriceListTypeField), data);
 
