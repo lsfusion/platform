@@ -11,7 +11,9 @@ import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 class GroupTreeTableModel extends DefaultTreeTableModel {
     private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<ClientGroupObject, Set<TreeGroupNode>>();
@@ -19,6 +21,10 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     public final List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
     public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     public final Map<ClientGroupObject, List<ClientPropertyDraw>> groupPropsMap = new HashMap<ClientGroupObject, List<ClientPropertyDraw>>();
+    private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
+    private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<ClientGroupObjectValue, Object>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellForegroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private final ClientFormController form;
     private final boolean plainTreeMode;
@@ -66,6 +72,42 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
             return o instanceof String ? BaseUtils.rtrim((String) o) : o;
         }
         return node.toString();
+    }
+
+    public Color getBackgroundColor(Object node, int column) {
+        if (column > 0 && node instanceof TreeGroupNode) {
+            ClientPropertyDraw property = getProperty(node, column);
+            if (property != null) {
+                ClientGroupObjectValue key = ((TreeGroupNode) node).key;
+                Color color = (Color) rowBackground.get(key);
+                if (color == null) {
+                    Map<ClientGroupObjectValue, Object> backgroundValues = cellBackgroundValues.get(property);
+                    if (backgroundValues != null) {
+                        color = (Color) backgroundValues.get(key);
+                    }
+                }
+                return color;
+            }
+        }
+        return null;
+    }
+
+    public Color getForegroundColor(Object node, int column) {
+        if (column > 0 && node instanceof TreeGroupNode) {
+            ClientPropertyDraw property = getProperty(node, column);
+            if (property != null) {
+                ClientGroupObjectValue key = ((TreeGroupNode) node).key;
+                Color color = (Color) rowForeground.get(key);
+                if (color == null) {
+                    Map<ClientGroupObjectValue, Object> foregroundValues = cellForegroundValues.get(property);
+                    if (foregroundValues != null) {
+                        color = (Color) foregroundValues.get(key);
+                    }
+                }
+                return color;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -232,6 +274,22 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues, boolean update) {
         BaseUtils.putUpdate(values, property, ivalues, update);
+    }
+
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
+        BaseUtils.putUpdate(this.cellBackgroundValues, property, cellBackgroundValues, false);
+    }
+
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
+        BaseUtils.putUpdate(this.cellForegroundValues, property, cellForegroundValues, false);
+    }
+
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+        this.rowBackground = rowBackground;
+    }
+
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
+        this.rowForeground = rowForeground;
     }
 
     public int addDrawProperty(ClientFormController form, ClientGroupObject group, ClientPropertyDraw property) {

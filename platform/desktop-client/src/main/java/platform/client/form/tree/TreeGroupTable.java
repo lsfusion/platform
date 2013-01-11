@@ -288,6 +288,22 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         model.updateKeys(group, keys, parents);
     }
 
+    public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
+        model.updateCellBackgroundValues(property, cellBackgroundValues);
+    }
+
+    public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
+        model.updateCellForegroundValues(property, cellForegroundValues);
+    }
+
+    public void updateRowBackgroundValues(Map<ClientGroupObjectValue, Object> rowBackground) {
+        model.updateRowBackgroundValues(rowBackground);
+    }
+
+    public void updateRowForegroundValues(Map<ClientGroupObjectValue, Object> rowForeground) {
+        model.updateRowForegroundValues(rowForeground);
+    }
+
     public void expandNew(ClientGroupObject group) {
         for (TreeGroupNode node : model.getGroupNodes(group)) {
             boolean inExpanded = false;
@@ -498,13 +514,28 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     @Override
     public Color getBackgroundColor(int row, int column) {
-        //todo:
-        return null;
+        if (row < 0 || row > getRowCount()) {
+            return null;
+        }
+
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow == null) {
+            return null;
+        }
+        return model.getBackgroundColor(pathForRow.getLastPathComponent(), column);
     }
 
     @Override
     public Color getForegroundColor(int row, int column) {
-        return null;
+        if (row < 0 || row > getRowCount()) {
+            return null;
+        }
+
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow == null) {
+            return null;
+        }
+        return model.getForegroundColor(pathForRow.getLastPathComponent(), column);
     }
 
     @Override
