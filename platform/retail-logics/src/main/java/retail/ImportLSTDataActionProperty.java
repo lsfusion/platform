@@ -530,7 +530,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField departmentStoreField = new ImportField(getLCP("sidExternalizable"));
                 ImportField currencyField = new ImportField(getLCP("shortNameCurrency"));
                 ImportField pricePriceListDetailDataPriceListTypeField = new ImportField(getLCP("pricePriceListDetailDataPriceListType"));
-                ImportField inPriceListPriceListTypeField = new ImportField(getLCP("inPriceListPriceListType"));
+                ImportField inPriceListPriceListTypeField = new ImportField(getLCP("inPriceListDataPriceListType"));
 
                 ImportKey<?> userPriceListDetailKey = new ImportKey((ConcreteCustomClass) getClass("userPriceListDetail"),
                         getLCP("userPriceListDetailSkuUserPriceList").getMapping(itemField, userPriceListField));
