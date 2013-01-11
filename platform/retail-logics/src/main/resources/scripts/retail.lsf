@@ -282,14 +282,14 @@ EXTEND DESIGN integrationData {
 
 NAVIGATOR {
 
-    NEW purchase 'Управление закупками' TO toolbar {
+    NEW purchase 'Закупки' TO toolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
         ADD supplyNavigator;
         ADD stockReserveNavigator;
     }
 
-    NEW warehouse 'Управление складом' TO toolbar {
+    NEW warehouse 'Склад' TO toolbar {
         ADD inventoryNavigator;
         ADD naturalLossNavigator;
         ADD writeOffNavigator;
@@ -308,7 +308,7 @@ NAVIGATOR {
         }
     }
 
-    NEW sale 'Управление продажами' TO toolbar {
+    NEW sale 'Продажи' TO toolbar {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD salesNavigator;

@@ -897,7 +897,7 @@ EXTEND DESIGN legalEntity{
 
 
 NAVIGATOR {
-    NEW priceListNavigator 'Управление ценами' {
+    NEW priceListNavigator 'Цены' {
         NEW priceListDocuments 'Документы' {
             ADD userPriceLists;
         }

@@ -75,7 +75,7 @@ FORM drivers 'Водители'
 ;
 
 NAVIGATOR {
-    NEW transportNavigator 'Управление транспортом' {
+    NEW transportNavigator 'Транспорт' {
         NEW transportDocuments 'Документы';
         NEW transportCatalog 'Справочники' {
             ADD drivers;
