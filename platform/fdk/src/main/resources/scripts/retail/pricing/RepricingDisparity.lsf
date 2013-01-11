@@ -1,4 +1,4 @@
-MODULE DisparityRepricing;
+MODULE RepricingDisparity;
 
 REQUIRE Disparity,
         Repricing;

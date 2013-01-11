@@ -1,4 +1,4 @@
-MODULE PurchaseReturnPricing;
+MODULE PricingPurchaseReturn;
 
 REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment;
 

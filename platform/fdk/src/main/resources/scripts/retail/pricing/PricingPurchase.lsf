@@ -1,4 +1,4 @@
-MODULE PurchasePricing;
+MODULE PricingPurchase;
 
 REQUIRE Pricing, PurchaseInvoice, Repricing, PurchaseShipment;
 

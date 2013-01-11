@@ -1,4 +1,4 @@
-MODULE POSPricing;
+MODULE PricingPOS;
 
 REQUIRE System,
         Utils,

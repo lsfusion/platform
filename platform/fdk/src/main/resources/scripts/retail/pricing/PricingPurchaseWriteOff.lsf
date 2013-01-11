@@ -1,6 +1,7 @@
-MODULE PurchasePricingWriteOff;
+MODULE PricingPurchaseWriteOff;
 
-REQUIRE PurchaseWriteOff, PurchasePricing;
+REQUIRE PurchaseWriteOff, PricingPurchase;
+
 NAMESPACE Purchase;
 
 extraPricingQuantityUserInvoiceDetail(detail) += - writeOffQuantityUserInvoiceDetail(detail);

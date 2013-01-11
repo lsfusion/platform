@@ -1,6 +1,6 @@
 MODULE Purchase;
 
-REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchasePricing, PurchaseScheduleOrder;
+REQUIRE PurchaseShipment, PurchaseReturnShipment, PurchaseCreditNote, PurchaseReturnCreditNote, PurchaseScheduleOrder;
 
 //-----------------------------------------------------------------------------------------------------------//
 

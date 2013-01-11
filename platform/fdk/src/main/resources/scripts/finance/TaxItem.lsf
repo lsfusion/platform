@@ -1,4 +1,4 @@
-MODULE ItemTax;
+MODULE TaxItem;
 
 REQUIRE System, Historizable, Item, StockTax;
 

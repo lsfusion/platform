@@ -1,9 +1,0 @@
-MODULE PricingStore;
-
-REQUIRE Pricing, Store;
-
-EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
-
-EXTEND DESIGN departmentStore{
-    row21 { ADD PROPERTY(createPricingDepartmentStore);}
-}

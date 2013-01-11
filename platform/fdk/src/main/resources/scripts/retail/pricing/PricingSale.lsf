@@ -1,4 +1,4 @@
-MODULE SalePricing;
+MODULE PricingSale;
 
 REQUIRE Pricing, SaleInvoice, SaleShipment;
 
