@@ -212,7 +212,7 @@ META defineItemGroupAttributeShow (attribute, caption)
     quantityChildWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(childItemGroup) AND isParentItemGroupItemGroup(childItemGroup, itemGroup) BY itemGroup PERSISTENT;
     quantityParentWith###attribute##ItemGroup (itemGroup) = GROUP SUM 1 IF show###attribute##ItemGroup(parentItemGroup) AND isParentItemGroupItemGroup(itemGroup, parentItemGroup) BY itemGroup PERSISTENT;
 
-    hasShow###attribute##ItemGroup caption (itemGroup) = TRUE IF (quantityParentWith###attribute##ItemGroup (itemGroup) (+) quantityParentWith###attribute##ItemGroup (itemGroup)) > 0 PERSISTENT;
+    hasShow###attribute##ItemGroup caption (itemGroup) = TRUE IF (quantityChildWith###attribute##ItemGroup (itemGroup) (+) quantityParentWith###attribute##ItemGroup (itemGroup)) > 0 PERSISTENT;
 
     hasShow###attribute##Item caption (item) = TRUE IF quantityParentWith###attribute##ItemGroup(itemGroupItem(item)) OR show###attribute##Item (item);
 
