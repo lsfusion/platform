@@ -36,10 +36,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addModulesFromResource(
                 "/scripts/VEDScript.lsf",
                 "/scripts/Country.lsf",
-                "/scripts/Utils.lsf",
-                "/scripts/DefaultData.lsf",
+                "/scripts/utils/Utils.lsf",
+                "/scripts/utils/DefaultData.lsf",
                 "/scripts/Currency.lsf",
-                "/scripts/Backup.lsf");
+                "/scripts/utils/Backup.lsf");
     }
 
     PanelExternalScreen panelScreen;

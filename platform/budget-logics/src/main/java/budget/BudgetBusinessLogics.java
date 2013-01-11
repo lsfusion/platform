@@ -22,9 +22,9 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
         budgetLM = addModule(new BudgetLogicsModule(LM, this));
 
         addModulesFromResource(
-                "/scripts/DefaultData.lsf",
+                "/scripts/utils/DefaultData.lsf",
                 "/scripts/Currency.lsf",
-                "/scripts/Utils.lsf");
+                "/scripts/utils/Utils.lsf");
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
