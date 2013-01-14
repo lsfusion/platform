@@ -14,7 +14,10 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.HSet;
 import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.MCol;
+import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MOrderSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
@@ -52,7 +55,6 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
@@ -60,9 +62,6 @@ import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.logics.service.CancelRestartActionProperty;
-import platform.server.logics.service.GarbageCollectorActionProperty;
-import platform.server.logics.service.RestartActionProperty;
 import platform.server.logics.table.DataTable;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
@@ -80,6 +79,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -560,6 +560,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(emailLM);
         addModule(schedulerLM);
         addModule(i18nLM);
+    }
+
+    protected void addModulesFromResource(List<String> paths) {
+        for (String filePath : paths) {
+            if (new File(filePath).isFile())
+                addModule(new ScriptingLogicsModule(filePath, LM, this));
+            else {
+                Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
+                Collection<String> list = ResourceList.getResources(pattern);
+                for (String name : list) {
+                    addModule(new ScriptingLogicsModule(name, LM, this));
+                }
+            }
+        }
     }
 
     protected void addModulesFromResource(String... paths) throws IOException {
