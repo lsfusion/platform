@@ -1,4 +1,4 @@
-MODULE PurchaseSaleOrder;
+MODULE SalePurchaseOrder;
 
 REQUIRE SaleOrder, PurchaseOrder;
 

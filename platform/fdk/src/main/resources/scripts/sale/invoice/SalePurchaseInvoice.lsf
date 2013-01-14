@@ -1,4 +1,4 @@
-MODULE PurchaseSaleInvoice;
+MODULE SalePurchaseInvoice;
 
 REQUIRE SaleInvoice, PurchaseInvoice;
 

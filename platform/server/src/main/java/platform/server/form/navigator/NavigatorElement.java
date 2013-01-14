@@ -173,6 +173,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return 1;
     }
 
+    public void setImage(String icon) {
+        image = new ImageIcon(NavigatorElement.class.getResource(icon));
+    }
+
     public ImageIcon getImage() {
         return image;
     }
