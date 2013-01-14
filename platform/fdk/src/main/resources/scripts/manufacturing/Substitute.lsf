@@ -1,0 +1,77 @@
+MODULE  Substitute;
+
+REQUIRE BOM;
+
+// ---------------- Материалы ------------------- //
+CLASS substitute 'Замена';
+TABLE substitute(material);
+
+
+fromSkuSubstitute = DATA sku(substitute);
+nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(substitute)) AUTOSET IN recognize;
+
+toSkuSubstitute = DATA sku(substitute);
+nameToSkuSubstitute 'Товар на' (substitute)= nameSku(toSkuSubstitute(substitute)) IN recognize;
+
+multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (substitute);
+
+allBOMsSubstitute 'Во всех спецификациях'= DATA BOOLEAN (substitute);
+allBOMsSubstitute(substitute) <- TRUE WHEN ASSIGNED(substitute IS substitute);
+
+includeSubstituteComponent 'Вкл.'= DATA BOOLEAN (substitute, component);
+excludeSubstituteComponent 'Искл.'= DATA BOOLEAN (substitute, component);
+toShowIncludeSubstitute (substitute) = substitute IS substitute AND NOT allBOMsSubstitute(substitute);
+
+nameBOMComponent 'Спецификация' (component) = name(BOMComponent(component));
+seriesNumberBOMComponent 'Серия/номер спецификации' (component)= seriesNumberObject(BOMComponent(component));
+
+inMaterialComponent (material, component) = GROUP SUM 1 IF nettoQuantityComponent(component) BY materialComponent(component), component;
+inSubstituteComponent (substitute, component)= inMaterialComponent (fromSkuSubstitute(substitute), component);
+inMaterial (material) = GROUP SUM nettoQuantityComponent(component) BY materialComponent(component);
+
+inclSubstituteComponent 'Вкл.' (substitute, component)=  allBOMsSubstitute(substitute) AND NOT excludeSubstituteComponent(substitute, component) OR
+                                                         includeSubstituteComponent(substitute, component) AND NOT allBOMsSubstitute(substitute);
+
+
+FORM substitute 'Замена'
+
+    OBJECTS sk = sku
+    PROPERTIES(sk) READONLY nameSku, idBarcodeSku, shortNameUOMSku
+    FILTERGROUP filters
+        FILTER 'Есть в спецификациях' 'F11' inMaterial(sk) DEFAULT
+
+    OBJECTS s=substitute
+    PROPERTIES(s) nameFromSkuSubstitute, nameToSkuSubstitute, multiplierSubstitute, allBOMsSubstitute
+    PROPERTIES(s) ADDOBJ, delete
+
+    FILTERS fromSkuSubstitute(s)==sk
+
+    OBJECTS c = component
+    PROPERTIES(c) READONLY nameBOMComponent, seriesNumberBOMComponent, nameMaterialComponent, shortNameUOMComponent
+    PROPERTIES(s,c) SHOWIF toShowIncludeSubstitute(s) includeSubstituteComponent
+    PROPERTIES(s,c) SHOWIF allBOMsSubstitute(s) excludeSubstituteComponent
+    ORDER BY nameBOMComponent
+
+    FILTERS inSubstituteComponent(s,c)
+;
+
+DESIGN substitute FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW documentContainer BEFORE functions.box {
+            childConstraints = TO THE BOTTOM;
+            ADD sk.box;
+            NEW row {
+                childConstraints = TO THE RIGHT;
+                ADD s.box {fillHorizontal = 3;}
+                ADD c.box{fillHorizontal = 2;}
+            }
+        }
+    }
+}
+NAVIGATOR {
+    manufacturingCatalog 'Справочники' {
+        ADD substitute;
+    }
+}

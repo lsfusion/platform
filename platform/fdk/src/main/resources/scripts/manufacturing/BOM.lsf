@@ -156,27 +156,13 @@ DESIGN technologies FROM DEFAULT{
     }
 }
 
-
-
-//FORM technologiesDialog 'Технологии'
-//
-//    OBJECTS t=technology
-//    PROPERTIES(t)  READONLY name
-////    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-////    OBJECTS m=material
-////    PROPERTIES     READONLY nameMaterial(m), shortNameUOMMaterial(m), wastageTechnologyMaterial(t,m)
-////    ORDER BY nameMaterial
-////    FILTERS        wastageTechnologyMaterial(t,m)
-//    DIALOG technology OBJECT t
-//;
-
-
 // ---------------------- BOM'ы ----------------------
 
 CLASS BOM 'Спецификация' : named, numeratedObject, historizable;
 TABLE BOM (BOM);
 
 @defineDocumentHeaderNote(BOM);
+@defineNumeratedObjectDefault(BOM, 'Нумератор для спецификаций', 'СП');
 
 // ------------- Изделия ----------- //
 CLASS product 'Изделие' : externalizable, material;
@@ -257,21 +243,60 @@ nameTechnologyComponent 'Технология' (component) = name(technologyComp
 
 wastageComponent '% потерь'= DATA NUMERIC[8,3] (component);
 
+wastageComponentDate '% потерь' (component, date) = IF technologyComponent(component) THEN wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), date)
+                                                    ELSE wastageComponent(component) AND date IS DATE;
+curWastageComponent '% потерь' (component) =  wastageComponentDate(component, currentDate());
+
+overCurWastageComponent '% потерь' (component) =  wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate()) OR
+                                                  wastageComponent(component);
+changeWastageComponent = ACTION (component) {
+    REQUEST NUMERIC[8,3] INPUT;
+
+    IF requestedNumeric() AND NOT technologyComponent(component) THEN {
+        SET wastageComponent(component) <- requestedNumeric();
+    } ELSE {
+        SET wastageComponent(component) <- NULL;
+    }
+}
+backgroundWastageComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
+
+
 @defineDocumentDetailQuantityCustomPrefix (component, brutto, ' (брутто)');
 @defineDocumentHeaderQuantityCustomPrefix (BOM, component, brutto, ' (брутто компонент)');
+
+bruttoQuantityComponent(component) <- (nettoQuantityComponent(component)/(1 - (wastageComponent(component)/100))) WHEN CHANGED (wastageComponent(component)) OR
+                                                                                                                       CHANGED (nettoQuantityComponent(component));
 
 inTechnologyMaterial 'Связь' (technology,material) = GROUP SUM 1 IF dataWastageTechnologyMaterialDate(technology, material, date) BY technology, material;
 
 CONSTRAINT technologyComponent(component) AND NOT inTechnologyMaterial(technologyComponent(component),materialComponent(component))
     CHECKED BY technologyComponent MESSAGE 'Для компонента выбрана технология, у которой нет значения % потерь для SKU';
 
+bruttoQuantityComponentDate(component, date)= IF technologyComponent(component) THEN (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), date)/100)))
+    ELSE bruttoQuantityComponent(component) AND date IS DATE;
+curBruttoQuantityComponent 'Кол-во (брутто)' (component) =  bruttoQuantityComponentDate(component, currentDate());
+
+overCurBruttoQuantityComponent 'Кол-во (брутто)' (component) = (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate())/100))) OR
+                                                            bruttoQuantityComponent(component);
+changeBruttoQuantityComponent = ACTION (component) {
+    REQUEST NUMERIC[14,3] INPUT;
+
+    IF requestedNumeric() AND NOT technologyComponent(component) THEN {
+        SET bruttoQuantityComponent(component) <- requestedNumeric();
+    } ELSE {
+        SET bruttoQuantityComponent(component) <- NULL;
+    }
+}
+backgroundBruttoQuantityComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
+
 //------------------------------- Формы -------------------------------------//
 FORM BOM 'Спецификация'
 
     OBJECTS b=BOM FIXED PANEL
+    OBJECTS dt = DATE FIXED PANEL
 
-    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM,
-                  bruttoQuantityComponentBOM
+    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
+    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, bruttoQuantityComponentBOM
     OBJECTS p = product
     PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
 
@@ -281,7 +306,8 @@ FORM BOM 'Спецификация'
 
     OBJECTS c = component
     PROPERTIES(c) indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
-                  wastageComponent READONLYIF technologyComponent(c), bruttoQuantityComponent READONLYIF technologyComponent(c)
+                  overCurWastageComponent ON CHANGE EXEC changeWastageComponent(c) BACKGROUND backgroundWastageComponent(c) READONLYIF technologyComponent(c),
+                  overCurBruttoQuantityComponent ON CHANGE EXEC changeBruttoQuantityComponent(c) BACKGROUND backgroundBruttoQuantityComponent(c) READONLYIF technologyComponent(c)
 
     PROPERTIES(c) ADDOBJ, delete
     PROPERTIES(b) TODRAW c deleteComponentBOM
@@ -314,7 +340,6 @@ DESIGN BOM FROM DEFAULT{
                     ADD PROPERTY(numberObject);
                     ADD PROPERTY(seriesObject);
                 }
-
                 ADD b.documentPrmGroup {
                     childConstraints = TO THE RIGHTBOTTOM;
                 }
@@ -342,7 +367,7 @@ FORM BOMs 'Спецификации'
 
     OBJECTS c = component
     PROPERTIES(c) READONLY indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
-                  wastageComponent , bruttoQuantityComponent
+                  overCurWastageComponent, overCurBruttoQuantityComponent
     FILTERS       BOMComponent(c) == b
 ;
 
