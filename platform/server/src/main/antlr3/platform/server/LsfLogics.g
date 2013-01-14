@@ -2649,7 +2649,8 @@ literal returns [LP property]
 	|	vbool=booleanLiteral	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; value = $vbool.val; }
 	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { cls = ScriptingLogicsModule.ConstType.DATETIME; value = $vdatetime.val; }
-	|	venum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; value = $venum.sid; } 
+	|	vtime=timeLiteral 	{ cls = ScriptingLogicsModule.ConstType.TIME; value = $vtime.val; }
+	|	venum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; value = $venum.sid; }
 	|	vnull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
 	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
 	;
@@ -2714,7 +2715,11 @@ dateLiteral returns [java.sql.Date val]
 	;
 
 dateTimeLiteral returns [java.sql.Timestamp val]
-	: time=DATETIME_LITERAL { $val = self.dateTimeLiteralToTimestamp($time.text); }
+	:	time=DATETIME_LITERAL { $val = self.dateTimeLiteralToTimestamp($time.text); }
+	;
+
+timeLiteral returns [java.sql.Time val]
+	:	time=TIME_LITERAL { $val = self.timeLiteralToTime($time.text); }
 	;
 
 booleanLiteral returns [boolean val]
@@ -2824,6 +2829,7 @@ ULONG_LITERAL	:	DIGITS('l'|'L');
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT; 
 DATETIME_LITERAL:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT ':' DIGIT DIGIT;	
+TIME_LITERAL	:	DIGIT DIGIT ':' DIGIT DIGIT;
 NUMBERED_PARAM	:	'$' DIGITS;
 RECURSIVE_PARAM :	'$' FIRST_ID_LETTER NEXT_ID_LETTER*;	
 EQ_OPERAND		:	('==') | ('!=');

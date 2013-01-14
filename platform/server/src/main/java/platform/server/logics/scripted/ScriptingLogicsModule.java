@@ -59,6 +59,7 @@ import javax.mail.Message;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -104,7 +105,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return BL;
     }
 
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, DATETIME, COLOR, NULL }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
@@ -1326,6 +1327,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LOGICAL: return addCProp(LogicalClass.instance, value);
             case DATE: return addCProp(DateClass.instance, value);
             case DATETIME: return addCProp(DateTimeClass.instance, value);
+            case TIME: return addCProp(TimeClass.instance, value);
             case ENUM: return addStaticClassConst((String) value);
             case COLOR: return addCProp(ColorClass.instance, value);
             case NULL: return baseLM.vnull;
@@ -1344,6 +1346,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public Timestamp dateTimeLiteralToTimestamp(String text) {
         return new Timestamp(Integer.parseInt(text.substring(0, 4)) - 1900, Integer.parseInt(text.substring(5, 7)) - 1, Integer.parseInt(text.substring(8, 10)),
                 Integer.parseInt(text.substring(11, 13)), Integer.parseInt(text.substring(14, 16)), 0, 0);
+    }
+
+    public Time timeLiteralToTime(String text) {
+        return new Time(Integer.parseInt(text.substring(0, 2)), Integer.parseInt(text.substring(3, 5)), 0);
     }
 
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
