@@ -17,12 +17,12 @@ public class ClientToolbar extends ClientComponent {
     public boolean visible = true;
 
     public boolean showGroupChange = true;
-    public boolean showCountQuantity = true;
+    public boolean showCountRows = true;
     public boolean showCalculateSum = true;
-    public boolean showGroup = true;
-    public boolean showPrintGroupButton = true;
-    public boolean showPrintGroupXlsButton = true;
-    public boolean showHideSettings = true;
+    public boolean showGroupReport = true;
+    public boolean showPrint = true;
+    public boolean showXls = true;
+    public boolean showSettings = true;
 
     public ClientToolbar() {
     }
@@ -38,12 +38,12 @@ public class ClientToolbar extends ClientComponent {
         outStream.writeBoolean(visible);
 
         outStream.writeBoolean(showGroupChange);
-        outStream.writeBoolean(showCountQuantity);
+        outStream.writeBoolean(showCountRows);
         outStream.writeBoolean(showCalculateSum);
-        outStream.writeBoolean(showGroup);
-        outStream.writeBoolean(showPrintGroupButton);
-        outStream.writeBoolean(showPrintGroupXlsButton);
-        outStream.writeBoolean(showHideSettings);
+        outStream.writeBoolean(showGroupReport);
+        outStream.writeBoolean(showPrint);
+        outStream.writeBoolean(showXls);
+        outStream.writeBoolean(showSettings);
     }
 
     @Override
@@ -53,12 +53,12 @@ public class ClientToolbar extends ClientComponent {
         visible = inStream.readBoolean();
 
         showGroupChange = inStream.readBoolean();
-        showCountQuantity = inStream.readBoolean();
+        showCountRows = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
-        showGroup = inStream.readBoolean();
-        showPrintGroupButton = inStream.readBoolean();
-        showPrintGroupXlsButton = inStream.readBoolean();
-        showHideSettings = inStream.readBoolean();
+        showGroupReport = inStream.readBoolean();
+        showPrint = inStream.readBoolean();
+        showXls = inStream.readBoolean();
+        showSettings = inStream.readBoolean();
     }
 
 //    public void setShowFind(boolean showFind) {
@@ -89,40 +89,40 @@ public class ClientToolbar extends ClientComponent {
         updateDependency(this, "visible");
     }
 
-    public boolean getShowPrintGroupButton() {
-        return showPrintGroupButton;
+    public boolean getShowPrint() {
+        return showPrint;
     }
 
-    public void setShowPrintGroupButton(boolean showPrintGroupButton) {
-        this.showPrintGroupButton = showPrintGroupButton;
-        updateDependency(this, "showPrintGroupButton");
+    public void setShowPrint(boolean showPrint) {
+        this.showPrint = showPrint;
+        updateDependency(this, "showPrint");
     }
 
-    public boolean getShowPrintGroupXlsButton() {
-        return showPrintGroupXlsButton;
+    public boolean getShowXls() {
+        return showXls;
     }
 
-    public void setShowPrintGroupXlsButton(boolean showPrintGroupXlsButton) {
-        this.showPrintGroupXlsButton = showPrintGroupXlsButton;
-        updateDependency(this, "showPrintGroupXlsButton");
+    public void setShowXls(boolean showXls) {
+        this.showXls = showXls;
+        updateDependency(this, "showXls");
     }
 
-    public boolean getShowHideSettings() {
-        return showHideSettings;
+    public boolean getShowSettings() {
+        return showSettings;
     }
 
-    public void setShowHideSettings(boolean showHideSettings) {
-        this.showHideSettings = showHideSettings;
-        updateDependency(this, "showHideSettings");
+    public void setShowSettings(boolean showSettings) {
+        this.showSettings = showSettings;
+        updateDependency(this, "showSettings");
     }
 
-    public boolean getShowCountQuantity() {
-        return showCountQuantity;
+    public boolean getShowCountRows() {
+        return showCountRows;
     }
 
-    public void setShowCountQuantity(boolean showCountQuantity) {
-        this.showCountQuantity = showCountQuantity;
-        updateDependency(this, "showCountQuantity");
+    public void setShowCountRows(boolean showCountRows) {
+        this.showCountRows = showCountRows;
+        updateDependency(this, "showCountRows");
     }
 
     public boolean getShowGroupChange() {
@@ -143,13 +143,13 @@ public class ClientToolbar extends ClientComponent {
         updateDependency(this, "showCalculateSum");
     }
 
-    public boolean getShowGroup() {
-        return showGroup;
+    public boolean getShowGroupReport() {
+        return showGroupReport;
     }
 
-    public void setShowGroup(boolean showGroupButton) {
-        this.showGroup = showGroupButton;
-        updateDependency(this, "showGroup");
+    public void setShowGroupReport(boolean showGroupButton) {
+        this.showGroupReport = showGroupButton;
+        updateDependency(this, "showGroupReport");
     }
 
     @Override

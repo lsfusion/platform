@@ -16,7 +16,7 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
     }
 
     public void setShowCountQuantity(boolean showCountQuantity) {
-        target.showCountQuantity = showCountQuantity;
+        target.showCountRows = showCountQuantity;
     }
 
     public void setShowCalculateSum(boolean showCalculateSum) {
@@ -24,18 +24,18 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
     }
 
     public void setShowGroup(boolean showGroup) {
-        target.showGroup = showGroup;
+        target.showGroupReport = showGroup;
     }
 
     public void setShowPrintGroupButton(boolean showPrintGroupButton) {
-        target.showPrintGroupButton = showPrintGroupButton;
+        target.showPrint = showPrintGroupButton;
     }
 
     public void setShowPrintGroupXlsButton(boolean showPrintGroupXlsButton) {
-        target.showPrintGroupXlsButton = showPrintGroupXlsButton;
+        target.showXls = showPrintGroupXlsButton;
     }
 
     public void setShowHideSettings(boolean showHideSettings) {
-        target.showHideSettings = showHideSettings;
+        target.showSettings = showHideSettings;
     }
 }

@@ -152,12 +152,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GToolbar toolbar = initGwtComponent(clientToolbar, new GToolbar());
         toolbar.visible = clientToolbar.visible;
         toolbar.showGroupChange = clientToolbar.showGroupChange;
-        toolbar.showCountQuantity = clientToolbar.showCountQuantity;
+        toolbar.showCountQuantity = clientToolbar.showCountRows;
         toolbar.showCalculateSum = clientToolbar.showCalculateSum;
-        toolbar.showGroup = clientToolbar.showGroup;
-        toolbar.showPrintGroupButton = clientToolbar.showPrintGroupButton;
-        toolbar.showPrintGroupXlsButton = clientToolbar.showPrintGroupXlsButton;
-        toolbar.showHideSettings = clientToolbar.showHideSettings;
+        toolbar.showGroup = clientToolbar.showGroupReport;
+        toolbar.showPrintGroupButton = clientToolbar.showPrint;
+        toolbar.showPrintGroupXlsButton = clientToolbar.showXls;
+        toolbar.showHideSettings = clientToolbar.showSettings;
         return toolbar;
     }
 

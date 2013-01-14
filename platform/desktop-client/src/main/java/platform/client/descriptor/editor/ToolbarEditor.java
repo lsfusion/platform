@@ -15,9 +15,9 @@ public class ToolbarEditor extends ComponentEditor {
         setComponentAt(index, new NorthBoxPanel(defaultComponentEditor, sizesEditor, designEditor,
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.visible"), component, "visible")),
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroupchange"), component, "showGroupChange")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcountquantity"), component, "showCountQuantity")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcountquantity"), component, "showCountRows")),
                 new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcalculatesum"), component, "showCalculateSum")),
-                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroup"), component, "showGroup"))
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroup"), component, "showGroupReport"))
         ));
     }
 }

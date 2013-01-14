@@ -106,7 +106,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
             addToToolbar(grid.createGroupChangeButton());
         }
 
-        if (groupObject.toolbar.showCountQuantity) {
+        if (groupObject.toolbar.showCountRows) {
             addToToolbar(grid.createCountQuantityButton());
         }
 
@@ -114,22 +114,22 @@ public class GroupObjectController extends AbstractGroupObjectController {
             addToToolbar(grid.craeteCalculateSumButton());
         }
 
-        if (groupObject.toolbar.showGroup) {
+        if (groupObject.toolbar.showGroupReport) {
             addToToolbar(grid.createGroupButton());
         }
 
         addToToolbar(Box.createHorizontalStrut(5));
 
-        if (groupObject.toolbar.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
+        if (groupObject.toolbar.showPrint && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
             addToToolbar(grid.createPrintGroupButton());
         }
 
-        if (groupObject.toolbar.showPrintGroupXlsButton && Main.module.isFull()) {
+        if (groupObject.toolbar.showXls && Main.module.isFull()) {
             addToToolbar(grid.createPrintGroupXlsButton());
             addToToolbar(Box.createHorizontalStrut(5));
         }
 
-        if (groupObject.toolbar.showHideSettings) {
+        if (groupObject.toolbar.showSettings) {
             addToToolbar(grid.createHideSettingsButton());
             addToToolbar(Box.createHorizontalStrut(5));
         }
