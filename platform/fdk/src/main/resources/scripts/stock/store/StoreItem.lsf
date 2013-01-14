@@ -1,0 +1,43 @@
+MODULE StoreItem;
+
+REQUIRE Store, Item;
+
+TABLE itemDepartmentStore (item, departmentStore);
+TABLE itemDepartmentStoreDate (item, departmentStore, DATE);
+
+EXTEND FORM item
+
+    // Управленческие параметры
+    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
+    PROPERTIES READONLY OBJVALUE(a), name(t), name(st), name(s)
+    FILTERS stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore (st, s)
+
+    OBJECTS dt=DATE FIXED PANEL, d=departmentStore
+    PROPERTIES (d) name
+    FILTERS inChainStoresStoreTypeStoreDepartmentStore(t, st, s, d)
+
+    PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
+;
+@extendFormFilterStockAccess(departmentStore, d, item);
+@extendFormFilterStockGroupAccess(chainStores, t, item, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, item, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, item, accessEmployeeEmployeeDivisionGroup);
+
+EXTEND DESIGN item {
+    itemDetail {
+        ADD d.box AFTER itemPrimary {
+            title = 'Управленческие параметры';
+
+            fillVertical = 1.0;
+            fillHorizontal = 1.0;
+            ADD dt.box BEFORE d.grid.box;
+            ADD treeStore.tree.box BEFORE d.grid.box;
+            POSITION treeStore.tree.box TO THE LEFT d.grid.box;
+            POSITION d.grid.box TO THE LEFT d.panel;
+            d.grid.box {
+                fillHorizontal = 3;
+            }
+        }
+    }
+}
+

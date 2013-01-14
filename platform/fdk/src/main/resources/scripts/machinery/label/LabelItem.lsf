@@ -1,0 +1,36 @@
+MODULE LabelItem;
+
+REQUIRE Label, StoreItem;
+
+GROUP labelGroup 'Ценник' : public;
+
+defaultLabelTypeItemDepartmentStore(item, departmentStore) = defaultLabelTypeDepartmentStore(departmentStore) AND item IS item;
+@defineHistorizableCustomDefault(labelItemDepartmentStore, defaultLabelTypeItemDepartmentStore, 'Ценник', labelType, name, item, nameAttributeItem, departmentStore, name, 10, labelGroup);
+labelBarcodeDepartmentStoreDate (barcode, departmentStore, date) = labelItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
+
+CONSTRAINT dataLabelItemDepartmentStoreDate(item, departmentStore, date) AND NOT inLabelTypeDepartmentStore(dataLabelItemDepartmentStoreDate(item, departmentStore, date), departmentStore)
+    CHECKED BY dataLabelItemDepartmentStoreDate MESSAGE 'Тип ценника запрещен для выбранного отдела магазина';
+
+@defineHistorizable(multiplierItemDepartmentStore, 'Множитель', INTEGER, item, nameAttributeItem, departmentStore, name, labelGroup);
+valOverMultiplierItemDepartmentStoreDate (item, departmentStore, date) = UNION OVERRIDE 1 IF item IS item AND departmentStore IS departmentStore AND date IS DATE,
+                                                                                        multiplierItemDepartmentStoreDate(item, departmentStore, date);
+valOverMultiplierBarcodeDepartmentDate (barcode, departmentStore, date) = valOverMultiplierItemDepartmentStoreDate(skuBarcode(barcode), departmentStore, date);
+
+labelTypeBarcodeDepartmentStoreDate (barcode, departmentStore, date) += labelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
+countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOverMultiplierBarcodeDepartmentDate(barcode, departmentStore, date);
+
+
+EXTEND FORM item
+    PROPERTIES overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),
+               overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt), overDialogMultiplierItemDepartmentStoreDate(i, d)
+;
+
+overCopyItem(s, d) += ACTION (s, d) {
+    FOR dataLabelItemDepartmentStoreDate(s, ds, dt) DO {
+        SET dateLabelItemDepartmentStoreDate(d, ds, dt) <- dataLabelItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
+    }
+
+    FOR dataMultiplierItemDepartmentStoreDate(s, ds, dt) DO {
+        SET dataMultiplierItemDepartmentStoreDate(d, ds, dt) <- dataMultiplierItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
+    }
+}
