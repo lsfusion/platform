@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements EquipmentServerHolder {
     ScriptingLogicsModule retailLM;
+    ScriptingLogicsModule importLM;
     EquipmentServer equipmentServer;
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
@@ -181,6 +182,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/machinery/label/LabelItem.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
+
+        importLM = addModuleFromResource("/scripts/import.lsf");
 
         equipmentServer = new EquipmentServer(retailLM);
         

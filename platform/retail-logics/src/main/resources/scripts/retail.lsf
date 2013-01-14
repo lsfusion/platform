@@ -143,60 +143,6 @@ EXTEND DESIGN defaultData {
         }
     }
 }
-//---------------------------------------------- Импорт данных -----------------------------------------------------//
-
-GROUP lstradeIntegrationGroup 'LS Trade' : public;
-
-importLSTDataAction 'Импортировать данные (LS Trade)' = ACTION CUSTOM 'retail.ImportLSTDataActionProperty' IN lstradeIntegrationGroup;
-importLSTDirectory 'Папка' = DATA STRING[200] () IN lstradeIntegrationGroup;
-importInactive 'Импортировать в том числе неактивные' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importWares 'Импортировать посуду' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importItems 'Импортировать товары' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importNumberItems 'Кол-во' = DATA INTEGER () IN lstradeIntegrationGroup;
-importNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN lstradeIntegrationGroup;
-importPrices 'Импортировать цены товаров' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importAssortment 'Импортировать ассортимент' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importWarehouses 'Импортировать склады' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importStores 'Импортировать магазины' = DATA BOOLEAN () IN lstradeIntegrationGroup;
-importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importBanks 'Импортировать банки' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-importRateWastes 'Импортировать нормы отходов' = DATA BOOLEAN() IN lstradeIntegrationGroup;
-
-EXTEND FORM integrationData
-    PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
-    importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importUserInvoices,
-    importLegalEntities, importWarehouses, importStores, importDepartmentStores, importBanks, importRateWastes
-;
-EXTEND DESIGN integrationData {
-    pane {
-        NEW lstrade {
-            title = 'LS Trade';
-            ADD NOGROUP.lstradeIntegrationGroup;
-        }
-    }
-}
-
-GROUP formularGroup 'Formular' : public;
-
-importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'retail.ImportDataActionProperty'IN formularGroup;
-importUrl 'URL' = DATA STRING[200]() IN formularGroup;
-importLogin 'Логин' = DATA STRING[200]() IN formularGroup;
-importPassword 'Пароль' = DATA STRING[200]() IN formularGroup;
-
-EXTEND FORM integrationData
-    PROPERTIES() importDataAction, importUrl, importLogin, importPassword
-;
-EXTEND DESIGN integrationData {
-    pane {
-        NEW formular {
-            title = 'Formular';
-            ADD NOGROUP.formularGroup;
-        }
-    }
-}
 
 //---------------------------- Настройка навигатора ----------------------------------------//
 

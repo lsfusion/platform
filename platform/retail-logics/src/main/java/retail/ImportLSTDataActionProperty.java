@@ -88,9 +88,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                             numberOfItems == null ? 0 : (Integer) numberOfItems, numberOfItemsAtATime == null ? 5000 : (Integer) numberOfItemsAtATime);
                 }
 
-                if (getLCP("importPrices").read(context) != null) {
-                    importPrices(path + "//_grmcen.dbf", context);
-                }
+                //if (getLCP("importPrices").read(context) != null) {
+                //    importPrices(path + "//_grmcen.dbf", context);
+                //}
 
                 if (getLCP("importAssortment").read(context) != null) {
                     importAssortment(path + "//_strvar.dbf", context);
@@ -240,15 +240,15 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportField nameBrandField = new ImportField(getLCP("name"));
         ImportField nameCountryField = new ImportField(getLCP("name"));
         ImportField barcodeField = new ImportField(getLCP("idBarcode"));
-        ImportField dateField = new ImportField(getLCP("date"));
-        ImportField importerPriceField = new ImportField(getLCP("dataImporterPriceItemDate"));
-        ImportField percentWholesaleMarkItemField = new ImportField(getLCP("percentWholesaleMarkItem"));
-        ImportField isFixPriceItemField = new ImportField(getLCP("isFixPriceItem"));
-        ImportField isLoafCutItemField = new ImportField(getLCP("isLoafCutItem"));
+        ImportField dateField = new ImportField(DateClass.instance);
+        //ImportField importerPriceField = new ImportField(getLCP("dataImporterPriceItemDate"));
+        //ImportField percentWholesaleMarkItemField = new ImportField(getLCP("percentWholesaleMarkItem"));
+        //ImportField isFixPriceItemField = new ImportField(getLCP("isFixPriceItem"));
+        //ImportField isLoafCutItemField = new ImportField(getLCP("isLoafCutItem"));
         ImportField isWeightItemField = new ImportField(getLCP("isWeightItem"));
         ImportField compositionField = new ImportField(getLCP("compositionScalesItem"));
-        ImportField dataSuppliersRangeItemField = new ImportField(getLCP("valueRate"));
-        ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
+        //ImportField dataSuppliersRangeItemField = new ImportField(getLCP("valueRate"));
+        //ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
         ImportField valueVATItemCountryDateField = new ImportField(getLCP("valueVATItemCountryDate"));
 //        ImportField quantityPackItemField = new ImportField(getLCP("quantityPackItem"));
         ImportField wareIDField = new ImportField(getLCP("sidExternalizable"));
@@ -276,11 +276,11 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) getClass("barcode"),
                 getLCP("barcodeIdDate").getMapping(barcodeField, dateField));
 
-        ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLCP("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeItemField));
+        //ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+        //        getLCP("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeItemField));
 
-        ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
-                getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATItemField));
+        //ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
+        //        getLCP("valueCurrentVATDefaultValue").getMapping(valueRetailVATItemField));
 
         ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) getClass("range"),
                 getLCP("valueCurrentVATDefaultValue").getMapping(valueVATItemCountryDateField));
@@ -323,16 +323,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
         props.add(new ImportProperty(itemIDField, getLCP("skuBarcode").getMapping(barcodeKey),
                 LM.object(getClass("item")).getMapping(itemKey)));
 
-        props.add(new ImportProperty(importerPriceField, getLCP("dataImporterPriceItemDate").getMapping(itemKey, dateField)));
-        props.add(new ImportProperty(percentWholesaleMarkItemField, getLCP("percentWholesaleMarkItem").getMapping(itemKey)));
-        props.add(new ImportProperty(isFixPriceItemField, getLCP("isFixPriceItem").getMapping(itemKey)));
-        props.add(new ImportProperty(isLoafCutItemField, getLCP("isLoafCutItem").getMapping(itemKey)));
+        //props.add(new ImportProperty(importerPriceField, getLCP("dataImporterPriceItemDate").getMapping(itemKey, dateField)));
+        //props.add(new ImportProperty(percentWholesaleMarkItemField, getLCP("percentWholesaleMarkItem").getMapping(itemKey)));
+        //props.add(new ImportProperty(isFixPriceItemField, getLCP("isFixPriceItem").getMapping(itemKey)));
+        //props.add(new ImportProperty(isLoafCutItemField, getLCP("isLoafCutItem").getMapping(itemKey)));
         props.add(new ImportProperty(isWeightItemField, getLCP("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, getLCP("compositionScalesItem").getMapping(itemKey)));
-        props.add(new ImportProperty(dataSuppliersRangeItemField, getLCP("dataSupplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
-                LM.object(getClass("range")).getMapping(supplierVATKey)));
-        props.add(new ImportProperty(valueRetailVATItemField, getLCP("dataRetailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
-                LM.object(getClass("range")).getMapping(retailVATKey)));
+        //props.add(new ImportProperty(dataSuppliersRangeItemField, getLCP("dataSupplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
+        //        LM.object(getClass("range")).getMapping(supplierVATKey)));
+        //props.add(new ImportProperty(valueRetailVATItemField, getLCP("dataRetailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
+        //        LM.object(getClass("range")).getMapping(retailVATKey)));
         props.add(new ImportProperty(valueVATItemCountryDateField, getLCP("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
                 LM.object(getClass("range")).getMapping(VATKey)));
 //        props.add(new ImportProperty(quantityPackItemField, getLCP("quantityPackItem").getMapping(itemKey)));
@@ -350,13 +350,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
                 nameUOMField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
-                importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, isWeightItemField,
-                compositionField, dataSuppliersRangeItemField, valueRetailVATItemField, valueVATItemCountryDateField, wareIDField, //quantityPackItemField, wareIDField,
+                /*importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, */isWeightItemField,
+                compositionField, /*dataSuppliersRangeItemField, valueRetailVATItemField, */valueVATItemCountryDateField, wareIDField, //quantityPackItemField, wareIDField,
                 priceWareField, ndsWareField, writeOffRateIDField), data);
 
         DataSession session = createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
-                brandKey, countryKey, barcodeKey, supplierVATKey, retailVATKey, VATKey, wareKey, rangeKey, writeOffRateKey), props);
+                brandKey, countryKey, barcodeKey, /*supplierVATKey, retailVATKey, */VATKey, wareKey, rangeKey, writeOffRateKey), props);
         service.synchronize(true, false);
         applySession(session);
         session.close();
@@ -374,7 +374,7 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 ImportField itemIDField = new ImportField(getLCP("sidExternalizable"));
                 ImportField departmentStoreIDField = new ImportField(getLCP("sidExternalizable"));
-                ImportField dateField = new ImportField(getLCP("date"));
+                ImportField dateField = new ImportField(DateClass.instance);
                 ImportField priceField = new ImportField(getLCP("dataRetailPriceItemDepartmentDate"));
                 ImportField markupField = new ImportField(getLCP("dataMarkupItemDepartmentDate"));
 
@@ -532,8 +532,6 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                 ImportField pricePriceListDetailDataPriceListTypeField = new ImportField(getLCP("pricePriceListDetailDataPriceListType"));
                 ImportField inPriceListPriceListTypeField = new ImportField(getLCP("inPriceListDataPriceListType"));
 
-                ImportKey<?> userPriceListDetailKey = new ImportKey((ConcreteCustomClass) getClass("userPriceListDetail"),
-                        getLCP("userPriceListDetailSkuUserPriceList").getMapping(itemField, userPriceListField));
 
                 ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) getClass("legalEntity"),
                         getLCP("externalizableSID").getMapping(legalEntityField));
@@ -546,6 +544,9 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) getClass("currency"),
                         getLCP("currencyShortName").getMapping(currencyField));
+
+                ImportKey<?> userPriceListDetailKey = new ImportKey((ConcreteCustomClass) getClass("userPriceListDetail"),
+                        getLCP("userPriceListDetailSkuSIDUserPriceListSID").getMapping(itemField, userPriceListField));
 
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -1061,16 +1062,16 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
                     country = "БЕЛАРУСЬ";
                 String dateString = new String(itemsImportFile.getField("P_TIME").getBytes(), "Cp1251").trim();
                 Date date = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
-                Double importerPrice = new Double(new String(itemsImportFile.getField("N_IZG").getBytes(), "Cp1251").trim());
-                Double percentWholesaleMarkItem = new Double(new String(itemsImportFile.getField("N_OPT").getBytes(), "Cp1251").trim());
-                Boolean isFixPriceItem = "T".equals(new String(itemsImportFile.getField("LFIXEDPRC").getBytes(), "Cp1251").substring(0, 1));
-                Boolean isLoafCutItem = "T".equals(new String(itemsImportFile.getField("LSPLIT").getBytes(), "Cp1251").substring(0, 1));
+                //Double importerPrice = new Double(new String(itemsImportFile.getField("N_IZG").getBytes(), "Cp1251").trim());
+                //Double percentWholesaleMarkItem = new Double(new String(itemsImportFile.getField("N_OPT").getBytes(), "Cp1251").trim());
+                //Boolean isFixPriceItem = "T".equals(new String(itemsImportFile.getField("LFIXEDPRC").getBytes(), "Cp1251").substring(0, 1));
+                //Boolean isLoafCutItem = "T".equals(new String(itemsImportFile.getField("LSPLIT").getBytes(), "Cp1251").substring(0, 1));
                 Boolean isWeightItem = "T".equals(new String(itemsImportFile.getField("LWEIGHT").getBytes(), "Cp1251").substring(0, 1));
                 String composition = null;
                 if (itemsImportFile.getField("FORMULA").getBytes() != null) {
                     composition = new String(itemsImportFile.getField("FORMULA").getBytes(), "Cp1251").replace("\n", "").replace("\r", "");
                 }
-                Double suppliersRange = new Double(new String(itemsImportFile.getField("NDSP").getBytes(), "Cp1251").trim());
+                //Double suppliersRange = new Double(new String(itemsImportFile.getField("NDSP").getBytes(), "Cp1251").trim());
                 Double retailVAT = new Double(new String(itemsImportFile.getField("NDSR").getBytes(), "Cp1251").trim());
                 Double quantityPackItem = quantities.containsKey(itemID) ? quantities.get(itemID) : null;
                 Boolean isWare = "T".equals(new String(itemsImportFile.getField("LGRMSEC").getBytes(), "Cp1251").substring(0, 1));
@@ -1081,8 +1082,8 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
 
                 if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                     data.add(Arrays.asList((Object) itemID, k_grtov, pol_naim, "U_" + UOM, UOM, brand, "B_" + brand, country, barcode,
-                            date, importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, isWeightItem ? isWeightItem : null,
-                            "".equals(composition) ? null : composition, suppliersRange, retailVAT, retailVAT, quantityPackItem, wareID,
+                            date, /*importerPrice, percentWholesaleMarkItem, isFixPriceItem ? isFixPriceItem : null, isLoafCutItem ? isLoafCutItem : null, */isWeightItem ? isWeightItem : null,
+                            "".equals(composition) ? null : composition, /*suppliersRange, retailVAT, */retailVAT, wareID,/*quantityPackItem, wareID,*/
                             wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
                             "RW_".equals(rateWasteID) ? null : rateWasteID));
             } catch (ParseException e) {
@@ -1090,6 +1091,13 @@ public class ImportLSTDataActionProperty extends ScriptingActionProperty {
             }
         }
         return data;
+
+        //ImportField importerPriceField = new ImportField(getLCP("dataImporterPriceItemDate"));
+        //ImportField percentWholesaleMarkItemField = new ImportField(getLCP("percentWholesaleMarkItem"));
+        //ImportField isFixPriceItemField = new ImportField(getLCP("isFixPriceItem"));
+        //ImportField isLoafCutItemField = new ImportField(getLCP("isLoafCutItem"));
+        //ImportField dataSuppliersRangeItemField = new ImportField(getLCP("valueRate"));
+        //ImportField valueRetailVATItemField = new ImportField(getLCP("valueRate"));
     }
 
     private List<List<Object>> importPricesFromDBF(String path, int start, int count) throws IOException, xBaseJException {

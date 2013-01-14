@@ -235,7 +235,7 @@ toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPr
 toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 
 userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyPriceList(userPriceList) WHERE userPriceList IS userPriceList;
-userPriceListDetailSkuUserPriceList (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY skuUserPriceListDetail (userPriceListDetail), userPriceListUserPriceListDetail (userPriceListDetail) WHERE userPriceListDetail IS userPriceListDetail;
+userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
 
 pricePriceListDetailDataPriceListType 'Цена (новая)' = ABSTRACT NUMERIC[14,2] (priceListDetail, dataPriceListType) PERSISTENT;
 priceUserPriceListDetailDataPriceListType 'Цена (новая)' = DATA NUMERIC[14,2] (priceListDetail, dataPriceListType);
