@@ -98,7 +98,19 @@ REQUIRE System,
         WarePriceList,
         ScheduleOrder,
         SaleScheduleOrder,
-        PurchaseScheduleOrder;
+        PurchaseScheduleOrder,
+        Certificate,
+        PurchaseCertificate,
+        SaleCertificate,
+        Declaration,
+        PurchaseDeclaration,
+        SaleDeclaration,
+        Compliance,
+        PurchaseCompliance,
+        SaleCompliance,
+        Sanitation,
+        PurchaseSanitation,
+        SaleSanitation;
 
 // ----------------------------------- Товарный классификатор ------------------------------------------ //
 

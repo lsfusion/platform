@@ -1,0 +1,47 @@
+MODULE Sanitation;
+
+REQUIRE Certificate;
+
+CLASS sanitation 'ГГР' : certificate;
+
+@defineDocumentHeaderTimePrefix(sanitation, ,' создания');
+@defineDocumentHeaderTimePrefix(sanitation, to, ' действия');
+registrationNumberSanitation 'Регистарционный номер' = DATA NUMERIC[14,3] (sanitation);
+
+@implementDocumentHeaderTimePrefix(certificate, , sanitation, );
+@implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
+registrationNumberCertificate(sanitation) += registrationNumberSanitation(sanitation);
+
+descriptionSanitation 'ГГР' (sanitation) =
+    [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
+    (registrationNumberSanitation(sanitation), dateSanitation(sanitation), toDateSanitation(sanitation));
+
+FORM sanitation
+    OBJECTS s = sanitation FIXED PANEL
+    PROPERTIES(s) registrationNumberSanitation, dateSanitation, timeSanitation, toDateSanitation, toTimeSanitation
+    EDIT sanitation OBJECT s
+;
+
+DESIGN sanitation FROM DEFAULT{
+    main{
+        ADD PROPERTY(registrationNumberSanitation);
+        ADD PROPERTY(dateSanitation);
+        ADD PROPERTY(timeSanitation);
+        ADD PROPERTY(toDateSanitation);
+        ADD PROPERTY(toTimeSanitation);
+    }
+    ADD functions.box;
+}
+
+FORM sanitations
+    OBJECTS s = sanitation
+    PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
+    PROPERTIES(s) ADDFORM, EDITFORM, delete
+;
+
+FORM sanitationsDialog
+    OBJECTS s = sanitation
+    PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
+
+    DIALOG sanitation OBJECT s
+;

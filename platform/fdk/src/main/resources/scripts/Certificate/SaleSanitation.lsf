@@ -1,0 +1,7 @@
+MODULE SaleSanitation;
+
+REQUIRE Sanitation, SaleCertificate, SaleInvoice;
+
+NAMESPACE Sale;
+
+@defineCertificateInvoice(sanitation, 'ГГР');

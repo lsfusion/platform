@@ -179,7 +179,20 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/region/by/transport/TripBy.lsf",
                 "/scripts/region/by/transport/TripInvoiceBy.lsf",
                 "/scripts/stock/store/StoreItem.lsf",
-                "/scripts/machinery/label/LabelItem.lsf"
+                "/scripts/machinery/label/LabelItem.lsf",
+                "/scripts/Certificate/Certificate.lsf",
+                "/scripts/Certificate/PurchaseCertificate.lsf",
+                "/scripts/Certificate/SaleCertificate.lsf",
+                "/scripts/Certificate/Declaration.lsf",
+                "/scripts/Certificate/PurchaseDeclaration.lsf",
+                "/scripts/Certificate/SaleDeclaration.lsf",
+                "/scripts/Certificate/Compliance.lsf",
+                "/scripts/Certificate/PurchaseCompliance.lsf",
+                "/scripts/Certificate/SaleCompliance.lsf",
+                "/scripts/Certificate/Sanitation.lsf",
+                "/scripts/Certificate/PurchaseSanitation.lsf",
+                "/scripts/Certificate/SaleSanitation.lsf"
+                
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
 

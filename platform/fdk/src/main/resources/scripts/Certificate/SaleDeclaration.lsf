@@ -1,0 +1,7 @@
+MODULE SaleDeclaration;
+
+REQUIRE Declaration, SaleCertificate, SaleInvoice;
+
+NAMESPACE Sale;
+
+@defineCertificateInvoice(declaration, 'Таможенная декларация');

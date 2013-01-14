@@ -1,0 +1,47 @@
+MODULE Compliance;
+
+REQUIRE Certificate;
+
+CLASS compliance 'Сертификат соответствия' : certificate;
+
+@defineDocumentHeaderTimePrefix(compliance, ,' создания');
+@defineDocumentHeaderTimePrefix(compliance, to, ' действия');
+registrationNumberCompliance 'Регистарционный номер' = DATA NUMERIC[14,3] (compliance);
+
+@implementDocumentHeaderTimePrefix(certificate, , compliance, );
+@implementDocumentHeaderTimePrefix(certificate, to, compliance, to);
+registrationNumberCertificate(compliance) += registrationNumberCompliance(compliance);
+
+descriptionCompliance 'Сертификат соответствия' (compliance) =
+    [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
+    (registrationNumberCompliance(compliance), dateCompliance(compliance), toDateCompliance(compliance));
+
+FORM compliance
+    OBJECTS c = compliance FIXED PANEL
+    PROPERTIES(c) registrationNumberCompliance, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance
+    EDIT compliance OBJECT c
+;
+
+DESIGN compliance FROM DEFAULT{
+    main{
+        ADD PROPERTY(registrationNumberCompliance);
+        ADD PROPERTY(dateCompliance);
+        ADD PROPERTY(timeCompliance);
+        ADD PROPERTY(toDateCompliance);
+        ADD PROPERTY(toTimeCompliance);
+    }
+    ADD functions.box;
+}
+
+FORM compliances
+    OBJECTS c = compliance
+    PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
+    PROPERTIES(c) ADDFORM, EDITFORM, delete
+;
+
+FORM compliancesDialog
+    OBJECTS c = compliance
+    PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
+
+    DIALOG compliance OBJECT c
+;

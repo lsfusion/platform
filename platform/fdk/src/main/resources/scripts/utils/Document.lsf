@@ -134,6 +134,10 @@ META defineDocumentInterfaceHeaderTimePrefix(object, prefix, caption)
     prefix###date###object(object) += prefix###date##User###object(object);
     prefix###time###object(object) += prefix###time##User###object(object);
 END
+META implementDocumentHeaderTimePrefix(abstract, prefixA, concrete, prefixB)
+    prefixA###date###abstract(concrete) += prefixB###date###concrete(concrete);
+    prefixA###time###abstract(concrete) += prefixB###time###concrete(concrete);
+END
 
 META defineDocumentHeaderTime (object)
     @defineDocumentHeaderTimePrefix(object, ,' документа');

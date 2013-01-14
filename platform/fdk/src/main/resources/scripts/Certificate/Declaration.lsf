@@ -1,0 +1,43 @@
+MODULE Declaration;
+
+REQUIRE Certificate;
+
+CLASS declaration 'Таможенная декларация' : certificate;
+
+@defineDocumentHeaderTimePrefix(declaration, ,' создания');
+registrationNumberDeclaration 'Регистарционный номер' = DATA NUMERIC[14,3] (declaration);
+
+@implementDocumentHeaderTimePrefix(certificate, , declaration, );
+registrationNumberCertificate(declaration) += registrationNumberDeclaration(declaration);
+
+descriptionDeclaration 'Таможенная декларация' (declaration) =
+    [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)']
+    (registrationNumberDeclaration(declaration), dateDeclaration(declaration));
+
+FORM declaration
+    OBJECTS d = declaration FIXED PANEL
+    PROPERTIES(d) registrationNumberDeclaration, dateDeclaration, timeDeclaration
+    EDIT declaration OBJECT d
+;
+
+DESIGN declaration FROM DEFAULT{
+    main{
+        ADD PROPERTY(registrationNumberDeclaration);
+        ADD PROPERTY(dateDeclaration);
+        ADD PROPERTY(timeDeclaration);
+    }
+    ADD functions.box;
+}
+
+FORM declarations
+    OBJECTS d = declaration
+    PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+;
+
+FORM declarationsDialog
+    OBJECTS d = declaration
+    PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
+
+    DIALOG declaration OBJECT d
+;

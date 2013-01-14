@@ -1,0 +1,7 @@
+MODULE SaleCompliance;
+
+REQUIRE Compliance, SaleCertificate, SaleInvoice;
+
+NAMESPACE Sale;
+
+@defineCertificateInvoice(compliance, 'Сертификат соответствия');

@@ -1,0 +1,7 @@
+MODULE PurchaseSanitation;
+
+REQUIRE Sanitation, PurchaseCertificate, PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+@defineCertificateInvoice(sanitation, 'ГГР');
