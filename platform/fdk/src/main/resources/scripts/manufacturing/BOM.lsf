@@ -389,7 +389,7 @@ DESIGN BOMs FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW manufacturingNavigator 'Производство' {
+    NEW manufacturingNavigator 'Производство' IMAGE '/images/plant.png' {
         NEW manufacturingDocuments 'Документы';
         NEW manufacturingCatalog 'Справочники' {
             ADD BOMs;

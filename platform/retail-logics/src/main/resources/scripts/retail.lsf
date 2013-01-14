@@ -268,14 +268,14 @@ EXTEND DESIGN integrationData {
 
 NAVIGATOR {
 
-    NEW purchase 'Закупки' TO toolbar {
+    NEW purchase 'Закупки' TO toolbar IMAGE '/images/boxes.png' {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
         ADD purchaseNavigator;
         ADD stockReserveNavigator;
     }
 
-    NEW warehouse 'Склад' TO toolbar {
+    NEW warehouse 'Склад' TO toolbar IMAGE '/images/warehouse.png' {
         ADD inventoryNavigator;
         ADD naturalLossNavigator;
         ADD writeOffNavigator;
@@ -294,14 +294,15 @@ NAVIGATOR {
         }
     }
 
-    NEW sale 'Продажи' TO toolbar {
+    NEW sale 'Продажи' TO toolbar IMAGE '/images/checkout.png' {
         ADD saleSaleNavigator;
         ADD saleReturnNavigator;
         ADD salesNavigator;
         ADD statisticsNavigator;
     }
 
-    NEW retail 'Розничная торговля' TO toolbar {
+    NEW retail 'Розничная торговля' TO toolbar IMAGE '/images/shopping.png' {
+
         ADD POSNavigator;
         NEW priceAccount 'Учет в розничных ценах' {
             ADD pricings;
@@ -320,7 +321,7 @@ NAVIGATOR {
     ADD transportNavigator TO toolbar;
     ADD machineryNavigator TO toolbar;
 
-    NEW finance 'Финансы' TO toolbar {
+    NEW finance 'Финансы' TO toolbar IMAGE '/images/money.png' {
         ADD contractNavigator;
         NEW financeCatalog 'Справочники' {
             ADD banks;
@@ -328,7 +329,7 @@ NAVIGATOR {
         }
     }
 
-    NEW hr 'Кадры' TO toolbar {
+    NEW hr 'Кадры' TO toolbar IMAGE '/images/people.png' {
         ADD employees;
     }
 
@@ -344,6 +345,7 @@ NAVIGATOR {
              ADD contractSkus;
          }
     }
+
     ADD administration;
     ADD account;
 }

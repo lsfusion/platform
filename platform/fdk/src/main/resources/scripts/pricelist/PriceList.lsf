@@ -897,7 +897,7 @@ EXTEND DESIGN legalEntity{
 
 
 NAVIGATOR {
-    NEW priceListNavigator 'Цены' {
+    NEW priceListNavigator 'Цены' IMAGE '/images/label.png' {
         NEW priceListDocuments 'Документы' {
             ADD userPriceLists;
         }

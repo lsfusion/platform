@@ -843,14 +843,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         masterData = addNavigatorElement(root, "masterData", getString("logics.administration.masterData"));
         masterData.window = windows.toolbar;
+        masterData.setImage("/images/catalog.png");
 
         regionalData = addNavigatorElement(masterData, "regionalData", getString("logics.administration.regionalData"));
 
         administration = addNavigatorElement(root, "administration", getString("logics.administration"));
         administration.window = windows.toolbar;
+        administration.setImage("/images/tools.png");
 
         account = addNavigatorElement(root, "account", getString("logics.account"));
         account.window = windows.toolbar;
+        account.setImage("/images/lock.png");
 
         application = addNavigatorElement(administration, "application", getString("logics.administration.application"));
         addFormEntity(new OptionsFormEntity(application, "options"));
