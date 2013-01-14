@@ -112,8 +112,8 @@ EXTEND FORM userInvoice
 ;
 // Проводим по регистру  продаж
 
-@implementSalesLedger(invoice, sku, supplierStock);
-quantitySalesLedger (ledger) += quantityInvoiceDetail(ledger);
-VATSalesLedger (ledger) += VATInvoiceDetail(ledger);
-sumSalesLedger (ledger) += invoiceSumInvoiceDetail(ledger);
-customerSalesLedger (ledger) += customerInvoiceDetail(ledger);
+@implementSaleLedger(invoice, sku, supplierStock);
+quantitySaleLedger (ledger) += quantityInvoiceDetail(ledger);
+VATSaleLedger (ledger) += VATInvoiceDetail(ledger);
+sumSaleLedger (ledger) += invoiceSumInvoiceDetail(ledger);
+customerSaleLedger (ledger) += customerInvoiceDetail(ledger);

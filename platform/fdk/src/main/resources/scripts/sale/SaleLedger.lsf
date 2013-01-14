@@ -1,54 +1,54 @@
-MODULE Sales;
+MODULE SaleLedger;
 
 REQUIRE System, Stock, Tax, Employee;
 
-CLASS ABSTRACT salesLedger 'Продажа товара';
-TABLE salesLedger(salesLedger);
+CLASS ABSTRACT saleLedger 'Продажа товара';
+TABLE saleLedger(saleLedger);
 
-dateTimeSalesLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (salesLedger) PERSISTENT INDEXED;
-dateSalesLedger 'Дата' (ledger) = toDate(dateTimeSalesLedger(ledger)) PERSISTENT INDEXED;
+dateTimeSaleLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (saleLedger) PERSISTENT INDEXED;
+dateSaleLedger 'Дата' (ledger) = toDate(dateTimeSaleLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSalesLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (salesLedger) PERSISTENT;
+isPostedSaleLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (saleLedger) PERSISTENT;
 
-skuSalesLedger (ledger) = ABSTRACT sku (salesLedger) PERSISTENT INDEXED;
-nameSkuSalesLedger 'SKU' (ledger) = nameSku(skuSalesLedger(ledger));
+skuSaleLedger (ledger) = ABSTRACT sku (saleLedger) PERSISTENT INDEXED;
+nameSkuSaleLedger 'SKU' (ledger) = nameSku(skuSaleLedger(ledger));
 
-stockSalesLedger (ledger) = ABSTRACT stock (salesLedger) PERSISTENT INDEXED;
-nameStockSalesLedger 'Склад' (ledger) = name(stockSalesLedger(ledger));
+stockSaleLedger (ledger) = ABSTRACT stock (saleLedger) PERSISTENT INDEXED;
+nameStockSaleLedger 'Склад' (ledger) = name(stockSaleLedger(ledger));
 
-descriptionSalesLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (salesLedger) PERSISTENT;
+descriptionSaleLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (saleLedger) PERSISTENT;
 
-quantitySalesLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (salesLedger) PERSISTENT;
+quantitySaleLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (saleLedger) PERSISTENT;
 
-sumSalesLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (salesLedger) PERSISTENT;
+sumSaleLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (saleLedger) PERSISTENT;
 
-customerSalesLedger (ledger) = ABSTRACT legalEntity (salesLedger) PERSISTENT INDEXED;
-nameCustomerSalesLedger 'Покупатель' (ledger) = name(customerSalesLedger(ledger));
+customerSaleLedger (ledger) = ABSTRACT legalEntity (saleLedger) PERSISTENT INDEXED;
+nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger(ledger));
 
-inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
-    BY customerSalesLedger(ledger), skuSalesLedger(ledger) PERSISTENT;
+inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
+    BY customerSaleLedger(ledger), skuSaleLedger(ledger) PERSISTENT;
 
-sumSoldTypeExchangeSalesLedger 'Сумма продажи валюта' (typeExchange, salesLedger)= roundCurrency((sumSalesLedger (salesLedger)/
-    rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSalesLedger(salesLedger)), dateSalesLedger(salesLedger))), currencyTypeExchange(typeExchange));
+sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundCurrency((sumSaleLedger (saleLedger)/
+    rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSaleLedger(saleLedger)), dateSaleLedger(saleLedger))), currencyTypeExchange(typeExchange));
 
 
-CONSTRAINT quantitySalesLedger(salesLedger) == 0 MESSAGE 'ошибка: Количество продажи не должно быть равно нулю';
+CONSTRAINT quantitySaleLedger(saleLedger) == 0 MESSAGE 'ошибка: Количество продажи не должно быть равно нулю';
 
-averagePriceSalesLedger 'Цена продажи (средняя)' (salesLedger) = sumSalesLedger(salesLedger)/quantitySalesLedger(salesLedger);
+averagePriceSaleLedger 'Цена продажи (средняя)' (saleLedger) = sumSaleLedger(saleLedger)/quantitySaleLedger(saleLedger);
 
-VATSalesLedger (ledger) = ABSTRACT range (salesLedger) PERSISTENT;
-valueVATSalesLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSalesLedger(ledger), dateSalesLedger(ledger));
+VATSaleLedger (ledger) = ABSTRACT range (saleLedger) PERSISTENT;
+valueVATSaleLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSaleLedger(ledger), dateSaleLedger(ledger));
 
-sumVATSalesLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
-        sumSalesLedger(ledger), valueVATSalesLedger(ledger));
+sumVATSaleLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
+        sumSaleLedger(ledger), valueVATSaleLedger(ledger));
 
-markupSumSalesLedger 'Надбавка' (ledger) = sumSalesLedger(ledger) - sumVATSalesLedger(ledger) - costSumSkuLedger(ledger);
+markupSumSaleLedger 'Надбавка' (ledger) = sumSaleLedger(ledger) - sumVATSaleLedger(ledger) - costSumSkuLedger(ledger);
 
-quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySalesLedger(ledger) IF isPostedSalesLedger(ledger)
-    BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateSalesLedger(ledger) PERSISTENT;
+quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
+    BY skuSaleLedger(ledger), stockSaleLedger(ledger), dateSaleLedger(ledger) PERSISTENT;
 
-sumSoldSkuStockDate (sku, stock, date) = GROUP SUM sumSalesLedger(ledger) IF isPostedSalesLedger(ledger)
-    BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateSalesLedger(ledger) PERSISTENT;
+sumSoldSkuStockDate (sku, stock, date) = GROUP SUM sumSaleLedger(ledger) IF isPostedSaleLedger(ledger)
+    BY skuSaleLedger(ledger), stockSaleLedger(ledger), dateSaleLedger(ledger) PERSISTENT;
 
 
 quantitySoldSkuStockWeekDateFromTo 'Продано за неделю (кол-во)' (sku, stock, week, dateFrom, dateTo) = GROUP SUM
@@ -139,7 +139,7 @@ EXTEND DESIGN options {
 }
 
 //---------------------------------------------- Формы продаж -------------------------------------//
-FORM salesLedger 'Продажи по позициям'
+FORM saleLedger 'Продажи по позициям'
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
@@ -147,16 +147,16 @@ FORM salesLedger 'Продажи по позициям'
     OBJECTS te = typeExchange FIXED PANEL
     PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
-    OBJECTS s = salesLedger
-    PROPERTIES(s) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameCustomerSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
-    PROPERTIES    READONLY sumSoldTypeExchangeSalesLedger (te, s)
-    FILTERS isPostedSalesLedger(s)
-    FILTERS dateSalesLedger(s) >= dFrom, dateSalesLedger(s) <= dTo
+    OBJECTS s = saleLedger
+    PROPERTIES(s) READONLY dateSaleLedger, dateTimeSaleLedger, nameStockSaleLedger, nameCustomerSaleLedger, nameSkuSaleLedger, descriptionSaleLedger,
+                           quantitySaleLedger, costSumSkuLedger, markupSumSaleLedger, sumVATSaleLedger, sumSaleLedger, averagePriceSaleLedger
+    PROPERTIES    READONLY sumSoldTypeExchangeSaleLedger (te, s)
+    FILTERS isPostedSaleLedger(s)
+    FILTERS dateSaleLedger(s) >= dFrom, dateSaleLedger(s) <= dTo
 ;
-@extendFormFilterAccess(salesLedger, s, salesLedger, stock);
+@extendFormFilterAccess(saleLedger, s, saleLedger, stock);
 
-DESIGN salesLedger FROM DEFAULT {
+DESIGN saleLedger FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
         ADD dates.box {
@@ -255,7 +255,7 @@ DESIGN salesSkuStock FROM DEFAULT {
 
 NAVIGATOR {
     NEW salesNavigator 'Продажи' {
-        ADD salesLedger;
+        ADD saleLedger;
         ADD salesSkuStock;
     }
 }
@@ -282,16 +282,16 @@ END
 
 //---------------------------------------------- Макросы для имплементаций -------------------------------------//
 
-META implementSalesLedgerCustom(concrete, skuProp, stockProp)
-    dateTimeSalesLedger (ledger) += dateTime###concrete##Detail(ledger);
-    isPostedSalesLedger (ledger) += isPosted###concrete##Detail(ledger);
-    skuSalesLedger (ledger) += skuProp###concrete##Detail(ledger);
-    stockSalesLedger (ledger) += stockProp###concrete##Detail(ledger);
-    descriptionSalesLedger (ledger) += description###concrete##Detail(ledger);
+META implementSaleLedgerCustom(concrete, skuProp, stockProp)
+    dateTimeSaleLedger (ledger) += dateTime###concrete##Detail(ledger);
+    isPostedSaleLedger (ledger) += isPosted###concrete##Detail(ledger);
+    skuSaleLedger (ledger) += skuProp###concrete##Detail(ledger);
+    stockSaleLedger (ledger) += stockProp###concrete##Detail(ledger);
+    descriptionSaleLedger (ledger) += description###concrete##Detail(ledger);
 END
-META implementSalesLedger(concrete, skuProp, stockProp)
-    EXTEND CLASS concrete##Detail : salesLedger;
-    @implementSalesLedgerCustom(concrete, skuProp, stockProp);
+META implementSaleLedger(concrete, skuProp, stockProp)
+    EXTEND CLASS concrete##Detail : saleLedger;
+    @implementSaleLedgerCustom(concrete, skuProp, stockProp);
 END
 
 EXTEND FORM currentBalanceSkuStock PROPERTIES(s, st) averageSoldSkuStock READONLY;

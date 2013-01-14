@@ -1,6 +1,6 @@
 MODULE ContractCompany;
 
-REQUIRE ContractStock, Company;
+REQUIRE StockContract, Company;
 
 NAMESPACE Contract;
 

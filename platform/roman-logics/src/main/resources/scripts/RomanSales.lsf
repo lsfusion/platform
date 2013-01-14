@@ -3,7 +3,7 @@ MODULE RomanSales;
 REQUIRE System,
         MasterData,
         RomanStock,
-        Sales
+        SaleLedger
 ;
 
 PRIORITY MasterData, Stock, RomanLogicsModule;
@@ -58,15 +58,15 @@ EXTEND FORM salesSkuStock
     nameCategorySupplierArticleSku(s), nameBrandSupplierArticleSku(s), nameSupplierArticleSku(s), sidArticleSku(s)
 ;
 
-nameThemeSupplierSalesLedger 'Тема' (salesLedger) = nameThemeSupplierArticleSku(skuSalesLedger(salesLedger));
-nameSubCategorySupplierSalesLedger 'Подгруппа' (salesLedger) = nameSubCategorySupplierArticleSku(skuSalesLedger(salesLedger));
-nameCategorySupplierSalesLedger 'Группа' (salesLedger) = nameCategorySupplierArticleSku(skuSalesLedger(salesLedger));
-nameBrandSupplierSalesLedger 'Бренд' (salesLedger) = nameBrandSupplierArticleSku(skuSalesLedger(salesLedger));
-nameSupplierSalesLedger 'Поставщик' (salesLedger) = nameSupplierArticleSku(skuSalesLedger(salesLedger));
-sidArticleSalesLedger 'Артикул' (salesLedger) = sidArticleSku(skuSalesLedger(salesLedger));
-sidSizeSupplierSalesLedger 'Размер поставщика' (salesLedger) = sidSizeSupplierItem(skuSalesLedger(salesLedger));
+nameThemeSupplierSaleLedger 'Тема' (salesLedger) = nameThemeSupplierArticleSku(skuSaleLedger(salesLedger));
+nameSubCategorySupplierSaleLedger 'Подгруппа' (salesLedger) = nameSubCategorySupplierArticleSku(skuSaleLedger(salesLedger));
+nameCategorySupplierSaleLedger 'Группа' (salesLedger) = nameCategorySupplierArticleSku(skuSaleLedger(salesLedger));
+nameBrandSupplierSaleLedger 'Бренд' (salesLedger) = nameBrandSupplierArticleSku(skuSaleLedger(salesLedger));
+nameSupplierSaleLedger 'Поставщик' (salesLedger) = nameSupplierArticleSku(skuSaleLedger(salesLedger));
+sidArticleSaleLedger 'Артикул' (salesLedger) = sidArticleSku(skuSaleLedger(salesLedger));
+sidSizeSupplierSaleLedger 'Размер поставщика' (salesLedger) = sidSizeSupplierItem(skuSaleLedger(salesLedger));
 
-EXTEND FORM salesLedger
-    PROPERTIES FORCE GRID AFTER nameSkuSalesLedger(s) sidSizeSupplierSalesLedger(s), nameThemeSupplierSalesLedger(s), nameSubCategorySupplierSalesLedger(s), nameCategorySupplierSalesLedger(s), nameBrandSupplierSalesLedger(s), nameSupplierSalesLedger(s), sidArticleSalesLedger(s)
+EXTEND FORM saleLedger
+    PROPERTIES FORCE GRID AFTER nameSkuSaleLedger(s) sidSizeSupplierSaleLedger(s), nameThemeSupplierSaleLedger(s), nameSubCategorySupplierSaleLedger(s), nameCategorySupplierSaleLedger(s), nameBrandSupplierSaleLedger(s), nameSupplierSaleLedger(s), sidArticleSaleLedger(s)
 ;
 

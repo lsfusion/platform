@@ -1,7 +1,8 @@
-MODULE Statistics;
+MODULE SaleStatistics;
 
-REQUIRE System, Utils, Historizable, Stock, LegalEntity, Sales;
+REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger;
 
+NAMESPACE Sale;
 
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
 

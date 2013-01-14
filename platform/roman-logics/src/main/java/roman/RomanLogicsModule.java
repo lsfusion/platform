@@ -1662,7 +1662,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("UOM"));
 
-        brandSupplier = addConcreteClass("brandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("discountSkuGroup"), (CustomClass) BL.PriceInterval.getClassByName("roundGroup"));  //baseClass.named,
+        brandSupplier = addConcreteClass("brandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("discountSkuGroup"), (CustomClass) BL.PriceRound.getClassByName("roundGroup"));  //baseClass.named,
 
         themeSupplier = addConcreteClass("themeSupplier", "Тема поставщика", baseClass.named);
 

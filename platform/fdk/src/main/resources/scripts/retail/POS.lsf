@@ -9,9 +9,9 @@ REQUIRE System,
         StockTax,
         CashRegister,
         CashOperation,
-        Sales,
+        SaleLedger,
         RetailCRM,
-        PriceInterval,
+        PriceRound,
         PriceList,
         StockDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
@@ -286,10 +286,10 @@ quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
 @implementSkuLedgerInLIFOBalance(receiptReturnDetail, departmentStore);
 sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 
-@implementSalesLedger(receiptSale, sku, departmentStore);
-quantitySalesLedger (ledger) += quantityReceiptSaleDetail(ledger);
-VATSalesLedger (ledger) += VATReceiptSaleDetail(ledger);
-sumSalesLedger (ledger) += sumReceiptSaleDetail(ledger);
+@implementSaleLedger(receiptSale, sku, departmentStore);
+quantitySaleLedger (ledger) += quantityReceiptSaleDetail(ledger);
+VATSaleLedger (ledger) += VATReceiptSaleDetail(ledger);
+sumSaleLedger (ledger) += sumReceiptSaleDetail(ledger);
 
 // ----------------- Оплаты по чеку ------------------------------
 

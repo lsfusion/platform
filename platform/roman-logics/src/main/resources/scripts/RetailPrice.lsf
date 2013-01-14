@@ -4,7 +4,7 @@ REQUIRE System,
         MasterData,
         POS,
         RomanStock,
-        PriceInterval,
+        PriceRound,
         UserPriceChange,
         Currency,
         RomanSales,
@@ -741,7 +741,7 @@ averagePriceSoldArticleWeekDateFromToDocument 'Средняя цена за не
 averageSoldArticleWeekDateFromToDocument 'Продано за неделю кол-во/цена' (article, week, dateFrom, dateTo, priceSetDocument)= [FORMULA STRING[30] 'CAST($1 AS TEXT) || \'(\' || CAST($2 AS TEXT) || \')\'']
         (round0(quantitySoldArticleWeekDateFromTo(article, week, dateFrom, dateTo)), averagePriceSoldArticleWeekDateFromToDocument(article, week, dateFrom, dateTo, priceSetDocument)) MINCHARWIDTH 15 PREFCHARWIDTH 20;
 
-articleSalesLedger (salesLedger) = articleSku(skuSalesLedger(salesLedger));
+articleSaleLedger (salesLedger) = articleSku(skuSaleLedger(salesLedger));
 
 
 FORM priceSetDocument 'Розничный прайс'
@@ -775,13 +775,13 @@ FORM priceSetDocument 'Розничный прайс'
                       quantitySoldArticleDateFromTo(aa, dFrom, dTo), balanceAArticleDate(aa, dTo)
     PROPERTIES (p,aa) prevPriceDocumentBDiscountPriceSetDocumentArticle READONLY, inPriceSetDocumentArticle, percentDiscountPriceSetDocumentArticle
 
-    OBJECTS sl = salesLedger
-    PROPERTIES(sl) READONLY dateSalesLedger, dateTimeSalesLedger, nameStockSalesLedger, nameSkuSalesLedger, descriptionSalesLedger,
-                           quantitySalesLedger, costSumSkuLedger, markupSumSalesLedger, sumVATSalesLedger, sumSalesLedger, averagePriceSalesLedger
-    FILTERS isPostedSalesLedger(sl)
-    FILTERS dateSalesLedger(sl) >= dFrom, dateSalesLedger(sl) <= dTo,
-            articleSalesLedger(sl)== aa
-    ORDER BY dateTimeSalesLedger
+    OBJECTS sl = saleLedger
+    PROPERTIES(sl) READONLY dateSaleLedger, dateTimeSaleLedger, nameStockSaleLedger, nameSkuSaleLedger, descriptionSaleLedger,
+                           quantitySaleLedger, costSumSkuLedger, markupSumSaleLedger, sumVATSaleLedger, sumSaleLedger, averagePriceSaleLedger
+    FILTERS isPostedSaleLedger(sl)
+    FILTERS dateSaleLedger(sl) >= dFrom, dateSaleLedger(sl) <= dTo,
+            articleSaleLedger(sl)== aa
+    ORDER BY dateTimeSaleLedger
 
     FILTERGROUP filtersSold
         FILTER 'Показывать проданные за интервал' 'F11' sumSoldArticleDateFromTo(aa, dFrom, dTo)

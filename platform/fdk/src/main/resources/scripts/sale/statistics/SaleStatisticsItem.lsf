@@ -1,6 +1,8 @@
-MODULE StatisticsItem;
+MODULE SaleStatisticsItem;
 
-REQUIRE Statistics, Item;
+REQUIRE SaleStatistics, Item;
+
+NAMESPACE Sale;
 
 statisticGroupCountryItem 'Статистическая группа' = DATA statisticGroup (country, item);
 nameStatisticGroupCountryItem 'Статистическая группа' = name(statisticGroupCountryItem(country, item));

@@ -49,9 +49,9 @@ EXTEND FORM userInvoice
 ;
 
 // Проводим по регистру закупок
-@implementSupplyLedger(invoice, sku, customerStock);
-supplierSupplyLedger (ledger) += supplierInvoiceDetail(ledger);
-quantitySupplyLedger (ledger) += quantityInvoiceDetail(ledger);
-VATSupplyLedger (ledger) += VATInvoiceDetail(ledger);
-sumSupplyLedger (ledger) += sumInvoiceDetail(ledger);
+@implementPurchaseLedger(invoice, sku, customerStock);
+supplierPurchaseLedger (ledger) += supplierInvoiceDetail(ledger);
+quantityPurchaseLedger (ledger) += quantityInvoiceDetail(ledger);
+VATPurchaseLedger (ledger) += VATInvoiceDetail(ledger);
+sumPurchaseLedger (ledger) += sumInvoiceDetail(ledger);
 

@@ -55,17 +55,13 @@ REQUIRE System,
         ShipmentStore,
         PurchaseWriteOffStore,
         Store,
-        Statistics,
-        StatisticsItem,
+        SaleStatistics,
         NaturalLossItem,
-        StatisticsStore,
         ConsignmentBy,
         StockDocumentBy,
         StockDocumentWarehouse,
         StockDocumentStore,
         ContainerMovementBy,
-        Sales,
-        Supply,
         Machinery,
         CashRegister,
         Scales,
@@ -275,7 +271,7 @@ NAVIGATOR {
     NEW purchase 'Закупки' TO toolbar {
         ADD purchasePurchaseNavigator;
         ADD purchaseReturnNavigator;
-        ADD supplyNavigator;
+        ADD purchaseNavigator;
         ADD stockReserveNavigator;
     }
 

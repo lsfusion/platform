@@ -1,6 +1,6 @@
 MODULE PriceList;
 
-REQUIRE System, Document, Numerator, Stock, Barcode, PriceInterval;
+REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound;
 
 // --------------------------- Ценовые группы -------------------------------------//
 

@@ -1,6 +1,6 @@
 MODULE NaturalLoss;
 
-REQUIRE Document, PriceList, Sales;
+REQUIRE Document, PriceList, SaleLedger;
 
 GROUP rateGroup 'Нормы' : public;
 
@@ -244,10 +244,10 @@ quantityNaturalLossDetail (naturalLossDetail) <- percentNaturalLossDetail(natura
          CHANGED(quantityLossNaturalLossDetail(naturalLossDetail));
 
 quantitySoldSkuDepartmentNaturalLoss 'Продано' (sku, stock, dateFrom, dateTo, subNaturalLossGroupDetail) =
-    GROUP SUM quantitySalesLedger(ledger) AND dateSalesLedger(ledger) >= (dateFrom AS DATE) AND dateSalesLedger(ledger) <= (dateTo AS DATE)
-              AND inIntervalNaturalLoss(dateSalesLedger(ledger), subNaturalLossGroupDetail)
-              AND subNaturalLossGroupCountrySku(countryStock(stockSalesLedger(ledger)), skuSalesLedger(ledger)) == subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
-              BY skuSalesLedger(ledger), stockSalesLedger(ledger), dateFrom, dateTo, subNaturalLossGroupDetail;
+    GROUP SUM quantitySaleLedger(ledger) AND dateSaleLedger(ledger) >= (dateFrom AS DATE) AND dateSaleLedger(ledger) <= (dateTo AS DATE)
+              AND inIntervalNaturalLoss(dateSaleLedger(ledger), subNaturalLossGroupDetail)
+              AND subNaturalLossGroupCountrySku(countryStock(stockSaleLedger(ledger)), skuSaleLedger(ledger)) == subNaturalLossGroupSubNaturalLossGroupDetail(subNaturalLossGroupDetail)
+              BY skuSaleLedger(ledger), stockSaleLedger(ledger), dateFrom, dateTo, subNaturalLossGroupDetail;
 
 sumNaturalLossDetail 'Сумма' (naturalLossDetail) = DATA NUMERIC[16,2] (naturalLossDetail);
 sumNaturalLossDetail (naturalLossDetail) <- priceNaturalLossDetail(naturalLossDetail) * quantityNaturalLossDetail(naturalLossDetail)

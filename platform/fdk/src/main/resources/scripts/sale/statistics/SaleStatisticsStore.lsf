@@ -1,7 +1,8 @@
-MODULE StatisticsStore;
+MODULE SaleStatisticsStore;
 
-REQUIRE Statistics, POS;
+REQUIRE SaleStatistics, POS;
 
+NAMESPACE Sale;
 
 EXTEND FORM statisticalReport
 
