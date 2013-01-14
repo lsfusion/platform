@@ -28,7 +28,7 @@ FORM materials 'Материалы'
     PROPERTIES READONLY skuGroupName = name(sg)
 
     OBJECTS m = material
-    PROPERTIES(m) READONLY nameMaterial, shortNameUOMMaterial
+    PROPERTIES(m) READONLY objectClassName, nameMaterial, shortNameUOMMaterial
     PROPERTIES() addMaterial TODRAW m
     PROPERTIES(m) editMaterial
     FILTERS isParentSkuGroupMaterial(sg, m)
@@ -77,9 +77,14 @@ skuGroupMaterial(material) += skuGroupSku(material);
 CLASS technology 'Технология' : named;
 TABLE technology (technology);
 
-wastageTechnologyMaterial '% потерь' = DATA NUMERIC[8,3] (technology, material);
+@defineHistorizable(wastageTechnologyMaterial, '% потерь', NUMERIC[8,3], technology, name, material, nameMaterial, base);
+
 
 FORM technology 'Технология'
+
+    OBJECTS dt = DATE FIXED PANEL
+    PROPERTIES valDt = OBJVALUE(dt) BACKGROUND dateDiffersCurrent(dt)
+
     OBJECTS t=technology FIXED PANEL
     PROPERTIES(t) name
 
@@ -88,13 +93,17 @@ FORM technology 'Технология'
 
     OBJECTS m = material
     PROPERTIES(m) nameMaterial, shortNameUOMMaterial
-    PROPERTIES(t,m) wastageTechnologyMaterial
+    PROPERTIES overWastageTechnologyMaterialDate(t,m,dt), overDialogWastageTechnologyMaterialDate(t,m)
 
     FILTERS isParentSkuGroupMaterial(sg, m)
     ORDER BY nameMaterial
 
     FILTERGROUP filters
-        FILTER 'С % потерь' 'F11' wastageTechnologyMaterial(t,m)
+        FILTER 'С % потерь' 'F9' wastageTechnologyMaterialDate(t,m,dt)
+
+    OBJECTS d=DATE
+    PROPERTIES  READONLY OBJVALUE(d), dataWastageTechnologyMaterialDate(t,m,d)
+    FILTERS dataWastageTechnologyMaterialDate(t,m,d)
 
     EDIT technology OBJECT t
 ;
@@ -105,11 +114,23 @@ DESIGN technology FROM DEFAULT{
         NEW specification.box BEFORE functions.box {
             childConstraints = TO THE RIGHT;
             ADD skuTree.tree.box {title = 'Группа материалов'; fillHorizontal=1; }
-            ADD m.box {title = 'Материал'; fillHorizontal=2; }
-
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                ADD m.box {
+                    title = 'Материал';
+                    fillHorizontal=2;
+                    fillVertical=3;
+                }
+                ADD d.box {
+                    title = 'История изменений';
+                    fillVertical=1;
+                }
+            }
         }
-        ADD t.box BEFORE specification.box {
+        NEW headerBox BEFORE specification.box {
             childConstraints = TO THE RIGHT;
+            ADD t.box { childConstraints = TO THE RIGHT;}
+            ADD dt.box {childConstraints = TO THE RIGHT;}
         }
     }
 }
@@ -127,6 +148,28 @@ FORM technologies 'Технологии'
 
     FILTERS        wastageTechnologyMaterial(t,m)
 ;
+DESIGN technologies FROM DEFAULT{
+    main {
+        ADD t.box;
+        ADD m.box { title = 'Материалы с % потерь на текущую дату';}
+        ADD functions.box;
+    }
+}
+
+
+
+//FORM technologiesDialog 'Технологии'
+//
+//    OBJECTS t=technology
+//    PROPERTIES(t)  READONLY name
+////    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+////    OBJECTS m=material
+////    PROPERTIES     READONLY nameMaterial(m), shortNameUOMMaterial(m), wastageTechnologyMaterial(t,m)
+////    ORDER BY nameMaterial
+////    FILTERS        wastageTechnologyMaterial(t,m)
+//    DIALOG technology OBJECT t
+//;
+
 
 // ---------------------- BOM'ы ----------------------
 
@@ -135,11 +178,23 @@ TABLE BOM (BOM);
 
 @defineDocumentHeaderNote(BOM);
 
-inTechnologyBOM 'Вкл.' = DATA BOOLEAN (technology, BOM);
-
 // ------------- Изделия ----------- //
 CLASS product 'Изделие' : externalizable, material;
 TABLE product (product);
+
+EXTEND FORM materials
+
+    FILTERGROUP filters
+        FILTER 'Изделие' 'F11' m AS product
+        FILTER 'Sku' 'F10' m AS sku
+;
+
+EXTEND FORM technology
+
+    FILTERGROUP filters
+        FILTER 'Изделие' 'F11' m AS product
+        FILTER 'Sku' 'F10' m AS sku
+;
 
 skuProduct = DATA sku (product);
 nameSkuProduct 'SKU' (product) = nameSku(skuProduct(product)) IN recognize;
@@ -194,51 +249,42 @@ UOMComponent = DATA UOM (component);
 shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
 UOMComponent(component) <-UOMSku(materialComponent(component)) WHEN CHANGED (materialComponent(component));
 
-@defineDocumentDetailQuantityCustomPrefix (component, , ' (нетто)');
-@defineDocumentHeaderQuantityCustomPrefix (BOM, component, , ' (компонент)');
+@defineDocumentDetailQuantityCustomPrefix (component, netto, ' (нетто)');
+@defineDocumentHeaderQuantityCustomPrefix (BOM, component, netto, ' (нетто компонент)');
 
-dataWastageTechnologyComponent = DATA NUMERIC[8,3] (technology, component);
+technologyComponent = DATA technology (component);
+nameTechnologyComponent 'Технология' (component) = name(technologyComponent(component));
 
-wastageTechnologyComponent '% потерь' (technology, component) = wastageTechnologyMaterial(technology, materialComponent(component)) OR
-                                                                dataWastageTechnologyComponent(technology, component);
+wastageComponent '% потерь'= DATA NUMERIC[8,3] (component);
 
+@defineDocumentDetailQuantityCustomPrefix (component, brutto, ' (брутто)');
+@defineDocumentHeaderQuantityCustomPrefix (BOM, component, brutto, ' (брутто компонент)');
 
-bttoTechnologyComponent 'Вес брутто' (technology, component) = quantityComponent(component)*100 / ((100 IF technology IS technology AND component IS component) (-) wastageTechnologyComponent(technology, component));
+inTechnologyMaterial 'Связь' (technology,material) = GROUP SUM 1 IF dataWastageTechnologyMaterialDate(technology, material, date) BY technology, material;
 
-wastageNameTechnology (technology)= [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', \' ||  \'(% потерь) \''](name(technology)) PREFCHARWIDTH 30 MAXCHARWIDTH 50;
-bttoNameTechnology (technology)= [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', \' ||  \'(кол-во брутто) \''](name(technology)) PREFCHARWIDTH 30 MAXCHARWIDTH 50;
+CONSTRAINT technologyComponent(component) AND NOT inTechnologyMaterial(technologyComponent(component),materialComponent(component))
+    CHECKED BY technologyComponent MESSAGE 'Для компонента выбрана технология, у которой нет значения % потерь для SKU';
 
 //------------------------------- Формы -------------------------------------//
 FORM BOM 'Спецификация'
 
     OBJECTS b=BOM FIXED PANEL
 
-    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM, quantityProductBOM, quantityComponentBOM
-
-    OBJECTS t=technology
-    PROPERTIES(t) READONLY name
-    PROPERTIES(t,b) inTechnologyBOM
-
-    FILTERGROUP filters
-        FILTER 'Включенные' 'F11' inTechnologyBOM(t,b)
-
+    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM,
+                  bruttoQuantityComponentBOM
     OBJECTS p = product
     PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
 
     PROPERTIES(p) ADDOBJ, delete
-    PROPERTIES(p) TODRAW p deleteProductBOM
+    PROPERTIES(b) TODRAW p deleteProductBOM
     FILTERS       BOMProduct(p) == b
 
-    OBJECTS tt = technology
-    FILTERS inTechnologyBOM(tt,b)
-
     OBJECTS c = component
-    PROPERTIES(c) indexComponent, nameMaterialComponent, shortNameUOMComponent, quantityComponent
-    PROPERTIES    wastageTechnologyComponent(tt,c)  COLUMNS (tt) HEADER wastageNameTechnology (tt),
-                  bttoTechnologyComponent(tt,c)  COLUMNS (tt) HEADER bttoNameTechnology (tt)
+    PROPERTIES(c) indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
+                  wastageComponent READONLYIF technologyComponent(c), bruttoQuantityComponent READONLYIF technologyComponent(c)
 
     PROPERTIES(c) ADDOBJ, delete
-    PROPERTIES(c) TODRAW c deleteComponentBOM
+    PROPERTIES(b) TODRAW c deleteComponentBOM
     FILTERS       BOMComponent(c) == b
 
     EDIT BOM OBJECT b
@@ -250,14 +296,8 @@ DESIGN BOM FROM DEFAULT{
         preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             type = TABBED;
-            NEW spec1 {
-                title = 'Параметры';
-                childConstraints = TO THE BOTTOM;
-                ADD t.box;
-            }
             ADD p.box {title = 'Изделие';}
             ADD c.box {title = 'Компонент';}
-            REMOVE tt.box;
         }
 
         ADD b.box BEFORE specification.box {
@@ -291,7 +331,8 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, quantityComponentBOM
+    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM,
+                  bruttoQuantityComponentBOM
     PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
 
@@ -300,7 +341,8 @@ FORM BOMs 'Спецификации'
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
-    PROPERTIES(c) READONLY indexComponent, nameMaterialComponent, shortNameUOMComponent, quantityComponent
+    PROPERTIES(c) READONLY indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
+                  wastageComponent , bruttoQuantityComponent
     FILTERS       BOMComponent(c) == b
 ;
 
