@@ -416,6 +416,10 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     countLedger##postfix##BatchStock 'Кол-во движений'###caption (batch, stock) =
         GROUP SUM 1 AND signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch) BY batch, stockSkuLedger(ledger) PERSISTENT;
 
+    orderBatch##postfix##SkuStock (sku, stock) = GROUP MAX orderBatch(batch) IF countLedger##postfix##BatchStock(batch, stock)
+                                                       BY skuBatch(batch), stock PERSISTENT;
+    lastOrderBatch##postfix##SkuStock(sku, stock) = orderBatch##postfix##SkuStock(sku, stock)[2] PERSISTENT;
+
     currentBalance##postfix##Batch 'Остаток (всего)'###caption (batch) = GROUP SUM currentBalance##postfix##BatchStock(batch, stock) BY batch PERSISTENT;
     outcome##postfix##Batch 'Расходовано'###caption (batch) = quantityBatch(batch) (-) currentBalance##postfix##Batch(batch);
 

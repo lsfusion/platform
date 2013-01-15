@@ -228,7 +228,7 @@ META defineItemAttribute (attribute, caption, group)
         FOR isParentItemGroupItemGroup (childGroup, itemGroup) DO {
             SET show###attribute##ItemGroup(childGroup) <- NULL;
         }
-    } SHORTCUT show###attribute##ItemGroup CONFIRM;
+    } SHORTCUT userShow###attribute##ItemGroup CONFIRM;
 END
 
 // Объявление
