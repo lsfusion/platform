@@ -5,7 +5,7 @@ REQUIRE Certificate;
 CLASS declaration 'Таможенная декларация' : certificate;
 
 @defineDocumentHeaderTimePrefix(declaration, ,' создания');
-registrationNumberDeclaration 'Регистарционный номер' = DATA NUMERIC[14,3] (declaration);
+registrationNumberDeclaration 'Регистарционный номер' = DATA NUMERIC[14,0] (declaration);
 
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );
 registrationNumberCertificate(declaration) += registrationNumberDeclaration(declaration);

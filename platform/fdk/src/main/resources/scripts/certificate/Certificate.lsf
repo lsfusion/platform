@@ -6,7 +6,7 @@ CLASS ABSTRACT certificate 'Документ качества';
 
 @defineDocumentAbstractHeaderTimePrefix(certificate, ,' создания');
 @defineDocumentAbstractHeaderTimePrefix(certificate, to, ' действия');
-registrationNumberCertificate 'Регистарционный номер' = ABSTRACT NUMERIC[14,3] (certificate);
+registrationNumberCertificate 'Регистарционный номер' = ABSTRACT NUMERIC[14,0] (certificate);
 
 descriptionCertificate 'Документ качества' (certificate) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']

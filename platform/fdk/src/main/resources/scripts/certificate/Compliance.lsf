@@ -6,7 +6,7 @@ CLASS compliance 'Сертификат соответствия' : certificate;
 
 @defineDocumentHeaderTimePrefix(compliance, ,' создания');
 @defineDocumentHeaderTimePrefix(compliance, to, ' действия');
-registrationNumberCompliance 'Регистарционный номер' = DATA NUMERIC[14,3] (compliance);
+registrationNumberCompliance 'Регистарционный номер' = DATA NUMERIC[14,0] (compliance);
 
 @implementDocumentHeaderTimePrefix(certificate, , compliance, );
 @implementDocumentHeaderTimePrefix(certificate, to, compliance, to);

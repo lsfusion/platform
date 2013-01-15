@@ -6,7 +6,7 @@ CLASS sanitation 'ГГР' : certificate;
 
 @defineDocumentHeaderTimePrefix(sanitation, ,' создания');
 @defineDocumentHeaderTimePrefix(sanitation, to, ' действия');
-registrationNumberSanitation 'Регистарционный номер' = DATA NUMERIC[14,3] (sanitation);
+registrationNumberSanitation 'Регистарционный номер' = DATA NUMERIC[14,0] (sanitation);
 
 @implementDocumentHeaderTimePrefix(certificate, , sanitation, );
 @implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
