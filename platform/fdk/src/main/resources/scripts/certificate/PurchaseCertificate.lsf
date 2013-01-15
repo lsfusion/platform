@@ -1,6 +1,6 @@
 MODULE PurchaseCertificate;
 
-REQUIRE Certificate, PurchaseInvoice;
+REQUIRE Certificate, PurchaseInvoice, PurchaseShipment;
 
 NAMESPACE Purchase;
 
@@ -16,12 +16,70 @@ EXTEND DESIGN userInvoice{
     }
 }
 
-META defineCertificateInvoice(prop, caption)
+EXTEND FORM userShipment
+    OBJECTS d2 = userShipmentDetail
+    PROPERTIES (d2) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail
+    FILTERS userShipmentUserShipmentDetail(d2) == s
+;
 
+EXTEND DESIGN userShipment{
+    specification.box{
+        ADD d2.box AFTER d.box {caption = 'Сертификаты';}
+    }
+}
+
+EXTEND FORM invoices
+    OBJECTS d2 = invoiceDetail
+    PROPERTIES(d2) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail
+    FILTERS invoiceInvoiceDetail(d2) == i
+;
+
+EXTEND DESIGN invoices{
+    documentDetail{
+        ADD d2.box AFTER d.box {caption = 'Сертификаты';}
+    }
+}
+
+EXTEND FORM shipments
+    OBJECTS d2 = shipmentDetail
+    PROPERTIES(d2) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail
+    FILTERS shipmentShipmentDetail(d2) == s
+;
+
+EXTEND DESIGN shipments{
+    documentDetail{
+        ADD d2.box AFTER d.box {caption = 'Сертификаты';}
+    }
+}
+
+META defineCertificateInvoice(prop, caption)
+    prop###invoiceDetail = ABSTRACT prop (invoiceDetail);
+    description###prop###invoiceDetail caption (invoiceDetail) = description###prop(prop###invoiceDetail(invoiceDetail));
     prop###userInvoiceDetail = DATA prop (userInvoiceDetail);
     description###prop###userInvoiceDetail caption (userInvoiceDetail) = description###prop(prop###userInvoiceDetail(userInvoiceDetail));
+    prop###invoiceDetail(userInvoiceDetail) += prop###userInvoiceDetail(userInvoiceDetail);
 
     EXTEND FORM userInvoice
         PROPERTIES(d2) description###prop###userInvoiceDetail
+    ;
+
+    EXTEND FORM invoices
+        PROPERTIES(d2) READONLY description###prop###invoiceDetail
+    ;
+END
+
+META defineCertificateShipment(prop, caption)
+     prop###shipmentDetail = ABSTRACT prop (shipmentDetail);
+    description###prop###shipmentDetail caption (shipmentDetail) = description###prop(prop###shipmentDetail(shipmentDetail));
+    prop###userShipmentDetail = DATA prop (userShipmentDetail);
+    description###prop###userShipmentDetail caption (userShipmentDetail) = description###prop(prop###userShipmentDetail(userShipmentDetail));
+    prop###shipmentDetail(userShipmentDetail) += prop###userShipmentDetail(userShipmentDetail);
+
+    EXTEND FORM userShipment
+        PROPERTIES(d2) description###prop###userShipmentDetail
+    ;
+
+    EXTEND FORM shipments
+        PROPERTIES(d2) READONLY description###prop###shipmentDetail
     ;
 END

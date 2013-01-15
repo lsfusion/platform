@@ -170,7 +170,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         main {
             preferredSize = (1024, 768);
 
-            NEW header.box BEFORE d.box {
+            NEW specification.box BEFORE functions.box{
+                type = TABBED;
+                ADD d.box;
+            }
+
+            NEW header.box BEFORE specification.box {
                 childConstraints = TO THE RIGHT;
 
                 NEW headerRow1 {

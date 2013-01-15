@@ -1,7 +1,8 @@
 MODULE PurchaseDeclaration;
 
-REQUIRE Declaration, PurchaseCertificate, PurchaseInvoice;
+REQUIRE Declaration, PurchaseCertificate;
 
 NAMESPACE Purchase;
 
 @defineCertificateInvoice(declaration, 'Таможенная декларация');
+@defineCertificateShipment(declaration, 'Таможенная декларация');

@@ -1,7 +1,8 @@
 MODULE PurchaseCompliance;
 
-REQUIRE Compliance, PurchaseCertificate, PurchaseInvoice;
+REQUIRE Compliance, PurchaseCertificate;
 
 NAMESPACE Purchase;
 
 @defineCertificateInvoice(compliance, 'Сертификат соответствия');
+@defineCertificateShipment(compliance, 'Сертификат соответствия');

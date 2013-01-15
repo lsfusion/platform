@@ -1,7 +1,10 @@
 MODULE SaleDeclaration;
 
-REQUIRE Declaration, SaleCertificate, SaleInvoice;
+REQUIRE Declaration, SaleCertificate;
 
 NAMESPACE Sale;
 
 @defineCertificateInvoice(declaration, 'Таможенная декларация');
+@defineCertificateShipment(declaration, 'Таможенная декларация');
+//declarationUserInvoiceDetail(userInvoiceDetail)  <- Purchase.declarationUserInvoiceDetail(batchUserInvoiceDetail(userInvoiceDetail))
+//    WHEN CHANGED (skuUserInvoiceDetail(userInvoiceDetail));
