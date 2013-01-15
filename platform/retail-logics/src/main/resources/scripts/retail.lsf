@@ -181,11 +181,6 @@ NAVIGATOR {
             ADD sumStockDocumentLedger;
             ADD containerMovement;
         }
-        NEW certificateCatalog 'Сертификаты'{
-            ADD declarations;
-            ADD compliances;
-            ADD sanitations;
-        }
         NEW warehouseCatalog 'Справочники' {
             ADD warehouses;
         }
@@ -231,16 +226,21 @@ NAVIGATOR {
     }
 
     ADD masterData {
-         NEW itemMasterData 'Товары' BEFORE regionalData {
-             ADD items;
-             ADD itemGroups;
-             ADD UOMs;
-             ADD wares;
-         }
-         NEW contragents 'Контрагенты' AFTER itemMasterData {
-             ADD legalEntities;
-             ADD contractSkus;
-         }
+            NEW itemMasterData 'Товары' BEFORE regionalData {
+            ADD items;
+            ADD itemGroups;
+            ADD UOMs;
+            ADD wares;
+        }
+        NEW contragents 'Контрагенты' AFTER itemMasterData {
+            ADD legalEntities;
+            ADD contractSkus;
+        }
+        NEW certificateCatalog 'Сертификаты' AFTER contragents{
+            ADD declarations;
+            ADD compliances;
+            ADD sanitations;
+        }
     }
 
     ADD administration;
