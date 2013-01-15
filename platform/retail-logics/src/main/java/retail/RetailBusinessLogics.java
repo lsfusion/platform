@@ -180,18 +180,18 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/region/by/transport/TripInvoiceBy.lsf",
                 "/scripts/stock/store/StoreItem.lsf",
                 "/scripts/machinery/label/LabelItem.lsf",
-                "/scripts/tt/Certificate.lsf",
-                "/scripts/tt/PurchaseCertificate.lsf",
-                "/scripts/tt/SaleCertificate.lsf",
-                "/scripts/tt/Declaration.lsf",
-                "/scripts/tt/PurchaseDeclaration.lsf",
-                "/scripts/tt/SaleDeclaration.lsf",
-                "/scripts/tt/Compliance.lsf",
-                "/scripts/tt/PurchaseCompliance.lsf",
-                "/scripts/tt/SaleCompliance.lsf",
-                "/scripts/tt/Sanitation.lsf",
-                "/scripts/tt/PurchaseSanitation.lsf",
-                "/scripts/tt/SaleSanitation.lsf"
+                "/scripts/certificate/Certificate.lsf",
+                "/scripts/certificate/PurchaseCertificate.lsf",
+                "/scripts/certificate/SaleCertificate.lsf",
+                "/scripts/certificate/Declaration.lsf",
+                "/scripts/certificate/PurchaseDeclaration.lsf",
+                "/scripts/certificate/SaleDeclaration.lsf",
+                "/scripts/certificate/Compliance.lsf",
+                "/scripts/certificate/PurchaseCompliance.lsf",
+                "/scripts/certificate/SaleCompliance.lsf",
+                "/scripts/certificate/Sanitation.lsf",
+                "/scripts/certificate/PurchaseSanitation.lsf",
+                "/scripts/certificate/SaleSanitation.lsf"
                 
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
