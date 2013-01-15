@@ -767,7 +767,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final HeaderPanel headerPanel;
     private final FlexTable loadingIndicatorContainer;
     private final Element tableDataContainer;
-    private final CustomScrollPanel tableDataScroller;
+    private final DataGridScrollPanel tableDataScroller;
     private final SimplePanel tableFooterContainer;
     private final Element tableFooterScroller;
     private final SimplePanel tableHeaderContainer;
@@ -870,7 +870,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         } else {
             tableData.section = tableData.tableElem.appendChild(Document.get().createTBodyElement());
         }
-        tableDataScroller = new CustomScrollPanel(tableData);
+        tableDataScroller = new DataGridScrollPanel(tableData);
         tableDataScroller.setHeight("100%");
         headerPanel.setContentWidget(tableDataScroller);
         tableDataContainer = tableData.getElement().getParentElement();
@@ -2000,7 +2000,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return tableHeader.section;
     }
 
-    public CustomScrollPanel getTableDataScroller() {
+    public DataGridScrollPanel getTableDataScroller() {
         return tableDataScroller;
     }
 

@@ -45,8 +45,7 @@ public class GSinglePropertyTable extends GPropertyTable {
             }
         });
 
-        getTableDataScroller().removeHorizontalScrollbar();
-        getTableDataScroller().removeVerticalScrollbar();
+        getTableDataScroller().removeScrollbars();
 
         addColumn(new Column<Object, Object>(new GridEditableCell(this)) {
             @Override
