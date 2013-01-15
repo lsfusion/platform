@@ -16,7 +16,7 @@ descriptionSanitation 'ГГР' (sanitation) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (registrationNumberSanitation(sanitation), dateSanitation(sanitation), toDateSanitation(sanitation));
 
-FORM sanitation
+FORM sanitation 'ГГР'
     OBJECTS s = sanitation FIXED PANEL
     PROPERTIES(s) registrationNumberSanitation, dateSanitation, timeSanitation, toDateSanitation, toTimeSanitation
     EDIT sanitation OBJECT s
@@ -33,13 +33,13 @@ DESIGN sanitation FROM DEFAULT{
     ADD functions.box;
 }
 
-FORM sanitations
+FORM sanitations 'ГГР'
     OBJECTS s = sanitation
     PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
-FORM sanitationsDialog
+FORM sanitationsDialog 'ГГР'
     OBJECTS s = sanitation
     PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
 

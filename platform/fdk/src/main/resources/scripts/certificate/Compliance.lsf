@@ -16,7 +16,7 @@ descriptionCompliance 'Сертификат соответствия' (complianc
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (registrationNumberCompliance(compliance), dateCompliance(compliance), toDateCompliance(compliance));
 
-FORM compliance
+FORM compliance 'Сертификат соответствия'
     OBJECTS c = compliance FIXED PANEL
     PROPERTIES(c) registrationNumberCompliance, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance
     EDIT compliance OBJECT c
@@ -33,13 +33,13 @@ DESIGN compliance FROM DEFAULT{
     ADD functions.box;
 }
 
-FORM compliances
+FORM compliances 'Сертификаты соответствия'
     OBJECTS c = compliance
     PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
-FORM compliancesDialog
+FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
     PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
 

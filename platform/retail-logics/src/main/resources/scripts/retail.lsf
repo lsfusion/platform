@@ -181,6 +181,11 @@ NAVIGATOR {
             ADD sumStockDocumentLedger;
             ADD containerMovement;
         }
+        NEW certificateCatalog 'Сертификаты'{
+            ADD declarations;
+            ADD compliances;
+            ADD sanitations;
+        }
         NEW warehouseCatalog 'Справочники' {
             ADD warehouses;
         }

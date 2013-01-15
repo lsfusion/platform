@@ -14,7 +14,7 @@ descriptionDeclaration 'Таможенная декларация' (declaration)
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)']
     (registrationNumberDeclaration(declaration), dateDeclaration(declaration));
 
-FORM declaration
+FORM declaration 'Таможенная декларация'
     OBJECTS d = declaration FIXED PANEL
     PROPERTIES(d) registrationNumberDeclaration, dateDeclaration, timeDeclaration
     EDIT declaration OBJECT d
@@ -29,13 +29,13 @@ DESIGN declaration FROM DEFAULT{
     ADD functions.box;
 }
 
-FORM declarations
+FORM declarations 'Таможенные декларация'
     OBJECTS d = declaration
     PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
-FORM declarationsDialog
+FORM declarationsDialog 'Таможенные декларация'
     OBJECTS d = declaration
     PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
 
