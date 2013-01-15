@@ -168,10 +168,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getMaximumWidth() {
+        return getMaximumPixelWidth() + "px";
+    }
+
+    public int getMaximumPixelWidth() {
         if (maximumWidth != -1) {
-            return maximumWidth + "px";
+            return maximumWidth;
         } else {
-            return "150px";
+            return baseType.getMaximumPixelWidth(maximumCharWidth, fontSize);
         }
     }
 

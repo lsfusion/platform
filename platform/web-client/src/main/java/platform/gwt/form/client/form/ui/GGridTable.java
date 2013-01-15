@@ -44,8 +44,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private boolean columnsUpdated = false;
     private boolean dataUpdated = false;
 
-    private Double rowHeight = 0.0;
-
     private final ArrayList<GridDataRecord> currentRecords = new ArrayList<GridDataRecord>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
@@ -330,11 +328,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
 
         return null;
-    }
-
-    @Override
-    protected Double getRowHeight() {
-        return rowHeight;
     }
 
     public void setCurrentKey(GGroupObjectValue currentKey) {

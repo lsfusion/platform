@@ -23,6 +23,15 @@ public abstract class GDataType extends GType implements GClass {
     }
 
     @Override
+    public int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize) {
+        if (maximumCharWidth != 0) {
+            return fontSize == null ? maximumCharWidth * 7 : maximumCharWidth * fontSize / 2;
+        } else {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    @Override
     public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
         return fontSize == null ? prefCharWidth * 7 : prefCharWidth * fontSize / 2;

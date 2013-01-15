@@ -35,6 +35,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected GGroupObjectValue oldKey = null;
     protected int oldRowScrollTop;
 
+    protected Double rowHeight = 0.0;
+
     public GGridSortableHeaderManager sortableHeaderManager;
 
     public interface GGridPropertyTableResource extends Resources {
@@ -111,7 +113,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected Double getRowHeight() {
-        return null;
+        return rowHeight;
     }
 
     public abstract GGroupObjectValue getCurrentKey();

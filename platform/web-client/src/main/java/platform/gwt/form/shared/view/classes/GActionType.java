@@ -22,6 +22,11 @@ public class GActionType extends GDataType {
     }
 
     @Override
+    public int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize) {
+        return getPreferredPixelWidth(maximumCharWidth, fontSize);
+    }
+
+    @Override
     public String getPreferredMask() {
         return "1234567";
     }

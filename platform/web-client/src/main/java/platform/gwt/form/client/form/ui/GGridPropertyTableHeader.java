@@ -8,6 +8,8 @@ import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.Header;
+import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.form.shared.view.GPropertyDraw;
 
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -61,23 +63,21 @@ public class GGridPropertyTableHeader extends Header<String> {
                 if ((mouseX > anchorRight && headerIndex != table.getColumnCount() - 1) || (mouseX < anchorLeft && headerIndex > 0)) {
                     target.getStyle().setCursor(Cursor.COL_RESIZE);
                     if (eventType.equals("mousedown")) {
-                        Column leftColumn;
-                        Column rightColumn;
-                        int initialMouseX;
-                        int scaleWidth;
-                        int scalePixelWidth = target.getOffsetWidth();
-                        if (mouseX > anchorRight) {
-                            leftColumn = table.getColumn(headerIndex);
-                            rightColumn = table.getColumn(headerIndex + 1);
-                            initialMouseX = target.getAbsoluteRight();
-                            scaleWidth = getColumnWidth(leftColumn);
-                        } else {
-                            leftColumn = table.getColumn(headerIndex - 1);
-                            rightColumn = table.getColumn(headerIndex);
-                            initialMouseX = target.getAbsoluteLeft();
-                            scaleWidth = getColumnWidth(rightColumn);
+                        int leftColumnIndex = mouseX > anchorRight ? headerIndex : headerIndex - 1;
+                        Column leftColumn = table.getColumn(leftColumnIndex);
+                        TableCellElement leftHeaderCell = ((TableRowElement) target.getParentElement()).getCells().getItem(leftColumnIndex);
+
+                        int rightColumnsCount = table.getColumnCount() - leftColumnIndex - 1;
+                        Column[] rightColumns = new Column[rightColumnsCount];
+                        double[] rightScaleWidths = new double[rightColumnsCount];
+                        for (int i = 1; i <= rightColumnsCount; i++) {
+                            Column column = table.getColumn(leftColumnIndex + i);
+                            rightColumns[i - 1] = column;
+                            rightScaleWidths[i - 1] = getColumnWidth(column);
                         }
-                        resizeHelper = new ColumnResizeHelper(leftColumn, rightColumn, initialMouseX, scaleWidth, scalePixelWidth);
+
+                        resizeHelper = new ColumnResizeHelper(leftColumn, rightColumns, rightScaleWidths, leftHeaderCell.getAbsoluteRight(),
+                                getColumnWidth(leftColumn), leftHeaderCell.getOffsetWidth());
                         stopPropagation(event);
                     }
                 } else {
@@ -87,9 +87,9 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
-    private int getColumnWidth(Column column) {
+    private double getColumnWidth(Column column) {
         String width = table.getColumnWidth(column);
-        return Integer.parseInt(width.substring(0, width.indexOf("px")));
+        return Double.parseDouble(width.substring(0, width.indexOf("px")));
     }
 
     @Override
@@ -164,23 +164,34 @@ public class GGridPropertyTableHeader extends Header<String> {
         private int initalMouseX;
 
         private Column leftColumn;
-        private Column rightColumn;
+        private double leftInitialWidth;
 
-        private int scaleWidth;
+        private double scaleWidth;
         private int scalePixelWidth;
 
-        private int leftInitialWidth;
-        private int rightInitialWidth;
+        private Column[] rightColumns;
+        private double[] rightInitialWidths;
+        private double[] rightCoeffs;
 
-        public ColumnResizeHelper(Column leftColumn, Column rightColumn, int initalMouseX, int scaleWidth, int scalePixelWidth) {
+        public ColumnResizeHelper(Column leftColumn, Column[] rightColumns, double[] rightScaleWidths, int initalMouseX, double scaleWidth, int scalePixelWidth) {
             this.leftColumn = leftColumn;
-            this.rightColumn = rightColumn;
+            this.rightColumns = rightColumns;
             this.initalMouseX = initalMouseX;
             this.scaleWidth = scaleWidth;
             this.scalePixelWidth = scalePixelWidth;
 
-            leftInitialWidth = getColumnWidth(leftColumn);
-            rightInitialWidth = getColumnWidth(rightColumn);
+            leftInitialWidth = scaleWidth;
+
+            double rightSum = 0.0;
+            for (double rightScaleWidth : rightScaleWidths) {
+                rightSum += rightScaleWidth;
+            }
+            rightInitialWidths = new double[rightColumns.length];
+            rightCoeffs = new double[rightColumns.length];
+            for (int i = 0; i < rightColumns.length; i++) {
+                rightInitialWidths[i] = getColumnWidth(rightColumns[i]);
+                rightCoeffs[i] = rightSum == 0.0 ? 0.0 : rightScaleWidths[i] / rightSum;
+            }
 
             previewHandlerReg = Event.addNativePreviewHandler(this);
         }
@@ -190,7 +201,11 @@ public class GGridPropertyTableHeader extends Header<String> {
             NativeEvent nativeEvent = event.getNativeEvent();
             stopPropagation(nativeEvent);
             if (nativeEvent.getType().equals("mousemove")) {
-                resizeHeaders(nativeEvent.getClientX());
+                int clientX = nativeEvent.getClientX();
+                int tableLeft = table.getAbsoluteLeft();
+                if (clientX >= tableLeft && clientX <= tableLeft + table.getOffsetWidth()) {
+                    resizeHeaders(clientX);
+                }
             } else if (nativeEvent.getType().equals("mouseup")) {
                 previewHandlerReg.removeHandler();
                 resizeHelper = null;
@@ -199,12 +214,26 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         private void resizeHeaders(int clientX) {
             int dragX = clientX - initalMouseX;
+            double dragColumnWidth = dragX * scaleWidth / scalePixelWidth;
+            double newLeftWidth = leftInitialWidth + dragColumnWidth;
 
-            int dragColumnWidth = dragX * scaleWidth / scalePixelWidth;
+            if (table.getTableDataScroller().getMaximumHorizontalScrollPosition() > 0) {
+                GPropertyDraw property = table.getProperty(new Cell.Context(table.getKeyboardSelectedRow(), table.getColumnIndex(leftColumn), null));
+                int propertyMinWidth = property != null ? property.getMinimumPixelWidth() : 0;
+                int propertyMaxWidth = property != null ? property.getMaximumPixelWidth() : Integer.MAX_VALUE;
+                if (property == null || (newLeftWidth >= propertyMinWidth && newLeftWidth <= propertyMaxWidth)) {
+                    table.setColumnWidth(leftColumn, newLeftWidth + "px");
+                    table.onResize();
+                }
+            } else {
+                if (newLeftWidth > 0) {
+                    table.setColumnWidth(leftColumn, newLeftWidth + "px");
 
-            if (leftInitialWidth + dragColumnWidth > 0 && rightInitialWidth - dragColumnWidth > 0) {
-                table.setColumnWidth(leftColumn, (leftInitialWidth + dragColumnWidth) + "px");
-                table.setColumnWidth(rightColumn, (rightInitialWidth - dragColumnWidth) + "px");
+                    for (int i = 0; i < rightColumns.length; i++) {
+                        table.setColumnWidth(rightColumns[i], (rightInitialWidths[i] - (rightCoeffs[i] != 0.0 ? dragColumnWidth * rightCoeffs[i] : dragColumnWidth / rightCoeffs.length)) + "px");
+                    }
+                    table.onResize();
+                }
             }
         }
     }

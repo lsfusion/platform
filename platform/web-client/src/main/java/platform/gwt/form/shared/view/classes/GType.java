@@ -39,6 +39,7 @@ public abstract class GType implements Serializable {
     }
 
     public abstract int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize);
+    public abstract int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize);
     public abstract int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize);
     public abstract GCompare[] getFilterCompares();
 

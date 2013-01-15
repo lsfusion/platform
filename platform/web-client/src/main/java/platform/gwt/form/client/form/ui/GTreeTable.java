@@ -197,6 +197,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     protected void updateHeader() {
         boolean needsHeaderRefresh = false;
+        rowHeight = 0.0;
         for (GPropertyDraw property : getColumnProperties()) {
             Map<GGroupObjectValue, Object> captions = propertyCaptions.get(property);
             if (captions != null) {
@@ -204,6 +205,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 headers.get(getColumnIndex(property)).setCaption(value == null ? "" : value.toString().trim());
                 needsHeaderRefresh = true;
             }
+            rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight());
         }
         if (needsHeaderRefresh) {
             refreshHeaders();
