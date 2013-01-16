@@ -251,3 +251,10 @@ META deriveDocumentQuantityDetailOnChangeQuantityPack (detail);
         }
     }
 END
+
+
+idBarcodeSkuDocumentDetail 'Товар' (documentDetail) = idBarcodeSku(skuDocumentDetail(documentDetail));
+
+EXTEND FORM documents
+    PROPERTIES (dd) idBarcodeSkuDocumentDetail BEFORE nameSkuDocumentDetail
+;

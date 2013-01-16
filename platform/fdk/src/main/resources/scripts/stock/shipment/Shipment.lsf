@@ -2,8 +2,8 @@ MODULE Shipment;
 
 REQUIRE Order, Invoice, StockDocument;
 
-CLASS ABSTRACT shipment 'Поставка';
-CLASS ABSTRACT shipmentDetail 'Строка поставки';
+CLASS ABSTRACT shipment 'Поставка' : document;
+CLASS ABSTRACT shipmentDetail 'Строка поставки' : documentDetail;
 
 @defineDocumentAbstract(shipment);
 @defineDocumentAbstractNumber(shipment);
@@ -136,6 +136,8 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 
     Shipment.quantityPackShipmentDetail(detail) += quantityPackShipmentDetail(detail);
 
+    @extendDocument(shipment);
+
 // --------------------------- Формы --------------------------------- //
 
     editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -145,8 +147,8 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS s = userShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameSupplierUserShipment, nameCustomerUserShipment, nameSupplierStockUserShipment, nameCustomerStockUserShipment,
                        nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
-                       nameCurrencyUserShipment, noteUserShipment,
-                       countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment, sumUserShipmentDetailUserShipment, toShowProp###userShipment
+                       nameCurrencyUserShipment, noteUserShipment, countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment,
+                       sumUserShipmentDetailUserShipment, toShowProp###userShipment
 
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
@@ -156,7 +158,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES (d) quantityUserShipmentDetail ON CHANGE EXEC changeQuantityUserShipmentDetail(d), priceUserShipmentDetail, sumUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
-        PROPERTIES(s) TODRAW d addDetailDialogSkuStockUserShipmentDetailUserShipment,
+        PROPERTIES(s) TODRAW d fillDocumentShipment, addDetailDialogSkuStockUserShipmentDetailUserShipment,
                                addDetailInputBarcodeUserShipmentDetailUserShipment, deleteUserShipmentDetailUserShipment
         FILTERS userShipmentUserShipmentDetail(d) == s
 

@@ -2,8 +2,8 @@ MODULE Invoice;
 
 REQUIRE Order, ContractLedger, StockTax;
 
-CLASS ABSTRACT invoice 'Накладная' : contractLedger, contractALedger, inContractLedger, outContractLedger;
-CLASS ABSTRACT invoiceDetail 'Строка накладной';
+CLASS ABSTRACT invoice 'Накладная' : contractLedger, contractALedger, inContractLedger, outContractLedger, document;
+CLASS ABSTRACT invoiceDetail 'Строка накладной' : documentDetail;
 
 @defineDocumentAbstract(invoice);
 @defineDocumentAbstractNumber(invoice);
@@ -401,6 +401,23 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
         }
     } IN orderGroup;
 
+
+    @extendDocument(invoice);
+
+//    fillDocumentInvoice 'Подбор документа' = ACTION (userInvoice) {
+//        FORM documents MODAL;
+//        IF formResult() == formResult.ok THEN {
+//            LOCAL chosenDocument = document();
+//            SET chosenDocument() <- chosenObject('d');
+//            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = userInvoiceDetail DO {
+//                SET userInvoiceUserInvoiceDetail(i) <- userInvoice;
+//                SET skuInvoiceDetail(i) <- skuDocumentDetail(documentDetail);
+//                SET quantityInvoiceDetail(i) <- quantityDocumentDetail(documentDetail);
+//                SET priceInvoiceDetail(i) <- priceDocumentDetail(documentDetail);
+//            }
+//        }
+//    } TOOLBAR;
+
 // --------------------------- Формы ---------------------------------- //
 
     editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -414,7 +431,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                        numberContractSkuUserInvoice, isCommissionUserInvoice,
                        fillOrderUserInvoice, ordersInvoice READONLY,
                        countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
-                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, toShowProp###userInvoice
+                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, toShowProp###userInvoice//, fillDocumentInvoice
+
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
@@ -427,7 +445,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                        VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail,
                        descriptionOrderUserInvoiceDetail, ADDOBJ, delete
 
-        PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
+        PROPERTIES(i) TODRAW d fillDocumentInvoice, addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
                                addDetailInputBarcodeUserInvoiceDetailUserInvoice, deleteUserInvoiceDetailUserInvoice
         FILTERS userInvoiceUserInvoiceDetail(d) == i
 
@@ -795,3 +813,13 @@ META extendFormDocumentPackageSkuCustom(object, form, concrete, toShowProp)
         quantityPackSku###object(s, concrete) ON CHANGE EXEC changeQuantityPackSku###object(s, concrete)
     ;
 END
+
+//numberDocument(invoice) += numberInvoice(invoice);
+//seriesDocument(invoice) += seriesInvoice(invoice);
+//dateDocument(invoice) += dateInvoice(invoice);
+//
+//skuDocumentDetail(invoiceDetail) += skuInvoiceDetail(invoiceDetail);
+//quantityDocumentDetail(invoiceDetail) += quantityInvoiceDetail(invoiceDetail);
+//priceDocumentDetail(invoiceDetail) += priceInvoiceDetail(invoiceDetail);
+//
+//documentDocumentDetail(invoiceDetail) += invoiceInvoiceDetail(invoiceDetail);

@@ -19,8 +19,8 @@ REQUIRE System,
 
 PRIORITY Utils, Stock;
 
-CLASS ABSTRACT order 'Заказ';
-CLASS ABSTRACT orderDetail 'Строка заказа';
+CLASS ABSTRACT order 'Заказ' : document;
+CLASS ABSTRACT orderDetail 'Строка заказа' : documentDetail;
 
 @defineDocumentAbstract(order);
 @defineDocumentAbstractNumber(order);
@@ -199,6 +199,8 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
     fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), quantityDaysNextShipmentUserOrder(userOrder));
 
+     @extendDocument(order);
+
 // --------------------------- Формы Заказа ---------------------------------
 
     editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -211,7 +213,8 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder, quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
+                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder,
+                       quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
 
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
@@ -226,7 +229,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
                        name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete
 
-        PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOrderDetailUserOrder,
+        PROPERTIES(o) TODRAW d fillDocumentOrder, addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
         FILTERS userOrderUserOrderDetail(d) == o
 
@@ -499,3 +502,13 @@ META extendFormDocumentPackageSkuStockCustom(object, form, concrete, stockProp, 
         quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantityPackSku###object###Stock(s, concrete, st)
     ;
 END
+
+//numberDocument(order) += numberOrder(order);
+//seriesDocument(order) += seriesOrder(order);
+//dateDocument(order) += dateOrder(order);
+//
+//skuDocumentDetail(orderDetail) += skuOrderDetail(orderDetail);
+//quantityDocumentDetail(orderDetail) += quantityOrderDetail(orderDetail);
+//priceDocumentDetail(orderDetail) += priceOrderDetail(orderDetail);
+//
+//documentDocumentDetail(orderDetail) += orderOrderDetail(orderDetail);

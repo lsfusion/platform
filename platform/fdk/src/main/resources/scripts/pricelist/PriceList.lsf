@@ -231,8 +231,13 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 @defineDocumentInterfaceDetailQuantity(priceList);
 @defineAddDetailDialogBarcode(userPriceList, sku);
 
-toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
-toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
+WHEN ASSIGNED(u AS userPriceList) DO {
+    IF u IS userPriceList AND toDateUserPriceList(u) THEN SET toDateUserPriceList(u) <- NULL;
+    IF u IS userPriceList AND toTimeUserPriceList(u) THEN SET toTimeUserPriceList(u) <- NULL;
+} SESSION;
+
+//toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
+//toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
 
 userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyPriceList(userPriceList) WHERE userPriceList IS userPriceList;
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;

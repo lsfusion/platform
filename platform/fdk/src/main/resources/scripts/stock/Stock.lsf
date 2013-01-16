@@ -2584,3 +2584,78 @@ loadDefaultUOMs 'Загрузить стандартные единицы изм
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultUOMs);
+
+
+CLASS ABSTRACT document 'Документ с товарами';
+CLASS ABSTRACT documentDetail 'Строка документа';
+
+numberDocument 'Номер' = ABSTRACT STRING[10](document);
+seriesDocument 'Серия' = ABSTRACT STRING[10](document);
+dateDocument 'Дата' = ABSTRACT DATE(document);
+
+supplierDocument = ABSTRACT legalEntity(document);
+nameSupplierDocument 'Поставщик' (document) = name(supplierDocument(document));
+supplierStockDocument = ABSTRACT stock(document);
+nameSupplierStockDocument 'Склад поставщика' (document) = name(supplierStockDocument(document));
+
+customerDocument = ABSTRACT legalEntity(document);
+nameCustomerDocument 'Покупатель' (document) = name(customerDocument(document));
+customerStockDocument = ABSTRACT stock(document);
+nameCustomerStockDocument 'Склад покупателя'(document) = name(customerStockDocument(document));
+
+documentDocumentDetail = ABSTRACT document(documentDetail);
+
+skuDocumentDetail = ABSTRACT sku(documentDetail);
+nameSkuDocumentDetail 'Товар' (documentDetail) = nameSku(skuDocumentDetail(documentDetail));
+quantityDocumentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3](documentDetail);
+priceDocumentDetail 'Цена' = ABSTRACT NUMERIC[14,3](documentDetail);
+indexDocumentDetail 'Номер' = ABSTRACT INTEGER(documentDetail);
+
+FORM documents 'Документы с товарами'
+    OBJECTS d=document
+    PROPERTIES(d) READONLY numberDocument, seriesDocument, dateDocument, nameSupplierDocument, nameSupplierStockDocument,
+                  nameCustomerDocument, nameCustomerStockDocument, objectClassName
+
+    OBJECTS dd=documentDetail
+    PROPERTIES(dd) READONLY indexDocumentDetail, nameSkuDocumentDetail, quantityDocumentDetail, priceDocumentDetail
+
+    FILTERS documentDocumentDetail(dd)==d
+;
+
+DESIGN documents FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+    }
+}
+
+META extendDocument(object)
+    numberDocument(object) += number###object(object);
+    seriesDocument(object) += series###object(object);
+    dateDocument(object) += date###object(object);
+
+    supplierDocument(object) += supplier###object(object);
+    supplierStockDocument(object) += supplierStock###object(object);
+    customerDocument(object) += customer###object(object);
+    customerStockDocument(object) += customerStock###object(object);
+
+    indexDocumentDetail(object##Detail) += indexUser###object##Detail(object##Detail);
+    skuDocumentDetail(object##Detail) += sku###object##Detail(object##Detail);
+    quantityDocumentDetail(object##Detail) += quantity###object##Detail(object##Detail);
+    priceDocumentDetail(object##Detail) += price###object##Detail(object##Detail);
+
+    documentDocumentDetail(object##Detail) += object###object##Detail(object##Detail);
+
+    fillDocument###object 'Подбор документа' = ACTION (user###object) {
+        FORM documents MODAL;
+        IF formResult() == formResult.ok THEN {
+            LOCAL chosenDocument = document();
+            SET chosenDocument() <- chosenObject('d');
+            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = user###object##Detail DO {
+                SET user###object##User###object##Detail(i) <- user###object;
+                SET sku###object##Detail(i) <- skuDocumentDetail(documentDetail);
+                SET quantity###object##Detail(i) <- quantityDocumentDetail(documentDetail);
+                SET price###object##Detail(i) <- priceDocumentDetail(documentDetail);
+            }
+        }
+    } TOOLBAR;
+END
