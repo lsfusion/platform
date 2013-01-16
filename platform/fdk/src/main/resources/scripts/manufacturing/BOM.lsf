@@ -207,6 +207,9 @@ descriptionProduct 'Название документа' (product)= descriptionB
 
 @defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
 
+densityProduct 'Удельный вес цены,%' = DATA NUMERIC[8,3] (product);
+densityBOM 'Удельный вес цен,%'= GROUP SUM densityProduct(product) BY BOMProduct(product) IN documentSumGroup;
+
 nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
                                       name(BOMProduct(material)),
                                       nameSkuProduct(material));
@@ -314,9 +317,9 @@ FORM BOM 'Спецификация'
     OBJECTS dt = DATE FIXED PANEL
 
     PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
-    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM//, bruttoQuantityComponentBOM
+    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, densityBOM//, bruttoQuantityComponentBOM
     OBJECTS p = product
-    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
+    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, densityProduct
 
     PROPERTIES(p) ADDOBJ, delete
     PROPERTIES(b) TODRAW p deleteProductBOM
@@ -380,13 +383,13 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM
+    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, densityBOM
 //                  bruttoQuantityComponentBOM
     PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product
-    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
+    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, densityProduct
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
@@ -447,7 +450,7 @@ bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMate
 
 bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS sku;
 
-recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date);
+recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
 recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);

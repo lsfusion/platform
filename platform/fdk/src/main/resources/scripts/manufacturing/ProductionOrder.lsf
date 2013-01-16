@@ -1,6 +1,6 @@
 MODULE  ProductionOrder;
 
-REQUIRE Substitute;
+REQUIRE Substitute, PriceList;
 NAMESPACE Production;
 
 // ---------------- Производственный заказ ------------------- //
@@ -12,6 +12,7 @@ TABLE order(order);
 @defineDocumentHeaderNote(order);
 
 @defineDocumentHeaderPosted (order);
+@defineDocumentHeaderPriceListType (order);
 
 @defineDocumentHeaderStock (order, stock, 'Склад-отправитель', output);
 @defineDocumentHeaderStock (order, stock, 'Склад-получатель', input);
@@ -159,7 +160,8 @@ FORM order 'Производственный заказ'
 
     OBJECTS o = order FIXED PANEL
     PROPERTIES(o) objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder,
+                  namePriceListTypeOrder
     OBJECTS pd=productDetail
     PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail
     PROPERTIES(pd) ADDOBJ, delete
@@ -195,7 +197,7 @@ DESIGN order FROM DEFAULT{
             type = TABBED;
             ADD pd.box { title = 'Изделия';}
             ADD cd.box { title = 'Компоненты';}
-            ADD s.box;
+            ADD s.box { title = 'Потребность';}
         }
 
         NEW header.box BEFORE specification.box {
@@ -229,6 +231,11 @@ DESIGN order FROM DEFAULT{
                         ADD PROPERTY(fromDateOrder);
                         ADD PROPERTY(toDateOrder);
                     }
+                    NEW priceRow {
+                        title = 'Вид цены материала';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(namePriceListTypeOrder);
+                    }
                 }
             }
 
@@ -247,7 +254,7 @@ FORM orders 'Производственные заказы'
 
     OBJECTS o = order
     PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder, namePriceListTypeOrder
     PROPERTIES(o) ADDFORM, EDITFORM, delete
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
