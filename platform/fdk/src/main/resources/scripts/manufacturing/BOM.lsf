@@ -229,7 +229,7 @@ TABLE component (component);
 @defineDocumentDetailActionsCustom (BOM, component);
 
 materialComponent = DATA material (component);
-nameMaterialComponent 'SKU' (component) = nameMaterial(materialComponent(component));
+nameMaterialComponent 'Материал' (component) = nameMaterial(materialComponent(component));
 
 UOMComponent = DATA UOM (component);
 shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
@@ -412,6 +412,21 @@ DESIGN BOMs FROM DEFAULT {
         }
     }
 }
+
+// ----- Рекурсивный расчет потребностей ---------- //
+
+TABLE BOMMaterial(BOM, material);
+// кол-во требуемых материалов материалов
+bruttoQuantityBOMMaterial (BOM, material) = GROUP SUM bruttoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
+
+bruttoQuantityBOMBOM (parent, child) = GROUP MAX bruttoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
+
+bruttoQuantityBOMSku(BOM, sku) = bruttoQuantityBOMMaterial(BOM, sku) AND sku IS sku;
+
+recBruttoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) STEP 1.0 AND q == $q * bruttoQuantityBOMBOM($child, child);
+recBruttoQuantityBOMBOM (parent, child) = GROUP SUM recBruttoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
+
+recBruttoQuantityBOMSku (BOM, sku) = GROUP SUM recBruttoQuantityBOMBOM(BOM, childBOM) * bruttoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);
 
 NAVIGATOR {
     NEW manufacturingNavigator 'Производство' IMAGE '/images/plant.png' {
