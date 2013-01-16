@@ -90,6 +90,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/sale/creditnote/SaleReturnCreditNote.lsf",
                 "/scripts/retail/pricing/PricingSale.lsf",
                 "/scripts/sale/Sale.lsf",
+                "/scripts/sale/order/SaleReserve.lsf",
                 "/scripts/purchase/StockReserve.lsf",
                 "/scripts/purchase/order/PurchaseOrder.lsf",
                 "/scripts/purchase/invoice/PurchaseInvoice.lsf",
@@ -101,12 +102,13 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/purchase/shipment/PurchaseReturnShipment.lsf",
                 "/scripts/purchase/creditnote/PurchaseReturnCreditNote.lsf",
                 "/scripts/purchase/Purchase.lsf",
+                "/scripts/purchase/order/PurchaseReserve.lsf",
                 "/scripts/retail/pricing/PricingPurchaseReturn.lsf",
                 "/scripts/purchase/writeoff/PurchaseWriteOff.lsf",
                 "/scripts/sale/shipment/SalePurchaseShipment.lsf",
                 "/scripts/sale/invoice/SalePurchaseInvoice.lsf",
                 "/scripts/sale/order/SalePurchaseOrder.lsf",
-                "/scripts/sale/SalePurchase.lsf",
+                "/scripts/sale/order/SalePurchaseReserve.lsf",
                 "/scripts/stock/inventory/Inventory.lsf",
                 "/scripts/masterdata/Currency.lsf",
                 "/scripts/stock/adjustment/StockAdjustment.lsf",
@@ -191,8 +193,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/certificate/SaleCompliance.lsf",
                 "/scripts/certificate/Sanitation.lsf",
                 "/scripts/certificate/PurchaseSanitation.lsf",
-                "/scripts/certificate/SaleSanitation.lsf"
-                
+                "/scripts/certificate/SaleSanitation.lsf",
+                "/scripts/machinery/Equipment.lsf"
+
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
 

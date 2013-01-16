@@ -1,6 +1,6 @@
 MODULE PurchaseLedger;
 
-REQUIRE System, Stock, Tax, Employee;
+REQUIRE System, Stock, Tax, Employee, Purchase;
 
 CLASS ABSTRACT purchaseLedger 'Покупка товара';
 TABLE purchaseLedger(purchaseLedger);
@@ -261,9 +261,11 @@ DESIGN purchaseSkuStock FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW purchaseNavigator 'Поступления' {
-        ADD purchaseLedger;
-        ADD purchaseSkuStock;
+    purchaseNavigator {
+        NEW purchaseLedgerNavigator 'Поступления' {
+            ADD purchaseLedger;
+            ADD purchaseSkuStock;
+        }
     }
 }
 

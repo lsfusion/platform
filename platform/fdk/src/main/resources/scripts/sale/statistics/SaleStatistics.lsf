@@ -1,6 +1,6 @@
 MODULE SaleStatistics;
 
-REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger;
+REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger, Sale;
 
 NAMESPACE Sale;
 
@@ -704,9 +704,11 @@ loadDefaultStatisticGroups 'Загрузить стандартные стати
 @implementLoadDefaultData(loadDefaultStatisticGroups);
 
 NAVIGATOR {
-    NEW statisticsNavigator 'Статистика' {
-        ADD statisticGroups;
-        ADD statisticalReport;
-        ADD torgSales;
+    saleNavigator {
+        NEW statisticsNavigator 'Статистика' {
+            ADD statisticGroups;
+            ADD statisticalReport;
+            ADD torgSales;
+        }
     }
 }

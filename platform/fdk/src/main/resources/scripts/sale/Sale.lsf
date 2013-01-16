@@ -1,62 +1,7 @@
 MODULE Sale;
 
-REQUIRE SaleShipment, SaleReturnShipment, SaleCreditNote, SaleReturnCreditNote, SaleBlanketOrder, SaleScheduleOrder
-;
-
-//-----------------------------------------------------------------------------------------------------------//
-
-currentReserveSaleSkuStock 'Резерв продажа (всего)' (sku, stock)  = Sale.currentReserveSkuStock(sku, stock) (-)
-    SaleReturn.currentReserveSkuStock(sku, stock) PERSISTENT;
-
-// без учета текущей даты/времени
-reserveSaleBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Sale.reserveBSkuStockDate(sku, stock, date) (-)
-    SaleReturn.reserveBSkuStockDate(sku, stock, date);
-
-// с учетом текущей даты/времени
-reserveSaleASkuStockDate 'Остаток на конец дня'(sku, stock, date) = Sale.reserveASkuStockDate(sku, stock, date) (-)
-    SaleReturn.reserveASkuStockDate(sku, stock, date);
-
-// без учета текущей даты/времени
-reserveSaleBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Sale.reserveBSkuStockDateTime(sku, stock, dateTime) (-)
-    SaleReturn.reserveBSkuStockDateTime(sku, stock, dateTime);
-
-// с учетом текущей даты/времени
-reserveSaleASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Sale.reserveASkuStockDateTime(sku, stock, dateTime) (-)
-    SaleReturn.reserveASkuStockDateTime(sku, stock, dateTime);
-
-
+REQUIRE System;
 
 NAVIGATOR {
-
-    NEW saleSaleNavigator 'Продажи' {
-        ADD Sale.scheduleOrderDetails;
-        ADD Sale.blanketOrders;
-        ADD Sale.orders;
-        ADD Sale.invoices;
-        ADD Sale.shipments;
-        ADD Sale.creditNotes;
-        //ADD Sale.scheduleOrders;
-    }
-    NEW saleReturnNavigator 'Возвраты' {
-        ADD SaleReturn.orders;
-        ADD SaleReturn.invoices;
-        ADD SaleReturn.shipments;
-        ADD SaleReturn.creditNotes;
-    }
+    NEW saleNavigator 'Продажи' TO toolbar IMAGE '/images/checkout.png';
 }
-
-
-META defineDialogSkuSaleReserve (form)
-
-    form###SaleReserve 'Резерв (продажи)' (sku) = currentReserveSaleSkuStock(sku, form###stock());
-
-    EXTEND FORM form
-        PROPERTIES(s) READONLY  form###SaleReserve AFTER form###balance SHOWIF form###stock()
-    ;
-END
-
-@defineDialogSkuSaleReserve(dialogSku);
-
-
-
-

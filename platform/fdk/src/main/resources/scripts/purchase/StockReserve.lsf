@@ -7,7 +7,8 @@ REQUIRE System,
         Document,
         Currency,
         SaleLedger,
-        Barcode;
+        Barcode,
+        Purchase;
 
 @defineHistorizable(stockReserveStockSku, 'Страховой запас (кол-во)', NUMERIC[14,3], stock, name, sku, nameSku, base);
 stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (stock, skuGroup);
@@ -80,7 +81,9 @@ DESIGN stockReserve FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW stockReserveNavigator 'Запасы' {
-        ADD stockReserve;
+    purchaseNavigator {
+        NEW stockReserveNavigator 'Запасы' {
+            ADD stockReserve;
+        }
     }
 }

@@ -1,9 +1,8 @@
 MODULE SaleItem;
 
-REQUIRE Item, Sale;
+REQUIRE Item, SaleOrder;
 
 NAMESPACE Item;
-
 
 EXTEND FORM item
     PROPERTIES(b) salePackBarcode ON CHANGE EXEC changeSalePackBarcodeSku(b,i) BEFORE delete(b)

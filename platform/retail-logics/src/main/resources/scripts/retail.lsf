@@ -48,7 +48,6 @@ REQUIRE System,
         PurchaseReturnShipment,
         PurchaseReturnCreditNote,
         PurchaseWriteOffBy,
-        SalePurchase,
         Repricing,
         Employee,
         StockAdjustment,
@@ -120,52 +119,11 @@ roundGroupSku(sku) += itemGroupItem(sku);
 EXTEND CLASS itemGroup : discountSkuGroup;
 inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
 
-//------------------------------------ Товар для подразделения с историей -------------------------------------------//
-
-
-nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
-@defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
-
-//---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
-
-generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.srv.actions.GenerateZReport';
-averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
-averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
-averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
-dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
-dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
-
-EXTEND FORM defaultData
-    PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageReceiptCountGenerateZReport, averageReceiptDetailCountGenerateZReport,
-                    dateFromGenerateZReport, dateToGenerateZReport
-
-;
-
-EXTEND DESIGN defaultData {
-    pane {
-        NEW ZReport {
-            title = 'Z-отчёт';
-            childConstraints = TO THE BOTTOM;
-            ADD PROPERTY(averageZReportCountGenerateZReport());
-            ADD PROPERTY(averageReceiptCountGenerateZReport());
-            ADD PROPERTY(averageReceiptDetailCountGenerateZReport());
-            ADD PROPERTY(dateFromGenerateZReport());
-            ADD PROPERTY(dateToGenerateZReport());
-            ADD PROPERTY(generateZReport());
-        }
-    }
-}
-
 //---------------------------- Настройка навигатора ----------------------------------------//
 
 NAVIGATOR {
 
-    NEW purchase 'Закупки' TO toolbar IMAGE '/images/boxes.png' {
-        ADD purchasePurchaseNavigator;
-        ADD purchaseReturnNavigator;
-        ADD purchaseNavigator;
-        ADD stockReserveNavigator;
-    }
+    ADD purchaseNavigator;
 
     NEW warehouse 'Склад' TO toolbar IMAGE '/images/warehouse.png' {
         ADD inventoryNavigator;
@@ -186,12 +144,7 @@ NAVIGATOR {
         }
     }
 
-    NEW sale 'Продажи' TO toolbar IMAGE '/images/checkout.png' {
-        ADD saleSaleNavigator;
-        ADD saleReturnNavigator;
-        ADD salesNavigator;
-        ADD statisticsNavigator;
-    }
+    ADD saleNavigator;
 
     NEW retail 'Розничная торговля' TO toolbar IMAGE '/images/shopping.png' {
 

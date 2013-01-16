@@ -1,7 +1,8 @@
-MODULE SalePurchase;
+MODULE SalePurchaseReserve;
 
-REQUIRE Sale, Purchase
-;
+REQUIRE SaleReserve, PurchaseReserve;
+
+NAMESPACE SalePurchase;
 
 //-----------------------------------------------------------------------------------------------------------//
 

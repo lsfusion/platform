@@ -415,18 +415,18 @@ DESIGN BOMs FROM DEFAULT {
 
 // ----- Рекурсивный расчет потребностей ---------- //
 
-TABLE BOMMaterial(BOM, material);
+TABLE BOMMaterial(BOM, material, DATE);
 // кол-во требуемых материалов материалов
-bruttoQuantityBOMMaterial (BOM, material) = GROUP SUM bruttoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
+bruttoQuantityBOMMaterialDate (BOM, material, date) = GROUP SUM bruttoQuantityComponentDate(component, date) BY BOMComponent(component), materialComponent(component), date;
 
-bruttoQuantityBOMBOM (parent, child) = GROUP MAX bruttoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
+bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMaterialDate(BOM, material, date) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-bruttoQuantityBOMSku(BOM, sku) = bruttoQuantityBOMMaterial(BOM, sku) AND sku IS sku;
+bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS sku;
 
-recBruttoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) STEP 1.0 AND q == $q * bruttoQuantityBOMBOM($child, child);
-recBruttoQuantityBOMBOM (parent, child) = GROUP SUM recBruttoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
+recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date);
+recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 
-recBruttoQuantityBOMSku (BOM, sku) = GROUP SUM recBruttoQuantityBOMBOM(BOM, childBOM) * bruttoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);
+recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
 
 NAVIGATOR {
     NEW manufacturingNavigator 'Производство' IMAGE '/images/plant.png' {

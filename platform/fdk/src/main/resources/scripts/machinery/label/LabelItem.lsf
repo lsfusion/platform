@@ -34,3 +34,8 @@ overCopyItem(s, d) += ACTION (s, d) {
         SET dataMultiplierItemDepartmentStoreDate(d, ds, dt) <- dataMultiplierItemDepartmentStoreDate(s, ds, dt) IF ds IS departmentStore AND dt IS DATE;
     }
 }
+
+// ------------------------------ Добавляем атрибуты в ценники ----------------------------- //
+
+nameManufacturerItemBarcode = nameManufacturerItem(skuBarcode(barcode));
+@defineLabelTransactionAttribute(manufacturer, 'Производитель', STRING[255], nameManufacturerItem);
