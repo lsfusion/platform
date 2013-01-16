@@ -161,8 +161,15 @@ DESIGN technologies FROM DEFAULT{
 CLASS BOM 'Спецификация' : named, numeratedObject, historizable;
 TABLE BOM (BOM);
 
+CLASS BOMPosted 'Проведенная спецификация' : BOM;
+
 @defineDocumentHeaderNote(BOM);
 @defineNumeratedObjectDefault(BOM, 'Нумератор для спецификаций', 'СП');
+@defineDocumentHeaderPosted (BOM);
+
+descriptionBOM 'Название документа' (BOM) =
+    [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' / \' || CAST($2 AS TEXT) || \' № \' || CAST($3 AS TEXT)'](
+    'Спецификация', name(BOM), seriesNumberObject(BOM)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 // ------------- Изделия ----------- //
 CLASS product 'Изделие' : externalizable, material;
@@ -185,15 +192,18 @@ EXTEND FORM technology
 skuProduct = DATA sku (product);
 nameSkuProduct 'SKU' (product) = nameSku(skuProduct(product)) IN recognize;
 UOMProduct = DATA UOM (product);
-shortNameUOMSkuProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN recognize;
+shortNameUOMProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN recognize;
 UOMProduct(product) <-UOMSku(skuProduct(product)) WHEN CHANGED (skuProduct(product));
 
 
 @defineDocumentRelation (BOM, product, ' (изделие)');
+descriptionProduct 'Название документа' (product)= descriptionBOM(BOMProduct(product));
+@defineDocumentDetailPosted (BOM, product);
+
 @defineDocumentDetailIndex (BOM, product);
 @defineDocumentDetailActionsCustom (BOM, product);
 
-@defineDocumentDetailQuantityCustomPrefix (product, , ' (нетто)');
+@defineDocumentDetailQuantityCustomPrefix (product, , );
 
 @defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
 
@@ -204,20 +214,13 @@ nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||
 UOMMaterial(material) += UOMSku(skuProduct(material));
 skuGroupMaterial(material) += skuGroupSku(skuProduct(material));
 
-//FORM product 'Изделие'
-//    OBJECTS p=product FIXED PANEL
-//    PROPERTIES(p) nameSkuProduct, nameSkuGroupProduct
-//
-//    EDIT product OBJECT p
-//;
-//
-//FORM products 'Изделия'
-//    OBJECTS p=product
-//    PROPERTIES(p) READONLY nameSkuProduct, nameSkuGroupProduct
-//    PROPERTIES(p)          ADDFORM, EDITFORM, delete
-//
-//    DIALOG product OBJECT p
-//;
+FORM products 'Изделия'
+    OBJECTS p=product
+    PROPERTIES(p) READONLY descriptionProduct, indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
+    PROPERTIES (p) ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    DIALOG product OBJECT p
+;
 
 
 // ------------- Компоненты ----------- //
@@ -225,11 +228,18 @@ CLASS component 'Компонент' : named;
 TABLE component (component);
 
 @defineDocumentRelation (BOM, component, ' (компонент)');
+descriptionComponent 'Название документа' (component)= descriptionBOM(BOMComponent(component));
+
+@defineDocumentDetailPosted (BOM, component);
 @defineDocumentDetailIndex (BOM, component);
 @defineDocumentDetailActionsCustom (BOM, component);
 
 materialComponent = DATA material (component);
 nameMaterialComponent 'Материал' (component) = nameMaterial(materialComponent(component));
+
+nameComponent 'Компонент' (component) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
+                                      name(BOMComponent(component)),
+                                      nameMaterialComponent(component));
 
 UOMComponent = DATA UOM (component);
 shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
@@ -289,6 +299,14 @@ changeBruttoQuantityComponent = ACTION (component) {
 }
 backgroundBruttoQuantityComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
 
+FORM components 'Компоненты'
+    OBJECTS c=component
+    PROPERTIES(c) READONLY descriptionComponent, indexComponent, nameMaterialComponent, shortNameUOMComponent, nettoQuantityComponent
+    PROPERTIES (c) ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    DIALOG component OBJECT c
+;
+
 //------------------------------- Формы -------------------------------------//
 FORM BOM 'Спецификация'
 
@@ -296,9 +314,9 @@ FORM BOM 'Спецификация'
     OBJECTS dt = DATE FIXED PANEL
 
     PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
-    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, bruttoQuantityComponentBOM
+    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM//, bruttoQuantityComponentBOM
     OBJECTS p = product
-    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
+    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
 
     PROPERTIES(p) ADDOBJ, delete
     PROPERTIES(b) TODRAW p deleteProductBOM
@@ -312,6 +330,9 @@ FORM BOM 'Спецификация'
     PROPERTIES(c) ADDOBJ, delete
     PROPERTIES(b) TODRAW c deleteComponentBOM
     FILTERS       BOMComponent(c) == b
+
+    EVENTS
+        ON OK EXEC prePostBOM(b)
 
     EDIT BOM OBJECT b
 ;
@@ -349,6 +370,9 @@ DESIGN BOM FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
             }
         }
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
     }
 }
 
@@ -356,13 +380,13 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM,
-                  bruttoQuantityComponentBOM
+    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM
+//                  bruttoQuantityComponentBOM
     PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable
+    PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product
-    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMSkuProduct, quantityProduct
+    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
@@ -398,16 +422,16 @@ DESIGN BOMs FROM DEFAULT {
                     title = 'История';
 
                     ADD b.historyGroup;
-//                    ADD dis.postedGroup;
+                    ADD b.postedGroup;
                 }
-//                NEW printTab {
-//                    title = 'Печатные формы';
-//                    NEW printContainer {
-//                        title = 'Печать';
-//                        childConstraints = TO THE BOTTOM;
-//                        fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
-//                    }
-//                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
+                    }
+                }
             }
         }
     }

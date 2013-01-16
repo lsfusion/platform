@@ -1,0 +1,307 @@
+MODULE  ProductionOrder;
+
+REQUIRE Substitute;
+NAMESPACE Production;
+
+// ---------------- Производственный заказ ------------------- //
+CLASS order 'Производственный заказ' : historizable, numeratedObject;
+CLASS orderPosted 'Проведенный производственный заказ' : order, postedObject;
+TABLE order(order);
+
+@defineDocumentHeaderTime(order);
+@defineDocumentHeaderNote(order);
+
+@defineDocumentHeaderPosted (order);
+
+@defineDocumentHeaderStock (order, stock, 'Склад-отправитель', output);
+@defineDocumentHeaderStock (order, stock, 'Склад-получатель', input);
+
+@defineDocumentHeaderDatePrefix (order, from, ' действия с');
+@defineDocumentHeaderDatePrefix (order, to, ' действия по');
+
+@defineDocumentHeaderDescription(order, 'Производственный заказ');
+
+@defineNumeratedObjectDefault(order, 'Нумератор для производственных заказов', 'ПЗ');
+
+// ---------------- Изделие ------------------- //
+CLASS productDetail 'Строка изделия' : named;
+TABLE productDetail (productDetail);
+
+@defineDocumentRelation (order, productDetail, );
+@defineDocumentDetailIndex (order, productDetail);
+@defineDocumentDetailActionsCustom (order, productDetail);
+@defineDocumentDetailPosted (order, productDetail);
+@defineDocumentDetailTime (order, productDetail);
+@defineDocumentDetailDescription(order, productDetail);
+@defineDocumentDetailDatePrefix (order, productDetail, from, ' действия с');
+fromDateOrder(order) <- currentDate() WHEN ASSIGNED(order IS order);
+@defineDocumentDetailDatePrefix (order, productDetail, to, ' действия по');
+
+@defineDocumentDetailQuantityCustom (productDetail);
+@defineDocumentHeaderQuantityCustomPrefix (order, productDetail, , ' (изделие)');
+
+@defineDocumentDetailSkuCustom (productDetail, sku);
+
+productProductDetail = DATA product (productDetail);
+nameProductProductDetail 'Изделие' (productDetail) = nameMaterial(productProductDetail(productDetail)) IN recognize;
+
+UOMProductDetail = DATA UOM (productDetail);
+shortNameUOMProductDetail 'Ед.изм.' (productDetail) = shortName(UOMProductDetail(productDetail)) IN recognize;
+UOMProductDetail(productDetail) <-UOMProduct(productProductDetail(productDetail)) WHEN CHANGED (productProductDetail(productDetail));
+
+CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(productDetail)) CHECKED BY productProductDetail
+    MESSAGE 'Sku изделия и строки изделия не соответствуют друг другу';
+
+// ------------- Компоненты ----------- //
+CLASS componentDetail 'Строка компонента' : named;
+TABLE componentDetail (componentDetail);
+
+@defineDocumentRelation (order, componentDetail, );
+@defineDocumentDetailIndex (order, componentDetail);
+@defineDocumentDetailActionsCustom (order, componentDetail);
+@defineDocumentDetailPosted (order, componentDetail);
+@defineDocumentDetailTime (order, componentDetail);
+@defineDocumentDetailDescription(order, componentDetail);
+@defineDocumentDetailDatePrefix (order, componentDetail, from, ' действия с');
+@defineDocumentDetailDatePrefix (order, componentDetail, to, ' действия по');
+
+@defineDocumentDetailQuantityCustomPrefix (componentDetail, brutto, ' (брутто)');
+@defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, brutto, ' (материал брутто)');
+
+@defineDocumentDetailSkuCustom (componentDetail, sku);
+
+componentComponentDetail = DATA component (componentDetail);
+nameComponentComponentDetail 'Компонент' (componentDetail) = nameComponent(componentComponentDetail(componentDetail));
+
+UOMComponentDetail = DATA UOM (componentDetail);
+shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortName(UOMComponentDetail(componentDetail));
+UOMComponentDetail(componentDetail) <-UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
+
+CONSTRAINT skuComponentDetail(componentDetail) != (materialComponent(componentComponentDetail(componentDetail)) OR  skuProduct(materialComponent(componentComponentDetail(componentDetail))))
+    CHECKED BY componentComponentDetail MESSAGE 'Sku компонента и строки компонента не соответствуют друг другу';
+
+productComponentDetail = DATA product (componentDetail);
+nameMaterialComponentDetail 'Изделие' (componentDetail) = nameMaterial(productComponentDetail(componentDetail));
+
+//--
+
+quantityBOMOrder 'Кол-во спецификаций' (BOM, order) = ceil([GROUP MAX quantityProductDetail(productDetail) / quantityProduct(productProductDetail(productDetail))
+    BY BOMProduct(productProductDetail(productDetail)), orderProductDetail(productDetail)](BOM, order));
+
+createComponentOrder 'Заполнить компоненты заказа' = ACTION (order)  {
+
+    FOR quantityBOMOrder(BOM, order) DO {
+
+        FOR  BOMComponent(component) == BOM  DO {
+            FOR ADDOBJ d=componentDetail DO {
+                SET orderComponentDetail(d) <- order;
+                SET componentComponentDetail(d) <- component;
+                SET bruttoQuantityComponentDetail(d) <- bruttoQuantityComponentDate(component, dateOrder(order))*quantityBOMOrder(BOM,order);
+
+                IF materialComponent(component) AS sku THEN {
+                    SET skuComponentDetail(d) <- materialComponent(component);
+                } ELSE {
+                    IF materialComponent(component) AS product THEN {
+                        SET productComponentDetail(d) <- materialComponent(component);
+                        SET skuComponentDetail(d) <- skuProduct(materialComponent(component));
+                    }
+                }
+            }
+        }
+    }
+
+} TOOLBAR;
+
+deployedComponentDetail 'Развернут' = DATA BOOLEAN (componentDetail);
+toShowCreateComponentDetail (componentDetail)= componentDetail IS componentDetail AND NOT deployedComponentDetail(componentDetail);
+
+createComponentDetail 'Заполнить компоненты изделия' = ACTION (componentDetail)  {
+
+    FOR  BOMComponent(component) == BOMProduct(productComponentDetail(componentDetail))  DO {
+        FOR ADDOBJ d=componentDetail DO {
+            SET orderComponentDetail(d) <- orderComponentDetail(componentDetail);
+            SET componentComponentDetail(d) <- component;
+            SET bruttoQuantityComponentDetail(d) <- bruttoQuantityComponentDate(component, dateOrder(orderComponentDetail(componentDetail)))*
+                ceil(bruttoQuantityComponentDetail(componentDetail)/quantityProduct(productComponentDetail(componentDetail)));
+
+            IF materialComponent(component) AS sku THEN {
+                SET skuComponentDetail(d) <- materialComponent(component);
+            } ELSE {
+                IF materialComponent(component) AS product THEN {
+                    SET productComponentDetail(d) <- materialComponent(component);
+                    SET skuComponentDetail(d) <- skuProduct(materialComponent(component));
+                }
+            }
+        }
+    }
+    EXEC delete(componentDetail);
+//    SET deployedComponentDetail(componentDetail) <- TRUE;
+} TOOLBAR;
+
+
+//recBruttoQuantityOrderSku (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY sku, order;
+//createRecComponentOrder 'Заполнить компоненты заказа рекурсивно' = ACTION (order)  {
+//
+//    FOR recBruttoQuantityOrderSku(order, sku) ADDOBJ d = componentDetail DO {
+//        SET orderComponentDetail(d) <- order;
+//        SET skuComponentDetail(d) <- sku;
+//        SET bruttoQuantityComponentDetail(d) <- recBruttoQuantityOrderSku(order, sku);
+//    }
+//} TOOLBAR;
+
+backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF productComponentDetail(componentDetail);
+
+bruttoQuantitySkuOrder 'Количество брутто' (sku,order)= GROUP SUM bruttoQuantityComponentDetail(componentDetail) BY skuComponentDetail(componentDetail), orderComponentDetail(componentDetail);
+
+// ------------- Формы ----------- //
+
+FORM order 'Производственный заказ'
+
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES(o) objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail
+    PROPERTIES(pd) ADDOBJ, delete
+    PROPERTIES(o) TODRAW pd deleteProductDetailOrder
+
+    FILTERS orderProductDetail(pd)==o
+
+    OBJECTS cd = componentDetail
+    PROPERTIES(cd) BACKGROUND backgroundComponentDetail(cd) indexComponentDetail, nameSkuComponentDetail, nameMaterialComponentDetail, nameComponentComponentDetail,
+                   shortNameUOMComponentDetail, bruttoQuantityComponentDetail
+    PROPERTIES(o) TODRAW cd createComponentOrder//, createRecComponentOrder
+    PROPERTIES(cd) TODRAW cd createComponentDetail SHOWIF productComponentDetail(cd)
+    PROPERTIES(cd) ADDOBJ, delete
+    PROPERTIES(o) TODRAW cd deleteComponentDetailOrder
+
+    FILTERS orderComponentDetail(cd)==o
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku, idBarcodeSku, shortNameUOMSku
+    PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
+    FILTERS bruttoQuantitySkuOrder(s,o)
+
+    EVENTS
+        ON OK EXEC prePostOrder(o)
+    EDIT order OBJECT o
+;
+
+DESIGN order FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            type = TABBED;
+            ADD pd.box { title = 'Изделия';}
+            ADD cd.box { title = 'Компоненты';}
+            ADD s.box;
+        }
+
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+                ADD o.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateOrder);
+                    ADD PROPERTY(timeOrder);
+                }
+                NEW headerRow11 {
+                    title = 'Склады';
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(nameOutputStockOrder);
+                    ADD PROPERTY(nameInputStockOrder);
+                }
+                NEW headerRow12 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                    NEW timeRow {
+                        title = 'Срок действия';
+                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD PROPERTY(fromDateOrder);
+                        ADD PROPERTY(toDateOrder);
+                    }
+                }
+            }
+
+            ADD o.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+    }
+}
+
+FORM orders 'Производственные заказы'
+
+    OBJECTS o = order
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+    PROPERTIES(o) ADDFORM, EDITFORM, delete
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail
+    FILTERS orderProductDetail(pd)==o
+
+    OBJECTS cd = componentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail, shortNameUOMComponentDetail, bruttoQuantityComponentDetail
+
+    FILTERS orderComponentDetail(cd)==o
+;
+DESIGN orders FROM DEFAULT {
+    PROPERTY (delete(o)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD o.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD pd.box {
+                title = 'Изделия';
+            }
+            ADD cd.box {
+                title = 'Компоненты';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD o.historyGroup;
+                ADD o.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0;
+                }
+            }
+        }
+    }
+}
+
+
+
+NAVIGATOR {
+    manufacturingDocuments {
+        ADD orders;
+    }
+}

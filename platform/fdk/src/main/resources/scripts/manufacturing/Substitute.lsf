@@ -2,13 +2,14 @@ MODULE  Substitute;
 
 REQUIRE BOM;
 
-// ---------------- Материалы ------------------- //
+// ---------------- Замена ------------------- //
+
 CLASS substitute 'Замена';
 TABLE substitute(material);
 
 
 fromSkuSubstitute = DATA sku(substitute);
-nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(substitute)) AUTOSET IN recognize;
+nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(substitute)) IN recognize;
 
 toSkuSubstitute = DATA sku(substitute);
 nameToSkuSubstitute 'Товар на' (substitute)= nameSku(toSkuSubstitute(substitute)) IN recognize;
@@ -47,10 +48,10 @@ FORM substitute 'Замена'
     FILTERS fromSkuSubstitute(s)==sk
 
     OBJECTS c = component
-    PROPERTIES(c) READONLY nameBOMComponent, seriesNumberBOMComponent, nameMaterialComponent, shortNameUOMComponent
+    PROPERTIES(c) READONLY descriptionComponent, nameMaterialComponent, shortNameUOMComponent
     PROPERTIES(s,c) SHOWIF toShowIncludeSubstitute(s) includeSubstituteComponent
     PROPERTIES(s,c) SHOWIF allBOMsSubstitute(s) excludeSubstituteComponent
-    ORDER BY nameBOMComponent
+    ORDER BY descriptionComponent
 
     FILTERS inSubstituteComponent(s,c)
 ;
