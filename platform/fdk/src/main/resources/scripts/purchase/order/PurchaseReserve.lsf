@@ -50,14 +50,14 @@ EXTEND FORM userOrder
 
 NAVIGATOR {
     purchaseNavigator {
-        NEW purchasePurchaseNavigator 'Закупки' {
+        NEW purchasePurchaseNavigator 'Закупки' BEFORE purchaseLedgerNavigator {
             ADD Purchase.scheduleOrderDetails;
             ADD Purchase.orders;
             ADD Purchase.invoices;
             ADD Purchase.shipments;
             ADD Purchase.creditNotes;
         }
-        NEW purchaseReturnNavigator 'Возвраты' {
+        NEW purchaseReturnNavigator 'Возвраты' AFTER purchasePurchaseNavigator {
             ADD PurchaseReturn.orders;
             ADD PurchaseReturn.invoices;
             ADD PurchaseReturn.shipments;

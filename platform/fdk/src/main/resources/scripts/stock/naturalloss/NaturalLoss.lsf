@@ -383,9 +383,11 @@ DESIGN naturalLosses FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW naturalLossNavigator 'Естественная убыль' {
-        ADD naturalLosses;
-        ADD naturalLossGroups;
+    stockNavigator {
+        NEW naturalLossNavigator 'Естественная убыль' BEFORE balanceSku {
+            ADD naturalLosses;
+            ADD naturalLossGroups;
+        }
     }
 }
 

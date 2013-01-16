@@ -3,6 +3,7 @@ MODULE POS;
 REQUIRE System,
         Utils,
         Document,
+        Retail,
         Currency,
         Store,
         Stock,
@@ -1192,13 +1193,15 @@ DESIGN POS FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW POSNavigator 'Касса' {
-        ADD POS;
-        ADD zReports;
-        ADD centralCashRegister;
-        ADD operationCashRegister;
-        ADD groupsCashRegister;
-        ADD cashRegistersModels;
+    retailNavigator {
+        NEW POSNavigator 'Касса' BEFORE retailMasterData {
+            ADD POS;
+            ADD zReports;
+            ADD centralCashRegister;
+            ADD operationCashRegister;
+            ADD groupsCashRegister;
+            ADD cashRegistersModels;
+        }
     }
 }
 

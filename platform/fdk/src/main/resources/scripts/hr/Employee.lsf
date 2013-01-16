@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE System, Security, Email, Hierarchy, Utils;
+REQUIRE System, Security, Email, Hierarchy, Utils, HR;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;
@@ -159,6 +159,12 @@ FORM employeeDialog 'Сотрудники'
 
     DIALOG employee OBJECT e
 ;
+
+NAVIGATOR {
+    HRNavigator {
+        ADD employees;
+    }
+}
 
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 

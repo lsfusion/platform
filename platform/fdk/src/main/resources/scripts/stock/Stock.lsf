@@ -2310,20 +2310,23 @@ DESIGN balanceBatchStock FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW stockCost 'Себестоимость' {
-        ADD costSkuLedger;
-        ADD costSkuBatchLedger;
-    }
-    NEW balanceSku 'Остатки по товару' {
-        ADD currentBalanceSkuStock;
-        ADD balanceSkuStock;
-    }
-    NEW balanceBatch 'Остатки по партиям' {
-        ADD currentBalanceBatchStock;
-        ADD balanceBatchStock;
+    NEW stockNavigator 'Склад' TO toolbar IMAGE '/images/warehouse.png' {
+        NEW balanceSku 'Остатки по товару' {
+            ADD currentBalanceSkuStock;
+            ADD balanceSkuStock;
+        }
+        NEW balanceBatch 'Остатки по партиям' {
+            ADD currentBalanceBatchStock;
+            ADD balanceBatchStock;
+        }
+        NEW stockCost 'Себестоимость' {
+            ADD costSkuLedger;
+            ADD costSkuBatchLedger;
+        }
+        NEW stockReports 'Отчеты';
+        NEW stockMasterData 'Справочники';
     }
 }
-
 
 // -------------------------------------------- Подбор SKU --------------------------------------- //
 

@@ -310,8 +310,10 @@ DESIGN writeOffs FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW writeOffNavigator 'Списания' {
-        ADD writeOffs;
-        ADD writeOffCommittees;
+    stockNavigator {
+        NEW writeOffNavigator 'Списания' BEFORE balanceSku {
+            ADD writeOffs;
+            ADD writeOffCommittees;
+        }
     }
 }

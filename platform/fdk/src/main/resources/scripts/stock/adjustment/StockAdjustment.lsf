@@ -218,8 +218,10 @@ DESIGN adjustments FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW adjustmentNavigator 'Изменение остатков' {
-        ADD adjustments;
+    stockNavigator {
+        NEW adjustmentNavigator 'Изменение остатков' BEFORE balanceSku {
+            ADD adjustments;
+        }
     }
 }
 

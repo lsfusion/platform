@@ -4,7 +4,8 @@ REQUIRE StockContract,
         Document,
         LegalEntity,
         Numerator,
-        Currency;
+        Currency,
+        Finance;
 
 PRIORITY Contract;
 
@@ -962,9 +963,11 @@ DESIGN contractLedger FROM DEFAULT{
 }
 
 NAVIGATOR {
-    NEW contractNavigator 'Задолженности' {
-        ADD contractLedger;
-        ADD payments;
-        ADD costContractLedger;
+    financeNavigator {
+        NEW contractNavigator 'Задолженности' BEFORE financeMasterData {
+            ADD contractLedger;
+            ADD payments;
+            ADD costContractLedger;
+        }
     }
 }

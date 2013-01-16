@@ -229,7 +229,9 @@ DESIGN disparities FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW disparityNavigator 'Изменение сортности' {
-        ADD disparities;
+    stockNavigator {
+        NEW disparityNavigator 'Изменение сортности' BEFORE balanceSku {
+            ADD disparities;
+        }
     }
 }

@@ -1281,8 +1281,10 @@ DESIGN inventories FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW inventoryNavigator 'Инвентаризация' {
-        ADD inventories;
-        ADD inventoryCommittees;
+    stockNavigator {
+        NEW inventoryNavigator 'Инвентаризация' BEFORE balanceSku {
+            ADD inventories;
+            ADD inventoryCommittees;
+        }
     }
 }

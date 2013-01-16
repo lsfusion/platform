@@ -1,7 +1,7 @@
 MODULE RetailCRM;
 
 REQUIRE System,
-
+        Retail,
         Stock,
         Barcode,
         Store,
@@ -516,10 +516,12 @@ EXTEND DESIGN discountCard {
 }
 
 NAVIGATOR {
-    NEW retailCRMNavigator 'CRM' {
-        ADD promotions;
-        ADD promotionGroups;
-        ADD discountCards;
-        ADD clients;
+    retailNavigator {
+        NEW retailCRMNavigator 'CRM' BEFORE retailMasterData {
+            ADD promotions;
+            ADD promotionGroups;
+            ADD discountCards;
+            ADD clients;
+        }
     }
 }

@@ -902,11 +902,11 @@ EXTEND DESIGN legalEntity{
 
 
 NAVIGATOR {
-    NEW priceListNavigator 'Цены' IMAGE '/images/label.png' {
+    NEW priceListNavigator 'Цены' TO toolbar IMAGE '/images/label.png' {
         NEW priceListDocuments 'Документы' {
             ADD userPriceLists;
         }
-        NEW priceListCatalog 'Справочники' {
+        NEW priceListMasterData 'Справочники' {
             ADD priceListTypes;
             ADD priceIntervals;
         }

@@ -594,11 +594,11 @@ EXTEND DESIGN defaultData {
 }
 
 NAVIGATOR {
-    NEW machineryNavigator 'Оборудование' IMAGE '/images/cogwheel.png' {
+    NEW machineryNavigator 'Оборудование' TO toolbar IMAGE '/images/cogwheel.png' {
         NEW machineryExport 'Загрузка в оборудование' {
             ADD machineryPriceTransactions;
         }
-        NEW machineryCatalog 'Справочники' {
+        NEW machineryMasterData 'Справочники' {
             ADD equipmentServer;
         }
     }

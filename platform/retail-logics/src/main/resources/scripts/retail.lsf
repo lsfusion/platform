@@ -125,59 +125,15 @@ inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSk
 NAVIGATOR {
 
     ADD purchaseNavigator;
-
-    NEW warehouse 'Склад' TO toolbar IMAGE '/images/warehouse.png' {
-        ADD inventoryNavigator;
-        ADD naturalLossNavigator;
-        ADD writeOffNavigator;
-        ADD adjustmentNavigator;
-        ADD disparityNavigator;
-
-        ADD balanceSku;
-        ADD balanceBatch;
-        ADD stockCost;
-        NEW stockDocuments 'Бухгалтерские документы' {
-            ADD sumStockDocumentLedger;
-            ADD containerMovement;
-        }
-        NEW warehouseCatalog 'Справочники' {
-            ADD warehouses;
-        }
-    }
-
+    ADD stockNavigator;
     ADD saleNavigator;
-
-    NEW retail 'Розничная торговля' TO toolbar IMAGE '/images/shopping.png' {
-
-        ADD POSNavigator;
-        NEW priceAccount 'Учет в розничных ценах' {
-            ADD pricings;
-            ADD repricings;
-            ADD pricingCommitteeDialog;
-            ADD repricingCommitteeDialog;
-        }
-        ADD retailCRMNavigator;
-        NEW retailCatalog 'Справочники' {
-            ADD stores;
-        }
-    }
-
-    ADD manufacturingNavigator TO toolbar;
-    ADD priceListNavigator TO toolbar;
-    ADD transportNavigator TO toolbar;
-    ADD machineryNavigator TO toolbar;
-
-    NEW finance 'Финансы' TO toolbar IMAGE '/images/money.png' {
-        ADD contractNavigator;
-        NEW financeCatalog 'Справочники' {
-            ADD banks;
-            ADD taxes;
-        }
-    }
-
-    NEW hr 'Кадры' TO toolbar IMAGE '/images/people.png' {
-        ADD employees;
-    }
+    ADD retailNavigator;
+    ADD manufacturingNavigator;
+    ADD priceListNavigator;
+    ADD transportNavigator;
+    ADD machineryNavigator;
+    ADD financeNavigator;
+    ADD HRNavigator;
 
     ADD masterData {
             NEW itemMasterData 'Товары' BEFORE regionalData {
@@ -188,6 +144,7 @@ NAVIGATOR {
         }
         NEW contragents 'Контрагенты' AFTER itemMasterData {
             ADD legalEntities;
+            ADD banks;
             ADD contractSkus;
         }
         NEW certificateCatalog 'Сертификаты' AFTER contragents{

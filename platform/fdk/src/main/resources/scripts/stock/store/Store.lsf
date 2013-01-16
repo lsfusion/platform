@@ -1,6 +1,6 @@
 MODULE Store;
 
-REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity;
+REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity, Retail;
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 
@@ -276,13 +276,11 @@ DESIGN stores FROM DEFAULT {
     ADD functions.box;
 }
 
-// -------------------------------------- Конкретные отделы магазина ------------------------------- //
-
-CLASS cafeStore 'Кафетерий' : departmentStore;
-CLASS salesStore 'Торговый зал' : departmentStore;
-CLASS warehouseStore 'Склад' : departmentStore;
-CLASS restaurantStore 'Ресторан' : departmentStore;
-CLASS manufactoryStore 'Цех' : departmentStore;
+NAVIGATOR {
+    retailMasterData {
+        ADD stores;
+    }
+}
 
 // -------------------------------------- Макросы ----------------------------------------------- //
 

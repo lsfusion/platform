@@ -250,6 +250,11 @@ DESIGN sumStockDocumentLedger FROM DEFAULT {
     ADD functions.box;
 }
 
+NAVIGATOR {
+    stockReports {
+        ADD sumStockDocumentLedger;
+    }
+}
 // ------------------------------------------ Макросы ----------------------------------------------------- //
 META implementStockDocumentLedger (concrete, stockProp)
     dateTimeStockDocumentLedger (ledger) += dateTime###concrete(ledger);

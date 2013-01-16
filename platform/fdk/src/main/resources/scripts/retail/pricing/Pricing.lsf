@@ -476,6 +476,15 @@ DESIGN pricings FROM DEFAULT {
     }
 }
 
+NAVIGATOR {
+    retailNavigator {
+        NEW pricingNavigator 'Учет в розничных ценах' {
+            ADD pricings;
+            ADD pricingCommitteeDialog;
+        }
+    }
+}
+
 // ---------------------------- Создание PriceList ----------------------------------- //
 
 EXTEND CLASS systemLedgerPriceListType {

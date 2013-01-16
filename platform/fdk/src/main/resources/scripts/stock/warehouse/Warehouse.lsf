@@ -123,3 +123,9 @@ EXTEND FORM legalEntity
 
     PROPERTIES addWarehouseLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
 ;
+
+NAVIGATOR {
+    stockMasterData {
+        ADD warehouses;
+    }
+}

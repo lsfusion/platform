@@ -1,0 +1,9 @@
+MODULE Retail;
+
+REQUIRE System;
+
+NAVIGATOR {
+    NEW retailNavigator 'Розничная торговля' TO toolbar IMAGE '/images/shopping.png' {
+        NEW retailMasterData 'Справочники';
+    }
+}

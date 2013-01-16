@@ -207,8 +207,10 @@ descriptionProduct 'Название документа' (product)= descriptionB
 
 @defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
 
-densityProduct 'Удельный вес цены,%' = DATA NUMERIC[8,3] (product);
-densityBOM 'Удельный вес цен,%'= GROUP SUM densityProduct(product) BY BOMProduct(product) IN documentSumGroup;
+pricePercentProduct 'Удельный вес цены,%' = DATA NUMERIC[8,3] (product);
+priceCoeffProduct (product) = pricePercentProduct(product) / 100;
+
+pricePercentBOM 'Удельный вес цен,%'= GROUP SUM pricePercentProduct(product) BY BOMProduct(product) IN documentSumGroup;
 
 nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
                                       name(BOMProduct(material)),
@@ -317,9 +319,9 @@ FORM BOM 'Спецификация'
     OBJECTS dt = DATE FIXED PANEL
 
     PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
-    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, densityBOM//, bruttoQuantityComponentBOM
+    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM//, bruttoQuantityComponentBOM
     OBJECTS p = product
-    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, densityProduct
+    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
 
     PROPERTIES(p) ADDOBJ, delete
     PROPERTIES(b) TODRAW p deleteProductBOM
@@ -383,13 +385,13 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, densityBOM
+    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
 //                  bruttoQuantityComponentBOM
     PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product
-    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, densityProduct
+    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
@@ -445,20 +447,28 @@ DESIGN BOMs FROM DEFAULT {
 TABLE BOMMaterial(BOM, material, DATE);
 // кол-во требуемых материалов материалов
 bruttoQuantityBOMMaterialDate (BOM, material, date) = GROUP SUM bruttoQuantityComponentDate(component, date) BY BOMComponent(component), materialComponent(component), date;
+bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS sku;
 
 bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMaterialDate(BOM, material, date) / quantityProduct(material) BY BOM, BOMProduct(material), date;
-
-bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS sku;
 
 recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
 recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
 
+// Расчет цены
+priceCoeffBOMBOMDate(parent, child, date) = GROUP SUM bruttoQuantityBOMMaterialDate(BOM, material, date) * priceCoeffProduct(material) / quantityProduct(material) BY BOM, BOMProduct(material), date;
+
+recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * priceCoeffBOMBOMDate($child, child, date);
+recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
+//
+recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date;
+recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BOMProduct(product), sku, date) * pricePercentProduct(product);
+
 NAVIGATOR {
-    NEW manufacturingNavigator 'Производство' IMAGE '/images/plant.png' {
+    NEW manufacturingNavigator 'Производство' TO toolbar IMAGE '/images/plant.png' {
         NEW manufacturingDocuments 'Документы';
-        NEW manufacturingCatalog 'Справочники' {
+        NEW manufacturingMasterData 'Справочники' {
             ADD BOMs;
             ADD technologies;
         }

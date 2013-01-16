@@ -555,6 +555,13 @@ DESIGN repricings FROM DEFAULT {
     }
 }
 
+NAVIGATOR {
+    pricingNavigator {
+        ADD repricings;
+        ADD repricingCommitteeDialog;
+    }
+}
+
 // ---------------------------- Создание PriceList ----------------------------------- //
 
 EXTEND CLASS repricingDetail : priceListLedger;

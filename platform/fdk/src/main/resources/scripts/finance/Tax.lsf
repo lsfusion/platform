@@ -1,6 +1,6 @@
 MODULE Tax;
 
-REQUIRE System, Utils, Historizable, Hierarchy, Country;
+REQUIRE System, Utils, Historizable, Hierarchy, Country, Finance;
 
 // ---------------------------------- Налог --------------------------------------- //
 
@@ -225,6 +225,12 @@ FORM rangeDialog 'Шкала'
     PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
     FILTERS countryRange(r) == c
 ;
+
+NAVIGATOR {
+    financeMasterData {
+        ADD taxes;
+    }
+}
 
 
 // ----------------------------------------- Макросы по объявлению налогов в документах ---------------------------- //
