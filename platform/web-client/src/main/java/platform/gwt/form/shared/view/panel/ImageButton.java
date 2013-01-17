@@ -54,14 +54,14 @@ public class ImageButton extends Button {
         label.addStyleName("customFontPresenter");
 
         setText(caption);
-        setRelativeImagePath(imagePath);
+        setModuleImagePath(imagePath);
 
         getElement().appendChild(panel.getElement());
     }
 
     public void setImage(ImageDescription imageDescription) {
         if (imageDescription != null) {
-            setAbsoluteImagePath(imageDescription.url);
+            setAppImagePath(imageDescription.url);
             if (imageDescription.width != -1) {
                 image.setWidth(imageDescription.width + "px");
             }
@@ -71,13 +71,17 @@ public class ImageButton extends Button {
         }
     }
 
-    public void setRelativeImagePath(String imagePath) {
+    public void setModuleImagePath(String imagePath) {
         setAbsoluteImagePath(imagePath == null ? null : GWT.getModuleBaseURL() + "images/" + imagePath);
+    }
+
+    public void setAppImagePath(String imagePath) {
+        setAbsoluteImagePath(imagePath == null ? null : GWT.getHostPageBaseURL() + imagePath);
     }
 
     public void setAbsoluteImagePath(String imagePath) {
         if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
-            image.setUrl(imagePath == null ? "" : GWT.getHostPageBaseURL() + imagePath);
+            image.setUrl(imagePath == null ? "" : imagePath);
 
             if ((this.imagePath == null && imagePath != null) || (this.imagePath != null && imagePath == null)) {
                 image.setVisible(imagePath != null);

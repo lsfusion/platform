@@ -99,7 +99,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         if (enabled != newEnabled) {
             enabled = newEnabled;
             button.setEnabled(enabled);
-            button.setAbsoluteImagePath(property.getIconPath(enabled));
+            button.setAppImagePath(property.getIconPath(enabled));
         }
     }
 
@@ -115,7 +115,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setIcon(String iconPath) {
-        button.setRelativeImagePath(iconPath);
+        button.setModuleImagePath(iconPath);
     }
 
     @Override
