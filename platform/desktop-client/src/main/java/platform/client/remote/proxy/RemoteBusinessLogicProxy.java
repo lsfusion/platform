@@ -79,10 +79,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         target.endSession(clientInfo);
     }
 
-    public boolean checkUser(String login, String password) throws RemoteException {
-        return target.checkUser(login, password);
-    }
-
     public TimeZone getTimeZone() throws RemoteException {
         return target.getTimeZone();
     }

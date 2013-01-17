@@ -2,10 +2,12 @@ package platform.server.logics;
 
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.interop.DaemonThreadFactory;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.UserInfo;
 import platform.server.Settings;
 import platform.server.auth.User;
 import platform.server.form.navigator.RemoteNavigator;
@@ -65,9 +67,16 @@ public class NavigatorsController {
 
             boolean isUniversalPasswordUsed = "unipass".equals(password.trim()) && Settings.instance.getUseUniPass();
             if (!isUniversalPasswordUsed) {
-                String correctPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, BL.LM.customUser));
-                if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
-                    throw new LoginException();
+                String hashPassword = (String) LM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, BL.LM.customUser));
+                if (hashPassword != null) {
+                    if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
+                        throw new LoginException();
+                    }
+                } else {
+                    String correctPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, BL.LM.customUser));
+                    if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
+                        throw new LoginException();
+                    }
                 }
             }
 

@@ -56,6 +56,9 @@ import platform.server.logics.table.TableFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -165,6 +168,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP userLogin;
     public LCP userPassword;
+    public LCP sha256PasswordCustomUser;
     public LCP userFirstName;
     public LCP userLastName;
     public LCP userPhone;
@@ -208,6 +212,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
+    
+    public LCP calculatedHash;
 
     T BL;
 
@@ -489,6 +495,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
         userPassword.setEchoSymbols(true);
+        sha256PasswordCustomUser = addDProp(publicGroup, "sha256PasswordCustomUser", getString("logics.user.password.hash"), StringClass.get(100), customUser);
+        sha256PasswordCustomUser.setEchoSymbols(true);
+        calculatedHash = addDProp(null, "calculatedHash", "Значение hash", StringClass.get(100), false);
 
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));

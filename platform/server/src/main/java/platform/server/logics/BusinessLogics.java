@@ -141,15 +141,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return navigatorsController.createNavigator(isFullClient, login, password, computer, forceCreateNew);
     }
 
-    public boolean checkUser(String login, String password) {
-        try {
-            User u = authenticateUser(login, password);
-            return u != null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public TimeZone getTimeZone() {
         return Calendar.getInstance().getTimeZone();
     }
@@ -238,6 +229,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataObject addObject = session.addObject(LM.customUser);
             LM.userLogin.change(login, session, addObject);
             LM.userPassword.change(defaultPassword, session, addObject);
+            LM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(this);
             user = new User(userID);
@@ -2914,15 +2906,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
             try {
-                User user = readUser(username, session);
-                if (user == null) {
+                //User user = readUser(username, session);
+                //if (user == null) {
+                //    throw new LoginException();
+                //}
+                Integer userId = (Integer) LM.loginToUser.read(session, new DataObject(username, StringClass.get(30)));
+                if (userId == null) {
                     throw new LoginException();
                 }
 
-                String password = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
-                if (password != null) {
-                    password = password.trim();
+                String password = (String) LM.sha256PasswordCustomUser.read(session, new DataObject(userId, LM.customUser));
+                if (password == null) {
+                    String plainPassword = ((String) LM.userPassword.read(session, new DataObject(userId, LM.customUser))).trim();
+                    password = BaseUtils.calculateBase64Hash("SHA-256", plainPassword, UserInfo.salt);
                 }
+                if (password != null)
+                    password = password.trim();
 
                 return new UserInfo(username, password, getUserRolesNames(username));
             } finally {
@@ -2984,7 +2983,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new ArrayList<String>();
     }
 
-    private User authenticateUser(String login, String password) throws LoginException, SQLException {
+/*    private User authenticateUser(String login, String password) throws LoginException, SQLException {
         DataSession session = createSession();
         try {
             User user = readUser(login, session);
@@ -3000,7 +2999,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } finally {
             session.close();
         }
-    }
+    }*/
 
     public void logException(String message, String errorType, String erTrace, DataObject user, String clientName, boolean client) throws SQLException {
         DataSession session = createSession();
@@ -3118,6 +3117,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             LM.userLogin.change(username, session, userObject);
             emailLM.emailContact.change(email, session, userObject);
             LM.userPassword.change(password, session, userObject);
+            LM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
             LM.userFirstName.change(firstName, session, userObject);
             LM.userLastName.change(lastName, session, userObject);
             session.apply(this);

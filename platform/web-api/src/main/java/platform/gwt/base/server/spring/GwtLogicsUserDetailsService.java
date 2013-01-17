@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class GwtLogicsUserDetailsService implements UserDetailsService {
 
-    private BusinessLogicsProvider businessLogicProvider;
+    private static BusinessLogicsProvider businessLogicProvider;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {

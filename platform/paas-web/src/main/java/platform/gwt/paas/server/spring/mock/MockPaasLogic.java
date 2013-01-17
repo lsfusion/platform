@@ -64,11 +64,6 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
-    public boolean checkUser(String login, String password) throws RemoteException {
-        return false;
-    }
-
-    @Override
     public void ping() throws RemoteException {
     }
 

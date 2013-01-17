@@ -27,6 +27,15 @@
         <custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
     </http>
 
+    <b:bean id="daoAuthenticationProvider" class="platform.gwt.base.server.spring.GwtAuthenticationProvider">
+        <b:property name="passwordEncoder"><b:ref local="passwordEncoder" /></b:property>
+        <b:property name="userDetailsService"><b:ref local="logicsUserService" /></b:property>
+    </b:bean>
+
+    <b:bean id="passwordEncoder" class="platform.gwt.base.server.spring.Base64ShaPasswordEncoder">
+        <b:constructor-arg value="256"/>
+    </b:bean>
+
     <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
         <b:property name="urlPattern" value="/platform\.gwt\.(?!login\.).*/dispatch.*"/>
@@ -56,9 +65,10 @@
 
     <authentication-manager>
         <authentication-provider user-service-ref="logicsUserService"/>
+        <authentication-provider ref ="daoAuthenticationProvider"/>
     </authentication-manager>
 
-    <b:bean name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
+    <b:bean id="logicsUserService" name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
         <b:property name="businessLogicProvider" ref="blLogicProvider" />
     </b:bean>
 

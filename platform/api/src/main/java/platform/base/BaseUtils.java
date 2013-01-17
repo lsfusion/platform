@@ -15,6 +15,9 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -2140,5 +2143,36 @@ public class BaseUtils {
             sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
         }
         return sb.toString();
+    }
+
+    public static String calculateBase64Hash(String algorithm, String input, Object salt) {
+        try {
+            return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+
+    public static String calculateHash(String algorithm, String input, Object salt) {
+        try {
+            return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+
+    protected static String mergePasswordAndSalt(String password, Object salt) {
+        if (password == null) {
+            password = "";
+        }
+        if ((salt == null) || "".equals(salt)) {
+            return password;
+        } else {
+            return password + "{" + salt.toString() + "}";
+        }
     }
 }

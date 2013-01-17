@@ -76,9 +76,18 @@ orderUserPolicy 'Порядок политики' (user, policy) = orderUserRole
 logOut 'Выйти' = ACTION CUSTOM 'platform.server.logics.security.LogOutActionProperty';
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'platform.server.logics.security.ReloginUserActionProperty';
 
+calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'platform.server.logics.security.CalculateBase64HashActionProperty';
+
+changeSHA256PasswordCustomUser = ACTION(customUser) {
+    REQUEST STRING[30] INPUT;
+    EXEC calculateBase64Hash('SHA-256', requestedString());
+    SET sha256PasswordCustomUser(customUser) <- calculatedHash();
+}
+
 FORM customUser 'Пользователь'
     OBJECTS u=customUser FIXED PANEL
-    PROPERTIES(u) userFirstName, userLastName, userLogin, userPassword, emailContact, nameMainRoleUser
+    PROPERTIES(u) userFirstName, userLastName, userLogin,
+    sha256PasswordCustomUser ON CHANGE EXEC changeSHA256PasswordCustomUser(u), emailContact, nameMainRoleUser
 
     OBJECTS ur=userRole
     PROPERTIES(ur) READONLY name, sidUserRole
@@ -280,11 +289,22 @@ reloginLoginUser = ACTION () {
         LOCAL user = customUser();
         SET user() <- loginToUser(chosenString('login'));
         IF user() THEN {
-            IF userPassword(user())==chosenString('password') THEN {
-                EXEC reloginUser(user());
-                MESSAGE 'Пользователь изменён';
-            } ELSE {
-                MESSAGE 'Неверный пароль';
+            IF TRUE AND NOT sha256PasswordCustomUser(user()) THEN {
+                IF userPassword(user())==chosenString('password') THEN {
+                    EXEC reloginUser(user());
+                    MESSAGE 'Пользователь изменён';
+                } ELSE {
+                    MESSAGE 'Неверный пароль';
+                }
+            }
+            ELSE {
+                EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+                IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
+                    EXEC reloginUser(user());
+                    MESSAGE 'Пользователь изменён (хэш)';
+                } ELSE {
+                    MESSAGE 'Неверный пароль (хэш)';
+                }
             }
         } ELSE {
             MESSAGE 'Пользователь не найден';
@@ -312,14 +332,25 @@ EXTEND DESIGN reloginPasswordUser {
     }
 }
 
-reloginPasswordUser = ACTION (user) {
+reloginPasswordUser = ACTION (customUser) {
     FORM reloginPasswordUser MODAL;
     IF formResult() == formResult.ok THEN {
-        IF userPassword(user)==chosenString('password') THEN {
-            EXEC reloginUser(user);
-            MESSAGE 'Пользователь изменён';
-        } ELSE {
-            MESSAGE 'Неверный пароль';
+        IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
+            IF userPassword(customUser)==chosenString('password') THEN {
+                EXEC reloginUser(customUser);
+                MESSAGE 'Пользователь изменён';
+            } ELSE {
+                MESSAGE 'Неверный пароль';
+            }
+        }
+        ELSE {
+            EXEC calculateBase64Hash('SHA-256', chosenString('password'));
+            IF sha256PasswordCustomUser(customUser)==calculatedHash() THEN {
+                EXEC reloginUser(customUser);
+                MESSAGE 'Пользователь изменён (хэш)';
+            } ELSE {
+                MESSAGE 'Неверный пароль (хэш)';
+            }
         }
     }
 }
@@ -366,17 +397,29 @@ EXTEND DESIGN changePasswordUser {
 changePasswordUser = ACTION (customUser) {
     FORM changePasswordUser MODAL;
     IF formResult() == formResult.ok THEN {
-        IF chosenString('old') != userPassword(customUser) THEN {
-            MESSAGE 'Неверный старый пароль';
-            BREAK;
+        IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
+            IF  chosenString('old') != userPassword(customUser) THEN {
+                MESSAGE 'Неверный старый пароль';
+                BREAK;
+            }
         }
+        ELSE {
+            EXEC calculateBase64Hash('SHA-256', chosenString('old'));
+            IF  calculatedHash() != sha256PasswordCustomUser(customUser) THEN {
+                MESSAGE 'Неверный старый пароль (хэш)';
+                BREAK;
+            }
+        }
+
         IF chosenString('new1') != chosenString('new2') THEN {
             MESSAGE 'Введённые пароли не совпадают';
             BREAK;
         }
-        SET userPassword(customUser) <- chosenString('new1');
+        //SET userPassword(customUser) <- chosenString('new1');
+        EXEC calculateBase64Hash('SHA-256', chosenString('new1'));
+        SET sha256PasswordCustomUser(customUser) <- calculatedHash();
         MESSAGE 'Пароль изменён';
-    }
+        }
 }
 
 changePassword = ACTION () {
