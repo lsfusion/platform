@@ -3,6 +3,8 @@ package platform.gwt.form.server.convert;
 import com.google.gwt.event.dom.client.KeyCodes;
 import platform.client.form.EditBindingMap;
 import platform.client.logics.*;
+import platform.client.logics.classes.ClientActionClass;
+import platform.client.logics.classes.ClientFileClass;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.reader.*;
@@ -26,7 +28,13 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
 
+    private String appImagesPath;
+
     public ClientComponentToGwtConverter() {
+    }
+
+    public ClientComponentToGwtConverter(String appImagesPath) {
+        this.appImagesPath = appImagesPath;
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -214,7 +222,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
-        propertyDraw.iconPath = clientPropertyDraw.design.iconPath;
+        boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
+        propertyDraw.icon= ImageHandler.createImage(clientPropertyDraw.design.getImage(), clientPropertyDraw.design.iconPath, appImagesPath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

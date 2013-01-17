@@ -12,7 +12,13 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
+    private String appImagesPath;
+
     public ClientNavigatorToGwtConverter() {
+    }
+
+    public ClientNavigatorToGwtConverter(String appImagesPath) {
+        this.appImagesPath = appImagesPath;
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -25,7 +31,9 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.sid = clientElement.sID;
         element.caption = clientElement.caption;
         element.children = new ArrayList<GNavigatorElement>();
-        element.icon = "open.png";
+
+        element.icon = ImageHandler.createImage(clientElement.image, clientElement.imageFileName, appImagesPath, "navigator", false);
+
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);
             element.children.add(childElement);
@@ -47,7 +55,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientNavigatorForm.class)
     public GNavigatorForm convertNavigatorForm(ClientNavigatorForm clientForm) {
         GNavigatorForm form = initNavigatorElement(clientForm, new GNavigatorForm());
-        form.icon = "form.png";
         form.isPrintForm = clientForm.isPrintForm;
         form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
         return form;
@@ -56,9 +63,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientNavigatorAction.class)
     public GNavigatorAction convertNavigatorAction(ClientNavigatorAction clientAction) {
-        GNavigatorAction form = initNavigatorElement(clientAction, new GNavigatorAction());
-        form.icon = "action.png";
-        return form;
+        return initNavigatorElement(clientAction, new GNavigatorAction());
     }
 
     public <E extends GAbstractWindow> E initAbstractNavigatorWindow(ClientAbstractWindow clientWindow, E window) {

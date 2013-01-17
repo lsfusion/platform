@@ -56,7 +56,6 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
-    private ImageIcon image;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
@@ -130,7 +129,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     protected FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon, boolean iisPrintForm) {
         super(parent, sID, caption, null);
-        image = new ImageIcon(NavigatorElement.class.getResource(icon!=null ? icon :"/images/form.png"));
+        setImage(icon != null ? icon : "/images/form.png");
         logger.debug("Initializing form " + caption + "...");
 
         title = ititle;
@@ -1310,11 +1309,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (GroupObjectEntity entity : groups) {
             getRichDesign().get(entity).needVerticalScroll = scroll;
         }
-    }
-
-    @Override
-    public ImageIcon getImage() {
-        return image;
     }
 
     public Collection<ObjectEntity> getObjects() {

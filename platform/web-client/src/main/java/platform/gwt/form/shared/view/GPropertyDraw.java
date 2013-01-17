@@ -33,7 +33,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GEditBindingMap editBindingMap;
 
-    public String iconPath;
+    public ImageDescription icon;
     public Boolean focusable;
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
@@ -129,14 +129,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public String getIconPath(boolean enabled) {
-        if (!enabled && iconPath != null) {
-            int dotInd = iconPath.lastIndexOf(".");
+        if (icon == null) {
+            return null;
+        }
+        if (!enabled && icon.url != null) {
+            int dotInd = icon.url.lastIndexOf(".");
             if (dotInd != -1) {
-                return iconPath.substring(0, dotInd) + "_Disabled" + iconPath.substring(dotInd);
+                return icon.url.substring(0, dotInd) + "_Disabled" + icon.url.substring(dotInd);
             }
         }
 
-        return iconPath;
+        return icon.url;
     }
 
     public boolean isReadOnly() {
@@ -223,7 +226,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", iconPath='" + iconPath + '\'' +
+                ", iconPath='" + icon.url + '\'' +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

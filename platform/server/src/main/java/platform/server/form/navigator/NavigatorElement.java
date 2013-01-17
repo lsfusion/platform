@@ -30,7 +30,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
 
     public NavigatorElement() {
-        image = new ImageIcon(NavigatorElement.class.getResource("/images/open.png"));
+        setImage("/images/open.png");
     }
 
     public NavigatorElement(String sID, String caption) {
@@ -41,7 +41,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         this.sID = sID;
         setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
-        image = new ImageIcon(NavigatorElement.class.getResource(icon!=null ? icon : "/images/open.png"));
+        setImage(icon != null ? icon : "/images/open.png");
         if (parent != null) {
             this.parent = parent;
             parent.add(this);
@@ -167,6 +167,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         }
 
         IOUtils.writeImageIcon(outStream, getImage());
+        outStream.writeUTF(getImage().getDescription());
     }
 
     public byte getTypeID() {
@@ -174,7 +175,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     }
 
     public void setImage(String icon) {
-        image = new ImageIcon(NavigatorElement.class.getResource(icon));
+        image = new ImageIcon(NavigatorElement.class.getResource(icon), icon.lastIndexOf("/") == -1 ? icon : icon.substring(icon.lastIndexOf("/") + 1));
     }
 
     public ImageIcon getImage() {

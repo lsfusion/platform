@@ -1,6 +1,5 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
@@ -29,17 +28,13 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
         DivElement innerDiv = div.appendChild(Document.get().createDivElement());
         innerDiv.setAttribute("align", "center");
-        // здесь...
+        // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
         div.addClassName("boxSized");
         innerDiv.getStyle().setMarginBottom(-2, Style.Unit.PX);
 
-        if (property.iconPath != null) {
+        if (property.icon != null) {
             ImageElement img = innerDiv.appendChild(Document.get().createImageElement());
-            img.getStyle().setWidth(14, Style.Unit.PX);
-            img.getStyle().setHeight(14, Style.Unit.PX);
             setImage(img, value);
-            // ... и здесь избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
-            img.getStyle().setMarginBottom(-2, Style.Unit.PX);
         } else {
             innerDiv.setInnerText("...");
         }
@@ -47,7 +42,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
-        if (property.iconPath != null) {
+        if (property.icon != null) {
             ImageElement img = cellElement
                     .getFirstChild()
                     .getFirstChild()
@@ -58,7 +53,16 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     private void setImage(ImageElement img, Object value) {
         boolean disabled = value == null || !(Boolean) value;
-        String iconPath = property.getIconPath(disabled);
-        img.setSrc(GWT.getModuleBaseURL() + "images/" + iconPath);
+        String iconPath = property.getIconPath(!disabled);
+        img.setSrc(iconPath);
+
+        int height = property.icon.height;
+        if (height != -1) {
+            img.setHeight(height);
+            img.getStyle().setMarginBottom(height > 12 ? -2 : height > 10 ? -1 : 0, Style.Unit.PX);
+        }
+        if (property.icon.width != -1) {
+            img.setWidth(property.icon.width);
+        }
     }
 }

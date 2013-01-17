@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import platform.client.logics.ClientForm;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.InvalidateListener;
 import platform.gwt.form.server.convert.ClientComponentToGwtConverter;
 import platform.gwt.form.shared.view.GForm;
+import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.RemoteFormInterface;
 
 import java.io.ByteArrayInputStream;
@@ -27,10 +29,10 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
 
     public FormSessionManager() {}
 
-    public GForm createForm(RemoteFormInterface remoteForm) throws IOException {
+    public GForm createForm(RemoteFormInterface remoteForm, LogicsDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-        GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(servlet.getServletContext().getRealPath("/images/")).convertOrCast(clientForm);
         gForm.sessionID = nextFormSessionID();
 
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));

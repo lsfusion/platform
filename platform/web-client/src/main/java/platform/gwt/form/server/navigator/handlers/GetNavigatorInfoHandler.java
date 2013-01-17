@@ -27,7 +27,7 @@ public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorI
 
     @Override
     public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws DispatchException, IOException {
-        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter();
+        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(servlet.getServletContext().getRealPath("/images/"));
 
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(servlet.getNavigator().getNavigatorTree());
 

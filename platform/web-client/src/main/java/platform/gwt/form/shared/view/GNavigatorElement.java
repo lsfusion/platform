@@ -10,7 +10,7 @@ import java.util.Set;
 public class GNavigatorElement implements Serializable {
     public String sid;
     public String caption;
-    public String icon;
+    public ImageDescription icon;
 
     public ArrayList<GNavigatorElement> children;
     public HashSet<GNavigatorElement> parents = new HashSet<GNavigatorElement>();

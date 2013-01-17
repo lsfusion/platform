@@ -94,7 +94,7 @@ public abstract class GFilterController {
                 toolbarButtonIconPath = EXPAND;
         }
         if (toolbarButtonIconPath != null) {
-            toolbarButton.setImagePath(toolbarButtonIconPath);
+            toolbarButton.setRelativeImagePath(toolbarButtonIconPath);
         }
         toolbarButton.setEnabled(state != State.EXPANDED);
 

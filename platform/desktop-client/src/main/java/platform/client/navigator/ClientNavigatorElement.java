@@ -6,7 +6,10 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ClientNavigatorElement {
     public static final String BASE_ELEMENT_SID = "baseElement";
@@ -17,6 +20,7 @@ public class ClientNavigatorElement {
     public List<ClientNavigatorElement> parents = new ArrayList<ClientNavigatorElement>();
     public List<ClientNavigatorElement> children = new ArrayList<ClientNavigatorElement>();
     public ImageIcon image;
+    public String imageFileName;
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
@@ -51,6 +55,7 @@ public class ClientNavigatorElement {
         window = ClientNavigatorWindow.deserialize(inStream);
 
         image = IOUtils.readImageIcon(inStream);
+        imageFileName = inStream.readUTF();
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

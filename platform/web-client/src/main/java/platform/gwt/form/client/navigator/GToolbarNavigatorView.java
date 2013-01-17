@@ -22,15 +22,15 @@ public class GToolbarNavigatorView extends GNavigatorView {
         super(window, navigatorController);
         vertical = window.type == 1;
         panel = vertical ? new VerticalPanel() : new HorizontalPanel();
-        SimplePanel tollbarContainer = new SimplePanel(panel);
+        SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
-            tollbarContainer.setStyleName("verticaToolbar");
+            toolbarContainer.setStyleName("verticaToolbar");
             panel.setWidth("100%");
         } else {
-            tollbarContainer.setStyleName("horizontalToolbar");
+            toolbarContainer.setStyleName("horizontalToolbar");
             panel.setHeight("100%");
         }
-        setComponent(tollbarContainer);
+        setComponent(toolbarContainer);
     }
 
     @Override
@@ -45,7 +45,8 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        ImageButton button = new ImageButton(element.caption, element.icon, !vertical);
+        ImageButton button = new ImageButton(element.caption, !vertical);
+        button.setImage(element.icon);
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
             public void onMouseDown(MouseDownEvent event) {

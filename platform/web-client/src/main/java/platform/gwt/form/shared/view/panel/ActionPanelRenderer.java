@@ -43,7 +43,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         this.columnKey = icolumnKey;
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
 
-        button = new ImageButton(property.getEditCaption(), property.iconPath);
+        button = new ImageButton(property.getEditCaption(), property.icon);
         button.addStyleName("panelActionProperty");
         if (property.preferredHeight > -1) {
             button.setHeight(property.preferredHeight + "px");
@@ -99,7 +99,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         if (enabled != newEnabled) {
             enabled = newEnabled;
             button.setEnabled(enabled);
-            button.setImagePath(property.getIconPath(enabled));
+            button.setAbsoluteImagePath(property.getIconPath(enabled));
         }
     }
 
@@ -110,12 +110,12 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setDefaultIcon() {
-        setIcon(property.iconPath);
+        button.setImage(property.icon);
     }
 
     @Override
     public void setIcon(String iconPath) {
-        button.setImagePath(iconPath);
+        button.setRelativeImagePath(iconPath);
     }
 
     @Override

@@ -66,13 +66,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = DialogClientAction.class)
     public GDialogAction convertAction(DialogClientAction action, RemoteServiceImpl servlet) throws IOException {
-        return new GDialogAction(servlet.getFormSessionManager().createForm(action.dialog));
+        return new GDialogAction(servlet.getFormSessionManager().createForm(action.dialog, servlet));
     }
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, RemoteServiceImpl servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
-        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.remoteForm));
+        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.remoteForm, servlet));
     }
 
     @Converter(from = ModalityType.class)

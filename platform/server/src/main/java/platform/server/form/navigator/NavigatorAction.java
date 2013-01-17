@@ -2,15 +2,11 @@ package platform.server.form.navigator;
 
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.Property;
 
-import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorElement<T> {
-    private ImageIcon image;
-
     private ActionProperty property;
 
     public NavigatorAction(String sID, String caption) {
@@ -23,7 +19,7 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
 
     public NavigatorAction(NavigatorElement<T> parent, String sID, String caption, String icon) {
         super(parent, sID, caption, icon);
-        image = new ImageIcon(NavigatorAction.class.getResource(icon!=null ? icon : "/images/action.png"));
+        setImage(icon != null ? icon : "/images/action.png");
     }
 
     @Override
@@ -34,11 +30,6 @@ public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorEleme
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-    }
-
-    @Override
-    public ImageIcon getImage() {
-        return image;
     }
 
     public void setProperty(ActionProperty property) {
