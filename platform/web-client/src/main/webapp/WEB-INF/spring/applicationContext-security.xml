@@ -28,8 +28,6 @@
     </http>
 
     <b:bean id="daoAuthenticationProvider" class="platform.gwt.base.server.spring.GwtAuthenticationProvider">
-        <b:property name="passwordEncoder"><b:ref local="passwordEncoder" /></b:property>
-        <b:property name="userDetailsService"><b:ref local="logicsUserService" /></b:property>
     </b:bean>
 
     <b:bean id="passwordEncoder" class="platform.gwt.base.server.spring.Base64ShaPasswordEncoder">
@@ -64,11 +62,10 @@
     </b:bean>
 
     <authentication-manager>
-        <authentication-provider user-service-ref="logicsUserService"/>
         <authentication-provider ref ="daoAuthenticationProvider"/>
     </authentication-manager>
 
-    <b:bean id="logicsUserService" name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
+    <b:bean id="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
         <b:property name="businessLogicProvider" ref="blLogicProvider" />
     </b:bean>
 
