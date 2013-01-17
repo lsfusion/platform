@@ -18,9 +18,9 @@
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью
      -->
-    <set-property name="user.agent" value="safari" />
+    <!--<set-property name="user.agent" value="safari" />-->
     <!--<set-property name="user.agent" value="gecko1_8" />-->
-    <set-property name="locale" value="ru" />
+    <!--<set-property name="locale" value="ru" />-->
 
     <!-- For production most teams prefer to set the default log level to `OFF` -->
      <inherits name="com.allen_sauer.gwt.log.gwt-log-OFF" />
