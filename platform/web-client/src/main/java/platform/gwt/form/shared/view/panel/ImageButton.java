@@ -77,7 +77,7 @@ public class ImageButton extends Button {
 
     public void setAbsoluteImagePath(String imagePath) {
         if (!GwtSharedUtils.nullEquals(this.imagePath, imagePath)) {
-            image.setUrl(imagePath == null ? "" : imagePath);
+            image.setUrl(imagePath == null ? "" : GWT.getHostPageBaseURL() + imagePath);
 
             if ((this.imagePath == null && imagePath != null) || (this.imagePath != null && imagePath == null)) {
                 image.setVisible(imagePath != null);

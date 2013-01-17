@@ -28,7 +28,7 @@ public class ImageHandler {
             if (canBeDisabled) {
                 createImageFile(icon.getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
             }
-            return new ImageDescription("/images/" + imagesFolderName + "/" + iconPath, icon.getIconWidth(), icon.getIconHeight());
+            return new ImageDescription("images/" + imagesFolderName + "/" + iconPath, icon.getIconWidth(), icon.getIconHeight());
         }
         return null;
     }
