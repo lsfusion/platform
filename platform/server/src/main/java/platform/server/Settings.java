@@ -27,6 +27,16 @@ public class Settings {
         this.packOnCacheComplexity = packOnCacheComplexity;
     }
 
+    private boolean cacheInnerHashes = true;
+
+    public boolean isCacheInnerHashes() {
+        return cacheInnerHashes;
+    }
+
+    public void setCacheInnerHashes(boolean cacheInnerHashes) {
+        this.cacheInnerHashes = cacheInnerHashes;
+    }
+
     private int mapInnerMaxIterations = 24;
 
     public int getMapInnerMaxIterations() {

@@ -1229,7 +1229,7 @@ recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 		'STEP'
 		{ 
 			insideRecursion = true; 
-		  	recursiveContext = new ArrayList<String>(context); 
+		  	recursiveContext = new ArrayList<String>(context);
 		}
 		nextStep=propertyExpression[recursiveContext, dynamic]
 		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?

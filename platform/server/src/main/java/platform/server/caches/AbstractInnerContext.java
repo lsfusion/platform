@@ -34,6 +34,12 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         public ImSet<KeyExpr> getInnerKeys() {
             return AbstractInnerContext.this.getInnerKeys();
         }
+        public ImSet<Value> getInnerValues() {
+            return AbstractInnerContext.this.getInnerValues();
+        }
+        protected boolean isComplex() {
+            return AbstractInnerContext.this.isComplex();
+        }
     };
 
     public int hashValues(HashValues hashValues) {
@@ -68,7 +74,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         return calculateInnerComponents(values);
     }
     private BaseUtils.HashComponents<KeyExpr> calculateInnerComponents(boolean values) {
-        return getComponents(values ? new HashMapValues(getValueComponents().map) : HashCodeValues.instance);
+        return getComponents(values ? HashMapValues.create(getValueComponents().map) : HashCodeValues.instance);
     }
 
     public I translateValues(MapValuesTranslate mapValues) {
@@ -118,14 +124,14 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
     }
     private final static GlobalInteger keyValueHash = new GlobalInteger(5);
     public BaseUtils.HashComponents<Value> calculateValueComponents() {
-        final HashMapKeys hashKeys = new HashMapKeys(getInnerKeys().toMap(keyValueHash));
+        final HashKeys hashKeys = HashMapKeys.create(getInnerKeys().toMap(keyValueHash));
         return BaseUtils.getComponents(new BaseUtils.HashInterface<Value, GlobalObject>() {
             public ImMap<Value, GlobalObject> getParams() {
                 return AbstractValuesContext.getParamClasses(getInnerValues());
             }
 
             public int hashParams(ImMap<Value, ? extends GlobalObject> map) {
-                return hashInner(new HashContext(hashKeys, map.size()>0?new HashMapValues(map):HashCodeValues.instance));
+                return hashInner(HashContext.create(hashKeys, HashMapValues.create(map)));
             }
         });
     }

@@ -140,15 +140,15 @@ createComponentDetail 'Заполнить компоненты изделия' =
 } TOOLBAR;
 
 
-//recBruttoQuantityOrderSku (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY sku, order;
-//createRecComponentOrder 'Заполнить компоненты заказа рекурсивно' = ACTION (order)  {
-//
-//    FOR recBruttoQuantityOrderSku(order, sku) ADDOBJ d = componentDetail DO {
-//        SET orderComponentDetail(d) <- order;
-//        SET skuComponentDetail(d) <- sku;
-//        SET bruttoQuantityComponentDetail(d) <- recBruttoQuantityOrderSku(order, sku);
-//    }
-//} TOOLBAR;
+recBruttoQuantityOrderSku (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY sku, order;
+createRecComponentOrder 'Заполнить компоненты заказа рекурсивно' = ACTION (order)  {
+
+    FOR q == recBruttoQuantityOrderSku(order, sku) ADDOBJ d = componentDetail DO {
+        SET orderComponentDetail(d) <- order;
+        SET skuComponentDetail(d) <- sku;
+        SET bruttoQuantityComponentDetail(d) <- q;
+    }
+} TOOLBAR;
 
 backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF productComponentDetail(componentDetail);
 

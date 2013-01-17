@@ -196,6 +196,12 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         public ImSet<KeyExpr> getInnerKeys() {
             return thisObj.keys;
         }
+        public ImSet<Value> getInnerValues() {
+            return thisObj.values;
+        }
+        protected boolean isComplex() {
+            return thisObj.isComplex();
+        }
     }
     private QueryInnerHashContext<K, I> innerHashContext = new QueryInnerHashContext<K, I>(this) { // по сути тоже множественное наследование, правда нюанс что своего же Inner класса
         protected int hashOuterExpr(BaseExpr outerExpr) {

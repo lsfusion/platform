@@ -789,16 +789,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     initialExprs = queries.mapRevValues(new GetValue<Expr, RecursiveExpr.Query>() {
                         public Expr getMapValue(RecursiveExpr.Query value) {
                             return value.initial;
-                        }
-                    });
+                        }});
                     stepExprs = queries.mapValues(new GetKeyValue<Expr, String, RecursiveExpr.Query>() {
                         public Expr getMapValue(String key, RecursiveExpr.Query value) {
                             Expr step = value.step;
                             if (wrapStep)
                                 step = SubQueryExpr.create(step);
                             return recJoin.getExpr(key).mult(step, (IntegralClass) value.getType());
-                        }
-                    });
+                        }});
                     propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
                         public String getMapValue(String key, RecursiveExpr.Query value) {
                             return GroupType.SUM.getSource(ListFact.singleton(key), MapFact.<String, Boolean>EMPTYORDER(), SetFact.<String>EMPTY(), value.getType(), syntax);

@@ -97,6 +97,13 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         public ImSet<KeyExpr> getInnerKeys() {
             return thisObj.getInner().getInnerKeys();
         }
+        public ImSet<Value> getInnerValues() {
+            return thisObj.getInner().getInnerValues();
+        }
+
+        protected boolean isComplex() {
+            return thisObj.isComplex();
+        }
     }
 
     // вообще должно быть множественное наследование самого QueryExpr от InnerContext

@@ -461,9 +461,9 @@ recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOM
 // Расчет цены
 priceCoeffBOMBOMDate(parent, child, date) = GROUP SUM bruttoQuantityBOMMaterialDate(BOM, material, date) * priceCoeffProduct(material) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-//recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES;
-//recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
-recPriceCoeffBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
+recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES;
+recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
+//recPriceCoeffBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
 //
 recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date;

@@ -7,6 +7,12 @@ import platform.server.data.translator.MapTranslate;
 
 public class HashContext extends HashObject {
 
+    public static HashContext create(HashKeys keys, HashValues values) {
+        if(keys == HashCodeKeys.instance && values == HashCodeValues.instance)
+            return hashCode;
+        return new HashContext(keys, values);
+    }
+
     public final HashKeys keys;
     public final HashValues values;
 
@@ -32,7 +38,7 @@ public class HashContext extends HashObject {
     }
 
     public HashContext filterKeysValues(ImSet<KeyExpr> filterKeys, ImSet<Value> filterValues) {
-        return new HashContext(keys.filterKeys(filterKeys), values.filterValues(filterValues));
+        return HashContext.create(keys.filterKeys(filterKeys), values.filterValues(filterValues));
     }
 
     public HashContext reverseTranslate(MapTranslate translator, ImSet<KeyExpr> contextKeys, ImSet<Value> contextValues) {
@@ -42,6 +48,6 @@ public class HashContext extends HashObject {
         HashValues transValues = values.reverseTranslate(translator.mapValues(), contextValues);
         if(transValues==null)
             return null;
-        return new HashContext(transKeys, transValues);
+        return HashContext.create(transKeys, transValues);
     }
 }

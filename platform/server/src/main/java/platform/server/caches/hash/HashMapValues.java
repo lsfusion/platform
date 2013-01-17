@@ -1,15 +1,22 @@
 package platform.server.caches.hash;
 
 import platform.base.GlobalObject;
+import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.Settings;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
 public class HashMapValues extends HashValues {
 
     public final ImMap<Value, ? extends GlobalObject> hashValues;
-    public HashMapValues(ImMap<Value, ? extends GlobalObject> hashValues) {
+    public static HashValues create(ImMap<Value, ? extends GlobalObject> hashValues) {
+        if(hashValues.isEmpty())
+            return HashCodeValues.instance;
+        return new HashMapValues(hashValues);
+    }
+    private HashMapValues(ImMap<Value, ? extends GlobalObject> hashValues) {
         this.hashValues = hashValues;
     }
 
@@ -28,14 +35,14 @@ public class HashMapValues extends HashValues {
     }
 
     public boolean isGlobal() {
-        return false;
+        return Settings.instance.isCacheInnerHashes();
     }
 
     public HashValues filterValues(ImSet<Value> values) {
-        return new HashMapValues(hashValues.filterIncl(values));
+        return create(hashValues.filterIncl(values));
     }
 
     public HashValues reverseTranslate(MapValuesTranslate translator, ImSet<Value> values) {
-        return new HashMapValues(translator.translateMapValues(values.toMap()).join(hashValues));
+        return create(translator.translateMapValues(values.toMap()).join(hashValues));
     }
 }

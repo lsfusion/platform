@@ -92,7 +92,7 @@ public abstract class AbstractValuesContext<U extends ValuesContext<U>> extends 
             }
 
             public int hashParams(ImMap<Value, ? extends GlobalObject> map) {
-                return valuesContext.hashValues(map.size()>0?new HashMapValues(map): HashCodeValues.instance);
+                return valuesContext.hashValues(HashMapValues.create(map));
             }
         });
     }

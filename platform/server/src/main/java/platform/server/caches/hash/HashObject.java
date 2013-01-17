@@ -1,5 +1,6 @@
 package platform.server.caches.hash;
 
+import platform.server.caches.AbstractHashContext;
 import platform.server.caches.AbstractTranslateContext;
 
 import java.util.IdentityHashMap;
@@ -8,15 +9,15 @@ public abstract class HashObject {
 
     public abstract boolean isGlobal();
 
-    private IdentityHashMap<AbstractTranslateContext, Integer> caches;
-    public Integer aspectGetCache(AbstractTranslateContext context) {
+    private IdentityHashMap<AbstractHashContext, Integer> caches;
+    public Integer aspectGetCache(AbstractHashContext context) {
         if(caches==null)
-             caches = new IdentityHashMap<AbstractTranslateContext, Integer>();
+             caches = new IdentityHashMap<AbstractHashContext, Integer>();
         return caches.get(context);
     }
-    public void aspectSetCache(AbstractTranslateContext context, Integer result) {
+    public void aspectSetCache(AbstractHashContext context, Integer result) {
         if(caches==null)
-             caches = new IdentityHashMap<AbstractTranslateContext, Integer>();
+             caches = new IdentityHashMap<AbstractHashContext, Integer>();
         caches.put(context, result);
     }
 

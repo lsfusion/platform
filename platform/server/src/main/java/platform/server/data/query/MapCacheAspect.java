@@ -344,7 +344,7 @@ public class MapCacheAspect {
         protected int hash(HashValues hashValues) {
             int hash = 0;
             for(int i=0,size=values.size();i<size;i++)
-                hash += values.getKey(i).hashCode() ^ values.getValue(i).hashOuter(new HashContext(HashCodeKeys.instance, hashValues));
+                hash += values.getKey(i).hashCode() ^ values.getValue(i).hashOuter(HashContext.create(HashCodeKeys.instance, hashValues));
             return 31 * (31 * (usedChanges.hashValues(hashValues) * 31 + hash) + changed.hashCode()) + (propClasses?1:0);
         }
 

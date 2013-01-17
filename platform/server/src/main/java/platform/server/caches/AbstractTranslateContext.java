@@ -1,15 +1,11 @@
 package platform.server.caches;
 
 import platform.base.BaseUtils;
-import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
-import platform.server.caches.hash.HashCodeKeys;
-import platform.server.caches.hash.HashCodeValues;
-import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashObject;
 import platform.server.data.Value;
 import platform.server.data.translator.MapObject;
@@ -17,7 +13,7 @@ import platform.server.data.translator.MapObject;
 import java.lang.ref.WeakReference;
 
 // assert что T instanceof AbstractTranslateContext но заколебешься его протаскивать
-public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends TwinImmutableObject implements PackInterface<T> {
+public abstract class AbstractTranslateContext<T, M extends MapObject, H extends HashObject> extends AbstractHashContext<H> implements PackInterface<T> {
 
     // аспекты транслирования
     private WeakReference<T> from;
@@ -54,10 +50,6 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
         this.translator = new WeakReference<M>(translator);
     }
 
-    protected boolean isComplex() { // замена аннотации
-        return false;
-    }
-
     protected abstract T aspectContextTranslate(M translator);
     @ManualLazy
     protected T aspectTranslate(M translator) {
@@ -74,47 +66,6 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
             return translate(translator);
     }
     protected abstract T translate(M translator);
-
-    protected abstract H reverseTranslate(H hash, M translator);
-    protected abstract H aspectContextHash(H hash);
-    private Integer hashes; //Map<H, Integer>
-    @ManualLazy
-    protected int aspectHash(H hash) {
-        if(isComplex()) {
-            if(hash.isGlobal()) {
-                // сделал isGlobal только HashCode*, так как getKeys, getValues и фильтрация достаточно много жрут
-                assert hash == HashCodeValues.instance || (hash instanceof HashContext && ((HashContext)hash).keys==HashCodeKeys.instance && ((HashContext)hash).values==HashCodeValues.instance);
-                if(hashes==null)
-                    hashes = hash(hash);
-                return hashes;
-
-/*                if(hashes==null)
-                     hashes = new HashMap<H, Integer>();
-
-                hash = aspectContextHash(hash);
-                Integer result = hashes.get(hash);
-                if(result==null) {
-                    AbstractTranslateContext<T, M, H> from = (AbstractTranslateContext<T, M, H>) getFrom();
-                    H reversed;
-                    if(from!=null && (reversed = from.reverseTranslate(hash, getTranslator()))!=null)
-                        result = from.aspectHash(reversed);
-                    else
-                        result = hash(hash);
-                    hashes.put(hash, result);
-                }
-                return result;*/
-            } else {
-                Integer cacheResult = hash.aspectGetCache(this);
-                if(cacheResult==null) {
-                    cacheResult = hash(hash);
-                    hash.aspectSetCache(this, cacheResult);
-                }
-                return cacheResult;
-            }
-        } else
-            return hash(hash);
-    }
-    protected abstract int hash(H hash); // по сути protected
 
     protected ImSet<Value> values;
     @ManualLazy
