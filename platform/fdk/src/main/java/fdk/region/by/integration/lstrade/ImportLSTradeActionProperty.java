@@ -1,4 +1,4 @@
-package retail;
+package fdk.region.by.integration.lstrade;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
@@ -31,9 +31,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
 
-public class ImportLSTDataActionProperty extends ScriptingActionProperty {
+public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
-    public ImportLSTDataActionProperty(ScriptingLogicsModule LM) {
+    public ImportLSTradeActionProperty(ScriptingLogicsModule LM) {
         super(LM);
 
         try {

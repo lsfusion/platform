@@ -1,4 +1,4 @@
-package retail;
+package fdk.region.by.integration.formular;
 
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteCustomClass;
@@ -15,8 +15,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class ImportDataActionProperty extends ScriptingActionProperty {
-    public ImportDataActionProperty(ScriptingLogicsModule LM) {
+public class ImportFormularActionProperty extends ScriptingActionProperty {
+    public ImportFormularActionProperty(ScriptingLogicsModule LM) {
         super(LM);
 
         try {

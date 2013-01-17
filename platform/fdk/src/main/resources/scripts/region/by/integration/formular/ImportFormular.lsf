@@ -1,0 +1,43 @@
+MODULE ImportFormular;
+
+REQUIRE System,
+        Barcode,
+        Country,
+        Currency,
+        Integration,
+        Item,
+        LegalEntity,
+        LegalEntityBy,
+        Numerator,
+        PriceList,
+        PurchaseInvoice,
+        PurchaseWriteOff,
+        PricingPurchase,
+        ScalesItem,
+        Stock,
+        Store,
+        Tax,
+        TaxItem,
+        Ware,
+        Warehouse,
+        WareItem,
+        WriteOffItem;
+
+GROUP formularGroup 'Formular' : public;
+
+importDataAction 'Импортировать данные (Formular)' = ACTION CUSTOM 'fdk.region.by.integration.formular.ImportFormularActionProperty'IN formularGroup;
+importUrl 'URL' = DATA STRING[200]() IN formularGroup;
+importLogin 'Логин' = DATA STRING[200]() IN formularGroup;
+importPassword 'Пароль' = DATA STRING[200]() IN formularGroup;
+
+EXTEND FORM integrationData
+    PROPERTIES() importDataAction, importUrl, importLogin, importPassword
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW formular {
+            title = 'Formular';
+            ADD NOGROUP.formularGroup;
+        }
+    }
+}

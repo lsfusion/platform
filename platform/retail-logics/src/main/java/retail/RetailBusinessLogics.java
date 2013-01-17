@@ -14,24 +14,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * User: DAle
- * Date: 05.01.12
- * Time: 15:34
- */
-
-
 public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> implements EquipmentServerHolder {
     ScriptingLogicsModule retailLM;
-    ScriptingLogicsModule importLM;
     EquipmentServer equipmentServer;
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
-    }
-
-    public ScriptingLogicsModule getLM() {
-        return retailLM;
     }
 
     @Override
@@ -201,11 +189,11 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/hr/HR.lsf",
                 "/scripts/manufacturing/Manufacturing.lsf",
                 "/scripts/retail/RetailCRMItem.lsf",
-                "/scripts/pricelist/PriceRoundItem.lsf"
+                "/scripts/pricelist/PriceRoundItem.lsf",
+                "/scripts/region/by/integration/lstrade/ImportLSTrade.lsf",
+                "/scripts/region/by/integration/formular/ImportFormular.lsf"
         );
         retailLM = addModuleFromResource("/scripts/retail.lsf");
-
-        importLM = addModuleFromResource("/scripts/import.lsf");
 
         equipmentServer = new EquipmentServer(retailLM);
         
