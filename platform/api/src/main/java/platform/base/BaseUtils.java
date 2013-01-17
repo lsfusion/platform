@@ -2145,24 +2145,22 @@ public class BaseUtils {
         return sb.toString();
     }
 
-    public static String calculateBase64Hash(String algorithm, String input, Object salt) {
+    public static String calculateBase64Hash(String algorithm, String input, Object salt) throws RuntimeException{
         try {
             return new String(Base64.encodeBase64(calculateHash(algorithm, input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
-    public static String calculateHash(String algorithm, String input, Object salt) {
+    public static String calculateHash(String algorithm, String input, Object salt) throws RuntimeException{
         try {
             return new String(MessageDigest.getInstance(algorithm).digest(mergePasswordAndSalt(input, salt).getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     protected static String mergePasswordAndSalt(String password, Object salt) {
