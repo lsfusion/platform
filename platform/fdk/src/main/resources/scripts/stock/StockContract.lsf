@@ -171,6 +171,12 @@ FORM contractSkus 'Договора на поставку'
     DIALOG contractSku OBJECT c
 ;
 
+NAVIGATOR {
+    legalEntityNavigator {
+        ADD contractSkus;
+    }
+}
+
 // ----------------------------- Расширяем форму организаций ------------------------------------------- //
 
 EXTEND FORM legalEntity

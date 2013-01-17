@@ -1,126 +1,16 @@
 MODULE retail;
 
-// Кол-ва - NUMERIC[14,3]
-// Цены - NUMERIC[14,2]
-// Суммы - NUMERIC[16,2]
-// Ставка налога - NUMERIC[10,5]
-// Надбавка - NUMERIC[8,3]
-// Норма списания отходов - NUMERIC[10,3]
-
 REQUIRE System,
-        EvalScript,
-        Utils,
-        Hierarchy,
-        Historizable,
-        Numerator,
-        Stock,
-        Barcode,
-        Document,
-        Tax,
-        Ware,
-        Country,
-        LegalEntityBy,
-        OrderBy,
-        SaleOrderBy,
-        Agreement,
-        Order,
-        BlanketOrder,
-        Invoice,
-        Shipment,
-        CreditNote,
-        SaleOrder,
-        SaleBlanketOrder,
-        SaleInvoice,
-        SaleShipment,
-        SaleCreditNote,
-        SaleReturnOrder,
-        SaleReturnInvoice,
-        SaleReturnShipment,
-        SaleReturnCreditNote,
-        Sale,
         Purchase,
-        PurchaseOrder,
-        PurchaseInvoice,
-        PurchaseShipment,
-        PurchaseCreditNote,
-        PurchaseReturnOrder,
-        PurchaseReturnInvoice,
-        PurchaseReturnShipment,
-        PurchaseReturnCreditNote,
-        PurchaseWriteOffBy,
-        Repricing,
-        Employee,
-        StockAdjustment,
-        ShipmentStore,
-        PurchaseWriteOffStore,
-        Store,
-        SaleStatistics,
-        NaturalLossItem,
-        ConsignmentBy,
-        StockDocumentBy,
-        StockDocumentWarehouse,
-        StockDocumentStore,
-        ContainerMovementBy,
-        Machinery,
-        CashRegister,
-        Scales,
-        StockReserve,
-        PriceChecker,
-        WriteOffBy,
-        Terminal,
-        Label,
-        RetailCRM,
-        CashOperationBy,
-        POS,
-        BOM,
-        Substitute,
-        ProductionOrder,
-        StockContract,
-        ContractLedger,
-        InventoryBy,
-        DefaultData,
-        Item,
-        WareItem,
-        ItemSize,
-        ItemArticle,
-        WriteOffItem,
-        PurchaseItem,
-        SaleItem,
+        Stock,
+        Sale,
+        Retail,
+        Manufacturing,
         PriceList,
         Transport,
-        Route,
-        TripInvoiceBy,
-        Warehouse,
-        ShipmentWarehouse,
-        StockTax,
-        Disparity,
-        NaturalLossBy,
-        WarePriceList,
-        ScheduleOrder,
-        SaleScheduleOrder,
-        PurchaseScheduleOrder,
-        Certificate,
-        PurchaseCertificate,
-        SaleCertificate,
-        Declaration,
-        PurchaseDeclaration,
-        SaleDeclaration,
-        Compliance,
-        PurchaseCompliance,
-        SaleCompliance,
-        Sanitation,
-        PurchaseSanitation,
-        SaleSanitation;
-
-// ----------------------------------- Товарный классификатор ------------------------------------------ //
-
-EXTEND CLASS itemGroup : roundGroup;
-roundGroupSku(sku) += itemGroupItem(sku);
-
-EXTEND CLASS itemGroup : discountSkuGroup;
-inDiscountSkuGroupSku(discountSkuGroup, sku) += itemGroupItem(sku) == discountSkuGroup;
-
-//---------------------------- Настройка навигатора ----------------------------------------//
+        Machinery,
+        Finance,
+        HR;
 
 NAVIGATOR {
 
@@ -134,26 +24,7 @@ NAVIGATOR {
     ADD machineryNavigator;
     ADD financeNavigator;
     ADD HRNavigator;
-
-    ADD masterData {
-            NEW itemMasterData 'Товары' BEFORE regionalData {
-            ADD items;
-            ADD itemGroups;
-            ADD UOMs;
-            ADD wares;
-        }
-        NEW contragents 'Контрагенты' AFTER itemMasterData {
-            ADD legalEntities;
-            ADD banks;
-            ADD contractSkus;
-        }
-        NEW certificateCatalog 'Сертификаты' AFTER contragents{
-            ADD declarations;
-            ADD compliances;
-            ADD sanitations;
-        }
-    }
-
+    ADD masterData;
     ADD administration;
     ADD account;
 }

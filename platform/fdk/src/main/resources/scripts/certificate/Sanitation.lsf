@@ -45,3 +45,9 @@ FORM sanitationsDialog 'ГГР'
 
     DIALOG sanitation OBJECT s
 ;
+
+NAVIGATOR {
+    certificateNavigator {
+        ADD sanitations;
+    }
+}

@@ -68,6 +68,12 @@ DESIGN dialogItemGroups FROM DEFAULT {
         }
     }
 }
+
+NAVIGATOR {
+    skuNavigator {
+        ADD itemGroups BEFORE UOMs;
+    }
+}
 // ----------------------------------- Товары ----------------------------------- //
 
 CLASS item 'Товар' : sku, externalizable;
@@ -198,6 +204,12 @@ DESIGN items FROM DEFAULT {
             }
     }
     ADD functions.box;
+}
+
+NAVIGATOR {
+    skuNavigator {
+        ADD items BEFORE itemGroups;
+    }
 }
 
 // ----------------------------------- Атрибуты товаров ------------------------------------------ //

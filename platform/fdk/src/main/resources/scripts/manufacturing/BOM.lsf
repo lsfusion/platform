@@ -4,7 +4,8 @@ REQUIRE Stock,
         Numerator,
         Barcode,
         Document,
-        Utils;
+        Utils,
+        Manufacturing;
 
 
 // ---------------- Материалы ------------------- //
@@ -466,15 +467,8 @@ recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM
 recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BOMProduct(product), sku, date) * pricePercentProduct(product);
 
 NAVIGATOR {
-    NEW manufacturingNavigator 'Производство' TO toolbar IMAGE '/images/plant.png' {
-        NEW manufacturingDocuments 'Документы';
-        NEW manufacturingMasterData 'Справочники' {
-            ADD BOMs;
-            ADD technologies;
-        }
+    manufacturingMasterData {
+        ADD BOMs;
+        ADD technologies;
     }
 }
-
-
-
-

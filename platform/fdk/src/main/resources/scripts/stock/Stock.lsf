@@ -2326,6 +2326,11 @@ NAVIGATOR {
         NEW stockReports 'Отчеты';
         NEW stockMasterData 'Справочники';
     }
+    masterData {
+        NEW skuNavigator 'Товар' BEFORE legalEntityNavigator {
+            ADD UOMs;
+        }
+    }
 }
 
 // -------------------------------------------- Подбор SKU --------------------------------------- //

@@ -72,7 +72,7 @@ DESIGN substitute FROM DEFAULT {
     }
 }
 NAVIGATOR {
-    manufacturingMasterData 'Справочники' {
+    manufacturingMasterData {
         ADD substitute;
     }
 }

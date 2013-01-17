@@ -45,3 +45,9 @@ FORM compliancesDialog 'Сертификаты соответствия'
 
     DIALOG compliance OBJECT c
 ;
+
+NAVIGATOR {
+    certificateNavigator {
+        ADD compliances;
+    }
+}

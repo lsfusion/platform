@@ -296,7 +296,15 @@ DESIGN legalEntities FROM DEFAULT{
     }
     ADD functions.box;
 }
-    
+
+NAVIGATOR {
+    masterData {
+        NEW legalEntityNavigator 'Контрагенты' BEFORE regionalData{
+            ADD legalEntities;
+            ADD banks;
+        }
+    }
+}
 // -------------------------------------------- Макросы --------------------------------------------- //
 META defineDocumentHeaderLegalEntity (object, contact, contactCaption)
     contact###object (object) = DATA legalEntity (object);

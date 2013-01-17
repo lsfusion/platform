@@ -12,6 +12,12 @@ descriptionCertificate 'Документ качества' (certificate) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (registrationNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
 
+NAVIGATOR {
+    masterData {
+        NEW certificateNavigator 'Сертификаты' BEFORE regionalData;
+    }
+}
+// -------------------------- Метакод по расширению форм и созданию свойств -------------------- //
 META extendCertificateForm(prop, char)
 
     EXTEND FORM user###prop

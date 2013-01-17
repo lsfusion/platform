@@ -69,3 +69,9 @@ FORM wares 'Посуда'
 
     DIALOG ware OBJECT w
 ;
+
+NAVIGATOR {
+    skuNavigator {
+        ADD wares AFTER UOMs;
+    }
+}

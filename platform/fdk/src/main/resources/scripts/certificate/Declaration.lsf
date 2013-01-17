@@ -41,3 +41,9 @@ FORM declarationsDialog 'Таможенные декларация'
 
     DIALOG declaration OBJECT d
 ;
+
+NAVIGATOR {
+    certificateNavigator {
+        ADD declarations;
+    }
+}
