@@ -452,9 +452,9 @@ bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sk
 
 bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMaterialDate(BOM, material, date) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-//recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
-//recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
-recBruttoQuantityBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
+recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
+recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
+//recBruttoQuantityBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
 

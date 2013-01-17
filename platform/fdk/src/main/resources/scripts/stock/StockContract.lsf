@@ -172,7 +172,7 @@ FORM contractSkus 'Договора на поставку'
 ;
 
 NAVIGATOR {
-    legalEntityNavigator {
+    stockMasterData {
         ADD contractSkus;
     }
 }

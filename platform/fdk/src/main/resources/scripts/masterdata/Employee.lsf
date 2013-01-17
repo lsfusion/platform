@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE System, Security, Email, Hierarchy, Utils, HR;
+REQUIRE System, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;
@@ -161,8 +161,8 @@ FORM employeeDialog 'Сотрудники'
 ;
 
 NAVIGATOR {
-    HRNavigator {
-        ADD employees;
+    masterData {
+        ADD employees BEFORE regionalData;
     }
 }
 

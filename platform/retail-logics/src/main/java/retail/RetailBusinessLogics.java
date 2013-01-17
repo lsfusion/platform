@@ -6,7 +6,6 @@ import net.sf.jasperreports.engine.JRException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/region/by/ware/WareSaleInvoice.lsf",
                 "/scripts/region/by/ware/WareSaleReturnInvoice.lsf",
                 "/scripts/masterdata/LegalEntity.lsf",
-                "/scripts/hr/Employee.lsf",
+                "/scripts/masterdata/Employee.lsf",
                 "/scripts/stock/store/Store.lsf",
                 "/scripts/stock/StockDocument.lsf",
                 "/scripts/masterdata/Contract.lsf",
@@ -184,7 +183,6 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
                 "/scripts/certificate/SaleSanitation.lsf",
                 "/scripts/retail/Retail.lsf",
                 "/scripts/finance/Finance.lsf",
-                "/scripts/hr/HR.lsf",
                 "/scripts/manufacturing/Manufacturing.lsf",
                 "/scripts/retail/RetailCRMItem.lsf",
                 "/scripts/pricelist/PriceRoundItem.lsf",
