@@ -3,5 +3,5 @@ MODULE HR;
 REQUIRE System;
 
 NAVIGATOR {
-    NEW HRNavigator 'Кадры' TO toolbar IMAGE '/images/people.png';
+    NEW HRNavigator 'Кадры' BEFORE masterData TO toolbar IMAGE '/images/people.png';
 }

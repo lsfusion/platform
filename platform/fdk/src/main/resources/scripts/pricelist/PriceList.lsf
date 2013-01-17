@@ -902,7 +902,7 @@ EXTEND DESIGN legalEntity{
 
 
 NAVIGATOR {
-    NEW priceListNavigator 'Цены' TO toolbar IMAGE '/images/label.png' {
+    NEW priceListNavigator 'Цены' BEFORE masterData TO toolbar IMAGE '/images/label.png' {
         NEW priceListDocuments 'Документы' {
             ADD userPriceLists;
         }

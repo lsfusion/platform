@@ -1,7 +1,7 @@
 MODULE Sale;
 
-REQUIRE System;
+REQUIRE System, Stock;
 
 NAVIGATOR {
-    NEW saleNavigator 'Продажи' TO toolbar IMAGE '/images/checkout.png';
+    NEW saleNavigator 'Продажи' AFTER stockNavigator TO toolbar IMAGE '/images/checkout.png';
 }

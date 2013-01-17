@@ -1,7 +1,7 @@
 MODULE Purchase;
 
-REQUIRE System;
+REQUIRE System, Stock;
 
 NAVIGATOR {
-    NEW purchaseNavigator 'Закупки' TO toolbar IMAGE '/images/boxes.png';
+    NEW purchaseNavigator 'Закупки' BEFORE stockNavigator TO toolbar IMAGE '/images/boxes.png';
 }

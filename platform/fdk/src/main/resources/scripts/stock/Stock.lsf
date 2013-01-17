@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee;
+REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, Finance;
 
 // ----------------------------------- Склады ------------------------------------------ //
 
@@ -2310,7 +2310,7 @@ DESIGN balanceBatchStock FROM DEFAULT {
 }
 
 NAVIGATOR {
-    NEW stockNavigator 'Склад' TO toolbar IMAGE '/images/warehouse.png' {
+    NEW stockNavigator 'Склад' BEFORE financeNavigator TO toolbar IMAGE '/images/warehouse.png' {
         NEW balanceSku 'Остатки по товару' {
             ADD currentBalanceSkuStock;
             ADD balanceSkuStock;

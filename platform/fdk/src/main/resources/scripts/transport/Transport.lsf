@@ -75,7 +75,7 @@ FORM drivers 'Водители'
 ;
 
 NAVIGATOR {
-    NEW transportNavigator 'Транспорт' TO toolbar IMAGE '/images/truck.png' {
+    NEW transportNavigator 'Транспорт' BEFORE masterData TO toolbar IMAGE '/images/truck.png' {
         NEW transportDocuments 'Документы';
         NEW transportMasterData 'Справочники' {
             ADD drivers;
