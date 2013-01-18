@@ -16,12 +16,14 @@ import java.util.Set;
 public class GToolbarNavigatorView extends GNavigatorView {
     private static final int PADDING_STEP = 15;
     private CellPanel panel;
+//    private FlowPanel panel;
     private boolean vertical;
 
     public GToolbarNavigatorView(GToolbarNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
         vertical = window.type == 1;
         panel = vertical ? new VerticalPanel() : new HorizontalPanel();
+//        panel = new FlowPanel();
         SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
             toolbarContainer.setStyleName("verticaToolbar");
@@ -70,6 +72,10 @@ public class GToolbarNavigatorView extends GNavigatorView {
         }
 
         panel.add(button);
+//        panel.setCellVerticalAlignment(button, HasVerticalAlignment.ALIGN_MIDDLE);
+//        if (!vertical) {
+//            button.getElement().getStyle().setFloat(Style.Float.LEFT);
+//        }
 
         if (vertical) {
             panel.setCellWidth(button, "100%");
