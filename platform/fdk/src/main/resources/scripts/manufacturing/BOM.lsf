@@ -249,7 +249,7 @@ nameComponent 'Компонент' (component) = [FORMULA STRING[255]  ' CAST($1
 
 UOMComponent = DATA UOM (component);
 shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
-UOMComponent(component) <-UOMSku(materialComponent(component)) WHEN CHANGED (materialComponent(component));
+UOMComponent(component) <-UOMMaterial(materialComponent(component)) WHEN CHANGED (materialComponent(component));
 
 @defineDocumentDetailQuantityCustomPrefix (component, netto, ' (нетто)');
 @defineDocumentHeaderQuantityCustomPrefix (BOM, component, netto, ' (нетто компонент)');

@@ -14,13 +14,15 @@ TABLE order(order);
 @defineDocumentHeaderPosted (order);
 @defineDocumentHeaderPriceListType (order);
 
-@defineDocumentHeaderStock (order, stock, 'Склад-отправитель', output);
-@defineDocumentHeaderStock (order, stock, 'Склад-получатель', input);
+@defineDocumentHeaderStock (order, stock, 'Склад сырья', raw);
+@defineDocumentHeaderStock (order, stock, 'Склад готовой продукции', goods);
 
 @defineDocumentHeaderDatePrefix (order, from, ' действия с');
 @defineDocumentHeaderDatePrefix (order, to, ' действия по');
 
 @defineDocumentHeaderDescription(order, 'Производственный заказ');
+@defineDocumentHeaderCurrency (order);
+@deriveDocumentCurrency (order, rawStock, currencyStock);
 
 @defineNumeratedObjectDefault(order, 'Нумератор для производственных заказов', 'ПЗ');
 
@@ -53,6 +55,16 @@ UOMProductDetail(productDetail) <-UOMProduct(productProductDetail(productDetail)
 CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(productDetail)) CHECKED BY productProductDetail
     MESSAGE 'Sku изделия и строки изделия не соответствуют друг другу';
 
+@defineDocumentDetailPriceCustomPrefix (productDetail, , );
+
+currencyProductDetail (productDetail)= currencyOrder(orderProductDetail(productDetail));
+
+sumProductDetail 'Сумма' = DATA NUMERIC[16,2] (productDetail);
+sumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * priceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+    WHEN CHANGED (quantityProductDetail(productDetail)) OR
+         CHANGED (priceProductDetail(productDetail)) OR
+         CHANGED(currencyProductDetail(productDetail));
+
 // ------------- Компоненты ----------- //
 CLASS componentDetail 'Строка компонента' : named;
 TABLE componentDetail (componentDetail);
@@ -76,13 +88,16 @@ nameComponentComponentDetail 'Компонент' (componentDetail) = nameCompon
 
 UOMComponentDetail = DATA UOM (componentDetail);
 shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortName(UOMComponentDetail(componentDetail));
-UOMComponentDetail(componentDetail) <-UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
+UOMComponentDetail(componentDetail) <- UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
 
-CONSTRAINT skuComponentDetail(componentDetail) != (materialComponent(componentComponentDetail(componentDetail)) OR  skuProduct(materialComponent(componentComponentDetail(componentDetail))))
+CONSTRAINT materialComponent(componentComponentDetail(componentDetail)) IS sku AND NOT skuComponentDetail(componentDetail) == materialComponent(componentComponentDetail(componentDetail))
     CHECKED BY componentComponentDetail MESSAGE 'Sku компонента и строки компонента не соответствуют друг другу';
 
 productComponentDetail = DATA product (componentDetail);
 nameMaterialComponentDetail 'Изделие' (componentDetail) = nameMaterial(productComponentDetail(componentDetail));
+
+CONSTRAINT skuComponentDetail(componentDetail) != skuProduct(productComponentDetail(componentDetail))
+    CHECKED BY productComponentDetail MESSAGE 'Sku изделия и строки компонента не соответствуют друг другу';
 
 //--
 
@@ -113,9 +128,6 @@ createComponentOrder 'Заполнить компоненты заказа' = AC
 
 } TOOLBAR;
 
-deployedComponentDetail 'Развернут' = DATA BOOLEAN (componentDetail);
-toShowCreateComponentDetail (componentDetail)= componentDetail IS componentDetail AND NOT deployedComponentDetail(componentDetail);
-
 createComponentDetail 'Заполнить компоненты изделия' = ACTION (componentDetail)  {
 
     FOR  BOMComponent(component) == BOMProduct(productComponentDetail(componentDetail))  DO {
@@ -136,11 +148,10 @@ createComponentDetail 'Заполнить компоненты изделия' =
         }
     }
     EXEC delete(componentDetail);
-//    SET deployedComponentDetail(componentDetail) <- TRUE;
 } TOOLBAR;
 
 
-recBruttoQuantityOrderSku (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY sku, order;
+recBruttoQuantityOrderSku 'Рекур.кол-во' (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku;
 createRecComponentOrder 'Заполнить компоненты заказа рекурсивно' = ACTION (order)  {
 
     FOR q == recBruttoQuantityOrderSku(order, sku) ADDOBJ d = componentDetail DO {
@@ -152,27 +163,61 @@ createRecComponentOrder 'Заполнить компоненты заказа р
 
 backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF productComponentDetail(componentDetail);
 
+//--  Сбивка по sku
+
 bruttoQuantitySkuOrder 'Количество брутто' (sku,order)= GROUP SUM bruttoQuantityComponentDetail(componentDetail) BY skuComponentDetail(componentDetail), orderComponentDetail(componentDetail);
+
+priceSkuOrder 'Цена' = DATA NUMERIC[14,2] (sku, order);
+priceSkuOrder(sku,order) <- pricePriceListTypeSkuStockDateTime(priceListTypeOrder(order), // или prevPricePriceListTypeSkuStockDateTime
+                                                               sku,
+                                                               rawStockOrder(order),
+                                                               dateTimeOrder(order))
+                                    WHEN CHANGED(priceListTypeOrder(order)) OR
+                                         CHANGED(rawStockOrder(order)) OR
+                                         CHANGED(dateTimeOrder(order));
+
+sumSkuOrder 'Сумма' = DATA NUMERIC[16,2] (sku, order);
+
+sumSkuOrder(sku, order) <- toNumeric16p2(roundCurrency((bruttoQuantitySkuOrder(sku, order) * priceSkuOrder(sku, order)), currencyOrder(order)))
+    WHEN CHANGED (bruttoQuantitySkuOrder(sku, order)) OR
+         CHANGED (priceSkuOrder(sku, order)) OR
+         CHANGED(currencyOrder(order) AND sku IS sku);
+
+
+recPriceProductOrder (product, order) = GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*priceSkuOrder(sku, order)/100
+    BY product, order;
+recPricePercentProductDetailSkuOrder 'Коэф.цены' (productDetail, sku, order)= recPricePercentProductSkuDate (productProductDetail(productDetail), sku, dateOrder(order))/100;
+
+recPriceProductDetail 'Цена расч.'(productDetail) = recPriceProductOrder (productProductDetail(productDetail), orderProductDetail(productDetail));
+
+fillPriceProductsOrder 'Заполнить цены для изделий по с/с' = ACTION (order)  {
+
+    FOR orderProductDetail(productDetail) == order DO {
+        SET priceProductDetail(productDetail) <- recPriceProductDetail(productDetail);
+    }
+} TOOLBAR;
+
 
 // ------------- Формы ----------- //
 
 FORM order 'Производственный заказ'
 
     OBJECTS o = order FIXED PANEL
-    PROPERTIES(o) objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder,
-                  namePriceListTypeOrder
+    PROPERTIES(o) objectClassName, nameRawStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+
     OBJECTS pd=productDetail
-    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail
+    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   priceProductDetail, sumProductDetail, recPriceProductDetail
     PROPERTIES(pd) ADDOBJ, delete
-    PROPERTIES(o) TODRAW pd deleteProductDetailOrder
+    PROPERTIES(o) TODRAW pd fillPriceProductsOrder, deleteProductDetailOrder
 
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
     PROPERTIES(cd) BACKGROUND backgroundComponentDetail(cd) indexComponentDetail, nameSkuComponentDetail, nameMaterialComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, bruttoQuantityComponentDetail
-    PROPERTIES(o) TODRAW cd createComponentOrder//, createRecComponentOrder
+    PROPERTIES(o) TODRAW cd createComponentOrder, createRecComponentOrder
     PROPERTIES(cd) TODRAW cd createComponentDetail SHOWIF productComponentDetail(cd)
     PROPERTIES(cd) ADDOBJ, delete
     PROPERTIES(o) TODRAW cd deleteComponentDetailOrder
@@ -182,7 +227,11 @@ FORM order 'Производственный заказ'
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku, idBarcodeSku, shortNameUOMSku
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
+    PROPERTIES(s,o) priceSkuOrder, sumSkuOrder
+    PROPERTIES(o) TODRAW s namePriceListTypeOrder FORCE PANEL
     FILTERS bruttoQuantitySkuOrder(s,o)
+
+    PROPERTIES    recPricePercentProductDetailSkuOrder(pd,s,o), recBruttoQuantityOrderSku(o,s)
 
     EVENTS
         ON OK EXEC prePostOrder(o)
@@ -217,8 +266,8 @@ DESIGN order FROM DEFAULT{
                 NEW headerRow11 {
                     title = 'Склады';
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameOutputStockOrder);
-                    ADD PROPERTY(nameInputStockOrder);
+                    ADD PROPERTY(nameRawStockOrder);
+                    ADD PROPERTY(nameGoodsStockOrder);
                 }
                 NEW headerRow12 {
                     childConstraints = TO THE RIGHTBOTTOM;
@@ -253,13 +302,14 @@ DESIGN order FROM DEFAULT{
 FORM orders 'Производственные заказы'
 
     OBJECTS o = order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameOutputStockOrder, nameInputStockOrder, nameNumeratorObject, numberObject, seriesObject,
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameRawStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder, namePriceListTypeOrder
     PROPERTIES(o) ADDFORM, EDITFORM, delete
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=productDetail
-    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail,
+                   quantityProductDetail, priceProductDetail, sumProductDetail
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
