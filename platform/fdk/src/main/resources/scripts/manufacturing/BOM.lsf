@@ -20,7 +20,9 @@ shortNameUOMMaterial 'Ед. изм.' (material) = shortName(UOMMaterial(material
 editMaterial 'Редактировать' = ABSTRACT ACTION (material) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
-skuGroupMaterial (material) = ABSTRACT skuGroup (material) PERSISTENT;
+skuMaterial (material) = ABSTRACT sku (material) PERSISTENT;
+
+skuGroupMaterial (material) = skuGroupSku(skuMaterial(material)) PERSISTENT;
 isParentSkuGroupMaterial (skuGroup, material) = isParentSkuGroupSkuGroup(skuGroupMaterial(material), skuGroup) PERSISTENT;
 
 FORM materials 'Материалы'
@@ -72,7 +74,7 @@ UOMMaterial(material) += UOMSku(material);
 editMaterial(sku) += editSku(sku);
 addMaterial () += addSku();
 
-skuGroupMaterial(material) += skuGroupSku(material);
+skuMaterial(material) += material AS sku;
 
 // -----------  Технологии -------------- //
 CLASS technology 'Технология' : named;
@@ -218,7 +220,7 @@ nameMaterial(material) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||
                                       nameSkuProduct(material));
 
 UOMMaterial(material) += UOMSku(skuProduct(material));
-skuGroupMaterial(material) += skuGroupSku(skuProduct(material));
+skuMaterial (material) += skuProduct(material);
 
 FORM products 'Изделия'
     OBJECTS p=product
@@ -466,7 +468,7 @@ recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDat
 //recPriceCoeffBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
 //
-recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date;
+recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMMaterialDate(childBOM, material, date) BY BOM, skuMaterial(material), date;
 recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BOMProduct(product), sku, date) * pricePercentProduct(product);
 
 NAVIGATOR {
