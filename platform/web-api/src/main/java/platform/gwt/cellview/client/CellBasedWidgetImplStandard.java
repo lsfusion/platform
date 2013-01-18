@@ -60,7 +60,7 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
     // Get the event listener, which is the first widget that handles the
     // specified event type.
     String typeName = event.getType();
-    EventListener listener = DOM.getEventListener(target);
+    EventListener listener = isNonBubblingEventHandled(target, typeName) ? DOM.getEventListener(target) : null;
     while (target != null && listener == null) {
       target = target.getParentElement().cast();
       if (target != null && isNonBubblingEventHandled(target, typeName)) {

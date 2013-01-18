@@ -35,5 +35,11 @@ public class JSNIHelper {
         return (ret === undefined || ret == null) ? null : String(ret);
     }-*/;
 
+    public static void consoleLog(String message) {
+        consoleLog("JSNIHelper", message);
+    }
 
+    public static native void consoleLog(String category, String message) /*-{
+        console.log(category + ":" + message);
+    }-*/;
 }

@@ -1,5 +1,7 @@
 package platform.gwt.form.shared.view.filter;
 
+import platform.gwt.form.shared.view.changes.dto.GFilterValueDTO;
+
 import java.io.Serializable;
 
 public class GDataFilterValue extends GFilterValue {
@@ -11,7 +13,7 @@ public class GDataFilterValue extends GFilterValue {
     }
 
     @Override
-    public byte getTypeID() {
-        return 0;
+    public GFilterValueDTO getDTO() {
+        return new GFilterValueDTO(0, value);
     }
 }

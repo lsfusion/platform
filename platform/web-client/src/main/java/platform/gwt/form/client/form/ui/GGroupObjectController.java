@@ -438,7 +438,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     @Override
-        protected void changeFilter(List<GPropertyFilter> conditions) {
+    protected void changeFilter(List<GPropertyFilter> conditions) {
         formController.changeFilter(groupObject, conditions);
     }
 

@@ -17,7 +17,7 @@ public class GPropertyFilter {
         GPropertyFilterDTO filterDTO = new GPropertyFilterDTO();
 
         filterDTO.propertyID = property.ID;
-        filterDTO.filterValue = value;
+        filterDTO.filterValue = value.getDTO();
         filterDTO.negation = negation;
         filterDTO.compareByte = compare.serialize();
         filterDTO.junction = junction;

@@ -1,7 +1,7 @@
 package platform.gwt.cellview.client;
 
 import com.google.gwt.user.client.ui.CustomScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HorizontalScrollbar;import com.google.gwt.user.client.ui.Widget;
 
 import static com.google.gwt.dom.client.Style.Overflow;
 
@@ -30,6 +30,15 @@ public class DataGridScrollPanel extends CustomScrollPanel {
     public void removeVerticalScrollbar() {
         super.removeVerticalScrollbar();
         getScrollableElement().getStyle().setOverflowY(Overflow.HIDDEN);
+    }
+
+    public int getRealClientHeight() {
+        return getClientHeight() - getHorizontalScrollbarHeight();
+    }
+
+    public int getHorizontalScrollbarHeight() {
+        HorizontalScrollbar scrollBar = getHorizontalScrollbar();
+        return scrollBar == null ? 0 : scrollBar.asWidget().getOffsetHeight();
     }
 
     public int getClientHeight() {

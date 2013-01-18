@@ -167,7 +167,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             }
 
-            rowHeight = 0.0;
+            int rowHeight = 0;
             NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>>();
             for (int i = 0; i < columnProperties.size(); ++i) {
                 GPropertyDraw property = columnProperties.get(i);
@@ -192,6 +192,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 rowHeight = Math.max(rowHeight, columnProperties.get(i).getMinimumPixelHeight());
             }
+            setCellHeight(rowHeight);
 
             columnsMap.foreachValue(new Function<NativeHashMap<GGroupObjectValue, GridColumn>>() {
                 @Override

@@ -89,8 +89,7 @@ class DataGridImpl {
      * @param rowHtml    the Html for the rows
      * @return the section element
      */
-    public TableSectionElement convertToSectionElement(DataGrid<?> table,
-                                                       String sectionTag, SafeHtml rowHtml) {
+    public TableSectionElement convertToSectionElement(DataGrid<?> table, String sectionTag, SafeHtml rowHtml) {
         // Attach an event listener so we can catch synchronous load events from
         // cached images.
         DOM.setEventListener(tmpElem, table);
@@ -156,63 +155,6 @@ class DataGridImpl {
        * Reattach the section. If next section is null, the section will be
        * appended instead.
        */
-        reattachSectionElement(parent, section, nextSection);
-
-        // Detach the event listener.
-        if (!table.isAttached()) {
-            DOM.setEventListener(table.getElement(), null);
-        }
-    }
-
-    /**
-     * Replace a set of row values with newly rendered values.
-     * <p/>
-     * This method does not necessarily perform a one to one replacement. Some
-     * row values may be rendered as multiple row elements, while others are
-     * rendered as only one row element.
-     *
-     * @param table      the {@link DataGrid}
-     * @param section    the {@link TableSectionElement} to replace
-     * @param html       the html of a table section element containing the rows
-     * @param startIndex the start index to replace
-     * @param childCount the number of row values to replace
-     */
-    public final void replaceChildren(DataGrid<?> table, TableSectionElement section,
-                                      SafeHtml html, int startIndex, int childCount) {
-        // If the widget is not attached, attach an event listener so we can catch
-        // synchronous load events from cached images.
-        if (!table.isAttached()) {
-            DOM.setEventListener(table.getElement(), table);
-        }
-
-        // Remove the section from the tbody.
-        Element parent = section.getParentElement();
-        Element nextSection = section.getNextSiblingElement();
-        detachSectionElement(section);
-
-        // Remove all children in the range.
-        final int endIndex = startIndex + childCount;
-
-        TableRowElement insertBefore = table.getChildElement(startIndex).cast();
-        while (insertBefore != null && table.getTableBuilder().getRowValueIndex(insertBefore) < endIndex) {
-            Element next = insertBefore.getNextSiblingElement();
-            section.removeChild(insertBefore);
-            insertBefore = (next == null) ? null : next.<TableRowElement>cast();
-        }
-
-        // Add new child elements.
-        TableSectionElement newSection = convertToSectionElement(table, section.getTagName(), html);
-        Element newChild = newSection.getFirstChildElement();
-        while (newChild != null) {
-            Element next = newChild.getNextSiblingElement();
-            section.insertBefore(newChild, insertBefore);
-            newChild = next;
-        }
-
-          /*
-           * Reattach the section. If next section is null, the section will be
-           * appended instead.
-           */
         reattachSectionElement(parent, section, nextSection);
 
         // Detach the event listener.

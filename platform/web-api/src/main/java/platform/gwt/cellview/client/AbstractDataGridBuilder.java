@@ -22,9 +22,11 @@ import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.Cell.Context;
 import platform.gwt.cellview.client.cell.HasCell;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static java.lang.Math.min;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 
 /**
@@ -112,66 +114,57 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
     }
 
     @Override
-    public void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
+    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged) {
         //assertion that updateRanges is sorted
 
-        int valCount = values.size();
-
         int rowCount = tbodyElement.getChildCount();
-        if (rowCount > valCount) {
-            for (int i = rowCount - 1; i >= valCount; --i) {
+        if (rowCount > renderedRowCount) {
+            for (int i = rowCount - 1; i >= renderedRowCount; --i) {
                 tbodyElement.deleteRow(i);
             }
-            rowCount = valCount;
+            rowCount = renderedRowCount;
         }
 
         if (columnsChanged) {
             //rebuild rows if columns have been changed
             if (rowCount > 0) {
                 TableRowElement tr = tbodyElement.getFirstChild().cast();
-                rebuildRow(0, values.get(0), tr);
-                for (int i = 1; i < rowCount; ++i) {
+                rebuildRow(minRenderedRow, values.get(minRenderedRow), tr);
+                for (int i = minRenderedRow + 1; i < minRenderedRow + rowCount; ++i) {
                     tr = tr.getNextSibling().cast();
                     rebuildRow(i, values.get(i), tr);
                 }
             }
         } else {
-            //update changed rows
-            NodeList<TableRowElement> rows = tbodyElement.getRows();
-            for (Range range : updateRanges) {
-                if (range.start > rowCount) {
-                    break;
-                }
-                int end = min(rowCount, range.end);
-
-                int i = range.start;
-                if (i < end) {
-                    TableRowElement tr = rows.getItem(i);
-                    updateRow(i, values.get(i), columnsToRedraw, tr);
-                    for (++i; i < end; ++i) {
-                        tr = tr.getNextSibling().cast();
-                        updateRow(i, values.get(i), columnsToRedraw, tr);
-                    }
+            if (rowCount > 0) {
+                //update changed rows
+                NodeList<TableRowElement> rows = tbodyElement.getRows();
+                TableRowElement tr = rows.getItem(0);
+                updateRow(minRenderedRow, values.get(minRenderedRow), null, tr);
+                for (int i = minRenderedRow + 1; i < minRenderedRow + rowCount; ++i) {
+                    tr = tr.getNextSibling().cast();
+                    updateRow(i, values.get(i), null, tr);
                 }
             }
         }
 
         //build new rows
-        for (int i = rowCount; i < valCount; ++i) {
-            buildRow(tbodyElement, values.get(i), i);
+        for (int i = minRenderedRow + rowCount; i < minRenderedRow + renderedRowCount; ++i) {
+            buildRow(tbodyElement, i, values.get(i));
         }
     }
 
     private void rebuildRow(int rowIndex, T rowValue, TableRowElement tr) {
         removeAllChildren(tr);
+        tr.setAttribute(ROW_ATTRIBUTE, String.valueOf(rowIndex));
         buildRowImpl(rowIndex, rowValue, tr);
     }
 
-    private void buildRow(TableSectionElement tbodyElement, T rowValue, int rowIndex) {
-        TableRowElement rowElement = tbodyElement.insertRow(-1);
-        rowElement.setAttribute(ROW_ATTRIBUTE, String.valueOf(rowIndex));
+    private void buildRow(TableSectionElement tbodyElement, int rowIndex, T rowValue) {
+        TableRowElement tr = tbodyElement.insertRow(-1);
+        tr.setAttribute(ROW_ATTRIBUTE, String.valueOf(rowIndex));
 
-        buildRowImpl(rowIndex, rowValue, rowElement);
+        buildRowImpl(rowIndex, rowValue, tr);
     }
 
     /**
@@ -192,6 +185,7 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
      * @param tr
      */
     private void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
+        tr.setAttribute(ROW_ATTRIBUTE, String.valueOf(rowIndex));
         updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr);
     }
 

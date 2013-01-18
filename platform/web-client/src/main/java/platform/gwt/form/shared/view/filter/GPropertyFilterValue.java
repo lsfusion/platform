@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view.filter;
 
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.changes.dto.GFilterValueDTO;
 
 public class GPropertyFilterValue extends GFilterValue {
     public GPropertyDraw property;
@@ -11,7 +12,7 @@ public class GPropertyFilterValue extends GFilterValue {
     }
 
     @Override
-    public byte getTypeID() {
-        return 2;
+    public GFilterValueDTO getDTO() {
+        return new GFilterValueDTO(2, property.ID);
     }
 }

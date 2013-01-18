@@ -41,8 +41,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public GPropertyTable(GFormController iform, Resources resources) {
         super(resources);
 
-        addStyleName(getResources().style().dataGridWidget());
-
         this.form = iform;
 
         this.editDispatcher = new GEditPropertyDispatcher(form, this);
@@ -135,6 +133,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     private Element getCellParent(int row, int column) {
+        ensureCellRendered(row, column);
         TableCellElement td = getRowElement(row).getCells().getItem(column);
         return getCellParentElement(td);
     }
@@ -211,5 +210,14 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         setFocus(true);
         form.setCurrentEditingTable(null);
+    }
+
+    public GPropertyTableBuilder<T> getTableBuilder() {
+        return (GPropertyTableBuilder<T>) super.getTableBuilder();
+    }
+
+    protected void setCellHeight(int cellHeight) {
+        getTableBuilder().setCellHeight(cellHeight);
+        setRowHeight(cellHeight + 1); //1px for border
     }
 }

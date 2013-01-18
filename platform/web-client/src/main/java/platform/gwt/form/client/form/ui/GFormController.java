@@ -9,10 +9,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
@@ -309,8 +306,6 @@ public class GFormController extends SimplePanel {
             treeController.processFormChanges(fc);
         }
 
-        flushTables();
-
         formLayout.hideEmptyContainerViews();
         if (!fc.classViews.isEmpty() || needToResize) {
             totalResize();
@@ -318,15 +313,6 @@ public class GFormController extends SimplePanel {
 
         // в конце скроллим все таблицы к текущим ключам
         applyScrollPositions();
-    }
-
-    private void flushTables() {
-        for (GGroupObjectController controller : controllers.values()) {
-            controller.flushTable();
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.flushTree();
-        }
     }
 
     private void applyScrollPositions() {
@@ -672,7 +658,7 @@ public class GFormController extends SimplePanel {
     }
 
     private void applyCurrentFilters() {
-        List<GPropertyFilterDTO> filters = new ArrayList<GPropertyFilterDTO>();
+        ArrayList<GPropertyFilterDTO> filters = new ArrayList<GPropertyFilterDTO>();
 
         for (List<GPropertyFilter> groupFilters : currentFilters.values()) {
             for (GPropertyFilter filter : groupFilters) {

@@ -47,7 +47,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         this.valueView = valueView;
         this.property = property;
 
-        setRemoveKeyboardStylesOnFocusLost(true);
+        setRemoveKeyboardStylesOnBlur(true);
 
         setSize("100%", property.getMinimumHeight());
         setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
@@ -70,19 +70,24 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             public String getForeground(Object rowValue, int row, int column) {
                 return null;
             }
-
-            @Override
-            public Double getCellPixelHeight() {
-                return (double) GDataFilterValueViewTable.this.property.getMinimumPixelHeight();
-            }
         });
         setRowData(Arrays.asList(new Object()));
     }
 
     public void setProperty(GPropertyDraw property) {
         this.property = property;
+
+        int minimumPixelHeight = property.getMinimumPixelHeight();
+
         setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
         setHeight(property.getMinimumHeight());
+
+        setCellHeight(minimumPixelHeight);
+    }
+
+    private void setCellHeight(int cellHeight) {
+        ((GPropertyTableBuilder)getTableBuilder()).setCellHeight(cellHeight);
+        setRowHeight(cellHeight + 1); //1px for border
     }
 
     public Object getValue() {

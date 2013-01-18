@@ -36,7 +36,7 @@ import java.util.List;
  */
 public interface CellTableBuilder<T> {
 
-    void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged);
+    void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged);
 
     /**
      * Return the column containing an element.

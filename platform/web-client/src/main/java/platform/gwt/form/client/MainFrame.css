@@ -5,11 +5,7 @@ body, html, textarea, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt
 }
 
 body, html {
-    /* нужно для правильной работы drag-n-drop */
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    overflow: -moz-hidden-unscrollable;
+    margin: 0;
 }
 
 button::-moz-focus-inner {  /*Remove button padding in FF*/

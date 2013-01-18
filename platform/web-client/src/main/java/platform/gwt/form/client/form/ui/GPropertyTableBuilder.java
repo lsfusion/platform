@@ -6,12 +6,9 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import platform.gwt.cellview.client.AbstractDataGridBuilder;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
-import platform.gwt.cellview.client.Range;
 import platform.gwt.cellview.client.cell.Cell;
 
 import java.util.List;
-
-import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 /**
  * Based on platform.gwt.cellview.client.DefaultDataGridBuilder
@@ -25,7 +22,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private final String firstColumnStyle;
     private final String lastColumnStyle;
 
-    private Double cellHeight;
+    private int cellHeight = 16;
     private boolean updateCellHeight;
 
     public GPropertyTableBuilder(DataGrid table) {
@@ -43,16 +40,14 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void update(TableSectionElement tbodyElement, List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
-        Double newCellHeight = getCellPixelHeight();
-        if (!nullEquals(newCellHeight, cellHeight)) {
-            updateCellHeight = true;
-            cellHeight = newCellHeight;
-        } else {
-            updateCellHeight = false;
-        }
+    public void update(TableSectionElement tbodyElement, List<T> values, int minRenderedRow, int renderedRowCount, boolean columnsChanged) {
+        super.update(tbodyElement, values, minRenderedRow, renderedRowCount, columnsChanged);
+        updateCellHeight = false;
+    }
 
-        super.update(tbodyElement, values, updateRanges, columnsToRedraw, columnsChanged);
+    public void setCellHeight(int cellHeight) {
+        updateCellHeight = true;
+        this.cellHeight = cellHeight;
     }
 
     @Override
@@ -145,7 +140,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     private void updateTD(int rowIndex, T rowValue, TableCellElement td, int columnIndex, boolean updateCellHeight) {
-        if (updateCellHeight && cellHeight != null) {
+        if (updateCellHeight) {
             td.getStyle().setHeight(cellHeight, Style.Unit.PX);
             td.getStyle().setLineHeight(cellHeight, Style.Unit.PX);
         }
@@ -163,6 +158,5 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     public abstract String getBackground(T rowValue, int row, int column);
     public abstract String getForeground(T rowValue, int row, int column);
-    public abstract Double getCellPixelHeight();
 }
 

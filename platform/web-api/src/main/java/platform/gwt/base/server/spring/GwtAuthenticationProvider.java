@@ -1,6 +1,5 @@
 package platform.gwt.base.server.spring;
 
-
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.dao.SaltSource;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,5 +14,5 @@ public class GwtAuthenticationProvider extends DaoAuthenticationProvider {
                 return UserInfo.salt;
             }
         });
-    };
+    }
 }

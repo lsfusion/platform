@@ -36,14 +36,10 @@ public class GSinglePropertyTable extends GPropertyTable {
         this.property = iproperty;
         this.columnKey = columnKey;
 
-        setRemoveKeyboardStylesOnFocusLost(true);
+        setTableBuilder(new GSinglePropertyTableBuilder(this));
 
-        setTableBuilder(new GSinglePropertyTableBuilder(this) {
-            @Override
-            public Double getCellPixelHeight() {
-                return (double) property.getPreferredPixelHeight();
-            }
-        });
+        setCellHeight(property.getPreferredPixelHeight());
+        setRemoveKeyboardStylesOnBlur(true);
 
         getTableDataScroller().removeScrollbars();
 

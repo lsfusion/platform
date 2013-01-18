@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HTML;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.Header;
 import platform.gwt.cellview.client.cell.Cell;
@@ -35,8 +34,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected GGroupObjectValue oldKey = null;
     protected int oldRowScrollTop;
 
-    protected Double rowHeight = 0.0;
-
     public GGridSortableHeaderManager sortableHeaderManager;
 
     public interface GGridPropertyTableResource extends Resources {
@@ -51,14 +48,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GGridPropertyTable(GFormController iform) {
         super(iform, GGRID_RESOURCES);
 
-        setTableBuilder(new GGridPropertyTableBuilder<T>(this) {
-            @Override
-            public Double getCellPixelHeight() {
-                return getRowHeight();
-            }
-        });
-
-        setEmptyTableWidget(new HTML("The table is empty"));
+        setTableBuilder(new GGridPropertyTableBuilder<T>(this));
 
         setKeyboardSelectionHandler(new GridPropertyTableKeyboardSelectionHandler(this));
     }
@@ -112,10 +102,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return sortableHeaderManager.getSortDirection(getHeaderIndex(header));
     }
 
-    protected Double getRowHeight() {
-        return rowHeight;
-    }
-
     public abstract GGroupObjectValue getCurrentKey();
 
     void storeScrollPosition() {
@@ -123,7 +109,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
         if (selectedRecord != null) {
             oldKey = selectedRecord.getKey();
-            oldRowScrollTop = getChildElement(selectedRow).getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
+            TableRowElement childElement = getChildElement(selectedRow);
+            if (childElement != null) {
+                oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
+            }
         }
     }
 
@@ -133,14 +122,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if (needToRestoreScrollPosition && isRowWithinBounds(currentInd)) {
             // note: именно здесь происходит browser-flush, который обрабатывает все изменения,
             // которые произошли в доме после вызова flush() -> resolvePendingState()
-            TableRowElement currentRow = getChildElement(currentInd);
 
-            int rowHeight = currentRow.getOffsetHeight();
-            int rowTop = currentRow.getOffsetTop();
+            int rowHeight = getRowHeight();
+            int rowTop = rowHeight * currentInd;
             int rowBottom = rowTop + rowHeight;
 
-            int hScrollBarHeight = getTableDataScroller().getHorizontalScrollbar().asWidget().getOffsetHeight();
-            int scrollHeight = getTableDataScroller().getOffsetHeight() - hScrollBarHeight;
+            int scrollHeight = getTableDataScroller().getRealClientHeight();
             int verticalScrollPosition = getTableDataScroller().getVerticalScrollPosition();
 
             GGroupObjectValue currentKey = getCurrentKey();
@@ -158,7 +145,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 newVerticalScrollPosition = rowTop;
             }
 
-            getTableDataScroller().setVerticalScrollPosition(newVerticalScrollPosition);
+            setDesiredVerticalScrollPosition(newVerticalScrollPosition);
 
             oldKey = null;
             oldRowScrollTop = -1;

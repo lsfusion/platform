@@ -2,6 +2,11 @@ package platform.gwt.form.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -50,6 +55,8 @@ public class MainFrame implements EntryPoint {
         // inject global styles
         GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
 
+        hackForGwtDnd();
+
         formsController = new DefaultFormsController() {
             @Override
             public void executeNavigatorAction(GNavigatorAction action) {
@@ -92,6 +99,30 @@ public class MainFrame implements EntryPoint {
         HotkeyManager.get().install(RootPanel.get());
 
         initCommonWindows();
+    }
+
+    private void hackForGwtDnd() {
+        //gwt-dnd ориентируется на body.clientHeight для ограничения области перетаскивания
+        //поэтому приходится в явную проставлять размеры у <body>
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                updateBodyDimensions();
+            }
+        });
+        Window.addResizeHandler(new ResizeHandler() {
+            public void onResize(ResizeEvent event) {
+                updateBodyDimensions();
+            }
+        });
+
+//        DebugHelper.install();
+    }
+
+    private void updateBodyDimensions() {
+        Style bodyStyle = RootPanel.get().getElement().getStyle();
+        bodyStyle.setHeight(Window.getClientHeight(), Style.Unit.PX);
+        bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
     private void initCommonWindows() {

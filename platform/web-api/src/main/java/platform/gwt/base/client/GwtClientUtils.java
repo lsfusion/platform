@@ -127,6 +127,18 @@ public class GwtClientUtils {
         return getPageParameters().get(parameterName);
     }
 
+    public static int getIntPageParameter(String parameterName) {
+        return getIntPageParameter(parameterName, -1);
+    }
+
+    public static int getIntPageParameter(String parameterName, int defaultValue) {
+        try {
+            return Integer.parseInt(getPageParameters().get(parameterName));
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     public static void stopPropagation(NativeEvent event) {
         event.stopPropagation();
         event.preventDefault();

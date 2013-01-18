@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright 2010 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -30,8 +31,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import platform.gwt.cellview.client.cell.Cell;
@@ -40,6 +41,12 @@ import platform.gwt.cellview.client.cell.CellPreviewEvent;
 import platform.gwt.cellview.client.cell.HasCell;
 
 import java.util.*;
+
+import static com.google.gwt.dom.client.Style.OutlineStyle;
+import static com.google.gwt.dom.client.Style.Position;
+import static com.google.gwt.dom.client.TableCellElement.TAG_TD;
+import static com.google.gwt.dom.client.TableCellElement.TAG_TH;
+import static java.lang.Math.min;
 
 /**
  * Abstract base class for tabular views that supports paging and columns.
@@ -73,16 +80,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return DEFAULT_RESOURCES;
     }
 
-    /*
-     * The table specific {@link DataGridImpl}.
-     * NOT USED for now
-     */
-    private static DataGridImpl dataGridImpl;
-//    if (dataGridImpl == null) {
-//        dataGridImpl = GWT.create(DataGridImpl.class);
-//    }
-
-    private static int IGNORE_SCROLL_TIMEOUT = 80;
+    private static final int PAGE_INCREMENT = 30;
+    private static final int IGNORE_SCROLL_TIMEOUT = 80;
 
     /**
      * A ClientBundle that provides images for this widget.
@@ -219,459 +218,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * Represents the state of the presenter.
-     *
-     * @param <T> the data type of the presenter
-     */
-    private static interface State<T> {
-        /**
-         * Get the current keyboard selected row relative to page start. This value
-         * should never be negative.
-         */
-        int getKeyboardSelectedRow();
-
-        /**
-         * Get the total number of rows.
-         */
-        int getRowCount();
-
-        /**
-         * Get a specific value from the row data.
-         */
-        T getRowValue(int index);
-    }
-
-    /**
-     * Represents the state of the presenter.
-     *
-     * @param <T> the data type of the presenter
-     */
-    private static class DefaultState<T> implements State<T> {
-        int keyboardSelectedRow = 0;
-        final List<T> rowData = new ArrayList<T>();
-
-        public DefaultState() {
-        }
-
-        @Override
-        public int getKeyboardSelectedRow() {
-            return keyboardSelectedRow;
-        }
-
-        @Override
-        public int getRowCount() {
-            return rowData.size();
-        }
-
-        @Override
-        public T getRowValue(int index) {
-            return rowData.get(index);
-        }
-    }
-
-    /**
-     * Represents the pending state of the presenter.
-     *
-     * @param <T> the data type of the presenter
-     */
-    private static class PendingState<T> extends DefaultState<T> {
-        /**
-         * A boolean indicating that a change in keyboard selected should cause us
-         * to steal focus.
-         */
-        private boolean keyboardStealFocus = false;
-
-        /**
-         * The list of ranges that has to be redrawn.
-         */
-        private List<Range> rangesToRedraw = null;
-        private Set<Column> columnsToRedraw = null;
-        private boolean redrawAllColumns = false;
-
-        public PendingState(State<T> state) {
-            this.keyboardSelectedRow = state.getKeyboardSelectedRow();
-
-            int rowCount = state.getRowCount();
-            for (int i = 0; i < rowCount; i++) {
-                this.rowData.add(state.getRowValue(i));
-            }
-        }
-
-        private List<Range> createRangesToRedraw() {
-            if (rangesToRedraw == null) {
-                rangesToRedraw = new ArrayList<Range>();
-            }
-            return rangesToRedraw;
-        }
-
-        private Set<Column> createColumnsToRedraw() {
-            if (columnsToRedraw == null) {
-                columnsToRedraw = new HashSet<Column>();
-            }
-            return columnsToRedraw;
-        }
-
-        /**
-         * Update the range data to be redraw.
-         *
-         * @param start the start index
-         * @param end   the end index (excluded)
-         */
-        public void redrawRows(int start, int end) {
-            // merge ranges on insertion
-
-            if (createRangesToRedraw().size() == 0) {
-                rangesToRedraw.add(new Range(start, end));
-                return;
-            }
-
-            int rangeCnt = rangesToRedraw.size();
-
-            int startIndex;
-            for (startIndex = 0; startIndex < rangeCnt; ++startIndex) {
-                Range prevRange = rangesToRedraw.get(startIndex);
-                if (prevRange.start > start) {
-                    break;
-                }
-            }
-
-            if (startIndex > 0) {
-                //range previous range
-
-                //prevRange.start < start because of cycle break condition
-                Range prevRange = rangesToRedraw.get(startIndex - 1);
-                if (prevRange.end >= end) {
-                    //fully included to the bigger range
-                    return;
-                }
-
-                if (prevRange.end >= start) {
-                    //merge prevRange with this one
-                    rangeCnt--;
-                    startIndex--;
-                    rangesToRedraw.remove(startIndex);
-                    start = prevRange.start;
-                }
-            }
-
-            //merge following ranges
-            if (startIndex < rangeCnt) {
-                Range nextRange = rangesToRedraw.get(startIndex);
-                while (nextRange.start <= end) {
-                    rangeCnt--;
-                    rangesToRedraw.remove(startIndex);
-                    if (nextRange.end > end) {
-                        //extend current range and break if merged range is farther
-                        end = nextRange.end;
-                        break;
-                    }
-
-                    if (startIndex == rangeCnt) {
-                        break;
-                    }
-
-                    nextRange = rangesToRedraw.get(startIndex);
-                }
-            }
-
-            rangesToRedraw.add(startIndex, new Range(start, end));
-        }
-
-        public void redrawAllRows() {
-            createRangesToRedraw().clear();
-            redrawRows(0, rowData.size());
-        }
-
-        public boolean needRedraw() {
-            return rangesToRedraw != null && (redrawAllColumns || columnsToRedraw != null);
-        }
-
-        public void redrawColumns(Set<? extends Column> updatedColumns) {
-            if (!redrawAllColumns) {
-                createColumnsToRedraw().addAll(updatedColumns);
-            }
-        }
-
-        public void redrawAllColumns() {
-            redrawAllColumns = true;
-            columnsToRedraw = null;
-        }
-
-        public int[] getColumnsToRedraw(DataGrid thisGrid) {
-            if (redrawAllColumns) {
-                return null;
-            }
-
-            int[] columnsToRedrawIndices = new int[columnsToRedraw.size()];
-            if (columnsToRedraw != null) {
-                int i = 0;
-                for (Column column : columnsToRedraw) {
-                    columnsToRedrawIndices[i++] = thisGrid.getColumnIndex(column);
-                }
-            }
-            return columnsToRedrawIndices;
-        }
-    }
-
-    /**
-     * A simple widget wrapper around a table element.
-     */
-    private static class TableWidget extends Widget {
-        final TableColElement colgroup;
-        TableSectionElement section;
-        final TableElement tableElem;
-
-        public TableWidget() {
-            // Setup the table.
-            tableElem = Document.get().createTableElement();
-            tableElem.setCellSpacing(0);
-            tableElem.getStyle().setTableLayout(TableLayout.FIXED);
-            tableElem.getStyle().setWidth(100.0, Unit.PCT);
-            setElement(tableElem);
-
-            // Add the colgroup.
-            colgroup = tableElem.appendChild(Document.get().createColGroupElement());
-        }
-
-        /**
-         * Get the {@link TableColElement} at the specified index, creating it if
-         * necessary.
-         *
-         * @param index the column index
-         * @return the {@link TableColElement}
-         */
-        public TableColElement ensureTableColElement(int index) {
-            // Ensure that we have enough columns.
-            for (int i = colgroup.getChildCount(); i <= index; i++) {
-                colgroup.appendChild(Document.get().createColElement());
-            }
-            return colgroup.getChild(index).cast();
-        }
-
-        /**
-         * Hide columns that aren't used in the table.
-         *
-         * @param start the first unused column index
-         */
-        void hideUnusedColumns(int start) {
-            // Remove all col elements that appear after the last column.
-            int colCount = colgroup.getChildCount();
-            for (int i = start; i < colCount; i++) {
-                colgroup.removeChild(ensureTableColElement(start));
-            }
-        }
-    }
-
-    /**
-     * Default implementation of a keyboard navigation handler for tables that
-     * supports navigation between cells.
-     *
-     * @param <T> the data type of each row
-     */
-    public static class DataGridKeyboardSelectionHandler<T> implements CellPreviewEvent.Handler<T> {
-        /**
-         * The number of rows to jump when PAGE_UP or PAGE_DOWN
-         */
-        private static final int PAGE_INCREMENT = 30;
-
-        private final DataGrid<T> display;
-
-        /**
-         * Construct a new keyboard selection handler for the specified table.
-         *
-         * @param display the display being handled
-         */
-        public DataGridKeyboardSelectionHandler(DataGrid<T> display) {
-            this.display = display;
-        }
-
-        public DataGrid<T> getDisplay() {
-            return display;
-        }
-
-        @Override
-        public void onCellPreview(CellPreviewEvent<T> event) {
-            NativeEvent nativeEvent = event.getNativeEvent();
-            String eventType = event.getNativeEvent().getType();
-            if (BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
-                if (handleKeyEvent(event)) {
-                    handledEvent(event);
-                }
-            } else if (BrowserEvents.CLICK.equals(eventType) ||
-                    BrowserEvents.FOCUS.equals(eventType) ||
-                    (BrowserEvents.MOUSEDOWN.equals(eventType) && nativeEvent.getButton() == Event.BUTTON_RIGHT)) {
-                /*
-                 * Move keyboard focus to the clicked column, even if the cell is being
-                 * edited. Unlike key events, we aren't moving the currently selected
-                 * row, just updating it based on where the user clicked.
-                 *
-                 * Since the user clicked, allow focus to go to a non-interactive
-                 * column.
-                 */
-                int col = event.getColumn();
-                int row = event.getIndex();
-                if ((display.getKeyboardSelectedColumn() != col)
-                        || (display.getKeyboardSelectedRow() != row)) {
-                    boolean stealFocus = false;
-                    if (BrowserEvents.CLICK.equals(eventType)) {
-                        // If a natively focusable element was just clicked, then do not
-                        // steal focus.
-                        Element target = Element.as(event.getNativeEvent().getEventTarget());
-                        stealFocus = !CellBasedWidgetImpl.get().isFocusable(target);
-                    }
-
-                    display.setKeyboardSelectedRow(row, stealFocus);
-
-                    // Update the column index.
-                    display.setKeyboardSelectedColumn(col, stealFocus);
-                }
-
-                // Do not cancel the event as the click may have occurred on a Cell.
-            }
-        }
-
-        protected void handledEvent(CellPreviewEvent<?> event) {
-            event.setCanceled(true);
-            event.getNativeEvent().preventDefault();
-        }
-
-        public boolean handleKeyEvent(CellPreviewEvent<T> event) {
-            int keyCode = event.getNativeEvent().getKeyCode();
-            switch (keyCode) {
-                case KeyCodes.KEY_RIGHT:
-                    return nextColumn(true);
-                case KeyCodes.KEY_LEFT:
-                    return nextColumn(false);
-                case KeyCodes.KEY_DOWN:
-                    return nextRow(true);
-                case KeyCodes.KEY_UP:
-                    return nextRow(false);
-                case KeyCodes.KEY_PAGEDOWN:
-                    setKeyboardSelectedRow(display.getKeyboardSelectedRow() + PAGE_INCREMENT);
-                    return true;
-                case KeyCodes.KEY_PAGEUP:
-                    setKeyboardSelectedRow(display.getKeyboardSelectedRow() - PAGE_INCREMENT);
-                    return true;
-                case KeyCodes.KEY_HOME:
-                    setKeyboardSelectedRow(0);
-                    return true;
-                case KeyCodes.KEY_END:
-                    setKeyboardSelectedRow(display.getRowCount() - 1);
-                    return true;
-            }
-            return false;
-        }
-
-        private double lastScrollTime = 0;
-        private boolean nextRow(boolean down) {
-            int rowIndex = getDisplay().getKeyboardSelectedRow();
-
-            CustomScrollPanel scrollPanel = display.getTableDataScroller();
-            int scrollPosition = scrollPanel.getVerticalScrollPosition();
-            TableRowElement row = getDisplay().getRowElementNoFlush(rowIndex);
-            int rowTop = row.getOffsetTop();
-            int rowHeight = row.getOffsetHeight();
-
-            //scroll row into view
-            int newVerticalScrollPosition = -1;
-            if (down) {
-                int hScrollBarHeight = scrollPanel.getHorizontalScrollbar().asWidget().getOffsetHeight();
-                int scrollHeight = scrollPanel.getOffsetHeight() - hScrollBarHeight;
-                int newRowBottom = row.getOffsetTop() + rowHeight + rowHeight;
-
-                if (newRowBottom > scrollPosition + scrollHeight) {
-                    newVerticalScrollPosition = newRowBottom - scrollHeight;
-                }
-                ++rowIndex;
-            } else {
-                int newRowTop = rowTop - rowHeight;
-                if (newRowTop < scrollPosition) {
-                    newVerticalScrollPosition = newRowTop;
-                }
-                --rowIndex;
-            }
-
-            if (newVerticalScrollPosition != -1) {
-                double currentTime = Duration.currentTimeMillis();
-                //ignore key stroke, if we need to scroll too often
-                if (currentTime - lastScrollTime < IGNORE_SCROLL_TIMEOUT) {
-                    return true;
-                }
-                scrollPanel.setVerticalScrollPosition(newVerticalScrollPosition);
-                lastScrollTime = currentTime;
-            }
-
-            setKeyboardSelectedRow(rowIndex);
-
-            return true;
-        }
-
-        private boolean nextColumn(boolean forward) {
-            int oldRow = display.getKeyboardSelectedRow();
-            int oldColumn = display.getKeyboardSelectedColumn();
-            int nextColumn = findInteractiveColumn(oldColumn, forward);
-            if ((forward && nextColumn <= oldColumn) || (!forward && nextColumn >= oldColumn)) {
-                int newRow = forward ? oldRow + 1 : oldRow - 1;
-                display.setKeyboardSelectedRow(newRow);
-                if (display.getKeyboardSelectedRow() != oldRow) {
-                    // If the row didn't change, we are at the end of the table.
-                    display.setKeyboardSelectedColumn(nextColumn);
-                    return true;
-                }
-            } else {
-                display.setKeyboardSelectedColumn(nextColumn);
-                return true;
-            }
-            return false;
-        }
-
-        private void setKeyboardSelectedRow(int row) {
-            display.setKeyboardSelectedRow(row);
-        }
-
-        /**
-         * Find and return the index of the next interactive column. If no column is
-         * interactive, 0 is returned. If the start index is the only interactive
-         * column, it is returned.
-         *
-         * @param start   the start index, exclusive unless it is the only option
-         * @param forward true to do a forward search
-         * @return the interactive column index, or 0 if not interactive
-         */
-        private int findInteractiveColumn(int start, boolean forward) {
-            if (!display.isInteractive) {
-                return 0;
-            } else if (!forward) {
-                for (int i = start - 1; i >= 0; i--) {
-                    if (isColumnInteractive(display.getColumn(i))) {
-                        return i;
-                    }
-                }
-                // Wrap to the end.
-                for (int i = display.getColumnCount() - 1; i >= start; i--) {
-                    if (isColumnInteractive(display.getColumn(i))) {
-                        return i;
-                    }
-                }
-            } else {
-                for (int i = start + 1; i < display.getColumnCount(); i++) {
-                    if (isColumnInteractive(display.getColumn(i))) {
-                        return i;
-                    }
-                }
-                // Wrap to the start.
-                for (int i = 0; i <= start; i++) {
-                    if (isColumnInteractive(display.getColumn(i))) {
-                        return i;
-                    }
-                }
-            }
-            return 0;
-        }
-    }
-
-
-    /**
      * The current state of the presenter reflected in the view. We intentionally
      * use the interface, which only has getters, to ensure that we do not
      * accidently modify the current state.
@@ -698,10 +244,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     private Scheduler.ScheduledCommand pendingStateCommand;
 
-
-    private int tabIndex;
-    private char accessKey = 0;
-
     boolean isFocused;
 
     private final List<Column<T, ?>> columns = new ArrayList<Column<T, ?>>();
@@ -710,25 +252,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private boolean cellWasEditing;
     private boolean cellIsEditing;
 
-    /**
-     * Indicates that at least one column depends on selection.
-     */
-    private Widget emptyTableWidget;
-
-    private Widget loadingIndicator;
-
-    /**
-     * Indicates that at least one column is interactive.
-     */
-    private boolean isInteractive;
-
     private HandlerRegistration keyboardSelectionReg;
-    private int keyboardSelectedColumn = 0;
     /**
      * Indicates, that keyboard styles will be removed, when table loses focus
      */
-    private boolean removeKeyboardStylesOnFocusLost;
-
+    private boolean removeKeyboardStylesOnBlur = false;
 
     private final Resources resources;
     protected final Style style;
@@ -760,19 +288,30 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
     private CellTableBuilder<T> tableBuilder;
 
-    final TableWidget tableData;
-    final TableWidget tableFooter;
-    final TableWidget tableHeader;
-    private final FlexTable emptyTableWidgetContainer;
     private final HeaderPanel headerPanel;
-    private final FlexTable loadingIndicatorContainer;
+
+    private final TableWidget tableData;
     private final Element tableDataContainer;
     private final DataGridScrollPanel tableDataScroller;
+
+    private final FooterWidget tableFooter;
     private final SimplePanel tableFooterContainer;
     private final Element tableFooterScroller;
+
+    private final HeaderWidget tableHeader;
     private final SimplePanel tableHeaderContainer;
     private final Element tableHeaderScroller;
 
+    private int renderedRowCount = 0;
+    private int minRenderedRow = 0;
+
+    //focused cell indices local to table (aka real indices in rendered portion of the data)
+    int oldLocalSelectedRow = -1;
+    int oldLocalSelectedCol = -1;
+
+    double lastVerticalScrollTime = 0;
+
+    private int rowHeight = 16;
 
     /**
      * Constructs a table with the given page size.
@@ -798,14 +337,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * Constructs a table with the given page size, the specified {@link Style},
      * and the given key provider.
      *
-     * @param widget      the parent widget
-     * @param pageSize    the page size
-     * @param resources   the resources to apply to the widget
+     * @param widget    the parent widget
+     * @param pageSize  the page size
+     * @param resources the resources to apply to the widget
      */
     private DataGrid(Widget widget, Resources resources) {
         initWidget(widget);
 
-        this.state = new DefaultState<T>();
+        this.state = new State<T>();
 
         // Sink events.
         Set<String> eventTypes = new HashSet<String>();
@@ -828,13 +367,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         topOfSelectedCellStyle = style.dataGridTopOfKeyboardSelectedCell();
         rightOfSelectedCellStyle = style.dataGridRightOfKeyboardSelectedCell();
 
+        addStyleName(style.dataGridWidget());
+
         headerPanel = (HeaderPanel) getWidget();
 
         // Create the header and footer widgets..
-        tableHeader = new TableWidget();
-        tableHeader.section = tableHeader.tableElem.createTHead();
-        tableFooter = new TableWidget();
-        tableFooter.section = tableFooter.tableElem.createTFoot();
+        tableHeader = new HeaderWidget();
+        tableFooter = new FooterWidget();
 
         /*
          * Wrap the header and footer widgets in a div because we cannot set the
@@ -865,11 +404,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         // Create the body.
         tableData = new TableWidget();
-        if (tableData.tableElem.getTBodies().getLength() > 0) {
-            tableData.section = tableData.tableElem.getTBodies().getItem(0);
-        } else {
-            tableData.section = tableData.tableElem.appendChild(Document.get().createTBodyElement());
-        }
+
         tableDataScroller = new DataGridScrollPanel(tableData);
         tableDataScroller.setHeight("100%");
         headerPanel.setContentWidget(tableDataScroller);
@@ -886,26 +421,25 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         headerBuilder = new DefaultHeaderBuilder<T>(this, false);
         footerBuilder = new DefaultHeaderBuilder<T>(this, true);
 
-        /*
-         * Create the containers for the empty table message and loading indicator.
-         * The containers are centered tables that contain one cell, which aligns
-         * the widget in the center of the panel.
-         */
-        emptyTableWidgetContainer = new FlexTable();
-        emptyTableWidgetContainer.getElement().setAttribute("align", "center");
-        loadingIndicatorContainer = new FlexTable();
-        loadingIndicatorContainer.getElement().setAttribute("align", "center");
-
-        // Set the loading indicator.
-        setLoadingIndicator(loadingIndicator); // Can be null.
-
         // Synchronize the scroll positions of the three tables.
         tableDataScroller.addScrollHandler(new ScrollHandler() {
+            private Timer scrollTimer;
             @Override
             public void onScroll(ScrollEvent event) {
-                int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
-                tableHeaderScroller.setScrollLeft(scrollLeft);
-                tableFooterScroller.setScrollLeft(scrollLeft);
+                if (scrollTimer == null) {
+                    scrollTimer = new Timer() {
+                        @Override
+                        public void run() {
+                            int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
+                            tableHeaderScroller.setScrollLeft(scrollLeft);
+                            tableFooterScroller.setScrollLeft(scrollLeft);
+
+                            ensurePendingState();
+                            scrollTimer = null;
+                        }
+                    };
+                    scrollTimer.schedule(5);
+                }
             }
         });
 
@@ -916,49 +450,42 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     @Override
     public void onResize() {
         headerPanel.onResize();
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                ensurePendingState();
+            }
+        });
     }
 
-    /**
-     * Get the access key.
-     *
-     * @return the access key, or -1 if not set
-     * @see #setAccessKey(char)
-     */
-    public char getAccessKey() {
-        return accessKey;
+    public void setRowHeight(int rowHeight) {
+        this.rowHeight = rowHeight;
+        ensurePendingState();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see #getAccessKey()
-     */
+    public int getRowHeight() {
+        return rowHeight;
+    }
+
     @Override
     public void setAccessKey(char key) {
-        this.accessKey = key;
-        setKeyboardSelectedImpl(getKeyboardSelectedRow(), true, false);
     }
 
     @Override
     public void setTabIndex(int index) {
-        this.tabIndex = index;
-        setKeyboardSelectedImpl(getKeyboardSelectedRow(), true, false);
     }
 
     @Override
     public int getTabIndex() {
-        return tabIndex;
+        return 0;
     }
 
     @Override
     public void setFocus(boolean focused) {
-        Element elem = getKeyboardSelectedElement();
-        if (elem != null) {
-            if (focused) {
-                elem.focus();
-            } else {
-                elem.blur();
-            }
+        if (focused) {
+            getFocusHolderElement().focus();
+        } else {
+            getFocusHolderElement().blur();
         }
     }
 
@@ -1109,59 +636,75 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         TableSectionElement tbody = getTableBodyElement();
         TableSectionElement tfoot = getTableFootElement();
         TableSectionElement thead = getTableHeadElement();
-        TableSectionElement targetTableSection = null;
-        TableCellElement targetTableCell = null;
+
         Element cellParent = null;
         Element headerParent = null;
         Element footerParent = null;
 
-        Element maybeTableCell = null;
-        Element cur = target;
-        while (cur != null && targetTableSection == null) {
-            /*
-             * Found the table section. Return the most recent cell element that we
-             * discovered.
-             */
-            if (cur == tbody || cur == tfoot || cur == thead) {
-                targetTableSection = cur.cast(); // We found the table section.
-                if (maybeTableCell != null) {
-                    targetTableCell = maybeTableCell.cast();
-                    break;
+        TableSectionElement targetTableSection = null;
+        TableCellElement targetTableCell = null;
+
+        if (target == getFocusHolderElement()) {
+            // forward events bubbled on table container to current cell,
+            // but don't forward blur or focus events on the container itself
+            if (!BrowserEvents.BLUR.equals(event.getType()) && !BrowserEvents.FOCUS.equals(event.getType())) {
+                targetTableSection = tbody;
+
+                ensureCellRendered(getKeyboardSelectedRow(), getKeyboardSelectedColumn());
+
+                targetTableCell = getKeyboardSelectedTableCellElement();
+                if (targetTableCell != null) {
+                    cellParent = targetTableCell.getFirstChildElement();
                 }
             }
+        } else {
+            Element maybeTableCell = null;
+            Element cur = target;
+            while (cur != null && targetTableSection == null) {
+                /*
+                 * Found the table section. Return the most recent cell element that we
+                 * discovered.
+                 */
+                if (cur == tbody || cur == tfoot || cur == thead) {
+                    targetTableSection = cur.cast(); // We found the table section.
+                    if (maybeTableCell != null) {
+                        targetTableCell = maybeTableCell.cast();
+                        break;
+                    }
+                }
 
-            // Look for a table cell.
-            String tagName = cur.getTagName();
-            if (TableCellElement.TAG_TD.equalsIgnoreCase(tagName)
-                    || TableCellElement.TAG_TH.equalsIgnoreCase(tagName)) {
-              /*
-               * Found a table cell, but we can't return yet because it may be part
-               * of a sub table within the a CellTable cell.
-               */
-                maybeTableCell = cur;
-            }
+                // Look for a table cell.
+                String tagName = cur.getTagName();
+                if (TAG_TD.equalsIgnoreCase(tagName) || TAG_TH.equalsIgnoreCase(tagName)) {
+                  /*
+                   * Found a table cell, but we can't return yet because it may be part
+                   * of a sub table within the a CellTable cell.
+                   */
+                    maybeTableCell = cur;
+                }
 
-            // Look for the most immediate cell parent if not already found.
-            if (cellParent == null && tableBuilder.isColumn(cur)) {
-                cellParent = cur;
-            }
+                // Look for the most immediate cell parent if not already found.
+                if (cellParent == null && tableBuilder.isColumn(cur)) {
+                    cellParent = cur;
+                }
 
-            /*
-             * Look for the most immediate header parent if not already found. Its
-             * possible that the footer or header will mistakenly identify a header
-             * from the other section, so we remember both. When we eventually reach
-             * the target table section element, we'll know for sure if its a header
-             * of footer.
-             */
-            if (headerParent == null && headerBuilder.isHeader(cur)) {
-                headerParent = cur;
-            }
-            if (footerParent == null && footerBuilder.isHeader(cur)) {
-                footerParent = cur;
-            }
+                /*
+                 * Look for the most immediate header parent if not already found. Its
+                 * possible that the footer or header will mistakenly identify a header
+                 * from the other section, so we remember both. When we eventually reach
+                 * the target table section element, we'll know for sure if its a header
+                 * of footer.
+                 */
+                if (headerParent == null && headerBuilder.isHeader(cur)) {
+                    headerParent = cur;
+                }
+                if (footerParent == null && footerBuilder.isHeader(cur)) {
+                    footerParent = cur;
+                }
 
-            // Iterate.
-            cur = cur.getParentElement();
+                // Iterate.
+                cur = cur.getParentElement();
+            }
         }
 
         if (targetTableCell == null) {
@@ -1190,17 +733,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 }
             }
         } else if (targetTableSection == tbody) {
-          /*
-           * Get the row index of the data value. This may not correspond to the DOM
-           * row index if the user specifies multiple table rows per row object.
-           */
-            int row = tableBuilder.getRowValueIndex(targetTableRow);
 
-            // If the event causes us to page, then the physical index will be out
-            // of bounds of the underlying data.
-            if (!isRowWithinBounds(row)) {
-                return;
-            }
+            int row = tableBuilder.getRowValueIndex(targetTableRow);
 
           /*
            * Fire a preview event. The preview event is fired even if the TD does
@@ -1209,17 +743,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
            */
             T value = getRowValue(row);
 
-          /*
-           * Create a new context based on the dom column index instead of using the
-           * user provided one from TableBuilder. We trigger cell preview events for
-           * table cells even if there is no associated Cell instance. If we used
-           * the user provided context, we could get inconsistent states where the
-           * Context is sometimes user provided and sometimes generated based on the
-           * DOM column index.
-           */
             Context context = new Context(row, col, value);
-            CellPreviewEvent<T> previewEvent =
-                    CellPreviewEvent.fire(this, event, this, context, value, cellIsEditing);
+            CellPreviewEvent<T> previewEvent = CellPreviewEvent.fire(this, event, this, context, value, cellIsEditing);
 
             // Pass the event to the cell.
             if (cellParent != null && !previewEvent.isCanceled()) {
@@ -1285,6 +810,33 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return row >= 0 && row < getRowCount();
     }
 
+    /**
+     * Checks that the row is currently rendered in the table
+     *
+     * @param row row index to check
+     * @return true if row is rendered, false if not
+     */
+    protected boolean isRowRendered(int row) {
+        return row >= minRenderedRow && row < minRenderedRow + renderedRowCount;
+    }
+
+    /**
+     * Scrolls to row and renders it
+     */
+    protected void ensureCellRendered(int row, int column) {
+        if (!isRowRendered(row)) {
+            int newScrollTop;
+            if (row < minRenderedRow) {
+                newScrollTop = row * rowHeight;
+            } else {
+                int rowBottom = row *rowHeight + rowHeight;
+                newScrollTop = rowBottom - getTableDataScroller().getRealClientHeight();
+            }
+
+            updateTableData(state.rowData, true, false, newScrollTop, row, column);
+        }
+    }
+
     @Override
     protected void onUnload() {
         isFocused = false;
@@ -1297,17 +849,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @param elem      the element
      * @param focusable true to make focusable, false to make unfocusable
      */
-    protected void setFocusable(Element elem, boolean focusable) {
+    protected static void setFocusable(Element elem, boolean focusable) {
         if (focusable) {
             FocusImpl focusImpl = FocusImpl.getFocusImplForWidget();
             com.google.gwt.user.client.Element rowElem = elem.cast();
-            focusImpl.setTabIndex(rowElem, getTabIndex());
-            if (accessKey != 0) {
-                focusImpl.setAccessKey(rowElem, accessKey);
-            }
+            focusImpl.setTabIndex(rowElem, 0);
         } else {
-            // Chrome: Elements remain focusable after removing the tabIndex, so set
-            // it to -1 first.
+            // Chrome: Elements remain focusable after removing the tabIndex, so set it to -1 first.
             elem.setTabIndex(-1);
             elem.removeAttribute("tabIndex");
             elem.removeAttribute("accessKey");
@@ -1438,14 +986,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
 
         // Increment the keyboard selected column.
-        if (beforeIndex <= keyboardSelectedColumn) {
-            keyboardSelectedColumn = Math.min(keyboardSelectedColumn + 1, columns.size() - 1);
-        }
-
-        // Move the keyboard selected column if the current column is not
-        // interactive.
-        if (isColumnInteractive(col) && ((keyboardSelectedColumn >= columns.size()) || !isColumnInteractive(columns.get(keyboardSelectedColumn)))) {
-            keyboardSelectedColumn = beforeIndex;
+        int selectedColumn = getKeyboardSelectedColumn();
+        if (beforeIndex <= selectedColumn) {
+            ensurePendingState().keyboardSelectedColumn = min(selectedColumn + 1, columns.size() - 1);
         }
 
         // Sink events used by the new column.
@@ -1480,10 +1023,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             return;
         }
 
-        if (oldIndex == keyboardSelectedColumn) {
-            keyboardSelectedColumn = newIndex;
-        } else if (oldIndex < keyboardSelectedColumn && keyboardSelectedColumn > 0) {
-            keyboardSelectedColumn--;
+        int selectedColumn = getKeyboardSelectedColumn();
+        if (oldIndex == selectedColumn) {
+            ensurePendingState().keyboardSelectedColumn = newIndex;
+        } else if (oldIndex < selectedColumn && selectedColumn > 0) {
+            ensurePendingState().keyboardSelectedColumn--;
         }
 
         Column<T, ?> column = columns.remove(oldIndex);
@@ -1531,9 +1075,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             setNonNullHeadersCount(nonNullHeadersCount - 1);
         }
 
+        int selectedColumn = getKeyboardSelectedColumn();
         // Decrement the keyboard selected column.
-        if (index <= keyboardSelectedColumn && keyboardSelectedColumn > 0) {
-            keyboardSelectedColumn--;
+        if (index <= selectedColumn && selectedColumn > 0) {
+            ensurePendingState().keyboardSelectedColumn = selectedColumn - 1;
         }
 
         // Redraw the table asynchronously.
@@ -1583,15 +1128,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return columnWidths.get(column);
     }
 
-    /**
-     * Get the widget displayed when the table has no rows.
-     *
-     * @return the empty table widget
-     */
-    public Widget getEmptyTableWidget() {
-        return emptyTableWidget;
-    }
-
     public CellTableBuilder<T> getTableBuilder() {
         return tableBuilder;
     }
@@ -1609,16 +1145,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private void refreshColumnsAndRedraw() {
         columnsChanged = true;
         redraw();
-    }
-
-    /**
-     * Set the widget to display when the data is loading.
-     *
-     * @param widget the loading indicator, or null to disable
-     */
-    public void setLoadingIndicator(Widget widget) {
-        loadingIndicatorContainer.setWidget(0, 0, widget);
-        loadingIndicator = widget;
     }
 
     /**
@@ -1674,16 +1200,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      * @return the currently selected column, or -1 if none selected
      */
     public int getKeyboardSelectedColumn() {
-        return keyboardSelectedColumn;
-    }
-
-    /**
-     * Get the widget displayed when the data is loading.
-     *
-     * @return the loading indicator
-     */
-    public Widget getLoadingIndicator() {
-        return loadingIndicator;
+        return getCurrentState().keyboardSelectedColumn;
     }
 
     /**
@@ -1704,15 +1221,32 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     public TableRowElement getRowElement(int row) {
         flush();
-        return getChildElement(row);
+        return getRowElementNoFlush(row);
     }
 
-    public boolean isRemoveKeyboardStylesOnFocusLost() {
-        return removeKeyboardStylesOnFocusLost;
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>
+     * The row element may not be the same as the TR element at the specified
+     * index if some row values are rendered with additional rows.
+     * </p>
+     *
+     * @param row the row index, relative to the page start
+     * @return the row element, or null if it doesn't exists
+     * @throws IndexOutOfBoundsException if the row index is outside of the
+     *                                   current page
+     */
+    protected TableRowElement getChildElement(int row) {
+        return getRowElementNoFlush(row);
     }
 
-    public void setRemoveKeyboardStylesOnFocusLost(boolean removeKeyboardStylesOnFocusLost) {
-        this.removeKeyboardStylesOnFocusLost = removeKeyboardStylesOnFocusLost;
+    public boolean isRemoveKeyboardStylesOnBlur() {
+        return removeKeyboardStylesOnBlur;
+    }
+
+    public void setRemoveKeyboardStylesOnBlur(boolean removeKeyboardStylesOnBlur) {
+        this.removeKeyboardStylesOnBlur = removeKeyboardStylesOnBlur;
     }
 
     /**
@@ -1742,16 +1276,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * Set the widget to display when the table has no rows.
-     *
-     * @param widget the empty table widget, or null to disable
-     */
-    public void setEmptyTableWidget(Widget widget) {
-        emptyTableWidgetContainer.setWidget(0, 0, widget);
-        this.emptyTableWidget = widget;
-    }
-
-    /**
      * Set the {@link HeaderBuilder} used to build the footer section of the
      * table.
      */
@@ -1769,52 +1293,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         assert builder != null : "builder cannot be null";
         this.headerBuilder = builder;
         refreshColumnsAndRedraw();
-    }
-
-    /**
-     * Set the keyboard selected row. The row index is the index relative to the
-     * current page start index.
-     *
-     * <p>
-     * If keyboard selection is disabled, this method does nothing.
-     * </p>
-     *
-     * <p>
-     * If the keyboard selected row is outside of the range of the current page
-     * (that is, less than 0 or greater than or equal to the page size), the page
-     * or range will be adjusted depending on the keyboard paging policy. If the
-     * keyboard paging policy is limited to the current range, the row index will
-     * be clipped to the current page.
-     * </p>
-     *
-     * @param row the row index relative to the page start
-     */
-    public final void setKeyboardSelectedRow(int row) {
-        setKeyboardSelectedRow(row, true);
-    }
-
-    /**
-     * Set the row index of the keyboard selected element.
-     *
-     * @param row       the row index
-     * @param stealFocus  true to steal focus
-     */
-    public void setKeyboardSelectedRow(int row, boolean stealFocus) {
-        if (stealFocus) {
-            ensurePendingState().keyboardStealFocus = stealFocus;
-        }
-
-        /*
-         * Early exit if the keyboard selected row has not changed and the keyboard
-         * selected value is already set.
-         */
-        if (!isRowWithinBounds(row) || getKeyboardSelectedRow() == row) {
-            return;
-        }
-
-        ensurePendingState().keyboardSelectedRow = row;
-
-        KeyboardRowChangedEvent.fire(this);
     }
 
     /**
@@ -1847,10 +1325,76 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     public void setKeyboardSelectedColumn(int column, boolean stealFocus) {
         assert column >= 0 : "Column must be zero or greater";
 
-        this.keyboardSelectedColumn = column;
+        if (getKeyboardSelectedColumn() == column) {
+            return;
+        }
+
+        if (column < 0) {
+            column = 0;
+        } else {
+            int columnCount = getColumnCount();
+            if (column >= columnCount) {
+                column = columnCount - 1;
+            }
+        }
+
+        ensurePendingState().keyboardSelectedColumn = column;
 
         // Reselect the row to move the selected column.
         setKeyboardSelectedRow(getKeyboardSelectedRow(), stealFocus);
+    }
+
+    /**
+     * Set the keyboard selected row. The row index is the index relative to the
+     * current page start index.
+     *
+     * <p>
+     * If keyboard selection is disabled, this method does nothing.
+     * </p>
+     *
+     * <p>
+     * If the keyboard selected row is outside of the range of the current page
+     * (that is, less than 0 or greater than or equal to the page size), the page
+     * or range will be adjusted depending on the keyboard paging policy. If the
+     * keyboard paging policy is limited to the current range, the row index will
+     * be clipped to the current page.
+     * </p>
+     *
+     * @param row the row index relative to the page start
+     */
+    public final void setKeyboardSelectedRow(int row) {
+        setKeyboardSelectedRow(row, true);
+    }
+
+    /**
+     * Set the row index of the keyboard selected element.
+     *
+     * @param row        the row index
+     * @param stealFocus true to steal focus
+     */
+    public void setKeyboardSelectedRow(int row, boolean stealFocus) {
+        if (stealFocus) {
+            ensurePendingState().keyboardStealFocus = stealFocus;
+        }
+
+        int rowCount = getRowCount();
+        if (rowCount == 0 || getKeyboardSelectedRow() == row) {
+            return;
+        }
+
+        if (row < 0) {
+            row = 0;
+        } else if (row >= rowCount) {
+            row = rowCount - 1;
+        }
+
+        ensurePendingState().keyboardSelectedRow = row;
+
+        KeyboardRowChangedEvent.fire(this);
+    }
+
+    protected void setDesiredVerticalScrollPosition(int newVerticalScrollPosition) {
+        ensurePendingState().desiredVerticalScrollPosition = newVerticalScrollPosition;
     }
 
     /**
@@ -1918,188 +1462,49 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * {@inheritDoc}
-     * <p/>
-     * <p>
-     * The row element may not be the same as the TR element at the specified
-     * index if some row values are rendered with additional rows.
-     * </p>
-     *
-     * @param row the row index, relative to the page start
-     * @return the row element, or null if it doesn't exists
-     * @throws IndexOutOfBoundsException if the row index is outside of the
-     *                                   current page
-     */
-    protected TableRowElement getChildElement(int row) {
-        return getRowElementNoFlush(row);
-    }
-
-    /**
      * Get a row element given the index of the row value.
      *
      * @param row the absolute row value index
      * @return the row element, or null if not found
      */
     private TableRowElement getRowElementNoFlush(int row) {
-        if (!isRowWithinBounds(row)) {
+        if (!isRowRendered(row)) {
             return null;
         }
 
-        /*
-         * In most tables, the row element that represents the row object at the
-         * specified index will be at the same index in the DOM. However, if the
-         * user provides a TableBuilder that renders multiple rows per row value,
-         * that will not be the case.
-         *
-         * We use a binary search to find the row, but we start at the index as that
-         * is the most likely location.
-         */
-        NodeList<TableRowElement> rows = getTableBodyElement().getRows();
-        int rowCount = rows.getLength();
-        if (rowCount == 0) {
-            return null;
-        }
-
-        int frameStart = 0;
-        int frameEnd = rowCount - 1;
-        int domIndex = Math.min(row, frameEnd);
-        while (domIndex >= frameStart && domIndex <= frameEnd) {
-            TableRowElement curRow = rows.getItem(domIndex);
-            int rowValueIndex = tableBuilder.getRowValueIndex(curRow);
-            if (rowValueIndex == row) {
-                return curRow;
-            } else if (rowValueIndex > row) {
-                // Shift the frame to lower indexes.
-                frameEnd = domIndex - 1;
-            } else {
-                // Shift the frame to higher indexes.
-                frameStart = domIndex + 1;
-            }
-
-            // Move the dom index.
-            domIndex = (frameStart + frameEnd) / 2;
-        }
-
-        // The element wasn't found.
-        return null;
+        return getTableBodyElement().getRows().getItem(row - minRenderedRow);
     }
 
-    protected Element getKeyboardSelectedElement() {
+    private Element getKeyboardSelectedElement() {
         return getCellParentElement(getKeyboardSelectedTableCellElement());
     }
 
     protected final TableSectionElement getTableBodyElement() {
-        return tableData.section;
+        return tableData.getSection();
     }
 
     protected final TableSectionElement getTableFootElement() {
-        return tableFooter.section;
+        return tableFooter.getSection();
     }
 
     protected final TableSectionElement getTableHeadElement() {
-        return tableHeader.section;
+        return tableHeader.getSection();
     }
 
     public DataGridScrollPanel getTableDataScroller() {
         return tableDataScroller;
     }
 
-    protected void onBlur() {
-        TableCellElement td = getKeyboardSelectedTableCellElement();
-        if (td != null) {
-            TableRowElement tr = td.getParentElement().cast();
-            setRowStyleName(tr, rowStyle, rowCellStyle, !isRemoveKeyboardStylesOnFocusLost());
-
-            setFocusedCellStyles(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), tr, td, false);
-        }
-    }
-
     protected void onFocus() {
-        TableCellElement td = getKeyboardSelectedTableCellElement();
-        if (td != null) {
-            TableRowElement tr = td.getParentElement().cast();
-            setRowStyleName(tr, rowStyle, rowCellStyle, true);
-
-            setFocusedCellStyles(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), tr, td, true);
-        }
+        updateSelectedRowStyles();
     }
 
-    protected boolean resetFocusOnCell() {
-        Element elem = getKeyboardSelectedElement();
-        if (elem == null) {
-            // There is no selected element.
-            return false;
-        }
-
-        int row = getKeyboardSelectedRow();
-        int col = getKeyboardSelectedColumn();
-        T value = getRowValue(row);
-        Context context = new Context(row, col, value);
-        HasCell<T, ?> column = tableBuilder.getColumn(context, value, elem);
-        return column != null && resetFocusOnCellImpl(context, value, column, elem);
+    protected void onBlur() {
+        updateSelectedRowStyles();
     }
 
-    private void setKeyboardSelectedImpl(int row, boolean selected, boolean stealFocus) {
-        if (!isRowWithinBounds(row)) {
-            return;
-        }
-
-        // Deselect the row.
-        TableRowElement tr = getRowElementNoFlush(row);
-        if (tr == null) {
-            // The row does not exist.
-            return;
-        }
-
-        boolean focused = isFocused || stealFocus;
-
-        boolean rowSelected = selected && (isFocused || !isRemoveKeyboardStylesOnFocusLost());
-        setRowStyleName(tr, rowStyle, rowCellStyle, rowSelected);
-
-        NodeList<TableCellElement> cells = tr.getCells();
-        int cellCount = cells.getLength();
-        int keyboardColumn = Math.min(getKeyboardSelectedColumn(), cellCount - 1);
-        for (int column = 0; column < cellCount; column++) {
-            TableCellElement td = cells.getItem(column);
-            boolean isKeyboardSelected = (column == keyboardColumn);
-            boolean isLastColumn = (column == cellCount - 1);
-
-            // Update the selected style.
-            boolean isFocusedCell = focused && selected && isKeyboardSelected;
-
-            setFocusedCellStyles(row, column, tr, td, isFocusedCell);
-
-            // Mark as focusable.
-            final Element focusable = getCellParentElement(td);
-            setFocusable(focusable, selected && isKeyboardSelected);
-
-            // Move focus to the cell.
-            if (selected && stealFocus && !cellIsEditing && isKeyboardSelected) {
-                CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                        focusable.focus();
-                    }
-                });
-            }
-        }
-    }
-
-    private void setFocusedCellStyles(int row, int column, TableRowElement tr, TableCellElement td, boolean focused) {
-        int cellCount = tr.getCells().getLength();
-
-        setStyleName(td, selectedCellStyle, focused && column != cellCount - 1);
-        setStyleName(td, lastSelectedCellStyle, focused && column == cellCount - 1);
-
-        if (row > 0) {
-            TableCellElement topTD = getRowElementNoFlush(row - 1).getCells().getItem(column);
-            setStyleName(topTD, topOfSelectedCellStyle, focused);
-        }
-
-        if (column < cellCount - 1) {
-            TableCellElement rightTD = tr.getCells().getItem(column + 1);
-            setStyleName(rightTD, rightOfSelectedCellStyle, focused);
-        }
+    private DivElement getFocusHolderElement() {
+        return tableData.containerElement;
     }
 
     /**
@@ -2195,14 +1600,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         // Do not use getRowElement() because that will flush the presenter.
         int rowIndex = getKeyboardSelectedRow();
-        if (rowIndex < 0 || rowIndex >= getTableBodyElement().getRows().getLength()) {
-            return null;
-        }
         TableRowElement tr = getRowElementNoFlush(rowIndex);
         if (tr != null) {
             int cellCount = tr.getCells().getLength();
             if (cellCount > 0) {
-                int column = Math.min(colIndex, cellCount - 1);
+                int column = min(colIndex, cellCount - 1);
                 return tr.getCells().getItem(column);
             }
         }
@@ -2300,8 +1702,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * Check whether or not the data set is empty. That is, the row count is
-     * exactly 0.
+     * Check whether or not the data set is empty. That is, the row count is exactly 0.
      *
      * @return true if data set is empty
      */
@@ -2404,8 +1805,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         state = pendingState;
         pendingState = null;
 
-        updateEmptyTableWidget();
-
         /*
          * Push changes to the view.
          */
@@ -2416,44 +1815,34 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
             boolean wasFocused = isFocused;
 
-            if (newState.needRedraw()) {
-                // Removing elements can fire a blur event, which we ignore.
-                isRefreshing = true;
+            isRefreshing = true;
 
-                int[] columnsToRedraw = newState.getColumnsToRedraw(this);
-
-                updateCells(newState.rowData, newState.rangesToRedraw, columnsToRedraw, columnsChanged);
-
-                isRefreshing = false;
+            int newSelectedRow = newState.keyboardSelectedRow;
+            int newSelectedColumn = newState.keyboardSelectedColumn;
+            if (newSelectedRow != oldState.keyboardSelectedRow || newSelectedColumn != oldState.keyboardSelectedColumn) {
+                updateTableData(newState.rowData, newState.needRedraw(), columnsChanged, newState.desiredVerticalScrollPosition, newSelectedRow, newSelectedColumn);
+            } else {
+                updateTableData(newState.rowData, newState.needRedraw(), columnsChanged, newState.desiredVerticalScrollPosition, -1, -1);
             }
+
+            isRefreshing = false;
 
             if (columnsChanged || headersChanged) {
                 updateHeadersImpl(columnsChanged);
             }
 
             if (columnsChanged) {
-                coalesceCellProperties();
                 refreshColumnWidths();
             }
 
             headersChanged = false;
             columnsChanged = false;
 
-            int rowCount = newState.getRowCount();
-
-            // Update the keyboard selected rows without redrawing.
-            // Deselect the old keyboard row.
-            int oldSelectedRow = oldState.getKeyboardSelectedRow();
-            if (oldSelectedRow >= 0 && oldSelectedRow < rowCount) {
-                setKeyboardSelectedImpl(oldSelectedRow, false, false);
+            if (stealFocus && !cellIsEditing) {
+                setFocus(true);
             }
 
-            // Select the new keyboard row.
-            int newSelectedRow = newState.getKeyboardSelectedRow();
-            if (newSelectedRow >= 0 && newSelectedRow < rowCount) {
-                isFocused = isFocused || stealFocus;
-                setKeyboardSelectedImpl(newSelectedRow, true, stealFocus);
-            }
+            updateSelectedRowStyles();
 
             resetFocus(wasFocused);
         } finally {
@@ -2466,46 +1855,138 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
     }
 
-    private void updateEmptyTableWidget() {
-        if (getRowCount() == 0) {
-            tableDataScroller.setWidget(emptyTableWidgetContainer);
-        } else {
-            tableDataScroller.setWidget(tableData);
+    private void updateTableData(List<T> values, boolean dataChanged, boolean columnsChanged, int scrollTop, int rowToShow, int colToShow) {
+        int rowCount = values.size();
+        int colCount = getColumnCount();
+
+        int scrollBarHeight = tableDataScroller.getHorizontalScrollbarHeight();
+        int scrollHeight = tableDataScroller.getClientHeight() - scrollBarHeight;
+        int scrollWidth = tableDataScroller.getClientWidth();
+
+        int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
+        int currentScrollTop = tableDataScroller.getVerticalScrollPosition();
+
+        int tableHeight = rowCount * rowHeight + scrollBarHeight;
+        int tableWidth = tableData.tableElement.getOffsetWidth();
+
+        if (scrollTop < 0 || scrollTop >= tableHeight - scrollHeight) {
+            scrollTop = currentScrollTop;
+        }
+
+        //scroll row to visible if needed
+        if (rowToShow >=0 && rowToShow < rowCount) {
+            int rowTop = rowHeight * rowToShow;
+            int rowBottom = rowTop + rowHeight;
+            if (rowBottom >= scrollTop + scrollHeight) {
+                scrollTop = rowBottom - scrollHeight;
+            }
+
+            if (rowTop < scrollTop) {
+                scrollTop = rowTop;
+            }
+        }
+
+        //scroll column to visible if needed
+        int scrollLeft = currentScrollLeft;
+        if (colToShow >=0 && colToShow < colCount && renderedRowCount > 0) {
+            TableRowElement tr = tableData.tableElement.getRows().getItem(0);
+            TableCellElement td = tr.getCells().getItem(colToShow);
+
+            int columnLeft = td.getOffsetLeft();
+            int columnRight = columnLeft + td.getOffsetWidth();
+            if (columnRight >= scrollLeft + scrollWidth) {
+                scrollLeft = columnRight - scrollWidth;
+            }
+
+            if (columnLeft < scrollLeft) {
+                scrollLeft = columnLeft;
+            }
+        }
+
+        int scrollBottom = scrollTop + scrollHeight;
+        int newBottomRowCount = scrollBottom / rowHeight;
+        if (newBottomRowCount * rowHeight != scrollBottom) {
+            newBottomRowCount++;
+        }
+
+        if (newBottomRowCount > rowCount) {
+            newBottomRowCount = rowCount;
+        }
+
+        int newMinRenderedRow = scrollTop / rowHeight ;
+        int newRenderedRowCnt = newBottomRowCount - newMinRenderedRow;
+        int newTableTop = newMinRenderedRow * rowHeight;
+
+        tableData.update(newTableTop, tableHeight, tableWidth);
+
+        if (scrollTop != currentScrollTop) {
+            tableDataScroller.setVerticalScrollPosition(scrollTop);
+            lastVerticalScrollTime = Duration.currentTimeMillis();
+        }
+        if (scrollLeft != currentScrollLeft) {
+            tableDataScroller.setHorizontalScrollPosition(scrollLeft);
+        }
+
+        if (dataChanged || columnsChanged || minRenderedRow != newMinRenderedRow || renderedRowCount != newRenderedRowCnt) {
+            tableBuilder.update(tableData.getSection(), values, newMinRenderedRow, newRenderedRowCnt, columnsChanged);
+            minRenderedRow = newMinRenderedRow;
+            renderedRowCount = newRenderedRowCnt;
         }
     }
 
-    private void updateCells(List<T> values, List<Range> updateRanges, int[] columnsToRedraw, boolean columnsChanged) {
-        // If the widget is not attached, attach an event listener so we can catch
-        // synchronous load events from cached images.
-        if (!isAttached()) {
-            DOM.setEventListener(getElement(), this);
+    private void updateSelectedRowStyles() {
+        int newLocalSelectedRow = getKeyboardSelectedRow() - minRenderedRow;
+        int newLocalSelectedCol = getKeyboardSelectedColumn();
+
+        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        int tableRowCount = rows.getLength();
+
+        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow < tableRowCount) {
+            TableRowElement tr = rows.getItem(oldLocalSelectedRow);
+            if (oldLocalSelectedRow != newLocalSelectedRow) {
+                setRowStyleName(tr, rowStyle, rowCellStyle, false);
+            }
+            if (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol) {
+                NodeList<TableCellElement> cells = tr.getCells();
+                if (oldLocalSelectedCol >= 0 && oldLocalSelectedCol < cells.getLength()) {
+                    TableCellElement td = cells.getItem(oldLocalSelectedCol);
+                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, tr, td, false);
+                }
+            }
         }
 
-        // Remove the section from the tbody.
-//        tableData.section.removeFromParent();
+        if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
+            TableRowElement tr = rows.getItem(newLocalSelectedRow);
+            setRowStyleName(tr, rowStyle, rowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
+            TableCellElement td = tr.getCells().getItem(newLocalSelectedCol);
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, tr, td, isFocused);
 
-        // Render the html.
-        tableBuilder.update(tableData.section, values, updateRanges, columnsToRedraw, columnsChanged);
+            oldLocalSelectedRow = newLocalSelectedRow;
+            oldLocalSelectedCol = newLocalSelectedCol;
+        }
+    }
 
-        /*
-         * Reattach the section. If next section is null, the section will be appended instead.
-         */
-//        tableData.tableElem.appendChild(tableData.section);
+    private void setFocusedCellStyles(int row, int column, TableRowElement tr, TableCellElement td, boolean focused) {
+        int cellCount = tr.getCells().getLength();
 
-        // Detach the event listener.
-        if (!isAttached()) {
-            DOM.setEventListener(getElement(), null);
+        setStyleName(td, selectedCellStyle, focused && column != cellCount - 1);
+        setStyleName(td, lastSelectedCellStyle, focused && column == cellCount - 1);
+
+        if (row > 0) {
+            TableCellElement topTD = tableData.tableElement.getRows().getItem(row - 1).getCells().getItem(column);
+            setStyleName(topTD, topOfSelectedCellStyle, focused);
+        }
+
+        if (column < cellCount - 1) {
+            TableCellElement rightTD = tr.getCells().getItem(column + 1);
+            setStyleName(rightTD, rightOfSelectedCellStyle, focused);
         }
     }
 
     private void resetFocus(boolean wasFocused) {
         // Ensure that the keyboard selected element is focusable.
-        Element elem = getKeyboardSelectedElement();
-        if (elem != null) {
-            setFocusable(elem, true);
-            if (isFocused) {
-                onFocus();
-            }
+        if (isFocused) {
+            onFocus();
         }
 
         if (wasFocused) {
@@ -2513,14 +1994,26 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 @Override
                 public void execute() {
                     if (!resetFocusOnCell()) {
-                        Element elem = getKeyboardSelectedElement();
-                        if (elem != null) {
-                            elem.focus();
-                        }
+                        setFocus(true);
                     }
                 }
             });
         }
+    }
+
+    private boolean resetFocusOnCell() {
+        Element elem = getKeyboardSelectedElement();
+        if (elem == null) {
+            // There is no selected element.
+            return false;
+        }
+
+        int row = getKeyboardSelectedRow();
+        int col = getKeyboardSelectedColumn();
+        T value = getRowValue(row);
+        Context context = new Context(row, col, value);
+        HasCell<T, ?> column = tableBuilder.getColumn(context, value, elem);
+        return column != null && resetFocusOnCellImpl(context, value, column, elem);
     }
 
     private void updateHeadersImpl(boolean columnsChanged) {
@@ -2545,14 +2038,435 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     /**
-     * Coalesce the various cell properties (isInteractive) into a table policy.
+     * Represents the state of the presenter.
+     *
+     * @param <T> the data type of the presenter
      */
-    private void coalesceCellProperties() {
-        isInteractive = false;
-        for (HasCell<T, ?> column : columns) {
-            if (isColumnInteractive(column)) {
-                isInteractive = true;
+    private static class State<T> {
+        final List<T> rowData;
+        int keyboardSelectedRow = 0;
+        int keyboardSelectedColumn = 0;
+
+        public State() {
+            this(new ArrayList<T>());
+        }
+
+        public State(ArrayList<T> rowData) {
+            this.rowData = rowData;
+        }
+
+        public int getKeyboardSelectedRow() {
+            return keyboardSelectedRow;
+        }
+
+        public int getKeyboardSelectedColumn() {
+            return keyboardSelectedColumn;
+        }
+
+        public int getRowCount() {
+            return rowData.size();
+        }
+
+        public T getRowValue(int index) {
+            return rowData.get(index);
+        }
+    }
+
+    /**
+     * Represents the pending state of the presenter.
+     *
+     * @param <T> the data type of the presenter
+     */
+    private static class PendingState<T> extends State<T> {
+        /**
+         * A boolean indicating that a change in keyboard selected should cause us
+         * to steal focus.
+         */
+        private boolean keyboardStealFocus = false;
+
+        private int desiredVerticalScrollPosition = -1;
+
+        /**
+         * The list of ranges that has to be redrawn.
+         */
+        private List<Range> rangesToRedraw = null;
+        private Set<Column> columnsToRedraw = null;
+        private boolean redrawAllColumns = false;
+
+        public PendingState(State<T> state) {
+            super(new ArrayList<T>(state.rowData));
+            this.keyboardSelectedRow = state.getKeyboardSelectedRow();
+            this.keyboardSelectedColumn = state.getKeyboardSelectedColumn();
+        }
+
+        private List<Range> createRangesToRedraw() {
+            if (rangesToRedraw == null) {
+                rangesToRedraw = new ArrayList<Range>();
             }
+            return rangesToRedraw;
+        }
+
+        private Set<Column> createColumnsToRedraw() {
+            if (columnsToRedraw == null) {
+                columnsToRedraw = new HashSet<Column>();
+            }
+            return columnsToRedraw;
+        }
+
+        /**
+         * Update the range data to be redraw.
+         *
+         * @param start the start index
+         * @param end   the end index (excluded)
+         */
+        public void redrawRows(int start, int end) {
+            // merge ranges on insertion
+
+            if (createRangesToRedraw().size() == 0) {
+                rangesToRedraw.add(new Range(start, end));
+                return;
+            }
+
+            int rangeCnt = rangesToRedraw.size();
+
+            int startIndex;
+            for (startIndex = 0; startIndex < rangeCnt; ++startIndex) {
+                Range prevRange = rangesToRedraw.get(startIndex);
+                if (prevRange.start > start) {
+                    break;
+                }
+            }
+
+            if (startIndex > 0) {
+                //range previous range
+
+                //prevRange.start < start because of cycle break condition
+                Range prevRange = rangesToRedraw.get(startIndex - 1);
+                if (prevRange.end >= end) {
+                    //fully included to the bigger range
+                    return;
+                }
+
+                if (prevRange.end >= start) {
+                    //merge prevRange with this one
+                    rangeCnt--;
+                    startIndex--;
+                    rangesToRedraw.remove(startIndex);
+                    start = prevRange.start;
+                }
+            }
+
+            //merge following ranges
+            if (startIndex < rangeCnt) {
+                Range nextRange = rangesToRedraw.get(startIndex);
+                while (nextRange.start <= end) {
+                    rangeCnt--;
+                    rangesToRedraw.remove(startIndex);
+                    if (nextRange.end > end) {
+                        //extend current range and break if merged range is farther
+                        end = nextRange.end;
+                        break;
+                    }
+
+                    if (startIndex == rangeCnt) {
+                        break;
+                    }
+
+                    nextRange = rangesToRedraw.get(startIndex);
+                }
+            }
+
+            rangesToRedraw.add(startIndex, new Range(start, end));
+        }
+
+        public void redrawAllRows() {
+            createRangesToRedraw().clear();
+            redrawRows(0, rowData.size());
+        }
+
+        public boolean needRedraw() {
+            return rangesToRedraw != null && (redrawAllColumns || columnsToRedraw != null);
+        }
+
+        public void redrawColumns(Set<? extends Column> updatedColumns) {
+            if (!redrawAllColumns) {
+                createColumnsToRedraw().addAll(updatedColumns);
+            }
+        }
+
+        public void redrawAllColumns() {
+            redrawAllColumns = true;
+            columnsToRedraw = null;
+        }
+
+        public int[] getColumnsToRedraw(DataGrid thisGrid) {
+            if (redrawAllColumns) {
+                return null;
+            }
+
+            int[] columnsToRedrawIndices = null;
+            if (columnsToRedraw != null) {
+                columnsToRedrawIndices = new int[columnsToRedraw.size()];
+                int i = 0;
+                for (Column column : columnsToRedraw) {
+                    columnsToRedrawIndices[i++] = thisGrid.getColumnIndex(column);
+                }
+            }
+            return columnsToRedrawIndices;
+        }
+    }
+
+    private abstract static class TableWrapperWidget extends Widget {
+        protected final TableElement tableElement;
+        protected final TableColElement colgroupElement;
+        protected final TableSectionElement sectionElement;
+
+        public TableWrapperWidget() {
+            tableElement = Document.get().createTableElement();
+            tableElement.setCellSpacing(0);
+            tableElement.getStyle().setTableLayout(TableLayout.FIXED);
+            tableElement.getStyle().setWidth(100.0, Unit.PCT);
+
+            colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
+
+            sectionElement = createSectionElement();
+        }
+
+        protected abstract TableSectionElement createSectionElement();
+
+        /**
+         * Get the {@link TableColElement} at the specified index, creating it if
+         * necessary.
+         *
+         * @param index the column index
+         * @return the {@link TableColElement}
+         */
+        public TableColElement ensureTableColElement(int index) {
+            // Ensure that we have enough columns.
+            for (int i = colgroupElement.getChildCount(); i <= index; i++) {
+                colgroupElement.appendChild(Document.get().createColElement());
+            }
+            return colgroupElement.getChild(index).cast();
+        }
+
+        /**
+         * Hide columns that aren't used in the table.
+         *
+         * @param start the first unused column index
+         */
+        void hideUnusedColumns(int start) {
+            // Remove all col elements that appear after the last column.
+            int colCount = colgroupElement.getChildCount();
+            for (int i = start; i < colCount; i++) {
+                colgroupElement.removeChild(ensureTableColElement(start));
+            }
+        }
+
+        public TableSectionElement getSection() {
+            return sectionElement;
+        }
+    }
+
+    private class HeaderWidget extends TableWrapperWidget {
+        public HeaderWidget() {
+            setElement(tableElement);
+        }
+
+        @Override
+        protected TableSectionElement createSectionElement() {
+            return tableElement.createTHead();
+        }
+    }
+
+    private class FooterWidget extends HeaderWidget {
+        @Override
+        protected TableSectionElement createSectionElement() {
+            return tableElement.createTFoot();
+        }
+    }
+
+    private static class TableWidget extends TableWrapperWidget {
+        int tableTop = 0;
+        int tableHeight = 0;
+        int tableWidth = 0;
+
+        private final DivElement containerElement;
+
+        public TableWidget() {
+            containerElement = Document.get().createDivElement();
+            containerElement.getStyle().setOutlineStyle(OutlineStyle.NONE);
+            containerElement.appendChild(tableElement);
+            setFocusable(containerElement, true);
+
+            tableElement.getStyle().setPosition(Position.ABSOLUTE);
+
+            setElement(containerElement);
+        }
+
+        @Override
+        protected TableSectionElement createSectionElement() {
+            if (tableElement.getTBodies().getLength() > 0) {
+                return tableElement.getTBodies().getItem(0);
+            } else {
+                return tableElement.appendChild(Document.get().createTBodyElement());
+            }
+        }
+
+        public void update(int newTableTop, int newTableHeight, int newTableWidth) {
+            if (newTableTop != tableTop) {
+                tableTop = newTableTop;
+                tableElement.getStyle().setTop(newTableTop, Unit.PX);
+            }
+            if (newTableHeight != tableHeight) {
+                tableHeight = newTableHeight;
+                containerElement.getStyle().setHeight(tableHeight, Unit.PX);
+            }
+            if (newTableWidth != tableWidth) {
+                tableWidth = newTableWidth;
+                containerElement.getStyle().setWidth(tableWidth, Unit.PX);
+            }
+        }
+    }
+
+    /**
+     * Default implementation of a keyboard navigation handler for tables that
+     * supports navigation between cells.
+     *
+     * @param <T> the data type of each row
+     */
+    public static class DataGridKeyboardSelectionHandler<T> implements CellPreviewEvent.Handler<T> {
+        /**
+         * The number of rows to jump when PAGE_UP or PAGE_DOWN
+         */
+        private final DataGrid<T> display;
+
+        /**
+         * Construct a new keyboard selection handler for the specified table.
+         *
+         * @param display the display being handled
+         */
+        public DataGridKeyboardSelectionHandler(DataGrid<T> display) {
+            this.display = display;
+        }
+
+        public DataGrid<T> getDisplay() {
+            return display;
+        }
+
+        @Override
+        public void onCellPreview(CellPreviewEvent<T> event) {
+            NativeEvent nativeEvent = event.getNativeEvent();
+            String eventType = event.getNativeEvent().getType();
+            if (BrowserEvents.KEYDOWN.equals(eventType) && !event.isCellEditing()) {
+                if (handleKeyEvent(event)) {
+                    handledEvent(event);
+                }
+            } else if (BrowserEvents.CLICK.equals(eventType) ||
+                    BrowserEvents.FOCUS.equals(eventType) ||
+                    (BrowserEvents.MOUSEDOWN.equals(eventType) && nativeEvent.getButton() == Event.BUTTON_RIGHT)) {
+
+                boolean stealFocus = false;
+                if (BrowserEvents.CLICK.equals(eventType)) {
+                    // If a natively focusable element was just clicked, then do not steal focus.
+                    Element target = Element.as(event.getNativeEvent().getEventTarget());
+                    stealFocus = !CellBasedWidgetImpl.get().isFocusable(target);
+                }
+
+                int col = event.getColumn();
+                int row = event.getIndex();
+                if ((display.getKeyboardSelectedColumn() != col) || (display.getKeyboardSelectedRow() != row)) {
+
+                    display.setKeyboardSelectedRow(row, true);
+
+                    // Update the column index.
+                    display.setKeyboardSelectedColumn(col, true);
+                } else if (stealFocus) {
+                    display.setFocus(stealFocus);
+                }
+
+                // Do not cancel the event as the click may have occurred on a Cell.
+            }
+        }
+
+        protected void handledEvent(CellPreviewEvent<?> event) {
+            event.setCanceled(true);
+            event.getNativeEvent().preventDefault();
+        }
+
+        public boolean handleKeyEvent(CellPreviewEvent<T> event) {
+            int keyCode = event.getNativeEvent().getKeyCode();
+            switch (keyCode) {
+                case KeyCodes.KEY_RIGHT:
+                    return nextColumn(true);
+                case KeyCodes.KEY_LEFT:
+                    return nextColumn(false);
+                case KeyCodes.KEY_DOWN:
+                    return nextRow(true);
+                case KeyCodes.KEY_UP:
+                    return nextRow(false);
+                case KeyCodes.KEY_PAGEDOWN:
+                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() + PAGE_INCREMENT);
+                    return true;
+                case KeyCodes.KEY_PAGEUP:
+                    display.setKeyboardSelectedRow(display.getKeyboardSelectedRow() - PAGE_INCREMENT);
+                    return true;
+                case KeyCodes.KEY_HOME:
+                    display.setKeyboardSelectedRow(0);
+                    return true;
+                case KeyCodes.KEY_END:
+                    display.setKeyboardSelectedRow(display.getRowCount() - 1);
+                    return true;
+            }
+            return false;
+        }
+
+        private boolean nextRow(boolean down) {
+            double currentTime = Duration.currentTimeMillis();
+            //ignore key stroke, if we need to scroll too often
+            if (currentTime - display.lastVerticalScrollTime < IGNORE_SCROLL_TIMEOUT) {
+                return true;
+            }
+
+            int rowIndex = getDisplay().getKeyboardSelectedRow();
+
+            display.setKeyboardSelectedRow(down ? rowIndex + 1 : rowIndex - 1);
+
+            return true;
+        }
+
+        private boolean nextColumn(boolean forward) {
+            if (display.renderedRowCount > 0) {
+                int rowCount = display.getRowCount();
+                int columnCount = display.getColumnCount();
+
+                int rowIndex = display.getKeyboardSelectedRow();
+                int columnIndex = display.getKeyboardSelectedColumn();
+
+                if (forward) {
+                    if (columnIndex == columnCount - 1) {
+                        if (rowIndex != rowCount) {
+                            columnIndex = 0;
+                            rowIndex++;
+                        }
+                    } else {
+                        columnIndex++;
+                    }
+                } else {
+                    if (columnIndex == 0) {
+                        if (rowIndex != 0) {
+                            columnIndex = columnCount - 1;
+                            rowIndex--;
+                        }
+                    } else {
+                        columnIndex--;
+                    }
+                }
+
+                display.setKeyboardSelectedRow(rowIndex);
+                display.setKeyboardSelectedColumn(columnIndex);
+            }
+            //allways handle KEY_LEFT/RIGHT
+            return true;
         }
     }
 }

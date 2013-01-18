@@ -8,9 +8,6 @@ import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.actions.form.SetUserFilters;
 import platform.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
-import platform.gwt.form.shared.view.filter.GDataFilterValue;
-import platform.gwt.form.shared.view.filter.GObjectFilterValue;
-import platform.gwt.form.shared.view.filter.GPropertyFilterValue;
 import platform.interop.FilterType;
 
 import java.io.ByteArrayOutputStream;
@@ -36,17 +33,17 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
             outStream.writeInt(filter.propertyID);
             outStream.writeBoolean(filter.negation);
             outStream.writeByte(filter.compareByte);
-            outStream.writeByte(filter.filterValue.getTypeID());
+            outStream.writeByte(filter.filterValue.typeID);
 
-            switch (filter.filterValue.getTypeID()) {
+            switch (filter.filterValue.typeID) {
                 case 0:
-                    BaseUtils.serializeObject(outStream, ((GDataFilterValue) filter.filterValue).value);
+                    BaseUtils.serializeObject(outStream, filter.filterValue.content);
                     break;
                 case 1:
-                    outStream.writeInt(((GObjectFilterValue) filter.filterValue).object.ID);
+                    outStream.writeInt((Integer) filter.filterValue.content);
                     break;
                 case 2:
-                    outStream.writeInt(((GPropertyFilterValue) filter.filterValue).property.ID);
+                    outStream.writeInt((Integer) filter.filterValue.content);
             }
 
             outStream.writeBoolean(filter.junction);
