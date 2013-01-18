@@ -6,3 +6,5 @@ NAMESPACE Purchase;
 
 @defineCertificateInvoice(declaration, 'Таможенная декларация');
 @defineCertificateShipment(declaration, 'Таможенная декларация');
+
+@implementCertificateBatch(declaration);

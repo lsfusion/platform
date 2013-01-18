@@ -2118,6 +2118,12 @@ FORM balanceSkuStock 'Остатки на дату'
     PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
+
+    OBJECTS bt=batch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
+    PROPERTIES(bt, st, t) READONLY  balanceBBatchStockDateTime
+    FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
+    ORDER BY dateTimeBatch DESC
 ;
 @extendFormFilterStockAccess(stock, st, balanceSkuStock);
 @extendFormFilterStockGroupAccess(stock, ts, balanceSkuStock, accessEmployeeEmployeeDivisionOver);
@@ -2151,14 +2157,13 @@ DESIGN balanceSkuStock FROM DEFAULT {
 
                 NEW ledger.box {
                     fillVertical = 1;
-                    title = 'Регистры';
+                    title = 'Изменение цен';
                     type = TABBED;
                     ADD bil.box;
+                    ADD bt.box;
                 }
-
-            }
+             }
         }
-
         ADD functions.box;
     }
 }

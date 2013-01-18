@@ -6,11 +6,14 @@ CLASS ABSTRACT certificate 'Документ качества';
 
 @defineDocumentAbstractHeaderTimePrefix(certificate, ,' создания');
 @defineDocumentAbstractHeaderTimePrefix(certificate, to, ' действия');
-registrationNumberCertificate 'Регистарционный номер' = ABSTRACT NUMERIC[14,0] (certificate);
+numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGroup MINCHARWIDTH 7;
+seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup FIXEDCHARWIDTH 3;
+seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+
 
 descriptionCertificate 'Документ качества' (certificate) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
-    (registrationNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
+    (seriesNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
 
 NAVIGATOR {
     masterData {
@@ -78,4 +81,25 @@ META defineCertificateShipment(prop, caption)
     EXTEND FORM shipments
         PROPERTIES(d2) READONLY description###prop###shipmentDetail
     ;
+END
+
+META defineCertificateBatch(prop, caption)
+    prop###batch = ABSTRACT prop (batch);
+    description###prop###batch caption (batch) = description###prop(prop###batch(batch));
+    EXTEND FORM currentBalanceSkuStock
+        PROPERTIES description###prop###batch(bt)
+    ;
+    EXTEND FORM balanceSkuStock
+        PROPERTIES description###prop###batch(bt)
+    ;
+    EXTEND FORM currentBalanceBatchStock
+        PROPERTIES description###prop###batch(bt)
+    ;
+    EXTEND FORM balanceBatchStock
+        PROPERTIES description###prop###batch(bt)
+    ;
+END
+
+META implementCertificateBatch(prop)
+    prop###batch (batch) += prop###shipmentDetail(shipmentDetailShipmentBatch(batch));
 END

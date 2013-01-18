@@ -6,3 +6,5 @@ NAMESPACE Purchase;
 
 @defineCertificateInvoice(compliance, 'Сертификат соответствия');
 @defineCertificateShipment(compliance, 'Сертификат соответствия');
+
+@implementCertificateBatch(compliance);

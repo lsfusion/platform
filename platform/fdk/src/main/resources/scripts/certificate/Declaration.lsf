@@ -1,28 +1,30 @@
 MODULE Declaration;
 
-REQUIRE Certificate;
+REQUIRE Certificate, Shipment;
 
-CLASS declaration 'Таможенная декларация' : certificate;
+CLASS declaration 'Таможенная декларация' : certificate, numberedObject;
 
 @defineDocumentHeaderTimePrefix(declaration, ,' создания');
-registrationNumberDeclaration 'Регистарционный номер' = DATA NUMERIC[14,0] (declaration);
-
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );
-registrationNumberCertificate(declaration) += registrationNumberDeclaration(declaration);
+seriesCertificate(declaration) += seriesObject(declaration) AND declaration IS declaration;
+numberCertificate(declaration) += numberObject(declaration) AND declaration IS declaration;
 
 descriptionDeclaration 'Таможенная декларация' (declaration) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)']
-    (registrationNumberDeclaration(declaration), dateDeclaration(declaration));
+    (seriesNumberObject(declaration), dateDeclaration(declaration));
+
+@defineCertificateBatch(declaration, 'Таможенная декларация');
 
 FORM declaration 'Таможенная декларация'
     OBJECTS d = declaration FIXED PANEL
-    PROPERTIES(d) registrationNumberDeclaration, dateDeclaration, timeDeclaration
+    PROPERTIES(d) seriesObject, numberObject, dateDeclaration, timeDeclaration
     EDIT declaration OBJECT d
 ;
 
 DESIGN declaration FROM DEFAULT{
     main{
-        ADD PROPERTY(registrationNumberDeclaration);
+        ADD PROPERTY(seriesObject);
+        ADD PROPERTY(numberObject);
         ADD PROPERTY(dateDeclaration);
         ADD PROPERTY(timeDeclaration);
     }
@@ -31,13 +33,13 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Таможенные декларация'
     OBJECTS d = declaration
-    PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
+    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
 FORM declarationsDialog 'Таможенные декларация'
     OBJECTS d = declaration
-    PROPERTIES(d) READONLY registrationNumberDeclaration, dateTimeDeclaration
+    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration
 
     DIALOG declaration OBJECT d
 ;

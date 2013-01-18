@@ -6,3 +6,5 @@ NAMESPACE Purchase;
 
 @defineCertificateInvoice(sanitation, 'ГГР');
 @defineCertificateShipment(sanitation, 'ГГР');
+
+@implementCertificateBatch(sanitation);

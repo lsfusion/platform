@@ -1,30 +1,32 @@
 MODULE Compliance;
 
-REQUIRE Certificate;
+REQUIRE Certificate, Shipment;
 
-CLASS compliance 'Сертификат соответствия' : certificate;
+CLASS compliance 'Сертификат соответствия' : certificate, numberedObject;
 
 @defineDocumentHeaderTimePrefix(compliance, ,' создания');
 @defineDocumentHeaderTimePrefix(compliance, to, ' действия');
-registrationNumberCompliance 'Регистарционный номер' = DATA NUMERIC[14,0] (compliance);
-
 @implementDocumentHeaderTimePrefix(certificate, , compliance, );
 @implementDocumentHeaderTimePrefix(certificate, to, compliance, to);
-registrationNumberCertificate(compliance) += registrationNumberCompliance(compliance);
+seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS compliance;
+numberCertificate(compliance) += numberObject(compliance) AND compliance IS compliance;
 
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
-    (registrationNumberCompliance(compliance), dateCompliance(compliance), toDateCompliance(compliance));
+    (seriesNumberObject(compliance), dateCompliance(compliance), toDateCompliance(compliance));
+
+@defineCertificateBatch(compliance, 'Сертификат соответствия');
 
 FORM compliance 'Сертификат соответствия'
     OBJECTS c = compliance FIXED PANEL
-    PROPERTIES(c) registrationNumberCompliance, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance
+    PROPERTIES(c) seriesObject, numberObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance
     EDIT compliance OBJECT c
 ;
 
 DESIGN compliance FROM DEFAULT{
     main{
-        ADD PROPERTY(registrationNumberCompliance);
+        ADD PROPERTY(seriesObject);
+        ADD PROPERTY(numberObject);
         ADD PROPERTY(dateCompliance);
         ADD PROPERTY(timeCompliance);
         ADD PROPERTY(toDateCompliance);
@@ -35,13 +37,13 @@ DESIGN compliance FROM DEFAULT{
 
 FORM compliances 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY registrationNumberCompliance, dateTimeCompliance, toDateTimeCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance
 
     DIALOG compliance OBJECT c
 ;

@@ -1,30 +1,32 @@
 MODULE Sanitation;
 
-REQUIRE Certificate;
+REQUIRE Certificate, Shipment;
 
-CLASS sanitation 'ГГР' : certificate;
+CLASS sanitation 'ГГР' : certificate, numberedObject;
 
 @defineDocumentHeaderTimePrefix(sanitation, ,' создания');
 @defineDocumentHeaderTimePrefix(sanitation, to, ' действия');
-registrationNumberSanitation 'Регистарционный номер' = DATA NUMERIC[14,0] (sanitation);
-
 @implementDocumentHeaderTimePrefix(certificate, , sanitation, );
 @implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
-registrationNumberCertificate(sanitation) += registrationNumberSanitation(sanitation);
+seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS sanitation;
+numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS sanitation;
 
 descriptionSanitation 'ГГР' (sanitation) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
-    (registrationNumberSanitation(sanitation), dateSanitation(sanitation), toDateSanitation(sanitation));
+    (seriesNumberObject(sanitation), dateSanitation(sanitation), toDateSanitation(sanitation));
+
+@defineCertificateBatch(sanitation, 'ГГР');
 
 FORM sanitation 'ГГР'
     OBJECTS s = sanitation FIXED PANEL
-    PROPERTIES(s) registrationNumberSanitation, dateSanitation, timeSanitation, toDateSanitation, toTimeSanitation
+    PROPERTIES(s) seriesObject, numberObject, dateSanitation, timeSanitation, toDateSanitation, toTimeSanitation
     EDIT sanitation OBJECT s
 ;
 
 DESIGN sanitation FROM DEFAULT{
     main{
-        ADD PROPERTY(registrationNumberSanitation);
+        ADD PROPERTY(seriesObject);
+        ADD PROPERTY(numberObject);
         ADD PROPERTY(dateSanitation);
         ADD PROPERTY(timeSanitation);
         ADD PROPERTY(toDateSanitation);
@@ -35,13 +37,13 @@ DESIGN sanitation FROM DEFAULT{
 
 FORM sanitations 'ГГР'
     OBJECTS s = sanitation
-    PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
+    PROPERTIES(s) READONLY seriesNumberObject, dateTimeSanitation, toDateTimeSanitation
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
 FORM sanitationsDialog 'ГГР'
     OBJECTS s = sanitation
-    PROPERTIES(s) READONLY registrationNumberSanitation, dateTimeSanitation, toDateTimeSanitation
+    PROPERTIES(s) READONLY seriesNumberObject, dateTimeSanitation, toDateTimeSanitation
 
     DIALOG sanitation OBJECT s
 ;
