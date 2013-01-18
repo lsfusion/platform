@@ -2554,50 +2554,7 @@ EXTEND DESIGN legalEntity{
     }
 }
 
-// ------------------------------------------------ Стандартные значения --------------------------------------- //
-
-loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, numeric) {
-    ADDOBJ UOM;
-    FOR u == addedObject() DO {
-       SET name(u) <- stringOne AS STRING[110];
-       SET shortName(u) <- stringTwo AS STRING[5];
-       SET baseUOM(u) <- u AS UOM;
-       SET factorUOM(u) <- numeric AS NUMERIC[17,3];
-    }
-}
-
-loadDefaultUOMs 'Загрузить стандартные единицы измерений' = ACTION () {
-    EXEC loadDefaultUOM('Банка', 'бан', 1);
-    EXEC loadDefaultUOM('Бутылка', 'бут', 1);
-    EXEC loadDefaultUOM('Килограмм', 'кг', 1);
-    EXEC loadDefaultUOM('Коробка', 'кор', 1);
-    EXEC loadDefaultUOM('Литр', 'л', 1);
-    EXEC loadDefaultUOM('Место', 'мест', 1);
-    EXEC loadDefaultUOM('Мешок', 'меш', 1);
-    EXEC loadDefaultUOM('Пакет', 'пак', 1);
-    EXEC loadDefaultUOM('Пачка', 'пач', 1);
-    EXEC loadDefaultUOM('Рубль', 'руб', 1);
-    EXEC loadDefaultUOM('Рулон', 'рул', 1);
-    EXEC loadDefaultUOM('Упаковка', 'упак', 1);
-    EXEC loadDefaultUOM('Штука', 'шт', 1);
-    EXEC loadDefaultUOM('Ящик', 'ящ', 1);
-    EXEC loadDefaultUOM('Десяток', 'дес', 1);
-    EXEC loadDefaultUOM('Изделие', 'изд', 1);
-    EXEC loadDefaultUOM('Набор', 'набор', 1);
-    EXEC loadDefaultUOM('Пара', 'пар', 1);
-    EXEC loadDefaultUOM('Погонный метр', 'пог.м', 1);
-    EXEC loadDefaultUOM('Условный метр', 'усл.м', 1);
-    EXEC loadDefaultUOM('Номер', 'ном', 1);
-    EXEC loadDefaultUOM('Лист', 'л.', 1);
-    EXEC loadDefaultUOM('Элемент', 'элем', 1);
-    EXEC loadDefaultUOM('Единица', 'ед', 1);
-    EXEC loadDefaultUOM('Комплект', 'компл', 1);
-    EXEC loadDefaultUOM('Флакон', 'флак', 1);
-    EXEC loadDefaultUOM('Ампула', 'ампул', 1);
-} IN loadDefaultGroup;
-
-@implementLoadDefaultData(loadDefaultUOMs);
-
+// ----------------------------------------------- Документы с товарами ---------------------------------------- //
 
 CLASS ABSTRACT document 'Документ с товарами';
 CLASS ABSTRACT documentDetail 'Строка документа';
@@ -2672,3 +2629,47 @@ META extendDocument(object)
         }
     } TOOLBAR;
 END
+
+// ------------------------------------------------ Стандартные значения --------------------------------------- //
+
+loadDefaultUOM 'Добавить ед.изм.' = ACTION (stringOne, stringTwo, numeric) {
+    ADDOBJ UOM;
+    FOR u == addedObject() DO {
+       SET name(u) <- stringOne AS STRING[110];
+       SET shortName(u) <- stringTwo AS STRING[5];
+       SET baseUOM(u) <- u AS UOM;
+       SET factorUOM(u) <- numeric AS NUMERIC[17,3];
+    }
+}
+
+loadDefaultUOMs 'Загрузить стандартные единицы измерений' = ACTION () {
+    EXEC loadDefaultUOM('Банка', 'бан', 1);
+    EXEC loadDefaultUOM('Бутылка', 'бут', 1);
+    EXEC loadDefaultUOM('Килограмм', 'кг', 1);
+    EXEC loadDefaultUOM('Коробка', 'кор', 1);
+    EXEC loadDefaultUOM('Литр', 'л', 1);
+    EXEC loadDefaultUOM('Место', 'мест', 1);
+    EXEC loadDefaultUOM('Мешок', 'меш', 1);
+    EXEC loadDefaultUOM('Пакет', 'пак', 1);
+    EXEC loadDefaultUOM('Пачка', 'пач', 1);
+    EXEC loadDefaultUOM('Рубль', 'руб', 1);
+    EXEC loadDefaultUOM('Рулон', 'рул', 1);
+    EXEC loadDefaultUOM('Упаковка', 'упак', 1);
+    EXEC loadDefaultUOM('Штука', 'шт', 1);
+    EXEC loadDefaultUOM('Ящик', 'ящ', 1);
+    EXEC loadDefaultUOM('Десяток', 'дес', 1);
+    EXEC loadDefaultUOM('Изделие', 'изд', 1);
+    EXEC loadDefaultUOM('Набор', 'набор', 1);
+    EXEC loadDefaultUOM('Пара', 'пар', 1);
+    EXEC loadDefaultUOM('Погонный метр', 'пог.м', 1);
+    EXEC loadDefaultUOM('Условный метр', 'усл.м', 1);
+    EXEC loadDefaultUOM('Номер', 'ном', 1);
+    EXEC loadDefaultUOM('Лист', 'л.', 1);
+    EXEC loadDefaultUOM('Элемент', 'элем', 1);
+    EXEC loadDefaultUOM('Единица', 'ед', 1);
+    EXEC loadDefaultUOM('Комплект', 'компл', 1);
+    EXEC loadDefaultUOM('Флакон', 'флак', 1);
+    EXEC loadDefaultUOM('Ампула', 'ампул', 1);
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultUOMs);

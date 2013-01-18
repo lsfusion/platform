@@ -576,8 +576,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         for (String filePath : paths) {
-            if ((filePath.endsWith(".lsf")) && (!excludedLSF.contains(filePath)))
-                addModule(new ScriptingLogicsModule(filePath, LM, this));
+            if (filePath.endsWith(".lsf"))
+                if (!excludedLSF.contains(filePath))
+                    addModule(new ScriptingLogicsModule(filePath, LM, this));
             else {
                 Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
                 Collection<String> list = ResourceList.getResources(pattern);
