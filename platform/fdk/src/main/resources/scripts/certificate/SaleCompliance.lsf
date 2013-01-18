@@ -7,3 +7,4 @@ NAMESPACE Sale;
 @defineCertificateInvoice(compliance, 'Сертификат соответствия');
 @defineCertificateShipment(compliance, 'Сертификат соответствия');
 @derivePropUserInvoiceDetail(compliance);
+@derivePropUserShipmentDetail(compliance);

@@ -8,10 +8,19 @@ NAMESPACE Sale;
 @extendCertificateForm(shipment, s);
 
 META derivePropUserInvoiceDetail(prop)
-    prop###userInvoiceDetail(userInvoiceDetail)  <- IF prop###batch(batchUserInvoiceDetail(userInvoiceDetail))
+    data###prop###userInvoiceDetail(userInvoiceDetail)  <- IF prop###batch(batchUserInvoiceDetail(userInvoiceDetail))
                                                             THEN prop###batch(batchUserInvoiceDetail(userInvoiceDetail))
                                                             ELSE prop###batch(lastOrderBatchSkuStock(skuUserInvoiceDetail(userInvoiceDetail), supplierStockUserInvoiceDetail(userInvoiceDetail)))
         WHEN CHANGED (batchUserInvoiceDetail(userInvoiceDetail)) OR
              CHANGED (skuUserInvoiceDetail(userInvoiceDetail)) OR
              CHANGED (supplierStockUserInvoiceDetail(userInvoiceDetail));
+END
+
+META derivePropUserShipmentDetail(prop)
+    data###prop###userShipmentDetail(userShipmentDetail)  <- IF prop###batch(batchUserShipmentDetail(userShipmentDetail))
+                                                            THEN prop###batch(batchUserShipmentDetail(userShipmentDetail))
+                                                            ELSE prop###batch(lastOrderBatchSkuStock(skuUserShipmentDetail(userShipmentDetail), supplierStockUserShipmentDetail(userShipmentDetail)))
+        WHEN CHANGED (batchUserShipmentDetail(userShipmentDetail)) OR
+             CHANGED (skuUserShipmentDetail(userShipmentDetail)) OR
+             CHANGED (supplierStockUserShipmentDetail(userShipmentDetail));
 END

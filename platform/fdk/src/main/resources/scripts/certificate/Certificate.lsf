@@ -52,11 +52,16 @@ END
 META defineCertificateInvoice(prop, caption)
     prop###invoiceDetail = ABSTRACT prop (invoiceDetail);
     description###prop###invoiceDetail caption (invoiceDetail) = description###prop(prop###invoiceDetail(invoiceDetail));
-    prop###userInvoiceDetail = DATA prop (userInvoiceDetail);
+    prop###userInvoice = DATA prop (userInvoice);
+    description###prop###userInvoice caption (userInvoice) = description###prop(prop###userInvoice(userInvoice));
+    data###prop###userInvoiceDetail = DATA prop (userInvoiceDetail);
+    prop###userInvoiceDetail (userInvoiceDetail) =
+        UNION OVERRIDE prop###userInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)), data###prop###userInvoiceDetail(userInvoiceDetail);
     description###prop###userInvoiceDetail caption (userInvoiceDetail) = description###prop(prop###userInvoiceDetail(userInvoiceDetail));
     prop###invoiceDetail(detail) += prop###userInvoiceDetail(detail);
 
     EXTEND FORM userInvoice
+        PROPERTIES(i) description###prop###userInvoice TODRAW d2 FORCE PANEL
         PROPERTIES(d2) description###prop###userInvoiceDetail
     ;
 
@@ -68,13 +73,17 @@ END
 META defineCertificateShipment(prop, caption)
     prop###shipmentDetail = ABSTRACT prop (shipmentDetail);
     description###prop###shipmentDetail caption (shipmentDetail) = description###prop(prop###shipmentDetail(shipmentDetail));
-    prop###userShipmentDetail = DATA prop (userShipmentDetail);
+    prop###userShipment = DATA prop (userShipment);
+    description###prop###userShipment caption (userShipment) = description###prop(prop###userShipment(userShipment));
+    data###prop###userShipmentDetail = DATA prop (userShipmentDetail);
+    prop###userShipmentDetail (userShipmentDetail) =
+        UNION OVERRIDE prop###userShipment(userShipmentUserShipmentDetail(userShipmentDetail)), data###prop###userShipmentDetail(userShipmentDetail);
     description###prop###userShipmentDetail caption (userShipmentDetail) = description###prop(prop###userShipmentDetail(userShipmentDetail));
     prop###shipmentDetail(detail) += prop###userShipmentDetail(detail);
-
     prop###shipmentDetail(detail) += prop###invoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
     EXTEND FORM userShipment
+        PROPERTIES(s) description###prop###userShipment TODRAW d2 FORCE PANEL
         PROPERTIES(d2) description###prop###userShipmentDetail
     ;
 
