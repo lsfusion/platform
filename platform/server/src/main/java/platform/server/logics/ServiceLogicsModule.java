@@ -1,42 +1,13 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-import platform.interop.Compare;
-import platform.interop.PropertyEditType;
-import platform.interop.action.MessageClientAction;
-import platform.interop.form.layout.ContainerType;
-import platform.server.classes.*;
-import platform.server.data.SQLSession;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
-import platform.server.form.entity.filter.RegularFilterEntity;
-import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.IsServerRestartingFormulaProperty;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.logics.service.CancelRestartActionProperty;
-import platform.server.logics.service.GarbageCollectorActionProperty;
-import platform.server.logics.service.RestartActionProperty;
-import platform.server.session.DataSession;
 
-import javax.swing.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -55,7 +26,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LAP cancelRestartServerAction;
     
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ServiceLogicsModule.class.getResourceAsStream("/scripts/Service.lsf"), baseLM, BL);
+        super(ServiceLogicsModule.class.getResourceAsStream("/scripts/system/Service.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

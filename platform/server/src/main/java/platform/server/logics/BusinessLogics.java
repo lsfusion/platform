@@ -554,15 +554,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(i18nLM);
     }
 
-    protected void addModulesFromResource(List<String> paths) {
+    protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) {
+
+        List<String> excludedLSF = new ArrayList<String>();
+
+        if (excludedPaths != null) {
+            for (String filePath : excludedPaths) {
+                if (filePath.endsWith(".lsf")) {
+                    String path = getClass().getResource(filePath).getPath();
+                    if (path.startsWith("/"))
+                        path = path.substring(1);
+                    excludedLSF.add(path);
+                } else {
+                    Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
+                    Collection<String> list = ResourceList.getResources(pattern);
+                    for (String name : list) {
+                        excludedLSF.add(name);
+                    }
+                }
+            }
+        }
+
         for (String filePath : paths) {
-            if (new File(filePath).isFile())
+            if ((filePath.endsWith(".lsf")) && (!excludedLSF.contains(filePath)))
                 addModule(new ScriptingLogicsModule(filePath, LM, this));
             else {
                 Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
                 Collection<String> list = ResourceList.getResources(pattern);
                 for (String name : list) {
-                    addModule(new ScriptingLogicsModule(name, LM, this));
+                    if (!excludedLSF.contains(name))
+                        addModule(new ScriptingLogicsModule(name, LM, this));
                 }
             }
         }

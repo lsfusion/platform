@@ -24,7 +24,7 @@ public class I18nLogicsModule extends ScriptingLogicsModule {
     public LCP insensitiveTranslationDictionaryEntryDictionaryTerm;
 
     public I18nLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(I18nLogicsModule.class.getResourceAsStream("/scripts/I18n.lsf"), baseLM, BL);
+        super(I18nLogicsModule.class.getResourceAsStream("/scripts/system/I18n.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

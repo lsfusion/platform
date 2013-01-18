@@ -1,27 +1,11 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import org.apache.log4j.Logger;
-import platform.interop.ClassViewType;
-import platform.interop.Compare;
-import platform.interop.PropertyEditType;
-import platform.interop.form.layout.ContainerType;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
-import platform.server.data.Union;
-import platform.server.form.entity.*;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
-import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.linear.LP;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
@@ -78,7 +62,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP nameMainRoleUser;
 
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(SecurityLogicsModule.class.getResourceAsStream("/scripts/Security.lsf"), baseLM, BL);
+        super(SecurityLogicsModule.class.getResourceAsStream("/scripts/system/Security.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

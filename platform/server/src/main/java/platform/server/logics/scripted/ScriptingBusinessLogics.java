@@ -13,21 +13,27 @@ import java.util.List;
 public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLogics> {
     private final String name;
     private final List<String> scriptFilePaths;
+    private final List<String> excludedScriptFilePaths;
 
     public ScriptingBusinessLogics(String name, DataAdapter iAdapter, int port, String paths) throws Exception {
-        this(name, iAdapter, port, Arrays.asList(paths.split(";")));
+        this(name, iAdapter, port, Arrays.asList(paths.split(";")), null);
     }
 
-    public ScriptingBusinessLogics(String name, DataAdapter adapter, int port, List<String> paths) throws Exception {
+    public ScriptingBusinessLogics(String name, DataAdapter iAdapter, int port, String paths, String excludedPaths) throws Exception {
+        this(name, iAdapter, port, Arrays.asList(paths.split(";")), Arrays.asList(excludedPaths.split(";")));
+    }
+
+    public ScriptingBusinessLogics(String name, DataAdapter adapter, int port, List<String> paths, List<String> excludedPaths) throws Exception {
         super(adapter, port);
         this.name = name;
         this.scriptFilePaths = paths;
+        this.excludedScriptFilePaths = excludedPaths;
     }
 
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        addModulesFromResource(scriptFilePaths);
+        addModulesFromResource(scriptFilePaths, excludedScriptFilePaths);
     }
 
     //private String modifySlashes(String regexp) {

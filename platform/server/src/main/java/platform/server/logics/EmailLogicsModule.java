@@ -42,7 +42,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP inNotificationProperty;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(EmailLogicsModule.class.getResourceAsStream("/scripts/Email.lsf"), baseLM, BL);
+        super(EmailLogicsModule.class.getResourceAsStream("/scripts/system/Email.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 
