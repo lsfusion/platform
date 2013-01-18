@@ -56,9 +56,6 @@ import platform.server.logics.table.TableFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -572,7 +569,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public class SelectionPropertySet extends MapClassesPropertySet<ImMap<ValueClass, Integer>, SelectionProperty> {
         static private final String prefix = "SelectionProperty_";
-        private MAddExclMap<String, LP> selectionLP = MapFact.mAddExclMap();
+        private MAddExclMap<String, LP> selectionLP = MapFact.mBigStrongMap();
 
         protected Class<?> getPropertyClass() {
             return SelectionProperty.class;

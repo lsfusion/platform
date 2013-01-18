@@ -8,7 +8,6 @@ import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashObject;
-import platform.server.data.translator.MapObject;
 
 public abstract class AbstractHashContext<H extends HashObject> extends TwinImmutableObject {
 
@@ -36,7 +35,7 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
                 } else {
                     MAddExclMap<H, Integer> mapHashes = (MAddExclMap<H, Integer>)hashes;
                     if(mapHashes==null) {
-                        mapHashes = MapFact.mAddExclMap();
+                        mapHashes = MapFact.mSmallCacheMap();
                         hashes = mapHashes;
                     }
 

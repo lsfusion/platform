@@ -7,7 +7,6 @@ import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.interop.Data;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
@@ -37,7 +36,7 @@ import java.text.Format;
 import java.util.Random;
 
 public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, AndClassSet, OrClassSet {
-    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mAddExclMap();
+    private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
     protected String caption;
 
     public static void storeClass(DataClass... classes) {

@@ -204,9 +204,11 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         modifyQuery.and(type==Modify.DELETE ? prevWhere.and(newWhere.not()) : (type == Modify.UPDATE ? prevWhere : prevWhere.or(newWhere)));
         modifyQuery.addProperties(getProperties().mapValues(new GetValue<Expr, PropertyField>() {
             public Expr getMapValue(PropertyField value) {
-                Expr newExpr = query.getExpr(value);
                 Expr prevExpr = prevJoin.getExpr(value);
-                return newExpr == null ? prevExpr : (type == Modify.MODIFY || type == Modify.UPDATE ?
+                if(type == Modify.DELETE || !query.getProperties().contains(value))
+                    return prevExpr;
+                Expr newExpr = query.getExpr(value);
+                return (type == Modify.MODIFY || type == Modify.UPDATE ?
                         newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr));
             }}));
         return rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);

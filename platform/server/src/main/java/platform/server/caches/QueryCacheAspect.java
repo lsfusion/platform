@@ -13,7 +13,6 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.add.MAddCol;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.server.data.Value;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.MapQuery;
@@ -32,7 +31,7 @@ public class QueryCacheAspect {
         void setCacheTwin(IQuery query);
     }
     public static class QueryCacheInterfaceImplement implements QueryCacheInterface {
-        MAddExclMap joinCache = MapFact.mSmallAddExclMap();
+        MAddExclMap joinCache = MapFact.mSmallCacheMap();
         public MAddExclMap getJoinCache() { return joinCache; }
 
         IQuery cacheTwin;
@@ -58,7 +57,7 @@ public class QueryCacheAspect {
         return null;
     }
 
-    final static MAddExclMap<Integer, MAddCol<Query>> hashTwins = MapFact.mAddExclMap();
+    final static MAddExclMap<Integer, MAddCol<Query>> hashTwins = MapFact.mBigCacheMap();
     <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
         IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
         if(result!=null)

@@ -4,7 +4,6 @@ import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -12,9 +11,6 @@ import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.PropertyChanges;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class SessionDataProperty extends DataProperty {
 
@@ -41,7 +37,7 @@ public class SessionDataProperty extends DataProperty {
 
     // тяжело использовать так как могут пересекаться и создавать каскадные эффекты
     // по аналогии с IsClassProperty
-    public final static MAddExclMap<Pair<ImMap<ValueClass, Integer>, ValueClass>, CalcPropertyImplement<?, ValueClass>> cacheClasses = MapFact.mAddExclMap();
+    public final static MAddExclMap<Pair<ImMap<ValueClass, Integer>, ValueClass>, CalcPropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
     @ManualLazy
     public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> getProperty(ValueClass value, ImMap<T, ValueClass> classes) {
         Pair<ImMap<ValueClass, Integer>, ValueClass> multiClasses = new Pair<ImMap<ValueClass, Integer>, ValueClass>(classes.values().multiSet(), value);

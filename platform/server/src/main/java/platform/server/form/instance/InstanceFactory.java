@@ -3,9 +3,7 @@ package platform.server.form.instance;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
@@ -20,11 +18,11 @@ public class InstanceFactory {
         this.connection = connection;
     }
 
-    private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallAddExclMap();
-    private final MAddExclMap<GroupObjectEntity, GroupObjectInstance> groupInstances = MapFact.mSmallAddExclMap();
-    private final MAddExclMap<TreeGroupEntity, TreeGroupInstance> treeInstances = MapFact.mSmallAddExclMap();
-    private final MAddExclMap<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = MapFact.mSmallAddExclMap();
-    private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallAddExclMap();
+    private final MAddExclMap<ObjectEntity, ObjectInstance> objectInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<GroupObjectEntity, GroupObjectInstance> groupInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<TreeGroupEntity, TreeGroupInstance> treeInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<PropertyObjectEntity, PropertyObjectInstance> propertyObjectInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallStrongMap();
 
 
     public ObjectInstance getInstance(ObjectEntity entity) {

@@ -9,9 +9,7 @@ import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
-import platform.base.col.interfaces.mutable.MRevMap;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetStaticValue;
@@ -258,7 +256,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
 
     private Collection<ClassExprWhere> packNoChange = ListFact.mAddRemoveCol(); // потому как remove нужен
-    private MAddExclMap<ClassExprWhere, Expr> packClassExprs = MapFact.mSmallAddExclMap();
+    private MAddExclMap<ClassExprWhere, Expr> packClassExprs = MapFact.mSmallCacheMap();
 
     @ManualLazy
     @Override

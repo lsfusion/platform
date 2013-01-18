@@ -8,7 +8,6 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
@@ -143,7 +142,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result.immutable();
     }
 
-    MAddExclMap<CustomClass,ImSet<CustomClass>> cacheChilds = MapFact.mSmallAddExclMap();
+    MAddExclMap<CustomClass,ImSet<CustomClass>> cacheChilds = MapFact.mSmallCacheMap();
 
     // получает классы у которого есть оба интерфейса
     public ImSet<CustomClass> commonChilds(CustomClass toCommon) {

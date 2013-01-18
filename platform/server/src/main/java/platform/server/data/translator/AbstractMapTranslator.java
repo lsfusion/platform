@@ -4,7 +4,6 @@ import platform.base.TwinImmutableObject;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.ManualLazy;
@@ -109,7 +108,7 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
             }});
     }
 
-    private final MAddExclMap<AbstractTranslateContext, AbstractTranslateContext> caches = MapFact.mAddExclMap();
+    private final MAddExclMap<AbstractTranslateContext, AbstractTranslateContext> caches = MapFact.mSmallCacheMap();
     public AbstractTranslateContext aspectGetCache(AbstractTranslateContext context) {
         return caches.get(context);
     }

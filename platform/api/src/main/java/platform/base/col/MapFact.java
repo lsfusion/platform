@@ -417,7 +417,19 @@ public class MapFact {
         return new HMap<K, V>(MapFact.<K, V>exclusive());
     }
 
-    public static <K, V> MAddExclMap<K, V> mSmallAddExclMap() {
+    public static <K, V> MAddExclMap<K, V> mBigStrongMap() {
+        return mAddExclMap();
+    }
+
+    public static <K, V> MAddExclMap<K, V> mBigCacheMap() {
+        return mBigStrongMap();
+    }
+
+    public static <K, V> MAddExclMap<K, V> mSmallStrongMap() {
+        return new ArIndexedMap<K, V>(MapFact.<K, V>exclusive());
+    }
+
+    public static <K, V> MAddExclMap<K, V> mSmallCacheMap() {
         return new ArIndexedMap<K, V>(MapFact.<K, V>exclusive());
     }
 

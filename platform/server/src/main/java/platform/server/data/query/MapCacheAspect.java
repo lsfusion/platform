@@ -15,7 +15,6 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.add.MAddCol;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
-import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashContext;
@@ -84,7 +83,7 @@ public class MapCacheAspect {
         }
     }
 
-    private <K,V> Join<V> join(Query<K,V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, MAddExclMap<Integer, MAddCol<CacheResult<JoinImplement<K>, Join<V>>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K,V> Join<V> join(Query<K,V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, final MAddExclMap<Integer, MAddCol<CacheResult<JoinImplement<K>, Join<V>>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 //        assert BaseUtils.onlyObjects(joinExprs.keySet()); он вообщем то не нужен, так как hashCaches хранится для Query, а он уже хранит K
         assert ((QueryCacheAspect.QueryCacheInterface)query).getCacheTwin() == query;
 
@@ -146,35 +145,35 @@ public class MapCacheAspect {
         private MAddExclMap<Integer,MAddCol<CacheResult<JoinExprInterfaceImplement,Query>>> exprCache;
         public MAddExclMap getExprCache() {
             if(exprCache==null)
-                exprCache = MapFact.mSmallAddExclMap();
+                exprCache = MapFact.mSmallCacheMap();
             return exprCache;
         }
 
         private MAddExclMap<Integer,MAddCol<CacheResult<QueryInterfaceImplement,Query>>> joinExprCache;
         public MAddExclMap getJoinExprCache() {
             if(joinExprCache==null)
-                joinExprCache = MapFact.mSmallAddExclMap();
+                joinExprCache = MapFact.mSmallCacheMap();
             return joinExprCache;
         }
 
         private MAddExclMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCache;
         public MAddExclMap getDataChangesCache() {
             if(dataChangesCache==null)
-                dataChangesCache = MapFact.mSmallAddExclMap();
+                dataChangesCache = MapFact.mSmallCacheMap();
             return dataChangesCache;
         }
 
         private MAddExclMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> incChangeCache;
         public MAddExclMap getIncChangeCache() {
             if(incChangeCache==null)
-                incChangeCache = MapFact.mSmallAddExclMap();
+                incChangeCache = MapFact.mSmallCacheMap();
             return incChangeCache;
         }
 
         private MAddExclMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> autoHintCache;
         public MAddExclMap getAutoHintCache() {
             if(autoHintCache==null)
-                autoHintCache = MapFact.mSmallAddExclMap();
+                autoHintCache = MapFact.mSmallCacheMap();
             return autoHintCache;
         }
     }
