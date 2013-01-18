@@ -34,11 +34,9 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
         textareaStyle.setWhiteSpace(Style.WhiteSpace.NORMAL);
         textareaStyle.setProperty("pointerEvents", "none");
         textareaStyle.setProperty("resize", "none");
-        if (property.fontSize != null) {
-            textareaStyle.setFontSize(property.fontSize, Style.Unit.PX);
-        }
-        if (property.fontFamily != null) {
-            textareaStyle.setProperty("fontFamily", property.fontFamily);
+
+        if (property.font != null) {
+            textareaStyle.setProperty("font", property.font.getFullFont());
         }
 
         updateTextArea(textArea, value);

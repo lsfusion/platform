@@ -96,11 +96,8 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
-        if (property.fontSize != null) {
-            divStyle.setFontSize(property.fontSize, Style.Unit.PX);
-        }
-        if (property.fontFamily != null) {
-            divStyle.setProperty("fontFamily", property.fontFamily);
+        if (property.font != null) {
+            divStyle.setProperty("font", property.font.getFullFont());
         }
 
         if (text == null || text.trim().isEmpty()) {

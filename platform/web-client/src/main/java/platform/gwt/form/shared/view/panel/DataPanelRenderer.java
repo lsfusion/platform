@@ -35,6 +35,10 @@ public class DataPanelRenderer implements PanelRenderer {
         label = new Label(caption = property.getEditCaption());
         label.addStyleName("customFontPresenter");
 
+        if (property.headerFont != null) {
+            label.getElement().getStyle().setProperty("font", property.headerFont.getFullFont());
+        }
+
         int propertyPixelWidth = property.getPreferredPixelWidth();
 
         valueTable = new GSinglePropertyTable(form, property, columnKey) {
@@ -63,6 +67,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
         panel.add(gridPanel);
         panel.setCellWidth(gridPanel, "100%");
+        panel.setCellVerticalAlignment(gridPanel, HasVerticalAlignment.ALIGN_MIDDLE);
 
         if (property.preferredHeight != -1) {
             gridPanel.setHeight(property.preferredHeight + "px");

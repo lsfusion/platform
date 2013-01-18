@@ -19,4 +19,9 @@ public class ImageDescription implements Serializable {
         this.width = width;
         this.height = height;
     }
+
+    @Override
+    public String toString() {
+        return url;
+    }
 }

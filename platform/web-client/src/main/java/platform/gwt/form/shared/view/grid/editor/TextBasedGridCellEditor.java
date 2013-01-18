@@ -113,13 +113,11 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         inputStyle.setWidth(100, Style.Unit.PCT);
         inputStyle.setHeight(100, Style.Unit.PCT);
 
-        if (property.fontSize != null) {
-            inputStyle.setFontSize(property.fontSize, Style.Unit.PX);
-        } else {
-            inputStyle.setFontSize(8, Style.Unit.PT);
+        if (property.font != null) {
+            inputStyle.setProperty("font", property.font.getFullFont());
         }
-        if (property.fontFamily != null) {
-            inputStyle.setProperty("fontFamily", property.fontFamily);
+        if (property.font.size == null) {
+            inputStyle.setFontSize(8, Style.Unit.PT);
         }
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
 

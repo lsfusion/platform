@@ -45,8 +45,11 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
         button = new ImageButton(property.getEditCaption(), property.icon);
         button.addStyleName("panelActionProperty");
-        if (property.preferredHeight > -1) {
-            button.setHeight(property.preferredHeight + "px");
+        if (property.getPreferredPixelHeight() > -1) {
+            button.setHeight(property.getPreferredHeight());
+        }
+        if (property.font != null) {
+            button.getLabel().getElement().getStyle().setProperty("font", property.font.getFullFont());
         }
         button.addClickHandler(new ClickHandler() {
             @Override

@@ -14,6 +14,7 @@ import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.SingleSimplexConstraint;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -73,9 +74,24 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             component.foreground = new ColorDTO(Integer.toHexString(clientComponent.design.getForeground().getRGB()).substring(2, 8));
         }
 
-        if (clientComponent.design.getFont() != null) {
-            component.fontSize = clientComponent.design.getFont().getSize();
-            component.fontFamily = clientComponent.design.getFont().getFamily();
+        Font clientFont = clientComponent.design.getFont();
+        if (clientFont != null) {
+            component.font = new GFont(
+                    ((clientFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
+                    ((clientFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
+                    clientFont.getSize(),
+                    clientFont.getFamily()
+            );
+        }
+
+        Font headerFont = clientComponent.design.getHeaderFont();
+        if (headerFont != null) {
+            component.headerFont = new GFont(
+                    ((headerFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
+                    ((headerFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
+                    headerFont.getSize(),
+                    headerFont.getFamily()
+            );
         }
 
         return component;

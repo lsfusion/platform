@@ -25,8 +25,8 @@ public class GComponent implements Serializable {
     public ColorDTO background;
     public ColorDTO foreground;
 
-    public Integer fontSize;
-    public String fontFamily;
+    public GFont font;
+    public GFont headerFont;
 
     public enum Alignment {
         LEFT, RIGHT, CENTER

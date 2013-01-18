@@ -154,7 +154,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (minimumWidth != -1) {
             return minimumWidth;
         } else {
-            return baseType.getMinimumPixelWidth(minimumCharWidth, fontSize);
+            return baseType.getMinimumPixelWidth(minimumCharWidth, font);
         }
     }
 
@@ -166,7 +166,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (minimumHeight != -1) {
             return minimumHeight;
         } else {
-            return baseType.getMinimumPixelHeight(fontSize);
+            return baseType.getMinimumPixelHeight(font);
         }
     }
 
@@ -178,7 +178,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (maximumWidth != -1) {
             return maximumWidth;
         } else {
-            return baseType.getMaximumPixelWidth(maximumCharWidth, fontSize);
+            return baseType.getMaximumPixelWidth(maximumCharWidth, font);
         }
     }
 
@@ -194,7 +194,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (preferredWidth != -1) {
             return preferredWidth;
         } else {
-            return baseType.getPreferredPixelWidth(preferredCharWidth, fontSize);
+            return baseType.getPreferredPixelWidth(preferredCharWidth, font);
         }
     }
 
@@ -206,7 +206,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         if (preferredHeight != -1) {
             return preferredHeight;
         } else {
-            return baseType.getPreferredPixelHeight(fontSize);
+            return baseType.getPreferredPixelHeight(font);
         }
     }
 
@@ -226,7 +226,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", iconPath='" + icon.url + '\'' +
+                ", iconPath='" + icon + '\'' +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
@@ -73,14 +74,14 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         int minCharWidth = getMinimumCharWidth(minimumCharWidth);
-        return fontSize == null ? minCharWidth * 10 : minCharWidth * fontSize * 5 / 8;
+        return font == null || font.size == null ? minCharWidth * 10 : minCharWidth * font.size * 5 / 8;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
-        return fontSize == null ? prefCharWidth * 10 : prefCharWidth * fontSize * 5 / 8;
+        return font == null || font.size == null ? prefCharWidth * 10 : prefCharWidth * font.size * 5 / 8;
     }
 }

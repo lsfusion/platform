@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.client.form.ui.GFormController;
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.grid.renderer.ActionGridCellRenderer;
@@ -22,8 +23,13 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize) {
-        return getPreferredPixelWidth(maximumCharWidth, fontSize);
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
+        return getPreferredPixelWidth(maximumCharWidth, font);
+    }
+
+    @Override
+    public int getPreferredPixelHeight(GFont font) {
+        return font == null || font.size == null ? 18 : (int) (font.size * 1.4);
     }
 
     @Override

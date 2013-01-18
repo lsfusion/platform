@@ -109,4 +109,8 @@ public class ImageButton extends Button {
             strut.setVisible(image.isVisible() && label.isVisible());
         }
     }
+
+    public Label getLabel() {
+        return label;
+    }
 }

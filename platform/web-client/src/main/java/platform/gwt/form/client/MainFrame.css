@@ -187,7 +187,6 @@ textarea {
 }
 
 .panelActionProperty {
-    height: 18px;
     padding: 1px 5px;
     display: block; /*убираем лишние пикселы снизу при нахождении в ячейке таблицы*/
 }

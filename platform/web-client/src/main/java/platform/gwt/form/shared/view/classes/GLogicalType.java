@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.classes;
 
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -26,12 +27,12 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         return 30;
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         return 30;
     }
 }

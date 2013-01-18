@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
@@ -54,7 +55,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     private void setImage(ImageElement img, Object value) {
         boolean disabled = value == null || !(Boolean) value;
         String iconPath = property.getIconPath(!disabled);
-        img.setSrc(iconPath);
+        img.setSrc(GWT.getHostPageBaseURL() + iconPath);
 
         int height = property.icon.height;
         if (height != -1) {

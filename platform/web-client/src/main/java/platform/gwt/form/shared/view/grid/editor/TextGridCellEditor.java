@@ -29,12 +29,12 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
         textareaStyle.setProperty("resize", "none");
-        if (property.fontSize != null) {
-//            textareaStyle.setFontSize(property.fontSize, Style.Unit.PX);
+
+        if (property.font != null) {
+            textareaStyle.setProperty("font", property.font.getFullFont());
         }
-        if (property.fontFamily != null) {
-            textareaStyle.setProperty("fontFamily", property.fontFamily);
-        }
+        textareaStyle.setFontSize(8, Style.Unit.PT);
+
         cellParent.getStyle().setProperty("height", cellParent.getParentElement().getStyle().getHeight());
 
         textArea.setValue(currentText);

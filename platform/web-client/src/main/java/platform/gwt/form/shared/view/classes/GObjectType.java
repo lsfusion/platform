@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.classes;
 
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
@@ -21,17 +22,17 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize) {
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         return 50;
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize) {
-        return getPreferredPixelWidth(maximumCharWidth, fontSize);
+    public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
+        return getPreferredPixelWidth(maximumCharWidth, font);
     }
 
     @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize) {
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         return 50;
     }
 

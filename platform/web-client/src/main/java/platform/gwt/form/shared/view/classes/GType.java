@@ -1,6 +1,7 @@
 package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.client.form.ui.GFormController;
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.filter.GCompare;
@@ -38,16 +39,16 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    public abstract int getMinimumPixelWidth(int minimumCharWidth, Integer fontSize);
-    public abstract int getMaximumPixelWidth(int maximumCharWidth, Integer fontSize);
-    public abstract int getPreferredPixelWidth(int preferredCharWidth, Integer fontSize);
+    public abstract int getMinimumPixelWidth(int minimumCharWidth, GFont font);
+    public abstract int getMaximumPixelWidth(int maximumCharWidth, GFont font);
+    public abstract int getPreferredPixelWidth(int preferredCharWidth, GFont font);
     public abstract GCompare[] getFilterCompares();
 
-    public int getMinimumPixelHeight(Integer fontSize) {
-        return fontSize == null ? 16 : (int) (fontSize * 1.25);
+    public int getMinimumPixelHeight(GFont font) {
+        return font == null || font.size == null ? 16 : (int) (font.size * 1.25);
     }
 
-    public int getPreferredPixelHeight(Integer fontSize) {
-        return getMinimumPixelHeight(fontSize);
+    public int getPreferredPixelHeight(GFont font) {
+        return getMinimumPixelHeight(font);
     }
 }
