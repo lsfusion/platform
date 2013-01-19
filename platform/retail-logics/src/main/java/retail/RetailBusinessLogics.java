@@ -23,8 +23,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> i
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        addModulesFromResource(Arrays.asList("/scripts"), Arrays.asList("/scripts/system", "/scripts/machinery/Equipment.lsf"));
-        equipmentServer = new EquipmentServer(addModuleFromResource("/scripts/machinery/Equipment.lsf"));
+        addModulesFromResource(Arrays.asList("scripts/"), Arrays.asList("scripts/system/", "scripts/machinery/Equipment.lsf"));
+        equipmentServer = new EquipmentServer(addModuleFromResource("scripts/machinery/Equipment.lsf"));
     }
 
     @Override

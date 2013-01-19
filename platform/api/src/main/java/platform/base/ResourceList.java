@@ -29,7 +29,7 @@ public class ResourceList{
         final ArrayList<String> retval = new ArrayList<String>();
         final File file = new File(element);
         if(file.isDirectory()){
-            retval.addAll(getResourcesFromDirectory(file, pattern));
+            retval.addAll(getResourcesFromDirectory(file, "", pattern));
         } else{
             retval.addAll(getResourcesFromJarFile(file, pattern));
         }
@@ -67,21 +67,18 @@ public class ResourceList{
 
     private static Collection<String> getResourcesFromDirectory(
             final File directory,
+            final String relativePath,
             final Pattern pattern){
         final ArrayList<String> retval = new ArrayList<String>();
         final File[] fileList = directory.listFiles();
         for(final File file : fileList){
             if(file.isDirectory()){
-                retval.addAll(getResourcesFromDirectory(file, pattern));
+                retval.addAll(getResourcesFromDirectory(file, relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(), pattern));
             } else{
-                try{
-                    final String fileName = OSUtils.convertPath(file.getCanonicalPath(), true);
-                    final boolean accept = pattern.matcher(fileName).matches();
-                    if(accept){
-                        retval.add(fileName);
-                    }
-                } catch(final IOException e){
-                    throw new Error(e);
+                final String fileName = relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(); // OSUtils.convertPath(file.getCanonicalPath(), true);
+                final boolean accept = pattern.matcher(fileName).matches();
+                if(accept){
+                    retval.add(fileName);
                 }
             }
         }

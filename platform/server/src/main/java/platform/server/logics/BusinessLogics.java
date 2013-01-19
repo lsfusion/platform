@@ -554,19 +554,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(i18nLM);
     }
 
-    protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) {
+    protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
 
         List<String> excludedLSF = new ArrayList<String>();
 
         if (excludedPaths != null) {
             for (String filePath : excludedPaths) {
                 if (filePath.endsWith(".lsf")) {
-                    String path = getClass().getResource(filePath).getPath();
-                    if (path.startsWith("/"))
-                        path = path.substring(1);
-                    excludedLSF.add(path);
+                    excludedLSF.add(filePath);
                 } else {
-                    Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
+                    Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
                     Collection<String> list = ResourceList.getResources(pattern);
                     for (String name : list) {
                         excludedLSF.add(name);
@@ -576,15 +573,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         for (String filePath : paths) {
-            if (filePath.endsWith(".lsf"))
+            if (filePath.endsWith(".lsf")) {
                 if (!excludedLSF.contains(filePath))
-                    addModule(new ScriptingLogicsModule(filePath, LM, this));
-            else {
-                Pattern pattern = Pattern.compile(".*" + filePath + ".*\\.lsf");
+                    addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(filePath), LM, this));
+            } else {
+                Pattern pattern = Pattern.compile(filePath + ".*\\.lsf");
                 Collection<String> list = ResourceList.getResources(pattern);
                 for (String name : list) {
                     if (!excludedLSF.contains(name))
-                        addModule(new ScriptingLogicsModule(name, LM, this));
+                        addModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/" + name), LM, this));
                 }
             }
         }
@@ -600,7 +597,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected ScriptingLogicsModule addModuleFromResource(String path) throws IOException {
-        return addModule(new ScriptingLogicsModule(getClass().getResourceAsStream(path), LM, this));
+        return addModule(new ScriptingLogicsModule(getClass().getResourceAsStream("/" + path), LM, this));
     }
 
     private void fillNameToModules() {
