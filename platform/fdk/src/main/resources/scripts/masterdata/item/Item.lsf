@@ -238,7 +238,7 @@ META defineItemAttribute (attribute, caption, group)
 
     setNullShow###attribute##ItemGroup 'Снять признак для всех потомков' = ACTION (itemGroup) {
         FOR isParentItemGroupItemGroup (childGroup, itemGroup) DO {
-            SET show###attribute##ItemGroup(childGroup) <- NULL;
+            SET userShow###attribute##ItemGroup(childGroup) <- NULL;
         }
     } SHORTCUT userShow###attribute##ItemGroup CONFIRM;
 END
