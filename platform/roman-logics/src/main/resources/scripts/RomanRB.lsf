@@ -43,7 +43,8 @@ REQUIRE System,
         RomanPOS,
         RomanSales,
         RomanCashOperation,
-        RomanLogicsModule;
+        RomanLogicsModule,
+        Purchase;
 
 PRIORITY RomanLogicsModule, Utils, Stock, Store;
 
@@ -105,26 +106,41 @@ skipAReceiptSaleDetailPriceChangeZReportDetail (priceChangeZReportDetail) =
 skipASkuLedger (ledger) += skipAReceiptSaleDetailPriceChangeZReportDetail (ledger);
 
 NAVIGATOR {
-    itemClassifier {
-        ADD categories;
-        ADD seasonYears;
-        ADD UOMs;
+
+    ADD masterData {
+        skuNavigator {
+            ADD skus BEFORE wares;
+            ADD categories AFTER skus;
+            ADD seasonYears AFTER categories;
+            ADD UOMs AFTER seasonYears;
+        }
+        legalEntityNavigator {
+            ADD companies;
+            ADD colorSizeSupplierForm;
+            ADD customers;
+            ADD banks;
+        }
     }
 
-    contragentClassifier {
-        ADD companies;
-        ADD banks;
+    ADD purchaseNavigator {
+        ADD orders;
+        ADD invoices;
+        ADD shipments;
     }
 
-    taxClassifier {
-        ADD taxes;
+    ADD distribution;
+
+    ADD transportNavigator {
+        transportDocuments {
+            ADD freightListForm;
+        }
+        NEW transportReports 'Отчеты' AFTER transportDocuments {
+            ADD freightReportForm;
+            ADD freightBoxContentForm;
+        }
     }
 
-    purchaseClassifier {
-        ADD contractSkus;
-    }
-
-    customs {
+    ADD customs {
         customClassifier {
             ADD customStores;
             ADD certificates;
@@ -143,29 +159,20 @@ NAVIGATOR {
         }
     }
 
-    prices {
-        NEW pricesDocument 'Документы' {
-            NEW retailPriceBase 'Розничное ценообразование'{
-                ADD coefficientRetails;
-                ADD priceIntervals;
-                ADD priceSetDocuments;
-                ADD freights;
-            }
-
-            NEW wholesalePrice 'Оптовое ценообразование' {
-                ADD wholesalePriceDocuments;
-                ADD priceDeclaration;
-            }
-
+    ADD priceListNavigator {
+        NEW retailPriceBase 'Розничное ценообразование' BEFORE priceListDocuments {
+            ADD coefficientRetails;
+            ADD priceIntervals;
+            ADD priceSetDocuments;
+            ADD freights;
+        }
+        NEW wholesalePrice 'Оптовое ценообразование' AFTER retailPriceBase{
+            ADD wholesalePriceDocuments;
+            ADD priceDeclaration;
         }
     }
 
-    stock {
-        stockClassifier {
-            ADD warehouses;
-        }
-        ADD inventoryNavigator;
-        ADD writeOffNavigator;
+    ADD stockNavigator {
         NEW defectDocuments 'Брак' {
             ADD defectStocks;
             NEW repair  'Ремонт'{
@@ -184,12 +191,9 @@ NAVIGATOR {
             ADD disparityBatchAs;
             ADD surplusOuts;
         }
-        ADD stockCost;
-        ADD balanceSku;
-        ADD balanceBatch;
     }
 
-    logistics {
+    ADD logistics {
         NEW transfersDocument 'Трансферы' {
             ADD transferTables;
             ADD innerOrders;
@@ -216,47 +220,27 @@ NAVIGATOR {
         }
     }
 
-    retailClassifier {
-        ADD gendersDialog;
-        ADD stores;
-        ADD typeLabels;
-    }
-
-    retail {
+    ADD retailNavigator {
         NEW retailPriceDocument 'Документы расценки' {
             ADD userPriceChanges;
             ADD inputListRegisters;
             ADD priceChangeDocuments;
         }
-        ADD POSNavigator;
-        ADD retailCRMNavigator;
-        NEW retailAggregations 'Сводная информация' {
-            ADD salesNavigator;
-            ADD sumStockDocumentLedger;
+        retailMasterData {
+            ADD gendersDialog;
+            ADD typeLabels;
+            ADD commonSizeForm;
+            ADD commonEditSizeForm;
+            ADD commonImportSizeForm;
         }
     }
-    wholesaleTrade {
-        NEW tradeClassifier 'Справочники' {
-            ADD customers;
-        }
-        NEW tradeDocument 'Отгрузки' {
-            ADD invoiceWHOuts;
-        }
-        ADD priceListNavigator;
+
+    ADD saleNavigator {
+        ADD invoiceWHOuts BEFORE saleLedgerNavigator;
     }
 
-    ADD machineryNavigator AFTER wholesaleTrade TO toolbar;
-
-    ADD transportNavigator AFTER machineryNavigator TO toolbar;
-
-    NEW finance 'Финансы' AFTER transportNavigator TO toolbar {
-        ADD contractNavigator;
-    }
-
-    NEW hr 'Кадры' AFTER machineryNavigator TO toolbar {
-        ADD employees;
-    }
-
-    ADD account TO toolbar;
-    ADD administration TO toolbar;
+    ADD financeNavigator;
+    ADD machineryNavigator;
+    ADD administration;
+    ADD account;
 }

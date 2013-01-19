@@ -52,7 +52,7 @@ sumSoldTypeExchangeArticleStockDateFromTo 'Продано за интервал 
 sumSoldTypeExchangeArticleDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, dateFrom, dateTo) = GROUP SUM
         sumSoldTypeExchangeArticleStockDateFromTo(typeExchange, article, stock, dateFrom, dateTo) BY typeExchange, article, dateFrom, dateTo;
 
-EXTEND FORM salesSkuStock
+EXTEND FORM saleSkuStock
 //    PROPERTIES FORCE GRID nameCategoryArticleSku(s) BEFORE name(st), nameBrandSupplierArticleSku(s) BEFORE name(st), sidColorSupplierItem(s) BEFORE name(st), sidSizeSupplierItem(s) BEFORE name(st)
     PROPERTIES FORCE GRID AFTER nameSku(s) sidSizeSupplierItem(s), nameThemeSupplierArticleSku(s), nameSubCategorySupplierArticleSku(s),
     nameCategorySupplierArticleSku(s), nameBrandSupplierArticleSku(s), nameSupplierArticleSku(s), sidArticleSku(s)

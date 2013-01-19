@@ -4,6 +4,8 @@ REQUIRE Supplier,
         ContractLedger,
         RomanLogicsModule;
 
+PRIORITY RomanLogicsModule, Stock;
+
 //---------------------------------------------- Договоры для инвойсов ----------------------------------------------//
 
 userContractInvoice 'Договор инвойса' = DATA contractSku (invoice);

@@ -47,102 +47,106 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        Stock = addModuleFromResource("/scripts/stock/Stock.lsf");
-        LegalEntity = addModuleFromResource("/scripts/masterdata/LegalEntity.lsf");
-        Company = addModuleFromResource("/scripts/Company.lsf");
-        Store = addModuleFromResource("/scripts/stock/store/Store.lsf");
-        Numerator = addModuleFromResource("/scripts/utils/Numerator.lsf");
-        RetailCRM = addModuleFromResource("/scripts/retail/RetailCRM.lsf");
-        PriceRound = addModuleFromResource("/scripts/pricelist/PriceRound.lsf");
-        Currency = addModuleFromResource("/scripts/masterdata/Currency.lsf");
-        Contract = addModuleFromResource("/scripts/masterdata/Contract.lsf");
-        StockContract = addModuleFromResource("/scripts/stock/StockContract.lsf");
-        ContractLedger = addModuleFromResource("/scripts/finance/ContractLedger.lsf");
-        Supplier = addModuleFromResource("/scripts/Supplier.lsf");
-        Utils = addModuleFromResource("/scripts/utils/Utils.lsf");
-        Country = addModuleFromResource("/scripts/masterdata/Country.lsf");
+        Stock = addModuleFromResource("scripts/stock/Stock.lsf");
+        LegalEntity = addModuleFromResource("scripts/masterdata/LegalEntity.lsf");
+        Company = addModuleFromResource("scripts/Company.lsf");
+        Store = addModuleFromResource("scripts/stock/store/Store.lsf");
+        Numerator = addModuleFromResource("scripts/utils/Numerator.lsf");
+        RetailCRM = addModuleFromResource("scripts/retail/RetailCRM.lsf");
+        PriceRound = addModuleFromResource("scripts/pricelist/PriceRound.lsf");
+        Currency = addModuleFromResource("scripts/masterdata/Currency.lsf");
+        Contract = addModuleFromResource("scripts/masterdata/Contract.lsf");
+        StockContract = addModuleFromResource("scripts/stock/StockContract.lsf");
+        ContractLedger = addModuleFromResource("scripts/finance/ContractLedger.lsf");
+        Supplier = addModuleFromResource("scripts/Supplier.lsf");
+        Utils = addModuleFromResource("scripts/utils/Utils.lsf");
+        Country = addModuleFromResource("scripts/masterdata/Country.lsf");
 
         addModulesFromResource(
-                "/scripts/utils/Hierarchy.lsf",
-                "/scripts/utils/Historizable.lsf",
-            //"/scripts/Numerator.lsf",
-                "/scripts/utils/Document.lsf",
-                "/scripts/transport/Transport.lsf",
-                "/scripts/region/by/finance/ConsignmentBy.lsf",
-                "/scripts/masterdata/Employee.lsf",
-                "/scripts/finance/Tax.lsf",
-                "/scripts/region/by/ware/Ware.lsf",
-                "/scripts/utils/Geo.lsf",
-                "/scripts/stock/StockDocument.lsf",
-            "/scripts/Declaration.lsf",
-            "/scripts/WholesalePrice.lsf",
-            "/scripts/RetailPrice.lsf",
-                "/scripts/stock/Barcode.lsf",
-            "/scripts/RomanStock.lsf",
-            "/scripts/RomanDocument.lsf",
-            "/scripts/CustomsFlow.lsf",
-            "/scripts/WHfromCS.lsf",
-            "/scripts/WHfromRF.lsf",
-            "/scripts/MasterData.lsf",
-                "/scripts/StorePrice.lsf",
-            //"/scripts/Contract.lsf",
-            "/scripts/Transfer.lsf",
-            "/scripts/RomanSale.lsf",
-            "/scripts/Return.lsf",
-            "/scripts/Move.lsf",
-            "/scripts/DocumentTransfer.lsf",
-            "/scripts/ListRegister.lsf",
-            "/scripts/StorePriceTransfer.lsf",
-                "/scripts/retail/CashOperation.lsf",
-                "/scripts/retail/POS.lsf",
-                "/scripts/sale/SaleLedger.lsf",
-                "/scripts/machinery/Machinery.lsf",
-                "/scripts/machinery/cashregister/CashRegister.lsf",
-            "/scripts/InnerOrder.lsf",
-                "/scripts/machinery/terminal/Terminal.lsf",
-                "/scripts/Customer.lsf",
-//            "/scripts/PriceRound.lsf",
-            "/scripts/WHtoLegalEntity.lsf",
-            "/scripts/DisparityBatch.lsf",
-                "/scripts/stock/writeoff/WriteOff.lsf",
-            "/scripts/RomanWriteOff.lsf",
-            "/scripts/PriceChange.lsf",
-            "/scripts/UserPriceChange.lsf",
-            "/scripts/Surplus.lsf",
-                "/scripts/stock/inventory/Inventory.lsf",
-            "/scripts/RomanContractLedger.lsf",
-                "/scripts/stock/warehouse/Warehouse.lsf",
-            "/scripts/PriceChangeDiscount.lsf",
-            "/scripts/CustomCategory.lsf",
-            "/scripts/Freight.lsf",
-            "/scripts/RomanInvoice.lsf",
-            "/scripts/Particulars.lsf",
-            "/scripts/Defect.lsf",
-                "/scripts/utils/DefaultData.lsf",
-                "/scripts/region/ua/machinery/cashregister/FiscalDatecs.lsf",
-            "/scripts/RomanTransfer.lsf",
-            "/scripts/RomanPOS.lsf",
-            "/scripts/RomanCashOperation.lsf",
-            "/scripts/ReturnCertification.lsf",
-                "/scripts/region/by/stock/StockBy.lsf",
-                "/scripts/region/by/stock/store/StoreBy.lsf",
-            "/scripts/RomanSales.lsf",
-                "/scripts/region/by/stock/writeoff/WriteOffBy.lsf",
-            "/scripts/CustomerBy.lsf",
-            "/scripts/SupplierBy.lsf",
-                "/scripts/region/by/stock/StockDocumentBy.lsf",
-                "/scripts/region/by/masterdata/LegalEntityBy.lsf",
-                "/scripts/utils/Backup.lsf",
-                "/scripts/pricelist/Agreement.lsf",
-                "/scripts/pricelist/PriceList.lsf",
-                "/scripts/machinery/label/Label.lsf",
-            "/scripts/ContractCompany.lsf",
-                "/scripts/utils/Integration.lsf",
-                "/scripts/stock/StockTax.lsf"
+            "scripts/utils/Hierarchy.lsf",
+            "scripts/utils/Historizable.lsf",
+            //"scripts/Numerator.lsf",
+            "scripts/utils/Document.lsf",
+            "scripts/transport/Transport.lsf",
+            "scripts/region/by/finance/ConsignmentBy.lsf",
+            "scripts/masterdata/Employee.lsf",
+            "scripts/finance/Tax.lsf",
+            "scripts/region/by/ware/Ware.lsf",
+            "scripts/utils/Geo.lsf",
+            "scripts/stock/StockDocument.lsf",
+            "scripts/RomanDeclaration.lsf",
+            "scripts/WholesalePrice.lsf",
+            "scripts/RetailPrice.lsf",
+            "scripts/stock/Barcode.lsf",
+            "scripts/RomanStock.lsf",
+            "scripts/RomanDocument.lsf",
+            "scripts/CustomsFlow.lsf",
+            "scripts/WHfromCS.lsf",
+            "scripts/WHfromRF.lsf",
+            "scripts/MasterData.lsf",
+            "scripts/StorePrice.lsf",
+            //"scripts/Contract.lsf",
+            "scripts/Transfer.lsf",
+            "scripts/RomanSale.lsf",
+            "scripts/Return.lsf",
+            "scripts/Move.lsf",
+            "scripts/DocumentTransfer.lsf",
+            "scripts/ListRegister.lsf",
+            "scripts/StorePriceTransfer.lsf",
+            "scripts/retail/CashOperation.lsf",
+            "scripts/retail/POS.lsf",
+            "scripts/sale/SaleLedger.lsf",
+            "scripts/machinery/Machinery.lsf",
+            "scripts/machinery/cashregister/CashRegister.lsf",
+            "scripts/InnerOrder.lsf",
+            "scripts/machinery/terminal/Terminal.lsf",
+            "scripts/Customer.lsf",
+            //"scripts/PriceRound.lsf",
+            "scripts/WHtoLegalEntity.lsf",
+            "scripts/DisparityBatch.lsf",
+            "scripts/stock/writeoff/WriteOff.lsf",
+            "scripts/RomanWriteOff.lsf",
+            "scripts/PriceChange.lsf",
+            "scripts/UserPriceChange.lsf",
+            "scripts/Surplus.lsf",
+            "scripts/stock/inventory/Inventory.lsf",
+            "scripts/RomanContractLedger.lsf",
+            "scripts/stock/warehouse/Warehouse.lsf",
+            "scripts/PriceChangeDiscount.lsf",
+            "scripts/CustomCategory.lsf",
+            "scripts/Freight.lsf",
+            "scripts/RomanInvoice.lsf",
+            "scripts/Particulars.lsf",
+            "scripts/Defect.lsf",
+            "scripts/utils/DefaultData.lsf",
+            "scripts/region/ua/machinery/cashregister/FiscalDatecs.lsf",
+            "scripts/RomanTransfer.lsf",
+            "scripts/RomanPOS.lsf",
+            "scripts/RomanCashOperation.lsf",
+            "scripts/ReturnCertification.lsf",
+            "scripts/region/by/stock/StockBy.lsf",
+            "scripts/region/by/stock/store/StoreBy.lsf",
+            "scripts/RomanSales.lsf",
+            "scripts/region/by/stock/writeoff/WriteOffBy.lsf",
+            "scripts/CustomerBy.lsf",
+            "scripts/SupplierBy.lsf",
+            "scripts/region/by/stock/StockDocumentBy.lsf",
+            "scripts/region/by/masterdata/LegalEntityBy.lsf",
+            "scripts/utils/Backup.lsf",
+            "scripts/pricelist/Agreement.lsf",
+            "scripts/pricelist/PriceList.lsf",
+            "scripts/machinery/label/Label.lsf",
+            "scripts/ContractCompany.lsf",
+            "scripts/utils/Integration.lsf",
+            "scripts/stock/StockTax.lsf",
+            "scripts/finance/Finance.lsf",
+            "scripts/retail/Retail.lsf",
+            "scripts/sale/Sale.lsf",
+            "scripts/purchase/Purchase.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
 
-        RomanRB = addModuleFromResource("/scripts/RomanRB.lsf");
+        RomanRB = addModuleFromResource("scripts/RomanRB.lsf");
 
         equipmentServer = new EquipmentServer(RomanRB);
     }

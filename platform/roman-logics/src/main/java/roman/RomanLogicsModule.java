@@ -4185,14 +4185,6 @@ public class RomanLogicsModule extends LogicsModule {
         generateToolbar.setDockPosition(20, 6, 80, 4);
         baseLM.windows.forms.setDockPosition(20, 10, 80, 89);
 
-        NavigatorElement itemClassifier = addNavigatorElement(baseLM.masterData, "itemClassifier", "Номенклатура");
-
-        addFormEntity(new SkuFormEntity(itemClassifier, "skus", "Товары"));
-
-        NavigatorElement contragentClassifier = addNavigatorElement(baseLM.masterData, "contragentClassifier", "Контрагенты");
-
-        NavigatorElement taxClassifier = addNavigatorElement(baseLM.masterData, "taxClassifier", "Налоги");
-
         ArticleCompositeEditFormEntity articleCompositeEditForm = new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)");
         articleComposite.setEditForm(articleCompositeEditForm, articleCompositeEditForm.objArticleComposite);
 
@@ -4211,7 +4203,7 @@ public class RomanLogicsModule extends LogicsModule {
         GenderSupplierFormEntity genderSupplierForm = new GenderSupplierFormEntity(null, "genderSuppliers", "Пол поставщика");
         genderSupplier.setDialogForm(genderSupplierForm, genderSupplierForm.objGender);
 
-        CommonSizeFormEntity commonSizeForm = new CommonSizeFormEntity(null, "commonSizeForm", "Унифицированный размер");
+        CommonSizeFormEntity commonSizeForm = addFormEntity(new CommonSizeFormEntity(null, "commonSizeForm", "Унифицированный размер"));
         commonSize.setDialogForm(commonSizeForm, commonSizeForm.objCommonSize);
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
@@ -4242,29 +4234,17 @@ public class RomanLogicsModule extends LogicsModule {
 
         invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(null, "invoiceExportForm", "Экспорт инвойсов"));
 
-        NavigatorElement purchase = addNavigatorElement(baseLM.root, "purchase", "Управление закупками");
-        purchase.window = baseLM.windows.toolbar;
+        addFormEntity(new ColorSizeSupplierFormEntity(null, "colorSizeSupplierForm", "Поставщики"));
 
-        NavigatorElement purchaseClassifier = addNavigatorElement(purchase, "purchaseClassifier", "Справочники");
-        addFormEntity(new ColorSizeSupplierFormEntity(purchaseClassifier, "сolorSizeSupplierForm", "Поставщики"));
-        //addFormEntity(new ContractFormEntity(purchaseClassifier, "contractForm", "Договора"));
-
-
-        NavigatorElement purchaseDocument = addNavigatorElement(purchase, "purchaseDocument", "Документы");
-
-        NavigatorElement orders = addNavigatorElement(purchaseDocument, "orders", "Заказы");
+        NavigatorElement orders = addNavigatorElement((NavigatorElement)null, "orders", "Заказы");
         addFormEntity(new PricatFormEntity(orders, "pricatForm", "Прикаты"));
 
-        NavigatorElement purchaseCreate = addNavigatorElement(purchase, "purchaseCreate", "Создать");
-        addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).modalityType = ModalityType.FULLSCREEN_MODAL;
-//        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
-//        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).modalityType = ModalityType.FULLSCREEN_MODAL;
-        purchaseCreate.window = generateToolbar;
+        addFormEntity(new OrderEditFormEntity(orders, "orderAddForm", "Создать заказ", false)).modalityType = ModalityType.FULLSCREEN_MODAL;
 
         addFormEntity(new OrderEditFormEntity(null, "orderEditForm", "Редактировать заказ", true));
         addFormEntity(new OrderFormEntity(orders, "orderForm", "Заказы"));
 
-        NavigatorElement invoices = addNavigatorElement(purchaseDocument, "invoices", "Инвойсы");
+        NavigatorElement invoices = addNavigatorElement((NavigatorElement)null, "invoices", "Инвойсы");
 
         addFormEntity(new InvoiceEditFormEntity(null, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
         addFormEntity(new InvoiceEditFormEntity(null, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
@@ -4272,7 +4252,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new InvoiceFormEntity(invoices, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new InvoiceShipmentFormEntity(invoices, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
-        NavigatorElement shipments = addNavigatorElement(purchaseDocument, "shipments", "Поставки");
+        NavigatorElement shipments = addNavigatorElement((NavigatorElement)null, "shipments", "Поставки");
         addFormEntity(new ShipmentListFormEntity(shipments, "boxShipmentListForm", "Поставки по коробам", true));
         addFormEntity(new ShipmentListFormEntity(shipments, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new ShipmentExportFormEntity(shipments, "shipmentExportForm", "Экспорт поставки"));
@@ -4318,14 +4298,6 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new BalanceWarehouseFormEntity(distributionReport, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new BalanceWarehousePeriodFormEntity(distributionReport, "balanceWarehousePeriodForm", "Движение товара за период"));
 
-        NavigatorElement shipment = addNavigatorElement(baseLM.root, "shipment", "Управление фрахтами");
-        shipment.window = baseLM.windows.toolbar;
-
-        NavigatorElement shipmentClassifier = addNavigatorElement(shipment, "shipmentClassifier", "Справочники");
-        shipmentClassifier.add(freightType.getListForm(baseLM).form);
-
-        NavigatorElement shipmentDocument = addNavigatorElement(shipment, "shipmentDocument", "Документы");
-
         logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM, false);
         formLogFreight = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
         formLogFreight.setImage("history.png");
@@ -4335,41 +4307,21 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightChangeFormEntity(null, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(null, "freightInvoiceForm", "Расценка фрахта"));
 
-        addFormEntity(new FreightListFormEntity(shipmentDocument, "freightListForm", "Фрахты"));
+        addFormEntity(new FreightListFormEntity(null, "freightListForm", "Фрахты"));
 
-        //shipmentDocument.add(actionFreight);
-
-        NavigatorElement shipmentReport = addNavigatorElement(shipment, "shipmentReport", "Сводная информация");
-        //addFormEntity(new FreightContentFormEntity(shipmentReport, "freightContentForm", "Содержимое фрахта"));
-        addFormEntity(new FreightReportFormEntity(shipmentReport, "freightReporttForm", "Отчёт по фрахту"));
-        addFormEntity(new FreightBoxContentFormEntity(shipmentReport, "freightBoxContentForm", "Содержимое короба"));
+        addFormEntity(new FreightReportFormEntity(null, "freightReportForm", "Отчёт по фрахту"));
+        addFormEntity(new FreightBoxContentFormEntity(null, "freightBoxContentForm", "Содержимое короба"));
 
         NavigatorElement customs = addNavigatorElement(baseLM.root, "customs", "Таможенное оформление");
         customs.window = baseLM.windows.toolbar;
 
         NavigatorElement customClassifier = addNavigatorElement(customs, "customClassifier", "Справочники");
 
-        NavigatorElement prices = addNavigatorElement(baseLM.root, "prices", "Ценообразование");
-        prices.window = baseLM.windows.toolbar;
-
-        NavigatorElement stock = addNavigatorElement(baseLM.root, "stock", "Управление складом");
-        stock.window = baseLM.windows.toolbar;
-
-        NavigatorElement stockClassifier = addNavigatorElement(stock, "stockClassifier", "Справочники");
-
         NavigatorElement logistics = addNavigatorElement(baseLM.root, "logistics", "Логистика");
         logistics.window = baseLM.windows.toolbar;
 
-        NavigatorElement retail = addNavigatorElement(baseLM.root, "retail", "Розничная торговля");
-        retail.window = baseLM.windows.toolbar;
-
-        NavigatorElement wholesaleTrade = addNavigatorElement(baseLM.root, "wholesaleTrade", "Оптовая торговля");
-        wholesaleTrade.window = baseLM.windows.toolbar;
-
-        NavigatorElement retailClassifier = addNavigatorElement(retail, "retailClassifier", "Справочники");
-        retailClassifier.add(commonSize.getListForm(baseLM).form);
-        addFormEntity(new CommonSizeEditFormEntity(retailClassifier, "commonEditSizeForm", "Белорусские размеры"));
-        addFormEntity(new CommonSizeImportFormEntity(retailClassifier, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
+        addFormEntity(new CommonSizeEditFormEntity(null, "commonEditSizeForm", "Белорусские размеры"));
+        addFormEntity(new CommonSizeImportFormEntity(null, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
 
         baseLM.root.add(baseLM.administration);
     }
@@ -4563,6 +4515,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCommonSize = addSingleGroupObject(commonSize, "Унифицированный размер", baseLM.name);
             objCommonSize.groupTo.initClassView = ClassViewType.GRID;
+            addObjectActions(this, objCommonSize);
 
             addDefaultOrder(baseLM.name, true);
         }

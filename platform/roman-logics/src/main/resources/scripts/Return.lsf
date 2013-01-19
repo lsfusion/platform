@@ -6,7 +6,7 @@ REQUIRE System,
         Stock,
         RomanStock,
         DocumentTransfer,
-        Sale,
+        RomanSale,
         ConsignmentBy,
         ContractCompany,
         RomanLogicsModule;

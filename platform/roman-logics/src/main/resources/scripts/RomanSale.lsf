@@ -1,4 +1,4 @@
-MODULE Sale;
+MODULE RomanSale;
 
 REQUIRE System,
         Document,

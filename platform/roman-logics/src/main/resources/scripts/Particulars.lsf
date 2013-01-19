@@ -436,7 +436,7 @@ DESIGN salesSizeSupplierItem FROM DEFAULT {
 
 
 NAVIGATOR {
-    salesNavigator 'Продажи' {
+    saleLedgerNavigator 'Продажи' {
         ADD salesArticle;
         ADD salesArticleTheme;
         ADD salesSizeSupplierItem;

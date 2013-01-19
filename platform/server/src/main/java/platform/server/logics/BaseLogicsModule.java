@@ -784,7 +784,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     // Окна
     public class Windows {
-        public NavigatorWindow root;
+        public ToolBarNavigatorWindow root;
         public NavigatorWindow toolbar;
         public NavigatorWindow tree;
         public AbstractWindow forms;
@@ -819,6 +819,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Окна
         windows = new Windows();
         windows.root = addWindow(new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "root", getString("logics.window.root"), 0, 0, 100, 6));
+        windows.root.alignmentY = JToolBar.CENTER_ALIGNMENT;
         windows.root.titleShown = false;
         windows.root.drawScrollBars = false;
 
