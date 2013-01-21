@@ -23,17 +23,6 @@ FORM itemGroups 'Товарные группы'
     PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
     PROPERTIES(g)          ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
-
-//    OBJECTS g=itemGroup
-//    PROPERTIES(g) canonicalNameItemGroup READONLY, delete
-//    PROPERTIES(g)          ADDFORM, EDITFORM
-//    ORDER BY canonicalNameItemGroup
-//
-//    FILTERGROUP filters
-//        FILTER 'Все листья' 'F10' isParentLeafItemGroupItemGroup(g, tg)
-//        FILTER 'Всех потомков' 'F9' isParentItemGroupItemGroup(g, tg) DEFAULT
-//        FILTER 'Только непосредственных потомков' 'F8' parentItemGroup(g) == tg
-
 ;
 
 FORM dialogItemGroups 'Товарные группы'
@@ -48,7 +37,7 @@ FORM dialogItemGroups 'Товарные группы'
 
     FILTERS isParentItemGroupItemGroup(g, tg)
 
-    DIALOG itemGroup OBJECT tg
+    DIALOG itemGroup OBJECT g
 ;
 
 DESIGN dialogItemGroups FROM DEFAULT {
@@ -471,14 +460,28 @@ EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegist
 
 // --------------------------------------- Генерация штрих-кодов --------------------------------------------- //
 
-pieceNumeratorItemGroup = DATA numerator (itemGroup);
-namePieceNumeratorItemGroup 'Нумератор штрих-кодов (для штучного товара)' (itemGroup) = name(pieceNumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
+META defineNumeratorItemGroup (prefix, caption)
+    data###prefix##NumeratorItemGroup = DATA numerator (itemGroup);
+    levelParent###prefix##NumeratorItemGroup (itemGroup) = GROUP MIN levelItemGroupItemGroup(itemGroup, parent) IF data###prefix##NumeratorItemGroup(parent)
+                                                                  BY itemGroup PERSISTENT;
+    nearestParent###prefix##NumeratorItemGroup (itemGroup) = itemGroupItemGroupLevel(itemGroup, levelParent###prefix##NumeratorItemGroup(itemGroup));
+    nearest###prefix##NumeratorItemGroup (itemGroup) = data###prefix##NumeratorItemGroup(nearestParent###prefix##NumeratorItemGroup(itemGroup)) PERSISTENT;
 
-weightNumeratorItemGroup = DATA numerator (itemGroup);
-nameWeightNumeratorItemGroup 'Нумератор штрих-кодов (для весового товара)' (itemGroup) = name(weightNumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
+    prefix##NumeratorItemGroup (itemGroup) =
+        UNION OVERRIDE nearest###prefix##NumeratorItemGroup(itemGroup), data###prefix##NumeratorItemGroup(itemGroup) PERSISTENT;
+    name###prefix##NumeratorItemGroup caption (itemGroup) = name(prefix##NumeratorItemGroup(itemGroup)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 10;
 
-EXTEND FORM itemGroup PROPERTIES(g)  AFTER nameParentItemGroup namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
-EXTEND FORM itemGroups PROPERTIES(g) AFTER canonicalNameItemGroup READONLY namePieceNumeratorItemGroup, nameWeightNumeratorItemGroup;
+    background###prefix##NumeratotItemGroup (itemGroup) = IF data###prefix##NumeratorItemGroup(itemGroup) THEN
+                                                                      RGB(190,190,190) IF itemGroup IS itemGroup
+                                                                  ELSE
+                                                                      RGB(230,230,230) IF prefix##NumeratorItemGroup (itemGroup);
+
+    EXTEND FORM itemGroup PROPERTIES(g)  AFTER nameParentItemGroup name###prefix##NumeratorItemGroup;
+    EXTEND FORM itemGroups PROPERTIES(g) AFTER canonicalNameItemGroup READONLY name###prefix##NumeratorItemGroup  BACKGROUND background###prefix##NumeratotItemGroup(g);
+END
+
+@defineNumeratorItemGroup (piece, 'Нумератор штрих-кодов (для штучного товара)');
+@defineNumeratorItemGroup (weight, 'Нумератор штрих-кодов (для весового товара)');
 
 pieceNumeratorItem (item) = pieceNumeratorItemGroup(itemGroupItem(item));
 weightNumeratorItem (item) = weightNumeratorItemGroup(itemGroupItem(item));
