@@ -868,14 +868,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
         addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
 
-        objects = addNavigatorElement(administration, "objects", getString("logics.object"));
-        objects.window = windows.tree;
-
         security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
 
         configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
 
         systemEvents = addNavigatorElement(administration, "systemEvents", getString("logics.administration.events"));
+
+        objects = addNavigatorElement(administration, "objects", getString("logics.object"));
+        objects.window = windows.tree;
     }
 
     public void initClassForms() {
