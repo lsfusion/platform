@@ -12,7 +12,8 @@ TABLE order(order);
 @defineDocumentHeaderNote(order);
 
 @defineDocumentHeaderPosted (order);
-@defineDocumentHeaderPriceListType (order);
+@defineDocumentHeaderPriceListType (order, priceListType, , ' (потребность)');
+@defineDocumentHeaderPriceListType (order, calcPriceListType, , ' (надбавка)');
 
 @defineDocumentHeaderStock (order, stock, 'Склад сырья', component);
 @defineDocumentHeaderStock (order, stock, 'Склад готовой продукции', goods);
@@ -54,15 +55,36 @@ UOMProductDetail(productDetail) <-UOMProduct(productProductDetail(productDetail)
 
 CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(productDetail)) CHECKED BY productProductDetail
     MESSAGE 'Sku изделия и строки изделия не соответствуют друг другу';
-
-@defineDocumentDetailPriceCustomPrefix (productDetail, , );
-
 currencyProductDetail (productDetail)= currencyOrder(orderProductDetail(productDetail));
 
-sumProductDetail 'Сумма' = DATA NUMERIC[16,2] (productDetail);
-sumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * priceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+@defineDocumentDetailPriceCustomPrefix (productDetail, components, ' компонентов');
+
+componentsSumProductDetail 'Сумма компонентов' = DATA NUMERIC[16,2] (productDetail);
+componentsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * componentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (quantityProductDetail(productDetail)) OR
-         CHANGED (priceProductDetail(productDetail)) OR
+         CHANGED (componentsPriceProductDetail(productDetail)) OR
+         CHANGED(currencyProductDetail(productDetail));
+
+calcPriceListTypeProductDetail (productDetail) = calcPriceListTypeOrder(orderProductDetail(productDetail));
+markupProductDetail 'Надбавка, %' = DATA NUMERIC[8,2] (productDetail);
+markupProductDetail(productDetail) <- markupCalcPriceListTypePriceGroupOver(calcPriceListTypeProductDetail(productDetail), priceGroupSku(skuProductDetail(productDetail)))
+    WHEN CHANGED (calcPriceListTypeProductDetail(productDetail)) OR
+         CHANGED (skuProductDetail(productDetail));
+
+multiplierCalcProductDetail (productDetail) = ((100.00 IF productDetail IS productDetail) (+) markupProductDetail(productDetail)) / 100 PERSISTENT;
+
+@defineDocumentDetailPriceCustomPrefix (productDetail, products, ' изделия');
+productsPriceProductDetail(productDetail) <-
+    roundPriceRoundCondition(componentsPriceProductDetail(productDetail) *
+    multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail)))
+        WHEN CHANGED (componentsPriceProductDetail(productDetail)) OR
+             CHANGED (multiplierCalcProductDetail(productDetail)) OR
+             CHANGED (calcPriceListTypeProductDetail(productDetail));
+
+productsSumProductDetail 'Сумма изделия' = DATA NUMERIC[16,2] (productDetail);
+productsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+    WHEN CHANGED (quantityProductDetail(productDetail)) OR
+         CHANGED (productsPriceProductDetail(productDetail)) OR
          CHANGED(currencyProductDetail(productDetail));
 
 // ------------- Компоненты ----------- //
@@ -237,7 +259,7 @@ recPriceProductDetail 'Цена расчетная'(productDetail) = recPricePro
 fillPriceProductsOrder 'Заполнить цены для изделий по с/с' = ACTION (order)  {
 
     FOR orderProductDetail(productDetail) == order DO {
-        SET priceProductDetail(productDetail) <- recPriceProductDetail(productDetail);
+        SET componentsPriceProductDetail(productDetail) <- recPriceProductDetail(productDetail);
     }
 } TOOLBAR;
 
@@ -257,10 +279,10 @@ FORM order 'Производственный заказ'
     OBJECTS o = order FIXED PANEL
     PROPERTIES(o) objectClassName, nameComponentStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
-
+    PROPERTIES(o) nameCalcPriceListTypeOrder FORCE PANEL
     OBJECTS pd=productDetail
-    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
-                   priceProductDetail, sumProductDetail, recPriceProductDetail READONLY
+    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, recPriceProductDetail READONLY,
+                   componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     PROPERTIES(pd) ADDOBJ, delete
     PROPERTIES(o) TODRAW pd fillPriceProductsOrder, deleteProductDetailOrder
 
@@ -307,15 +329,26 @@ DESIGN order FROM DEFAULT{
         preferredSize = (1024, 768);
         NEW specification.box BEFORE functions.box{
             type = TABBED;
-            ADD pd.box { title = 'Изделия';}
+            NEW row1 {
+                title = 'Изделия';
+                childConstraints = TO THE BOTTOM;
+                NEW row11 {
+                    childConstraints = TO THE BOTTOM;
+                    NEW row111{
+                        title = 'Цена изделий';
+                        ADD PROPERTY(nameCalcPriceListTypeOrder);
+                    }
+                    ADD pd.box;
+                }
+            }
             ADD cd.box { title = 'Компоненты';}
-            NEW row {
+            NEW row2 {
                 title = 'Потребность';
                 childConstraints = TO THE BOTTOM;
-                NEW row1 {
+                NEW row21 {
                     childConstraints = TO THE BOTTOM;
-                    ADD o.panel {
-                        title = 'Вид цен для материалов';
+                    NEW row211 {
+                        title = 'Цена материалов';
                         ADD PROPERTY(namePriceListTypeOrder);
                     }
                     ADD s.box;
@@ -378,8 +411,8 @@ FORM orders 'Производственные заказы'
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=productDetail
-    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail,
-                   quantityProductDetail, priceProductDetail, sumProductDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
