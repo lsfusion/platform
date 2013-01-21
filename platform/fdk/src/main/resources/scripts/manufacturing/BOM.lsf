@@ -447,23 +447,33 @@ DESIGN BOMs FROM DEFAULT {
 
 // ----- Рекурсивный расчет потребностей ---------- //
 
-TABLE BOMMaterial(BOM, material, DATE);
 // кол-во требуемых материалов материалов
 bruttoQuantityBOMMaterialDate (BOM, material, date) = GROUP SUM bruttoQuantityComponentDate(component, date) BY BOMComponent(component), materialComponent(component), date;
 bruttoQuantityBOMSkuDate(BOM, sku, date) = bruttoQuantityBOMMaterialDate(BOM, sku, date) AND sku IS sku;
 
 bruttoQuantityBOMBOMDate (parent, child, date) = GROUP MAX bruttoQuantityBOMMaterialDate(BOM, material, date) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
+recBruttoQuantityBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * bruttoQuantityBOMBOMDate($child, child, date) CYCLES;
 recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 //recBruttoQuantityBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
 
+//EXTEND FORM BOM
+//    OBJECTS d = DATE FIXED PANEL
+//    PROPERTIES(d) OBJVALUE
+//
+//    OBJECTS s = sku
+//    PROPERTIES nameSku(s), recBruttoQuantityBOMSkuDate(b, s, d)
+//
+//    OBJECTS bs = BOM
+//    PROPERTIES name(bs), recBruttoQuantityBOMBOMDate(b, bs, d), bruttoQuantityBOMBOMDate(b, bs, d)
+//;
+
 // Расчет цены
 priceCoeffBOMBOMDate(parent, child, date) = GROUP SUM bruttoQuantityBOMMaterialDate(BOM, material, date) * priceCoeffProduct(material) / quantityProduct(material) BY BOM, BOMProduct(material), date;
 
-recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.0 AND q == 1.0 AND child == (parent AS BOM) AND date IS DATE STEP 1.0 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES;
+recPriceCoeffBOMBOMDateResult (parent, child, date, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM) AND date IS DATE STEP 1.00000000000 AND q == $q * priceCoeffBOMBOMDate($child, child, date) CYCLES;
 recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDateResult(parent, child, date, q) * q BY parent, child, date;
 //recPriceCoeffBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
