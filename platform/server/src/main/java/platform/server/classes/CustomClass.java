@@ -344,6 +344,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             }
 
             form = createDefaultForm(LM);
+            LM.addFormEntity(form.form);
 
             return form;
         }
