@@ -1,6 +1,6 @@
 MODULE Equipment;
 
-REQUIRE Terminal, CashRegister, Scales, PriceChecker;
+REQUIRE Terminal, CashRegister, Scales, PriceChecker, Item, POS;
 
 //---------------------------------------------- Генерация Z-отчета -------------------------------------------------//
 
@@ -8,12 +8,19 @@ generateZReport 'Сгенерировать Z-отчёт' = ACTION CUSTOM 'equ.s
 averageZReportCountGenerateZReport 'Среднее число Z-отчётов' = DATA INTEGER ();
 averageReceiptCountGenerateZReport 'Среднее число чеков' = DATA INTEGER ();
 averageReceiptDetailCountGenerateZReport 'Среднее число строк в чеке' = DATA INTEGER ();
+priceListTypeGenerateZReport 'Вид цен' = DATA priceListType ();
 dateFromGenerateZReport 'Дата (с)' = DATA DATETIME ();
 dateToGenerateZReport 'Дата (по)' = DATA DATETIME ();
 
+maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
+priceSkuGroupMachinery 'Цена' (sku, groupMachinery) = pricePriceListTypeSkuStockDateTime(priceListTypeGenerateZReport(),
+                                                                                                 sku,
+                                                                                                 stockGroupMachinery(groupMachinery),
+                                                                                                 dateFromGenerateZReport());
+
 EXTEND FORM defaultData
     PROPERTIES()    generateZReport, averageZReportCountGenerateZReport, averageReceiptCountGenerateZReport, averageReceiptDetailCountGenerateZReport,
-                    dateFromGenerateZReport, dateToGenerateZReport
+                    priceListTypeGenerateZReport, dateFromGenerateZReport, dateToGenerateZReport
 
 ;
 
@@ -25,6 +32,7 @@ EXTEND DESIGN defaultData {
             ADD PROPERTY(averageZReportCountGenerateZReport());
             ADD PROPERTY(averageReceiptCountGenerateZReport());
             ADD PROPERTY(averageReceiptDetailCountGenerateZReport());
+            ADD PROPERTY(priceListTypeGenerateZReport());
             ADD PROPERTY(dateFromGenerateZReport());
             ADD PROPERTY(dateToGenerateZReport());
             ADD PROPERTY(generateZReport());

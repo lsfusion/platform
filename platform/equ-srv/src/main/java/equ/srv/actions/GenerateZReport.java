@@ -15,6 +15,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -44,6 +45,7 @@ public class GenerateZReport extends ScriptingActionProperty {
             Integer zReportCount = addDeviation((Integer) getLCP("averageZReportCountGenerateZReport").read(context), 0.25, r);
             Integer receiptCount = (Integer) getLCP("averageReceiptCountGenerateZReport").read(context);
             Integer receiptDetailCount = (Integer) getLCP("averageReceiptDetailCountGenerateZReport").read(context);
+            ObjectValue priceListType = getLCP("priceListTypeGenerateZReport").readClasses(context);
             Date dateFrom = (Date) getLCP("dateFromGenerateZReport").read(context);
             dateFrom = dateFrom == null ? new Date(System.currentTimeMillis()) : dateFrom;
             Date dateTo = (Date) getLCP("dateToGenerateZReport").read(context);
@@ -55,7 +57,7 @@ public class GenerateZReport extends ScriptingActionProperty {
 
             QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(newKeys);
             query.addProperty("currentBalanceSkuStock", getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr));
-            query.addProperty("currentRetailPriceLedger", getLCP("currentRetailPriceLedger").getExpr(itemExpr, departmentStoreExpr));
+            query.addProperty("priceSkuGroupMachinery", getLCP("priceSkuGroupMachinery").getExpr(itemExpr, priceListType.getExpr()));
             query.and(getLCP("currentBalanceSkuStock").getExpr(itemExpr, departmentStoreExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
@@ -70,10 +72,10 @@ public class GenerateZReport extends ScriptingActionProperty {
                     Integer departmentStore = (Integer) resultKeys.get("departmentStore");
                     if ((departmentStore != null) && (!departmentStoreList.contains(departmentStore)))
                         departmentStoreList.add(departmentStore);
-                    Double currentRetailPriceLedger = (Double) resultValues.get("currentRetailPriceLedger");
+                    Double priceSkuGroupMachinery = (Double) resultValues.get("priceSkuGroupMachinery");
                     String barcodeItem = (String) getLCP("idBarcodeSku").read(session, itemObject);
                     Boolean isWeightItem = (Boolean) getLCP("isWeightItem").read(session, itemObject);
-                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, currentRetailPriceLedger, isWeightItem != null, departmentStore));
+                    itemZReportInfoList.add(new ItemZReportInfo(barcodeItem, currentBalanceSkuStock, priceSkuGroupMachinery, isWeightItem != null, departmentStore));
                 }
             }
 
