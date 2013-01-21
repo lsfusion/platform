@@ -121,6 +121,14 @@ public class GPanelController {
         return true;
     }
 
+    public void relayout(ArrayList<GPropertyDraw> properties) {
+        for (GPropertyController property : propertyControllers.values()) {
+            if (properties.contains(property.property)) {
+                property.relayout();
+            }
+        }
+    }
+
     private class GPropertyController {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
@@ -266,6 +274,12 @@ public class GPanelController {
 
         public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
             this.cellForegroundValues = cellForegroundValues;
+        }
+
+        public void relayout() {
+            for (PanelRenderer renderer : renderers.values()) {
+                renderer.relayout();
+            }
         }
     }
 }

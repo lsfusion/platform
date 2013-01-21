@@ -102,6 +102,18 @@ public class GContainer extends GComponent {
         return grids;
     }
 
+    public List<GPropertyDraw> getAllPropertyDraws() {
+        List<GPropertyDraw> draws = new ArrayList<GPropertyDraw>();
+        for (GComponent child : children) {
+            if (child instanceof GPropertyDraw) {
+                draws.add((GPropertyDraw) child);
+            } else if (child instanceof GContainer) {
+                draws.addAll(((GContainer) child).getAllPropertyDraws());
+            }
+        }
+        return draws;
+    }
+
     public boolean containsTreeGroup() {
         return !getAllTreeGrids().isEmpty();
     }

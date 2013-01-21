@@ -9,7 +9,10 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
@@ -610,6 +613,7 @@ public class GFormController extends SimplePanel {
         }
         List<GGrid> grids = new ArrayList<GGrid>();
         List<GTreeGroup> treeGrids = new ArrayList<GTreeGroup>();
+        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
         if (component instanceof GGrid) {
             grids.add((GGrid) component);
         } else if (component instanceof GTreeGroup) {
@@ -617,6 +621,14 @@ public class GFormController extends SimplePanel {
         } else if (component instanceof GContainer) {
             grids.addAll(((GContainer) component).getAllGrids());
             treeGrids.addAll(((GContainer) component).getAllTreeGrids());
+            properties.addAll(((GContainer) component).getAllPropertyDraws());
+        }
+
+        for (GGroupObjectController groupController : controllers.values()) {
+            groupController.relayoutPanelProperties(properties);
+        }
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            treeController.relayoutPanelProperties(properties);
         }
         for (GGrid grid : grids) {
             if (controllers.get(grid.groupObject) != null) {

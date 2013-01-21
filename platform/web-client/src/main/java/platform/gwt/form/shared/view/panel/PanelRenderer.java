@@ -16,4 +16,6 @@ public interface PanelRenderer extends Serializable {
 
     void focus();
     String getWidth();
+
+    void relayout();
 }

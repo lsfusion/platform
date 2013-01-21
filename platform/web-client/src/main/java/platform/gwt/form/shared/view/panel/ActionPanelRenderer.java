@@ -148,6 +148,10 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     }
 
     @Override
+    public void relayout() {
+    }
+
+    @Override
     public void onEditFinished() {
         if (focusTargetAfterEdit != null) {
             Element.as(focusTargetAfterEdit).focus();

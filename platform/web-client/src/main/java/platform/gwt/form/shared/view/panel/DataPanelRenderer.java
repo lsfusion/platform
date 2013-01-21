@@ -147,4 +147,9 @@ public class DataPanelRenderer implements PanelRenderer {
     public String getWidth() {
         return componentWidth;
     }
+
+    @Override
+    public void relayout() {
+        valueTable.onResize();
+    }
 }
