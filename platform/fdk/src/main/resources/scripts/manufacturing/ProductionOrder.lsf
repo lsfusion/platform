@@ -74,18 +74,21 @@ markupProductDetail(productDetail) <- markupCalcPriceListTypePriceGroupOver(calc
 multiplierCalcProductDetail (productDetail) = ((100.00 IF productDetail IS productDetail) (+) markupProductDetail(productDetail)) / 100 PERSISTENT;
 
 @defineDocumentDetailPriceCustomPrefix (productDetail, products, ' изделия');
-productsPriceProductDetail(productDetail) <-
-    roundPriceRoundCondition(componentsPriceProductDetail(productDetail) *
-    multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail)))
+productsPriceProductDetail(productDetail) <- IF calcPriceListTypeProductDetail(productDetail) THEN
+    toNumeric14p2(roundPriceRoundCondition(componentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
+    ELSE toNumeric14p2(roundCurrency((componentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail)))
         WHEN CHANGED (componentsPriceProductDetail(productDetail)) OR
              CHANGED (multiplierCalcProductDetail(productDetail)) OR
-             CHANGED (calcPriceListTypeProductDetail(productDetail));
+             CHANGED (calcPriceListTypeProductDetail(productDetail)) OR
+             CHANGED (currencyProductDetail(productDetail));
 
 productsSumProductDetail 'Сумма изделия' = DATA NUMERIC[16,2] (productDetail);
 productsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (quantityProductDetail(productDetail)) OR
          CHANGED (productsPriceProductDetail(productDetail)) OR
          CHANGED(currencyProductDetail(productDetail));
+
+@defineDocumentHeaderSumCustomPrefix (order, productDetail, products, ' (изделие)');
 
 // ------------- Компоненты ----------- //
 CLASS componentDetail 'Строка компонента' : named;
@@ -101,7 +104,7 @@ TABLE componentDetail (componentDetail);
 @defineDocumentDetailDatePrefix (order, componentDetail, to, ' действия по');
 
 @defineDocumentDetailQuantityCustomPrefix (componentDetail, brutto, ' (брутто)');
-@defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, brutto, ' (материал брутто)');
+//@defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, brutto, ' (материал брутто)');
 
 @defineDocumentDetailSkuCustom (componentDetail, sku);
 
@@ -272,13 +275,17 @@ multiplierSubstitutesComponentDetail 'Коэффициент замены' (comp
 quantitySubstitutesComponentDetail 'Кол-во замены' (componentDetail)= quantitySubstitutesSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) AND
     substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
 
+overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) OR substituteComponentDetail(componentDetail);
+overQuantityComponentDetail (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
+
+@defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, over, ' (материал)');
 // ------------- Формы ----------- //
 
 FORM order 'Производственный заказ'
 
     OBJECTS o = order FIXED PANEL
     PROPERTIES(o) objectClassName, nameComponentStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder
     PROPERTIES(o) nameCalcPriceListTypeOrder FORCE PANEL
     OBJECTS pd=productDetail
     PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, recPriceProductDetail READONLY,
@@ -406,7 +413,9 @@ FORM orders 'Производственные заказы'
 
     OBJECTS o = order
     PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, bruttoQuantityComponentDetailOrder, namePriceListTypeOrder
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+
     PROPERTIES(o) ADDFORM, EDITFORM, delete
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
