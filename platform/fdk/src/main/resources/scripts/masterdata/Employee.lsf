@@ -22,9 +22,9 @@ CLASS ABSTRACT employeeDivisionGroup 'Группа подразделений' :
 CLASS ABSTRACT employeeDivision 'Подразделение' : named;
 TABLE employeeDivision(employeeDivision);
 
-TABLE employeeDivisionGroupEmployeeDivision(employeeDivisionGroup, employeeDivision);
-
 employeeDivisionGroupEmployeeDivision = ABSTRACT employeeDivisionGroup (employeeDivision) PERSISTENT;
+
+TABLE employeeDivisionGroupEmployeeDivision(employeeDivisionGroup, employeeDivision);
 isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDivision) = isParentEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroupEmployeeDivision(employeeDivision), employeeDivisionGroup) PERSISTENT;
 
 // ------------------------------------- Сотрудники -------------------------------------- //
@@ -42,6 +42,8 @@ inEmployeeDivisionEmployee 'Сотрудник отдела' = DATA BOOLEAN (emp
 
 accessEmployee 'Доступ разрешен' = DATA BOOLEAN (employee);
 accessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
+
+TABLE employeeDivisionGroupEmployee(employeeDivisionGroup, employee);
 accessEmployeeDivisionGroupEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivisionGroup, employee);
 
 levelParentEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) = GROUP MIN levelEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroup, parent) IF accessEmployeeDivisionGroupEmployee(parent, employee)

@@ -26,6 +26,7 @@ FORM truckModels 'Модели машин'
 
 // Машины
 CLASS truck 'Машина';
+TABLE truck(truck);
 
 sidTruck 'Номер' = DATA STRING[20](truck);
 truckModelTruck = DATA truckModel(truck);
