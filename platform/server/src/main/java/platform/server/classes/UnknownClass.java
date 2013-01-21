@@ -4,6 +4,7 @@ import platform.base.ImmutableObject;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -88,7 +89,7 @@ public class UnknownClass extends ImmutableObject implements ConcreteObjectClass
         return new AndClassSet[]{this};
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public ActionProperty getChangeClassAction() {
         return CustomClass.getChangeClassAction(this);
     }

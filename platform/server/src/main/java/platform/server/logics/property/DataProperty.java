@@ -8,6 +8,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MCol;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -45,12 +46,12 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return false;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     protected CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
         return IsClassProperty.getProperty(value, "value");
     }

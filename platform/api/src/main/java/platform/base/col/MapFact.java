@@ -16,6 +16,9 @@ import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
+import platform.base.col.lru.ArLRUIndexedMap;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -421,15 +424,7 @@ public class MapFact {
         return mAddExclMap();
     }
 
-    public static <K, V> MAddExclMap<K, V> mBigCacheMap() {
-        return mBigStrongMap();
-    }
-
     public static <K, V> MAddExclMap<K, V> mSmallStrongMap() {
-        return new ArIndexedMap<K, V>(MapFact.<K, V>exclusive());
-    }
-
-    public static <K, V> MAddExclMap<K, V> mSmallCacheMap() {
         return new ArIndexedMap<K, V>(MapFact.<K, V>exclusive());
     }
 

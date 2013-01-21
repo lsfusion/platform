@@ -12,7 +12,8 @@ import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.add.MAddCol;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.data.Value;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.MapQuery;
@@ -25,14 +26,15 @@ public class QueryCacheAspect {
     private final static Logger logger = Logger.getLogger(QueryCacheAspect.class);
 
     public interface QueryCacheInterface {
-        MAddExclMap getJoinCache();
+        MCacheMap getJoinCache();
         
         IQuery getCacheTwin();
         void setCacheTwin(IQuery query);
     }
     public static class QueryCacheInterfaceImplement implements QueryCacheInterface {
-        MAddExclMap joinCache = MapFact.mSmallCacheMap();
-        public MAddExclMap getJoinCache() { return joinCache; }
+        MCacheMap joinCache = LRUCache.mSmall(LRUCache.EXP_RARE);
+
+        public MCacheMap getJoinCache() { return joinCache; }
 
         IQuery cacheTwin;
         public IQuery getCacheTwin() {
@@ -57,7 +59,8 @@ public class QueryCacheAspect {
         return null;
     }
 
-    final static MAddExclMap<Integer, MAddCol<Query>> hashTwins = MapFact.mBigCacheMap();
+    final static MCacheMap<Integer, MAddCol<Query>> hashTwins = LRUCache.mBig();
+
     <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
         IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
         if(result!=null)

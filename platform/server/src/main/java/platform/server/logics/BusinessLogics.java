@@ -34,6 +34,7 @@ import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -130,8 +131,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void setDialogUndecorated(Boolean dialogUndecorated) {
         this.dialogUndecorated = dialogUndecorated;
     }
-
-    public final static boolean activateCaches = true;
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
         if (restartController.isPendingRestart()) {
@@ -1055,7 +1054,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return sqlRef.get();
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // ресурсы потребляет
     private SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
         try {
             return createSQL(Connection.TRANSACTION_REPEATABLE_READ);
@@ -1765,7 +1764,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         System.out.println(show);
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // глобальное очень сложное вычисление
     public List<Property> getPropertyList(boolean onlyCheck) {
         // жестковато тут конечно написано, но пока не сильно времени жрет
 
@@ -1855,7 +1854,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
-    @IdentityLazy
+    @IdentityStrongLazy // глобальное очень сложное вычисление
     private Map<CalcProperty, List<CalcProperty>> getMapAppliedDepends() {
         Map<CalcProperty, Set<CalcProperty>> mapDepends = new HashMap<CalcProperty, Set<CalcProperty>>();
         for (CalcProperty property : getStoredProperties()) {

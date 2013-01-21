@@ -6,6 +6,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.base.ClassUtils;
 import platform.base.ExceptionUtils;
+import platform.base.col.lru.LRUCache;
 import platform.interop.RemoteServerAgentLoaderInterface;
 import platform.server.Settings;
 import platform.server.lifecycle.LifecycleManager;
@@ -47,6 +48,8 @@ public class BusinessLogicsBootstrap {
         initRMI();
 
         initSpringContext();
+
+        initLRUCaches();
 
         initLifecycleManager();
 
@@ -169,6 +172,12 @@ public class BusinessLogicsBootstrap {
         } catch (Exception e) {
             logger.error("Unhandled exception : ", e);
         }
+    }
+
+    private static void initLRUCaches() {
+        LRUCache.init(new int[] { Settings.instance.getLRUOftenCleanPeriod(), Settings.instance.getLRURareCleanPeriod()},
+                      new int[] { Settings.instance.getLRUOftenExpireSecond(), Settings.instance.getLRURareExpireSecond()},
+                      new int[] { Settings.instance.getLRUOftenProceedBucket(), Settings.instance.getLRURareProceedBucket()});
     }
 
     private static void initLifecycleManager() {

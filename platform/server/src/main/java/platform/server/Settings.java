@@ -27,6 +27,61 @@ public class Settings {
         this.packOnCacheComplexity = packOnCacheComplexity;
     }
 
+    private int LRUOftenCleanPeriod = 2;
+    private int LRUOftenExpireSecond = 5;
+    private int LRUOftenProceedBucket = 10000;
+    private int LRURareCleanPeriod = 20;
+    private int LRURareExpireSecond = 3600;
+    private int LRURareProceedBucket = 10000;
+
+    public int getLRUOftenCleanPeriod() {
+        return LRUOftenCleanPeriod;
+    }
+
+    public void setLRUOftenCleanPeriod(int LRUOftenCleanPeriod) {
+        this.LRUOftenCleanPeriod = LRUOftenCleanPeriod;
+    }
+
+    public int getLRUOftenExpireSecond() {
+        return LRUOftenExpireSecond;
+    }
+
+    public void setLRUOftenExpireSecond(int LRUOftenExpireSecond) {
+        this.LRUOftenExpireSecond = LRUOftenExpireSecond;
+    }
+
+    public int getLRUOftenProceedBucket() {
+        return LRUOftenProceedBucket;
+    }
+
+    public void setLRUOftenProceedBucket(int LRUOftenProceedBucket) {
+        this.LRUOftenProceedBucket = LRUOftenProceedBucket;
+    }
+
+    public int getLRURareCleanPeriod() {
+        return LRURareCleanPeriod;
+    }
+
+    public void setLRURareCleanPeriod(int LRURareCleanPeriod) {
+        this.LRURareCleanPeriod = LRURareCleanPeriod;
+    }
+
+    public int getLRURareExpireSecond() {
+        return LRURareExpireSecond;
+    }
+
+    public void setLRURareExpireSecond(int LRURareExpireSecond) {
+        this.LRURareExpireSecond = LRURareExpireSecond;
+    }
+
+    public int getLRURareProceedBucket() {
+        return LRURareProceedBucket;
+    }
+
+    public void setLRURareProceedBucket(int LRURareProceedBucket) {
+        this.LRURareProceedBucket = LRURareProceedBucket;
+    }
+
     private boolean cacheInnerHashes = true;
 
     public boolean isCacheInnerHashes() {

@@ -21,6 +21,7 @@ import platform.interop.PropertyEditType;
 import platform.server.Context;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
@@ -351,7 +352,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public TreeGroupEntity addTreeGroupObject(GroupObjectEntity... tGroups) {
-        return addTreeGroupObject((String)null, tGroups);
+        return addTreeGroupObject((String) null, tGroups);
     }
 
     public TreeGroupEntity addTreeGroupObject(String sID, GroupObjectEntity... tGroups) {
@@ -1114,7 +1115,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             return add(new ComponentSet(container));
         }
     }
-    @IdentityLazy
+    @IdentityStrongLazy
     public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
         ComponentSet result = new ComponentSet();
         for(PropertyDrawEntity property : propertyDraws)

@@ -18,7 +18,6 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         super(property, mapping);
     }
 
-    @IdentityLazy
     public ActionPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }

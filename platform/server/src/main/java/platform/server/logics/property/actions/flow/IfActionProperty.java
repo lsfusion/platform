@@ -3,6 +3,7 @@ package platform.server.logics.property.actions.flow;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -40,7 +41,7 @@ public class IfActionProperty extends KeepContextActionProperty {
         finalizeInit();
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return DerivedProperty.createIfElseUProp(interfaces, ifProp,
                 trueAction != null ? trueAction.mapWhereProperty() : null,

@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -78,7 +79,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         return used.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return DerivedProperty.createJoin(action.property.getWhereProperty().mapImplement(action.mapping));
     }

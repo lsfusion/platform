@@ -2,16 +2,16 @@ package platform.server.classes;
 
 import platform.base.ImmutableObject;
 import platform.base.SFunctionSet;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclSet;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
-import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.query.Stat;
@@ -22,7 +22,6 @@ import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.ChangeClassActionProperty;
@@ -142,13 +141,13 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result.immutable();
     }
 
-    MAddExclMap<CustomClass,ImSet<CustomClass>> cacheChilds = MapFact.mSmallCacheMap();
+    private MCacheMap<CustomClass,ImSet<CustomClass>> cacheChilds = LRUCache.mSmall(LRUCache.EXP_RARE);
 
     // получает классы у которого есть оба интерфейса
     public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
-        ImSet<CustomClass> result = null;
-        if(BusinessLogics.activateCaches) result = cacheChilds.get(toCommon);
+        ImSet<CustomClass> result = cacheChilds.get(toCommon);
         if(result!=null) return result;
+
         commonClassSet1(false);
         toCommon.commonClassSet2(false,null,false);
 
@@ -156,7 +155,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         commonClassSet3(mResult,null,false);
         result = mResult.immutable();
 
-        if(BusinessLogics.activateCaches) cacheChilds.exclAdd(toCommon, result);
+        cacheChilds.exclAdd(toCommon, result);
         return result;
     }
 
@@ -492,7 +491,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return ChangeClassActionProperty.create(cls, false, cls.getBaseClass());
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public ActionProperty getChangeClassAction() {
         return getChangeClassAction(this);
     }

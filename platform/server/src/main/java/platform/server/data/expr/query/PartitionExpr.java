@@ -10,6 +10,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.Settings;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
@@ -229,7 +230,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
             return super.getAndClassSet(and);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
         return new PartitionJoin(getInner().getInnerKeys(), getInner().getInnerValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
     }

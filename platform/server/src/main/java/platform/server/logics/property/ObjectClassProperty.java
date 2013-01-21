@@ -6,6 +6,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.CustomClass;
@@ -56,7 +57,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     @Override
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return ChangeClassActionProperty.create(null, false, baseClass).getImplement(SetFact.singletonOrder(getInterface()));
     }

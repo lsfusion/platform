@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
@@ -46,7 +47,7 @@ public class ListActionProperty extends KeepContextActionProperty {
         actions = ListFact.mList();
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {

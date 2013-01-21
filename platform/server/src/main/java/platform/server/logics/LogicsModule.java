@@ -17,6 +17,7 @@ import platform.interop.ModalityType;
 import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -621,7 +622,7 @@ public abstract class LogicsModule {
         return addAProp(baseClass.getChangeClassValueAction());
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     protected LAP addChangeClassAProp(ConcreteCustomClass cls) {
         return addAProp(cls.getChangeClassAction());
     }
@@ -964,7 +965,7 @@ public abstract class LogicsModule {
     }
 
     // только для того, чтобы обернуть все в IdentityLazy, так как только для List нормально сделан equals
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     protected LCP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, List<ValueClass> params) {
         return addCProp(group, genSID(), persistent, caption, valueClass, value, params.toArray(new ValueClass[]{}));
     }
@@ -2072,7 +2073,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(property));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     protected LAP<?> addSAProp(LCP lp) {
         return addProperty(null, new LAP(new SeekActionProperty(baseLM.baseClass, lp == null ? null : (CalcProperty) lp.property)));
     }
@@ -2196,24 +2197,24 @@ public abstract class LogicsModule {
         return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public SessionDataProperty getAddedObjectProperty() {
         SessionDataProperty addedObject = new SessionDataProperty("addedObject", "Added Object", baseLM.baseClass);
         addProperty(null, new LCP<ClassPropertyInterface>(addedObject));
         return addedObject;
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public LCP getConfirmedProperty() {
         return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("confirmed", "Confirmed", LogicalClass.instance)));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public AnyValuePropertyHolder getChosenValueProperty() {
         return addAnyValuePropertyHolder("chosen", "Chosen", StringClass.get(100));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public AnyValuePropertyHolder getRequestedValueProperty() {
         return addAnyValuePropertyHolder("requested", "Requested");
     }
@@ -2241,12 +2242,12 @@ public abstract class LogicsModule {
         );
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public LCP getRequestCanceledProperty() {
         return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("requestCanceled", "Request Input Canceled", LogicalClass.instance)));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // data
     public LCP getFormResultProperty() {
         return addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("formResult", "Form Result", baseLM.formResult)));
     }
@@ -2281,7 +2282,7 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
@@ -2315,7 +2316,7 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LAP property = addDMFAProp(publicGroup, "edit" + (oldSession ? "Session" : "") + "Form" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit"), // + "(" + cls + ")",
@@ -2448,17 +2449,17 @@ public abstract class LogicsModule {
 
     // нужен так как иначе начинает sID расширять
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp) {
         return addProperty(null, new LCP<T>(lp.property.getOld(), lp.listInterfaces));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type) {
         return addProperty(null, new LCP<T>(lp.property.getChanged(type), lp.listInterfaces));
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
     }
@@ -2656,7 +2657,7 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     protected LCP dumb(int interfaces) {
         ValueClass params[] = new ValueClass[interfaces];
         for (int i = 0; i < interfaces; ++i) {

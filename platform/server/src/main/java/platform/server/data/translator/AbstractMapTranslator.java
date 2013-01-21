@@ -1,10 +1,10 @@
 package platform.server.data.translator;
 
 import platform.base.TwinImmutableObject;
-import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TranslateContext;
@@ -108,7 +108,8 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
             }});
     }
 
-    private final MAddExclMap<AbstractTranslateContext, AbstractTranslateContext> caches = MapFact.mSmallCacheMap();
+    private final MCacheMap<AbstractTranslateContext, AbstractTranslateContext> caches = LRUCache.mSmall(LRUCache.EXP_QUICK);
+
     public AbstractTranslateContext aspectGetCache(AbstractTranslateContext context) {
         return caches.get(context);
     }

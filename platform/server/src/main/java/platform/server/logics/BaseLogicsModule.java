@@ -18,6 +18,7 @@ import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.ContainerType;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
@@ -692,7 +693,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return classes.length;
         }
 
-        @IdentityLazy
+        @IdentityStrongLazy // для ID
         private LCP getStringConcatanationProperty(int intNum) {
             return new LCP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), getString("logics.join"), intNum, ", "));
         }
@@ -910,12 +911,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
 
     @Override
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public LCP is(ValueClass valueClass) {
         return addProperty(null, new LCP<ClassPropertyInterface>(valueClass.getProperty()));
     }
     @Override
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public LCP object(ValueClass valueClass) {
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
     }

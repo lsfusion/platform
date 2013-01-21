@@ -5,6 +5,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.Expr;
@@ -26,7 +27,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
         this.mapInterfaces = getMapInterfaces(mapInterfaces);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return IsClassProperty.getMapProperty(mapInterfaces.join( // по аналогии с группировкой (а точнее вместо) такая "эвристика"
                 getGroupWhereProperty().mapInterfaceCommonClasses(null)));

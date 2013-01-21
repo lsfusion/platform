@@ -14,7 +14,8 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.add.MAddCol;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashContext;
@@ -83,7 +84,7 @@ public class MapCacheAspect {
         }
     }
 
-    private <K,V> Join<V> join(Query<K,V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, final MAddExclMap<Integer, MAddCol<CacheResult<JoinImplement<K>, Join<V>>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K,V> Join<V> join(Query<K,V> query, ImMap<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, final MCacheMap<Integer, MAddCol<CacheResult<JoinImplement<K>, Join<V>>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 //        assert BaseUtils.onlyObjects(joinExprs.keySet()); он вообщем то не нужен, так как hashCaches хранится для Query, а он уже хранит K
         assert ((QueryCacheAspect.QueryCacheInterface)query).getCacheTwin() == query;
 
@@ -135,45 +136,45 @@ public class MapCacheAspect {
     }
 
     public interface MapPropertyInterface {
-        MAddExclMap getExprCache();
-        MAddExclMap getJoinExprCache();
-        MAddExclMap getDataChangesCache();
-        MAddExclMap getIncChangeCache();
-        MAddExclMap getAutoHintCache();
+        MCacheMap getExprCache();
+        MCacheMap getJoinExprCache();
+        MCacheMap getDataChangesCache();
+        MCacheMap getIncChangeCache();
+        MCacheMap getAutoHintCache();
     }
     public static class MapPropertyInterfaceImplement implements MapPropertyInterface {
-        private MAddExclMap<Integer,MAddCol<CacheResult<JoinExprInterfaceImplement,Query>>> exprCache;
-        public MAddExclMap getExprCache() {
+        private MCacheMap<Integer,MAddCol<CacheResult<JoinExprInterfaceImplement,Query>>> exprCache;
+        public MCacheMap getExprCache() {
             if(exprCache==null)
-                exprCache = MapFact.mSmallCacheMap();
+                exprCache = LRUCache.mSmall(LRUCache.EXP_RARE);
             return exprCache;
         }
 
-        private MAddExclMap<Integer,MAddCol<CacheResult<QueryInterfaceImplement,Query>>> joinExprCache;
-        public MAddExclMap getJoinExprCache() {
+        private MCacheMap<Integer,MAddCol<CacheResult<QueryInterfaceImplement,Query>>> joinExprCache;
+        public MCacheMap getJoinExprCache() {
             if(joinExprCache==null)
-                joinExprCache = MapFact.mSmallCacheMap();
+                joinExprCache = LRUCache.mSmall(LRUCache.EXP_RARE);
             return joinExprCache;
         }
 
-        private MAddExclMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCache;
-        public MAddExclMap getDataChangesCache() {
+        private MCacheMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCache;
+        public MCacheMap getDataChangesCache() {
             if(dataChangesCache==null)
-                dataChangesCache = MapFact.mSmallCacheMap();
+                dataChangesCache = LRUCache.mSmall(LRUCache.EXP_RARE);
             return dataChangesCache;
         }
 
-        private MAddExclMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> incChangeCache;
-        public MAddExclMap getIncChangeCache() {
+        private MCacheMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> incChangeCache;
+        public MCacheMap getIncChangeCache() {
             if(incChangeCache==null)
-                incChangeCache = MapFact.mSmallCacheMap();
+                incChangeCache = LRUCache.mSmall(LRUCache.EXP_RARE);
             return incChangeCache;
         }
 
-        private MAddExclMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> autoHintCache;
-        public MAddExclMap getAutoHintCache() {
+        private MCacheMap<Integer,MAddCol<CacheResult<PropertyChanges, PropertyChange>>> autoHintCache;
+        public MCacheMap getAutoHintCache() {
             if(autoHintCache==null)
-                autoHintCache = MapFact.mSmallCacheMap();
+                autoHintCache = LRUCache.mSmall(LRUCache.EXP_RARE);
             return autoHintCache;
         }
     }
@@ -187,7 +188,7 @@ public class MapCacheAspect {
         if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (ImSet<CalcProperty>) thisJoinPoint.proceed();
 
-        return (ImSet<CalcProperty>) CacheAspect.callMethod(property, thisJoinPoint);
+        return (ImSet<CalcProperty>) CacheAspect.callMethod(property, thisJoinPoint, false);
     }
 
     @Around("execution(* platform.server.logics.property.CalcProperty.getUsedChanges(platform.server.session.StructChanges,boolean)) " +
@@ -262,7 +263,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, MAddExclMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, MCacheMap<Integer,MAddCol<CacheResult<DataChangesInterfaceImplement,DataChangesResult>>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<K>(property,change,propChanges,changedWheres!=null);
 
@@ -363,7 +364,7 @@ public class MapCacheAspect {
         }
     }
 
-    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, MAddExclMap<Integer, MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> IQuery<K, String> getQuery(CalcProperty<K> property, boolean propClasses, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<K, ? extends Expr> interfaceValues, MCacheMap<Integer, MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
         if(disableCaches)
@@ -492,7 +493,7 @@ public class MapCacheAspect {
 
     public static boolean disableCaches = false;
 
-    public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres, MAddExclMap<Integer, MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWheres, MCacheMap<Integer, MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // здесь по идее на And не надо проверять
         if(disableCaches || property instanceof FormulaProperty)
@@ -554,7 +555,7 @@ public class MapCacheAspect {
         return getJoinExpr(property, joinExprs, propClasses, propChanges, changedWhere, ((MapPropertyInterface) property).getExprCache(), thisJoinPoint);
     }
 
-    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, MAddExclMap<Integer, MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> PropertyChange<K> getIncrementChange(CalcProperty<K> property, PropertyChanges propChanges, MCacheMap<Integer, MAddCol<CacheResult<PropertyChanges, PropertyChange<K>>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         // assert что в interfaceValues только values
 
         PropertyChanges implement = property.getUsedChanges(propChanges);

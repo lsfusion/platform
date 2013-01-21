@@ -14,9 +14,7 @@ import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.Settings;
 import platform.server.ThisMessage;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.LazyInit;
-import platform.server.caches.PackComplex;
+import platform.server.caches.*;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -204,7 +202,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return old;
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // используется в resolve и кое где еще
     public ChangedProperty<T> getChanged(IncrementType type) {
         return new ChangedProperty<T>(this, type);
     }
@@ -218,7 +216,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return classTable.join(classTable.mapFields.join(joinImplement)).getExpr(classTable.propValue);
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy
     public ClassTable<T> getClassTable() {
         return new ClassTable<T>(this);
     }
@@ -335,11 +333,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return changeTable;
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // just in case
     public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(CalcProperty<P> change) {
         return new MaxChangeProperty<T, P>(this, change);
     }
-    @IdentityLazy
+    @IdentityStrongLazy // just in case
     public <P extends PropertyInterface> OnChangeProperty<T, P> getOnChangeProperty(CalcProperty<P> change) {
         return new OnChangeProperty<T, P>(this, change);
     }
@@ -718,7 +716,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new CalcPropertyMapImplement<T, V>(this, getMapInterfaces(list));
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses();
 

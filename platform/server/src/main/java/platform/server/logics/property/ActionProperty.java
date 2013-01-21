@@ -9,6 +9,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ActionClass;
 import platform.server.classes.CustomClass;
@@ -290,7 +291,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyClassImplement<P>(this, classes, mapping);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, P> getGroupChange() {
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();

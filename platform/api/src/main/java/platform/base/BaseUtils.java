@@ -2053,6 +2053,10 @@ public class BaseUtils {
         return a > b ? a : b;
     }
 
+    public static int min(int a, int b) {
+        return a > b ? b : a;
+    }
+
     public static long max(long a, long b) {
         return a > b ? a : b;
     }

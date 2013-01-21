@@ -615,7 +615,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     // для OldProperty хранит изменения с предыдущего execute'а
     private IncrementTableProps sessionEventChangedOld = new IncrementTableProps();
     private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps();
-    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), dataModifier);
+    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
 
     @IdentityLazy
     private ImSet<OldProperty> getSessionEventOldDepends() {

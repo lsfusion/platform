@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -81,7 +82,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return getCaption();
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CustomActionProperty getChangeAction(Property filterProperty) {
         assert baseClass instanceof CustomClass;
         return new ChangeReadObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass());

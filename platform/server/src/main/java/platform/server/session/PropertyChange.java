@@ -12,6 +12,7 @@ import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractInnerContext;
 import platform.server.caches.AbstractOuterContext;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
@@ -227,7 +228,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             table.writeRows(session, getQuery(), baseClass, queryEnv);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public IQuery<T,String> getQuery() { // важно потому как aspect может на IQuery изменить
         return new Query<T, String>(getFullMapKeys(mapKeys, mapValues), where, mapValues, MapFact.singleton("value", expr)); // через query для кэша
    }

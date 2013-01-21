@@ -12,13 +12,11 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.NotNullExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.IQuery;
-import platform.server.data.query.Query;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.GroupStatType;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.session.PropertyChange;
 
 
@@ -101,14 +99,14 @@ public class AfterTranslateAspect {
     @Around("execution(platform.base.Pair platform.server.data.where.AbstractWhere.getWhereJoins(boolean, platform.base.col.interfaces.immutable.ImSet, platform.base.col.interfaces.immutable.ImOrderSet)) && target(where) && args(tryExclusive,keepStat,orderTop)")
     public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, ImSet keepStat, ImOrderSet orderTop) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()) && orderTop.isEmpty())
-            return CacheAspect.callMethod(where, thisJoinPoint);
+            return CacheAspect.callMethod(where, thisJoinPoint, false);
         return thisJoinPoint.proceed();
     }
 
     @Around("execution(platform.base.col.interfaces.immutable.ImCol platform.server.data.where.AbstractWhere.getStatJoins(boolean, platform.base.col.interfaces.immutable.ImSet, platform.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,type,noWhere)")
     public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, GroupStatType type, boolean noWhere) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()))
-            return CacheAspect.callMethod(where, thisJoinPoint);
+            return CacheAspect.callMethod(where, thisJoinPoint, false);
         return thisJoinPoint.proceed();
     }
 

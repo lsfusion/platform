@@ -5,6 +5,7 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -45,7 +46,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         return new ChangeReadObjectActionProperty(null, getInterface().interfaceClass).getImplement(SetFact.singletonOrder(getInterface()));
     }

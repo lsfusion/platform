@@ -9,6 +9,7 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
 import platform.server.data.expr.Expr;
@@ -65,7 +66,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
             }});
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     private CalcPropertyRevImplement<?, Interface<P>> getIsClassProperty() {
         return IsClassProperty.getProperty(getMapInterfaces().crossJoin(property.getInterfaceClasses()));
     }

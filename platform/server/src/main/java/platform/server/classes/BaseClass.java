@@ -10,6 +10,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.IdentityStrongLazy;
 import platform.server.data.PropertyField;
 import platform.server.data.SQLSession;
 import platform.server.data.Table;
@@ -194,7 +195,7 @@ public class BaseClass extends AbstractCustomClass {
         return getUpSet().getCount();
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // equals'а нет
     public ObjectClassProperty getObjectClassProperty() {
         return new ObjectClassProperty("objectClass", this);
     }
@@ -224,7 +225,7 @@ public class BaseClass extends AbstractCustomClass {
         return mvResult.immutableValue();
     }
 
-    @IdentityLazy
+    @IdentityStrongLazy // для ID
     public ChangeClassValueActionProperty getChangeClassValueAction() {
         return new ChangeClassValueActionProperty("CHANGE_CLASS_VALUE", ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
     }

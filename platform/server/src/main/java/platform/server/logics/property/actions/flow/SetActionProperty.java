@@ -3,6 +3,7 @@ package platform.server.logics.property.actions.flow;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -82,7 +83,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
                 mapImplement(MapFact.singleton("value", writeFrom)));
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     private CalcPropertyMapImplement<?, I> getFullProperty() {
         return getFullProperty(innerInterfaces, where, writeTo, writeFrom);
     }

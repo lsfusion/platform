@@ -7,6 +7,7 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExprPullWheres;
@@ -57,7 +58,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         return new SubQueryExpr(query, group);
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public SubQueryJoin getInnerJoin() {
         return new SubQueryJoin(getInner().getInnerKeys(), getInner().getInnerValues(), query.getWhere(), group);
     }

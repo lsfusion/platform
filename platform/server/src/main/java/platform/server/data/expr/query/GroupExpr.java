@@ -9,17 +9,15 @@ import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.interop.Compare;
 import platform.server.Settings;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.ManualLazy;
-import platform.server.caches.ParamLazy;
-import platform.server.caches.TwinManualLazy;
+import platform.server.caches.*;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -239,7 +237,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public GroupJoin getInnerJoin() {
         StatKeys<Expr> statKeys;
         if(query.type.hasAdd()) {
@@ -256,7 +254,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
 
     private Collection<ClassExprWhere> packNoChange = ListFact.mAddRemoveCol(); // потому как remove нужен
-    private MAddExclMap<ClassExprWhere, Expr> packClassExprs = MapFact.mSmallCacheMap();
+    private MCacheMap<ClassExprWhere, Expr> packClassExprs = LRUCache.mSmall(LRUCache.EXP_RARE);
 
     @ManualLazy
     @Override

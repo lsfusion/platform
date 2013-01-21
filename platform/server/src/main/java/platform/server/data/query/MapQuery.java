@@ -5,6 +5,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
@@ -84,7 +85,7 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
             return this;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public Query<K, V> getQuery() {
         Query<MK, MV> transQuery = query.translateQuery(mapValues.mapKeys());
         return new Query<K,V>(mapKeys.join(query.mapKeys), mapProps.join(transQuery.properties), transQuery.where);

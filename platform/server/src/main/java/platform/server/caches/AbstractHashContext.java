@@ -1,8 +1,8 @@
 package platform.server.caches;
 
 import platform.base.TwinImmutableObject;
-import platform.base.col.MapFact;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 import platform.server.Settings;
 import platform.server.caches.hash.HashCodeKeys;
 import platform.server.caches.hash.HashCodeValues;
@@ -33,9 +33,9 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
                         hashes = hash(hash);
                     return (Integer)hashes;
                 } else {
-                    MAddExclMap<H, Integer> mapHashes = (MAddExclMap<H, Integer>)hashes;
+                    MCacheMap<H, Integer> mapHashes = (MCacheMap<H, Integer>)hashes;
                     if(mapHashes==null) {
-                        mapHashes = MapFact.mSmallCacheMap();
+                        mapHashes = LRUCache.mSmall(LRUCache.EXP_QUICK);
                         hashes = mapHashes;
                     }
 

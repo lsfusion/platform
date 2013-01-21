@@ -10,6 +10,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.interop.Compare;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
 import platform.server.data.expr.Expr;
@@ -59,7 +60,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return cycle!=Cycle.IMPOSSIBLE;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false

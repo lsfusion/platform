@@ -4,6 +4,7 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.Settings;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
@@ -46,7 +47,7 @@ public class IDTable extends GlobalTable {
         return MapFact.toMap(OBJECT, 10, FORM, 0); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     private Query<KeyField, PropertyField> getGenerateQuery(int idType) {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
         platform.server.data.query.Join<PropertyField> joinTable = join(query.getMapExprs());

@@ -9,6 +9,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -166,7 +167,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         ActionPropertyMapImplement<?, Interface> result = null;

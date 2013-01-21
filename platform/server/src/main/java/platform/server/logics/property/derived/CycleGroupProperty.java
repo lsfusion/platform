@@ -8,6 +8,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.Settings;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -43,7 +44,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         this.toChange = toChange;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false

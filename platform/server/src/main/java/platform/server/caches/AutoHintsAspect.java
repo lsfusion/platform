@@ -17,6 +17,7 @@ import platform.base.col.interfaces.mutable.add.MAddCol;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.base.col.lru.MCacheMap;
 import platform.server.Settings;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
@@ -110,7 +111,7 @@ public class AutoHintsAspect {
         }
     }
 
-    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, MAddExclMap<Integer, MAddCol<MapCacheAspect.CacheResult<AutoHintImplement, AutoHintException>>> exprCaches, Modifier modifier) throws Throwable {
+    public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, MCacheMap<Integer, MAddCol<MapCacheAspect.CacheResult<AutoHintImplement, AutoHintException>>> exprCaches, Modifier modifier) throws Throwable {
         if(!Settings.instance.isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             SessionModifier sessionModifier = (SessionModifier) modifier;
 

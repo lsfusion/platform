@@ -21,7 +21,6 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         super(property, mapping);
     }
 
-    @IdentityLazy
     public CalcPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         return new CalcPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }

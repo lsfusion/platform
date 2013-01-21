@@ -1,14 +1,14 @@
 package platform.base;
 
-import platform.base.col.MapFact;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.lru.LRUCache;
+import platform.base.col.lru.MCacheMap;
 
 public abstract class ImmutableObject {
     
-    private MAddExclMap caches = null;
-    public MAddExclMap getCaches() {
+    private MCacheMap caches = null;
+    public MCacheMap getCaches() {
         if(caches==null)
-            caches = MapFact.mSmallCacheMap();
+            caches = LRUCache.mSmall(LRUCache.EXP_RARE);
         return caches;
     }
 

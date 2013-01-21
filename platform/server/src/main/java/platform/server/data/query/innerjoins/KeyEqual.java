@@ -5,6 +5,7 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.TranslateContext;
 import platform.server.data.expr.BaseExpr;
@@ -66,7 +67,7 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         return keyExprs.isEmpty();
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public QueryTranslator getTranslator() {
         return new PartialQueryTranslator(keyExprs);
     }

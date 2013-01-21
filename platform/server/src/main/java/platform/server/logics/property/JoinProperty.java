@@ -13,6 +13,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.ServerResponse;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -232,7 +233,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         CalcProperty<T> aggProp = implement.property;
 

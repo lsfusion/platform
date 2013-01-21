@@ -9,8 +9,9 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.base.col.lru.MCacheMap;
 
-public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
+public class ArIndexedMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V> {
 
     public int size;
     public Object[] keys;

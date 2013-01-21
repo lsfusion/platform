@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
@@ -26,7 +27,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
         ActionPropertyMapImplement<?, Interface> result = falseProp.mapEditAction(editActionSID, filterProperty);

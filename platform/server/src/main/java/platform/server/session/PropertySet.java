@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
@@ -40,7 +41,7 @@ public class PropertySet<T extends PropertyInterface> {
         return where.and(AggrExpr.getOrderWhere(orders, ordersNotNull));
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     private Query<T,Expr> getExecuteQuery() {
         QueryBuilder<T, Expr> query = new QueryBuilder<T, Expr>(mapKeys, getFullWhere());
         query.addProperties(orders.keys().toMap());

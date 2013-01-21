@@ -10,9 +10,10 @@ import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.base.col.lru.MCacheMap;
 
 // дублируем HSet
-public class HMap<K, V> extends AMRevMap<K, V> {
+public class HMap<K, V> extends AMRevMap<K, V> implements MCacheMap<K, V> {
     public int size;
     public Object[] table;
     protected Object[] vtable;

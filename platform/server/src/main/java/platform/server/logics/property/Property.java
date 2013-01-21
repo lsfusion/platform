@@ -17,6 +17,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.ClassViewType;
 import platform.interop.form.ServerResponse;
 import platform.server.Settings;
+import platform.server.caches.IdentityInstanceLazy;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ActionClass;
@@ -237,7 +238,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return orderInterfaces;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ImRevMap<T, KeyExpr> getMapKeys() {
         return KeyExpr.getMapKeys(interfaces);
     }
@@ -475,7 +476,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         editActions = ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).immutable();
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public PropertyChange<T> getNoChange() {
         return new PropertyChange<T>(getMapKeys(), CaseExpr.NULL);
     }
