@@ -244,7 +244,6 @@ textarea {
 .toolbarNavigatorButton {
     border: solid 1px transparent;
     background: transparent;
-    text-align: left;
     display: block;
 }
 
@@ -341,4 +340,8 @@ textarea {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+.displayBlock {
+    display: block;
 }

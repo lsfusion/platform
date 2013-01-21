@@ -40,6 +40,7 @@ public class ImageButton extends Button {
         panel = directionBottom ? new VerticalPanel() {} : new HorizontalPanel();
         panel.add(image = new Image());
         image.setVisible(false);
+        image.addStyleName("displayBlock");
         if (!directionBottom) {
             strut = GwtClientUtils.createHorizontalStrut(2);
             panel.add(strut);
@@ -49,6 +50,9 @@ public class ImageButton extends Button {
         if (directionBottom) {
             panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
             panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
+        } else {
+            panel.setCellVerticalAlignment(image, HasAlignment.ALIGN_MIDDLE);
+            panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
         }
 
         label.addStyleName("customFontPresenter");

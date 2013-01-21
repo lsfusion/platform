@@ -3,10 +3,7 @@ package platform.gwt.form.client.navigator;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.*;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.panel.ImageButton;
 import platform.gwt.form.shared.view.window.GToolbarNavigatorWindow;
@@ -16,14 +13,19 @@ import java.util.Set;
 public class GToolbarNavigatorView extends GNavigatorView {
     private static final int PADDING_STEP = 15;
     private CellPanel panel;
-//    private FlowPanel panel;
     private boolean vertical;
+    private HasVerticalAlignment.VerticalAlignmentConstant alignmentY;
+    private HasAlignment.HorizontalAlignmentConstant alignmentX;
+    private boolean verticalTextAlign;
 
     public GToolbarNavigatorView(GToolbarNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
+        alignmentX = window.getAlignmentX();
+        alignmentY = window.getAlignmentY();
+        verticalTextAlign = window.isVerticalTextAlignVertical();
+
         vertical = window.type == 1;
         panel = vertical ? new VerticalPanel() : new HorizontalPanel();
-//        panel = new FlowPanel();
         SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
             toolbarContainer.setStyleName("verticaToolbar");
@@ -47,7 +49,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        ImageButton button = new ImageButton(element.caption, !vertical);
+        ImageButton button = new ImageButton(element.caption, verticalTextAlign);
         button.setImage(element.icon);
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
@@ -58,11 +60,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
             }
         });
 
-        if (vertical) {
-            button.setSize("100%", "28px");
-        } else {
-            button.setHeight("100%");
-        }
+        button.setHeight("auto");
         button.addStyleName("toolbarNavigatorButton");
         if (element.equals(selected)) {
             button.addStyleName("toolbarSelectedNavigatorButton");
@@ -72,14 +70,8 @@ public class GToolbarNavigatorView extends GNavigatorView {
         }
 
         panel.add(button);
-//        panel.setCellVerticalAlignment(button, HasVerticalAlignment.ALIGN_MIDDLE);
-//        if (!vertical) {
-//            button.getElement().getStyle().setFloat(Style.Float.LEFT);
-//        }
-
-        if (vertical) {
-            panel.setCellWidth(button, "100%");
-        }
+        panel.setCellVerticalAlignment(button, alignmentY);
+        panel.setCellHorizontalAlignment(button, alignmentX);
 
         if ((element.window != null) && (!element.window.equals(window))) {
             return;
