@@ -6,5 +6,5 @@ NAMESPACE Sale;
 
 @defineCertificateInvoice(declaration, 'Таможенная декларация');
 @defineCertificateShipment(declaration, 'Таможенная декларация');
-@derivePropUserInvoiceDetail(declaration);
-@derivePropUserShipmentDetail(declaration);
+@derivePropUserInvoiceDetail(declaration, 'Таможенная декларация');
+@derivePropUserShipmentDetail(declaration, 'Таможенная декларация');

@@ -6,5 +6,5 @@ NAMESPACE Sale;
 
 @defineCertificateInvoice(sanitation, 'ГГР');
 @defineCertificateShipment(sanitation, 'ГГР');
-@derivePropUserInvoiceDetail(sanitation);
-@derivePropUserShipmentDetail(sanitation);
+@derivePropUserInvoiceDetail(sanitation, 'ГГР');
+@derivePropUserShipmentDetail(sanitation, 'ГГР');

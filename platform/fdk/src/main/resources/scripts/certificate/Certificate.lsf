@@ -10,7 +10,6 @@ numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGr
 seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup FIXEDCHARWIDTH 3;
 seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
-
 descriptionCertificate 'Документ качества' (certificate) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
@@ -25,25 +24,35 @@ META extendCertificateForm(prop, char)
 
     EXTEND FORM user###prop
         OBJECTS d2 = user###prop##Detail
-        PROPERTIES (d2) indexUser###prop##Detail, idBarcodeSkuUser###prop##Detail, nameSkuUser###prop##Detail
+        PROPERTIES (d2) indexUser###prop##Detail, idBarcodeSkuUser###prop##Detail, nameSkuUser###prop##Detail,
+                        descriptionBatchUser###prop##Detail ON CHANGE EXEC batchDialogUser###prop##Detail(d)
         FILTERS user###prop##User###prop##Detail(d2) == char
     ;
 
     EXTEND DESIGN user###prop{
         specification.box{
-            ADD d2.box AFTER d.box {caption = 'Сертификаты';}
+            NEW certContainer AFTER d.box {
+                caption = 'Сертификаты';
+                NEW headerCertContainer;
+                ADD d2.box;
+            }
         }
     }
 
     EXTEND FORM prop##s
         OBJECTS d2 = prop##Detail
-        PROPERTIES(d2) READONLY index###prop##Detail, idBarcodeSku###prop##Detail, nameSku###prop##Detail
+        PROPERTIES(d2) READONLY index###prop##Detail, idBarcodeSku###prop##Detail, nameSku###prop##Detail,
+                                descriptionBatch###prop##Detail
         FILTERS prop###prop##Detail(d2) == char
     ;
 
     EXTEND DESIGN prop##s{
         documentDetail{
-            ADD d2.box AFTER d.box {caption = 'Сертификаты';}
+            NEW certContainer AFTER d.box {
+                caption = 'Сертификаты';
+                NEW headerCertContainer;
+                ADD d2.box;
+            }
         }
     }
 
@@ -61,9 +70,15 @@ META defineCertificateInvoice(prop, caption)
     prop###invoiceDetail(detail) += prop###userInvoiceDetail(detail);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) description###prop###userInvoice TODRAW d2 FORCE PANEL
+        PROPERTIES(i) description###prop###userInvoice
         PROPERTIES(d2) description###prop###userInvoiceDetail
     ;
+
+    EXTEND DESIGN userInvoice{
+        headerCertContainer{
+            ADD PROPERTY(description###prop###userInvoice);
+        }
+    }
 
     EXTEND FORM invoices
         PROPERTIES(d2) READONLY description###prop###invoiceDetail
@@ -83,9 +98,15 @@ META defineCertificateShipment(prop, caption)
     prop###shipmentDetail(detail) += prop###invoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
     EXTEND FORM userShipment
-        PROPERTIES(s) description###prop###userShipment TODRAW d2 FORCE PANEL
+        PROPERTIES(s) description###prop###userShipment
         PROPERTIES(d2) description###prop###userShipmentDetail
     ;
+
+    EXTEND DESIGN userShipment{
+        headerCertContainer{
+            ADD PROPERTY(description###prop###userShipment);
+        }
+    }
 
     EXTEND FORM shipments
         PROPERTIES(d2) READONLY description###prop###shipmentDetail
@@ -95,6 +116,8 @@ END
 META defineCertificateBatch(prop, caption)
     prop###batch = ABSTRACT prop (batch);
     description###prop###batch caption (batch) = description###prop(prop###batch(batch));
+    batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
+
     EXTEND FORM currentBalanceSkuStock
         PROPERTIES description###prop###batch(bt)
     ;
