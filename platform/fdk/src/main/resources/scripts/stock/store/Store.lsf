@@ -42,6 +42,8 @@ TABLE store (store);
 legalEntityStore = DATA legalEntity (store) NOT NULL;
 nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN base;
 
+isCompanyStore(store) = isCompanyLegalEntity(legalEntityStore(store));
+
 languageStore (store) = languageLegalEntity(legalEntityStore(store));
 
 regionStore = DATA region (store);

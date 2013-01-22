@@ -928,7 +928,7 @@ setUserPromotionReceipt (receipt) = GROUP SUM 1 IF setUserPromotionReceiptSaleDe
 promotionSumReceiptSaleDetail (detail) = GROUP SUM promotionSumReceiptSaleDetailPromotionCondition(detail, condition)
                                                BY detail;
 
-inReceiptPromotion (receipt, promotion) = inPromotionStore(promotion, storeReceipt(receipt)) AND
+inReceiptPromotion (receipt, promotion) = inPromotionStoreOver(promotion, storeReceipt(receipt)) AND
                                           dateReceipt(receipt) >= dateFromPromotion(promotion) AND dateReceipt(receipt) <= dateToPromotion(promotion) AND
                                           NOT timeReceipt(receipt) < timeOfFromPromotion(promotion) AND NOT timeReceipt(receipt) > timeOfToPromotion(promotion) AND
                                           NOT sumReceiptDetailReceipt(receipt) < minSumBillPromotion(promotion) AND NOT sumReceiptDetailReceipt(receipt) > maxSumBillPromotion(promotion)

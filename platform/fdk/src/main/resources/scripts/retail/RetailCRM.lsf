@@ -126,6 +126,15 @@ DESIGN discountCard FROM DEFAULT {
     }
 }
 
+FORM discountCardDialog 'Дисконтные карты'
+
+    OBJECTS d = discountCard
+    PROPERTIES(d) READONLY nameClientDiscountCard, initialSumDiscountCard, numberObject, seriesObject,
+                         dateDiscountCard, dateToDiscountCard
+
+    DIALOG discountCard OBJECT d
+;
+
 FORM discountCards 'Дисконтные карты'
     OBJECTS d=discountCard
     PROPERTIES(d) READONLY numberObject, seriesObject, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
@@ -174,9 +183,34 @@ timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
 TABLE promotionDOW (promotion, DOW);
 skipPromotionDOW 'Исключить' = DATA BOOLEAN (promotion, DOW);
 
-TABLE promotionStore (promotion, store);
+inPromotion 'В акции' = DATA BOOLEAN (promotion);
+inPromotion(promotion) <- TRUE WHEN ASSIGNED(promotion IS promotion);
+
+TABLE promotionChainStores(promotion, chainStores);
+inPromotionChainStores 'В акции' = DATA BOOLEAN (promotion, chainStores);
+
+TABLE promotionStoreType(promotion, storeType);
+inPromotionStoreType 'В акции' = DATA BOOLEAN (promotion, storeType);
+
+TABLE promotionStore(promotion, store);
 inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
-storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStore(promotion, store), ', '
+
+inPromotionChainStoresOver 'В акции' (promotion, chainStores) =
+    UNION OVERRIDE inPromotion(promotion) AND chainStores IS chainStores,
+                   inPromotionChainStores(promotion, chainStores);
+
+inPromotionStoreTypeOver 'В акции' (promotion, storeType) =
+    UNION OVERRIDE inPromotion(promotion) AND storeType IS storeType,
+                   inPromotionChainStores(promotion, chainStoresStoreType(storeType)),
+                   inPromotionStoreType(promotion, storeType);
+
+inPromotionStoreOver 'В акции' (promotion, store) =
+    UNION OVERRIDE inPromotion(promotion) AND store IS store,
+                   inPromotionChainStores(promotion, chainStoresStore(store)),
+                   inPromotionStoreType(promotion, storeTypeStore(store)),
+                   inPromotionStore(promotion, store) AND isCompanyStore(store);
+
+storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPromotionStoreOver(promotion, store), ', '
                                               BY promotion
                                               ORDER store PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -247,7 +281,6 @@ inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OV
                                                                                     AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
                                                                                inDataPromotionConditionSku(promotionCondition, sku);
 
-
 FORM promotion 'Акция'
     OBJECTS sh=promotion   FIXED PANEL
     PROPERTIES(sh)     name, namePromotionGroupPromotion, userSetPromotion,
@@ -292,17 +325,21 @@ FORM promotion 'Акция'
     TREE treeStore a=STRING[3], t=chainStores, st=storeType
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
 
-    FILTERS stringEqualsAll(a)
-    FILTERS inChainStoresStoreType (t, st)
+    FILTERS stringEqualsAll(a),
+            inChainStoresStoreType (t, st)
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameLegalEntityStore
 
-    FILTERS inChainStoresStoreTypeStore(t, st, s)
+    FILTERS inChainStoresStoreTypeStore(t, st, s),
+            isCompanyStore(s)
 
-    PROPERTIES(sh, s) inPromotionStore
+    PROPERTIES(sh) inPromotion TODRAW a FORCE GRID
+    PROPERTIES(sh, t) inPromotionChainStoresOver
+    PROPERTIES(sh, st) inPromotionStoreTypeOver
+    PROPERTIES(sh, s) inPromotionStoreOver
     FILTERGROUP filterStore
-        FILTER 'Только отмеченные' 'F9' inPromotionStore(sh, s)
+        FILTER 'Только отмеченные' 'F9' inPromotionStoreOver(sh, s)
 
     OBJECTS dis= discountCard
     PROPERTIES(dis)    READONLY numberObject, seriesObject, nameClientDiscountCard
