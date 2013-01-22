@@ -257,6 +257,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         this.selectedRecord = record;
     }
 
+    public void setCurrentObjects(GGroupObjectValue objects) {
+        if (currentRecords != null) {
+            int i = 0;
+            for (GTreeGridRecord record : currentRecords) {
+                if (record.getKey().equals(objects)) {
+                    setCurrentRecord(record);
+                    setKeyboardSelectedRow(i);
+                    return;
+                }
+                i++;
+            }
+        }
+    }
+
     public GTreeGridRecord getSelectedRecord() {
         return selectedRecord;
     }

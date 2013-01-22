@@ -537,7 +537,13 @@ public class GFormController extends SimplePanel {
     }
 
     public boolean isAsyncModifyObject(GPropertyDraw property) {
-        return property.addRemove != null && controllers.get(property.addRemove.object.groupObject).isInGridClassView();
+        if (property.addRemove != null) {
+            GGroupObjectController controller = controllers.get(property.addRemove.object.groupObject);
+            if (controller != null && controller.isInGridClassView()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void modifyObject(final GPropertyDraw property, final GGroupObjectValue columnKey) {
