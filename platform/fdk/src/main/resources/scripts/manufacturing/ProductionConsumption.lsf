@@ -1,0 +1,360 @@
+MODULE  ProductionConsumption;
+
+REQUIRE ProductionOrder, StockDocument;
+NAMESPACE Production;
+
+// ---------------- Списание матириалов, производство ------------------- //
+
+CLASS ABSTRACT consumption 'Списание сырья' ;
+CLASS ABSTRACT consumptionDetail 'Строка списания сырья' : named;
+
+CLASS userConsumption 'Списание сырья (польз.)': consumption, historizable, numeratedObject;
+CLASS userConsumptionDetail 'Строка списания сырья (польз.)' : consumptionDetail;
+CLASS userConsumptionPosted 'Проведенное списание сырья (польз.)': userConsumption, postedObject;
+
+@defineNumeratedObjectDefault(userConsumption, 'Нумератор для списания сырья', 'СС');
+
+@defineDocumentInterface(consumption);
+@defineDocumentInterfaceNumber(consumption);
+@defineDocumentInterfaceStock(consumption, stock, 'Склад', );
+@defineDocumentDetailStock(userConsumption, stock, 'Склад');
+@defineDocumentInterfacePosted(consumption);
+
+@defineDocumentInterfaceDescription(consumption, 'Списание сырья');
+
+@defineDocumentInterfaceCurrency(consumption);
+@deriveDocumentCurrency(userConsumption, stock);
+@defineDocumentInterfacePriceListType(consumption); // объявляем вид цены
+priceListTypeUserConsumptionDetail(detail) <- priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))
+        WHEN CHANGED(priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail)));
+
+@defineDocumentInterfaceDetailSku(consumption, sku);
+@defineDocumentInterfaceDetailQuantity(consumption);
+
+@defineDocumentInterfaceDetailPrice(consumption); // объявляем цену
+@deriveDocumentDetailPricePriceListType (userConsumption, stock); // записываем цену
+
+// суммма
+@defineDocumentInterfaceDetailDataSum(consumption);
+@deriveDocumentDetailSum(userConsumption, quantity);
+
+// кол-во в шапке документа
+@defineDocumentInterfaceHeaderQuantity(consumption);
+@defineDocumentHeaderSkuQuantity(consumption, sku);
+
+@defineDocumentHeaderSkuQuantity(userConsumption, sku);
+@defineDocumentInterfaceHeaderSum(consumption);
+
+@defineDocumentHeaderItemSum(consumption, , );
+@defineDocumentHeaderItemSum(userConsumption, , );
+
+@defineAddDetailDialogSkuStock(userConsumption, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userConsumption, sku);
+
+//--  Связь накладной и поставки
+
+GROUP orderGroup 'Информация о заказе' : public;
+
+componentDetailConsumptionDetail = ABSTRACT componentDetail (consumptionDetail) PERSISTENT;
+componentDetailUserConsumptionDetail = DATA componentDetail (userConsumptionDetail);
+componentDetailConsumptionDetail(consumptionDetail) += componentDetailUserConsumptionDetail(consumptionDetail);
+
+CONSTRAINT stockConsumptionDetail(detail) != componentsStockComponentDetail(componentDetailUserConsumptionDetail(detail)) OR
+           skuConsumptionDetail(detail) != overSkuComponentDetail(componentDetailUserConsumptionDetail(detail))
+    CHECKED BY componentDetailUserConsumptionDetail
+        MESSAGE 'Склад сырья и товар в списании сырья и производственном заказе должны соответствовать друг другу';
+
+
+descriptionIndexComponentDetailConsumptionDetail 'Строка заказа' (detail) = descriptionIndexComponentDetail(componentDetailConsumptionDetail(detail));
+descriptionIndexComponentDetailUserConsumptionDetail 'Строка заказа' (detail) = descriptionIndexComponentDetail(componentDetailUserConsumptionDetail(detail));
+
+quantityConsumptionDetailOrderConsumption (order, consumption) = GROUP SUM quantityConsumptionDetail(consumptionDetail) BY orderComponentDetail(componentDetailConsumptionDetail(consumptionDetail)), consumptionConsumptionDetail(consumptionDetail);
+
+ordersConsumption 'Заказы' (consumption) = GROUP CONCAT toString255(descriptionOrder(order)) IF quantityConsumptionDetailOrderConsumption(order, consumption) , ', '
+                                                BY consumption
+                                                ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+consumeComponentDetail 'Кол-во (списано)' (componentDetail) = GROUP SUM quantityConsumptionDetail(consumptionDetail) IF isPostedConsumptionDetail(consumptionDetail)
+                                                                   BY componentDetailConsumptionDetail(consumptionDetail) PERSISTENT;
+
+//costConsumptionDetailBatch = ABSTRACT NUMERIC[14,3] (consumptionDetail, batch);
+//costComponentDetailBatch (componentDetail, batch) = GROUP SUM costConsumptionDetailBatch(consumptionDetail, batch) BY componentDetailConsumptionDetail(consumptionDetail), batch;
+//countBatchComponentDetail 'Кол-во партий' (componentDetail) = GROUP SUM 1 IF costComponentDetailBatch(componentDetail, batch) BY componentDetail PERSISTENT;
+//maxBatchComponentDetail (componentDetail) = GROUP MAX batch IF costComponentDetailBatch(componentDetail, batch) BY componentDetail;
+
+toConsumeComponentDetail 'Не списано' (componentDetail) = overQuantityComponentDetail (componentDetail) (-) consumeComponentDetail(componentDetail);
+
+toConsumeComponentDetailOrder 'Не списано по заказу' (order) =
+    GROUP SUM toConsumeComponentDetail(componentDetail) IF toConsumeComponentDetail(componentDetail) > 0
+          BY orderComponentDetail(componentDetail);
+
+EXTEND FORM orderDetails
+            PROPERTIES(d) READONLY toConsumeComponentDetail
+;
+EXTEND DESIGN orderDetails {
+    PROPERTY(toConsumeComponentDetail) { background = #FFFFCC; }
+}
+
+//--
+
+FORM consumptionOrders 'Производственные заказы'
+
+    OBJECTS s = stock FIXED PANEL
+//    PROPERTIES (s) READONLY name
+
+    OBJECTS o = order
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    FILTERS isPostedOrder(o),
+            componentsStockOrder(o) == s,
+            toConsumeComponentDetailOrder(o)
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+    FILTERS orderProductDetail(pd)==o
+
+    OBJECTS cd = componentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,       //BACKGROUND backgroundComponentDetail(cd)
+                   shortNameUOMComponentDetail, overQuantityComponentDetail
+//    PROPERTIES(cd) READONLY nameSubstituteComponentDetail, multiplierSubstitutesComponentDetail,                  //BACKGROUND backgroundSubstitutesOrder(o)
+//                   quantitySubstitutesComponentDetail
+    PROPERTIES(cd) READONLY toConsumeComponentDetail
+
+    FILTERS orderComponentDetail(cd)==o
+
+;
+
+DESIGN consumptionOrders FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+            ADD o.box;
+            NEW documentDetail {
+                type = TABBED;
+                ADD cd.box {
+                    title = 'Компоненты';
+                }
+                ADD pd.box {
+                    title = 'Изделия';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+        PROPERTY(toConsumeComponentDetail) { background = #FFFFCC; }
+    }
+}
+
+fillOrderUserConsumption 'Заполнить на основе производственного заказа' =  ACTION (userConsumption) {
+    FORM consumptionOrders OBJECTS s = stockUserConsumption(userConsumption) MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        LOCAL productionOrder = order();
+        SET productionOrder() <- chosenObject('o');
+
+        FOR orderComponentDetail(componentDetail) == productionOrder() ADDOBJ d = userConsumptionDetail DO {
+            SET userConsumptionUserConsumptionDetail(d) <- userConsumption;
+            SET componentDetailUserConsumptionDetail(d) <- componentDetail;
+            SET skuUserConsumptionDetail(d) <- overSkuComponentDetail(componentDetail);
+            SET quantityUserConsumptionDetail (d) <- toConsumeComponentDetail(componentDetail);              // возможно надо overQuantityComponentDetail   ?
+            SET priceListTypeConsumptionDetail(d) <- priceListTypeComponentDetail(componentDetail);
+
+        }
+    }
+} IN orderGroup;
+
+
+// Проводим по регистру
+@implementSkuLedgerOutFIFO(consumptionDetail, sku, stock);
+quantityOutFIFOSkuLedger (ledger) += quantityConsumptionDetail(ledger);
+@implementSkuLedgerOutFIFOBalance (consumptionDetail, stock);
+sumOutSkuLedger (ledger) += sumConsumptionDetail(ledger);
+
+// Товарный отчет
+@implementStockDocumentLedgerOut(consumption, stock);
+sumOutStockDocumentLedger (ledger) += sumConsumptionDetailConsumption(ledger);
+sumItemOutStockDocumentLedger (ledger) += sumItemConsumptionDetailConsumption(ledger);
+sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailConsumption(ledger);
+
+// --------------------------- Формы Списания ---------------------------------
+
+editConsumption 'Редактировать' = ABSTRACT ACTION (consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM userConsumption 'Списание сырья'
+    OBJECTS o = userConsumption FIXED PANEL
+    PROPERTIES (o) objectClassName, nameStockUserConsumption, nameNumeratorObject, numberObject, seriesObject, dateUserConsumption, timeUserConsumption,
+                   nameCurrencyUserConsumption, namePriceListTypeUserConsumption, noteUserConsumption,
+                   countUserConsumptionDetailUserConsumption, quantityUserConsumptionDetailUserConsumption, sumUserConsumptionDetailUserConsumption,
+                   fillOrderUserConsumption, ordersConsumption READONLY
+
+    OBJECTS d = userConsumptionDetail
+    PROPERTIES (d) indexUserConsumptionDetail, idBarcodeSkuUserConsumptionDetail, nameSkuUserConsumptionDetail, shortNameUOMSkuUserConsumptionDetail,
+                   namePriceListTypeUserConsumptionDetail, quantityUserConsumptionDetail, priceUserConsumptionDetail, sumUserConsumptionDetail,
+                   descriptionIndexComponentDetailUserConsumptionDetail, ADDOBJ, delete
+
+    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserConsumptionDetailUserConsumption,           //fillDocumentConsumption
+                           addDetailInputBarcodeUserConsumptionDetailUserConsumption, deleteUserConsumptionDetailUserConsumption
+    FILTERS userConsumptionUserConsumptionDetail(d) == o
+
+    EVENTS
+        ON OK EXEC prePostUserConsumption(o)
+
+    HINTTABLE LIST dateTimeUserConsumptionDetail, skuUserConsumptionDetail, stockUserConsumptionDetail,
+                   priceListTypeUserConsumptionDetail, currencyUserConsumptionDetail, priceUserConsumptionDetail
+
+    EDIT userConsumption OBJECT o
+;
+
+DESIGN userConsumption FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD o.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameStockUserConsumption);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserConsumption);
+                    ADD PROPERTY(timeUserConsumption);
+                }
+                NEW headerRow12 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                    ADD o.orderGroup{
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                }
+            }
+
+            ADD o.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+    }
+}
+
+//-- SKU
+
+addUserConsumption 'Добавить' = ACTION ADDFORM userConsumption;
+editUserConsumption 'Редактировать' (userConsumption) = ACTION EDITFORM userConsumption;
+editConsumption(consumption) += editUserConsumption(consumption);
+
+copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
+    FOR ADDOBJ o = userConsumption DO {
+        SET stockUserConsumption(o) <- stockUserConsumption(userConsumption);
+        SET currencyUserConsumption(o) <- currencyUserConsumption(userConsumption);
+        SET priceListTypeUserConsumption(o) <- priceListTypeUserConsumption(userConsumption);
+        SET noteUserConsumption(o) <- noteUserConsumption(userConsumption);
+
+        FOR userConsumptionUserConsumptionDetail(userConsumptionDetail) == userConsumption DO {
+            FOR ADDOBJ d=userConsumptionDetail DO {
+                SET userConsumptionUserConsumptionDetail(d) <- o;
+                SET skuUserConsumptionDetail(d) <- skuUserConsumptionDetail(userConsumptionDetail);
+                SET quantityUserConsumptionDetail(d) <- quantityUserConsumptionDetail(userConsumptionDetail);
+                SET priceListTypeUserConsumptionDetail(d) <- priceListTypeUserConsumptionDetail(userConsumptionDetail);
+            }
+        }
+        FORM userConsumption OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+    }
+} TOOLBAR;
+
+
+FORM consumptions 'Списания сырья'
+    OBJECTS o = consumption
+    PROPERTIES (o) READONLY isPostedConsumption FORCE GRID, objectClassName, numberConsumption, seriesConsumption, dateConsumption, timeConsumption,
+                            nameStockConsumption, nameCurrencyConsumption, namePriceListTypeConsumption, noteConsumption,
+                            countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption
+
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserConsumption TODRAW o
+    PROPERTIES (o) editConsumption, copyConsumption
+    PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserConsumption(o)
+
+    OBJECTS d=consumptionDetail
+    PROPERTIES (d) READONLY indexConsumptionDetail, idBarcodeSkuConsumptionDetail, nameSkuConsumptionDetail, shortNameUOMSkuConsumptionDetail
+    PROPERTIES (d) READONLY namePriceListTypeConsumptionDetail, quantityConsumptionDetail, priceConsumptionDetail, sumConsumptionDetail
+
+    FILTERS consumptionConsumptionDetail(d) == o
+    DIALOG consumption OBJECT o
+;
+@extendFormFilterAccess(consumption, o, consumptions, stock);
+
+DESIGN consumptions FROM DEFAULT {
+    PROPERTY (delete(o)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD o.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD o.historyGroup;
+                ADD o.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0;
+                }
+            }
+        }
+    }
+}
+NAVIGATOR {
+    manufacturingDocuments {
+        ADD consumptions;
+    }
+}
+
+
+
+
+
+

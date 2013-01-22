@@ -940,6 +940,11 @@ META defineDocumentInterfaceHeaderPriceListType (object)
 END
 
 //--
+META defineDocumentDetailPriceListTypePrefix (object, detail, type, prefix, caption)
+    prefix###type###detail = prefix###type###object(object###detail (detail));
+    name###prefix###type###detail 'Вид цен'###caption (idetail) = name(prefix###type###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+END
+//--
 
 META defineDocumentDetailPriceListType (object, detail, type, prefix, caption)
     prefix###type###detail =  DATA type (detail);

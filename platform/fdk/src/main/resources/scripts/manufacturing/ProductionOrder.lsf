@@ -11,11 +11,13 @@ TABLE order(order);
 @defineDocumentHeaderTime(order);
 @defineDocumentHeaderNote(order);
 
+@defineNumeratedObjectDefault(order, 'Нумератор для производственного заказа', 'ПЗ');
+
 @defineDocumentHeaderPosted (order);
 @defineDocumentHeaderPriceListType (order, priceListType, , ' (потребность)');
 @defineDocumentHeaderPriceListType (order, calcPriceListType, , ' (надбавка)');
 
-@defineDocumentHeaderStock (order, stock, 'Склад сырья', component);
+@defineDocumentHeaderStock (order, stock, 'Склад сырья', components);
 @defineDocumentHeaderStock (order, stock, 'Склад готовой продукции', goods);
 
 @defineDocumentHeaderDatePrefix (order, from, ' действия с');
@@ -23,7 +25,7 @@ TABLE order(order);
 
 @defineDocumentHeaderDescription(order, 'Производственный заказ');
 @defineDocumentHeaderCurrency (order);
-@deriveDocumentCurrency (order, componentStock, currencyStock);
+@deriveDocumentCurrency (order, componentsStock, currencyStock);
 
 @defineNumeratedObjectDefault(order, 'Нумератор для производственных заказов', 'ПЗ');
 
@@ -40,6 +42,9 @@ TABLE productDetail (productDetail);
 @defineDocumentDetailDatePrefix (order, productDetail, from, ' действия с');
 fromDateOrder(order) <- currentDate() WHEN ASSIGNED(order IS order);
 @defineDocumentDetailDatePrefix (order, productDetail, to, ' действия по');
+
+@defineDocumentDetailStock (order, productDetail, componentsStock, 'Склад сырья');
+@defineDocumentDetailStock (order, productDetail, goodsStock, 'Склад готовой продукции');
 
 @defineDocumentDetailQuantityCustom (productDetail);
 @defineDocumentHeaderQuantityCustomPrefix (order, productDetail, , ' (изделие)');
@@ -105,6 +110,11 @@ TABLE componentDetail (componentDetail);
 
 @defineDocumentDetailQuantityCustomPrefix (componentDetail, brutto, ' (брутто)');
 //@defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, brutto, ' (материал брутто)');
+
+@defineDocumentDetailStock (order, componentDetail, componentsStock, 'Склад сырья');
+@defineDocumentDetailStock (order, componentDetail, goodsStock, 'Склад готовой продукции');
+
+@defineDocumentDetailPriceListTypePrefix (order, componentDetail, priceListType, , );
 
 @defineDocumentDetailSkuCustom (componentDetail, sku);
 
@@ -196,10 +206,10 @@ bruttoQuantitySkuOrder 'Количество брутто' (sku,order)= GROUP SU
 dataPriceSkuOrder 'Цена' = DATA NUMERIC[14,2] (sku, order);
 dataPriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order),
                                                                        sku,
-                                                                       componentStockOrder(order),
+                                                                       componentsStockOrder(order),
                                                                        dateTimeOrder(order))
                                     WHEN CHANGED(priceListTypeOrder(order)) OR
-                                         CHANGED(componentStockOrder(order)) OR
+                                         CHANGED(componentsStockOrder(order)) OR
                                          CHANGED(dateTimeOrder(order));
 
 priceSkuOrder 'Цена' (sku, order) = dataPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order);
@@ -224,10 +234,10 @@ dataPriceSubstitutesSkuOrder 'Цена замены' = DATA NUMERIC[14,2] (sku, 
 
 dataPriceSubstitutesSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order),
                                                                                   substituteSkuOrder(sku, order),
-                                                                                  componentStockOrder(order),
+                                                                                  componentsStockOrder(order),
                                                                                   dateTimeOrder(order))
                                     WHEN CHANGED(priceListTypeOrder(order) AND sku IS sku) OR
-                                         CHANGED(componentStockOrder(order) AND sku IS sku) OR
+                                         CHANGED(componentsStockOrder(order) AND sku IS sku) OR
                                          CHANGED(substituteSkuOrder(sku, order)) OR
                                          CHANGED(dateTimeOrder(order) AND sku IS sku);
 priceSubstitutesSkuOrder 'Цена замены' (sku, order) = dataPriceSubstitutesSkuOrder(sku, order) AND quantitySubstitutesSkuOrder(sku, order);
@@ -276,7 +286,8 @@ quantitySubstitutesComponentDetail 'Кол-во замены' (componentDetail)=
     substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
 
 overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) OR substituteComponentDetail(componentDetail);
-overQuantityComponentDetail (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
+overNameSkuComponentDetail 'SKU' (componentDetail) = nameSku(overSkuComponentDetail(componentDetail));
+overQuantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
 
 @defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, over, ' (материал)');
 // ------------- Формы ----------- //
@@ -284,7 +295,7 @@ overQuantityComponentDetail (componentDetail) = bruttoQuantityComponentDetail(co
 FORM order 'Производственный заказ'
 
     OBJECTS o = order FIXED PANEL
-    PROPERTIES(o) objectClassName, nameComponentStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+    PROPERTIES(o) objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder
     PROPERTIES(o) nameCalcPriceListTypeOrder FORCE PANEL
     OBJECTS pd=productDetail
@@ -381,7 +392,7 @@ DESIGN order FROM DEFAULT{
                 NEW headerRow11 {
                     title = 'Склады';
                     childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameComponentStockOrder);
+                    ADD PROPERTY(nameComponentsStockOrder);
                     ADD PROPERTY(nameGoodsStockOrder);
                 }
                 NEW headerRow12 {
@@ -412,7 +423,7 @@ DESIGN order FROM DEFAULT{
 FORM orders 'Производственные заказы'
 
     OBJECTS o = order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
 
@@ -479,6 +490,14 @@ DESIGN orders FROM DEFAULT {
         }
     }
 }
+
+FORM orderDetails 'Строка компонента'
+    OBJECTS d = componentDetail
+    PROPERTIES(d) READONLY indexComponentDetail, overNameSkuComponentDetail, shortNameUOMComponentDetail,
+                           descriptionComponentDetail, overQuantityComponentDetail
+
+    DIALOG componentDetail OBJECT d
+;
 
 
 
