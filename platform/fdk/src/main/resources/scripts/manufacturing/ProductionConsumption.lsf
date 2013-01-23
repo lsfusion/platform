@@ -65,8 +65,8 @@ CONSTRAINT stockConsumptionDetail(detail) != componentsStockComponentDetail(comp
         MESSAGE 'Склад сырья и товар в списании сырья и производственном заказе должны соответствовать друг другу';
 
 
-descriptionIndexComponentDetailConsumptionDetail 'Строка заказа' (detail) = descriptionIndexComponentDetail(componentDetailConsumptionDetail(detail));
-descriptionIndexComponentDetailUserConsumptionDetail 'Строка заказа' (detail) = descriptionIndexComponentDetail(componentDetailUserConsumptionDetail(detail));
+descriptionIndexComponentDetailConsumptionDetail 'Строка компонента' (detail) = descriptionIndexComponentDetail(componentDetailConsumptionDetail(detail));
+descriptionIndexComponentDetailUserConsumptionDetail 'Строка компонента' (detail) = descriptionIndexComponentDetail(componentDetailUserConsumptionDetail(detail));
 
 quantityConsumptionDetailOrderConsumption (order, consumption) = GROUP SUM quantityConsumptionDetail(consumptionDetail) BY orderComponentDetail(componentDetailConsumptionDetail(consumptionDetail)), consumptionConsumptionDetail(consumptionDetail);
 
@@ -88,11 +88,13 @@ toConsumeComponentDetailOrder 'Не списано по заказу' (order) =
     GROUP SUM toConsumeComponentDetail(componentDetail) IF toConsumeComponentDetail(componentDetail) > 0
           BY orderComponentDetail(componentDetail);
 
-EXTEND FORM orderDetails
+EXTEND FORM componentDetails
             PROPERTIES(d) READONLY toConsumeComponentDetail
 ;
-EXTEND DESIGN orderDetails {
-    PROPERTY(toConsumeComponentDetail) { background = #FFFFCC; }
+EXTEND DESIGN componentDetails {
+    main {
+        PROPERTY(toConsumeComponentDetail) { background = #FFFFCC; }
+    }
 }
 
 //--
@@ -168,7 +170,6 @@ fillOrderUserConsumption 'Заполнить на основе производ�
             SET skuUserConsumptionDetail(d) <- overSkuComponentDetail(componentDetail);
             SET quantityUserConsumptionDetail (d) <- toConsumeComponentDetail(componentDetail);              // возможно надо overQuantityComponentDetail   ?
             SET priceListTypeConsumptionDetail(d) <- priceListTypeComponentDetail(componentDetail);
-
         }
     }
 } IN orderGroup;
@@ -285,6 +286,7 @@ copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
                 SET skuUserConsumptionDetail(d) <- skuUserConsumptionDetail(userConsumptionDetail);
                 SET quantityUserConsumptionDetail(d) <- quantityUserConsumptionDetail(userConsumptionDetail);
                 SET priceListTypeUserConsumptionDetail(d) <- priceListTypeUserConsumptionDetail(userConsumptionDetail);
+                SET componentDetailUserConsumptionDetail(d) <- componentDetailUserConsumptionDetail(userConsumptionDetail);
             }
         }
         FORM userConsumption OBJECTS o = o MANAGESESSION DOCKED_MODAL;
@@ -306,7 +308,8 @@ FORM consumptions 'Списания сырья'
 
     OBJECTS d=consumptionDetail
     PROPERTIES (d) READONLY indexConsumptionDetail, idBarcodeSkuConsumptionDetail, nameSkuConsumptionDetail, shortNameUOMSkuConsumptionDetail
-    PROPERTIES (d) READONLY namePriceListTypeConsumptionDetail, quantityConsumptionDetail, priceConsumptionDetail, sumConsumptionDetail
+    PROPERTIES (d) READONLY namePriceListTypeConsumptionDetail, quantityConsumptionDetail, priceConsumptionDetail, sumConsumptionDetail,
+                   descriptionIndexComponentDetailConsumptionDetail
 
     FILTERS consumptionConsumptionDetail(d) == o
     DIALOG consumption OBJECT o

@@ -489,15 +489,27 @@ DESIGN orders FROM DEFAULT {
     }
 }
 
-FORM orderDetails 'Строка компонента'
+FORM componentDetails 'Строка компонента'
     OBJECTS d = componentDetail
     PROPERTIES(d) READONLY indexComponentDetail, overNameSkuComponentDetail, shortNameUOMComponentDetail,
                            descriptionComponentDetail, overQuantityComponentDetail
 
     DIALOG componentDetail OBJECT d
 ;
+DESIGN componentDetails FROM DEFAULT {
 
+}
 
+FORM productDetails 'Строка изделия'
+    OBJECTS d = productDetail
+    PROPERTIES(d) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, descriptionProductDetail,
+                  quantityProductDetail, productsPriceProductDetail, productsSumProductDetail //componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail,
+
+    DIALOG productDetail OBJECT d
+;
+DESIGN productDetails FROM DEFAULT {
+
+}
 
 NAVIGATOR {
     manufacturingDocuments {

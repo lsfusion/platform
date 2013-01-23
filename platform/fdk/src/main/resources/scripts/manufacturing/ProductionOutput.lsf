@@ -1,0 +1,364 @@
+MODULE  ProductionOutput;
+
+REQUIRE ProductionOrder, StockDocument;
+NAMESPACE Production;
+
+// ---------------- Производство ------------------- //
+
+CLASS ABSTRACT output 'Производство' ;
+CLASS ABSTRACT outputDetail 'Строка производства' : named;
+
+CLASS userOutput 'Производство (польз.)': output, historizable, numeratedObject;
+CLASS userOutputDetail 'Строка производства (польз.)' : outputDetail;
+CLASS userOutputPosted 'Проведенное призводство (польз.)': userOutput, postedObject;
+
+@defineNumeratedObjectDefault(userOutput, 'Нумератор для производства', 'НП');
+
+@defineDocumentInterface(output);
+@defineDocumentInterfaceNumber(output);
+@defineDocumentInterfaceStock(output, stock, 'Склад', );
+@defineDocumentDetailStock(userOutput, stock, 'Склад');
+@defineDocumentInterfacePosted(output);
+
+@defineDocumentInterfaceDescription(output, 'Производство');
+
+@defineDocumentInterfaceCurrency(output);
+@deriveDocumentCurrency(userOutput, stock);
+@defineDocumentInterfacePriceListType(output); // объявляем вид цены
+priceListTypeUserOutputDetail(detail) <- priceListTypeUserOutput(userOutputUserOutputDetail(detail))
+        WHEN CHANGED(priceListTypeUserOutput(userOutputUserOutputDetail(detail)));
+
+@defineDocumentInterfaceDetailSku(output, sku);
+@defineDocumentInterfaceDetailQuantity(output);
+
+@defineDocumentInterfaceDetailPrice(output); // объявляем цену
+@deriveDocumentDetailPricePriceListType (userOutput, stock); // записываем цену
+
+expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail); // PERSISTENT INDEXED   надо ли?
+expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
+expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetail);
+
+// суммма
+@defineDocumentInterfaceDetailDataSum(output);
+@deriveDocumentDetailSum(userOutput, quantity);
+
+// кол-во в шапке документа
+@defineDocumentInterfaceHeaderQuantity(output);
+@defineDocumentHeaderSkuQuantity(output, sku);
+
+@defineDocumentHeaderSkuQuantity(userOutput, sku);
+@defineDocumentInterfaceHeaderSum(output);
+
+@defineDocumentHeaderItemSum(output, , );
+@defineDocumentHeaderItemSum(userOutput, , );
+
+@defineAddDetailDialogSkuStock(userOutput, sku, stock, dialogSku);
+@defineAddDetailDialogBarcode(userOutput, sku);
+
+//--  Связь накладной и поставки
+
+GROUP orderGroup 'Информация о заказе' : public;
+
+productDetailOutputDetail = ABSTRACT productDetail (outputDetail) PERSISTENT;
+productDetailUserOutputDetail = DATA productDetail (userOutputDetail);
+productDetailOutputDetail(outputDetail) += productDetailUserOutputDetail(outputDetail);
+
+CONSTRAINT stockOutputDetail(detail) != goodsStockProductDetail(productDetailUserOutputDetail(detail)) OR
+           skuOutputDetail(detail) != skuProductDetail(productDetailUserOutputDetail(detail))
+    CHECKED BY productDetailUserOutputDetail
+        MESSAGE 'Склад ГП и товар в производстве и производственном заказе должны соответствовать друг другу';
+
+
+descriptionIndexProductDetailOutputDetail 'Строка изделия' (detail) = descriptionIndexProductDetail(productDetailOutputDetail(detail));
+descriptionIndexProductDetailUserOutputDetail 'Строка изделия' (detail) = descriptionIndexProductDetail(productDetailUserOutputDetail(detail));
+
+quantityOutputDetailOrderOutput (order, output) = GROUP SUM quantityOutputDetail(outputDetail) BY orderProductDetail(productDetailOutputDetail(outputDetail)), outputOutputDetail(outputDetail);
+
+ordersOutput 'Заказы' (output) = GROUP CONCAT toString255(descriptionOrder(order)) IF quantityOutputDetailOrderOutput(order, output) , ', '
+                                                BY output
+                                                ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+outputProductDetail 'Кол-во (оприходовано)' (productDetail) = GROUP SUM quantityOutputDetail(outputDetail) IF isPostedOutputDetail(outputDetail)
+                                                                   BY productDetailOutputDetail(outputDetail) PERSISTENT;
+
+//costOutputDetailBatch = ABSTRACT NUMERIC[14,3] (outputDetail, batch);
+//costProductDetailBatch (productDetail, batch) = GROUP SUM costOutputDetailBatch(outputDetail, batch) BY productDetailOutputDetail(outputDetail), batch;
+//countBatchProductDetail 'Кол-во партий' (productDetail) = GROUP SUM 1 IF costProductDetailBatch(productDetail, batch) BY productDetail PERSISTENT;
+//maxBatchProductDetail (productDetail) = GROUP MAX batch IF costProductDetailBatch(productDetail, batch) BY productDetail;
+
+toOutputProductDetail 'Не оприходовано' (productDetail) = quantityProductDetail (productDetail) (-) outputProductDetail(productDetail);
+
+toOutputProductDetailOrder 'Не оприходовано заказу' (order) =
+    GROUP SUM toOutputProductDetail(productDetail) IF toOutputProductDetail(productDetail) > 0
+          BY orderProductDetail(productDetail);
+
+EXTEND FORM productDetails
+            PROPERTIES(d) READONLY toOutputProductDetail
+;
+EXTEND DESIGN productDetails {
+    main {
+        PROPERTY(toOutputProductDetail) { background = #FFFFCC; }
+    }
+}
+
+//--
+
+FORM outputOrders 'Производственные заказы'
+
+    OBJECTS s = stock FIXED PANEL
+
+    OBJECTS o = order
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    FILTERS isPostedOrder(o),
+            componentsStockOrder(o) == s,
+            toOutputProductDetailOrder(o)
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+    FILTERS orderProductDetail(pd)==o
+
+    OBJECTS cd = componentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,
+                   shortNameUOMComponentDetail, overQuantityComponentDetail
+    PROPERTIES(cd) READONLY toOutputProductDetail
+    FILTERS orderComponentDetail(cd)==o
+
+
+;
+
+DESIGN outputOrders FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+            ADD o.box;
+            NEW documentDetail {
+                type = TABBED;
+                ADD pd.box {
+                    title = 'Изделия';
+                }
+                ADD cd.box {
+                    title = 'Компоненты';
+                }
+                NEW printTab {
+                    title = 'Печатные формы';
+                    NEW printContainer {
+                        title = 'Печать';
+                        childConstraints = TO THE BOTTOM;
+                        fillVertical = 1.0;
+                    }
+                }
+            }
+        }
+        PROPERTY(toOutputProductDetail) { background = #FFFFCC; }
+    }
+}
+
+fillOrderUserOutput 'Заполнить на основе производственного заказа' =  ACTION (userOutput) {
+    FORM outputOrders OBJECTS s = stockUserOutput(userOutput) MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        LOCAL productionOrder = order();
+        SET productionOrder() <- chosenObject('o');
+
+        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = userOutputDetail DO {
+            SET userOutputUserOutputDetail(d) <- userOutput;
+            SET productDetailUserOutputDetail(d) <- productDetail;
+            SET skuUserOutputDetail(d) <- skuProductDetail(productDetail);
+            SET quantityUserOutputDetail (d) <- toOutputProductDetail(productDetail);              // возможно надо quantityProductDetail   ?
+            SET priceOutputDetail(d) <- productsPriceProductDetail(productDetail);     //   ?????????????
+        }
+    }
+} IN orderGroup;
+
+
+// Проводим по регистру
+
+@implementBatch(outputDetail, sku, stock, price);
+quantityBatch (ledger) += quantityOutputDetail(ledger);
+expiryDateBatch (ledger) += expiryDateOutputDetail(ledger);
+sumInSkuLedger (ledger) += sumOutputDetail(ledger);
+
+// Товарный отчет
+@implementStockDocumentLedgerInc(output, stock);
+sumIncStockDocumentLedger (ledger) += sumOutputDetailOutput(ledger);
+sumItemIncStockDocumentLedger (ledger) += sumItemOutputDetailOutput(ledger);
+sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(ledger);
+
+// --------------------------- Формы Списания ---------------------------------
+
+editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM userOutput 'Производство'
+    OBJECTS o = userOutput FIXED PANEL
+    PROPERTIES (o) objectClassName, nameStockUserOutput, nameNumeratorObject, numberObject, seriesObject, dateUserOutput, timeUserOutput,
+                   nameCurrencyUserOutput, namePriceListTypeUserOutput, noteUserOutput,
+                   countUserOutputDetailUserOutput, quantityUserOutputDetailUserOutput, sumUserOutputDetailUserOutput,
+                   fillOrderUserOutput, ordersOutput READONLY
+
+    OBJECTS d = userOutputDetail
+    PROPERTIES (d) indexUserOutputDetail, idBarcodeSkuUserOutputDetail, nameSkuUserOutputDetail, shortNameUOMSkuUserOutputDetail,
+                   namePriceListTypeUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
+                   descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
+
+    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOutputDetailUserOutput,           //fillDocumentOutput
+                           addDetailInputBarcodeUserOutputDetailUserOutput, deleteUserOutputDetailUserOutput
+    FILTERS userOutputUserOutputDetail(d) == o
+
+    EVENTS
+        ON OK EXEC prePostUserOutput(o)
+
+    HINTTABLE LIST dateTimeUserOutputDetail, skuUserOutputDetail, stockUserOutputDetail,
+                   priceListTypeUserOutputDetail, currencyUserOutputDetail, priceUserOutputDetail
+
+    EDIT userOutput OBJECT o
+;
+
+DESIGN userOutput FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
+
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD o.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameStockUserOutput);
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserOutput);
+                    ADD PROPERTY(timeUserOutput);
+                }
+                NEW headerRow12 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD o.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                    ADD o.orderGroup{
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                }
+            }
+
+            ADD o.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+    }
+}
+
+//-- SKU
+
+addUserOutput 'Добавить' = ACTION ADDFORM userOutput;
+editUserOutput 'Редактировать' (userOutput) = ACTION EDITFORM userOutput;
+editOutput(output) += editUserOutput(output);
+
+copyOutput 'Копировать' = ACTION (userOutput) NEWSESSION {
+    FOR ADDOBJ o = userOutput DO {
+        SET stockUserOutput(o) <- stockUserOutput(userOutput);
+        SET currencyUserOutput(o) <- currencyUserOutput(userOutput);
+        SET priceListTypeUserOutput(o) <- priceListTypeUserOutput(userOutput);
+        SET noteUserOutput(o) <- noteUserOutput(userOutput);
+
+        FOR userOutputUserOutputDetail(userOutputDetail) == userOutput DO {
+            FOR ADDOBJ d=userOutputDetail DO {
+                SET userOutputUserOutputDetail(d) <- o;
+                SET skuUserOutputDetail(d) <- skuUserOutputDetail(userOutputDetail);
+                SET quantityUserOutputDetail(d) <- quantityUserOutputDetail(userOutputDetail);
+                SET priceListTypeUserOutputDetail(d) <- priceListTypeUserOutputDetail(userOutputDetail);
+                SET productDetailUserOutputDetail(d) <- productDetailUserOutputDetail(userOutputDetail);
+            }
+        }
+        FORM userOutput OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+    }
+} TOOLBAR;
+
+
+FORM outputs 'Производство'
+    OBJECTS o = output
+    PROPERTIES (o) READONLY isPostedOutput FORCE GRID, objectClassName, numberOutput, seriesOutput, dateOutput, timeOutput,
+                            nameStockOutput, nameCurrencyOutput, namePriceListTypeOutput, noteOutput,
+                            countOutputDetailOutput, quantityOutputDetailOutput, sumOutputDetailOutput
+
+    PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserOutput TODRAW o
+    PROPERTIES (o) editOutput, copyOutput
+    PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOutput(o)
+
+    OBJECTS d=outputDetail
+    PROPERTIES (d) READONLY indexOutputDetail, idBarcodeSkuOutputDetail, nameSkuOutputDetail, shortNameUOMSkuOutputDetail
+    PROPERTIES (d) READONLY namePriceListTypeOutputDetail, quantityOutputDetail, priceOutputDetail, sumOutputDetail, descriptionIndexProductDetailOutputDetail
+
+    FILTERS outputOutputDetail(d) == o
+    DIALOG output OBJECT o
+;
+@extendFormFilterAccess(output, o, outputs, stock);
+
+DESIGN outputs FROM DEFAULT {
+    PROPERTY (delete(o)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD o.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD o.historyGroup;
+                ADD o.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                    fillVertical = 1.0;
+                }
+            }
+        }
+    }
+}
+NAVIGATOR {
+    manufacturingDocuments {
+        ADD outputs;
+    }
+}
+
+
+
+
+
+
