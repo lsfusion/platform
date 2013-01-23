@@ -25,8 +25,6 @@ CLASS userConsumptionPosted 'Проведенное списание сырья 
 @defineDocumentInterfaceCurrency(consumption);
 @deriveDocumentCurrency(userConsumption, stock);
 @defineDocumentInterfacePriceListType(consumption); // объявляем вид цены
-priceListTypeUserConsumptionDetail(detail) <- priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))
-        WHEN CHANGED(priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail)));
 
 @defineDocumentInterfaceDetailSku(consumption, sku);
 @defineDocumentInterfaceDetailQuantity(consumption);
@@ -50,6 +48,8 @@ priceListTypeUserConsumptionDetail(detail) <- priceListTypeUserConsumption(userC
 
 @defineAddDetailDialogSkuStock(userConsumption, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userConsumption, sku);
+
+editConsumption 'Редактировать' = ABSTRACT ACTION (consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 //--  Связь накладной и поставки
 
@@ -97,6 +97,19 @@ EXTEND DESIGN componentDetails {
     }
 }
 
+EXTEND FORM order
+            PROPERTIES(cd) READONLY toConsumeComponentDetail BEFORE priceComponentDetail(cd)
+;
+EXTEND FORM orders
+            PROPERTIES(cd) READONLY toConsumeComponentDetail BEFORE priceComponentDetail(cd)
+;
+
+priceListTypeUserConsumptionDetail(detail) <- IF priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail)) THEN
+                                                 priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))
+                                                 ELSE priceListTypeComponentDetail(componentDetailUserConsumptionDetail(detail))
+
+        WHEN CHANGED(priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))) OR
+             CHANGED(componentDetailUserConsumptionDetail(detail));
 //--
 
 FORM consumptionOrders 'Производственные заказы'
@@ -118,10 +131,9 @@ FORM consumptionOrders 'Производственные заказы'
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
-    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,       //BACKGROUND backgroundComponentDetail(cd)
+    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, overQuantityComponentDetail
-//    PROPERTIES(cd) READONLY nameSubstituteComponentDetail, multiplierSubstitutesComponentDetail,                  //BACKGROUND backgroundSubstitutesOrder(o)
-//                   quantitySubstitutesComponentDetail
+
     PROPERTIES(cd) READONLY toConsumeComponentDetail
 
     FILTERS orderComponentDetail(cd)==o
@@ -169,7 +181,6 @@ fillOrderUserConsumption 'Заполнить на основе производ�
             SET componentDetailUserConsumptionDetail(d) <- componentDetail;
             SET skuUserConsumptionDetail(d) <- overSkuComponentDetail(componentDetail);
             SET quantityUserConsumptionDetail (d) <- toConsumeComponentDetail(componentDetail);              // возможно надо overQuantityComponentDetail   ?
-            SET priceListTypeConsumptionDetail(d) <- priceListTypeComponentDetail(componentDetail);
         }
     }
 } IN orderGroup;
@@ -187,9 +198,82 @@ sumOutStockDocumentLedger (ledger) += sumConsumptionDetailConsumption(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemConsumptionDetailConsumption(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailConsumption(ledger);
 
+// Создание аггрегированного списания
+
+@defineDocumentHeaderCreate (order, createConsumption, 'Создать документ списания сырья');
+@defineDocumentDetailCreateCustom (order, componentDetail, createConsumption, 'Создать документ списания сырья');
+
+EXTEND FORM order
+            PROPERTIES(o)  createConsumptionOrder
+;
+EXTEND DESIGN order {
+    headerRow112 {
+        NEW headerRow1121 {
+            title = 'Списание';
+            ADD PROPERTY(createConsumptionOrder);
+        }
+    }
+}
+
+EXTEND FORM orders
+            PROPERTIES(o) READONLY createConsumptionOrder
+;
+
+CLASS orderConsumption 'Списание сырья на основе заказа' : consumption;
+CLASS orderConsumptionPosted 'Проведенное списание сырья на основе заказа': orderConsumption, postedObject;
+CLASS orderConsumptionDetail 'Строка списания сырья на основе заказа' : consumptionDetail;
+
+@defineDocumentTables(orderConsumption);
+
+@defineDocumentAggregationHeader(order, orderConsumption, createConsumptionOrder);
+@defineAggregation(componentDetail, orderConsumptionDetail, createConsumptionComponentDetail);
+
+orderConsumptionOrderConsumptionDetail (detail) = orderConsumptionOrder(orderComponentDetail(componentDetailOrderConsumptionDetail(detail)));
+consumptionConsumptionDetail(detail) += orderConsumptionOrderConsumptionDetail(detail);
+@defineDocumentDetailIndex(orderConsumption);
+
+dateOrderConsumptionDetail 'Дата' (orderConsumptionDetail) = dateComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
+timeOrderConsumptionDetail 'Время' (orderConsumptionDetail) = timeComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
+dateTimeOrderConsumptionDetail 'Дата/время' (orderConsumptionDetail) = dateComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
+
+dateConsumption(consumption) += dateOrderConsumption(consumption);
+timeConsumption(consumption) += timeOrderConsumption(consumption);
+
+stockConsumption(consumption) += componentsStockOrder(orderOrderConsumption(consumption));
+isPostedConsumption(consumption) += isPostedOrder(orderOrderConsumption(consumption));
+
+numberOrderConsumption 'Номер документа' (orderConsumption) = numberObject(orderOrderConsumption(orderConsumption));
+numberConsumption(consumption) += numberOrderConsumption(consumption);
+
+seriesOrderConsumption 'Серия документа' (orderConsumption) = seriesObject(orderOrderConsumption(orderConsumption));
+seriesConsumption(consumption) += seriesOrderConsumption(consumption);
+
+seriesNumberOrderConsumption 'Серия/номер документа' (orderConsumption) = seriesNumberObject(orderOrderConsumption(orderConsumption));
+
+noteConsumption(consumption) += noteOrder(orderOrderConsumption(consumption));
+currencyConsumption (consumption) += currencyOrder(orderOrderConsumption(consumption));
+
+priceListTypeConsumption(consumption) += priceListTypeOrder(orderOrderConsumption(consumption));
+
+@defineDocumentDescription(orderConsumption, orderConsumptionDetail, seriesNumberOrderConsumption, 'Списание сырья на основе заказа');
+descriptionConsumption (consumption) += descriptionOrderConsumption(consumption);
+
+
+componentDetailConsumptionDetail (consumptionDetail) += componentDetailOrderConsumptionDetail(consumptionDetail);
+skuConsumptionDetail(consumptionDetail) +=  overSkuComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+quantityConsumptionDetail(consumptionDetail) += overQuantityComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+
+priceListTypeConsumptionDetail(consumptionDetail) += priceListTypeComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+
+priceConsumptionDetail(consumptionDetail) += priceComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+sumConsumptionDetail(consumptionDetail) += sumComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+
+editOrder 'Редактировать' (order) = ACTION EDITFORM order;
+editConsumption(consumption) += ACTION EXEC editOrder(orderOrderConsumption(consumption));
+
 // --------------------------- Формы Списания ---------------------------------
 
-editConsumption 'Редактировать' = ABSTRACT ACTION (consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
 
 FORM userConsumption 'Списание сырья'
     OBJECTS o = userConsumption FIXED PANEL
@@ -286,6 +370,7 @@ copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
                 SET skuUserConsumptionDetail(d) <- skuUserConsumptionDetail(userConsumptionDetail);
                 SET quantityUserConsumptionDetail(d) <- quantityUserConsumptionDetail(userConsumptionDetail);
                 SET priceListTypeUserConsumptionDetail(d) <- priceListTypeUserConsumptionDetail(userConsumptionDetail);
+//                SET priceUserConsumptionDetail(d) <- priceUserConsumptionDetail(userConsumptionDetail);
                 SET componentDetailUserConsumptionDetail(d) <- componentDetailUserConsumptionDetail(userConsumptionDetail);
             }
         }
@@ -298,7 +383,7 @@ FORM consumptions 'Списания сырья'
     OBJECTS o = consumption
     PROPERTIES (o) READONLY isPostedConsumption FORCE GRID, objectClassName, numberConsumption, seriesConsumption, dateConsumption, timeConsumption,
                             nameStockConsumption, nameCurrencyConsumption, namePriceListTypeConsumption, noteConsumption,
-                            countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption
+                            countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption, ordersConsumption
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 

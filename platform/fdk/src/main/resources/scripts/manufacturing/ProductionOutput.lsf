@@ -31,8 +31,8 @@ priceListTypeUserOutputDetail(detail) <- priceListTypeUserOutput(userOutputUserO
 @defineDocumentInterfaceDetailSku(output, sku);
 @defineDocumentInterfaceDetailQuantity(output);
 
-@defineDocumentInterfaceDetailPrice(output); // объявляем цену
-@deriveDocumentDetailPricePriceListType (userOutput, stock); // записываем цену
+@defineDocumentInterfaceDetailPrice(output); // объявляем цену. Записываем цену: см ниже.
+//@deriveDocumentDetailPricePriceListType (userOutput, stock); // записываем цену
 
 expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail); // PERSISTENT INDEXED   надо ли?
 expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
@@ -78,7 +78,7 @@ ordersOutput 'Заказы' (output) = GROUP CONCAT toString255(descriptionOrder
                                                 BY output
                                                 ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
-outputProductDetail 'Кол-во (оприходовано)' (productDetail) = GROUP SUM quantityOutputDetail(outputDetail) IF isPostedOutputDetail(outputDetail)
+outputProductDetail 'Кол-во (произведено)' (productDetail) = GROUP SUM quantityOutputDetail(outputDetail) IF isPostedOutputDetail(outputDetail)
                                                                    BY productDetailOutputDetail(outputDetail) PERSISTENT;
 
 //costOutputDetailBatch = ABSTRACT NUMERIC[14,3] (outputDetail, batch);
@@ -86,7 +86,7 @@ outputProductDetail 'Кол-во (оприходовано)' (productDetail) = G
 //countBatchProductDetail 'Кол-во партий' (productDetail) = GROUP SUM 1 IF costProductDetailBatch(productDetail, batch) BY productDetail PERSISTENT;
 //maxBatchProductDetail (productDetail) = GROUP MAX batch IF costProductDetailBatch(productDetail, batch) BY productDetail;
 
-toOutputProductDetail 'Не оприходовано' (productDetail) = quantityProductDetail (productDetail) (-) outputProductDetail(productDetail);
+toOutputProductDetail 'Не произведено' (productDetail) = quantityProductDetail (productDetail) (-) outputProductDetail(productDetail);
 
 toOutputProductDetailOrder 'Не оприходовано заказу' (order) =
     GROUP SUM toOutputProductDetail(productDetail) IF toOutputProductDetail(productDetail) > 0
@@ -100,6 +100,27 @@ EXTEND DESIGN productDetails {
         PROPERTY(toOutputProductDetail) { background = #FFFFCC; }
     }
 }
+EXTEND FORM order
+            PROPERTIES(pd) READONLY toOutputProductDetail AFTER quantityProductDetail
+;
+EXTEND FORM orders
+            PROPERTIES(pd) READONLY toOutputProductDetail AFTER quantityProductDetail
+;
+
+
+
+
+priceUserOutputDetail(detail) <- IF priceListTypeUserOutputDetail(detail) THEN
+                                    prevPricePriceListTypeSkuStockDateTime(priceListTypeUserOutputDetail(detail),
+                                                                 skuUserOutputDetail(detail),
+                                                                 stockUserOutputDetail(detail),
+                                                                 dateTimeUserOutputDetail(detail))
+                                    ELSE productsPriceProductDetail(productDetailUserOutputDetail(detail))
+    WHEN CHANGED(priceListTypeUserOutputDetail(detail)) OR
+         CHANGED(skuUserOutputDetail(detail)) OR
+         CHANGED(stockUserOutputDetail(detail)) OR
+         CHANGED(dateTimeUserOutputDetail(detail)) OR
+         CHANGED(productDetailUserOutputDetail(detail));
 
 //--
 
@@ -170,7 +191,6 @@ fillOrderUserOutput 'Заполнить на основе производств
             SET productDetailUserOutputDetail(d) <- productDetail;
             SET skuUserOutputDetail(d) <- skuProductDetail(productDetail);
             SET quantityUserOutputDetail (d) <- toOutputProductDetail(productDetail);              // возможно надо quantityProductDetail   ?
-            SET priceOutputDetail(d) <- productsPriceProductDetail(productDetail);     //   ?????????????
         }
     }
 } IN orderGroup;
@@ -202,7 +222,7 @@ FORM userOutput 'Производство'
 
     OBJECTS d = userOutputDetail
     PROPERTIES (d) indexUserOutputDetail, idBarcodeSkuUserOutputDetail, nameSkuUserOutputDetail, shortNameUOMSkuUserOutputDetail,
-                   namePriceListTypeUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
+                   namePriceListTypeUserOutputDetail, expiryDateUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
                    descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
 
     PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOutputDetailUserOutput,           //fillDocumentOutput
@@ -310,7 +330,8 @@ FORM outputs 'Производство'
 
     OBJECTS d=outputDetail
     PROPERTIES (d) READONLY indexOutputDetail, idBarcodeSkuOutputDetail, nameSkuOutputDetail, shortNameUOMSkuOutputDetail
-    PROPERTIES (d) READONLY namePriceListTypeOutputDetail, quantityOutputDetail, priceOutputDetail, sumOutputDetail, descriptionIndexProductDetailOutputDetail
+    PROPERTIES (d) READONLY namePriceListTypeOutputDetail, expiryDateOutputDetail, quantityOutputDetail, priceOutputDetail,
+                   sumOutputDetail, descriptionIndexProductDetailOutputDetail
 
     FILTERS outputOutputDetail(d) == o
     DIALOG output OBJECT o

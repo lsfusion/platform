@@ -114,6 +114,9 @@ TABLE componentDetail (componentDetail);
 
 @defineDocumentDetailPriceListTypePrefix (order, componentDetail, priceListType, , );
 
+@defineDocumentDetailPriceCustomPrefix (componentDetail, , );
+@defineDocumentDetailDataSumCustomPrefix (componentDetail, , );
+
 @defineDocumentDetailSkuCustom (componentDetail, sku);
 
 componentComponentDetail = DATA component (componentDetail);
@@ -125,6 +128,8 @@ UOMComponentDetail(componentDetail) <- UOMComponent(componentComponentDetail(com
 
 CONSTRAINT materialComponent(componentComponentDetail(componentDetail)) IS sku AND NOT skuComponentDetail(componentDetail) == materialComponent(componentComponentDetail(componentDetail))
     CHECKED BY componentComponentDetail MESSAGE 'Sku компонента и строки компонента не соответствуют друг другу';
+
+currencyComponentDetail (componentDetail)= currencyOrder(orderComponentDetail(componentDetail));
 
 productComponentDetail = DATA product (componentDetail);
 nameMaterialComponentDetail 'Изделие' (componentDetail) = nameMaterial(productComponentDetail(componentDetail));
@@ -283,9 +288,18 @@ multiplierSubstitutesComponentDetail 'Коэффициент замены' (comp
 quantitySubstitutesComponentDetail 'Кол-во замены' (componentDetail)= quantitySubstitutesSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) AND
     substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
 
+
 overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) OR substituteComponentDetail(componentDetail);
 overNameSkuComponentDetail 'SKU' (componentDetail) = nameSku(overSkuComponentDetail(componentDetail));
 overQuantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
+
+calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order);
+calcPriceComponentDetail (componentDetail)= calcPriceSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
+priceComponentDetail(detail) <- calcPriceComponentDetail(detail) WHEN CHANGED(calcPriceComponentDetail(detail));
+sumComponentDetail (detail) <- toNumeric16p2(roundCurrency((priceComponentDetail(detail)* overQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
+        WHEN CHANGED(priceComponentDetail(detail)) OR
+             CHANGED(overQuantityComponentDetail(detail)) OR
+             CHANGED(currencyComponentDetail(detail));
 
 @defineDocumentHeaderQuantityCustomPrefix (order, componentDetail, over, ' (материал)');
 // ------------- Формы ----------- //
@@ -308,6 +322,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(cd) BACKGROUND backgroundComponentDetail(cd) indexComponentDetail, nameSkuComponentDetail, nameMaterialComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, bruttoQuantityComponentDetail
     PROPERTIES(cd) READONLY BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteComponentDetail, multiplierSubstitutesComponentDetail, quantitySubstitutesComponentDetail
+    PROPERTIES(cd) priceComponentDetail, sumComponentDetail
 
     PROPERTIES(o) TODRAW cd createComponentOrder, createRecComponentOrder
     PROPERTIES(cd) TODRAW cd createComponentDetail SHOWIF productComponentDetail(cd)
@@ -388,10 +403,16 @@ DESIGN order FROM DEFAULT{
                     ADD PROPERTY(timeOrder);
                 }
                 NEW headerRow11 {
-                    title = 'Склады';
-                    childConstraints = TO THE RIGHT;
-                    ADD PROPERTY(nameComponentsStockOrder);
-                    ADD PROPERTY(nameGoodsStockOrder);
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    NEW headerRow111 {
+                        title = 'Склады';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameComponentsStockOrder);
+                        ADD PROPERTY(nameGoodsStockOrder);
+                    }
+                    NEW headerRow112 {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
                 }
                 NEW headerRow12 {
                     childConstraints = TO THE RIGHTBOTTOM;
@@ -438,6 +459,7 @@ FORM orders 'Производственные заказы'
                    shortNameUOMComponentDetail, bruttoQuantityComponentDetail
     PROPERTIES(cd) READONLY BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteComponentDetail, multiplierSubstitutesComponentDetail,
                    quantitySubstitutesComponentDetail
+    PROPERTIES(cd) READONLY priceComponentDetail, sumComponentDetail
 
     FILTERS orderComponentDetail(cd)==o
 
