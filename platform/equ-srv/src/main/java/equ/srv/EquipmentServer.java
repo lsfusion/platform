@@ -555,9 +555,9 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                                 sale.numberReceiptDetail, sale.barcodeItem, sale.quantityReceiptDetail, sale.priceReceiptDetail, sale.sumReceiptDetail,
                                 sale.discountSumReceiptDetail, sale.discountSumReceipt, sale.seriesNumberDiscountCard));
                     if (sale.sumCash != 0)
-                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "paymentMeansCash", sale.sumCash, 1));
+                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "cash", sale.sumCash, 1));
                     if (sale.sumCard != 0)
-                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "paymentMeansCard", sale.sumCard, 2));
+                        dataPayment.add(Arrays.<Object>asList(sale.zReportNumber, sale.receiptNumber, sale.cashRegisterNumber, "card", sale.sumCard, 2));
                 }
 
             List<ImportField> saleImportFields = Arrays.asList(cashRegisterField, zReportNumberField, dateField, timeField,

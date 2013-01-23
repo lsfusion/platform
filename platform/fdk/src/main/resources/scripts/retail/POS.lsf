@@ -310,7 +310,7 @@ namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(payme
 sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN base;
 sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
-receiptPayment (payment) = DATA receipt (payment) NOT NULL DELETE;
+receiptPayment (payment) = DATA receipt (payment);// NOT NULL DELETE;
 
 countPaymentReceipt 'Кол-во типов платежей' (receipt) = GROUP SUM 1 IF receiptPayment(payment) == receipt BY receipt;
 
@@ -454,7 +454,7 @@ FORM zReports 'Z-отчеты'
     FILTERS receiptReceiptDetail(d)==b
 
     OBJECTS p=payment
-    PROPERTIES(p) READONLY  namePaymentTypePayment, namePaymentMeansPayment, sumPayment
+    PROPERTIES(p) READONLY  receiptPayment, namePaymentTypePayment, namePaymentMeansPayment, sumPayment
 
     FILTERS receiptPayment(p)==b
 ;
@@ -1250,18 +1250,19 @@ EXTEND DESIGN operationCashRegister{
 }
 // ----------------------------------------------- Стандартные значения ------------------------------------- //
 
-loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans) {
+loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans, sid) {
     ADDOBJ paymentType;
     FOR p == addedObject() DO {
         SET name(p) <- string AS STRING[110];
         SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
+        SET sidPaymentType(p) <- sid AS STRING[10];
     }
 }
 
 loadDefaultPaymentTypes 'Загрузить стандартные типы оплаты' = ACTION(){
-    EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash);
-    EXEC loadDefaultPaymentType('Visa', paymentMeans.paymentMeansCard);
-    EXEC loadDefaultPaymentType('Mastercard', paymentMeans.paymentMeansCard);
+    EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash, 'cash');
+    EXEC loadDefaultPaymentType('Visa', paymentMeans.paymentMeansCard, 'visa');
+    EXEC loadDefaultPaymentType('Mastercard', paymentMeans.paymentMeansCard, 'mastercard');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultPaymentTypes);
