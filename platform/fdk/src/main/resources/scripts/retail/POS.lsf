@@ -310,7 +310,7 @@ namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(payme
 sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN base;
 sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
 
-receiptPayment (payment) = DATA receipt (payment);// NOT NULL DELETE;
+receiptPayment (payment) = DATA receipt (payment) NOT NULL DELETE;
 
 countPaymentReceipt 'Кол-во типов платежей' (receipt) = GROUP SUM 1 IF receiptPayment(payment) == receipt BY receipt;
 
