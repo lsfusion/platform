@@ -57,7 +57,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             Type type = objectClass.getType();
             String result = type.getString(object, compile.syntax);
             if(!type.isSafeType(object))
-                result = type.getCast(result, compile.syntax, false);
+                result = type.getCast(result, compile.syntax, true); // cast часто rtrim делает и глотает проблемы
             return result;
         }
     }

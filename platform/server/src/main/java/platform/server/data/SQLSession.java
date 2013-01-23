@@ -749,9 +749,11 @@ public class SQLSession extends MutableObject {
     }
     // в явную без query так как часто выполняется
     public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues) throws SQLException {
+        ImSet<KeyField> tableKeys = table.getTableKeys();
+
         String select = "SELECT COUNT(*) AS cnt";
-        if(table.keys.size() > 1)
-            for(KeyField field : table.keys) {
+        if(tableKeys.size() > 1)
+            for(KeyField field : tableKeys) {
                 select = select + ", " + syntax.getCountDistinct(field.name);
                 select = select + ", ANYVALUE(" + field.name + ")";
             }
@@ -781,15 +783,15 @@ public class SQLSession extends MutableObject {
                 
                 int totalCnt = readInt(result.getObject(1));
                 int offs=2;
-                if(table.keys.size() > 1) {
-                    ImFilterValueMap<KeyField, Object> mKeyValues = table.getTableKeys().mapFilterValues();
-                    for(int i=0,size=table.keys.size();i<size;i++) {
+                if(tableKeys.size() > 1) {
+                    ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
+                    for(int i=0,size=tableKeys.size();i<size;i++) {
                         Integer cnt = readInt(result.getObject(2*i + offs));
                         if(cnt == 1)
-                            mKeyValues.mapValue(i, table.keys.get(i).type.read(result.getObject(2*i + 1 + offs)));
+                            mKeyValues.mapValue(i, tableKeys.get(i).type.read(result.getObject(2*i + 1 + offs)));
                     }
                     keyValues.set(mKeyValues.immutableValue());
-                    offs += 2*table.keys.size();
+                    offs += 2*tableKeys.size();
                 } else
                     keyValues.set(MapFact.<KeyField, Object>EMPTY());
 

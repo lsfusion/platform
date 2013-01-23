@@ -49,7 +49,7 @@ public class BusinessLogicsBootstrap {
 
         initSpringContext();
 
-        initLRUCaches();
+//        initLRUCaches();
 
         initLifecycleManager();
 
