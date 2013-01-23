@@ -85,10 +85,71 @@ FORM UOMs 'Единицы измерений'
     PROPERTIES(u) ADDFORM, EDITFORM, delete
 ;
 
+// ----------------------------------- Абстрактная группа ------------------------------------------ //
+
+CLASS ABSTRACT group 'Классификатор SKU' : named;
+@defineHierarchyAbstract(group);
+
+CLASS ABSTRACT groupType 'Тип классификатора SKU' : named;
+CLASS STATIC systemGroupType 'Системный тип классификатор SKU' : groupType;
+
+groupTypeGroup = ABSTRACT groupType (group) PERSISTENT;
+nameGroupTypeGroup 'Тип классификатора SKU' (group) = name(groupTypeGroup(group));
+
+TABLE groupTypeSku(groupType, sku);
+groupGroupTypeSku = ABSTRACT group (groupType, sku) EXCLUSIVE PERSISTENT;
+nameGroupGroupTypeSku 'Имя' (type, sku) = name(groupGroupTypeSku(type, sku));
+canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
+
+// ----------------------------------- Custom Group ------------------------------------------ //
+
+CLASS customGroup 'Дополнительный классификатор SKU' : group;
+@defineHierarchy(customGroup);
+
+parentGroup (group) += parentCustomGroup(group);
+
+CLASS customGroupType 'Тип дополнительного классификатора SKU' : groupType;
+
+customGroupTypeCustomGroup = DATA customGroupType (customGroup) AUTOSET;
+nameCustomGroupTypeCustomGroup 'Тип классификатора' (customGroup) = name(customGroupTypeCustomGroup(customGroup));
+
+CONSTRAINT customGroupTypeCustomGroup(parentCustomGroup(group)) != customGroupTypeCustomGroup(group)
+           CHECKED BY parentCustomGroup MESSAGE 'Родительский объект классификатора SKU имеет неправильный тип';
+
+groupTypeGroup (group) += customGroupTypeCustomGroup(group);
+
+TABLE customGroupTypeSku(customGroupType, sku);
+customGroupCustomGroupTypeSku = ABSTRACT customGroup (customGroupType, sku) PERSISTENT;
+
+groupGroupTypeSku(type, sku) += customGroupCustomGroupTypeSku(type, sku);
+
+FORM customGroup 'Дополнительная группа'
+    OBJECTS g=customGroup FIXED PANEL
+    PROPERTIES(g) nameCustomGroupTypeCustomGroup, name, nameParentCustomGroup
+    EDIT customGroup OBJECT g
+;
+
+FORM customGroups 'Дополнительные группы'
+    OBJECTS t = customGroupType FIXED PANEL
+    PROPERTIES(t) SELECTOR name
+
+    TREE treeGroups g=customGroup PARENT parentCustomGroup
+    PROPERTIES(g) READONLY name, canonicalNameCustomGroup
+    PROPERTIES(g)          ADDFORM, EDITFORM, delete
+    FILTERS customGroupTypeCustomGroup(g) == t
+    ORDER BY canonicalNameCustomGroup
+
+    DIALOG customGroup OBJECT g
+;
+
 // ----------------------------------- Sku Group ------------------------------------------ //
 
-CLASS ABSTRACT skuGroup 'Группа SKU' : named;
+CLASS ABSTRACT skuGroup 'Группа SKU' : group;
 @defineHierarchyAbstract(skuGroup);
+
+EXTEND CLASS systemGroupType { skuGroupType 'Основной' }
+
+parentGroup(skuGroup) += parentSkuGroup(skuGroup);
 
 TABLE skuGroupLanguage(skuGroup, language);
 nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRING[110] (skuGroup, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
@@ -102,6 +163,10 @@ TABLE sku(sku);
 TABLE legalEntitySku(legalEntity, sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
+
+groupTypeGroup(group) += systemGroupType.skuGroupType IF group IS skuGroup;
+groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == systemGroupType.skuGroupType;
+
 nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
 
 TABLE skuLanguage(sku, language);
@@ -2348,6 +2413,7 @@ NAVIGATOR {
     masterData {
         NEW skuNavigator 'Товар' BEFORE legalEntityNavigator {
             ADD UOMs;
+            ADD customGroups;
         }
     }
 }

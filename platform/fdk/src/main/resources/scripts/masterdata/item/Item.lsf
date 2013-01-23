@@ -4,7 +4,7 @@ REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS itemGroup 'Товарная группа' : named, externalizable, skuGroup, priceGroup;
+CLASS itemGroup 'Товарная группа' : named, externalizable, skuGroup;
 
 @defineHierarchy(itemGroup);
 
@@ -82,14 +82,21 @@ TABLE itemGroupItem (itemGroup, item);
 
 isParentItemGroupItem (itemGroup, item) = isParentItemGroupItemGroup(itemGroupItem(item), itemGroup) PERSISTENT;
 
+// ------------------ Дополнительные группы --------------- //
+TABLE customGroupTypeItem(customGroupType, item);
+customGroupCustomGroupTypeItem = DATA customGroup (customGroupType, item);
+customGroupCustomGroupTypeSku(type, item) += customGroupCustomGroupTypeItem(type, item);
+
+nameCustomGroupCustomGroupTypeItem 'Имя' (type, item) = name(customGroupCustomGroupTypeItem(type, item));
+canonicalNameCustomGroupCustomGroupTypeItem 'Каноническое имя' (type, item) = canonicalNameCustomGroup(customGroupCustomGroupTypeItem(type, item));
+
+CONSTRAINT customGroupTypeCustomGroup(customGroupCustomGroupTypeItem(type, item)) != type
+           CHECKED BY customGroupCustomGroupTypeItem
+           MESSAGE 'Выбранный объект классификатора SKU имеет неправильный тип';
+
 // Атрибуты
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
-
-// --------------------------- Ценовые группы -------------------------------------//
-
-parentPriceGroup(priceGroup) += parentItemGroup(priceGroup);
-priceGroupSku(sku) += itemGroupItem(sku);
 
 // ------------------------------------ Формы -------------------------- //
 FORM item 'Товар'
@@ -106,8 +113,11 @@ FORM item 'Товар'
     PROPERTIES(b)       ADDOBJ, delete
     FILTERS skuBarcode(b) == i
 
-    OBJECTS dt2=DATE FIXED PANEL
-    PROPERTIES (dt2) OBJVALUE BACKGROUND dateDiffersCurrent(dt2)
+    OBJECTS cgt = customGroupType
+    PROPERTIES name(cgt) READONLY, canonicalNameCustomGroupCustomGroupTypeItem(cgt, i)
+
+    OBJECTS dtr=DATE FIXED PANEL
+    PROPERTIES (dtr) OBJVALUE BACKGROUND dateDiffersCurrent(dtr)
 
     OBJECTS c=country
     PROPERTIES (c) READONLY name
@@ -147,9 +157,16 @@ DESIGN item FROM DEFAULT {
                 }
                 ADD b.box;
             }
+            NEW itemGroup {
+                childConstraints = TO THE RIGHT;
+                title = 'Классификаторы';
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+                ADD cgt.box;
+            }
             NEW regionalPrm {
                 caption = 'Региональные параметры';
-                ADD dt2.box;
+                ADD dtr.box;
                 ADD c.box;
 
             }
@@ -521,6 +538,8 @@ copyDataItem = ACTION (item, i) {
             SET dataTitleCashRegisterBarcode(b) <- dataTitleCashRegisterBarcode(barcode);
         }
     }
+
+    SET customGroupCustomGroupTypeItem(type, i) <- customGroupCustomGroupTypeItem(type, item);
 
     EXEC overCopyItem(item, i);
 }

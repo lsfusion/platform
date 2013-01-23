@@ -16,8 +16,6 @@ includeVATPriceListType(type) += TRUE IF type IS warePriceListType;
 @defineDocumentHeaderCurrency(warePriceListType);
 currencyPriceListType(warePriceListType) += currencyWarePriceListType(warePriceListType);
 
-TABLE warePriceListTypePriceGroup (warePriceListType, priceGroup);
-
 wareSku (sku) = ABSTRACT ware (sku);
 wareSku (sku) += wareItem(sku);
 

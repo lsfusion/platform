@@ -62,9 +62,12 @@ CONSTRAINT supplierAgreement(agreement) AND NOT isSellerLegalEntity(supplierAgre
 priceListTypeAgreement 'Вид цены' (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
 
-TABLE agreementPriceGroup(agreement, priceGroup);
-priceListTypeAgreementPriceGroup (agreement, priceGroup) = DATA priceListType (agreement, priceGroup);
-namePriceListTypeAgreementPriceGroup 'Вид цены' (agreement, priceGroup) = name(priceListTypeAgreementPriceGroup(agreement, priceGroup));
+groupTypeAgreement = DATA groupType (agreement);
+nameGroupTypeAgreement 'Тип классификатора' (agreement) = name(groupTypeAgreement(agreement));
+
+TABLE agreementGroup(agreement, group);
+priceListTypeAgreementGroup (agreement, group) = DATA priceListType (agreement, group);
+namePriceListTypeAgreementGroup 'Вид цены' (agreement, group) = name(priceListTypeAgreementGroup(agreement, group));
 
 TABLE agreementSku(agreement, sku);
 priceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
@@ -74,8 +77,8 @@ CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAg
            CHECKED BY priceListTypeAgreement
            MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
-CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementPriceGroup(agreement, priceGroup))
-           CHECKED BY priceListTypeAgreementPriceGroup
+CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementGroup(agreement, group))
+           CHECKED BY priceListTypeAgreementGroup
            MESSAGE 'Валюта соглашения должна совпадать с валютой вида цены';
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreementSku(agreement, sku))
@@ -84,7 +87,7 @@ CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAg
 
 priceListTypeAgreementSkuOver (agreement, sku) =
     UNION OVERRIDE priceListTypeAgreement(agreement) AND sku IS sku,
-                   priceListTypeAgreementPriceGroup(agreement, priceGroupSku(sku)),
+                   priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement),sku)),
                    priceListTypeAgreementSku(agreement, sku);
 
 namePriceListTypeAgreementSkuOver 'Вид цены' = name(priceListTypeAgreementSkuOver(agreement, sku));
@@ -222,7 +225,7 @@ FORM agreement 'Соглашение'
     OBJECTS a = agreement FIXED PANEL
     PROPERTIES(a) name, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
                   fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameSupplierAgreement,
-                  nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                  nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement
 
     TREE legalEntityGroupTree b=STRING[3], lg = legalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
@@ -239,14 +242,16 @@ FORM agreement 'Соглашение'
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F10' inAgreementCustomerOver (a, c)
 
-    TREE priceGroupTree g=priceGroup PARENT parentPriceGroup
+    TREE groupTree g=group PARENT parentGroup
     PROPERTIES READONLY name(g)
+    FILTERS groupTypeGroup(g) == groupTypeAgreement(a)
     ORDER BY name(g)
 
-    OBJECTS pg = priceGroup
-    PROPERTIES(pg) READONLY canonicalNamePriceGroup
-    PROPERTIES(a, pg) namePriceListTypeAgreementPriceGroup
-    FILTERS isParentPriceGroupPriceGroup(pg, g)
+    OBJECTS pg = group
+    PROPERTIES(pg) READONLY canonicalNameGroup
+    PROPERTIES(a, pg) namePriceListTypeAgreementGroup
+    FILTERS isParentGroupGroup(pg, g),
+            groupTypeGroup(pg) == groupTypeAgreement(a)
 
     TREE skuGroupTree sg=skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY name(sg)
@@ -305,12 +310,15 @@ DESIGN agreement FROM DEFAULT {
                         fillHorizontal = 2.0;
                     }
                 }
-                NEW priceGroupContainer{
-                    childConstraints = TO THE RIGHT;
+                NEW groupPane {
+                    childConstraints = TO THE BOTTOM;
                     caption = 'Уточнение цен по ценовым группам';
-                    type = SPLITH;
-                    ADD priceGroupTree.tree.box;
-                    ADD pg.box{fillHorizontal = 3.0;}
+                    ADD PROPERTY(nameGroupTypeAgreement);
+                    NEW groupContainer {
+                        type = SPLITH;
+                        ADD groupTree.tree.box;
+                        ADD pg.box{fillHorizontal = 3.0;}
+                    }
                 }
                 NEW skuContainer{
                     childConstraints = TO THE RIGHT;
@@ -348,10 +356,11 @@ copySessionAgreement 'Копировать' = ACTION (agreement) {
         SET currencyAgreement(a) <- currencyAgreement(agreement);
         SET priceListTypeAgreement(a) <- priceListTypeAgreement(agreement);
         SET noteAgreement(a) <- noteAgreement(agreement);
+        SET groupTypeAgreement(a) <- groupTypeAgreement(agreement);
         SET inCustomerAgreement(a) <- inCustomerAgreement(agreement);
 
         SET inAgreementCustomer(a, customer) <- inAgreementCustomer (agreement, customer);
-        SET priceListTypeAgreementPriceGroup(a, priceGroup) <- priceListTypeAgreementPriceGroup(agreement, priceGroup);
+        SET priceListTypeAgreementGroup(a, group) <- priceListTypeAgreementGroup(agreement, group);
         SET priceListTypeAgreementSku(a, sku) <- priceListTypeAgreementSku(agreement, sku);
 
         FORM agreement OBJECTS a = a DOCKED_MODAL;

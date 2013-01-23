@@ -26,7 +26,7 @@ overCopyItem(s, d) += ACTION (s, d) {
 
 
 EXTEND FORM item
-    PROPERTIES (i, c, dt2) overNumberVATItemCountryDate, valueVATItemCountryDate
+    PROPERTIES (i, c, dtr) overNumberVATItemCountryDate, valueVATItemCountryDate
     FILTERGROUP filters1
             FILTER 'Страну, у которых есть НДС' 'F11' countRangeTaxCountry (tax.taxVAT, c) DEFAULT
 

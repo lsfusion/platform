@@ -481,7 +481,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
 
         // записываем в имя имя класса + номер объекта
-        dataName.setEventChange(addJProp(string2, addJProp(name.getOld(), objectClass, 1), 1,
+        dataName.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
                 addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
                 is(baseClass.named), 1);
 

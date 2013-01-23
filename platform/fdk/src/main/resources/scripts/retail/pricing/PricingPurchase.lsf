@@ -52,7 +52,7 @@ ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем
     FOR [GROUP MAX(changedPriceListType(detail)) BY retailPriceListTypeUserInvoiceDetail(detail)](priceListType) DO {
         IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
         IF priceListType IS calcPriceListType THEN {
-            SET retailMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypePriceGroupOver(priceListType, priceGroupSku(skuUserInvoiceDetail(detail)))
+            SET retailMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypeSku(priceListType, skuUserInvoiceDetail(detail))
                                                          WHERE changedPriceListType(detail) AND retailPriceListTypeUserInvoiceDetail(detail) == priceListType;
             SET retailPriceUserInvoiceDetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
                                                                     priceUserInvoiceDetail(detail),

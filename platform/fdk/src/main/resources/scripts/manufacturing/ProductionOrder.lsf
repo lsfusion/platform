@@ -70,7 +70,7 @@ componentsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quanti
 
 calcPriceListTypeProductDetail (productDetail) = calcPriceListTypeOrder(orderProductDetail(productDetail));
 markupProductDetail 'Надбавка, %' = DATA NUMERIC[8,2] (productDetail);
-markupProductDetail(productDetail) <- markupCalcPriceListTypePriceGroupOver(calcPriceListTypeProductDetail(productDetail), priceGroupSku(skuProductDetail(productDetail)))
+markupProductDetail(productDetail) <- markupCalcPriceListTypeSku(calcPriceListTypeProductDetail(productDetail), skuProductDetail(productDetail))
     WHEN CHANGED (calcPriceListTypeProductDetail(productDetail)) OR
          CHANGED (skuProductDetail(productDetail));
 

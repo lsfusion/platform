@@ -4257,6 +4257,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new ShipmentListFormEntity(shipments, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new ShipmentExportFormEntity(shipments, "shipmentExportForm", "Экспорт поставки"));
 
+        addFormEntity(new SkuFormEntity(null, "skus", "Товары"));
 
         NavigatorElement distribution = addNavigatorElement(baseLM.root, "distribution", "Sintitex");
         distribution.window = baseLM.windows.toolbar;
