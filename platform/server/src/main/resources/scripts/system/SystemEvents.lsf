@@ -139,6 +139,8 @@ FORM changes 'Журнал изменений'
     PROPERTIES (s) READONLY captionNavigatorElementSession, hostnameComputerConnectionSession,
     userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
     quantityChangedClassesSession, changesSession FORCE PANEL, dateTimeSession
+    FILTERGROUP filtersChange
+                    FILTER 'Только изменения пользователей' 'F8' userLoginConnectionSession(s) DEFAULT
 ;
 
 EXTEND DESIGN changes {
