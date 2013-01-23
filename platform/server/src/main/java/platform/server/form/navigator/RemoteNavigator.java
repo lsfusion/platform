@@ -82,9 +82,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     private int updateTime;
 
+    private String remoteAddress;
+
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(T BL, boolean isFullClient, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public RemoteNavigator(T BL, boolean isFullClient, String remoteAddress, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
         this.isFullClient = isFullClient;
@@ -97,6 +99,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
         this.user = new DataObject(currentUser.ID, this.BL.LM.customUser);
         this.computer = new DataObject(computer, this.BL.LM.computer);
+        this.remoteAddress = remoteAddress;
         this.sql = this.BL.createSQL();
     }
 
@@ -550,6 +553,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public int getUpdateTime() {
         return updateTime;
+    }
+
+    public String getRemoteAddress(){
+        return remoteAddress;
     }
 
     public synchronized void invalidate() throws SQLException {

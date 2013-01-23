@@ -33,6 +33,8 @@ TABLE connectionNavigatorElement (connection, navigatorElement);
 computerConnection 'Компьютер' = DATA computer (connection);
 hostnameComputerConnection 'Имя компьютера'(connection) = hostname(computerConnection(connection));
 
+remoteAddressConnection 'IP пользователя' = DATA STRING[40] (connection);
+
 userConnection 'Пользователь' = DATA customUser (connection);
 userLoginConnection 'Логин пользователя' (connection) = userLogin(userConnection(connection));
 
@@ -76,7 +78,7 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 FORM connections 'Журнал подключений'
 
     OBJECTS c=connection
-    PROPERTIES (c) hostnameComputerConnection, userLoginConnection, nameConnectionStatusConnection,
+    PROPERTIES (c) hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
                    connectTimeConnection, disconnectTimeConnection, nameUserSession, dateSession
 
     OBJECTS n=navigatorElement

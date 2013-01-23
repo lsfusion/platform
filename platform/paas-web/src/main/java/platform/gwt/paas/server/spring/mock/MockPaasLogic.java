@@ -40,7 +40,7 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) throws RemoteException {
         return null;
     }
 

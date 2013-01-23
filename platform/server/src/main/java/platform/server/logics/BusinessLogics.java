@@ -132,12 +132,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         this.dialogUndecorated = dialogUndecorated;
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
         if (restartController.isPendingRestart()) {
             return null;
         }
 
-        return navigatorsController.createNavigator(isFullClient, login, password, computer, forceCreateNew);
+        return navigatorsController.createNavigator(isFullClient, login, password, computer, remoteAddress, forceCreateNew);
     }
 
     public TimeZone getTimeZone() {

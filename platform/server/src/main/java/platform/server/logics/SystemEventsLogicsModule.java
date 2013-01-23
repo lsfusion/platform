@@ -29,6 +29,7 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
     public ConcreteCustomClass session;
 
     public LCP computerConnection;
+    public LCP remoteAddressConnection;
     public LCP userConnection;
     public LCP userLoginConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
@@ -82,6 +83,7 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
 
         // Подключения к серверу
         computerConnection = getLCPByName("computerConnection");
+        remoteAddressConnection = getLCPByName("remoteAddressConnection");
         userConnection = getLCPByName("userConnection");
         userLoginConnection = getLCPByName("userLoginConnection");
         connectionStatusConnection = (LCP<PropertyInterface>) getLCPByName("connectionStatusConnection");

@@ -3,6 +3,7 @@ package platform.server.logics;
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.OSUtils;
 import platform.base.Pair;
 import platform.interop.DaemonThreadFactory;
 import platform.interop.exceptions.LoginException;
@@ -46,7 +47,7 @@ public class NavigatorsController {
         this.LM = BL.LM;
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         forceCreateNew = true;
 
@@ -97,7 +98,7 @@ public class NavigatorsController {
             }
 
             if (navigator == null) {
-                navigator = new RemoteNavigator(BL, isFullClient, user, computer, BL.getExportPort());
+                navigator = new RemoteNavigator(BL, isFullClient, remoteAddress, user, computer, BL.getExportPort());
                 addNavigator(loginKey, navigator, isUniversalPasswordUsed);
             }
 
@@ -124,7 +125,7 @@ public class NavigatorsController {
                 BL.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
                 BL.systemEventsLM.connectionStatusConnection.change(BL.systemEventsLM.connectionStatus.getID("connectedConnection"), session, newConnection);
                 BL.systemEventsLM.connectTimeConnection.change(LM.currentDateTime.read(session), session, newConnection);
-
+                BL.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
                 session.apply(BL);
                 session.close();
 

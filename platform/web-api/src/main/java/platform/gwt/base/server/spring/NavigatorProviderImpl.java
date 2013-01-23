@@ -5,12 +5,16 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import platform.base.OSUtils;
 import platform.base.ReflectionUtils;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
+import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
 
 public class NavigatorProviderImpl implements NavigatorProvider, InitializingBean, DisposableBean, InvalidateListener {
@@ -37,8 +41,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, InitializingBea
 
                     try {
                         RemoteLogicsInterface bl = blProvider.getLogics();
-
-                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(OSUtils.getLocalHostName()), true);
+                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(OSUtils.getLocalHostName()), ((WebAuthenticationDetails)auth.getDetails()).getRemoteAddress(), true);
                         if (unsynced == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
                         }
@@ -69,5 +72,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, InitializingBea
     @Override
     public void destroy() throws Exception {
         blProvider.removeInvlidateListener(this);
+        if(navigator!=null)
+            navigator.close();
     }
 }

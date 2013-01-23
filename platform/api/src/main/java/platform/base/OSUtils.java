@@ -115,6 +115,15 @@ public class OSUtils {
         return name;
     }
 
+    public static String getHostAddress() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+
     public static String convertPath(String path, Boolean convertFirst) {
         if (path.startsWith("\\") && convertFirst)
             return "\\" + path.substring(2, path.length()).replace("\\", "/");

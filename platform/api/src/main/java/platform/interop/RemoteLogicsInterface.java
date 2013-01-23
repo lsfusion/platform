@@ -21,7 +21,7 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     byte[] getLogo() throws RemoteException;
 
-    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, boolean forceCreateNew) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
 
