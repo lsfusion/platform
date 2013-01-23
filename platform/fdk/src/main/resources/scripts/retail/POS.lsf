@@ -1261,8 +1261,7 @@ loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, p
 
 loadDefaultPaymentTypes 'Загрузить стандартные типы оплаты' = ACTION(){
     EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash, 'cash');
-    EXEC loadDefaultPaymentType('Visa', paymentMeans.paymentMeansCard, 'visa');
-    EXEC loadDefaultPaymentType('Mastercard', paymentMeans.paymentMeansCard, 'mastercard');
+    EXEC loadDefaultPaymentType('Карточка', paymentMeans.paymentMeansCard, 'card');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultPaymentTypes);
