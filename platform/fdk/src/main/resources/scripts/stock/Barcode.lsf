@@ -180,10 +180,12 @@ EXTEND FORM skus
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
+    FILTERS (s IS sku AND NOT filterBarcode()) OR (filterBarcode() == idBarcodeSku(s))
 ;
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
+    FILTERS (bt IS batch AND NOT filterBarcode()) OR (filterBarcode() == idBarcodeSkuBatch(bt))
 ;
 
 EXTEND FORM costSkuLedger

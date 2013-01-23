@@ -167,6 +167,8 @@ DESIGN item FROM DEFAULT {
     }
 }
 
+filterBarcode 'Штрих-код' = DATA SESSION STRING[14] ();
+
 editSku(sku) += [ACTION EDITFORM item](sku);
 addSku () += [ACTION ADDFORM item]();
 
@@ -178,6 +180,8 @@ FORM items 'Товары'
     OBJECTS i=item
     PROPERTIES(i) READONLY idBarcodeSku
     PROPERTIES(i) ADDFORM, EDITFORM, delete
+    PROPERTIES filterBarcode() TODRAW i FORCE PANEL DRAWTOTOOLBAR
+    FILTERS (i IS item AND NOT filterBarcode()) OR (filterBarcode() == idBarcodeSku(i))
 
     DIALOG item OBJECT i
 ;
@@ -190,6 +194,9 @@ DESIGN items FROM DEFAULT {
             ADD i.box {
                 defaultComponent = TRUE;
                 fillHorizontal = 4;
+                PROPERTY(filterBarcode){
+                    editKey = 'F4';
+                }
             }
     }
     ADD functions.box;
