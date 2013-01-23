@@ -27,8 +27,6 @@ TABLE order(order);
 @defineDocumentHeaderCurrency (order);
 @deriveDocumentCurrency (order, componentsStock, currencyStock);
 
-@defineNumeratedObjectDefault(order, 'Нумератор для производственных заказов', 'ПЗ');
-
 // ---------------- Изделие ------------------- //
 CLASS productDetail 'Строка изделия' : named;
 TABLE productDetail (productDetail);
