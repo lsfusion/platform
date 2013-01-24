@@ -166,6 +166,15 @@ END
 
 // ----------------------------------- Расширение подбора товаров ---------------------------- //
 
+seekBarcode 'Штрих-код' = DATA SESSION STRING[14] ();
+seekSkuBarcode = ACTION (){
+    REQUEST STRING[14] INPUT;
+    SET seekBarcode() <- NULL;
+    SET seekBarcode() <- requestedString();
+    EXEC seek(skuBarcodeIdDate(seekBarcode(), currentDate()));
+    SET seekBarcode() <- NULL;
+}
+
 META defineDialogSkuBarcode (form)
     EXTEND FORM form
         PROPERTIES READONLY idBarcodeSku(s), idBarcodeSku(si)
@@ -180,13 +189,28 @@ EXTEND FORM skus
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
-    FILTERS (s IS sku AND NOT filterBarcode()) OR (filterBarcode() == idBarcodeSku(s))
+    PROPERTIES seekBarcode() TODRAW s FORCE PANEL DRAWTOTOOLBAR ON CHANGE EXEC seekSkuBarcode()
 ;
+EXTEND DESIGN currentBalanceSkuStock{
+    sts.box{
+        PROPERTY(seekBarcode){
+            editKey = 'F4';
+        }
+    }
+}
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
-    FILTERS (bt IS batch AND NOT filterBarcode()) OR (filterBarcode() == idBarcodeSkuBatch(bt))
+    PROPERTIES seekBarcode() TODRAW bt FORCE PANEL DRAWTOTOOLBAR
+    FILTERS (bt IS batch AND NOT seekBarcode()) OR (skuBarcodeIdDate(seekBarcode(), currentDate()) == skuBatch(bt))
 ;
+EXTEND DESIGN currentBalanceBatchStock{
+    stb.box{
+        PROPERTY(seekBarcode){
+            editKey = 'F4';
+        }
+    }
+}
 
 EXTEND FORM costSkuLedger
     PROPERTIES(bil) READONLY idBarcodeSkuSkuLedger AFTER nameSkuSkuLedger

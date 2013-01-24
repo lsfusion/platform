@@ -2075,8 +2075,6 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
 
 // ------------------------------------------------ Остатки по товарам ---------------------------------------- //
 
-filterBarcode 'Штрих-код' = DATA SESSION STRING[14] ();
-
 FORM currentBalanceSkuStock 'Текущие остатки'
 
     TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
@@ -2091,8 +2089,6 @@ FORM currentBalanceSkuStock 'Текущие остатки'
 
     OBJECTS           sts=(st=stock, s=sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
-    PROPERTIES filterBarcode() TODRAW s FORCE PANEL DRAWTOTOOLBAR
-
     FILTERS           isParentSkuGroupSku(sk, s),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
@@ -2141,9 +2137,6 @@ DESIGN currentBalanceSkuStock FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD sts.box {
                     fillVertical = 2;
-                    PROPERTY(filterBarcode){
-                        editKey = 'F4';
-                    }
                 }
 
                 NEW ledger.box {
@@ -2262,7 +2255,6 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     PROPERTIES        READONLY nameSkuBatch(bt), stockName = name(st)
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
-    PROPERTIES filterBarcode() TODRAW bt FORCE PANEL DRAWTOTOOLBAR
     FILTERS           isParentSkuGroupBatch(sk, bt),
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
@@ -2310,9 +2302,6 @@ DESIGN currentBalanceBatchStock FROM DEFAULT {
                 childConstraints = TO THE BOTTOM;
                 ADD stb.box {
                     title = 'Партии';
-                    PROPERTY(filterBarcode){
-                        editKey = 'F4';
-                    }
                 }
                 ADD bil.box {
                     title = 'Движение';
