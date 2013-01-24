@@ -424,9 +424,13 @@ TABLE manufacturer(manufacturer);
 @defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
 
 // Тара
-isContainerItem 'Тара' = DATA BOOLEAN (item) IN itemBaseGroup;
-isContainerSku (sku) += isContainerItem(sku);
-EXTEND FORM item PROPERTIES(i) isContainerItem;
+skuTypeItem = DATA skuType (item);
+skuTypeSku (sku) += skuTypeItem(sku);
+
+skuTypeItem(item) <- skuType.skuTypeItem WHEN ASSIGNED(item IS item);
+
+nameSkuTypeItem 'Тип' (item) = name(skuTypeItem(item)) IN itemBaseGroup;
+EXTEND FORM item PROPERTIES(i) nameSkuTypeItem;
 
 // Весовой
 isWeightItem 'Весовой товар' = DATA BOOLEAN (item) IN itemBaseGroup;
@@ -530,7 +534,7 @@ copyDataItem = ACTION (item, i) {
     SET grossWeightItem(i) <- grossWeightItem(item);
     SET countryItem(i) <- countryItem(item);
     SET imageItem(i) <- imageItem(item);
-    SET isContainerItem(i) <- isContainerItem(item);
+    SET skuTypeItem(i) <- skuTypeItem(item);
     SET isWeightItem(i) <- isWeightItem(item);
     SET inactiveItem(i) <- inactiveItem(item);
 

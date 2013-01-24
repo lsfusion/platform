@@ -156,6 +156,16 @@ nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRIN
 
 nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) = IF languageStock(stock) THEN nameSkuGroupLanguage(skuGroup, languageStock(stock)) ELSE name(skuGroup);
 
+// ----------------------------------- Sku Type ------------------------------------------ //
+
+CLASS STATIC skuType {
+    skuTypeItem 'Товар',
+    skuTypeContainer 'Тара',
+    skuTypeCharge 'Услуги'
+}
+
+isStockSkuType 'Складируемые' (type) = type IS skuType AND NOT type == skuType.skuTypeCharge PERSISTENT;
+
 // ----------------------------------- Sku ------------------------------------------ //
 
 CLASS ABSTRACT sku 'SKU';
@@ -187,7 +197,14 @@ netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 
-isContainerSku 'Тара' (sku) = ABSTRACT BOOLEAN (sku) PERSISTENT;
+skuTypeSku = ABSTRACT skuType (sku) PERSISTENT;
+
+isStockSku 'Складируемый' (sku) = isStockSkuType(skuTypeSku(sku)) PERSISTENT;
+
+isItemSku 'Товар' (sku) = skuTypeSku(sku) == skuType.skuTypeItem PERSISTENT;
+isContainerSku 'Тара' (sku) = skuTypeSku(sku) == skuType.skuTypeContainer PERSISTENT;
+isChargeSku 'Услуги' (sku) = skuTypeSku(sku) == skuType.skuTypeCharge PERSISTENT;
+
 isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
 
 inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (sku) PERSISTENT;
@@ -1130,7 +1147,7 @@ END
 //-
 META defineDocumentHeaderItemSumCustom (object, detail, prefixA, prefixB)
     prefixB###sumItem###detail###object 'Сумма, товар' (object) =
-        GROUP SUM prefixA###sum###detail(idetail) AND NOT isContainerSku(sku###detail(idetail))
+        GROUP SUM prefixA###sum###detail(idetail) AND isItemSku(sku###detail(idetail))
             BY object###detail(idetail) IN documentSumGroup;
     prefixB###sumContainer###detail###object 'Сумма, тара' (object) =
         GROUP SUM prefixA###sum###detail(idetail) IF isContainerSku(sku###detail(idetail))

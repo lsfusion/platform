@@ -491,17 +491,17 @@ sumShortageSkuCollationSheet 'Сумма недостачи' (collationSheet) = 
 
 
 sumItemSkuBalanceCollationSheet 'Сумма по остаткам, товар' (collationSheet) = round0(
-    [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF NOT isContainerSku(sku) BY collationSheet](collationSheet)) PERSISTENT;
+    [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet)) PERSISTENT;
 sumContainerSkuBalanceCollationSheet 'Сумма по остаткам, тара' (collationSheet) = round0(
     [GROUP SUM sumBalanceCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet)) PERSISTENT;
 
 sumItemSkuPageInventoryDetailCollationSheet 'Сумма по факту, товар' (collationSheet) = round0(
-    [GROUP SUM sumPageInventoryDetailCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF NOT isContainerSku(sku) BY collationSheet](collationSheet));
+    [GROUP SUM sumPageInventoryDetailCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet));
 sumContainerSkuPageInventoryDetailCollationSheet 'Сумма по факту, тара' (collationSheet) = round0(
     [GROUP SUM sumPageInventoryDetailCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet));
 
 sumItemSkuShortageCollationSheet 'Сумма недостачи, товар' (collationSheet) = round0(
-    [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF NOT isContainerSku(sku) BY collationSheet](collationSheet));
+    [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isItemSku(sku) BY collationSheet](collationSheet));
 sumContainerSkuShortageCollationSheet 'Сумма недостачи, тара' (collationSheet) = round0(
     [GROUP SUM sumShortageCollationSheetSku(collationSheet, sku) IF includeCollationSheetSku(collationSheet, sku) IF isContainerSku(sku) BY collationSheet](collationSheet));
 
