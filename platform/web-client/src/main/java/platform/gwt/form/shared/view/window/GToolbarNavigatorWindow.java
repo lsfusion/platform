@@ -64,7 +64,7 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
         return HasAlignment.ALIGN_LEFT;
     }
 
-    public boolean isVerticalTextAlignVertical() {
+    public boolean hasVerticalTextPosition() {
         return verticalTextPosition == BOTTOM;
     }
 }

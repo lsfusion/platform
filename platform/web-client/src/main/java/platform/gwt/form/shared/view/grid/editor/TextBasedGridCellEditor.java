@@ -38,7 +38,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
 
     @Override
     public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
-        currentText = oldValue == null ? "" : oldValue.toString();
+        currentText = renderToString(oldValue);
         InputElement inputElement = getInputElement(parent);
         boolean selectAll = true;
         if (editEvent instanceof NativeEditEvent) {
@@ -89,6 +89,10 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
                 }
             }
         }
+    }
+
+    protected String renderToString(Object value) {
+        return value == null ? "" : value.toString();
     }
 
     protected void enterPressed(NativeEvent event, Element parent) {

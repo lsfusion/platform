@@ -2420,7 +2420,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             return false;
         }
 
-        private boolean nextRow(boolean down) {
+        protected boolean nextRow(boolean down) {
             double currentTime = Duration.currentTimeMillis();
             //ignore key stroke, if we need to scroll too often
             if (currentTime - display.lastVerticalScrollTime < IGNORE_SCROLL_TIMEOUT) {
@@ -2434,7 +2434,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             return true;
         }
 
-        private boolean nextColumn(boolean forward) {
+        protected boolean nextColumn(boolean forward) {
             if (display.renderedRowCount > 0) {
                 int rowCount = display.getRowCount();
                 int columnCount = display.getColumnCount();

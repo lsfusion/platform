@@ -22,7 +22,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         super(window, navigatorController);
         alignmentX = window.getAlignmentX();
         alignmentY = window.getAlignmentY();
-        verticalTextAlign = window.isVerticalTextAlignVertical();
+        verticalTextAlign = window.hasVerticalTextPosition();
 
         vertical = window.type == 1;
         panel = vertical ? new VerticalPanel() : new HorizontalPanel();

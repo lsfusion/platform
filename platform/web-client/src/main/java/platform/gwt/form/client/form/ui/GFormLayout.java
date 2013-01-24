@@ -106,12 +106,15 @@ public class GFormLayout extends FlowPanel {
             }
         }
 
-        //предоставляем TabbedPane'у самому управлять видимостью своих компонентов
         GAbstractFormContainer formContainer = getFormContainer(container);
-        if (formContainer != null && !formContainer.isInTabbedPane()) {
-            formContainer.getContainerView().setVisible(
-                    hasVisibleChildren(container)
-            );
+        if (formContainer != null) {
+            if (!formContainer.isInTabbedPane()) {
+                formContainer.getContainerView().setVisible(
+                        hasVisibleChildren(container)
+                );
+            } else {
+                ((GFormTabbedPane) getFormContainer(container.container)).setChildVisible(container, hasVisibleChildren(container));
+            }
             if (formContainer.isInSplitPane()) {
                 ((GFormSplitPane) getFormContainer(container.container)).update();
             }
