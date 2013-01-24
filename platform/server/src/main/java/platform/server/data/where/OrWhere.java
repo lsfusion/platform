@@ -367,9 +367,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 return false;
 
             for(int i=0;i<compare1.greater.size;i++)
-                compare1.greater.get(i).less.exclAddAll(compare2.less);
+                compare1.greater.get(i).less.addAll(compare2.less);
             for(int i=0;i<compare2.less.size;i++)
-                compare2.less.get(i).greater.exclAddAll(compare1.greater);
+                compare2.less.get(i).greater.addAll(compare1.greater);
 
             return true;
         }
