@@ -232,9 +232,9 @@ orderConsumptionOrderConsumptionDetail (detail) = orderConsumptionOrder(orderCom
 consumptionConsumptionDetail(detail) += orderConsumptionOrderConsumptionDetail(detail);
 @defineDocumentDetailIndex(orderConsumption);
 
-dateOrderConsumptionDetail 'Дата' (orderConsumptionDetail) = dateComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
-timeOrderConsumptionDetail 'Время' (orderConsumptionDetail) = timeComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
-dateTimeOrderConsumptionDetail 'Дата/время' (orderConsumptionDetail) = dateComponentDetail(componentDetailConsumptionDetail(orderConsumptionDetail));
+dateOrderConsumptionDetail 'Дата' (orderConsumptionDetail) = dateComponentDetail(componentDetailOrderConsumptionDetail(orderConsumptionDetail));
+timeOrderConsumptionDetail 'Время' (orderConsumptionDetail) = timeComponentDetail(componentDetailOrderConsumptionDetail(orderConsumptionDetail));
+dateTimeOrderConsumptionDetail 'Дата/время' (orderConsumptionDetail) = dateComponentDetail(componentDetailOrderConsumptionDetail(orderConsumptionDetail));
 
 dateConsumption(consumption) += dateOrderConsumption(consumption);
 timeConsumption(consumption) += timeOrderConsumption(consumption);
@@ -268,12 +268,9 @@ priceListTypeConsumptionDetail(consumptionDetail) += priceListTypeComponentDetai
 priceConsumptionDetail(consumptionDetail) += priceComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
 sumConsumptionDetail(consumptionDetail) += sumComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
 
-editOrder 'Редактировать' (order) = ACTION EDITFORM order;
 editConsumption(consumption) += ACTION EXEC editOrder(orderOrderConsumption(consumption));
 
 // --------------------------- Формы Списания ---------------------------------
-
-
 
 FORM userConsumption 'Списание сырья'
     OBJECTS o = userConsumption FIXED PANEL

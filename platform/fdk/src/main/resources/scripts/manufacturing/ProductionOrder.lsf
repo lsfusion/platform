@@ -255,7 +255,6 @@ changeSubstituteSkuOrder = ACTION (substitute, sku, order) {
         SET substituteSkuOrder(sku, order) <- NULL;
         SET multiplierSkuOrder(sku, order) <- NULL;
     }
-
 }
 quantitySubstitutesSkuOrder(sku, order) <- bruttoQuantitySkuOrder(sku,order) * multiplierSkuOrder(sku, order)
     WHEN CHANGED (bruttoQuantitySkuOrder(sku,order)) OR CHANGED(multiplierSkuOrder(sku, order));
@@ -277,6 +276,18 @@ fillPriceProductsOrder 'Заполнить цены для изделий по �
     FOR orderProductDetail(productDetail) == order DO {
         SET componentsPriceProductDetail(productDetail) <- recPriceProductDetail(productDetail);
     }
+} TOOLBAR;
+
+resetSubstituteOrder 'Сбросить все замены' = ACTION (order) {
+    FOR (TRUE IF substituteSkuOrder(sku, order)) OR (TRUE IF multiplierSkuOrder(sku, order)) DO {
+        SET substituteSkuOrder(sku, order) <- NULL;
+        SET multiplierSkuOrder(sku, order) <- NULL;
+    }
+} TOOLBAR;
+
+deleteComponentOrder 'Очистить' =  ACTION (order) {
+    EXEC deleteComponentDetailOrder(order);
+    EXEC resetSubstituteOrder(order);
 } TOOLBAR;
 
 //-- Замены для компонентов
@@ -327,7 +338,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(o) TODRAW cd createComponentOrder, createRecComponentOrder
     PROPERTIES(cd) TODRAW cd createComponentDetail SHOWIF productComponentDetail(cd)
     PROPERTIES(cd) ADDOBJ, delete
-    PROPERTIES(o) TODRAW cd deleteComponentDetailOrder
+    PROPERTIES(o) TODRAW cd deleteComponentOrder
 
     FILTERS orderComponentDetail(cd)==o
 
@@ -338,6 +349,8 @@ FORM order 'Производственный заказ'
     PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder, multiplierSkuOrder, quantitySubstitutesSkuOrder, priceSubstitutesSkuOrder
     PROPERTIES(s,o) overPriceSkuOrder
     FILTERS bruttoQuantitySkuOrder(s,o)
+//    PROPERTIES(o) TODRAW s resetSubstituteOrder
+
 
     PROPERTIES(o) namePriceListTypeOrder FORCE PANEL
 
@@ -438,6 +451,7 @@ DESIGN order FROM DEFAULT{
         }
     }
 }
+editOrder 'Редактировать' (order) = ACTION EDITFORM order;
 
 FORM orders 'Производственные заказы'
 

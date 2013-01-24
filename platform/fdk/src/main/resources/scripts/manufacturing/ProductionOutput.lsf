@@ -55,6 +55,8 @@ expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetai
 @defineAddDetailDialogSkuStock(userOutput, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userOutput, sku);
 
+editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
 //--  Связь накладной и поставки
 
 GROUP orderGroup 'Информация о заказе' : public;
@@ -209,9 +211,79 @@ sumIncStockDocumentLedger (ledger) += sumOutputDetailOutput(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemOutputDetailOutput(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(ledger);
 
-// --------------------------- Формы Списания ---------------------------------
+// Создание аггрегированного списания
 
-editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+@defineDocumentHeaderCreate (order, createOutput, 'Создать документ производства');
+@defineDocumentDetailCreateCustom (order, productDetail, createOutput, 'Создать документ производства');
+
+EXTEND FORM order
+            PROPERTIES(o)  createOutputOrder
+;
+EXTEND DESIGN order {
+    headerRow112 {
+        NEW headerRow1122 {
+            title = 'Производство';
+            ADD PROPERTY(createOutputOrder);
+        }
+    }
+}
+
+EXTEND FORM orders
+            PROPERTIES(o) READONLY createOutputOrder
+;
+
+CLASS orderOutput 'Производство на основе заказа' : output;
+CLASS orderOutputPosted 'Проведенное производство на основе заказа': orderOutput, postedObject;
+CLASS orderOutputDetail 'Строка производства на основе заказа' : outputDetail;
+
+@defineDocumentTables(orderOutput);
+
+@defineDocumentAggregationHeader(order, orderOutput, createOutputOrder);
+@defineAggregation(productDetail, orderOutputDetail, createOutputProductDetail);
+
+orderOutputOrderOutputDetail (detail) = orderOutputOrder(orderProductDetail(productDetailOrderOutputDetail(detail)));
+outputOutputDetail(detail) += orderOutputOrderOutputDetail(detail);
+@defineDocumentDetailIndex(orderOutput);
+
+dateOrderOutputDetail 'Дата' (orderOutputDetail) = dateProductDetail(productDetailOrderOutputDetail(orderOutputDetail));
+timeOrderOutputDetail 'Время' (orderOutputDetail) = timeProductDetail(productDetailOrderOutputDetail(orderOutputDetail));
+dateTimeOrderOutputDetail 'Дата/время' (orderOutputDetail) = dateProductDetail(productDetailOrderOutputDetail(orderOutputDetail));
+
+dateOutput(output) += dateOrderOutput(output);
+timeOutput(output) += timeOrderOutput(output);
+
+stockOutput(output) += goodsStockOrder(orderOrderOutput(output));
+isPostedOutput(output) += isPostedOrder(orderOrderOutput(output));
+
+numberOrderOutput 'Номер документа' (orderOutput) = numberObject(orderOrderOutput(orderOutput));
+numberOutput(output) += numberOrderOutput(output);
+
+seriesOrderOutput 'Серия документа' (orderOutput) = seriesObject(orderOrderOutput(orderOutput));
+seriesOutput(output) += seriesOrderOutput(output);
+
+seriesNumberOrderOutput 'Серия/номер документа' (orderOutput) = seriesNumberObject(orderOrderOutput(orderOutput));
+
+noteOutput(output) += noteOrder(orderOrderOutput(output));
+currencyOutput (output) += currencyOrder(orderOrderOutput(output));
+
+priceListTypeOutput(output) += calcPriceListTypeOrder(orderOrderOutput(output));
+
+@defineDocumentDescription(orderOutput, orderOutputDetail, seriesNumberOrderOutput, 'Производство на основе заказа');
+descriptionOutput (output) += descriptionOrderOutput(output);
+
+
+productDetailOutputDetail (outputDetail) += productDetailOrderOutputDetail(outputDetail);
+skuOutputDetail(outputDetail) +=  skuProductDetail(productDetailOrderOutputDetail(outputDetail));
+quantityOutputDetail(outputDetail) += quantityProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+priceListTypeOutputDetail(outputDetail) += calcPriceListTypeProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+priceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+sumOutputDetail(outputDetail) += productsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+editOutput(output) += ACTION EXEC editOrder(orderOrderOutput(output));
+
+// --------------------------- Формы Списания ---------------------------------
 
 FORM userOutput 'Производство'
     OBJECTS o = userOutput FIXED PANEL
@@ -225,7 +297,7 @@ FORM userOutput 'Производство'
                    namePriceListTypeUserOutputDetail, expiryDateUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
                    descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
 
-    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOutputDetailUserOutput,           //fillDocumentOutput
+    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOutputDetailUserOutput,
                            addDetailInputBarcodeUserOutputDetailUserOutput, deleteUserOutputDetailUserOutput
     FILTERS userOutputUserOutputDetail(d) == o
 
