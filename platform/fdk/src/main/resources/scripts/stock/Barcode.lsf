@@ -172,6 +172,8 @@ seekSkuBarcode = ACTION (){
     SET seekBarcode() <- NULL;
     SET seekBarcode() <- requestedString();
     EXEC seek(skuBarcodeIdDate(seekBarcode(), currentDate()));
+    IF TRUE AND NOT skuBarcodeIdDate(seekBarcode(), currentDate()) THEN
+        MESSAGE 'Шрих-код не найден';
     SET seekBarcode() <- NULL;
 }
 
