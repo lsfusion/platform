@@ -3,7 +3,7 @@ MODULE  ProductionOrder;
 REQUIRE Substitute, PriceList;
 NAMESPACE Production;
 
-// ---------------- Производственный заказ ------------------- //
+// ----------------  заказ ------------------- //
 CLASS order 'Производственный заказ' : historizable, numeratedObject;
 CLASS orderPosted 'Проведенный производственный заказ' : order, postedObject;
 TABLE order(order);
@@ -126,7 +126,7 @@ UOMComponentDetail = DATA UOM (componentDetail);
 shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortName(UOMComponentDetail(componentDetail));
 UOMComponentDetail(componentDetail) <- UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
 
-CONSTRAINT materialComponent(componentComponentDetail(componentDetail)) IS sku AND NOT skuComponentDetail(componentDetail) == materialComponent(componentComponentDetail(componentDetail))
+CONSTRAINT skuComponentDetail(componentDetail) != materialComponent(componentComponentDetail(componentDetail))    // materialComponent(componentComponentDetail(componentDetail)) IS sku AND NOT
     CHECKED BY componentComponentDetail MESSAGE 'Sku компонента и строки компонента не соответствуют друг другу';
 
 currencyComponentDetail (componentDetail)= currencyOrder(orderComponentDetail(componentDetail));
@@ -139,18 +139,18 @@ CONSTRAINT skuComponentDetail(componentDetail) != skuProduct(productComponentDet
 
 //--
 
-quantityBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX quantityProductDetail(productDetail) / quantityProduct(productProductDetail(productDetail))  //ceil
+quantityProductsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX quantityProductDetail(productDetail) / quantityProduct(productProductDetail(productDetail))  //ceil
     BY BOMProduct(productProductDetail(productDetail)), orderProductDetail(productDetail)](BOM, order);
 
-createComponentOrder 'Заполнить из спецификации' = ACTION (order)  {
+createComponentOrder 'Заполнить компоненты из спецификации' = ACTION (order)  {
 
-    FOR quantityBOMOrder(BOM, order) DO {
+    FOR quantityProductsBOMOrder(BOM, order) DO {
 
         FOR  BOMComponent(component) == BOM  DO {
             FOR ADDOBJ d=componentDetail DO {
                 SET orderComponentDetail(d) <- order;
                 SET componentComponentDetail(d) <- component;
-                SET bruttoQuantityComponentDetail(d) <- bruttoQuantityComponentDate(component, dateOrder(order))*quantityBOMOrder(BOM,order);
+                SET bruttoQuantityComponentDetail(d) <- bruttoQuantityComponentDate(component, dateOrder(order))*quantityProductsBOMOrder(BOM,order);
 
                 IF materialComponent(component) AS sku THEN {
                     SET skuComponentDetail(d) <- materialComponent(component);
@@ -165,6 +165,26 @@ createComponentOrder 'Заполнить из спецификации' = ACTION
     }
 
 } TOOLBAR;
+
+quantityComponentsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX bruttoQuantityComponentDetail(componentDetail) / bruttoQuantityComponentDate(componentComponentDetail(componentDetail), dateComponentDetail(componentDetail))  //ceil
+    BY BOMComponent(componentComponentDetail(componentDetail)), orderComponentDetail(componentDetail)](BOM, order);
+
+createProductOrder 'Заполнить изделия из спецификации ' = ACTION (order)  {
+
+    FOR quantityComponentsBOMOrder(BOM, order) DO {
+
+        FOR  BOM == BOMProduct(product)  DO {
+            FOR ADDOBJ d=productDetail DO {
+                SET orderProductDetail(d) <- order;
+                SET skuProductDetail(d) <- skuProduct(product);
+                SET productProductDetail(d) <- product;
+                SET quantityProductDetail(d) <- quantityProduct(product)*quantityComponentsBOMOrder(BOM,order);
+            }
+        }
+    }
+
+} TOOLBAR;
+
 
 createComponentDetail 'Развернуть изделие' = ACTION (componentDetail)  {
 
@@ -189,7 +209,7 @@ createComponentDetail 'Развернуть изделие' = ACTION (componentD
 } TOOLBAR;
 
 
-recBruttoQuantityOrderSku 'Рекур.кол-во' (order, sku) = GROUP SUM quantityBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku;
+recBruttoQuantityOrderSku 'Рекур.кол-во' (order, sku) = GROUP SUM quantityProductsBOMOrder(BOM, order) * recBruttoQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku;
 createRecComponentOrder 'Заполнить из спецификации (рекурсивно)' = ACTION (order)  {
 
     FOR q == recBruttoQuantityOrderSku(order, sku) ADDOBJ d = componentDetail DO {
@@ -325,7 +345,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, recPriceProductDetail READONLY,
                    componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     PROPERTIES(pd) ADDOBJ, delete
-    PROPERTIES(o) TODRAW pd fillPriceProductsOrder, deleteProductDetailOrder
+    PROPERTIES(o) TODRAW pd createProductOrder, fillPriceProductsOrder, deleteProductDetailOrder
 
     FILTERS orderProductDetail(pd)==o
 
