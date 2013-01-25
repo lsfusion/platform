@@ -1,6 +1,6 @@
 MODULE TripInvoice;
 
-REQUIRE Order, Shipment, Invoice, Trip;
+REQUIRE OrderInvoice, Shipment, Trip;   //  Order, Invoice
 
 quantityTripInvoice (trip, invoice) = GROUP SUM quantityOrderInvoice(order, invoice) IF inTripOrder(trip, order) BY trip, invoice;
 

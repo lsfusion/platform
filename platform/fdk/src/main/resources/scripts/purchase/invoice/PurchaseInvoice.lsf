@@ -1,11 +1,12 @@
 MODULE PurchaseInvoice;
 
-REQUIRE PurchaseOrder, Invoice;
+REQUIRE PurchaseOrder, OrderInvoice;
 
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 @defineInvoiceBatch(customerStock);
 
 @defineInvoiceDestination(supplier, customer);

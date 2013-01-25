@@ -1,0 +1,258 @@
+MODULE OrderInvoice;
+
+REQUIRE Order, Invoice;
+
+NAMESPACE Invoice;
+
+createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
+createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
+
+orderInvoiceDetail = ABSTRACT order(invoiceDetail);
+
+quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail)
+                                               BY orderInvoiceDetail(invoiceDetail),
+                                                  invoiceInvoiceDetail(invoiceDetail);
+
+//--  Связь с заказом
+
+META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
+
+    orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
+    Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
+
+    orderUserInvoiceDetail = DATA order(userInvoiceDetail);
+    orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
+
+    CONSTRAINT supplierInvoiceDetail(invoiceDetail) != supplierOrder(orderUserInvoiceDetail(invoiceDetail)) OR
+               customerUserInvoiceDetail(invoiceDetail) != customerOrder(orderUserInvoiceDetail(invoiceDetail))
+        CHECKED BY orderUserInvoiceDetail
+            MESSAGE 'Поставщик и покупатель в заказе и накладной должны соответствовать друг другу';
+
+    GROUP orderGroup 'Информация о заказе' : public;
+
+    descriptionOrderInvoiceDetail 'Заказ' (invoiceDetail) = descriptionOrder(orderInvoiceDetail(invoiceDetail)) IN orderGroup;
+    descriptionOrderUserInvoiceDetail 'Заказ' (userInvoiceDetail) = descriptionOrder(orderUserInvoiceDetail(userInvoiceDetail)) IN orderGroup;
+
+    quantityInvoiceDetailOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY orderInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+    ordersInvoice 'Заказы' (invoice) = GROUP CONCAT toString255(descriptionOrder(order)) IF quantityInvoiceDetailOrderInvoice(order, invoice) , ', '
+                                             BY invoice
+                                             ORDER order
+                                             IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+    invoicedInvoiceDetailOrderSku 'Выписано накладных' (order, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) IF isPostedInvoiceDetail(invoiceDetail)
+                                                               BY orderInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail);
+    invoicedOrderDetail 'Выписано накладных' (orderDetail) = PARTITION UNGROUP invoicedInvoiceDetailOrderSku
+                                                              LIMIT STRICT quantityOrderDetail (orderDetail)
+                                                              BY orderOrderDetail(orderDetail), skuOrderDetail(orderDetail)
+                                                              ORDER orderDetail;
+
+    EXTEND FORM userOrder PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityUserOrderDetail;
+    EXTEND FORM orders PROPERTIES(d) READONLY invoicedOrderDetail AFTER quantityOrderDetail;
+
+    toInvoiceOrderDetail 'Не выписано накладных' (orderDetail) = quantityOrderDetail (orderDetail) (-) invoicedOrderDetail(orderDetail);
+
+    toInvoiceOrderDetailStockOrder 'Не выписано накладных по складу' (stock, order) =
+        GROUP SUM toInvoiceOrderDetail(orderDetail) IF toInvoiceOrderDetail(orderDetail) > 0
+        BY stockProp###OrderDetail(orderDetail), orderOrderDetail(orderDetail);
+
+    // Создание заказа на основе инвойса //
+    inOrderSupplierStock (order, supplierStock) = GROUP SUM 1 IF supplierStockOrderDetail(orderDetail) == supplierStock BY orderOrderDetail(orderDetail), supplierStock;
+    inOrderSupplier (order, supplier) = GROUP SUM 1 IF legalEntityStock(supplierStockOrderDetail(orderDetail)) == supplier BY orderOrderDetail(orderDetail), supplier;
+
+    FORM invoiceOrders 'Заказы'###sign
+        OBJECTS s = legalEntity FIXED PANEL
+        PROPERTIES (s) READONLY name
+        OBJECTS ss = stock FIXED PANEL
+        PROPERTIES (ss) READONLY name
+
+        OBJECTS c = legalEntity FIXED PANEL
+        PROPERTIES (c) READONLY name
+        OBJECTS cs = stock FIXED PANEL
+        PROPERTIES (cs) READONLY name
+
+        OBJECTS o = order
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order
+        FILTERS isPostedOrder(o),
+                inOrderSupplier(o, s),
+                customerOrder(o) == c,
+                customerStockOrder(o) == cs
+//        FILTERGROUP order
+//            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
+//            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
+
+        OBJECTS d = orderDetail
+        PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
+        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
+                       amountPackOrderDetail, quantityPackOrderDetail
+        PROPERTIES (d) READONLY quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
+                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
+                        name###stockProp###orderDetail, toInvoiceOrderDetail
+        FILTERS orderOrderDetail(d) == o
+//        FILTERGROUP orderDetail
+//            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
+//            FILTER 'Строки со склада' 'F9' stockProp###orderDetail(d) == s
+    ;
+
+    DESIGN invoiceOrders FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW documentContainer BEFORE functions.box {
+
+                childConstraints = TO THE BOTTOM;
+
+//                NEW headerBox {
+//                    childConstraints = TO THE RIGHT;
+//                    ADD s.box {title = 'Поставщик';};
+//                    ADD c.box {title = 'Покупатель';};
+//                }
+                NEW headerSupplierBox {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Поставщик';
+                    ADD s.box;
+                    ADD ss.box;
+                }
+                NEW headerCustomerBox {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    title = 'Покупатель';
+                    ADD c.box;
+                    ADD cs.box;
+                }
+                ADD o.box;
+                NEW documentDetail {
+                    type = TABBED;
+
+                    ADD d.box {
+                        title = 'Спецификация';
+                    }
+                    NEW printTab {
+                        title = 'Печатные формы';
+                        NEW printContainer {
+                            title = 'Печать';
+                            childConstraints = TO THE BOTTOM;
+                            fillVertical = 1.0;
+                        }
+                    }
+                }
+            }
+            PROPERTY(toInvoiceOrderDetail) { background = #FFFFCC; }
+        }
+    }
+
+    createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (userInvoice, order);
+    useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (userInvoice, order);
+
+    differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
+
+    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
+        THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
+        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
+
+    createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
+        IF useExplicitBatchDetailUserInvoiceOrder(userInvoice, order) AND explicitBatchLedgerStock(stockProp##Order(order)) THEN {
+            EXEC createExplicitBatchDetailUserInvoiceOrder(userInvoice, order);
+        } ELSE
+            FOR orderOrderDetail(orderDetail) == order AND
+                toInvoiceOrderDetail(orderDetail) > 0 // возможно еще нужно фильтровать по складам
+                AND inOrderDetailUserInvoice(orderDetail, userInvoice)
+                ADDOBJ d = userInvoiceDetail DO {
+                    SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
+                    SET orderUserInvoiceDetail(d) <- order;
+                    SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
+                    SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
+                    SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
+                    SET quantityPackUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
+                    SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
+                    SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
+                    SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
+                    SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+                    SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
+                    SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+            }
+    }
+
+    fillUserInvoiceOrder = ACTION (userInvoice, order) {
+        SET supplierUserInvoice(userInvoice) <- supplierOrder(order);
+        SET supplierStockUserInvoice(userInvoice) <- supplierStockOrder(order);
+
+        SET customerUserInvoice(userInvoice) <- customerOrder(order);
+        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
+
+        SET currencyUserInvoice(userInvoice) <- currencyOrder(order);
+        SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
+        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
+
+        SET noteUserInvoice(userInvoice) <- noteOrder(order);
+
+        EXEC createDetailUserInvoiceOrder(userInvoice, order);
+    }
+
+    fillSupplierStockUserInvoiceOrder = ACTION (supplierStock, userInvoice, order) {
+        SET supplierUserInvoice(userInvoice) <- legalEntityStock(supplierStock);
+        SET supplierStockUserInvoice(userInvoice) <- supplierStock AS stock;
+
+        SET customerUserInvoice(userInvoice) <- customerOrder(order);
+        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
+
+        SET currencyUserInvoice(userInvoice) <- currencyOrder(order);
+        SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
+        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
+
+        SET noteUserInvoice(userInvoice) <- noteOrder(order);
+
+        EXEC createDetailUserInvoiceOrder(userInvoice, order);
+    }
+
+    createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
+        IF order IS order THEN {
+            FOR ADDOBJ i = userInvoice DO {
+                EXEC fillUserInvoiceOrder(i, order);
+            }
+        }
+    }
+    Invoice.createUserInvoiceOrder (order) += createUserInvoiceOrder(order);
+
+    createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
+        IF order IS order THEN {
+            IF differentStocksInDetailsStock(customerStockOrder(order)) THEN {
+                FOR ADDOBJ i = userInvoicePosted DO {
+                    EXEC fillUserInvoiceOrder(i, order);
+                }
+            }
+                ELSE {
+                FOR inOrderSupplierStock(order, supplierStock) DO {
+                        FOR ADDOBJ i = userInvoicePosted DO {
+                            EXEC fillSupplierStockUserInvoiceOrder(supplierStock, i, order);
+                        }
+                    }
+
+                }
+            }
+    }
+    Invoice.createUserInvoicePostedOrder (order) += createUserInvoicePostedOrder(order);
+
+    fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
+        FORM invoiceOrders OBJECTS s = supplierUserInvoice(userInvoice), ss = supplierStockUserInvoice(userInvoice),
+                                   c = customerUserInvoice(userInvoice), cs = customerStockUserInvoice(userInvoice) MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC createDetailUserInvoiceOrder(userInvoice, chosenObject('o'));
+        }
+    } IN orderGroup;
+
+    EXTEND FORM userInvoice
+        PROPERTIES (i)  fillOrderUserInvoice, ordersInvoice READONLY
+        PROPERTIES (d)  descriptionOrderUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail(d)
+    ;
+
+    EXTEND DESIGN userInvoice {
+        headerRow13 {
+            ADD i.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}
+        }
+    }
+    EXTEND FORM invoices
+        PROPERTIES (i)  READONLY ordersInvoice AFTER invoiceSumInvoiceDetailInvoice(i)
+        PROPERTIES (d)  READONLY descriptionOrderInvoiceDetail AFTER invoiceSumInvoiceDetail(d)
+    ;
+
+END

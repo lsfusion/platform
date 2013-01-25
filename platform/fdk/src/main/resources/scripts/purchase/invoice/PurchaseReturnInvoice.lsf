@@ -1,12 +1,13 @@
 MODULE PurchaseReturnInvoice;
 
-REQUIRE Invoice,PurchaseReturnOrder;
+REQUIRE OrderInvoice,PurchaseReturnOrder;
 
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 @defineInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 

@@ -1,6 +1,6 @@
 MODULE CreditNote;
 
-REQUIRE Invoice, Shipment;
+REQUIRE Shipment, Invoice;
 
 //----------------------------------------------- Акт расхождения ---------------------------------------------------//
 
