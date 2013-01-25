@@ -538,13 +538,13 @@ TABLE correctionGroupDeclaration(correction, groupDeclaration);
 TABLE declarationArtCatCompCountry(declaration, article, customCategory10, STRING[200], country);
 TABLE declarationArtCatCompCountryPrice(declaration, article, customCategory10, STRING[200], country, NUMERIC[14,2]);
 
-quantityDeclarationGroup 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
-                                           BY declarationDeclarationDetail(declarationDetail),
-                                              articleDeclarationDetail(declarationDetail),
-                                              customCategory10DeclarationDetail(declarationDetail),
-                                              mainCompositionDeclarationDetail(declarationDetail),
-                                              countryDeclarationDetail(declarationDetail),
-                                              declarationPriceDeclarationDetail(declarationDetail) IN base PERSISTENT;
+quantityDeclarationGrouping 'Кол-во' = GROUP SUM quantityDeclarationDetail(declarationDetail)
+                                              BY declarationDeclarationDetail(declarationDetail),
+                                                 articleDeclarationDetail(declarationDetail),
+                                                 customCategory10DeclarationDetail(declarationDetail),
+                                                 mainCompositionDeclarationDetail(declarationDetail),
+                                                 countryDeclarationDetail(declarationDetail),
+                                                 declarationPriceDeclarationDetail(declarationDetail) IN base PERSISTENT;
 
 CLASS groupDeclaration 'Строка декларации';
 
@@ -587,9 +587,9 @@ inDeclarationGroupDeclaration (declaration, groupDeclaration) = declarationGroup
 // todo надо будет удалить таблицу
 TABLE groupstring (object, object, object, object, STRING[200]);
 
-//quantityDeclarationGroup(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
+//quantityGroupDeclaration(declaration, article, customCategory10, STRING, country) => uniqueGroupDeclaration(declaration, article, customCategory10, STRING, country) RESOLVE TRUE;
 //isGroupDeclaration(group) = group IS groupDeclaration;
-//isGroupDeclaration(group) => quantityDeclarationGroup(declarationGroupDeclaration(group),
+//isGroupDeclaration(group) => quantityGroupDeclaration(declarationGroupDeclaration(group),
 //                                                      articleGroupDeclaration(group),
 //                                                      customCategory10GroupDeclaration(group),
 //                                                      mainCompositionGroupDeclaration(group),
@@ -875,7 +875,7 @@ setSumGroupDeclaration 'Рассчитать суммы' = ACTION (declaration) 
 };
 
 toCreateGroupsDeclaration 'Создать строки' = ACTION (declaration) {
-    FOR quantityDeclarationGroup(declaration, article, customCategory10, mainComposition, country, price) ADDOBJ g=groupDeclaration DO {
+    FOR quantityDeclarationGrouping(declaration, article, customCategory10, mainComposition, country, price) ADDOBJ g=groupDeclaration DO {
 
         SET declarationGroupDeclaration(g) <- declaration;
         SET articleGroupDeclaration(g) <- article;

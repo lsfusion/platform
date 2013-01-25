@@ -205,7 +205,18 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 @defineDocumentInterface(priceList);
 
 @defineDocumentInterfaceTimePrefix(priceList, from, ' c');
-@defineDocumentInterfaceTimePrefix(priceList, to, ' по');
+//@defineDocumentInterfaceTimePrefix(priceList, to, ' по');
+
+toDatePriceList 'Дата по' = ABSTRACT DATE (priceList) IN documentHeaderGroup PERSISTENT;
+toTimePriceList 'Время по' = ABSTRACT TIME (priceList) IN documentHeaderGroup PERSISTENT;
+toDateTimePriceList 'Дата/время по'(priceList) = dateTimeToDateTime(toDatePriceList(priceList), toTimePriceList(priceList)) PERSISTENT;
+
+toDateUserPriceList 'Дата по' = DATA DATE(userPriceList);
+toTimeUserPriceList 'Время по' = DATA TIME(userPriceList);
+toDateTimeUserPriceList 'Дата/время'(userPriceList) = dateTimeToDateTime(toDateUserPriceList(userPriceList), toTimeUserPriceList(userPriceList));
+
+toDatePriceList(userPriceList) += toDateUserPriceList(userPriceList);
+toTimePriceList(userPriceList) += toTimeUserPriceList(userPriceList);
 
 @defineDocumentInterfaceNumber(priceList);
 @defineNumeratedObjectDefault(priceList, 'Нумератор для прайсов', 'ПЛ');
@@ -223,13 +234,12 @@ CLASS userPriceListPosted 'Проведенный прайс (польз.)' : us
 @defineDocumentInterfaceDetailQuantity(priceList);
 @defineAddDetailDialogBarcode(userPriceList, sku);
 
-WHEN ASSIGNED(u AS userPriceList) DO {
-    IF u IS userPriceList AND toDateUserPriceList(u) THEN SET toDateUserPriceList(u) <- NULL;
-    IF u IS userPriceList AND toTimeUserPriceList(u) THEN SET toTimeUserPriceList(u) <- NULL;
-} SESSION;
+@defineDocumentInterfaceDetailTimePrefix(priceList, to, 'по');
 
-//toDateUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
-//toTimeUserPriceList(userPriceList) <- NULL WHEN ASSIGNED(userPriceList IS userPriceList);
+//WHEN ASSIGNED(u AS userPriceList) DO {
+//    IF u IS userPriceList AND toDateUserPriceList(u) THEN SET toDateUserPriceList(u) <- NULL;
+//    IF u IS userPriceList AND toTimeUserPriceList(u) THEN SET toTimeUserPriceList(u) <- NULL;
+//} SESSION;
 
 userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyPriceList(userPriceList) WHERE userPriceList IS userPriceList;
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;

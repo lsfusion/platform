@@ -1816,7 +1816,7 @@ public class RomanLogicsModule extends LogicsModule {
         barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
-        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);
+//        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);
         equalsObjectBarcode = addJProp(baseLM.equals2, barcode, 1, 2);
         seekBarcodeAction = addJoinAProp("Поиск штрихкода", addSAProp(null), barcodeToObject, 1);
         reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
@@ -4261,6 +4261,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement distribution = addNavigatorElement(baseLM.root, "distribution", "Sintitex");
         distribution.window = baseLM.windows.toolbar;
+        distribution.setImage("/images/germany2.png");
 
         NavigatorElement distributionClassifier = addNavigatorElement(distribution, "distributionClassifier", "Справочники");
         distributionClassifier.add(exporter.getListForm(baseLM).form);
@@ -4315,11 +4316,13 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement customs = addNavigatorElement(baseLM.root, "customs", "Таможенное оформление");
         customs.window = baseLM.windows.toolbar;
+        customs.setImage("/images/cop.png");
 
         NavigatorElement customClassifier = addNavigatorElement(customs, "customClassifier", "Справочники");
 
         NavigatorElement logistics = addNavigatorElement(baseLM.root, "logistics", "Логистика");
         logistics.window = baseLM.windows.toolbar;
+        logistics.setImage("/images/arrows.png");
 
         addFormEntity(new CommonSizeEditFormEntity(null, "commonEditSizeForm", "Белорусские размеры"));
         addFormEntity(new CommonSizeImportFormEntity(null, "commonImportSizeForm", "Белорусские размеры (таблицей)"));
@@ -4360,7 +4363,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue, barcodeObjectName);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
 //            objBarcode.resetOnApply = true;
@@ -4383,7 +4386,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(reverseBarcode)));
 //            design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
 
-            design.setBackground(barcodeObjectName, new Color(240, 240, 240));
+//            design.setBackground(barcodeObjectName, new Color(240, 240, 240));
 
             design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
             design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
@@ -4819,10 +4822,10 @@ public class RomanLogicsModule extends LogicsModule {
             this.box = box;
 
             objInvoice = addSingleGroupObject("invoice", (box ? boxInvoice : simpleInvoice), "Инвойс");
-            if (!edit) {
+           // if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
 //                setAddOnEvent(objInvoice, RomanLogicsModule.this, FormEventType.INIT);
-            }
+           //}
 
             addPropertyDraw(objInvoice, date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, nameCurrencyRRPDocument,
                     sumDocument, quantityDocument, netWeightDocument, nameCompanyInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
