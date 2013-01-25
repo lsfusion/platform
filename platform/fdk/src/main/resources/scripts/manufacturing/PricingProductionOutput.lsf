@@ -1,0 +1,27 @@
+MODULE  PricingProductionOutput;
+
+REQUIRE ProductionOutput, Pricing;
+NAMESPACE Production;
+
+// ----------------  Расценка ------------------- //
+
+EXTEND CLASS outputDetail : priceListLedger;
+
+fromDateTimePriceListLedger (ledger) += dateTimeOutputDetail(ledger);
+
+isPostedPriceListLedger(ledger) += isPostedOutputDetail(ledger);
+//skipPriceListLedger(ledger) += skipChangeLedgerPricingDetail(ledger);
+
+skuPriceListLedger (ledger) += skuOutputDetail(ledger);
+
+descriptionPriceListLedger (ledger) += descriptionOutputDetail(ledger);
+
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
+inPriceListLedgerStock (ledger, stock) += stockOutputDetail(ledger) == stock AND stock IS departmentStore;
+
+// todo: надо разобраться с ценами, т.е. чтобы была цена поставщика без НДС.
+
+
+
