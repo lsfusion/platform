@@ -105,7 +105,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return BL;
     }
 
-    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM, LONG, DATE, DATETIME, TIME, COLOR, NULL }
+    public enum ConstType { STATIC, INT, REAL, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
@@ -923,8 +923,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ImSet<SessionDataProperty> sessionUsed = used != null ? SetFact.singleton((SessionDataProperty) findLPByCompoundName(used).property) : SetFact.<SessionDataProperty>EMPTY();
         MExclSet<SessionDataProperty> mUpLocal = SetFact.mExclSet(upLocalNames.size()); // exception кидается
-        for(String name : upLocalNames)
+        for(String name : upLocalNames) {
             mUpLocal.exclAdd((SessionDataProperty) findLPByCompoundName(name).property);
+        }
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
@@ -1328,7 +1329,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case DATE: return addCProp(DateClass.instance, value);
             case DATETIME: return addCProp(DateTimeClass.instance, value);
             case TIME: return addCProp(TimeClass.instance, value);
-            case ENUM: return addStaticClassConst((String) value);
+            case STATIC: return addStaticClassConst((String) value);
             case COLOR: return addCProp(ColorClass.instance, value);
             case NULL: return baseLM.vnull;
         }
@@ -1437,9 +1438,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
-        int pointPos = name.indexOf('.');
+        int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
-        assert name.indexOf('.') == name.lastIndexOf('.');
 
         String className = name.substring(0, pointPos);
         String instanceName = name.substring(pointPos+1);
@@ -1451,7 +1451,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (staticClass.hasSID(instanceName)) {
                 resultProp = addCProp(staticClass, instanceName);
             } else {
-                errLog.emitNotFoundError(parser, "static class instance", instanceName);
+                errLog.emitNotFoundError(parser, "static оbject", instanceName);
             }
         } else {
             errLog.emitNonStaticHasInstancesError(parser, className);

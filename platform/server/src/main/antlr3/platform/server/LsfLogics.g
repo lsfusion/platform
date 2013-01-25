@@ -2650,8 +2650,8 @@ literal returns [LP property]
 	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
 	|	vdatetime=dateTimeLiteral { cls = ScriptingLogicsModule.ConstType.DATETIME; value = $vdatetime.val; }
 	|	vtime=timeLiteral 	{ cls = ScriptingLogicsModule.ConstType.TIME; value = $vtime.val; }
-	|	venum=strictCompoundID { cls = ScriptingLogicsModule.ConstType.ENUM; value = $venum.sid; }
-	|	vnull=NULL_LITERAL { cls = ScriptingLogicsModule.ConstType.NULL; }
+	|	vsobj=staticObjectID { cls = ScriptingLogicsModule.ConstType.STATIC; value = $vsobj.sid; }
+	|	vnull=NULL_LITERAL 	{ cls = ScriptingLogicsModule.ConstType.NULL; }
 	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
 	;
 
@@ -2669,12 +2669,12 @@ compoundID returns [String sid]
 	:	firstPart=ID { $sid = $firstPart.text; } ('.' secondPart=ID { $sid = $sid + '.' + $secondPart.text; })?
 	;
 
-strictCompoundID returns [String sid]
-	:	firstPart=ID '.' secondPart=ID { $sid = $firstPart.text + '.' + $secondPart.text; }
+staticObjectID returns [String sid]
+	:	(namespacePart=ID '.')? classPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $classPart.text + '.' + $namePart.text; }
 	;
 	
 multiCompoundID returns [String sid]
-	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + "." + $cid.text; } )*
+	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + '.' + $cid.text; } )*
 	;
 
 colorLiteral returns [Color val]
