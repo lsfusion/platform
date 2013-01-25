@@ -37,8 +37,8 @@ EXTEND FORM dialogSupplierVATCustomCategory10
 ;
 
 toSetRangeCustomCategories10 'Взять шкалы' = ACTION () NEWSESSION AUTOAPPLY {
-    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID(112), dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
-    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID(112), NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID('112'), dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS())) WHERE d == 2011_01_01;
+    SET dataSupplierVATCustomCategory10Date(c, d) <- valueCurrentVATCountryValue(countrySID('112'), NDSPercentCustom()) WHERE d == 2011_01_01 AND NOT dutyPercentCustomCategory10TypeDuty(c, typeDutyNDS());
 };
 
 
