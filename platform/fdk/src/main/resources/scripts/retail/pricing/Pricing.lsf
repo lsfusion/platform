@@ -600,7 +600,12 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
 
     @defineDocumentTables(concrete###pricing);
 
-    @defineDocumentAggregation(invoice, concrete###pricing, createPricingInvoice);
+    needToPricingInvoiceDetail (invoiceDetail) = createPricingInvoiceDetail(invoiceDetail) AND isStockSkuInvoiceDetail(invoiceDetail) PERSISTENT;
+
+    needToPricingInvoice (invoice)= GROUP SUM 1 IF needToPricingInvoiceDetail(invoiceDetail)
+        BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
+
+    @defineDocumentAggregation(invoice, concrete###pricing, needToPricingInvoice);
 
 
     printPricingInvoice 'Акт расценки' (invoice) = printPricing(concrete###pricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;

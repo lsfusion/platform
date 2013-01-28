@@ -4,18 +4,14 @@ REQUIRE PurchaseInvoice;
 
 NAMESPACE Purchase;
 
-isChargeInvoiceDetail 'Услуга' (invoiceDetail) = isChargeSku(skuInvoiceDetail(invoiceDetail));
-isChargeUserInvoiceDetail 'Услуга' (userInvoiceDetail) = isChargeSku(skuUserInvoiceDetail(userInvoiceDetail));
-
-
-chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) IF isChargeUserInvoiceDetail(idetail)
+chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND NOT isStockSkuUserInvoiceDetail(idetail)
     BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) IF isChargeInvoiceDetail(idetail)
+chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND NOT isStockSkuInvoiceDetail(idetail)
     BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
 
-itemSumUserInvoice 'Сумма товара в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND NOT isChargeUserInvoiceDetail(idetail)
+itemSumUserInvoice 'Сумма товара в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND isStockSkuUserInvoiceDetail(idetail)
     BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-itemSumInvoice 'Сумма товара в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND NOT isChargeInvoiceDetail(idetail)
+itemSumInvoice 'Сумма товара в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND isStockSkuInvoiceDetail(idetail)
     BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
 
 calcChargePriceUserInvoiceDetail  (detail) = [(X*Y)/(Z*W)](
@@ -23,15 +19,10 @@ calcChargePriceUserInvoiceDetail  (detail) = [(X*Y)/(Z*W)](
     chargeSumUserInvoice(userInvoiceUserInvoiceDetail(detail)),
     itemSumUserInvoice(userInvoiceUserInvoiceDetail(detail)),
     quantityUserInvoiceDetail(detail)
-) AND NOT isChargeUserInvoiceDetail(detail);
+) AND isStockSkuInvoiceDetail(detail);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, charge, ' услуг за ед.');
 chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHEN CHANGED(calcChargePriceUserInvoiceDetail(detail));
-
-//@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, account, ' с учетом услуг');
-//accountPriceUserInvoiceDetail(detail) <- chargePriceUserInvoiceDetail(detail) (+) priceUserInvoiceDetail(detail)
-//    WHEN CHANGED (chargePriceUserInvoiceDetail(detail)) OR
-//         CHANGED (priceUserInvoiceDetail(detail));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) chargeSumUserInvoice

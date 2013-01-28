@@ -669,7 +669,8 @@ META defineRepricing(sign, stockProp)
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
                                                    AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore
                                                    AND NOT costLedgerDepartmentStore(stockProp###InvoiceDetail(invoiceDetail))
-                                                   AND createRepricingInvoiceDetail(invoiceDetail) PERSISTENT;// AND isPostedInvoiceDetail(invoiceDetail) ;
+                                                   AND createRepricingInvoiceDetail(invoiceDetail)
+                                                   AND isStockSkuInvoiceDetail(invoiceDetail) PERSISTENT;// AND isPostedInvoiceDetail(invoiceDetail) ;
 
     needToRepricingInvoice (invoice)= GROUP SUM 1 IF needToRepricingInvoiceDetail(invoiceDetail)
         BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;

@@ -644,14 +644,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     }
 
     skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
-    isStockInvoiceDetail (invoiceDetail) = isStockSku(skuInvoiceDetail(invoiceDetail));
     createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND
-                                                                     isStockInvoiceDetail(invoiceDetail) AND
+                                                                     isStockSkuInvoiceDetail(invoiceDetail) AND
                                                                      NOT skipCreateShipmentInvoiceDetail(invoiceDetail) PERSISTENT;
 
-    isStockUserInvoiceDetail (invoiceDetail) = isStockSku(skuUserInvoiceDetail(invoiceDetail));
     createShipmentUserInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail)) AND
-                                                                         isStockUserInvoiceDetail(invoiceDetail);
+                                                                         isStockSkuUserInvoiceDetail(invoiceDetail);
 
     showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
 
