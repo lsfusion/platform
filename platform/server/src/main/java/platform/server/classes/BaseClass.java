@@ -123,16 +123,18 @@ public class BaseClass extends AbstractCustomClass {
         Map<Object, String> modifiedSIDs = new HashMap<Object, String>();
         Map<Object, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
+        int free = 0;
         // пробежим по всем классам и заполним их ID
         for(CustomClass customClass : allClasses)
-            if(customClass instanceof ConcreteCustomClass)
+            if(customClass instanceof ConcreteCustomClass) {
                 customClass.ID = objectClass.getID(customClass.getSID());
+                free = Math.max(free, customClass.ID);
+            }
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof StaticCustomClass)
                 modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs));
 
-        int free = 0;
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
                 while (usedIds.contains(free))

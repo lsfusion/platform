@@ -5082,6 +5082,13 @@ public class RomanLogicsModule extends LogicsModule {
                 addGCAProp(actionGroup, "translationInvoiceLanguageMainComposition", "Перевести все", objSku.groupTo, translationMainCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuInvoice.property);
                 addGCAProp(actionGroup, "translationInvoiceLanguageAdditionalComposition", "Перевести все", objSku.groupTo, translationAdditionalCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuInvoice.property);
                 addGCAProp(actionGroup, "translationInvoiceLanguageName", "Перевести все", objSku.groupTo, translationNameSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(translateNameSkuInvoice.property);
+            } else {
+                addGCAProp(actionGroup, "translationInvoiceMainCompositionSimple", "Перевести все", objSku.groupTo, translationMainCompositionSku).property.panelLocation = new ShortcutPanelLocation(mainCompositionSku.property);
+                addGCAProp(actionGroup, "translationInvoiceAdditionalCompositionSimple", "Перевести все", objSku.groupTo, translationAdditionalCompositionSku).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSku.property);
+                addGCAProp(actionGroup, "translationInvoiceNameSimple", "Перевести все", objSku.groupTo, translationNameSku).property.panelLocation = new ShortcutPanelLocation(translateNameArticleSku.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageMainCompositionSimple", "Перевести все", objSku.groupTo, translationMainCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(mainCompositionSkuInvoice.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageAdditionalCompositionSimple", "Перевести все", objSku.groupTo, translationAdditionalCompositionSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(additionalCompositionSkuInvoice.property);
+                addGCAProp(actionGroup, "translationInvoiceLanguageNameSimple", "Перевести все", objSku.groupTo, translationNameSkuInvoice, 1, 2, 1).property.panelLocation = new ShortcutPanelLocation(translateNameSkuInvoice.property);
             }
 
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
