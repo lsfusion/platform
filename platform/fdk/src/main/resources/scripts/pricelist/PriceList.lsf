@@ -700,6 +700,7 @@ nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = na
 TABLE calcPriceListTypeGroup (calcPriceListType, group);
 
 markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, group);
+dataMarkupCalcPriceListTypeSku 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, sku);
 
 roundConditionCalcPriceListType 'Условие округления' = DATA roundCondition (calcPriceListType);
 nameRoundConditionCalcPriceListType 'Условие округления' (calcPriceListType) = name(roundConditionCalcPriceListType(calcPriceListType));
@@ -717,7 +718,9 @@ nearestMarkupCalcPriceListTypeGroup 'Расчетная надбавка, %' (ca
 markupCalcPriceListTypeGroupOver 'Надбавка, %' (type, group) =
     UNION OVERRIDE nearestMarkupCalcPriceListTypeGroup(type, group), markupCalcPriceListTypeGroup(type, group) PERSISTENT;
 
-markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) = markupCalcPriceListTypeGroupOver(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku));
+markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) =
+    UNION OVERRIDE markupCalcPriceListTypeGroupOver(type, groupGroupTypeSku(groupTypeCalcPriceListType(type), sku)),
+                   dataMarkupCalcPriceListTypeSku(type, sku);
 
 multiplierCalcPriceListTypeGroup (type, group) = (100 + markupCalcPriceListTypeGroupOver(type, group)) / 100 PERSISTENT;
 
@@ -730,6 +733,8 @@ pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPrice
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) AND markupCalcPriceListTypeGroup(calcPriceListType, group);
+
+hasParentGroupGroupTypeSku(type, sku, group) = isParentGroupGroup(groupGroupTypeSku(groupTypeCalcPriceListType(type), sku), group);
 
 // --------------------------- Формы ------------------------- //
 
@@ -756,13 +761,19 @@ editPriceListType(priceListType) += editDataPriceListType(priceListType);
 
 FORM calcPriceListType 'Расчетный вид цен'
     OBJECTS c = calcPriceListType FIXED PANEL
-    PROPERTIES(c) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType, nameRoundConditionCalcPriceListType, nameGroupTypeCalcPriceListType
+    PROPERTIES(c) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType,
+                  nameRoundConditionCalcPriceListType, nameGroupTypeCalcPriceListType
 
     TREE treeGroup g=group PARENT parentGroup
     PROPERTIES READONLY name(g)
     FILTERS groupTypeGroup(g) == groupTypeCalcPriceListType(c)
     ORDER BY name(g)
     PROPERTIES(c, g) markupCalcPriceListTypeGroup , nearestMarkupCalcPriceListTypeGroup
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku, idBarcodeSku
+    FILTERS hasParentGroupGroupTypeSku(c, s, g)
+    PROPERTIES(c, s) dataMarkupCalcPriceListTypeSku, markupCalcPriceListTypeSku
 
     EDIT calcPriceListType OBJECT c
 ;
@@ -771,11 +782,15 @@ DESIGN calcPriceListType FROM DEFAULT{
     NEW mainContainer{
         childConstraints = TO THE RIGHT;
         type = SPLITH;
-        ADD c.box{fillHorizontal = 3.0;}
+        ADD c.box{
+            fillHorizontal = 3.0;
+            ADD PROPERTY(nameCurrencyCalcPriceListType);
+        }
         NEW groupContainer {
             childConstraints = TO THE BOTTOM;
             ADD PROPERTY(nameGroupTypeCalcPriceListType);
             ADD treeGroup.tree.box { fillHorizontal = 2.0; }
+            ADD s.box { fillHorizontal = 2.0; }
         }
     }
     ADD functions.box;
