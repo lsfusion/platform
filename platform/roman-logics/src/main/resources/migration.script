@@ -78,29 +78,29 @@ V0.6 {
 }
 
 V0.7 {
-    CLASS dictionary -> I18n_dictionary;
-    TABLE dictionary -> I18n_dictionary;
+    CLASS dictionary -> I18n_dictionary
+    TABLE dictionary -> I18n_dictionary
 
-    PROPERTY insensitiveDictionary -> I18n_insensitiveDictionary;
+    PROPERTY insensitiveDictionary -> I18n_insensitiveDictionary
 
-    CLASS dictionaryEntry -> I18n_dictionaryEntry;
-    TABLE dictionaryEntry -> I18n_dictionaryEntry;
+    CLASS dictionaryEntry -> I18n_dictionaryEntry
+    TABLE dictionaryEntry -> I18n_dictionaryEntry
 
-    PROPERTY entryDictionary -> I18n_dictionaryDictionaryEntry;
-    PROPERTY termDictionary -> I18n_termDictionaryEntry;
-    PROPERTY translationDictionary -> I18n_translationDictionaryEntry;
+    PROPERTY entryDictionary -> I18n_dictionaryDictionaryEntry
+    PROPERTY termDictionary -> I18n_termDictionaryEntry
+    PROPERTY translationDictionary -> I18n_translationDictionaryEntry
 
-    CLASS language -> I18n_language;
-    TABLE language -> I18n_language;
+    CLASS language -> I18n_language
+    TABLE language -> I18n_language
 
-    PROPERTY localeLanguage -> I18n_localeLanguage;
+    PROPERTY localeLanguage -> I18n_localeLanguage
 
-    PROPERTY dictionaryCompositionLanguage -> I18n_dictionaryCompositionLanguage;
+    PROPERTY dictionaryCompositionLanguage -> I18n_dictionaryCompositionLanguage
 
-    PROPERTY dictionaryNameLanguage -> I18n_dictionaryNameLanguage;
+    PROPERTY dictionaryNameLanguage -> I18n_dictionaryNameLanguage
 
-    CLASS multiLanguageNamed -> I18n_multiLanguageNamed;
+    CLASS multiLanguageNamed -> I18n_multiLanguageNamed
 
-    TABLE multiLanguageNamedLanguage-> I18n_multiLanguageNamedLanguage;
-    PROPERTY languageName -> I18n_languageName;
+    TABLE multiLanguageNamedLanguage-> I18n_multiLanguageNamedLanguage
+    PROPERTY languageName -> I18n_languageName
 }
