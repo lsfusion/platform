@@ -573,10 +573,13 @@ FORM postReceiptPayment 'Оплата по чеку'
 DESIGN postReceiptPayment FROM DEFAULT {
 
     main {
-        preferredSize = (600, 250);
+        preferredSize = (800, 320);
         NEW payContainer {
             childConstraints = TO THE BOTTOM;
             ADD p.box {
+                p.grid {
+                    defaultComponent = TRUE;
+                }
                 PROPERTY(sumPayment) { font = 'Tahoma bold 36'; }
                 PROPERTY(namePaymentTypePayment) { font = 'Tahoma bold 36'; }
                 PROPERTY(delete) { font = 'Tahoma bold 36'; }

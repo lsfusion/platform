@@ -1,5 +1,6 @@
 package platform.gwt.form.client.form.ui;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -11,7 +12,7 @@ import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import java.util.List;
 import java.util.Map;
 
-public class GGridController {
+public class GGridController implements DefaultFocusReceiver {
     private GGrid grid;
     private CellPanel gridView;
     private GGridTable table;
@@ -73,6 +74,9 @@ public class GGridController {
 
     public void addToLayout(GFormLayout formLayout) {
         formLayout.add(grid, gridView);
+        if (grid.defaultComponent) {
+            formLayout.addDefaultComponent(this);
+        }
 //        formLayout.setTableCellSize(grid.container, gridView, "100%", false);
     }
 
@@ -110,5 +114,16 @@ public class GGridController {
 
     public void changeOrder(GPropertyDraw property, GOrder modiType) {
         table.changeOrder(property, modiType);
+    }
+
+    @Override
+    public boolean focus() {
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                table.setFocus(true);
+            }
+        });
+        return true;
     }
 }

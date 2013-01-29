@@ -129,7 +129,7 @@ public class GPanelController {
         }
     }
 
-    private class GPropertyController {
+    private class GPropertyController implements DefaultFocusReceiver {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
 
@@ -191,6 +191,9 @@ public class GPanelController {
                 if (isViewVisible()) {
                     if (!addedToLayout) {
                         formLayout.add(property, getView(), property.container.children.indexOf(property));
+                        if (property.defaultComponent) {
+                            formLayout.addDefaultComponent(this);
+                        }
                         addedToLayout = true;
                     }
                 } else {
@@ -280,6 +283,11 @@ public class GPanelController {
             for (PanelRenderer renderer : renderers.values()) {
                 renderer.relayout();
             }
+        }
+
+        @Override
+        public boolean focus() {
+            return focusFirstWidget();
         }
     }
 }

@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GTreeGroupController extends GAbstractGroupObjectController {
+public class GTreeGroupController extends GAbstractGroupObjectController implements DefaultFocusReceiver {
     private GTreeGroup treeGroup;
 
     private GTreeTable tree;
@@ -45,6 +45,9 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         treeTableView.setCellWidth(panel, "100%");
 
         iFormLayout.add(treeGroup, treeTableView, 0);
+        if (treeGroup.defaultComponent) {
+            iFormLayout.addDefaultComponent(this);
+        }
 
         addFilterButton();
 
@@ -257,5 +260,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     @Override
     protected void changeFilter(List<GPropertyFilter> conditions) {
         formController.changeFilter(treeGroup, conditions);
+    }
+
+    @Override
+    public boolean focus() {
+        return focusFirstWidget();
     }
 }

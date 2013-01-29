@@ -8,6 +8,7 @@ import platform.gwt.form.shared.view.GComponent;
 import platform.gwt.form.shared.view.GContainer;
 import platform.gwt.form.shared.view.GGrid;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ public class GFormLayout extends FlowPanel {
     private Panel mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> containerViews = new HashMap<GContainer, GAbstractFormContainer>();
+
+    private ArrayList<DefaultFocusReceiver> defaultComponents = new ArrayList<DefaultFocusReceiver>();
 
     public GFormLayout(GFormController formController, GContainer mainContainer) {
 
@@ -69,6 +72,19 @@ public class GFormLayout extends FlowPanel {
 
     public void add(GComponent key, Widget view) {
         add(key, view, -1);
+    }
+
+    public boolean focusDefaultWidget() {
+        for (DefaultFocusReceiver dc : defaultComponents) {
+            if (dc.focus()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void addDefaultComponent(DefaultFocusReceiver component) {
+        defaultComponents.add(component);
     }
 
     public boolean remove(GComponent key) {

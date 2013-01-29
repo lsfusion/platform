@@ -851,6 +851,10 @@ public class GFormController extends SimplePanel {
     }
 
     private void focusFirstWidget() {
+        if (formLayout.focusDefaultWidget()) {
+            return;
+        }
+
         for (GGroupObjectController controller : controllers.values()) {
             if (controller.focusFirstWidget()) {
                 return;

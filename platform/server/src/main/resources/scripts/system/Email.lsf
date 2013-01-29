@@ -56,36 +56,34 @@ FORM notification 'Почта'
     OBJECTS p=property
 
     PROPERTIES(n, p) inNotificationProperty
-    PROPERTIES(n) subjectNotification, textNotification, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
+    PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
     PROPERTIES(p) READONLY captionProperty, SIDProperty
     ORDER BY SIDProperty
-    PROPERTIES(n) textNotification FORCE PANEL
 
     FILTERGROUP emailFilter
         FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
 ;
 
 EXTEND DESIGN notification {
-     main {
-            NEW specContainer {
-                type = TABBED;
-                ADD n.box;
-                ADD p.box;
-                NEW textContainer {
-                    title = 'Текст письма';
-                    childConstraints = TO THE BOTTOM;
-                    ADD PROPERTY(textNotification(n));
+    main {
+        NEW specContainer {
+            type = TABBED;
+            ADD n.box;
+            ADD p.box;
+            NEW textContainer {
+                title = 'Текст письма';
+                childConstraints = TO THE BOTTOM;
+                fillHorizontal = 1;
+                fillVertical = 1;
+                ADD PROPERTY(textNotification(n)) {
                     fillHorizontal = 1;
-                    fillVertical = 1;
-                    PROPERTY (textNotification(n)) {
-                        fillHorizontal = 1;
-                        preferredSize = ( -1, 600);
-                        panelLabelAbove = TRUE;
-                    }
+                    preferredSize = ( -1, 600);
+                    panelLabelAbove = TRUE;
                 }
             }
-            ADD functions.box;
         }
+        ADD functions.box;
+    }
 }
 
 NAVIGATOR {
