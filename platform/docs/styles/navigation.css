@@ -1,0 +1,19 @@
+#navigation-global li {  
+	float: left;  
+	list-style-type: none  ;
+	width: 12%;
+}
+
+#navigation-global a {
+	font-size : 18px;
+}
+
+#navigation-global ul {
+	margin-top: 0px;
+}
+
+#logo {
+	float: left;
+	width: 40%;
+	font-size: 18px;
+}
