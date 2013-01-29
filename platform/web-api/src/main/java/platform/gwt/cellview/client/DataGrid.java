@@ -81,7 +81,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     }
 
     private static final int PAGE_INCREMENT = 30;
-    private static final int IGNORE_SCROLL_TIMEOUT = 80;
+    private static final int IGNORE_SCROLL_TIMEOUT = 40;
 
     /**
      * A ClientBundle that provides images for this widget.
@@ -126,19 +126,14 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         String DEFAULT_CSS = "platform/gwt/cellview/client/DataGrid.css";
 
         /**
-         * Applied to every cell.
+         * Applied to rows.
+         */
+        String dataGridRow();
+
+        /**
+         * Applied to cell.
          */
         String dataGridCell();
-
-        /**
-         * Applied to even rows.
-         */
-        String dataGridEvenRow();
-
-        /**
-         * Applied to cells in even rows.
-         */
-        String dataGridEvenRowCell();
 
         /**
          * Applied to the first column.
@@ -176,15 +171,15 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         String dataGridKeyboardSelectedRowCell();
 
         /**
-         * Applied to the keyboard selected cell.
+         * Applied to the focused cell and rounding cells.
          */
-        String dataGridKeyboardSelectedCell();
+        String dataGridFocusedCell();
 
-        String dataGridLastKeyboardSelectedCell();
+        String dataGridFocusedCellLastInRow();
 
-        String dataGridRightOfKeyboardSelectedCell();
+        String dataGridRightOfFocusedCell();
 
-        String dataGridTopOfKeyboardSelectedCell();
+        String dataGridTopOfFocusedCell();
 
         /**
          * Applied to the last column.
@@ -200,16 +195,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
          * Applied to the last column headers.
          */
         String dataGridLastColumnHeader();
-
-        /**
-         * Applied to odd rows.
-         */
-        String dataGridOddRow();
-
-        /**
-         * Applied to cells in odd rows.
-         */
-        String dataGridOddRowCell();
 
         /**
          * Applied to the table.
@@ -261,12 +246,12 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final Resources resources;
     protected final Style style;
 
-    private String rowStyle;
-    private String rowCellStyle;
-    private String selectedCellStyle;
-    private String lastSelectedCellStyle;
-    private String topOfSelectedCellStyle;
-    private String rightOfSelectedCellStyle;
+    private String selectedRowStyle;
+    private String selectedRowCellStyle;
+    private String focusedCellStyle;
+    private String focusedCellLastInRowStyle;
+    private String topOfFocusedCellStyle;
+    private String rightOfFocusedCellStyle;
 
     private HeaderBuilder<T> footerBuilder;
     private int nonNullFootersCount = 0;
@@ -360,12 +345,12 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         this.style = resources.style();
         this.style.ensureInjected();
 
-        rowStyle = style.dataGridKeyboardSelectedRow();
-        rowCellStyle = style.dataGridKeyboardSelectedRowCell();
-        selectedCellStyle = style.dataGridKeyboardSelectedCell();
-        lastSelectedCellStyle = style.dataGridLastKeyboardSelectedCell();
-        topOfSelectedCellStyle = style.dataGridTopOfKeyboardSelectedCell();
-        rightOfSelectedCellStyle = style.dataGridRightOfKeyboardSelectedCell();
+        selectedRowStyle = style.dataGridKeyboardSelectedRow();
+        selectedRowCellStyle = style.dataGridKeyboardSelectedRowCell();
+        focusedCellStyle = style.dataGridFocusedCell();
+        focusedCellLastInRowStyle = style.dataGridFocusedCellLastInRow();
+        topOfFocusedCellStyle = style.dataGridTopOfFocusedCell();
+        rightOfFocusedCellStyle = style.dataGridRightOfFocusedCell();
 
         addStyleName(style.dataGridWidget());
 
@@ -426,20 +411,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             private Timer scrollTimer;
             @Override
             public void onScroll(ScrollEvent event) {
-                if (scrollTimer == null) {
-                    scrollTimer = new Timer() {
-                        @Override
-                        public void run() {
-                            int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
-                            tableHeaderScroller.setScrollLeft(scrollLeft);
-                            tableFooterScroller.setScrollLeft(scrollLeft);
-
-                            ensurePendingState();
-                            scrollTimer = null;
-                        }
-                    };
-                    scrollTimer.schedule(5);
-                }
+                int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
+                tableHeaderScroller.setScrollLeft(scrollLeft);
+                tableFooterScroller.setScrollLeft(scrollLeft);
+                ensurePendingState();
             }
         });
 
@@ -1860,7 +1835,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int colCount = getColumnCount();
 
         int scrollBarHeight = tableDataScroller.getHorizontalScrollbarHeight();
-        int scrollHeight = tableDataScroller.getClientHeight() - scrollBarHeight;
+        int scrollHeight = tableDataScroller.getRealClientHeight();
         int scrollWidth = tableDataScroller.getClientWidth();
 
         int currentScrollLeft = tableDataScroller.getHorizontalScrollPosition();
@@ -1944,7 +1919,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow < tableRowCount) {
             TableRowElement tr = rows.getItem(oldLocalSelectedRow);
             if (oldLocalSelectedRow != newLocalSelectedRow) {
-                setRowStyleName(tr, rowStyle, rowCellStyle, false);
+                setRowStyleName(tr, selectedRowStyle, selectedRowCellStyle, false);
             }
             if (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol) {
                 NodeList<TableCellElement> cells = tr.getCells();
@@ -1957,7 +1932,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
             TableRowElement tr = rows.getItem(newLocalSelectedRow);
-            setRowStyleName(tr, rowStyle, rowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
+            setRowStyleName(tr, selectedRowStyle, selectedRowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
             TableCellElement td = tr.getCells().getItem(newLocalSelectedCol);
             setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, tr, td, isFocused);
 
@@ -1969,17 +1944,17 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private void setFocusedCellStyles(int row, int column, TableRowElement tr, TableCellElement td, boolean focused) {
         int cellCount = tr.getCells().getLength();
 
-        setStyleName(td, selectedCellStyle, focused && column != cellCount - 1);
-        setStyleName(td, lastSelectedCellStyle, focused && column == cellCount - 1);
+        setStyleName(td, focusedCellStyle, focused && column != cellCount - 1);
+        setStyleName(td, focusedCellLastInRowStyle, focused && column == cellCount - 1);
 
         if (row > 0) {
             TableCellElement topTD = tableData.tableElement.getRows().getItem(row - 1).getCells().getItem(column);
-            setStyleName(topTD, topOfSelectedCellStyle, focused);
+            setStyleName(topTD, topOfFocusedCellStyle, focused);
         }
 
         if (column < cellCount - 1) {
             TableCellElement rightTD = tr.getCells().getItem(column + 1);
-            setStyleName(rightTD, rightOfSelectedCellStyle, focused);
+            setStyleName(rightTD, rightOfFocusedCellStyle, focused);
         }
     }
 

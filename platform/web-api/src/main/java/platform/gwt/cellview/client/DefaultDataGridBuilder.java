@@ -28,11 +28,8 @@ import platform.gwt.cellview.client.cell.Cell;
  */
 public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
 
-    private final String evenRowStyle;
-    private final String oddRowStyle;
+    private final String rowStyle;
     private final String cellStyle;
-    private final String evenCellStyle;
-    private final String oddCellStyle;
     private final String firstColumnStyle;
     private final String lastColumnStyle;
 
@@ -41,11 +38,8 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
 
         // Cache styles for faster access.
         Style style = cellTable.getResources().style();
-        evenRowStyle = style.dataGridEvenRow();
-        oddRowStyle = style.dataGridOddRow();
+        rowStyle = style.dataGridRow();
         cellStyle = style.dataGridCell();
-        evenCellStyle = " " + style.dataGridEvenRowCell();
-        oddCellStyle = " " + style.dataGridOddRowCell();
         firstColumnStyle = " " + style.dataGridFirstColumn();
         lastColumnStyle = " " + style.dataGridLastColumn();
     }
@@ -54,10 +48,7 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
     public void buildRowImpl(int rowIndex, T rowValue, TableRowElement tr) {
 
         // Calculate the row styles.
-        boolean isEven = rowIndex % 2 == 0;
-        String trClasses = isEven ? evenRowStyle : oddRowStyle;
-
-        tr.setClassName(trClasses);
+        tr.setClassName(rowStyle);
 
         // Build the columns.
         int columnCount = cellTable.getColumnCount();
@@ -66,7 +57,6 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
 
             // Create the cell styles.
             StringBuilder tdClasses = new StringBuilder(cellStyle);
-            tdClasses.append(isEven ? evenCellStyle : oddCellStyle);
             if (columnIndex == 0) {
                 tdClasses.append(firstColumnStyle);
             }

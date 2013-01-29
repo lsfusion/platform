@@ -33,6 +33,11 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
+        //нужно для эллипсиса, но подтормаживает рендеринг,
+        //оставлено закомменченым просто для справки
+//        divStyle.setOverflow(Style.Overflow.HIDDEN);
+//        divStyle.setTextOverflow(Style.TextOverflow.ELLIPSIS);
+
         if (property.font != null) {
             divStyle.setProperty("font", property.font.getFullFont());
         }

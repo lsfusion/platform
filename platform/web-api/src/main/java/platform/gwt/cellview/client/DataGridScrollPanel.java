@@ -33,7 +33,9 @@ public class DataGridScrollPanel extends CustomScrollPanel {
     }
 
     public int getRealClientHeight() {
-        return getClientHeight() - getHorizontalScrollbarHeight();
+        int height = getClientHeight() - getHorizontalScrollbarHeight();
+        //if pane height is smaller than scrollbar height, than return 0
+        return height < 0 ? 0 : height;
     }
 
     public int getHorizontalScrollbarHeight() {

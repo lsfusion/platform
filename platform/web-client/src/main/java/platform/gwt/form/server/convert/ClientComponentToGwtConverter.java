@@ -76,25 +76,24 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         Font clientFont = clientComponent.design.getFont();
         if (clientFont != null) {
-            component.font = new GFont(
-                    ((clientFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
-                    ((clientFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
-                    clientFont.getSize(),
-                    clientFont.getFamily()
-            );
+            component.font = convertFont(clientFont);
         }
 
         Font headerFont = clientComponent.design.getHeaderFont();
         if (headerFont != null) {
-            component.headerFont = new GFont(
-                    ((headerFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
-                    ((headerFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
-                    headerFont.getSize(),
-                    headerFont.getFamily()
-            );
+            component.headerFont = convertFont(headerFont);
         }
 
         return component;
+    }
+
+    private GFont convertFont(Font headerFont) {
+        return new GFont(
+                ((headerFont.getStyle() & Font.ITALIC) != 0 ? "italic" : null),
+                ((headerFont.getStyle() & Font.BOLD) != 0 ? "bold" : null),
+                headerFont.getSize(),
+                headerFont.getFamily()
+        );
     }
 
     @Cached
