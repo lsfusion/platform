@@ -54,12 +54,15 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
     @ManualLazy
     protected T aspectTranslate(M translator) {
         if(isComplex()) {
-            AbstractTranslateContext<T, M, H> cacheResult = translator.aspectGetCache(this);
-            if(cacheResult==null) {
-                cacheResult = (AbstractTranslateContext<T, M, H>) aspectContextTranslate(translator);
-                if(cacheResult!=this)
-                    cacheResult.initTranslate((T) this, translator);
-                translator.aspectSetCache(this, cacheResult);
+            AbstractTranslateContext<T, M, H> cacheResult;
+            synchronized (translator) {
+                cacheResult = translator.aspectGetCache(this);
+                if(cacheResult==null) {
+                    cacheResult = (AbstractTranslateContext<T, M, H>) aspectContextTranslate(translator);
+                    if(cacheResult!=this)
+                        cacheResult.initTranslate((T) this, translator);
+                    translator.aspectSetCache(this, cacheResult);
+                }
             }
             return (T) cacheResult;
         } else

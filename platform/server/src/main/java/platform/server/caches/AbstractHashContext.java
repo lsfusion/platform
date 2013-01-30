@@ -40,10 +40,13 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
                     }
 
                     hash = aspectContextHash(hash);
-                    Integer result = mapHashes.get(hash);
-                    if(result==null) {
-                        result = hash(hash);
-                        mapHashes.exclAdd(hash, result);
+                    Integer result;
+                    synchronized (mapHashes) {
+                        result = mapHashes.get(hash);
+                        if(result==null) {
+                            result = hash(hash);
+                            mapHashes.exclAdd(hash, result);
+                        }
                     }
                     return result;
                 }

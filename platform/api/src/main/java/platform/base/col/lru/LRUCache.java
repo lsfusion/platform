@@ -32,6 +32,27 @@ public class LRUCache {
         return new HMap<K, V>(MapFact.<K, V>exclusive());
     }
 
+/*    private static class SyncCache<K, V> implements MCacheMap<K, V> {
+        private final MCacheMap<K, V> syncMap;
+
+        private SyncCache(MCacheMap<K, V> syncMap) {
+            this.syncMap = syncMap;
+        }
+
+        public synchronized V get(K key) {
+            return syncMap.get(key);
+        }
+
+        public synchronized boolean containsKey(K key) {
+            return syncMap.containsKey(key);
+        }
+
+        public synchronized void exclAdd(K key, V value) {
+            syncMap.exclAdd();
+        }
+    }*/
+
+    // предполагается что все использования должны synchronized'ся
     public static <K, V> MCacheMap<K, V> mSmall(byte strategy) {
         if(strategies[strategy]==null)
             return new ArIndexedMap<K, V>(MapFact.<K, V>exclusive());

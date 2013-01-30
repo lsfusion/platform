@@ -1,14 +1,17 @@
 package platform.server.logics.property.actions.flow;
 
+import platform.server.classes.ValueClass;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
 
-public class CancelActionProperty extends ChangeFlowActionProperty {
+public class CancelActionProperty extends SystemActionProperty {
 
     public CancelActionProperty() {
-        super("cancel", "cancel");
+        super("cancel", "cancel", new ValueClass[] {});
     }
 
     @Override
@@ -16,9 +19,8 @@ public class CancelActionProperty extends ChangeFlowActionProperty {
         return type == ChangeFlowType.CANCEL;
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         context.cancel();
-        return FlowResult.FINISH;
     }
 
 }

@@ -279,7 +279,9 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         if(!BaseUtils.hashEquals(packGroup,group) || !revGroup.valuesSet().disjoint(outerExprValues.keys())) // если простой пак
             return createOuterGroupCases(packGroup, query, outerExprValues, true);
 
-        return followFalse(outerWhere, Where.TRUE, query, revGroup, this, true, null);
+        synchronized (this) {
+            return followFalse(outerWhere, Where.TRUE, query, revGroup, this, true, null);
+        }
     }
 
     private static Expr followFalse(Where outerWhere, Where innerWhere, Query query, ImRevMap<Expr, BaseExpr> innerOuter, GroupExpr thisExpr, final boolean pack, Query splitQuery) {

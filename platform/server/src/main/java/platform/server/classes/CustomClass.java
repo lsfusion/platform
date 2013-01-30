@@ -141,21 +141,24 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result.immutable();
     }
 
-    private MCacheMap<CustomClass,ImSet<CustomClass>> cacheChilds = LRUCache.mSmall(LRUCache.EXP_RARE);
+    private final MCacheMap<CustomClass,ImSet<CustomClass>> cacheChilds = LRUCache.mSmall(LRUCache.EXP_RARE);
 
     // получает классы у которого есть оба интерфейса
     public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
-        ImSet<CustomClass> result = cacheChilds.get(toCommon);
-        if(result!=null) return result;
+        ImSet<CustomClass> result;
+        synchronized (cacheChilds) {
+            result = cacheChilds.get(toCommon);
+            if(result!=null) return result;
 
-        commonClassSet1(false);
-        toCommon.commonClassSet2(false,null,false);
+            commonClassSet1(false);
+            toCommon.commonClassSet2(false,null,false);
 
-        MSet<CustomClass> mResult = SetFact.mSet();
-        commonClassSet3(mResult,null,false);
-        result = mResult.immutable();
+            MSet<CustomClass> mResult = SetFact.mSet();
+            commonClassSet3(mResult,null,false);
+            result = mResult.immutable();
 
-        cacheChilds.exclAdd(toCommon, result);
+            cacheChilds.exclAdd(toCommon, result);
+        }
         return result;
     }
 

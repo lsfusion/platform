@@ -62,10 +62,13 @@ public class CacheAspect {
     private static Object lazyExecute(ImmutableObject object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
         MCacheMap caches = object.getCaches();
-        Object result = caches.get(invoke);
-        if(result == null && !caches.containsKey(invoke)) {
-            result = execute(object, thisJoinPoint, args, changedArgs);
-            caches.exclAdd(invoke, result);
+        Object result;
+        synchronized (caches) {
+            result = caches.get(invoke);
+            if(result == null && !caches.containsKey(invoke)) {
+                result = execute(object, thisJoinPoint, args, changedArgs);
+                caches.exclAdd(invoke, result);
+            }
         }
         return result;
     }
