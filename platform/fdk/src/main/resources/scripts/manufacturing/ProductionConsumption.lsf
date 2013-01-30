@@ -127,7 +127,7 @@ FORM consumptionOrders 'Производственные заказы'
 
     OBJECTS pd=productDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
-                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+                   calcComponentsPriceProductDetail, componentsPriceProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail

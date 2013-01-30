@@ -1,6 +1,6 @@
 MODULE  ProductionOrder;
 
-REQUIRE Substitute, PriceList;
+REQUIRE Substitute, PriceList, StockTax;
 NAMESPACE Production;
 
 // ----------------  заказ ------------------- //
@@ -15,7 +15,12 @@ TABLE order(order);
 
 @defineDocumentHeaderPosted (order);
 @defineDocumentHeaderPriceListType (order, priceListType, , ' (потребность)');
-@defineDocumentHeaderPriceListType (order, calcPriceListType, , ' (надбавка)');
+includeVATOrder 'Цена с НДС' = DATA BOOLEAN (order);
+includeVATOrder(order) <- includeVATPriceListType(priceListTypeOrder(order)) WHEN CHANGED(priceListTypeOrder(order));
+//backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
+
+@defineDocumentHeaderPriceListType (order, calcPriceListType, , ' (надбавка-изделие)');
+@defineDocumentHeaderPriceListType (order, calcPriceListType, components, ' (надбавка-потребность)');
 
 @defineDocumentHeaderStock (order, stock, 'Склад сырья', components);
 @defineDocumentHeaderStock (order, stock, 'Склад готовой продукции', goods);
@@ -61,12 +66,7 @@ CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(pr
 currencyProductDetail (productDetail)= currencyOrder(orderProductDetail(productDetail));
 
 @defineDocumentDetailPriceCustomPrefix (productDetail, components, ' компонентов');
-
-componentsSumProductDetail 'Сумма компонентов' = DATA NUMERIC[16,2] (productDetail);
-componentsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * componentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
-    WHEN CHANGED (quantityProductDetail(productDetail)) OR
-         CHANGED (componentsPriceProductDetail(productDetail)) OR
-         CHANGED(currencyProductDetail(productDetail));
+componentsPriceMVATProductDetail 'Цена компонентов без НДС' = DATA NUMERIC[14,2] (productDetail);
 
 calcPriceListTypeProductDetail (productDetail) = calcPriceListTypeOrder(orderProductDetail(productDetail));
 markupProductDetail 'Надбавка, %' = DATA NUMERIC[8,2] (productDetail);
@@ -77,13 +77,6 @@ markupProductDetail(productDetail) <- markupCalcPriceListTypeSku(calcPriceListTy
 multiplierCalcProductDetail (productDetail) = ((100.00 IF productDetail IS productDetail) (+) markupProductDetail(productDetail)) / 100 PERSISTENT;
 
 @defineDocumentDetailPriceCustomPrefix (productDetail, products, ' изделия');
-productsPriceProductDetail(productDetail) <- IF calcPriceListTypeProductDetail(productDetail) THEN
-    toNumeric14p2(roundPriceRoundCondition(componentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
-    ELSE toNumeric14p2(roundCurrency((componentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail)))
-        WHEN CHANGED (componentsPriceProductDetail(productDetail)) OR
-             CHANGED (multiplierCalcProductDetail(productDetail)) OR
-             CHANGED (calcPriceListTypeProductDetail(productDetail)) OR
-             CHANGED (currencyProductDetail(productDetail));
 
 productsSumProductDetail 'Сумма изделия' = DATA NUMERIC[16,2] (productDetail);
 productsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
@@ -126,7 +119,7 @@ UOMComponentDetail = DATA UOM (componentDetail);
 shortNameUOMComponentDetail 'Ед. изм.' (componentDetail) = shortName(UOMComponentDetail(componentDetail));
 UOMComponentDetail(componentDetail) <- UOMComponent(componentComponentDetail(componentDetail)) WHEN CHANGED (componentComponentDetail(componentDetail));
 
-CONSTRAINT skuComponentDetail(componentDetail) != materialComponent(componentComponentDetail(componentDetail))    // materialComponent(componentComponentDetail(componentDetail)) IS sku AND NOT
+CONSTRAINT skuComponentDetail(componentDetail) != skuMaterial(materialComponent(componentComponentDetail(componentDetail)))
     CHECKED BY componentComponentDetail MESSAGE 'Sku компонента и строки компонента не соответствуют друг другу';
 
 currencyComponentDetail (componentDetail)= currencyOrder(orderComponentDetail(componentDetail));
@@ -236,14 +229,20 @@ dataPriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceList
                                          CHANGED(dateTimeOrder(order));
 
 priceSkuOrder 'Цена' (sku, order) = dataPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order);
-
 sumSkuOrder 'Сумма' = DATA NUMERIC[16,2] (sku, order);
-
 sumSkuOrder(sku, order) <- toNumeric16p2(roundCurrency((bruttoQuantitySkuOrder(sku, order) * priceSkuOrder(sku, order)), currencyOrder(order)))
     WHEN CHANGED (bruttoQuantitySkuOrder(sku, order)) OR
          CHANGED (priceSkuOrder(sku, order)) OR
          CHANGED(currencyOrder(order) AND sku IS sku);
 
+markupSkuOrder 'Надбавка, %' = DATA NUMERIC[8,2] (sku, order);
+
+markupSkuOrder(sku,order) <- markupCalcPriceListTypeSku(componentsCalcPriceListTypeOrder(order), sku) AND bruttoQuantitySkuOrder(sku, order)
+    WHEN CHANGED(componentsCalcPriceListTypeOrder(order));
+
+premiumPriceSkuOrder 'Цена с надбавкой' = DATA NUMERIC[14,2] (sku, order);
+
+valueVATSkuOrder 'НДС, %' = DATA NUMERIC[10,5] (sku, order);
 
 //-- Замена
 
@@ -265,6 +264,14 @@ dataPriceSubstitutesSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTim
                                          CHANGED(dateTimeOrder(order) AND sku IS sku);
 priceSubstitutesSkuOrder 'Цена замены' (sku, order) = dataPriceSubstitutesSkuOrder(sku, order) AND quantitySubstitutesSkuOrder(sku, order);
 
+overSkuSkuOrder (sku,order) = (sku AS sku AND order IS order) OR substituteSkuOrder(sku,order);
+
+valueVATSkuOrder(sku, order) <- valueRateRangeDate(
+    VATSkuCountryDate (overSkuSkuOrder (sku,order), componentsCountryOrder(order), dateOrder(order)), dateOrder(order))
+        WHEN CHANGED(overSkuSkuOrder (sku,order)) OR
+             CHANGED(componentsCountryOrder(order) AND sku IS sku) OR
+             CHANGED(dateOrder(order) AND sku IS sku);
+
 changeSubstituteSkuOrder = ACTION (substitute, sku, order) {
     REQUEST BOOLEAN INPUT;
     IF requestedLogical() THEN {
@@ -279,24 +286,35 @@ changeSubstituteSkuOrder = ACTION (substitute, sku, order) {
 quantitySubstitutesSkuOrder(sku, order) <- bruttoQuantitySkuOrder(sku,order) * multiplierSkuOrder(sku, order)
     WHEN CHANGED (bruttoQuantitySkuOrder(sku,order)) OR CHANGED(multiplierSkuOrder(sku, order));
 
-overPriceSkuOrder 'Цена для расчета с/с изделия' (sku, order) = priceSkuOrder(sku,order) OR (priceSubstitutesSkuOrder(sku,order)*multiplierSkuOrder(sku,order));
+overPriceSkuOrder 'Цена с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR (priceSubstitutesSkuOrder(sku,order)*multiplierSkuOrder(sku,order));
+
+multiplierCalcSkuOrder(sku, order) = ((100.00 IF sku IS sku AND order IS order) (+) markupSkuOrder(sku, order)) / 100 PERSISTENT;
+
+premiumPriceSkuOrder(sku,order)<- overPriceSkuOrder(sku, order) * multiplierCalcSkuOrder(sku, order)
+        WHEN CHANGED(overPriceSkuOrder(sku, order)) OR
+             CHANGED(multiplierCalcSkuOrder(sku, order));
 
 backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS order;
 
 //-- Подсчет цены изделия с учетом замен
 
-recPriceProductOrder (product, order) = GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)/100
-    BY product, order;
-recPricePercentProductDetailSkuOrder 'Коэф.цены' (productDetail, sku, order)= recPricePercentProductSkuDate (productProductDetail(productDetail), sku, dateOrder(order))/100;
+calcComponentsPriceProductDetail 'Цена расчетная (с/с)' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)/100
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 
-recPriceProductDetail 'Цена расчетная'(productDetail) = recPriceProductOrder (productProductDetail(productDetail), orderProductDetail(productDetail));
+calcPremiumComponentsPriceProductDetail 'Цена компонентов с надбавкой' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)/100
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 
-fillPriceProductsOrder 'Заполнить цены для изделий по с/с' = ACTION (order)  {
+calcPremiumPriceProductDetail 'Цена расчетная (с надбавками)' (productDetail) = IF calcPriceListTypeProductDetail(productDetail) THEN
+    toNumeric14p2(roundPriceRoundCondition(calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
+        ELSE toNumeric14p2(roundCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail)));
 
-    FOR orderProductDetail(productDetail) == order DO {
-        SET componentsPriceProductDetail(productDetail) <- recPriceProductDetail(productDetail);
+changeMarkupProductDetail (productDetail) = ACTION (productDetail) {
+    REQUEST NUMERIC[8,2] INPUT;
+    IF requestedNumeric() THEN {
+        SET markupProductDetail (productDetail) <- requestedNumeric();
+        SET productsPriceProductDetail(productDetail) <- calcPremiumPriceProductDetail(productDetail);
     }
-} TOOLBAR;
+}
 
 resetSubstituteOrder 'Сбросить все замены' = ACTION (order) {
     FOR (TRUE IF substituteSkuOrder(sku, order)) OR (TRUE IF multiplierSkuOrder(sku, order)) DO {
@@ -309,6 +327,44 @@ deleteComponentOrder 'Очистить' =  ACTION (order) {
     EXEC deleteComponentDetailOrder(order);
     EXEC resetSubstituteOrder(order);
 } TOOLBAR;
+
+//-- Расчет НДС без надбавок
+calcVATComponentsPriceProductDetail 'Сумма НДС' (productDetail)=
+    [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)*(valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/100
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
+densityVATComponentsPriceProductDetail 'Уд.вес НДС компонентов' (productDetail)= [100*X/(Y-X)](
+    calcVATComponentsPriceProductDetail(productDetail),calcComponentsPriceProductDetail(productDetail));
+
+//-- Расчет НДС с надбавками
+calcPremiumVATComponentsPriceProductDetail 'Сумма НДС с надбавками' (productDetail)=
+    [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)*(valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/100
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
+densityPremiumVATComponentsPriceProductDetail 'Уд.вес НДС изделия' (productDetail)= [100*X/(Y-X)](
+    calcPremiumVATComponentsPriceProductDetail(productDetail),calcPremiumComponentsPriceProductDetail(productDetail));
+
+//--
+calcComponentsPriceMVATProductDetail 'Цена компонентов без НДС' (productDetail)= [100*Y/(100+X)](
+    calcComponentsPriceProductDetail(productDetail),
+    0.0 IF productDetail IS productDetail OR densityVATComponentsPriceProductDetail(productDetail));
+
+fillPriceProductsOrder 'Заполнить цены для изделий' = ACTION (order)  {
+
+    FOR orderProductDetail(productDetail) == order DO {
+        SET componentsPriceProductDetail(productDetail) <- calcComponentsPriceProductDetail(productDetail);
+        SET productsPriceProductDetail(productDetail) <- calcPremiumPriceProductDetail(productDetail);
+        SET componentsPriceMVATProductDetail(productDetail) <- toNumeric14p2(calcComponentsPriceMVATProductDetail(productDetail));
+    }
+} TOOLBAR;
+//-- Свойства для аггрегированных производств/расценок
+componentsSumProductDetail(productDetail)= roundCurrency((componentsPriceProductDetail(productDetail)*quantityProductDetail(productDetail)),currencyProductDetail(productDetail));
+retailMarkupProductDetail(productDetail) =[round2(((X/Z*100/(100+Y))-1)*100)](
+                                        0.0 IF productDetail IS productDetail OR productsPriceProductDetail(productDetail),
+                                        componentsPriceProductDetail(productDetail),
+                                        0.0 IF productDetail IS productDetail OR densityPremiumVATComponentsPriceProductDetail(productDetail));
+
+retailVATSumProductDetail(productDetail)= roundCurrency([X*Y/(100+Y)](productsSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
+
+retailMarkupSumProductDetail(productDetail) = productsSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
 
 //-- Замены для компонентов
 
@@ -342,8 +398,10 @@ FORM order 'Производственный заказ'
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder
     PROPERTIES(o) nameCalcPriceListTypeOrder FORCE PANEL
     OBJECTS pd=productDetail
-    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, recPriceProductDetail READONLY,
-                   componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+    PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, calcComponentsPriceProductDetail READONLY,
+                   componentsPriceProductDetail, densityVATComponentsPriceProductDetail SHOWIF includeVATOrder(o), componentsPriceMVATProductDetail SHOWIF includeVATOrder(o),
+                   markupProductDetail ON CHANGE EXEC changeMarkupProductDetail(pd), calcPremiumPriceProductDetail READONLY,
+                   productsPriceProductDetail, productsSumProductDetail, densityPremiumVATComponentsPriceProductDetail SHOWIF includeVATOrder(o)
     PROPERTIES(pd) ADDOBJ, delete
     PROPERTIES(o) TODRAW pd createProductOrder, fillPriceProductsOrder, deleteProductDetailOrder
 
@@ -367,14 +425,10 @@ FORM order 'Производственный заказ'
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
     PROPERTIES(s,o) priceSkuOrder, sumSkuOrder
     PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder, multiplierSkuOrder, quantitySubstitutesSkuOrder, priceSubstitutesSkuOrder
-    PROPERTIES(s,o) overPriceSkuOrder
+    PROPERTIES(s,o) overPriceSkuOrder, markupSkuOrder, premiumPriceSkuOrder, valueVATSkuOrder SHOWIF includeVATOrder(o)
     FILTERS bruttoQuantitySkuOrder(s,o)
-//    PROPERTIES(o) TODRAW s resetSubstituteOrder
 
-
-    PROPERTIES(o) namePriceListTypeOrder FORCE PANEL
-
-//    PROPERTIES    recPricePercentProductDetailSkuOrder(pd,s,o), recBruttoQuantityOrderSku(o,s)
+    PROPERTIES(o) FORCE PANEL namePriceListTypeOrder, includeVATOrder, nameComponentsCalcPriceListTypeOrder
 
     OBJECTS su = substitute
     PROPERTIES(su) READONLY nameToSkuSubstitute, multiplierSubstitute
@@ -412,8 +466,17 @@ DESIGN order FROM DEFAULT{
                 NEW row21 {
                     childConstraints = TO THE BOTTOM;
                     NEW row211 {
-                        title = 'Цена материалов';
-                        ADD PROPERTY(namePriceListTypeOrder);
+                        childConstraints = TO THE RIGHT;
+                        NEW row2111 {
+                            title = 'Цена материалов';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(namePriceListTypeOrder);
+                            ADD PROPERTY(includeVATOrder);
+                        }
+                        NEW row2112 {
+                            title = 'Надбавка к материалам';
+                            ADD PROPERTY(nameComponentsCalcPriceListTypeOrder);
+                        }
                     }
                     ADD s.box;
                 }
@@ -480,12 +543,12 @@ FORM orders 'Производственные заказы'
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
 
-    PROPERTIES(o) ADDFORM, EDITFORM, delete
+    PROPERTIES(o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=productDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
-                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+                   calcComponentsPriceProductDetail, componentsPriceProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
@@ -500,7 +563,7 @@ FORM orders 'Производственные заказы'
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku, idBarcodeSku, shortNameUOMSku
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
-    PROPERTIES(s,o) READONLY priceSkuOrder, sumSkuOrder
+    PROPERTIES(s,o) READONLY priceSkuOrder, markupSkuOrder, premiumPriceSkuOrder
     FILTERS bruttoQuantitySkuOrder(s,o)
 
 ;

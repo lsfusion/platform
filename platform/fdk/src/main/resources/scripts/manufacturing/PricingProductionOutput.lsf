@@ -5,23 +5,199 @@ NAMESPACE Production;
 
 // ----------------  Расценка ------------------- //
 
-EXTEND CLASS outputDetail : priceListLedger;
+@defineDocumentInterfaceHeaderPricingCommittee (output, stock);
+@defineDocumentInterfaceCreate (output, createPricing, 'Создать акт расценки');
 
-fromDateTimePriceListLedger (ledger) += dateTimeOutputDetail(ledger);
+@defineDocumentInterfaceDetailPricePrefix(output, supplier, ' входная');
+supplierPriceUserOutputDetail(detail) <- componentsPriceMVATProductDetail(productDetailUserOutputDetail(detail))
+    WHEN CHANGED(productDetailUserOutputDetail(detail));
 
-isPostedPriceListLedger(ledger) += isPostedOutputDetail(ledger);
-//skipPriceListLedger(ledger) += skipChangeLedgerPricingDetail(ledger);
+@defineDocumentInterfaceDetailDataSumPrefix (output, supplier, ' входная');
 
-skuPriceListLedger (ledger) += skuOutputDetail(ledger);
+@deriveDocumentDetailSumPrefix(userOutput, supplier, currency, quantity);
 
-descriptionPriceListLedger (ledger) += descriptionOutputDetail(ledger);
+@defineDocumentHeaderSumCustomPrefix (output, outputDetail, supplier,' входная');
 
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.supplierPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceOutputDetail(ledger) WHEN CLASS(priceOutputDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
-inPriceListLedgerStock (ledger, stock) += stockOutputDetail(ledger) == stock AND stock IS departmentStore;
+@defineDocumentInterfaceDetailPricePrefix(output, retail, ' выходная');
+retailPriceUserOutputDetail(detail) <- productsPriceProductDetail(productDetailUserOutputDetail(detail))
+                  WHEN CHANGED(productDetailUserOutputDetail(detail));
+@defineDocumentInterfaceDetailVAT(output, countryStock, retail, );
+valueRetailVATUserOutputDetail(detail) <- densityPremiumVATComponentsPriceProductDetail(productDetailUserOutputDetail(detail))
+                  WHEN CHANGED(productDetailUserOutputDetail(detail));
 
-// todo: надо разобраться с ценами, т.е. чтобы была цена поставщика без НДС.
 
+@defineDocumentInterfaceDetailMarkupPrefix (output, retail, );
+retailMarkupUserOutputDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
+                                        0.0 IF detail IS userOutputDetail OR retailPriceUserOutputDetail(detail),
+                                        supplierPriceUserOutputDetail(detail),
+                                        0.0 IF detail IS userOutputDetail OR valueRetailVATUserOutputDetail(detail))
+        WHEN CHANGED(retailPriceUserOutputDetail(detail)) OR
+             CHANGED(supplierPriceUserOutputDetail(detail)) OR
+             CHANGED(retailPriceUserOutputDetail(detail))
+;
+//@changeDocumentDetailMarkupCustomPrefix(userOutputDetail, retail, , retail, retail);
+//@changeDocumentDetailPriceCustomPrefix(userOutputDetail, retail, , retail, retail, currency);
+@defineDocumentInterfaceDetailDataSumPrefix (output, retail, ' выходная');
+
+//@deriveDocumentDetailPriceMarkupCustomPrefix(userOutputDetail, retail);
+@deriveDocumentDetailSumPrefix(userOutput, retail, currency, quantity);
+
+@defineDocumentInterfaceHeaderSumPrefix (output, retail, ' выходная');
+
+@defineDocumentInterfaceDetailVATDataSumPrefix (output, retail, ' розничная');
+@deriveDocumentDetailReverseVATSumPrefix(userOutput, retail, retail, currency);
+
+@defineDocumentInterfaceDetailMarkupSumPrefix (output, retail);
+@deriveDocumentDetailMarkupSumPrefix(userOutput, retail, retail, supplier);
+
+@defineDocumentInterfaceHeaderSumPrefix (output, retailMarkup, ' надбавки');
+@defineDocumentInterfaceHeaderSumPrefix (output, retailVAT, ' НДС');
+
+//-- аггр.расценка на основе заказа
+@defineDocumentHeaderCreate (order, createPricing, 'Создать акт расценки');
+backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
+
+@defineDocumentHeaderPricingCommittee(order, goodsStock);
+
+EXTEND FORM order
+    PROPERTIES(o)  BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder SHOWIF createPricingOrder(o)
+//    PROPERTIES (d) BEFORE delete(d) SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
+//                   supplierPriceUserOutputDetail, supplierSumUserOutputDetail, retailMarkupUserOutputDetail, retailMarkupSumUserOutputDetail,
+//                   valueRetailVATUserOutputDetail, retailVATSumUserOutputDetail, retailPriceUserOutputDetail, retailSumUserOutputDetail
+;
+EXTEND DESIGN order {
+    headerRow1 {
+        NEW headerRow13 BEFORE headerRow12 {
+            title = 'Расценка';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPricingOrder);
+            ADD PROPERTY(namePricingCommitteeOrder);
+        }
+    }
+}
+
+EXTEND FORM orders
+    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder
+//    PROPERTIES (d) READONLY SHOWIF createPricingOutput(o) BACKGROUND backgroundRetailOutput(o) supplierPriceOutputDetail, supplierSumOutputDetail, retailMarkupOutputDetail, retailMarkupSumOutputDetail,
+//                   valueRetailVATOutputDetail, retailVATSumOutputDetail, retailPriceOutputDetail, retailSumOutputDetail
+;
+
+pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
+createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
+
+supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+valueRetailVATOutputDetail(outputDetail) += densityVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailMarkupOutputDetail(outputDetail) +=retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailVATSumOutputDetail(outputDetail)+= retailVATSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailMarkupSumOutputDetail(outputDetail) += retailMarkupSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailSumOutputDetail(outputDetail) += productsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+//-- аггр.расценка на основе производства
+
+backgroundRetailOutput 'Цвет' (output) = RGB(224, 255, 255) IF output IS output;
+
+EXTEND FORM userOutput
+    PROPERTIES(o)  BACKGROUND backgroundRetailOutput(o) createPricingUserOutput, namePricingCommitteeUserOutput SHOWIF createPricingUserOutput(o)
+    PROPERTIES (d) BEFORE delete(d) SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
+                   supplierPriceUserOutputDetail, supplierSumUserOutputDetail, retailMarkupUserOutputDetail, retailMarkupSumUserOutputDetail,
+                   valueRetailVATUserOutputDetail, retailVATSumUserOutputDetail, retailPriceUserOutputDetail, retailSumUserOutputDetail
+;
+EXTEND DESIGN userOutput {
+    headerRow12 {
+        NEW headerRow121 BEFORE headerRow122 {
+            title = 'Расценка';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPricingUserOutput);
+            ADD PROPERTY(namePricingCommitteeUserOutput);
+        }
+    }
+}
+
+EXTEND FORM outputs
+    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOutput(o) createPricingOutput, namePricingCommitteeOutput
+    PROPERTIES (d) READONLY SHOWIF createPricingOutput(o) BACKGROUND backgroundRetailOutput(o) supplierPriceOutputDetail, supplierSumOutputDetail, retailMarkupOutputDetail, retailMarkupSumOutputDetail,
+                   valueRetailVATOutputDetail, retailVATSumOutputDetail, retailPriceOutputDetail, retailSumOutputDetail
+;
+
+CLASS outputPricing 'Акт расценки на основе производства' : pricing;
+CLASS outputPricingPosted 'Проведенный акт расценки на основе производства': outputPricing, postedObject;
+CLASS outputPricingDetail 'Строка акта расценки на основе производства' : pricingDetail;
+
+@defineDocumentTables(outputPricing);
+
+@defineDocumentAggregation(output, outputPricing, createPricingOutput);
+
+printPricingOutput 'Акт расценки' (output) = printPricing(outputPricingOutput(output)) IMAGE 'print.png' IN printGroup;
+EXTEND FORM outputs
+    PROPERTIES(o) FORCE PANEL printPricingOutput SHOWIF createPricingOutput(o)
+;
+EXTEND DESIGN outputs {printContainer { ADD o.printGroup;}}
+
+pricingPricingDetail(detail) += outputPricingOutputPricingDetail(detail);
+@defineDocumentDetailIndex(outputPricing);
+
+datePricing(pricing) += dateOutputPricing(pricing);
+timePricing(pricing) += timeOutputPricing(pricing);
+
+
+departmentStorePricing(pricing) += stockOutput(outputOutputPricing(pricing)) IF stockOutput(outputOutputPricing(pricing)) IS departmentStore;
+dataDepartmentStorePricingDetail(pricingDetail) += stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail)))
+                                                   IF stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail))) IS departmentStore;
+
+//    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, supplier, 'Поставщик', , );
+//    supplierPricing(pricing) += supplier###concrete###pricing(pricing);
+
+@defineDocumentAggregationPosted(output, outputPricing);
+isPostedPricing(pricing) += isPostedOutputPricing(pricing);
+
+numberOutputPricing 'Номер документа' (outputPricing) = numberOutput(outputOutputPricing(outputPricing));
+numberPricing(pricing) += numberOutputPricing(pricing);
+seriesOutputPricing 'Серия документа' (outputPricing) = seriesOutput(outputOutputPricing(outputPricing));
+seriesPricing(pricing) += seriesOutputPricing(pricing);
+seriesNumberOutputPricing 'Серия/номер документа' (outputPricing) = seriesNumberOutput(outputOutputPricing(outputPricing));
+
+
+notePricing(pricing) += noteOutput(outputOutputPricing(pricing));
+currencyPricing (pricing) += currencyOutput(outputOutputPricing(pricing));
+pricingCommitteePricing(pricing) += pricingCommitteeOutput(outputOutputPricing(pricing));
+
+@defineDocumentDescription(outputPricing, outputPricingDetail, seriesNumberOutputPricing, 'Акт расценки на основе производства');
+descriptionPricing (pricing) += descriptionOutputPricing(pricing);
+
+skuPricingDetail(pricingDetail) +=  skuOutputDetail(outputDetailOutputPricingDetail(pricingDetail));
+quantityPricingDetail(pricingDetail) += quantityOutputDetail(outputDetailOutputPricingDetail(pricingDetail));
+
+//-------------------------- Ценовые характеристики------------------------------------------
+@defineDocumentAggregationDetailProperty (output, outputPricing, supplierPrice, 'Цена входная');
+pricePricingDetail(pricingDetail) += supplierPriceOutputPricingDetail(pricingDetail);
+@defineDocumentAggregationDetailProperty (output, outputPricing, supplierSum, 'Сумма входная');
+sumPricingDetail(pricingDetail) += supplierSumOutputPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (output, outputPricing, retailPrice, 'Цена выходная');
+retailPricePricingDetail(pricingDetail) += retailPriceOutputPricingDetail(pricingDetail);
+@defineDocumentAggregationDetailProperty (output, outputPricing, retailSum, 'Сумма выходная');
+retailSumPricingDetail(pricingDetail) += retailSumOutputPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (output, outputPricing, retailMarkup, 'Надбавка');
+retailMarkupPricingDetail(pricingDetail) += retailMarkupOutputPricingDetail(pricingDetail);
+@defineDocumentAggregationDetailProperty (output, outputPricing, retailMarkupSum, 'Сумма надбавки');
+retailMarkupSumPricingDetail(pricingDetail) += retailMarkupSumOutputPricingDetail(pricingDetail);
+
+@defineDocumentAggregationDetailProperty (output, outputPricing, valueRetailVAT, 'НДС,%');      // пока только значение ставки, без самой шкалы.!!!!!
+valueRetailVATPricingDetail(pricingDetail) += valueRetailVATOutputPricingDetail(pricingDetail);
+@defineDocumentAggregationDetailProperty (output, outputPricing, retailVATSum, 'Сумма НДС');
+retailVATSumPricingDetail(pricingDetail) += retailVATSumOutputPricingDetail(pricingDetail);
+
+//--
+
+printPricingOrder 'Акт расценки' (order) = printPricingOutput(orderOutputOrder(order)) IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM orders
+    PROPERTIES(o) FORCE PANEL printPricingOrder SHOWIF createPricingOrder(o)
+;
+EXTEND DESIGN orders {printContainer { ADD o.printGroup;}}
 
 

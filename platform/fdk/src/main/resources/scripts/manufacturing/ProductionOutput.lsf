@@ -140,7 +140,7 @@ FORM outputOrders 'Производственные заказы'
 
     OBJECTS pd=productDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
-                   recPriceProductDetail, componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
+                   calcComponentsPriceProductDetail, componentsPriceProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
@@ -229,7 +229,7 @@ EXTEND DESIGN order {
 }
 
 EXTEND FORM orders
-            PROPERTIES(o) READONLY createOutputOrder
+    PROPERTIES(o) READONLY createOutputOrder
 ;
 
 CLASS orderOutput 'Производство на основе заказа' : output;
@@ -340,12 +340,18 @@ DESIGN userOutput FROM DEFAULT{
                     ADD PROPERTY(timeUserOutput);
                 }
                 NEW headerRow12 {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    ADD o.documentPrmGroup {
+                    childConstraints = TO THE BOTTOM;
+//                    NEW headerRow121 {
+//                        childConstraints = TO THE RIGHTBOTTOM;
+//                    }
+                    NEW headerRow122 {
                         childConstraints = TO THE RIGHTBOTTOM;
-                    }
-                    ADD o.orderGroup{
-                        childConstraints = TO THE RIGHTBOTTOM;
+                        ADD o.documentPrmGroup {
+                            childConstraints = TO THE RIGHTBOTTOM;
+                        }
+                        ADD o.orderGroup{
+                            childConstraints = TO THE RIGHTBOTTOM;
+                        }
                     }
                 }
             }
