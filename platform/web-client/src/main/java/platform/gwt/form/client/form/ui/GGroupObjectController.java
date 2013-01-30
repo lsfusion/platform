@@ -366,10 +366,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         grid.relayoutTable();
     }
 
-    public void relayoutPanelProperties(ArrayList<GPropertyDraw> properties) {
-        panel.relayout(properties);
-    }
-
     public boolean isInGridClassView() {
         return classViewType == GClassViewType.GRID;
     }

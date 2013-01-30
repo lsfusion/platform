@@ -6,6 +6,9 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableLayoutPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.form.ui.GFormController;
@@ -23,7 +26,7 @@ public class DataPanelRenderer implements PanelRenderer {
     protected final Label label;
     protected final GSinglePropertyTable valueTable;
     protected final CellPanel panel;
-    protected ResizeLayoutPanel gridPanel;
+    protected ResizableLayoutPanel gridPanel;
 
     private String caption;
 
@@ -53,11 +56,11 @@ public class DataPanelRenderer implements PanelRenderer {
             }
         };
 
-        gridPanel = new ResizeLayoutPanel();
+        gridPanel = new ResizableLayoutPanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
 
-        panel = property.panelLabelAbove ? new VerticalPanel() : new HorizontalPanel();
+        panel = property.panelLabelAbove ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         panel.addStyleName("dataPanelRendererPanel");
         panel.setWidth("100%");
 
@@ -146,10 +149,5 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public String getWidth() {
         return componentWidth;
-    }
-
-    @Override
-    public void relayout() {
-        valueTable.onResize();
     }
 }

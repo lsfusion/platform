@@ -2,8 +2,8 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import platform.gwt.base.client.ui.ResizableLayoutPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GGrid;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -22,10 +22,10 @@ public class GGridController implements DefaultFocusReceiver {
     public GGridController(GGrid igrid, GFormController iformController, GGroupObjectController igroupObject) {
         grid = igrid;
         groupController = igroupObject;
-        gridView = new VerticalPanel();
+        gridView = new ResizableVerticalPanel();
         table = new GGridTable(iformController, igroupObject, this);
 
-        ResizeLayoutPanel panel = new ResizeLayoutPanel();
+        ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
         panel.setSize("100%", "100%");
         gridView.setSize("100%", "100%");

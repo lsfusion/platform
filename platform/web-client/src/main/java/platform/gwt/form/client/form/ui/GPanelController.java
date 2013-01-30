@@ -1,7 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -121,14 +121,6 @@ public class GPanelController {
         return true;
     }
 
-    public void relayout(ArrayList<GPropertyDraw> properties) {
-        for (GPropertyController property : propertyControllers.values()) {
-            if (properties.contains(property.property)) {
-                property.relayout();
-            }
-        }
-    }
-
     private class GPropertyController implements DefaultFocusReceiver {
         private boolean addedToLayout = false;
         private boolean columnsUpdated = true;
@@ -144,7 +136,7 @@ public class GPanelController {
         private Map<GGroupObjectValue, Object> cellBackgroundValues;
 
         private Map<GGroupObjectValue, Object> cellForegroundValues;
-        private HorizontalPanel renderersPanel;
+        private ResizableHorizontalPanel renderersPanel;
 
         public GPropertyController(GPropertyDraw property) {
             this.property = property;
@@ -160,7 +152,7 @@ public class GPanelController {
                     renderers = new HashMap<GGroupObjectValue, PanelRenderer>();
                 }
                 if (renderersPanel == null) {
-                    renderersPanel = new HorizontalPanel();
+                    renderersPanel = new ResizableHorizontalPanel();
                 }
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -277,12 +269,6 @@ public class GPanelController {
 
         public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
             this.cellForegroundValues = cellForegroundValues;
-        }
-
-        public void relayout() {
-            for (PanelRenderer renderer : renderers.values()) {
-                renderer.relayout();
-            }
         }
 
         @Override

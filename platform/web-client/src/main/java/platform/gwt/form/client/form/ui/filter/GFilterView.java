@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.panel.ImageButton;
@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GFilterView extends VerticalPanel implements GFilterConditionView.UIHandler {
+public class GFilterView extends ResizableVerticalPanel implements GFilterConditionView.UIHandler {
     private static final String ADD_CONDITION = "filtadd.png";
     private static final String APPLY = "filt.png";
 

@@ -3,7 +3,7 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.panel.ImageButton;
@@ -11,7 +11,7 @@ import platform.gwt.form.shared.view.panel.ImageButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GShowTypeView extends HorizontalPanel {
+public class GShowTypeView extends ResizableHorizontalPanel {
     private Button gridButton;
     private Button panelButton;
     private Button hideButton;

@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.*;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -16,7 +17,7 @@ import platform.gwt.form.shared.view.panel.ImageButton;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GFilterConditionView extends HorizontalPanel implements GFilterValueView.GFilterValueListener {
+public class GFilterConditionView extends ResizableHorizontalPanel implements GFilterValueView.GFilterValueListener {
     public interface UIHandler {
         void conditionChanged();
         void conditionRemoved(GPropertyFilter condition);

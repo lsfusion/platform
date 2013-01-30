@@ -1,6 +1,6 @@
 package platform.gwt.form.client.form.ui.filter;
 
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import platform.gwt.base.client.ui.ResizableLayoutPanel;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GDataFilterValue;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -12,7 +12,7 @@ public class GDataFilterValueView extends GFilterValueView {
     private GGroupObjectLogicsSupplier logicsSupplier;
     private GDataFilterValueViewTable valueTable;
 
-    private ResizeLayoutPanel tablePanel;
+    private ResizableLayoutPanel tablePanel;
 
     public GDataFilterValueView(GFilterValueListener listener, GDataFilterValue filterValue, GPropertyDraw property, GGroupObjectLogicsSupplier logicsSupplier) {
         super(listener);
@@ -21,7 +21,7 @@ public class GDataFilterValueView extends GFilterValueView {
 
         valueTable = new GDataFilterValueViewTable(this, property);
 
-        tablePanel = new ResizeLayoutPanel();
+        tablePanel = new ResizableLayoutPanel();
         tablePanel.addStyleName("dataFilterValueTablePanel");
         tablePanel.setWidget(valueTable);
         tablePanel.setPixelSize(property.getPreferredPixelWidth(), property.getMinimumPixelHeight());

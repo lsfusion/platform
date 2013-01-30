@@ -1,15 +1,15 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 
-public class GCaptionPanel extends VerticalPanel {
+public class GCaptionPanel extends ResizableVerticalPanel {
     public GCaptionPanel(String title, Widget content) {
         setStyleName("captionPanel");
         setSize("100%", "100%");
 
-        VerticalPanel container = new VerticalPanel();
+        ResizableVerticalPanel container = new ResizableVerticalPanel();
         container.setSize("100%", "100%");
         container.setStyleName("captionPanelContainer");
 

@@ -1,5 +1,6 @@
 package platform.gwt.form.client.form.ui.container;
 
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.client.form.ui.GCaptionPanel;
 import platform.gwt.form.shared.view.GComponent;
@@ -75,6 +76,13 @@ public abstract class GAbstractFormContainer {
             }
         }
         return containerView;
+    }
+
+    public void onResize() {
+        Widget view = getContainerView();
+        if (view instanceof RequiresResize) {
+            ((RequiresResize) view).onResize();
+        }
     }
 
     protected abstract Widget getUndecoratedView();

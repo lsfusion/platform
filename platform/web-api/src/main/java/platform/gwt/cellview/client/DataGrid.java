@@ -32,7 +32,6 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import platform.gwt.cellview.client.cell.Cell;
@@ -408,7 +407,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         // Synchronize the scroll positions of the three tables.
         tableDataScroller.addScrollHandler(new ScrollHandler() {
-            private Timer scrollTimer;
             @Override
             public void onScroll(ScrollEvent event) {
                 int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
@@ -425,12 +423,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     @Override
     public void onResize() {
         headerPanel.onResize();
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                ensurePendingState();
-            }
-        });
     }
 
     public void setRowHeight(int rowHeight) {
@@ -2260,7 +2252,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         }
     }
 
-    private static class TableWidget extends TableWrapperWidget {
+    private class TableWidget extends TableWrapperWidget implements RequiresResize {
         int tableTop = 0;
         int tableHeight = 0;
         int tableWidth = 0;
@@ -2300,6 +2292,17 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 tableWidth = newTableWidth;
                 containerElement.getStyle().setWidth(tableWidth, Unit.PX);
             }
+        }
+
+        @Override
+        public int getOffsetWidth() {
+            //override for CustomScrollPanel working properly
+            return tableElement.getOffsetWidth();
+        }
+
+        @Override
+        public void onResize() {
+            ensurePendingState();
         }
     }
 

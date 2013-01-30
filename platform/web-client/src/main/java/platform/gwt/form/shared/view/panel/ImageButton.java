@@ -3,6 +3,8 @@ package platform.gwt.form.shared.view.panel;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.ImageDescription;
 
@@ -37,7 +39,7 @@ public class ImageButton extends Button {
     }
 
     public ImageButton(String caption, String imagePath, boolean directionBottom) {
-        panel = directionBottom ? new VerticalPanel() {} : new HorizontalPanel();
+        panel = directionBottom ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         panel.add(image = new Image());
         image.setVisible(false);
         image.addStyleName("displayBlock");

@@ -9,10 +9,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
@@ -57,7 +54,7 @@ import java.util.*;
 import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static platform.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
-public class GFormController extends SimplePanel {
+public class GFormController extends SimpleLayoutPanel {
 
     private final FormDispatchAsync dispatcher;
 
@@ -600,7 +597,7 @@ public class GFormController extends SimplePanel {
         if (formLayout != null && visibleComponent instanceof GContainer) {
             formLayout.adjustContainerSizes((GContainer) visibleComponent);
         }
-        redrawHeaders(visibleComponent);
+        relayoutTables(visibleComponent);
     }
 
     public void closePressed() {
@@ -613,38 +610,13 @@ public class GFormController extends SimplePanel {
 
     // судя по документации, TabPanel криво работает в StandardsMode. в данном случае неправильно отображает
     // таблицы, кроме тех, что в первой вкладке. поэтому вынуждены сами вызывать onResize() для заголовков таблиц
-    private void redrawHeaders(GComponent component) {
+    private void relayoutTables(GComponent component) {
         if (controllers.isEmpty() && treeControllers.isEmpty()) {
             return;
         }
-        List<GGrid> grids = new ArrayList<GGrid>();
-        List<GTreeGroup> treeGrids = new ArrayList<GTreeGroup>();
-        ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
-        if (component instanceof GGrid) {
-            grids.add((GGrid) component);
-        } else if (component instanceof GTreeGroup) {
-            treeGrids.add((GTreeGroup) component);
-        } else if (component instanceof GContainer) {
-            grids.addAll(((GContainer) component).getAllGrids());
-            treeGrids.addAll(((GContainer) component).getAllTreeGrids());
-            properties.addAll(((GContainer) component).getAllPropertyDraws());
-        }
-
-        for (GGroupObjectController groupController : controllers.values()) {
-            groupController.relayoutPanelProperties(properties);
-        }
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            treeController.relayoutPanelProperties(properties);
-        }
-        for (GGrid grid : grids) {
-            if (controllers.get(grid.groupObject) != null) {
-                controllers.get(grid.groupObject).relayoutTable();
-            }
-        }
-        for (GTreeGroup treeGroup : treeGrids) {
-            if (treeControllers.get(treeGroup) != null) {
-                treeControllers.get(treeGroup).relayoutTable();
-            }
+        GContainer container = component == null || component instanceof GContainer ? (GContainer) component : component.container;
+        if (container != null) {
+            formLayout.getFormContainer(container).onResize();
         }
     }
 
@@ -822,6 +794,7 @@ public class GFormController extends SimplePanel {
         for (GTreeGroupController tgc : treeControllers.values()) {
             tgc.setFilterVisible(selected);
         }
+        relayoutTables(formLayout.getMainKey());
     }
 
     private static final class Change {

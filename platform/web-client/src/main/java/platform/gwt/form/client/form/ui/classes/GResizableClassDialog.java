@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.client.MainFrameMessages;
 import platform.gwt.form.client.form.ui.dialog.GResizableModalWindow;
 import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
@@ -48,7 +49,7 @@ public class GResizableClassDialog extends GResizableModalWindow {
         bottomPanel.add(btnOk);
         bottomPanel.add(btnCancel);
 
-        VerticalPanel bottomAlignedPanel = new VerticalPanel();
+        ResizableVerticalPanel bottomAlignedPanel = new ResizableVerticalPanel();
         bottomAlignedPanel.setWidth("100%");
         bottomAlignedPanel.add(bottomPanel);
         bottomAlignedPanel.setCellHorizontalAlignment(bottomPanel, HasAlignment.ALIGN_RIGHT);

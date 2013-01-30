@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import net.auroris.ColorPicker.client.ColorPicker;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.client.MainFrameMessages;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -47,7 +48,7 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
         bottomPane.add(btnOk);
         bottomPane.add(btnCancel);
 
-        VerticalPanel mainPane = new VerticalPanel();
+        ResizableVerticalPanel mainPane = new ResizableVerticalPanel();
         mainPane.add(colorPicker);
         mainPane.add(bottomPane);
         mainPane.setCellHorizontalAlignment(bottomPane, HasAlignment.ALIGN_RIGHT);

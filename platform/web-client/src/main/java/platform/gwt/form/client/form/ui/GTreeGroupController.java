@@ -2,8 +2,8 @@ package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.ResizeLayoutPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
+import platform.gwt.base.client.ui.ResizableLayoutPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -32,10 +32,10 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
 
         tree = new GTreeTable(iFormController, iForm);
 
-        CellPanel treeTableView = new VerticalPanel();
+        CellPanel treeTableView = new ResizableVerticalPanel();
         treeTableView.setSize("100%", "100%");
 
-        ResizeLayoutPanel panel = new ResizeLayoutPanel();
+        ResizableLayoutPanel panel = new ResizableLayoutPanel();
         panel.setStyleName("gridResizePanel");
         panel.setSize("100%", "100%");
         panel.setWidget(tree);
@@ -142,10 +142,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
 
     public void relayoutTable() {
         tree.onResize();
-    }
-
-    public void relayoutPanelProperties(ArrayList<GPropertyDraw> properties) {
-        panel.relayout(properties);
     }
 
     @Override

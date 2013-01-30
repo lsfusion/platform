@@ -3,6 +3,8 @@ package platform.gwt.form.client.navigator;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.client.form.ui.GCaptionPanel;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.panel.ImageButton;
@@ -15,7 +17,7 @@ public class GPanelNavigatorView extends GNavigatorView {
 
     public GPanelNavigatorView(GPanelNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
-        panel = window.orientation == 1 ? new VerticalPanel() : new HorizontalPanel();
+        panel = window.orientation == 1 ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         setComponent(panel);
     }
 
@@ -30,7 +32,7 @@ public class GPanelNavigatorView extends GNavigatorView {
     }
 
     private void addElement(GNavigatorElement element, Panel container) {
-        HorizontalPanel insidePanel = new HorizontalPanel();
+        ResizableHorizontalPanel insidePanel = new ResizableHorizontalPanel();
 
         if (element instanceof GNavigatorForm) {
             insidePanel.add(createButton(element));

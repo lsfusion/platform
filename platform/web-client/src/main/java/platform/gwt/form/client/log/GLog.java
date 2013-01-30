@@ -3,8 +3,8 @@ package platform.gwt.form.client.log;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public final class GLog {
     public static void error(String message, ArrayList<ArrayList<String>> data, ArrayList<String> titles) {
         error(message);
 
-        VerticalPanel panel = new VerticalPanel();
+        ResizableVerticalPanel panel = new ResizableVerticalPanel();
         HTML constraintMessage = new HTML("<h3 style=\"margin-top: 0;\">" + message + "</h3>");
         panel.add(constraintMessage);
 

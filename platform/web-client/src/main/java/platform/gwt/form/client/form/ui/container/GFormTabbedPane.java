@@ -2,8 +2,8 @@ package platform.gwt.form.client.form.ui.container;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableTabPanel;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.shared.view.GComponent;
 import platform.gwt.form.shared.view.GContainer;
@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
-    private TabPanel tabsPanel;
+    private ResizableTabPanel tabsPanel;
 
     public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
 
-        tabsPanel = new TabPanel();
+        tabsPanel = new ResizableTabPanel();
         tabsPanel.getDeckPanel().setHeight("100%");
 
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {

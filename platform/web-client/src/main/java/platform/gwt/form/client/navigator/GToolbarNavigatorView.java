@@ -4,6 +4,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.panel.ImageButton;
 import platform.gwt.form.shared.view.window.GToolbarNavigatorWindow;
@@ -25,7 +27,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         verticalTextAlign = window.hasVerticalTextPosition();
 
         vertical = window.type == 1;
-        panel = vertical ? new VerticalPanel() : new HorizontalPanel();
+        panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
             toolbarContainer.setStyleName("verticaToolbar");

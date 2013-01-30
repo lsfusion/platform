@@ -2,6 +2,8 @@ package platform.gwt.form.client.form.ui.container;
 
 import com.google.gwt.i18n.client.HasDirection;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GComponent;
 import platform.gwt.form.shared.view.GContainer;
 
@@ -12,10 +14,10 @@ public class GFormContainer extends GAbstractFormContainer {
         this.key = key;
 
         if (key.drawVertical()) {
-            panel = new VerticalPanel();
+            panel = new ResizableVerticalPanel();
             panel.addStyleName("gwtVertical");
         } else {
-            panel = new HorizontalPanel();
+            panel = new ResizableHorizontalPanel();
             panel.addStyleName("gwtHorizontal");
         }
     }

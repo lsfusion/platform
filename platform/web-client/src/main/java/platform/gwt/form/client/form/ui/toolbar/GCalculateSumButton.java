@@ -2,6 +2,7 @@ package platform.gwt.form.client.form.ui.toolbar;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.form.shared.view.GPropertyDraw;
 
 public abstract class GCalculateSumButton extends GToolbarButton {
@@ -16,7 +17,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         PopupPanel popup = new PopupPanel(true, false);
         popup.addStyleName("popup");
 
-        HorizontalPanel panel = new HorizontalPanel();
+        ResizableHorizontalPanel panel = new ResizableHorizontalPanel();
         Label text = new Label(result == null
                 ? "Невозможно посчитать сумму [" + property.caption + "]"
                 : "Сумма [" + property.caption + "]: ");

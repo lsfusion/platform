@@ -1,8 +1,8 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableFlowPanel;
 import platform.gwt.form.client.form.ui.container.*;
 import platform.gwt.form.shared.view.GComponent;
 import platform.gwt.form.shared.view.GContainer;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GFormLayout extends FlowPanel {
+public class GFormLayout extends ResizableFlowPanel {
     private Panel mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> containerViews = new HashMap<GContainer, GAbstractFormContainer>();

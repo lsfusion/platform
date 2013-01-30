@@ -3,12 +3,14 @@ package platform.gwt.form.client.form.ui.container;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 
 public class GSplitPane {
     private boolean vertical;
     private CellPanel container;
-    private SimplePanel firstWidget = new SimplePanel();
-    private SimplePanel secondWidget = new SimplePanel();
+    private SimpleLayoutPanel firstWidget = new SimpleLayoutPanel();
+    private SimpleLayoutPanel secondWidget = new SimpleLayoutPanel();
     private Splitter splitter;
     private int splitterSize = 8;
 
@@ -16,7 +18,7 @@ public class GSplitPane {
 
     public GSplitPane(boolean vertical, boolean allowScrolls) {
         this.vertical = vertical;
-        container = vertical ? new VerticalPanel() : new HorizontalPanel();
+        container = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         splitter = vertical ? new VSplitter() : new HSplitter();
 
         container.add(firstWidget);

@@ -1,17 +1,17 @@
 package platform.gwt.form.client.form.ui.container;
 
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.ui.ResizableFlowPanel;
 import platform.gwt.form.shared.view.GComponent;
 import platform.gwt.form.shared.view.GContainer;
 
 public class GFormFlowPanel extends GAbstractFormContainer {
-    private FlowPanel panel;
+    private ResizableFlowPanel panel;
 
     public GFormFlowPanel(GContainer key) {
         this.key = key;
 
-        panel = new FlowPanel();
+        panel = new ResizableFlowPanel();
     }
 
     @Override

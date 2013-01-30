@@ -10,9 +10,9 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -61,7 +61,7 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
 
     @Override
     protected Widget createPopupComponent() {
-        VerticalPanel panel = new VerticalPanel();
+        ResizableVerticalPanel panel = new ResizableVerticalPanel();
 
         editBox = new TextBox();
         editBox.addStyleName("dateTimeEditorBox");

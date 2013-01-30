@@ -102,6 +102,8 @@ public class MainFrame implements EntryPoint {
     }
 
     private void hackForGwtDnd() {
+        RootPanel.get().getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
+
         //gwt-dnd ориентируется на body.clientHeight для ограничения области перетаскивания
         //поэтому приходится в явную проставлять размеры у <body>
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
