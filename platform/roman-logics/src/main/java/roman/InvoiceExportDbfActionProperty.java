@@ -66,14 +66,14 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
         CharField brand = new CharField("BRAND", 110);
         CharField gender = new CharField("GENDER", 50);
         CharField theme = new CharField("THEME", 110);
-        CharField season = new CharField("SEASON", 50);
+        CharField season = new CharField("SEASON", 110);
         CharField categ = new CharField("CATEG", 110);
         NumField quant = new NumField("QUANT", 4, 0);
         NumField price = new NumField("PRICE", 8, 2);
         NumField sum = new NumField("SUM", 8, 2);
         NumField rrp = new NumField("RRP", 8, 2);
-        CharField contractIn = new CharField("CONTIN", 20);
-        DateField dateConIn = new DateField("DATEIN");
+        //CharField contractIn = new CharField("CONTIN", 20);
+        //DateField dateConIn = new DateField("DATEIN");
         NumField priceIn = new NumField("PRICEIN", 8, 2);
         NumField sumIn = new NumField("SUMIN", 8, 2);
         CharField contract = new CharField("CONTRACT", 20);
@@ -91,7 +91,7 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
             dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), true, "Cp866");
             Util.setxBaseJProperty("ignoreDBFLengthCheck", "true");
             dbfInvoice.addField(new Field[]{invN, date, boxN, art, name, color, size, commonSize, comp, countOrig, countProd, barcode,
-                    brand, gender, theme, season, categ, quant, price, sum, rrp, contractIn, dateConIn, priceIn, sumIn, imp, contract, dateCon});
+                    brand, gender, theme, season, categ, quant, price, sum, rrp, /*contractIn, dateConIn, */priceIn, sumIn, imp, contract, dateCon});
         }
 
         public void extractData() throws SQLException, IOException, xBaseJException {
@@ -132,7 +132,7 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
             map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
             map.put(gender, formInstance.getPropertyDraw(BL.RomanLM.sidGenderArticleSku));
             map.put(theme, formInstance.getPropertyDraw(BL.RomanLM.nameThemeSupplierArticleSku));
-            //map.put(season, formInstance.getPropertyDraw(BL.RomanLM.sidSeasonSupplierArticleSku));
+            map.put(season, formInstance.getPropertyDraw(BL.RomanLM.nameSeasonYearArticleSku));
             map.put(categ, formInstance.getPropertyDraw(BL.RomanLM.nameCategoryArticleSku));
             map.put(quant, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterStockSku));
             map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));
@@ -171,8 +171,8 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
             putDouble(price, row.values.get(map.get(price)));
             putDouble(sum, row.values.get(map.get(sum)));
             putDouble(rrp, row.values.get(map.get(rrp)));
-            putString(contractIn, row.values.get(map.get(contractIn)));
-            putDate(dateConIn, row.values.get(map.get(dateConIn)));
+            //putString(contractIn, row.values.get(map.get(contractIn)));
+            //putDate(dateConIn, row.values.get(map.get(dateConIn)));
             putDouble(priceIn, row.values.get(map.get(priceIn)));
             putDouble(sumIn, row.values.get(map.get(sumIn)));
             putString(imp, row.values.get(map.get(imp)));

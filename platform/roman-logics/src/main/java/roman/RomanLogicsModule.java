@@ -4752,7 +4752,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSku = addSingleGroupObject(sku, "SKU");
             addPropertyDraw(new LP[]{barcode, sidArticleSku, nameSeasonYearArticleSku, sidGenderSupplierArticleSku,
                     nameCollectionSupplierArticle, nameSubCategorySupplierArticle, sidThemeSupplierArticleSku,
-                    nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku,
+                    nameThemeSupplierArticleSku, nameSeasonYearArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku,
                     nameCategoryArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
@@ -5069,7 +5069,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku = addSingleGroupObject("sku", sku, "SKU");
             addPropertyDraw(new LP[]{barcode, sidArticleSku, sidSeasonSupplierArticle, nameSeasonYearArticleSku, sidGenderSupplierArticleSku,
-                    nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku, nameCategoryArticleSku,
+                    nameThemeSupplierArticleSku, nameSeasonYearArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku, nameCategoryArticleSku,
                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku}, objSku);
 
@@ -6138,7 +6138,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, barcode, nameSupplierArticleSku,
-                    nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+                    nameBrandSupplierArticleSku, nameThemeSupplierArticleSku, nameSeasonYearArticleSku,
                     nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku, nameSeasonYearArticleSku,
                     nameCategoryArticleSku, sidArticleSku, nameArticleSku, sidCustomCategory10Sku,
                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
@@ -6254,7 +6254,7 @@ public class RomanLogicsModule extends LogicsModule {
             setEditType(nameSupplierArticle, PropertyEditType.READONLY);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku,
-                    nameThemeSupplierArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku,
+                    nameThemeSupplierArticleSku, nameSeasonYearArticleSku, nameSubCategorySupplierArticleSku, nameCollectionSupplierArticleSku,
                     sidGenderArticleSku, nameSeasonYearArticleSku, nameCategoryArticleSku,
                     nameTypeFabricArticleSku, sidArticleSku, nameArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameCommonSizeSku, nameCountrySku, netWeightSku,
@@ -7022,7 +7022,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objFreightBox, barcode);
             addPropertyDraw(objSku, sidArticleSku, originalNameArticleSku, sidColorSupplierItem, sidSizeSupplierItem, nameCommonSizeSku);
             addPropertyDraw(objFreight, objSku, mainCompositionFreightSku, nameCountryOfOriginFreightSku);
-            addPropertyDraw(objSku, barcode, nameBrandSupplierArticleSku, nameCountryBrandSupplierSku, sidGenderArticleSku, nameThemeSupplierArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
+            addPropertyDraw(objSku, barcode, nameBrandSupplierArticleSku, nameCountryBrandSupplierSku, sidGenderArticleSku, nameThemeSupplierArticleSku, nameSeasonYearArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
             //setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 //            getPropertyDraw(sidImporterFreightTypeInvoice).toDraw = objSku.groupTo;
 //            getPropertyDraw(dateImporterFreightTypeInvoice).toDraw = objSku.groupTo;
