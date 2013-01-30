@@ -49,8 +49,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         super(iform, GGRID_RESOURCES);
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
-
-        setKeyboardSelectionHandler(new GridPropertyTableKeyboardSelectionHandler(this));
     }
 
     @Override

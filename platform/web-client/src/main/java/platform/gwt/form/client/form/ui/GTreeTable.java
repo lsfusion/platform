@@ -1,8 +1,13 @@
 package platform.gwt.form.client.form.ui;
 
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import platform.gwt.cellview.client.Column;
+import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.KeyboardRowChangedEvent;
 import platform.gwt.cellview.client.cell.Cell;
+import platform.gwt.cellview.client.cell.CellPreviewEvent;
 import platform.gwt.form.shared.view.GForm;
 import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
@@ -27,6 +32,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private Set<GTreeTableNode> expandedNodes;
 
+    private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
+
     public GTreeTable(GFormController iformController, GForm iform) {
         super(iformController);
 
@@ -42,6 +49,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         headers.add(header);
         addColumn(column, header);
         setColumnWidth(column, "80px");
+
+        keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
+        setKeyboardSelectionHandler(keyboardSelectionHandler);
 
         addKeyboardRowChangedHandler(new KeyboardRowChangedEvent.Handler() {
             @Override
@@ -150,6 +160,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             currentRecords = tree.getUpdatedRecords();
             updatePropertyReaders();
             setRowData(currentRecords);
+
+            keyboardSelectionHandler.dataUpdated();
+
             redraw();
 
             dataUpdated = false;
@@ -213,19 +226,25 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void fireExpandNode(GTreeGridRecord record) {
-        saveVisualState();
-        GTreeTableNode node = tree.getNodeByRecord(record);
+    public void expandNodeByRecord(GTreeGridRecord record) {
+        fireExpandNode(tree.getNodeByRecord(record));
+    }
+
+    private void fireExpandNode(GTreeTableNode node) {
         if (node != null) {
+            saveVisualState();
             expandedNodes.add(node);
             form.expandGroupObject(node.getGroup(), node.getKey());
         }
     }
 
-    public void fireCollapseNode(GTreeGridRecord record) {
-        saveVisualState();
-        GTreeTableNode node = tree.getNodeByRecord(record);
+    public void collapseNodeByRecord(GTreeGridRecord record) {
+        fireCollapseNode(tree.getNodeByRecord(record));
+    }
+
+    private void fireCollapseNode(GTreeTableNode node) {
         if (node != null) {
+            saveVisualState();
             expandedNodes.remove(node);
             form.collapseGroupObject(node.getGroup(), node.getKey());
         }
@@ -363,6 +382,64 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else {
             //меняем напрямую для верхних groupObjects
             form.changePropertyOrder(property, GGroupObjectValue.EMPTY, modiType);
+        }
+    }
+
+    public boolean keyboardNodeChangeState(boolean open) {
+        GTreeTableNode node = tree.getNodeByRecord(selectedRecord);
+        if (node == null || (node.getGroup() != null && !node.getGroup().mayHaveChildren())) {
+            return false;
+        }
+        if (open) {
+            if (!node.isOpen()) {
+                keyboardSelectionHandler.tryingToExpand = true;
+                fireExpandNode(node);
+                return true;
+            }
+        } else if (node.isOpen()) {
+            fireCollapseNode(node);
+            return true;
+        }
+        return false;
+    }
+
+    public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {
+        public boolean tryingToExpand = false;
+
+        public TreeTableKeyboardSelectionHandler(DataGrid<GTreeGridRecord> table) {
+            super(table);
+        }
+
+        public void dataUpdated() {
+            if (tryingToExpand) {
+                GTreeTableNode currentNode = tree.getNodeByRecord(selectedRecord);
+                if (currentNode != null && !currentNode.isOpen()) {
+                    nextColumn(true);
+                }
+                tryingToExpand = false;
+            }
+        }
+
+        @Override
+        public boolean handleKeyEvent(CellPreviewEvent<GTreeGridRecord> event) {
+            NativeEvent nativeEvent = event.getNativeEvent();
+
+            assert BrowserEvents.KEYDOWN.equals(nativeEvent.getType());
+
+            int keyCode = nativeEvent.getKeyCode();
+            if (!nativeEvent.getCtrlKey() && getKeyboardSelectedColumn() == 0) {
+                if (keyCode == KeyCodes.KEY_RIGHT) {
+                    if (keyboardNodeChangeState(true)) {
+                        return true;
+                    }
+                } else if (keyCode == KeyCodes.KEY_LEFT) {
+                    if (keyboardNodeChangeState(false)) {
+                        return true;
+                    }
+                }
+            }
+
+            return super.handleKeyEvent(event);
         }
     }
 }

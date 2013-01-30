@@ -44,9 +44,9 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
         Boolean open = ((GTreeColumnValue) value).getOpen();
         if (open != null) {
             if (!open) {
-                treeTable.fireExpandNode((GTreeGridRecord) context.getRowValue());
+                treeTable.expandNodeByRecord((GTreeGridRecord) context.getRowValue());
             } else {
-                treeTable.fireCollapseNode((GTreeGridRecord) context.getRowValue());
+                treeTable.collapseNodeByRecord((GTreeGridRecord) context.getRowValue());
             }
         }
     }
