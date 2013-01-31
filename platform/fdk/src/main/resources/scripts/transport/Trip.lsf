@@ -50,7 +50,7 @@ CONSTRAINT numberStockTrip(stock1, tripOrder(order)) >= numberStockTrip(stock2, 
 
 grossWeightOrderedTrip 'Суммарный вес заказов' (trip) = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order);
 
-grossWeightTripToStock 'Вес' = GROUP SUM grossWeightOrderDetailOrder(order) BY tripOrder(order), toStockOrder(order);
+grossWeightTripToStock 'Вес' = GROUP SUM round3(grossWeightOrderDetailOrder(order)/1000) BY tripOrder(order), toStockOrder(order);
 
 quantityOrderedTripSku 'Кол-во в заказах' (trip, sku) = GROUP SUM quantityOrderDetail(orderDetail) BY tripOrder(orderOrderDetail(orderDetail)), skuOrderDetail(orderDetail);
 

@@ -185,7 +185,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     @deriveDocumentQuantityDetailOnChangeQuantityPack (userInvoiceDetail);
     Invoice.quantityPackInvoiceDetail(detail) += quantityPackInvoiceDetail(detail);
 
-    @extendDocument(invoice);
+    @implementDocumentSupplierCustomer(invoice);
 
 //    fillDocumentInvoice 'Подбор документа' = ACTION (userInvoice) {
 //        FORM documents MODAL;

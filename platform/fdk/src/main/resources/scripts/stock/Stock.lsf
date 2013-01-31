@@ -2684,15 +2684,10 @@ DESIGN documents FROM DEFAULT{
     }
 }
 
-META extendDocument(object)
+META implementDocument(object)
     numberDocument(object) += number###object(object);
     seriesDocument(object) += series###object(object);
     dateDocument(object) += date###object(object);
-
-    supplierDocument(object) += supplier###object(object);
-    supplierStockDocument(object) += supplierStock###object(object);
-    customerDocument(object) += customer###object(object);
-    customerStockDocument(object) += customerStock###object(object);
 
     indexDocumentDetail(object##Detail) += indexUser###object##Detail(object##Detail);
     skuDocumentDetail(object##Detail) += sku###object##Detail(object##Detail);
@@ -2714,6 +2709,17 @@ META extendDocument(object)
             }
         }
     } TOOLBAR;
+
+END
+
+META implementDocumentSupplierCustomer(object)
+
+    @implementDocument(object);
+
+    supplierDocument(object) += supplier###object(object);
+    supplierStockDocument(object) += supplierStock###object(object);
+    customerDocument(object) += customer###object(object);
+    customerStockDocument(object) += customerStock###object(object);
 END
 
 // ------------------------------------------------ Стандартные значения --------------------------------------- //

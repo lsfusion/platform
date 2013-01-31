@@ -13,8 +13,8 @@ REQUIRE System,
 
 NAMESPACE Stock;
 
-CLASS ABSTRACT adjustment 'Изменение остатков' ;
-CLASS ABSTRACT adjustmentDetail 'Строка изменения остатков' : named;
+CLASS ABSTRACT adjustment 'Изменение остатков' : document;
+CLASS ABSTRACT adjustmentDetail 'Строка изменения остатков' : named, documentDetail;
 
 CLASS userAdjustment 'Изменение остатков (польз.)' : adjustment, historizable, numeratedObject;
 CLASS userAdjustmentDetail 'Строка изменения остатков (польз.)' : adjustmentDetail;
@@ -55,6 +55,8 @@ skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)
 
 @defineAddDetailDialogSkuStock(userAdjustment, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(userAdjustment, sku);
+
+@implementDocument(adjustment);
 
 // --------------------------- Формы ---------------------------------- //
 

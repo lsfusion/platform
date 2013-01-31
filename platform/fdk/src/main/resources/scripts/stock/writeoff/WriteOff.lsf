@@ -117,8 +117,8 @@ FORM reason 'Причина списания'
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' ;
-CLASS writeOffDetail 'Строка списания';
+CLASS writeOff 'Списание' : document;
+CLASS writeOffDetail 'Строка списания' : documentDetail;
 
 CLASS userWriteOff 'Списание (польз.)' : writeOff, historizable, numeratedDocument;
 CLASS userWriteOffDetail 'Строка списания (польз.)' : writeOffDetail;
@@ -186,6 +186,9 @@ sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 sumOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
+
+@implementDocument(writeOff);
+supplierStockDocument(writeOff) += stockWriteOff(writeOff);
 
 // --------------------------- Формы списания ---------------------------------
 

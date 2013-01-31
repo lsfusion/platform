@@ -399,8 +399,8 @@ EXTEND FORM legalEntity
     PROPERTIES(ags, l) inAgreementCustomerOver
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
-    PROPERTIES(ags) EDITSESSIONFORM, copySessionAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES(ags) delete, EDITSESSIONFORM, copySessionAgreement
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(ags, l),
             supplierAgreement(ags) == s,
@@ -415,8 +415,8 @@ EXTEND FORM legalEntity
     PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
     PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement, delete
-    PROPERTIES(agc) EDITSESSIONFORM, copySessionAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+    PROPERTIES(agc) delete, EDITSESSIONFORM, copySessionAgreement
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(agc, c),

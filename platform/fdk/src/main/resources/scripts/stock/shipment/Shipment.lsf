@@ -136,7 +136,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 
     Shipment.quantityPackShipmentDetail(detail) += quantityPackShipmentDetail(detail);
 
-    @extendDocument(shipment);
+    @implementDocumentSupplierCustomer(shipment);
 
 // --------------------------- Формы --------------------------------- //
 

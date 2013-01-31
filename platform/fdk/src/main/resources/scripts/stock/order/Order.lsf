@@ -199,7 +199,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
     fromShipmentDateUserOrder 'Начало периода' (userOrder) = subtractDate(dateUserOrder(userOrder), quantityDaysNextShipmentUserOrder(userOrder));
 
-     @extendDocument(order);
+     @implementDocumentSupplierCustomer(order);
 
 // --------------------------- Формы Заказа ---------------------------------
 

@@ -3117,6 +3117,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         //sku shipment detail
         skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
+
         barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", barcode, skuShipmentDetail, 1);
 
         articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
@@ -3181,6 +3182,9 @@ public class RomanLogicsModule extends LogicsModule {
         simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
         shipmentShipmentDetail = addCUProp(idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
         sidShipmentShipmentDetail = addJProp(baseGroup, "sidShipmentShipmentDetail", "Поставка", sidDocument, shipmentShipmentDetail, 1);
+
+        addConstraint(addJProp("Поставщик товара должен совпадать с поставщиком строки", baseLM.diff2,
+            addJProp(supplierArticleSku, skuShipmentDetail, 1), 1, addJProp(supplierDocument, shipmentShipmentDetail, 1), 1), true);
 
         // supplier box shipmentDetail
         supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
@@ -5571,6 +5575,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             setEditType(baseGroup, PropertyEditType.READONLY, objShipmentDetail.groupTo);
             setEditType(supplierAttributeGroup, PropertyEditType.READONLY, objShipmentDetail.groupTo);
+            setEditType(barcodeSkuShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
             setEditType(sidSupplierBoxShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
             setEditType(barcodeSupplierBoxShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
             setEditType(barcodeStockShipmentDetail, PropertyEditType.EDITABLE, objShipmentDetail.groupTo);
