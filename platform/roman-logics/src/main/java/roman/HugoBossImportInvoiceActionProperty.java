@@ -45,7 +45,7 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField,  colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
-                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, genderField, new ImportField[]{themeCodeField, themeNameField,
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, null, genderField, new ImportField[]{themeCodeField, themeNameField,
                 subCategoryCodeField, subCategoryNameField, collectionCodeField, collectionNameField, brandCodeField, brandNameField});
     }
 }
