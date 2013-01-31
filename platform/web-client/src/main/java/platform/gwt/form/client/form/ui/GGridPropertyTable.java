@@ -60,6 +60,22 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         super.onBrowserEvent2(event);
     }
 
+    @Override
+    protected void onFocus() {
+        super.onFocus();
+        changeBorder("black");
+    }
+
+    @Override
+    protected void onBlur() {
+        super.onBlur();
+        changeBorder("lightGrey");
+    }
+
+    public void changeBorder(String color) {
+        getElement().getStyle().setBorderColor(color);
+    }
+
     public GPropertyDraw getSelectedProperty() {
         int row = getKeyboardSelectedRow();
         int column = getKeyboardSelectedColumn();

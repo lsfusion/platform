@@ -2,15 +2,17 @@ package platform.gwt.form.client.form.ui.container;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 
 public class GSplitPane {
     private boolean vertical;
     private CellPanel container;
-    private SimpleLayoutPanel firstWidget = new SimpleLayoutPanel();
-    private SimpleLayoutPanel secondWidget = new SimpleLayoutPanel();
+    private ResizableSimplePanel firstWidget = new ResizableSimplePanel();
+    private ResizableSimplePanel secondWidget = new ResizableSimplePanel();
     private Splitter splitter;
     private int splitterSize = 8;
 

@@ -1884,7 +1884,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int newRenderedRowCnt = newBottomRowCount - newMinRenderedRow;
         int newTableTop = newMinRenderedRow * rowHeight;
 
-        tableData.update(newTableTop, tableHeight, tableWidth);
+        tableData.update(newTableTop, tableHeight < scrollHeight ? scrollHeight : tableHeight, tableWidth);
 
         if (scrollTop != currentScrollTop) {
             tableDataScroller.setVerticalScrollPosition(scrollTop);
@@ -1908,44 +1908,49 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         NodeList<TableRowElement> rows = tableData.tableElement.getRows();
         int tableRowCount = rows.getLength();
 
-        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow < tableRowCount) {
-            TableRowElement tr = rows.getItem(oldLocalSelectedRow);
-            if (oldLocalSelectedRow != newLocalSelectedRow) {
-                setRowStyleName(tr, selectedRowStyle, selectedRowCellStyle, false);
+        if (oldLocalSelectedRow >= 0 && oldLocalSelectedRow <= tableRowCount) {
+            // if old row index is out ouf bounds only by 1, than we still need to clean top cell, which is in bounds
+            TableRowElement oldTR = oldLocalSelectedRow < tableRowCount ? rows.getItem(oldLocalSelectedRow) : null;
+            if (oldTR != null && oldLocalSelectedRow != newLocalSelectedRow) {
+                setRowStyleName(oldTR, selectedRowStyle, selectedRowCellStyle, false);
             }
             if (oldLocalSelectedRow != newLocalSelectedRow || oldLocalSelectedCol != newLocalSelectedCol) {
-                NodeList<TableCellElement> cells = tr.getCells();
+                NodeList<TableCellElement> cells = oldTR != null ? oldTR.getCells() : null;
                 if (oldLocalSelectedCol >= 0 && oldLocalSelectedCol < cells.getLength()) {
-                    TableCellElement td = cells.getItem(oldLocalSelectedCol);
-                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, tr, td, false);
+                    TableCellElement oldTD = cells.getItem(oldLocalSelectedCol);
+                    setFocusedCellStyles(oldLocalSelectedRow, oldLocalSelectedCol, rows, cells, oldTR, oldTD, false);
                 }
             }
         }
 
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
-            TableRowElement tr = rows.getItem(newLocalSelectedRow);
-            setRowStyleName(tr, selectedRowStyle, selectedRowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
-            TableCellElement td = tr.getCells().getItem(newLocalSelectedCol);
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, tr, td, isFocused);
+            TableRowElement newTR = rows.getItem(newLocalSelectedRow);
+            NodeList<TableCellElement> cells = newTR.getCells();
+            TableCellElement newTD = cells.getItem(newLocalSelectedCol);
+
+            setRowStyleName(newTR, selectedRowStyle, selectedRowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, cells, newTR, newTD, isFocused);
 
             oldLocalSelectedRow = newLocalSelectedRow;
             oldLocalSelectedCol = newLocalSelectedCol;
         }
     }
 
-    private void setFocusedCellStyles(int row, int column, TableRowElement tr, TableCellElement td, boolean focused) {
+    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableCellElement> cells, TableRowElement tr, TableCellElement td, boolean focused) {
         int cellCount = tr.getCells().getLength();
 
-        setStyleName(td, focusedCellStyle, focused && column != cellCount - 1);
-        setStyleName(td, focusedCellLastInRowStyle, focused && column == cellCount - 1);
+        if (td != null) {
+            setStyleName(td, focusedCellStyle, focused && column != cellCount - 1);
+            setStyleName(td, focusedCellLastInRowStyle, focused && column == cellCount - 1);
+        }
 
         if (row > 0) {
-            TableCellElement topTD = tableData.tableElement.getRows().getItem(row - 1).getCells().getItem(column);
+            TableCellElement topTD = rows.getItem(row - 1).getCells().getItem(column);
             setStyleName(topTD, topOfFocusedCellStyle, focused);
         }
 
         if (column < cellCount - 1) {
-            TableCellElement rightTD = tr.getCells().getItem(column + 1);
+            TableCellElement rightTD = cells.getItem(column + 1);
             setStyleName(rightTD, rightOfFocusedCellStyle, focused);
         }
     }

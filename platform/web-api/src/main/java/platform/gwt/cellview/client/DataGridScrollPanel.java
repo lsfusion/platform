@@ -1,7 +1,8 @@
 package platform.gwt.cellview.client;
 
 import com.google.gwt.user.client.ui.CustomScrollPanel;
-import com.google.gwt.user.client.ui.HorizontalScrollbar;import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HorizontalScrollbar;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.google.gwt.dom.client.Style.Overflow;
 

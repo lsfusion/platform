@@ -9,7 +9,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
@@ -17,6 +19,7 @@ import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.client.jsni.Function2;
 import platform.gwt.base.client.jsni.NativeHashMap;
+import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.base.shared.actions.NumberResult;
 import platform.gwt.form.client.ErrorHandlingCallback;
@@ -54,7 +57,7 @@ import java.util.*;
 import static platform.gwt.base.shared.GwtSharedUtils.putToDoubleNativeMap;
 import static platform.gwt.base.shared.GwtSharedUtils.removeFromDoubleMap;
 
-public class GFormController extends SimpleLayoutPanel {
+public class GFormController extends ResizableSimplePanel {
 
     private final FormDispatchAsync dispatcher;
 
