@@ -66,11 +66,28 @@ groupTypeAgreement = DATA groupType (agreement);
 nameGroupTypeAgreement 'Тип классификатора' (agreement) = name(groupTypeAgreement(agreement));
 
 TABLE agreementGroup(agreement, group);
-priceListTypeAgreementGroup (agreement, group) = DATA priceListType (agreement, group);
-namePriceListTypeAgreementGroup 'Вид цены' (agreement, group) = name(priceListTypeAgreementGroup(agreement, group));
+dataPriceListTypeAgreementGroup (agreement, group) = DATA priceListType (agreement, group);
+nameDataPriceListTypeAgreementGroup 'Вид цены' (agreement, group) = name(dataPriceListTypeAgreementGroup(agreement, group));
+
+levelParentPriceListTypeAgreementGroup (agreement, group) =
+    GROUP MIN levelGroupGroup(group, parent) IF dataPriceListTypeAgreementGroup(agreement, parent)
+    BY agreement, group PERSISTENT;
+nearestParentGroup (agreement, group) = groupGroupLevel(group, levelParentPriceListTypeAgreementGroup (agreement, group));
+nearestPriceListTypeAgreementGroup (agreement, group) =
+   dataPriceListTypeAgreementGroup(agreement, nearestParentGroup(agreement, group)) PERSISTENT;
+nameNearestPriceListTypeAgreementGroup 'Вид цены' (agreement, group) =
+    name(nearestPriceListTypeAgreementGroup (agreement, group));
+
+priceListTypeAgreementGroup 'Вид цены' (agreement, group) =
+    UNION OVERRIDE nearestPriceListTypeAgreementGroup(agreement, group), dataPriceListTypeAgreementGroup(agreement, group) PERSISTENT;
 
 TABLE agreementSku(agreement, sku);
-priceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
+dataPriceListTypeAgreementSku (agreement, sku) = DATA priceListType (agreement, sku);
+nameDataPriceListTypeAgreementSku 'Вид цены' (agreement, sku) = name(dataPriceListTypeAgreementSku(agreement, sku));
+
+priceListTypeAgreementSku (agreement, sku) =
+    UNION OVERRIDE priceListTypeAgreementGroup(agreement, groupGroupTypeSku(groupTypeAgreement(agreement), sku)),
+                   dataPriceListTypeAgreementSku (agreement, sku);
 namePriceListTypeAgreementSku 'Вид цены' (agreement, sku) = name(priceListTypeAgreementSku(agreement, sku));
 
 CONSTRAINT currencyAgreement(agreement) != currencyPriceListType(priceListTypeAgreement(agreement))
@@ -246,12 +263,7 @@ FORM agreement 'Соглашение'
     PROPERTIES READONLY name(g)
     FILTERS groupTypeGroup(g) == groupTypeAgreement(a)
     ORDER BY name(g)
-
-    OBJECTS pg = group
-    PROPERTIES(pg) READONLY canonicalNameGroup
-    PROPERTIES(a, pg) namePriceListTypeAgreementGroup
-    FILTERS isParentGroupGroup(pg, g),
-            groupTypeGroup(pg) == groupTypeAgreement(a)
+    PROPERTIES(a, g) nameDataPriceListTypeAgreementGroup, nameNearestPriceListTypeAgreementGroup
 
     TREE skuGroupTree sg=skuGroup PARENT parentSkuGroup
     PROPERTIES READONLY name(sg)
@@ -259,7 +271,7 @@ FORM agreement 'Соглашение'
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku
-    PROPERTIES(a, s) namePriceListTypeAgreementSku
+    PROPERTIES(a, s) nameDataPriceListTypeAgreementSku, namePriceListTypeAgreementSku
     FILTERS isParentSkuGroupSku(sg, s)
 
     EDIT agreement OBJECT a
@@ -314,11 +326,7 @@ DESIGN agreement FROM DEFAULT {
                     childConstraints = TO THE BOTTOM;
                     caption = 'Уточнение цен по ценовым группам';
                     ADD PROPERTY(nameGroupTypeAgreement);
-                    NEW groupContainer {
-                        type = SPLITH;
-                        ADD groupTree.tree.box;
-                        ADD pg.box{fillHorizontal = 3.0;}
-                    }
+                    ADD groupTree.tree.box;
                 }
                 NEW skuContainer{
                     childConstraints = TO THE RIGHT;
