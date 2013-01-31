@@ -498,3 +498,22 @@ DESIGN zReports FROM DEFAULT{
 
     ADD functions.box;
 }
+
+// ----------------------------------------------- Стандартные значения ------------------------------------- //
+
+loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans, sid) {
+    ADDOBJ paymentType;
+    FOR p == addedObject() DO {
+        SET name(p) <- string AS STRING[110];
+        SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
+        SET sidPaymentType(p) <- sid AS STRING[10];
+    }
+}
+
+loadDefaultPaymentTypes 'Загрузить стандартные типы оплаты' = ACTION(){
+    EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash, 'cash');
+    EXEC loadDefaultPaymentType('Карточка', paymentMeans.paymentMeansCard, 'card');
+} IN loadDefaultGroup;
+
+@implementLoadDefaultData(loadDefaultPaymentTypes);
+

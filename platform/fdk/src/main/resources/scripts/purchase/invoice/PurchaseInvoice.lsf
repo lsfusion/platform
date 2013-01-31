@@ -1,6 +1,6 @@
 MODULE PurchaseInvoice;
 
-REQUIRE PurchaseOrder, OrderInvoice;
+REQUIRE Utils, PurchaseOrder, OrderInvoice;
 
 NAMESPACE Purchase;
 
@@ -56,3 +56,37 @@ quantityPurchaseLedger (ledger) += quantityInvoiceDetail(ledger);
 VATPurchaseLedger (ledger) += VATInvoiceDetail(ledger);
 sumPurchaseLedger (ledger) += sumInvoiceDetail(ledger);
 
+// Создаем виды цен
+
+EXTEND CLASS invoiceDetail : priceListLedger;
+
+fromDateTimePriceListLedger (ledger) += dateTimeInvoiceDetail(ledger);
+
+isPostedPriceListLedger(ledger) += isPostedInvoiceDetail(ledger);
+
+skuPriceListLedger (ledger) += skuInvoiceDetail(ledger);
+
+descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(ledger);
+
+inPriceListLedgerStock (ledger, stock) += customerStockInvoiceDetail(ledger) == stock;
+
+EXTEND CLASS systemLedgerPriceListType { purchaseInvoiceStockPriceListType 'Закупки (последняя по складу)' }
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(ledger) WHEN CLASS(priceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseInvoiceStockPriceListType;
+
+// Создаем вид цен по всем складам компании
+CLASS invoicePriceListLedger : priceListLedger;
+
+@defineAggregation(invoiceDetail, invoicePriceListLedger, isInvoiceDetail);
+
+fromDateTimePriceListLedger (ledger) += dateTimeInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
+
+isPostedPriceListLedger(ledger) += isPostedInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
+
+skuPriceListLedger (ledger) += skuInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
+
+descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
+
+inPriceListLedgerStock (ledger, stock) += isCompanyStock(stock) AND ledger IS invoicePriceListLedger;
+
+EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя)' }
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
