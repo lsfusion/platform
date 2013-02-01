@@ -761,6 +761,22 @@ DESIGN TestHotkeys FROM DEFAULT {
         editKey = 'F5';
     }
 }
+
+FORM TestTabs 'Тест табов'
+OBJECTS s=store, a=article
+PROPERTIES(s) OBJVALUE, name, storeSizeCode, name, storeSizeCode, name
+PROPERTIES(a) OBJVALUE, name, name, name, name
+PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
+;
+
+DESIGN TestTabs FROM DEFAULT {
+    NEW tabs.box BEFORE functions.box {
+        type = TABBED;
+        ADD s.box;
+        ADD a.box;
+    }
+}
+
 //////////////// INDEX STATEMENT //////////////////
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
@@ -845,6 +861,7 @@ NAVIGATOR {
     ADD TestHeaders;
     ADD TestHotkeys;
     ADD TestEvalActionForm;
+    ADD TestTabs;
 }
 
 //////////////// DESIGN STATEMENT /////////////////
