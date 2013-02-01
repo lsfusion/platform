@@ -12,6 +12,15 @@ NAMESPACE Purchase;
 @defineInvoiceDestination(supplier, customer);
 @defineInvoiceStockDestination(supplierStock, customerStock);
 
+// --------------------------- Себестоимость ---------------------------------- //
+
+extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
+extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
+
+costPriceInvoiceDetail(detail) = priceInvoiceDetail(detail) (+) extraCostPriceInvoiceDetail(detail);
+costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetail(detail) (+) extraCostPriceUserInvoiceDetail(detail);
+
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(a, userInvoice, contractSku);

@@ -626,10 +626,6 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 //-- аггр.объект
 
     @defineDocumentInterfaceDetailPricePrefix(invoice, shipment, ' (учетная)');
-    overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
-    calcShipmentPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
-
-    extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
     @defineDocumentInterfaceDetailQuantityPrefix (invoice, shipment, ' (поставлено)');
     shipmentQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) WHEN CHANGED(quantityUserInvoiceDetail(detail));
 

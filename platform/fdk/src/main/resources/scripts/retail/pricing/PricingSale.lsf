@@ -13,8 +13,8 @@ NAMESPACE Sale;
 @definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
 
 
-overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
-    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
+//overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
+//    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](

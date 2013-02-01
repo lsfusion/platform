@@ -24,6 +24,8 @@ calcChargePriceUserInvoiceDetail  (detail) = [(X*Y)/(Z*W)](
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, charge, ' услуг за ед.');
 chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHEN CHANGED(calcChargePriceUserInvoiceDetail(detail));
 
+extraCostPriceUserInvoiceDetail(detail) += chargePriceUserInvoiceDetail(detail);
+
 EXTEND FORM userInvoice
     PROPERTIES(i) chargeSumUserInvoice
     PROPERTIES(d) chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)

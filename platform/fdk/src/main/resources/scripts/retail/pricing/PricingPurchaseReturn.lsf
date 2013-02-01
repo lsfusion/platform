@@ -8,8 +8,6 @@ NAMESPACE PurchaseReturn;
 
 @definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
 
-overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
-    IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
