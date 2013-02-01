@@ -69,6 +69,7 @@ descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(ledger);
 inPriceListLedgerStock (ledger, stock) += customerStockInvoiceDetail(ledger) == stock;
 
 EXTEND CLASS systemLedgerPriceListType { purchaseInvoiceStockPriceListType 'Закупки (последняя по складу)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoiceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(ledger) WHEN CLASS(priceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
@@ -87,4 +88,5 @@ descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(invoiceDetailInv
 inPriceListLedgerStock (ledger, stock) += isCompanyStock(stock) AND ledger IS invoicePriceListLedger;
 
 EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;

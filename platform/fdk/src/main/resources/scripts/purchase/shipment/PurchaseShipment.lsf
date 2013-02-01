@@ -35,7 +35,10 @@ priceShipmentBatch (batch) = priceShipmentDetail(shipmentDetailShipmentBatch(bat
 quantityBatch (ledger) += quantityShipmentDetail(shipmentDetailShipmentBatch(ledger));
 sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentBatch(ledger));
 
-ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OR batchShipmentDetail(detail);
+ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OR batchShipmentDetail(detail) PERSISTENT;
+
+batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(ledger)) OR batchInvoiceDetail(ledger);
+batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) OR batchInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
 
 // Проводим по регистру учетных цен
 @implementSystemLedgerPriceListTypeBatch(account, shipmentBatch, stock);
