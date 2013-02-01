@@ -32,7 +32,7 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
     public GForm createForm(RemoteFormInterface remoteForm, LogicsDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-        GForm gForm = new ClientComponentToGwtConverter(servlet.getServletContext().getRealPath("/images/")).convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
         gForm.sessionID = nextFormSessionID();
 
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));

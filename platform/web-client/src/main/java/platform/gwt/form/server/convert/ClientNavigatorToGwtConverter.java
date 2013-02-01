@@ -12,13 +12,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
-    private String appImagesPath;
-
     public ClientNavigatorToGwtConverter() {
-    }
-
-    public ClientNavigatorToGwtConverter(String appImagesPath) {
-        this.appImagesPath = appImagesPath;
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -32,7 +26,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.caption = clientElement.caption;
         element.children = new ArrayList<GNavigatorElement>();
 
-        element.icon = ImageHandler.createImage(clientElement.image, clientElement.imageFileName, appImagesPath, "navigator", false);
+        element.icon = ImageHandler.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);

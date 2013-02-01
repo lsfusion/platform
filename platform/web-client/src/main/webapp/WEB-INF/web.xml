@@ -53,6 +53,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>propertyImageHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>propertyImageHandler</servlet-name>
+        <url-pattern>/propertyImage</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>captchaService</servlet-name>
         <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
     </servlet>

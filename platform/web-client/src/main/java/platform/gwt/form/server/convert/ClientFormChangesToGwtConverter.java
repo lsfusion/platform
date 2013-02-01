@@ -1,6 +1,7 @@
 package platform.gwt.form.server.convert;
 
 import platform.client.logics.*;
+import platform.client.logics.classes.ClientImageClass;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -85,12 +86,20 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         i = 0;
         for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : changes.properties.entrySet()) {
             HashMap<GGroupObjectValue, Object> propValues = new HashMap<GGroupObjectValue, Object>();
+            ClientPropertyReader reader = entry.getKey();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
-                propValues.put(groupObjectValue, convertOrCast(clientValues.getValue()));
+                Object propValue = convertOrCast(clientValues.getValue());
+                if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
+                    propValues.put(
+                            groupObjectValue,
+                            ImageHandler.createPropertyImage((byte[]) propValue, ((ClientPropertyDraw) reader).getSID())
+                    );
+                } else {
+                    propValues.put(groupObjectValue, propValue);
+                }
             }
-            ClientPropertyReader reader = entry.getKey();
 
             dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType());
             dto.propertiesValues[i++] = propValues;

@@ -45,6 +45,8 @@
 
     <b:bean id="generateReportHandler" class="platform.gwt.base.server.handlers.GenerateReportRequestHandler"/>
 
+    <b:bean id="propertyImageHandler" class="platform.gwt.base.server.handlers.GetPropertyImageRequestHandler" />
+
     <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
         <b:property name="URI" value="/readFile"/>
     </b:bean>

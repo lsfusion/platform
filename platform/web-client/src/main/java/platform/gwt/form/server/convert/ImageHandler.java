@@ -1,6 +1,7 @@
 package platform.gwt.form.server.convert;
 
 import com.google.common.base.Throwables;
+import platform.base.BaseUtils;
 import platform.gwt.form.shared.view.ImageDescription;
 
 import javax.imageio.ImageIO;
@@ -16,9 +17,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ImageHandler {
-    public static ImageDescription createImage(ImageIcon icon, String iconPath, String appImagesPath, String imagesFolderName, boolean canBeDisabled) {
-        if (appImagesPath != null && icon != null) {
-            File imagesFolder = new File(appImagesPath, imagesFolderName);
+    public static String APP_FOLDER_URL;
+    public static String APP_IMAGES_FOLDER_URL;
+    public static String APP_TEMP_FOLDER_URL;
+
+    public static void initializeAppFolder(String path) {
+        if (APP_FOLDER_URL == null) {
+            APP_FOLDER_URL = path;
+            APP_IMAGES_FOLDER_URL = path + "/images/";
+            APP_TEMP_FOLDER_URL = path + "/WEB-INF/" + "temp";
+        }
+    }
+
+    public static ImageDescription createImage(ImageIcon icon, String iconPath, String imagesFolderName, boolean canBeDisabled) {
+        if (APP_IMAGES_FOLDER_URL != null && icon != null) {
+            File imagesFolder = new File(APP_IMAGES_FOLDER_URL, imagesFolderName);
             imagesFolder.mkdir();
 
             String iconFileName = iconPath.substring(0, iconPath.lastIndexOf("."));
@@ -75,5 +88,22 @@ public class ImageHandler {
             g.dispose();
         }
         return bufferedImage;
+    }
+
+    public static String createPropertyImage(byte[] imageBytes, String imageFilePrefix) {
+        if (imageBytes != null) {
+            String newFileName = imageFilePrefix + "_" + BaseUtils.randomString(15);
+            File imageFile = new File(APP_TEMP_FOLDER_URL, newFileName);
+            try {
+                FileOutputStream fos = new FileOutputStream(imageFile);
+                fos.write(imageBytes);
+                fos.close();
+            } catch (Exception e) {
+                Throwables.propagate(e);
+            }
+
+            return newFileName ;
+        }
+        return null;
     }
 }

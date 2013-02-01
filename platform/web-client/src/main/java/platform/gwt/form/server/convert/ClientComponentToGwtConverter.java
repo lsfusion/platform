@@ -29,13 +29,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
 
-    private String appImagesPath;
-
     public ClientComponentToGwtConverter() {
-    }
-
-    public ClientComponentToGwtConverter(String appImagesPath) {
-        this.appImagesPath = appImagesPath;
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -238,7 +232,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.icon= ImageHandler.createImage(clientPropertyDraw.design.getImage(), clientPropertyDraw.design.iconPath, appImagesPath, "property", canIconBeDisabled);
+        propertyDraw.icon= ImageHandler.createImage(clientPropertyDraw.design.getImage(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 
