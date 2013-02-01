@@ -295,7 +295,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                 if (line.startsWith("^SMOL")) {
                     String warehouseID = line.split("\\(|\\)")[1];
                     String[] dataWarehouse = reader.readLine().split(":");
-                    String name = dataWarehouse[0].trim();
+                    String name = "Склад " + dataWarehouse[0].trim();
                     warehousesList.add(new Warehouse(defaultLegalEntitySID, warehouseID, name, null));
                 }
             }
