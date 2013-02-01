@@ -87,8 +87,10 @@ public class PricatEDIInputTable extends EDIInputTable {
                                 } else if(imd2.equals(("XX6"))) {
                                    row.put("season", comp.get(3));
                                 } else if(imd2.equals("BRN")){
-                                    row.put("brandName", comp.get(3));
-                                    row.put("brandCode", comp.get(3));
+                                    if (comp.size() >= 4) {
+                                        row.put("brandName", comp.get(3));
+                                        row.put("brandCode", comp.get(3));
+                                    }
                                 }
                             }
                             } else if (segmentID.equals("ALI01")) {
