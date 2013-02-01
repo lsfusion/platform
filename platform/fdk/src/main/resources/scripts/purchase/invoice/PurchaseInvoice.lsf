@@ -29,8 +29,6 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(custome
 
         // для импорта
 numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS userInvoice;
-sidUserInvoiceDetail (userInvoiceDetail) = DATA STRING[200] (userInvoiceDetail);
-userInvoiceDetailSID (sidUserInvoiceDetail) = GROUP MAX userInvoiceDetail BY sidUserInvoiceDetail(userInvoiceDetail) WHERE userInvoiceDetail IS userInvoice;
 
 @defineDocumentPackageSku(userInvoice, sku, customerStock);
 @extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showPurchasePack);

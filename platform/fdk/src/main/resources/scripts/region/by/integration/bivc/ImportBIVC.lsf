@@ -1,0 +1,32 @@
+MODULE ImportBIVC;
+
+REQUIRE Import;
+
+
+//---------------------------------------------- Импорт данных -----------------------------------------------------//
+
+GROUP bivcGroup 'bivc' : public;
+
+importBIVCDataAction 'Импортировать данные (BIVC)' = ACTION CUSTOM 'fdk.region.by.integration.bivc.ImportBIVCActionProperty' IN bivcGroup;
+importBIVCDirectory 'Папка' = DATA STRING[200] () IN bivcGroup;
+importBIVCNumberItems 'Кол-во' = DATA INTEGER () IN bivcGroup;
+importBIVCNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN bivcGroup;
+
+importBIVCGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN bivcGroup;
+importBIVCItems 'Импортировать товары' = DATA BOOLEAN () IN bivcGroup;
+importBIVCUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN bivcGroup;
+importBIVCLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN bivcGroup;
+importBIVCWarehouses 'Импортировать склады' = DATA BOOLEAN() IN bivcGroup;
+
+EXTEND FORM integrationData
+    PROPERTIES() importBIVCDataAction, importBIVCDirectory, importBIVCNumberItems, importBIVCNumberItemsAtATime,
+    importBIVCGroupItems, importBIVCItems, importBIVCUserInvoices, importBIVCLegalEntities, importBIVCWarehouses
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW bivc {
+            title = 'BIVC';
+            ADD NOGROUP.bivcGroup;
+        }
+    }
+}

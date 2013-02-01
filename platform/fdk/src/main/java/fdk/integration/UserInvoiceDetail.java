@@ -16,12 +16,14 @@ public class UserInvoiceDetail {
     public String warehouse;
     public String supplierWarehouse;
     public Double price;
+    public Double chargePrice;
     public Double retailPrice;
     public Double retailMarkup;
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
                              Date date, String item, Double quantity, String supplier, String warehouse,
-                             String supplierWarehouse, Double price, Double retailPrice, Double retailMarkup) {
+                             String supplierWarehouse, Double price, Double chargePrice,
+                             Double retailPrice, Double retailMarkup) {
         this.number = number;
         this.series = series;
         this.createPricing = createPricing;
@@ -34,6 +36,7 @@ public class UserInvoiceDetail {
         this.warehouse = warehouse;
         this.supplierWarehouse = supplierWarehouse;
         this.price = price;
+        this.chargePrice = chargePrice;
         this.retailPrice = retailPrice;
         this.retailMarkup = retailMarkup;
 

@@ -10,7 +10,7 @@ public class ImportData {
     private List<LegalEntity> legalEntitiesList;
     private List<Warehouse> warehousesList;
     private List<LegalEntity> storesList;
-    private List<Stock> stocksList;
+    private List<DepartmentStore> departmentStoresList;
     private List<RateWaste> rateWastesList;
     private List<Ware> waresList;
     private List<Price> pricesList;
@@ -79,12 +79,12 @@ public class ImportData {
         this.storesList = storesList;
     }
 
-    public List<Stock> getStocksList() {
-        return stocksList;
+    public List<DepartmentStore> getDepartmentStoresList() {
+        return departmentStoresList;
     }
 
-    public void setStocksList(List<Stock> stocksList) {
-        this.stocksList = stocksList;
+    public void setDepartmentStoresList(List<DepartmentStore> departmentStoresList) {
+        this.departmentStoresList = departmentStoresList;
     }
 
     public List<RateWaste> getRateWastesList() {

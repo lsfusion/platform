@@ -69,8 +69,8 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 importData.setStoresList((getLCP("importStores").read(context) != null) ?
                         importLegalEntitiesFromDBF(path + "//_sprana.dbf", importInactive, true) : null);
 
-                importData.setStocksList((getLCP("importDepartmentStores").read(context) != null) ?
-                        importStocksFromDBF(path + "//_sprana.dbf", importInactive, path + "//_storestr.dbf") : null);
+                importData.setDepartmentStoresList((getLCP("importDepartmentStores").read(context) != null) ?
+                        importDepartmentStoresFromDBF(path + "//_sprana.dbf", importInactive, path + "//_storestr.dbf") : null);
 
                 importData.setRateWastesList((getLCP("importRateWastes").read(context) != null) ?
                         importRateWastesFromDBF(path + "//_sprvgrt.dbf") : null);
@@ -328,7 +328,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
             if ((post_dok.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
                 data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
-                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail,
+                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail));
         }
         return data;
@@ -490,7 +490,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     }
 
 
-    private List<Stock> importStocksFromDBF(String path, Boolean importInactive, String
+    private List<DepartmentStore> importDepartmentStoresFromDBF(String path, Boolean importInactive, String
             pathStores) throws IOException, xBaseJException {
 
         DBF importStores = new DBF(pathStores);
@@ -505,7 +505,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         DBF importFile = new DBF(path);
         int recordCount = importFile.getRecordCount();
 
-        List<Stock> data = new ArrayList<Stock>();
+        List<DepartmentStore> data = new ArrayList<DepartmentStore>();
 
         for (int i = 0; i < recordCount; i++) {
 
@@ -516,7 +516,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                 String name = new String(importFile.getField("POL_NAIM").getBytes(), "Cp1251").trim();
                 String store = storeDepartmentStoreMap.get(k_ana);
                 String[] ownership = getAndTrimOwnershipFromName(name);
-                data.add(new Stock(k_ana, ownership[2], store));
+                data.add(new DepartmentStore(k_ana, ownership[2], store));
             }
         }
         return data;

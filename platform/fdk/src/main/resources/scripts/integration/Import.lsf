@@ -1,0 +1,27 @@
+MODULE Import;
+
+REQUIRE System,
+        Barcode,
+        Country,
+        Currency,
+        Integration,
+        Item,
+        LegalEntity,
+        LegalEntityBy,
+        Numerator,
+        PriceList,
+        PurchaseInvoice,
+        PurchaseInvoiceCharge,
+        PurchaseWriteOff,
+        PricingPurchase,
+        ScalesItem,
+        Stock,
+        Store,
+        Tax,
+        TaxItem,
+        Ware,
+        Warehouse,
+        WareItem,
+        WriteOffItem;
+
+EXTEND CLASS userInvoiceDetail : externalizable;

@@ -33,20 +33,22 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             DataSession session = context.getSession();
             DataObject fullAddress = context.getKeyValue(POIInterface);
 
-            final Geocoder geocoder = new Geocoder();
-            GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress((String) fullAddress.object).setLanguage("ru").getGeocoderRequest();
-            GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
+            String address = (String) fullAddress.object;
+            if (address != null) {
+                final Geocoder geocoder = new Geocoder();
+                GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress((String) fullAddress.object).setLanguage("ru").getGeocoderRequest();
+                GeocodeResponse geocoderResponse = geocoder.geocode(geocoderRequest);
 
-            if (geocoderResponse!=null && geocoderResponse.getResults().size() != 0) {
-                GeocoderResult result = geocoderResponse.getResults().get(0);
+                if (geocoderResponse != null && geocoderResponse.getResults().size() != 0) {
+                    GeocoderResult result = geocoderResponse.getResults().get(0);
 
-                double longitude = result.getGeometry().getLocation().getLng().doubleValue();
-                double latitude = result.getGeometry().getLocation().getLat().doubleValue();
+                    double longitude = result.getGeometry().getLocation().getLng().doubleValue();
+                    double latitude = result.getGeometry().getLocation().getLat().doubleValue();
 
-                getLCP("readLatitude").change(latitude, session);
-                getLCP("readLongitude").change(longitude, session);
+                    getLCP("readLatitude").change(latitude, session);
+                    getLCP("readLongitude").change(longitude, session);
+                }
             }
-
         } catch (SQLException e) {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
         }
