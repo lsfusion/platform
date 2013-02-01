@@ -491,6 +491,25 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return false;
 //                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
             }
+            
+            protected Where pushWhere(Where groupWhere, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<String> empty) {
+                Where fullWhere = groupWhere;
+                Where pushWhere = null;
+                if(innerJoins.size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
+                    fullWhere = fullWhere.and(pushWhere);
+                else
+                    for(K key : innerJoins.keyIt()) // проталкивание по одному ключу
+                        if((pushWhere = whereJoins.getGroupPushWhere(MapFact.singleton(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
+                            fullWhere = fullWhere.and(pushWhere);
+                if(fullWhere.pack().isFalse()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    empty.set(getEmptySelect(groupWhere));
+                    return null;
+                }
+                if(pushWhere!=null && checkRecursivePush(fullWhere))
+                    fullWhere = groupWhere;
+                return fullWhere;
+            }
+
         }
 
         private class GroupSelect extends QuerySelect<Expr, GroupExpr.Query,GroupJoin,GroupExpr> {
@@ -514,26 +533,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
 
-                Where fullWhere = groupWhere;
-                StatKeys<Expr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
-                Where pushWhere = null;
-                ImMap<Expr, BaseExpr> innerJoins = innerJoin.getJoins();
-                if(innerJoins.size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
-                    fullWhere = fullWhere.and(pushWhere);
-                else
-                    for(Expr key : innerJoins.keyIt()) // проталкивание по одному ключу
-                        if((pushWhere = whereJoins.getGroupPushWhere(MapFact.singleton(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
-                            fullWhere = fullWhere.and(pushWhere);
-
-                if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
-                    return getEmptySelect(groupWhere);
-
-                if(pushWhere!=null && checkRecursivePush(fullWhere))
-                    fullWhere = groupWhere;
+                Result<String> empty = new Result<String>();
+                groupWhere = pushWhere(groupWhere, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
+                if(groupWhere==null)
+                    return empty.result;
 
                 final Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
-                String fromSelect = new Query<KeyExpr,Expr>(keys.toRevMap(), queryExprs.toMap(), fullWhere)
+                String fromSelect = new Query<KeyExpr,Expr>(keys.toRevMap(), queryExprs.toMap(), groupWhere)
                     .compile(syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, params, env);
 
                 ImMap<String, String> keySelect = group.join(fromPropertySelect.result);
@@ -589,10 +596,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     Where pushWhere;
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
-
                     if(fullWhere.pack().isFalse()) // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         return getEmptySelect(innerWhere);
-
                     if(pushWhere!=null && checkRecursivePush(fullWhere))
                         fullWhere = innerWhere;
                 }
@@ -680,22 +685,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Where innerWhere = innerJoin.getWhere();
 
-                Where fullWhere = innerWhere;
-                StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat);
-                Where pushWhere;
-                if((pushWhere = whereJoins.getGroupPushWhere(innerJoin.getJoins(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
-                    fullWhere = fullWhere.and(pushWhere);
-
-                if(fullWhere.pack().isFalse())
-                    return getEmptySelect(innerWhere);
-
-                if(pushWhere!=null && checkRecursivePush(fullWhere))
-                    fullWhere = innerWhere;
+                Result<String> empty = new Result<String>();
+                innerWhere = pushWhere(innerWhere, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
+                if(innerWhere==null)
+                    return empty.result;
 
                 Result<ImMap<String, String>> keySelect = new Result<ImMap<String, String>>();
                 Result<ImMap<String, String>> propertySelect = new Result<ImMap<String, String>>();
                 Result<ImCol<String>> whereSelect = new Result<ImCol<String>>();
-                String fromSelect = new Query<String,String>(group, queries, fullWhere).compile(syntax, subcontext).fillSelect(keySelect, propertySelect, whereSelect, params, env);
+                String fromSelect = new Query<String,String>(group, queries, innerWhere).compile(syntax, subcontext).fillSelect(keySelect, propertySelect, whereSelect, params, env);
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
                     whereSelect.result.toString(" AND "),"","","", "") + ")";
 
@@ -752,7 +750,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             public String getParamSource(boolean useRecursionFunction, final boolean wrapStep, ExecuteEnvironment env) {
                 ImRevMap<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
-                final Where initialWhere = innerJoin.getInitialWhere();
+                Where initialWhere = innerJoin.getInitialWhere();
                 Where stepWhere = innerJoin.getStepWhere();
 
                 boolean isLogical = innerJoin.isLogical();
@@ -838,28 +836,22 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 } else
                     recWhere = recJoin.getWhere();
 
+                final Where fInitialWhere = initialWhere;
                 ImMap<String, Type> columnTypes = initialExprs.addExcl(recKeys.result).mapValues(new GetValue<Type, Expr>() {
                     public Type getMapValue(Expr value) {
-                        return value.getType(initialWhere);
+                        return value.getType(fInitialWhere);
                     }});
 
-                Where fullWhere = initialWhere;
                 ImMap<KeyExpr, BaseExpr> staticGroup = innerJoin.getJoins().remove(mapIterate.keys());
-                StatKeys<KeyExpr> statKeys = initialWhere.getStatKeys(staticGroup.keys()); // определяем ключи которые надо протолкнуть
-                Where pushWhere; // проталкивание в итерацию начальных групп
-                if((pushWhere = whereJoins.getGroupPushWhere(staticGroup, upWheres, innerJoin, keyStat, initialWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
-                    fullWhere = fullWhere.and(pushWhere);
-
-                if(fullWhere.pack().isFalse())
-                    return getEmptySelect(initialWhere);
-
-                if(pushWhere!=null && checkRecursivePush(fullWhere))
-                    fullWhere = initialWhere;
+                Result<String> empty = new Result<String>();
+                initialWhere = pushWhere(initialWhere, staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
+                if(initialWhere==null)
+                    return empty.result;
 
                 String outerParams = null;
                 ImRevMap<Value, String> innerParams;
                 if(useRecursionFunction) {
-                    ImSet<Value> values = AbstractOuterContext.getOuterValues(SetFact.merge(queries.valuesSet(), fullWhere));
+                    ImSet<Value> values = AbstractOuterContext.getOuterValues(SetFact.merge(queries.valuesSet(), initialWhere));
                     outerParams = "";
                     ImRevValueMap<Value, String> mvInnerParams = values.mapItRevValues(); // "совместная" обработка / последействие
                     int iv = 1;
@@ -882,7 +874,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
 
                 Result<ImOrderSet<String>> keyOrder = new Result<ImOrderSet<String>>(); Result<ImOrderSet<String>> propOrder = new Result<ImOrderSet<String>>();
-                String initialSelect = getSelect(recKeys.result, initialExprs, columnTypes, fullWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, env);
+                String initialSelect = getSelect(recKeys.result, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, env);
                 String stepSelect = getSelect(recKeys.result, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, env);
                 ImOrderSet<String> fieldOrder = keyOrder.result.addOrderExcl(propOrder.result);
 

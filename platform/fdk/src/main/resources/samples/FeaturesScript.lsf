@@ -1079,3 +1079,16 @@ END
 // TABLE name(className1, ..., classNameN);
 TABLE documentArticle(document, article);
 
+fib(i, to) = GROUP MAX f IF (RECURSION i==1 AND f==0 AND f1==1 AND to IS INTEGER
+                STEP i==$i+1 AND f==$f+0+$f1 AND f1==$f AND i<to) BY i, to;
+
+//fib(i, to) = RECURSION 1 IF (i==0 OR i==1) AND to IS INTEGER STEP 1 IF (i==$i+1 OR i==$i+2) AND i<to;
+FORM fibForm 'Числа фибоначи'
+OBJECTS to = INTEGER FIXED PANEL, i=INTEGER
+PROPERTIES OBJVALUE(to), OBJVALUE(i), fib(i, to)
+FILTERS fib(i, to)
+;
+
+NAVIGATOR {
+    ADD fibForm;
+}

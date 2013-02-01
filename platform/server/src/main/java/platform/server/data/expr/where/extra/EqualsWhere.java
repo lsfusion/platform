@@ -6,6 +6,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.*;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.innerjoins.KeyEquals;
@@ -71,12 +72,13 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         ImSet<ImSet<VariableClassExpr>> equals = SetFact.EMPTY();
         ClassExprWhere classWhere = getOperandWhere().getClassWhere();
 
-        if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExprInterface)
-            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExprInterface)operator1).getStaticClass()));
+        ConcreteClass staticClass;
+        if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExprInterface && (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null)
+            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2, staticClass));
         if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
             equals = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
-        if(operator1 instanceof VariableClassExpr && operator2 instanceof StaticClassExprInterface)
-            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExprInterface)operator2).getStaticClass()));
+        if(operator1 instanceof VariableClassExpr && operator2 instanceof StaticClassExprInterface && (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null)
+            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,staticClass));
 
         return new MeanClassWhere(classWhere, equals);
     }
