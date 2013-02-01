@@ -93,4 +93,10 @@ public class GEditBindingMap implements Serializable {
         return contextMenuBindingMap;
     }
 
+    public static boolean isEditableAwareEditEvent(String actionSID) {
+        return CHANGE.equals(actionSID)
+                || CHANGE_WYS.equals(actionSID)
+                || EDIT_OBJECT.equals(actionSID)
+                || GROUP_CHANGE.equals(actionSID);
+    }
 }

@@ -19,6 +19,7 @@ import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.*;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
+import static platform.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 
@@ -83,11 +84,13 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     private void onEditEvent(GridEditableCell editCell, EditEvent editEvent, Cell.Context editContext, Element editCellParent) {
         if (form.isEditing()) return;
 
-        if (!isEditable(editContext)) return;
-
         GPropertyDraw property = getProperty(editContext);
 
         String actionSID = getEditAction(property, editEvent);
+
+        if (isEditableAwareEditEvent(actionSID) && !isEditable(editContext)) {
+            return;
+        }
 
         if (actionSID != null) {
             editEvent.stopPropagation();
