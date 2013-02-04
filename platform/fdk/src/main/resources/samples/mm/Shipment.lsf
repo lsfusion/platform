@@ -30,7 +30,7 @@ priceShipmentDetail(shipmentDetail) <- salePriceItem(itemShipmentDetail(shipment
 
 FORM shipment 'Расходная накладная'
 	OBJECTS s=shipment FIXED PANEL
-	PROPERTIES(s) numberShipment, dateShipment, nameCustomerShipment, nameStockShipment, ADDOBJ, delete
+	PROPERTIES(s) numberShipment, dateShipment, nameCustomerShipment, nameStockShipment
 
 	OBJECTS d=shipmentDetail
 	PROPERTIES(d) nameItemShipmentDetail, quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail READONLY, ADDOBJ, delete

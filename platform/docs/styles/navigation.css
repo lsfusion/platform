@@ -1,24 +1,7 @@
-/* A Free Design by Bryant Smith (bryantsmith.com) */
-
-html, body {
-text-align: center;
-}
-p {text-align: left;}
-
 body {
-	margin: 0;
-	padding: 0;
 	background: #C1C1C1;
 	background-image:url(background.png)
-	text-align: left;
-	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-	font-size: 13px;
-	color: #F1F5F8;
 }
-*
-{
-  margin: 0 auto 0 auto;
- text-align:left;}
 
 #site-header h1
 {
@@ -81,6 +64,7 @@ background-repeat:no-repeat;
 
 #site-main .main_body
 {
+padding-top:10px;
 padding-left:20px;
 padding-right:20px;
 padding-bottom:20px;
