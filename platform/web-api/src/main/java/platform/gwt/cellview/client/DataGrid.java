@@ -1716,7 +1716,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     private PendingState<T> ensurePendingState() {
         if (isResolvingState) {
-            throw new IllegalStateException("It's not allowed to change current state, when resolving pending state");
+            //allow spurious calles to ensurePendingState(), when resolving state
+            //which is possible, for example, when getting onResize from ScrollingPanel
+            return null;
         }
 
         // Create the pending state if needed.
@@ -1784,6 +1786,15 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
             isRefreshing = true;
 
+            if (columnsChanged) {
+                refreshColumnWidths();
+            }
+
+            if (columnsChanged || headersChanged) {
+                updateHeadersImpl(columnsChanged);
+                headerPanel.onResize();
+            }
+
             int newSelectedRow = newState.keyboardSelectedRow;
             int newSelectedColumn = newState.keyboardSelectedColumn;
             if (newSelectedRow != oldState.keyboardSelectedRow || newSelectedColumn != oldState.keyboardSelectedColumn) {
@@ -1793,14 +1804,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             }
 
             isRefreshing = false;
-
-            if (columnsChanged || headersChanged) {
-                updateHeadersImpl(columnsChanged);
-            }
-
-            if (columnsChanged) {
-                refreshColumnWidths();
-            }
 
             headersChanged = false;
             columnsChanged = false;
