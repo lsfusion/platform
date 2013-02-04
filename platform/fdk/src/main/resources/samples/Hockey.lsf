@@ -89,8 +89,6 @@ EXTEND FORM MainForm
 
 NAVIGATOR {
     root {
-        ADD MainForm;
+        ADD MainForm BEFORE masterData;
     }
 }
-
-
