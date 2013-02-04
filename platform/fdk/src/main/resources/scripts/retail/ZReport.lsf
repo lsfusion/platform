@@ -455,7 +455,7 @@ FORM zReports 'Z-отчеты'
     FILTERS receiptReceiptDetail(d)==b
 
     OBJECTS p=payment
-    PROPERTIES(p) READONLY  receiptPayment, namePaymentTypePayment, namePaymentMeansPayment, sumPayment
+    PROPERTIES(p) READONLY  namePaymentTypePayment, namePaymentMeansPayment, sumPayment
 
     FILTERS receiptPayment(p)==b
 ;

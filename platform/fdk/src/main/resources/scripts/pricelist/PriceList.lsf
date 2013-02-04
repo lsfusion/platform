@@ -65,6 +65,9 @@ priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRA
 includeVATSystemPriceListType 'Цена с НДС' = ABSTRACT BOOLEAN (systemPriceListType);
 includeVATBasePriceListType(type) += includeVATSystemPriceListType(type);
 
+priceBasePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceSystemPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
+priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceSystemPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
+
 // ------------------------------------- Виды цен, формируемые ledger'ами ----------- //
 
 CLASS ABSTRACT ledgerPriceListType 'Регистровый вид цены' : basePriceListType;
