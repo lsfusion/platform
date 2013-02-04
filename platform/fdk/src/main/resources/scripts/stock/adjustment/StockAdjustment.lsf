@@ -57,6 +57,7 @@ skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)
 @defineAddDetailDialogBarcode(userAdjustment, sku);
 
 @implementDocument(adjustment);
+supplierStockDocument(adjustment) += stockAdjustment(adjustment);
 
 // --------------------------- Формы ---------------------------------- //
 
@@ -83,7 +84,7 @@ FORM userAdjustment 'Изменение остатков'
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
                    descriptionBatchUserAdjustmentDetail ON CHANGE EXEC batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
 
-    PROPERTIES(i) TODRAW d addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
+    PROPERTIES(i) TODRAW d fillDocumentAdjustment, addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
     FILTERS userAdjustmentUserAdjustmentDetail(d) == i
 

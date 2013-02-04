@@ -5,8 +5,8 @@ NAMESPACE Production;
 
 // ---------------- Производство ------------------- //
 
-CLASS ABSTRACT output 'Производство' ;
-CLASS ABSTRACT outputDetail 'Строка производства' : named;
+CLASS ABSTRACT output 'Производство' : document;
+CLASS ABSTRACT outputDetail 'Строка производства' : named, documentDetail;
 
 CLASS userOutput 'Производство (польз.)': output, historizable, numeratedObject;
 CLASS userOutputDetail 'Строка производства (польз.)' : outputDetail;
@@ -56,6 +56,9 @@ expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetai
 @defineAddDetailDialogBarcode(userOutput, sku);
 
 editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+@implementDocument(output);
+supplierStockDocument(output) += stockOutput(output);
 
 //--  Связь накладной и поставки
 
@@ -297,7 +300,7 @@ FORM userOutput 'Производство'
                    namePriceListTypeUserOutputDetail, expiryDateUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
                    descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
 
-    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserOutputDetailUserOutput,
+    PROPERTIES(o) TODRAW d fillDocumentOutput, addDetailDialogSkuStockUserOutputDetailUserOutput,
                            addDetailInputBarcodeUserOutputDetailUserOutput, deleteUserOutputDetailUserOutput
     FILTERS userOutputUserOutputDetail(d) == o
 

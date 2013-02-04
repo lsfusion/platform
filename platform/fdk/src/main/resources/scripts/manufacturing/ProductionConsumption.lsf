@@ -5,8 +5,8 @@ NAMESPACE Production;
 
 // ---------------- Списание матириалов, производство ------------------- //
 
-CLASS ABSTRACT consumption 'Списание сырья' ;
-CLASS ABSTRACT consumptionDetail 'Строка списания сырья' : named;
+CLASS ABSTRACT consumption 'Списание сырья' : document;
+CLASS ABSTRACT consumptionDetail 'Строка списания сырья' : named, documentDetail;
 
 CLASS userConsumption 'Списание сырья (польз.)': consumption, historizable, numeratedObject;
 CLASS userConsumptionDetail 'Строка списания сырья (польз.)' : consumptionDetail;
@@ -50,6 +50,9 @@ CLASS userConsumptionPosted 'Проведенное списание сырья 
 @defineAddDetailDialogBarcode(userConsumption, sku);
 
 editConsumption 'Редактировать' = ABSTRACT ACTION (consumption) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+@implementDocument(consumption);
+supplierStockDocument(consumption) += stockConsumption(consumption);
 
 //--  Связь накладной и поставки
 
@@ -284,7 +287,7 @@ FORM userConsumption 'Списание сырья'
                    namePriceListTypeUserConsumptionDetail, quantityUserConsumptionDetail, priceUserConsumptionDetail, sumUserConsumptionDetail,
                    descriptionIndexComponentDetailUserConsumptionDetail, ADDOBJ, delete
 
-    PROPERTIES(o) TODRAW d addDetailDialogSkuStockUserConsumptionDetailUserConsumption,           //fillDocumentConsumption
+    PROPERTIES(o) TODRAW d fillDocumentConsumption, addDetailDialogSkuStockUserConsumptionDetailUserConsumption,
                            addDetailInputBarcodeUserConsumptionDetailUserConsumption, deleteUserConsumptionDetailUserConsumption
     FILTERS userConsumptionUserConsumptionDetail(d) == o
 

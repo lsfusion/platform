@@ -204,7 +204,7 @@ FORM userWriteOff 'Списание'
                    descriptionBatchUserWriteOffDetail, quantityUserWriteOffDetail,
                    priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, delete
 
-    PROPERTIES(w) TODRAW d addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
+    PROPERTIES(w) TODRAW d fillDocumentWriteOff, addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
                            addDetailInputBarcodeUserWriteOffDetailUserWriteOff, deleteUserWriteOffDetailUserWriteOff
     FILTERS userWriteOffUserWriteOffDetail(d)==w
 
