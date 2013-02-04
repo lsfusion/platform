@@ -1,0 +1,25 @@
+MODULE PurchaseManufacturingPrice;
+
+REQUIRE PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+
+EXTEND CLASS systemLedgerPriceListType { manufacturingPriceStockPriceListType 'Цена изготовителя (последняя по складу)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType. manufacturingPriceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(ledger) WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.manufacturingPriceStockPriceListType;
+
+EXTEND CLASS systemLedgerPriceListType { manufacturingPricePriceListType 'Цена изготовителя (последняя)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.manufacturingPricePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.manufacturingPricePriceListType;
+
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) manufacturingPriceUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail AFTER invoiceSumInvoiceDetail
+;

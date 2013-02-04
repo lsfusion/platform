@@ -1,0 +1,17 @@
+MODULE SaleManufacturingPrice;
+
+REQUIRE SaleInvoice;
+
+NAMESPACE Sale;
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
+
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, supplierStock);
+
+EXTEND FORM userInvoice
+    PROPERTIES(d) manufacturingPriceUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail
+;
+
+EXTEND FORM invoices
+    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail AFTER invoiceSumInvoiceDetail
+;
