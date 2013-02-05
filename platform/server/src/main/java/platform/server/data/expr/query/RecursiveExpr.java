@@ -93,6 +93,11 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         protected int hash(HashContext hash) {
             return 31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initial.hashOuter(hash)) + step.hashOuter(hash)) + (cyclePossible?1:0);
         }
+
+        @Override
+        public String toString() {
+            return "INNER(" + mapIterate + "," + initial + "," + step + "," + cyclePossible + ")";
+        }
     }
 
     public static class QueryInnerContext extends QueryExpr.QueryInnerContext<KeyExpr, Query, RecursiveJoin, RecursiveExpr, QueryInnerContext> {
@@ -204,5 +209,10 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
 
     public NotNull calculateNotNullWhere() {
         return new NotNull();
+    }
+
+    @Override
+    public String toString() {
+        return "RECURSIVE(" + query + "," + group + ")";
     }
 }

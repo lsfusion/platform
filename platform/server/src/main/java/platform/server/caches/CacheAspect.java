@@ -286,11 +286,10 @@ public class CacheAspect {
         else // нужно вызвать тот же метод но twin объекта
             return thisJoinPoint.proceed(BaseUtils.add(new Object[]{twin}, args));
     }
-    @Around("execution(@platform.server.caches.TwinManualLazy * *.*(..)) && target(object)")
+/*    @Around("execution(@platform.server.caches.TwinManualLazy * *.*(..)) && target(object)")
     public Object callTwinManualMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, false);
-//        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
-    }
+        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+    }*/
     
     @Around("execution(@platform.server.caches.ParamTwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
