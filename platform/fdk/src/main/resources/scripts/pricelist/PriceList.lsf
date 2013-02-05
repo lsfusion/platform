@@ -96,7 +96,7 @@ TABLE priceListLedgerLedgerPriceListType(priceListLedger, ledgerPriceListType);
 pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedger, ledgerPriceListType) PERSISTENT;
 
 TABLE priceListLedgerStock(priceListLedger, stock);
-inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock) PERSISTENT;
+inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock);
 
 orderPriceListLedger(ledger) = LIST(fromDateTimePriceListLedger(ledger), ledger) AND activePriceListLedger(ledger) PERSISTENT;
 
@@ -298,7 +298,7 @@ levelParentPriceListStockGroup (priceList, stockGroup) = GROUP MIN levelStockGro
                                                                BY priceList, stockGroup PERSISTENT;
 nearestParentStockGroup (priceList, stockGroup) = stockGroupStockGroupLevel(stockGroup, levelParentPriceListStockGroup(priceList, stockGroup));
 nearestInPriceListStockGroup (priceList, stockGroup) =
-    inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup));
+    inPriceListStockGroup(priceList, nearestParentStockGroup(priceList, stockGroup)) PERSISTENT;
 
 inPriceListStockGroupOver 'Отм' (priceList, stockGroup) =
     UNION OVERRIDE inPriceList(priceList) AND stockGroup IS stockGroup,
