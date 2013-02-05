@@ -10,6 +10,23 @@ CLASS itemGroup 'Товарная группа' : named, externalizable, skuGrou
 
 parentSkuGroup (itemGroup) += parentItemGroup(itemGroup);
 
+inItemGroup 'Отм.' = DATA SESSION BOOLEAN (itemGroup);
+
+FORM moveItemGroup 'Товарные группы'
+    TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
+    ORDER BY canonicalNameItemGroup
+;
+
+moveItemGroup 'Перенести отмеченные группы' = ACTION (){
+
+    FORM moveItemGroup MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET parentItemGroup(itemGroup) <- chosenObject('g') WHERE inItemGroup(itemGroup);
+        SET inItemGroup(itemGroup) <- NULL;
+    }
+}
+
 // ------------------ Формы  --------------------- //
 
 FORM itemGroup 'Товарная группа'
@@ -20,8 +37,9 @@ FORM itemGroup 'Товарная группа'
 
 FORM itemGroups 'Товарные группы'
     TREE treeGroups g=itemGroup PARENT parentItemGroup
+    PROPERTIES inItemGroup(g), moveItemGroup() TODRAW g FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
-    PROPERTIES(g)          ADDFORM, EDITFORM
+    PROPERTIES(g) ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 ;
 
@@ -32,7 +50,7 @@ FORM dialogItemGroups 'Товарные группы'
 
     OBJECTS g=itemGroup
     PROPERTIES(g) name READONLY, canonicalNameItemGroup READONLY, delete
-    PROPERTIES(g)          ADDFORM, EDITFORM
+    PROPERTIES(g) ADDFORM, EDITFORM
     ORDER BY canonicalNameItemGroup
 
     FILTERS isParentItemGroupItemGroup(g, tg)

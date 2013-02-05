@@ -123,6 +123,46 @@ customGroupCustomGroupTypeSku = ABSTRACT customGroup (customGroupType, sku) PERS
 
 groupGroupTypeSku(type, sku) += customGroupCustomGroupTypeSku(type, sku);
 
+inCustomGroup 'Отм.' = DATA SESSION BOOLEAN (customGroup);
+
+FORM moveCustomGroup 'Дополнительные группы'
+    OBJECTS t = customGroupType FIXED PANEL
+    PROPERTIES(t) READONLY name
+
+    TREE treeGroups g=customGroup PARENT parentCustomGroup
+    PROPERTIES(g) READONLY name, canonicalNameCustomGroup
+    FILTERS customGroupTypeCustomGroup(g) == t
+    ORDER BY canonicalNameCustomGroup
+;
+
+moveCustomGroup 'Перенести отмеченные группы' = ACTION (customGroupType){
+
+    FORM moveCustomGroup OBJECTS t = customGroupType MODAL;
+    IF formResult() == formResult.ok THEN {
+        SET parentCustomGroup(customGroup) <- chosenObject('g') WHERE inCustomGroup(customGroup);
+        SET inCustomGroup(customGroup) <- NULL;
+    }
+}
+
+FORM customGroupType 'Тип дополнительного классификатора SKU'
+    OBJECTS t = customGroupType
+    PROPERTIES(t) commonName
+    EDIT customGroupType OBJECT t
+;
+
+FORM dialogCustomGroupType 'Тип дополнительного классификатора SKU'
+    OBJECTS t = customGroupType
+    PROPERTIES(t) READONLY commonName
+    DIALOG customGroupType OBJECT t
+;
+
+FORM customGroupTypes 'Типы дополнительного классификатора SKU'
+    OBJECTS t = customGroupType
+    PROPERTIES(t) READONLY commonName
+    PROPERTIES(t) ADDFORM, EDITFORM, delete
+    EDIT customGroupType OBJECT t
+;
+
 FORM customGroup 'Дополнительная группа'
     OBJECTS g=customGroup FIXED PANEL
     PROPERTIES(g) nameCustomGroupTypeCustomGroup, name, nameParentCustomGroup
@@ -134,8 +174,9 @@ FORM customGroups 'Дополнительные группы'
     PROPERTIES(t) SELECTOR name
 
     TREE treeGroups g=customGroup PARENT parentCustomGroup
+    PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(g) READONLY name, canonicalNameCustomGroup
-    PROPERTIES(g)          ADDFORM, EDITFORM, delete
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
 
@@ -2420,6 +2461,7 @@ NAVIGATOR {
     masterData {
         NEW skuNavigator 'Товар' BEFORE legalEntityNavigator {
             ADD UOMs;
+            ADD customGroupTypes;
             ADD customGroups;
         }
     }
