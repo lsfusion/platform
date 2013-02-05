@@ -130,9 +130,11 @@ CONSTRAINT skuComponentDetail(componentDetail) != skuProduct(productComponentDet
     CHECKED BY productComponentDetail MESSAGE 'Sku изделия и строки компонента не соответствуют друг другу';
 
 //--
+quantityProductOrder 'Кол-во изделий в заказе' (product, order) = GROUP SUM quantityProductDetail(productDetail)
+    BY productProductDetail(productDetail), orderProductDetail(productDetail);
 
-quantityProductsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX quantityProductDetail(productDetail) / quantityProduct(productProductDetail(productDetail))  //ceil
-    BY BOMProduct(productProductDetail(productDetail)), orderProductDetail(productDetail)](BOM, order);
+quantityProductsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX quantityProductOrder(product, order)/ quantityProduct(product)
+    BY BOMProduct(product), order](BOM, order);
 
 createComponentOrder 'Заполнить компоненты из спецификации' = ACTION (order)  {
 

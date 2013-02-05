@@ -1,6 +1,6 @@
 MODULE  CostCardOrderBy;
 
-REQUIRE PricingProductionOutput;
+REQUIRE PricingProductionOutput, LegalEntityBy;
 NAMESPACE Production;
 
 // ----------------  Калькуляционная карта ------------------- //
@@ -27,10 +27,6 @@ VATSumProductDetail 'Сумма НДС компонентов' (productDetail) =
 descriptionBOMProductDetail 'Спецификация'(productDetail) = descriptionBOM(BOMProduct(productProductDetail(productDetail)));
 quantityProductProductDetail 'Кол-во в спец.'(productDetail)= quantityProduct(productProductDetail(productDetail));
 shortNameUOMProductProductDetail 'Ед.изм. в спец.'(productDetail)= shortNameUOMProduct(productProductDetail(productDetail));
-
-//    numberCostCardProductDetail 'Номер кальк.карты' (productDetail) =
-//        [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' № \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)'](
-//        seriesNumberObject(orderProductDetail(productDetail)), date###object(object)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 //--
 calcPremiumComponentsSumProductDetail(productDetail) = quantityProductDetail(productDetail)*calcPremiumComponentsPriceProductDetail(productDetail);
 calcVATComponentsSumProductDetail(productDetail) = quantityProductDetail(productDetail)*VATSumProductDetail(productDetail);
@@ -39,11 +35,14 @@ retailMarkupPriceProductDetail 'Цена надбавки' (productDetail)= reta
 retailVATPriceProductDetail 'Цена НДС' (productDetail)= retailVATSumProductDetail(productDetail)/quantityProductDetail(productDetail);
 
 componentsSumProductProductDetail(productDetail)= componentsPriceProductDetail(productDetail)*quantityProductDetail(productDetail);
+//--
+@defineDocumentUNPLegalEntity(order, goodsLegalEntityStock, );
+//addressGoodsLegalEntityStockOrder 'Адрес компании' (order)= addressLegalEntity(goodsLegalEntityStockOrder(order));
 
 FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
     OBJECTS o = order FIXED PANEL
-    PROPERTIES(o) objectClassName, nameGoodsLegalEntityStockOrder,
+    PROPERTIES(o) objectClassName, nameGoodsLegalEntityStockOrder, UNPGoodsLegalEntityStockOrder, addressGoodsLegalEntityStockOrder,
                   nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject, seriesNumberObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder
     PROPERTIES(o) nameCalcPriceListTypeOrder
@@ -65,15 +64,31 @@ FORM costCardOrderBy 'Калькуляционная карта' PRINT
     FILTERS quantityProductDetailSku(pd,s)
 
 ;
-
 printCostCardOrder 'Калькуляционная карта' (order) = ACTION FORM costCardOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+
+FORM intakeSheetOrderBy 'Заборный лист' PRINT
+
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES(o) objectClassName, nameGoodsLegalEntityStockOrder,
+                  nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject, seriesNumberObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder
+    PROPERTIES(o) nameCalcPriceListTypeOrder
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, quantityProductProductDetail, shortNameUOMProductProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   componentsPriceProductDetail, componentsSumProductProductDetail
+    PROPERTIES(pd) markupProductDetail, productsPriceProductDetail, productsSumProductDetail, densityPremiumVATComponentsPriceProductDetail,
+                   VATSumProductDetail, calcPremiumVATComponentsPriceProductDetail, calcPremiumComponentsPriceProductDetail, calcPremiumComponentsSumProductDetail,
+                   calcVATComponentsSumProductDetail,
+                   retailMarkupPriceProductDetail, retailMarkupSumProductDetail, retailVATPriceProductDetail, retailVATSumProductDetail
+
+    FILTERS orderProductDetail(pd)==o
+
+;
+printIntakeSheetOrder 'Заборный лист' (order) = ACTION FORM intakeSheetOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
 EXTEND FORM orders
-    PROPERTIES(o) FORCE PANEL printCostCardOrder //SHOWIF createPricingOrder(o)
+    PROPERTIES(o) FORCE PANEL printIntakeSheetOrder, printCostCardOrder
 ;
 EXTEND DESIGN orders {printContainer { ADD o.printGroup;}}
 
-NAVIGATOR {
-    manufacturingDocuments {
-        ADD costCardOrderBy;
-    }
-}
+
