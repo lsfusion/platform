@@ -9,7 +9,7 @@ NAMESPACE Production;
 @defineDocumentInterfaceCreate (output, createPricing, 'Создать акт расценки');
 
 @defineDocumentInterfaceDetailPricePrefix(output, supplier, ' входная');
-supplierPriceUserOutputDetail(detail) <- componentsPriceMVATProductDetail(productDetailUserOutputDetail(detail))
+supplierPriceUserOutputDetail(detail) <- componentsPriceProductDetail(productDetailUserOutputDetail(detail))
     WHEN CHANGED(productDetailUserOutputDetail(detail));
 
 @defineDocumentInterfaceDetailDataSumPrefix (output, supplier, ' входная');
@@ -38,17 +38,27 @@ retailMarkupUserOutputDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
 //@changeDocumentDetailMarkupCustomPrefix(userOutputDetail, retail, , retail, retail);
 //@changeDocumentDetailPriceCustomPrefix(userOutputDetail, retail, , retail, retail, currency);
 @defineDocumentInterfaceDetailDataSumPrefix (output, retail, ' выходная');
-
-//@deriveDocumentDetailPriceMarkupCustomPrefix(userOutputDetail, retail);
 @deriveDocumentDetailSumPrefix(userOutput, retail, currency, quantity);
 
 @defineDocumentInterfaceHeaderSumPrefix (output, retail, ' выходная');
 
 @defineDocumentInterfaceDetailVATDataSumPrefix (output, retail, ' розничная');
-@deriveDocumentDetailReverseVATSumPrefix(userOutput, retail, retail, currency);
-
 @defineDocumentInterfaceDetailMarkupSumPrefix (output, retail);
-@deriveDocumentDetailMarkupSumPrefix(userOutput, retail, retail, supplier);
+
+VATMarkupSumUserOutputDetail 'НДС и надбавка' (userOutputDetail) =  retailSumUserOutputDetail(userOutputDetail) (-) supplierSumUserOutputDetail(userOutputDetail);
+
+retailVATSumUserOutputDetail(userOutputDetail) <- roundCurrency([X*Y/(100+Y)](VATMarkupSumUserOutputDetail(userOutputDetail), valueRetailVATUserOutputDetail(userOutputDetail)), currencyUserOutputDetail(userOutputDetail))
+        WHEN CHANGED(VATMarkupSumUserOutputDetail(userOutputDetail)) OR
+             CHANGED(valueRetailVATUserOutputDetail(userOutputDetail)) OR
+             CHANGED(currencyUserOutputDetail(userOutputDetail));
+
+retailMarkupSumUserOutputDetail (userOutputDetail) <- VATMarkupSumUserOutputDetail(userOutputDetail) (-) retailVATSumUserOutputDetail(userOutputDetail)
+        WHEN CHANGED(VATMarkupSumUserOutputDetail(userOutputDetail)) OR
+             CHANGED(retailVATSumUserOutputDetail(userOutputDetail));
+
+retailMarkupUserOutputDetail(userOutputDetail) <-[round2(X*100/Y)](retailMarkupSumUserOutputDetail(userOutputDetail),supplierSumUserOutputDetail(userOutputDetail))
+        WHEN CHANGED(retailMarkupSumUserOutputDetail(userOutputDetail)) OR
+             CHANGED(supplierSumUserOutputDetail(userOutputDetail));
 
 @defineDocumentInterfaceHeaderSumPrefix (output, retailMarkup, ' надбавки');
 @defineDocumentInterfaceHeaderSumPrefix (output, retailVAT, ' НДС');
@@ -61,9 +71,6 @@ backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
 
 EXTEND FORM order
     PROPERTIES(o)  BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder SHOWIF createPricingOrder(o)
-//    PROPERTIES (d) BEFORE delete(d) SHOWIF createPricingUserOutput(o) BACKGROUND backgroundRetailOutput(o)
-//                   supplierPriceUserOutputDetail, supplierSumUserOutputDetail, retailMarkupUserOutputDetail, retailMarkupSumUserOutputDetail,
-//                   valueRetailVATUserOutputDetail, retailVATSumUserOutputDetail, retailPriceUserOutputDetail, retailSumUserOutputDetail
 ;
 EXTEND DESIGN order {
     headerRow1 {
@@ -78,8 +85,6 @@ EXTEND DESIGN order {
 
 EXTEND FORM orders
     PROPERTIES(o) READONLY BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder
-//    PROPERTIES (d) READONLY SHOWIF createPricingOutput(o) BACKGROUND backgroundRetailOutput(o) supplierPriceOutputDetail, supplierSumOutputDetail, retailMarkupOutputDetail, retailMarkupSumOutputDetail,
-//                   valueRetailVATOutputDetail, retailVATSumOutputDetail, retailPriceOutputDetail, retailSumOutputDetail
 ;
 
 pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
@@ -87,11 +92,11 @@ createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
 
 supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
 supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
-valueRetailVATOutputDetail(outputDetail) += densityVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+valueRetailVATOutputDetail(outputDetail) += densityPremiumVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailMarkupOutputDetail(outputDetail) +=retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailVATSumOutputDetail(outputDetail)+= retailVATSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailMarkupSumOutputDetail(outputDetail) += retailMarkupSumProductDetail(productDetailOrderOutputDetail(outputDetail));
-
 retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailSumOutputDetail(outputDetail) += productsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 
@@ -147,8 +152,7 @@ departmentStorePricing(pricing) += stockOutput(outputOutputPricing(pricing)) IF 
 dataDepartmentStorePricingDetail(pricingDetail) += stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail)))
                                                    IF stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail))) IS departmentStore;
 
-//    @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, supplier, 'Поставщик', , );
-//    supplierPricing(pricing) += supplier###concrete###pricing(pricing);
+supplierPricing(pricing) += legalEntityStockOutput(outputOutputPricing(pricing));
 
 @defineDocumentAggregationPosted(output, outputPricing);
 isPostedPricing(pricing) += isPostedOutputPricing(pricing);
@@ -192,6 +196,15 @@ valueRetailVATPricingDetail(pricingDetail) += valueRetailVATOutputPricingDetail(
 retailVATSumPricingDetail(pricingDetail) += retailVATSumOutputPricingDetail(pricingDetail);
 
 //--
+quantityOutputOutputPricing (output, outputPricing) = GROUP SUM quantityOutputDetail(outputDetailOutputPricingDetail(detail)) BY outputOutputDetail(outputDetailOutputPricingDetail(detail)), outputPricingOutputPricingDetail(detail);
+
+outputsOutputPricing 'Документы производства' (outputPricing) = GROUP CONCAT toString255(descriptionOutput(output)) IF quantityOutputOutputPricing (output, outputPricing) , ', '
+                                                BY outputPricing
+                                                ORDER output MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+//descriptionDocumentPricing(pricing) += outputsOutputPricing(pricing);
+//EXTEND FORM pricings
+//    PROPERTIES(p)  outputsOutputPricing
+//;
 
 printPricingOrder 'Акт расценки' (order) = printPricingOutput(orderOutputOrder(order)) IMAGE 'print.png' IN printGroup;
 
@@ -199,5 +212,6 @@ EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printPricingOrder SHOWIF createPricingOrder(o)
 ;
 EXTEND DESIGN orders {printContainer { ADD o.printGroup;}}
+
 
 

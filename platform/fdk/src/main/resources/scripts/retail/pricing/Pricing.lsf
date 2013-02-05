@@ -309,6 +309,8 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 @defineDocumentInterfaceHeaderSkip (pricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
 
+descriptionDocumentPricing 'Документы-основания'= ABSTRACT STRING[255] (pricing)PERSISTENT;
+
 isReturnPricing 'Обратный' = ABSTRACT BOOLEAN (pricing);
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
@@ -805,7 +807,7 @@ META definePricingRelation(sign, stockProp)
     EXTEND DESIGN userPricing { headerColumn2 { ADD p.invoiceGroup; } }
 
     EXTEND FORM pricings
-        PROPERTIES(p) READONLY invoicesPricing
+        PROPERTIES(p) READONLY invoicesPricing, descriptionDocumentPricing
         PROPERTIES(d) READONLY descriptionIndexInvoiceDetailPricingDetail
     ;
 
@@ -824,4 +826,5 @@ META definePricingRelation(sign, stockProp)
     ;
 
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailInvoicePricingDetail(pricingDetail);
+    descriptionDocumentPricing(pricing) += invoicesPricing(pricing);
 END

@@ -211,6 +211,7 @@ descriptionProduct 'Название документа' (product)= descriptionB
 @defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
 
 pricePercentProduct 'Удельный вес цены,%' = DATA NUMERIC[8,3] (product);
+pricePercentProduct(product) <- 100 WHEN ASSIGNED (product IS product);
 priceCoeffProduct (product) = pricePercentProduct(product) / 100;
 
 pricePercentBOM 'Удельный вес цен,%'= GROUP SUM pricePercentProduct(product) BY BOMProduct(product) IN documentSumGroup;
@@ -458,6 +459,8 @@ recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityB
 //recBruttoQuantityBOMBOMDate (parent, child, date) = 1.0 IF (parent AS BOM) == (child AS BOM) AND date IS DATE;
 
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
+
+recBruttoNodeQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMMaterialDate(childBOM, material, date) BY BOM, skuMaterial(material), date; //](BOM, sku);
 
 //EXTEND FORM BOM
 //    OBJECTS d = DATE FIXED PANEL
