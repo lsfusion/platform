@@ -4,9 +4,9 @@ REQUIRE PurchaseInvoice;
 
 NAMESPACE Purchase;
 
-chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND NOT isStockSkuUserInvoiceDetail(idetail)
+chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND isChargeSkuUserInvoiceDetail(idetail)
     BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND NOT isStockSkuInvoiceDetail(idetail)
+chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND NOT isChargeSkuInvoiceDetail(idetail)
     BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
 
 itemSumUserInvoice 'Сумма товара в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND isStockSkuUserInvoiceDetail(idetail)
@@ -22,12 +22,23 @@ calcChargePriceUserInvoiceDetail  (detail) = [(X*Y)/(Z*W)](
 ) AND isStockSkuInvoiceDetail(detail);
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, charge, ' услуг за ед.');
-chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHEN CHANGED(calcChargePriceUserInvoiceDetail(detail));
+
+deriveChargePriceUserInvoice 'Расписать сумму услуг по товарам' = ACTION (userInvoice) {
+    SET chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
+}
+
+EXTEND CLASS systemLedgerPriceListType {chargePriceStockPriceListType ' услуги (последняя по складу)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType. chargePriceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(ledger) WHEN CLASS(chargePriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.chargePriceStockPriceListType;
+
+EXTEND CLASS systemLedgerPriceListType { chargePricePriceListType ' услуги (последняя)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.chargePricePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.chargePricePriceListType;
 
 extraCostPriceUserInvoiceDetail(detail) += chargePriceUserInvoiceDetail(detail);
 
 EXTEND FORM userInvoice
-    PROPERTIES(i) chargeSumUserInvoice
+    PROPERTIES(i) chargeSumUserInvoice, deriveChargePriceUserInvoice TODRAW d FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES(d) chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)
 ;
 

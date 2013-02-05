@@ -124,6 +124,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     isStockSkuInvoiceDetail (invoiceDetail) = isStockSku(skuInvoiceDetail(invoiceDetail));
     isStockSkuUserInvoiceDetail (userInvoiceDetail) = isStockSku(skuUserInvoiceDetail(userInvoiceDetail));
 
+    isChargeSkuInvoiceDetail (invoiceDetail) = isChargeSku(skuInvoiceDetail(invoiceDetail));
+    isChargeSkuUserInvoiceDetail (userInvoiceDetail) = isChargeSku(skuUserInvoiceDetail(userInvoiceDetail));
+
     @defineDocumentInterfaceDetailQuantity(invoice);
     Invoice.quantityInvoiceDetail(detail) += quantityInvoiceDetail(detail);
 
