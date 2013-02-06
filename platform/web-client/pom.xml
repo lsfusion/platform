@@ -75,6 +75,7 @@
                             <force>true</force>
                             <draftCompile>true</draftCompile>
                             <optimizationLevel>1</optimizationLevel>
+                            <style>DETAILED</style>
                         </configuration>
                     </plugin>
                 </plugins>

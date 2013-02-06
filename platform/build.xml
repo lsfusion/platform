@@ -272,7 +272,7 @@
     </target>
 
     <target name="web-client-recursiveCompile">
-        <antcall target="quickCompile">
+        <antcall target="recursiveCompile">
             <param name="artifactId" value="web-client"/>
         </antcall>
     </target>
