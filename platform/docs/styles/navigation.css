@@ -15,7 +15,7 @@ color:#FFFFAA;
 text-align:left;
 font-size:23px;
 font-weight:bold;
-font-family:Arial, Helvetica, sans-serif;
+font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
 float:left;
 
 }
@@ -41,6 +41,7 @@ float:left;
 	font-size:16px;
 	font-weight:bold;
 	text-decoration:none;
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 
 #site-header ul li a:hover{
@@ -68,6 +69,7 @@ position:relative;
 min-height:500px;
 height:100%;
 width:921px;
+margin-top:-1em;
 background-image:url(main_body.png);
 background-repeat:repeat-y;
 color:#000000;
