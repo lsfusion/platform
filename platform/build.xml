@@ -272,6 +272,12 @@
     </target>
 
     <target name="web-client-recursiveCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="web-client"/>
+        </antcall>
+    </target>
+
+    <target name="web-client-recursiveCompileWithGwt">
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
