@@ -50,6 +50,36 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>gwtCompile</id>
+            <activation>
+                <property>
+                    <name>gwtCompile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>gwt-maven-plugin</artifactId>
+                        <executions>
+                            <!-- GWT version detected from dependencyManagement -->
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <force>true</force>
+                            <draftCompile>true</draftCompile>
+                            <optimizationLevel>1</optimizationLevel>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -110,14 +140,6 @@
         </dependency>
 
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>web-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>desktop-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
@@ -152,6 +174,15 @@
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>web-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>desktop-client</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
