@@ -64,17 +64,35 @@ background-repeat:no-repeat;
 
 #site-main .main_body
 {
-padding-top:10px;
-padding-left:20px;
-padding-right:20px;
-padding-bottom:20px;
-height:auto;
-width:881px;
+position:relative;
+min-height:500px;
+height:100%;
+width:921px;
 background-image:url(main_body.png);
 background-repeat:repeat-y;
 color:#000000;
 }
 
+#site-main .main_tree
+{
+position:absolute;
+left:2px;
+width:250px;
+height:100%;
+overflow:auto;
+}
+
+#site-main .main_content
+{
+margin-left:262px;
+margin-right:10px;
+}
+
+#site-main .main_content_no_tree
+{
+margin-left:10px;
+margin-right:10px;
+}
 
 #site-main .main_top h1
 {
