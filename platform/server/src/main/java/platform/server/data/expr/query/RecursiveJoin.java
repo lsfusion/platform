@@ -46,6 +46,14 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             this.isLogical = isLogical;
         }
 
+        public Query(Query query, Where initialWhere) {
+            this.initialWhere = initialWhere;
+            stepWhere = query.stepWhere;
+            mapIterate = query.mapIterate;
+            cyclePossible = query.cyclePossible;
+            isLogical = query.isLogical;
+        }
+
         public boolean twins(TwinImmutableObject o) {
             return initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
         }
@@ -66,6 +74,11 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     public RecursiveJoin(RecursiveJoin join, MapTranslate translator) {
         super(join, translator);
+    }
+
+    // для проталкивания
+    public RecursiveJoin(RecursiveJoin join, Where pushedInitialWhere) {
+        super(join, new Query(join.query, pushedInitialWhere));
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group) {

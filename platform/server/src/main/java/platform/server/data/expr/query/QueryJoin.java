@@ -163,6 +163,15 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         values = mapValues.translateValues(join.values);
     }
 
+    // для проталкивания
+    protected QueryJoin(T join, I query) {
+        // надо еще транслировать "внутренние" values
+        this.query = query;
+        group = join.group;
+        keys = join.keys;
+        values = join.values;
+    }
+
     public QueryJoin(ImSet<KeyExpr> keys, ImSet<Value> values, I inner, ImMap<K, BaseExpr> group) {
         this.keys = keys;
         this.values = values;

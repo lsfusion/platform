@@ -751,10 +751,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImRevMap<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
                 Where initialWhere = innerJoin.getInitialWhere();
+                final Where baseInitialWhere = initialWhere;
                 Where stepWhere = innerJoin.getStepWhere();
 
                 boolean isLogical = innerJoin.isLogical();
                 boolean cyclePossible = innerJoin.isCyclePossible();
+
+                boolean single = isSingle(innerJoin);
 
                 String rowPath = "qwpather";
 
@@ -766,12 +769,23 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Expr concKeys = null; ArrayClass rowType = null;
                 if(cyclePossible && (!isLogical || useRecursionFunction)) {
                     concKeys = ConcatenateExpr.create(mapIterate.keys().toOrderSet());
-                    rowType = ArrayClass.get(concKeys.getType(initialWhere));
+                    rowType = ArrayClass.get(concKeys.getType(baseInitialWhere));
                     props = props.addExcl(rowPath, rowType);
                 }
 
+                // проталкивание
+                ImMap<KeyExpr, BaseExpr> staticGroup = innerJoin.getJoins().remove(mapIterate.keys());
+                Result<String> empty = new Result<String>();
+                initialWhere = pushWhere(initialWhere, staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
+                if(initialWhere==null)
+                    return empty.result;
+
+                RecursiveJoin tableInnerJoin = innerJoin;
+                if(!BaseUtils.hashEquals(initialWhere, baseInitialWhere)) // проверка на hashEquals - оптимизация, само такое проталкивание нужно чтобы у RecursiveTable - статистика была правильной
+                    tableInnerJoin = new RecursiveJoin(innerJoin, initialWhere);
+
                 String recName = subcontext.wrapRecursion("rectable"); Result<ImRevMap<String, KeyExpr>> recKeys = new Result<ImRevMap<String, KeyExpr>>();
-                final Join<String> recJoin = innerJoin.getRecJoin(props, recName, recKeys);
+                final Join<String> recJoin = tableInnerJoin.getRecJoin(props, recName, recKeys);
 
                 ImRevMap<String, Expr> initialExprs;
                 ImMap<String, Expr> stepExprs;
@@ -802,7 +816,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
 
                 ImCol<String> havingSelect;
-                if(isSingle(innerJoin))
+                if(single)
                     havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
                 else
                     havingSelect = SetFact.EMPTY();
@@ -836,17 +850,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 } else
                     recWhere = recJoin.getWhere();
 
-                final Where fInitialWhere = initialWhere;
                 ImMap<String, Type> columnTypes = initialExprs.addExcl(recKeys.result).mapValues(new GetValue<Type, Expr>() {
                     public Type getMapValue(Expr value) {
-                        return value.getType(fInitialWhere);
+                        return value.getType(baseInitialWhere);
                     }});
-
-                ImMap<KeyExpr, BaseExpr> staticGroup = innerJoin.getJoins().remove(mapIterate.keys());
-                Result<String> empty = new Result<String>();
-                initialWhere = pushWhere(initialWhere, staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
-                if(initialWhere==null)
-                    return empty.result;
 
                 String outerParams = null;
                 ImRevMap<Value, String> innerParams;
