@@ -116,6 +116,12 @@ CONSTRAINT customGroupTypeCustomGroup(customGroupCustomGroupTypeItem(type, item)
 imageItem 'Изображение' = DATA IMAGEFILE (item);
 loadImageItem 'Загрузить изображение' (item) = ACTION LOADFILE imageItem(item);
 
+// -------------------------------- Надбавки для расчетных видов цен --------------------------------//
+
+currentBasePricePriceListTypeSkuStock 'Базовая цена' (type, sku, stock) = pricePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, currentDateTime());
+
+currentCalcPricePriceListTypeSkuStock 'Расчетная цена' (type, sku, stock) = pricePriceListTypeSkuStockDateTime(type, sku, stock, currentDateTime());
+
 // ------------------------------------ Формы -------------------------- //
 FORM item 'Товар'
 
@@ -134,11 +140,21 @@ FORM item 'Товар'
     OBJECTS cgt = customGroupType
     PROPERTIES name(cgt) READONLY, canonicalNameCustomGroupCustomGroupTypeItem(cgt, i)
 
-    OBJECTS dtr=DATE FIXED PANEL
+    OBJECTS dtr = DATE FIXED PANEL
     PROPERTIES (dtr) OBJVALUE BACKGROUND dateDiffersCurrent(dtr)
 
-    OBJECTS c=country
+    OBJECTS c = country
     PROPERTIES (c) READONLY name
+
+    OBJECTS st2 = stock FIXED PANEL
+    PROPERTIES(st2) SELECTOR name
+
+    OBJECTS ct = calcPriceListType
+    PROPERTIES(ct) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionCalcPriceListType,
+                   nameBasePriceListTypeCalcPriceListType
+    PROPERTIES(ct, i, st2) READONLY currentBasePricePriceListTypeSkuStock
+    PROPERTIES(ct, i) dataMarkupCalcPriceListTypeSku
+    PROPERTIES(ct, i, st2) READONLY currentCalcPricePriceListTypeSkuStock
 
     EDIT item OBJECT i
 ;
@@ -186,7 +202,14 @@ DESIGN item FROM DEFAULT {
                 caption = 'Региональные параметры';
                 ADD dtr.box;
                 ADD c.box;
-
+            }
+            NEW calcPriceListTypePrm {
+                caption = 'Цены';
+                childConstraints = TO THE BOTTOM;
+                ADD st2.box;
+                ADD ct.box{
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
             }
             NEW itemImage {
                 title = 'Изображение';
@@ -199,7 +222,7 @@ DESIGN item FROM DEFAULT {
                 }
                 ADD PROPERTY(loadImageItem);
             }
-       }
+        }
     }
 }
 
