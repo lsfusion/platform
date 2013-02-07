@@ -94,7 +94,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
                     propValues.put(
                             groupObjectValue,
-                            ImageHandler.createPropertyImage((byte[]) propValue, ((ClientPropertyDraw) reader).getSID())
+                            FileManager.createPropertyImage((byte[]) propValue, ((ClientPropertyDraw) reader).getSID())
                     );
                 } else {
                     propValues.put(groupObjectValue, propValue);

@@ -23,6 +23,11 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
         super(inStream);
     }
 
+    @Override
+    public String[] getExtensions() {
+        return new String[] {"pdf"};
+    }
+
     public String getFileSID() {
         return "PDFClass";
     }
@@ -42,7 +47,7 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.pdf"), getExtensions());
     }
 
     @Override

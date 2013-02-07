@@ -16,7 +16,7 @@
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.15-M3</jacob.version>
         <commons.lang.version>2.5</commons.lang.version>
-        <commons.io.version>2.0.1</commons.io.version>
+        <commons.io.version>2.4</commons.io.version>
         <commons.codec.version>1.4</commons.codec.version>
         <commons.logging.version>1.1</commons.logging.version>
         <commons.daemon.version>1.0.5</commons.daemon.version>
@@ -57,6 +57,7 @@
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
         <jstl.version>1.2</jstl.version>
+        <commons.fileupload.version>1.2.2</commons.fileupload.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.5.0-patched-2</gwt.version>
@@ -71,6 +72,7 @@
         <gwt.mosaic.version>0.4.0-rc4</gwt.mosaic.version>
         <gwt.dnd.version>3.1.2</gwt.dnd.version>
         <color.picker.version>2.1</color.picker.version>
+        <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
 
         <!-- general properties -->
         <maven.test.skip>true</maven.test.skip>
@@ -659,6 +661,11 @@
                 <artifactId>jstl</artifactId>
                 <version>${jstl.version}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <version>${commons.fileupload.version}</version>
+            </dependency>
 
             <!-- GWT-related libraries -->
             <dependency>
@@ -751,6 +758,11 @@
                 <groupId>com.allen-sauer.gwt.dnd</groupId>
                 <artifactId>gwt-dnd</artifactId>
                 <version>${gwt.dnd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.moxieapps.gwt.uploader</groupId>
+                <artifactId>uploader</artifactId>
+                <version>${moxieapps.gwt.uploader.version}</version>
             </dependency>
 
             <!-- Platform modules -->

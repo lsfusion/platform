@@ -62,6 +62,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>fileUploadHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>fileUploadHandler</servlet-name>
+        <url-pattern>/uploadFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>captchaService</servlet-name>
         <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
     </servlet>

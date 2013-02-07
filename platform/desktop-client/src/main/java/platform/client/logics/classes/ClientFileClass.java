@@ -12,7 +12,7 @@ import static platform.interop.Compare.NOT_EQUALS;
 
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 
-    protected boolean multiple;
+    public boolean multiple;
 
     public abstract String getFileSID();
 
@@ -28,6 +28,8 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
 
         multiple = inStream.readBoolean();
     }
+
+    public abstract String[] getExtensions();
 
     public String getPreferredMask() {
         return "1234567";

@@ -3,6 +3,7 @@ package platform.gwt.form.server.convert;
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.gwt.form.shared.view.ImageDescription;
+import platform.gwt.form.shared.view.changes.dto.GFilesDTO;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,7 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class ImageHandler {
+public class FileManager {
     public static String APP_FOLDER_URL;
     public static String APP_IMAGES_FOLDER_URL;
     public static String APP_TEMP_FOLDER_URL;
@@ -25,7 +26,7 @@ public class ImageHandler {
         if (APP_FOLDER_URL == null) {
             APP_FOLDER_URL = path;
             APP_IMAGES_FOLDER_URL = path + "/images/";
-            APP_TEMP_FOLDER_URL = path + "/WEB-INF/" + "temp";
+            APP_TEMP_FOLDER_URL = path + "/WEB-INF/temp";
         }
     }
 
@@ -105,5 +106,22 @@ public class ImageHandler {
             return newFileName ;
         }
         return null;
+    }
+
+    public static byte[] readFilesAndDelete(GFilesDTO filesObj) {
+        File[] files = new File[filesObj.filePaths.size()];
+        for (int i = 0; i < filesObj.filePaths.size(); i++) {
+            files[i] = new File(APP_TEMP_FOLDER_URL, filesObj.filePaths.get(i));
+        }
+        try {
+            byte[] bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.custom, files);
+            for (File file : files) {
+                file.delete();
+            }
+            return bytes;
+
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

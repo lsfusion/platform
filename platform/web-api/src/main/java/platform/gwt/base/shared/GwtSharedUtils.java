@@ -130,4 +130,15 @@ public class GwtSharedUtils {
         }
         return result;
     }
+
+    private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    private final static Random random = new Random();
+    public static String randomString(int len) {
+
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
+        }
+        return sb.toString();
+    }
 }

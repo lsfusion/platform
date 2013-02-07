@@ -23,6 +23,11 @@ public class ClientWordClass extends ClientStaticFormatFileClass {
         super(inStream);
     }
 
+    @Override
+    public String[] getExtensions() {
+        return new String[] {"doc", "docx"};
+    }
+
     public String getFileSID() {
         return "WordClass";
     }
@@ -42,7 +47,7 @@ public class ClientWordClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.word"), getExtensions());
     }
 
     @Override

@@ -23,6 +23,11 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
         super(inStream);
     }
 
+    @Override
+    public String[] getExtensions() {
+        return new String[] {"xls", "xlsx"};
+    }
+
     public String getFileSID() {
         return "ExcelClass";
     }
@@ -42,7 +47,7 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.excel.documents"), getExtensions());
     }
 
     @Override

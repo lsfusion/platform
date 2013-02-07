@@ -36,7 +36,9 @@ public class GResizableModalWindow extends ResizableWindow {
                 modalMask.hide();
                 modalMask = null;
 
-                hiddenHandler.onHidden();
+                if (hiddenHandler != null) {
+                    hiddenHandler.onHidden();
+                }
             }
         });
 

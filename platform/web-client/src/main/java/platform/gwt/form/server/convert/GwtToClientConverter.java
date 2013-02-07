@@ -6,6 +6,7 @@ import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GUserInputResult;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
+import platform.gwt.form.shared.view.changes.dto.GFilesDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.UserInputResult;
 
@@ -39,6 +40,11 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = Date.class)
     public java.sql.Date convertDate(Date date) {
         return DateConverter.safeDateToSql(date);
+    }
+
+    @Converter(from = GFilesDTO.class)
+    public byte[] convertFiles(GFilesDTO filesObject) {
+        return FileManager.readFilesAndDelete(filesObject);
     }
 
     @Converter(from = GUserInputResult.class)

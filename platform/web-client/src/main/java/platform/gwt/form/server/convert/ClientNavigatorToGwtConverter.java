@@ -26,7 +26,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.caption = clientElement.caption;
         element.children = new ArrayList<GNavigatorElement>();
 
-        element.icon = ImageHandler.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
+        element.icon = FileManager.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);

@@ -23,6 +23,11 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
         super(inStream);
     }
 
+    @Override
+    public String[] getExtensions() {
+        return null;
+    }
+
     public String getFileSID() {
         return "CustomFileClass";
     }

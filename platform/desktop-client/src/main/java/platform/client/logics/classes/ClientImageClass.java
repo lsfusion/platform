@@ -23,6 +23,11 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
         super(inStream);
     }
 
+    @Override
+    public String[] getExtensions() {
+        return new String[] {"jpg", "jpeg", "bmp", "png"};
+    }
+
     public String getFileSID() {
         return "ImageClass";
     }
@@ -52,7 +57,7 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
+        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.image"), getExtensions());
     }
 
     @Override

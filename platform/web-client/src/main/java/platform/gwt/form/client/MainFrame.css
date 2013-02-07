@@ -305,6 +305,55 @@ textarea {
     width: 8em;
 }
 
+/* ------------ File upload dialog  ------------ */
+.dropFilesLabel {
+    margin-top: 6px;
+    padding-top: 28px;
+    padding-bottom: 28px;
+    font-family: verdana, arial, sans-serif;
+    font-size: 12px;
+    color: #2d4b6d;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    border: 2px dashed #888888;
+    border-radius: 7px;
+}
+
+.dropFilesLabelHover {
+    border: 2px solid #444444;
+    color: #7c9647;
+}
+
+.gwt-ProgressBar-shell {
+    border: 1px solid #faf9f7;
+    border-right: 1px solid #848280;
+    border-bottom: 1px solid #848280;
+    background-color: #AAAAAA;
+    width: 50%;
+    height: 12pt;
+}
+
+.gwt-ProgressBar-shell .gwt-ProgressBar-bar {
+    background-color: #67A7E3;
+}
+
+.gwt-ProgressBar-shell .gwt-ProgressBar-text {
+    padding: 0px;
+    margin: 0px;
+    color: white;
+    font-size: 8pt;
+}
+
+.upFileNameLabel {
+    white-space: nowrap;
+}
+
+.uploadDialogContainer {
+    outline: none;
+    height: 100%;
+}
+
 /* ------------ Other components  ------------ */
 .formController {
     overflow: auto !important;

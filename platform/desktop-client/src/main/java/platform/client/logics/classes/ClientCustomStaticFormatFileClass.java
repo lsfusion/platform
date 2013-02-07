@@ -15,8 +15,8 @@ import java.util.Arrays;
 
 public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileClass {
 
-    private String filterDescription;
-    private String filterExtensions[];
+    public String filterDescription;
+    public String filterExtensions[];
 
     public ClientCustomStaticFormatFileClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -33,6 +33,11 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
                 filterExtensions[i] = inStream.readUTF();
             }
         }
+    }
+
+    @Override
+    public String[] getExtensions() {
+        return filterExtensions;
     }
 
     public String getFileSID() {

@@ -20,6 +20,9 @@
     <!--<inherits name='com.google.gwt.user.theme.dark.Dark'/>-->
     <inherits name='com.google.gwt.user.theme.clean.Clean'/>
 
+    <!-- GWT file upload -->
+    <inherits name="org.moxieapps.gwt.uploader.Uploader"/>
+
     <entry-point class='platform.gwt.form.client.MainFrame'/>
 
     <source path='client'/>

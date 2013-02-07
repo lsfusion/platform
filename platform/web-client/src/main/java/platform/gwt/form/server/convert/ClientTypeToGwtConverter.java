@@ -3,6 +3,8 @@ package platform.gwt.form.server.convert;
 import platform.client.logics.classes.*;
 import platform.gwt.form.shared.view.classes.*;
 
+import javax.activation.MimetypesFileTypeMap;
+import java.io.IOException;
 import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -68,34 +70,58 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GDateTimeType.instance;
     }
 
+    private <T extends GFileType> T initializeFileClass(ClientFileClass clientFileClass, T fileClass) {
+        fileClass.multiple = clientFileClass.multiple;
+        if (clientFileClass.getExtensions() != null) {
+            fileClass.extensions = new ArrayList<String>();
+            MimetypesFileTypeMap mimeMap;
+            try {
+                mimeMap = new MimetypesFileTypeMap(FileManager.APP_FOLDER_URL + "/WEB-INF/mimetypes");
+            } catch (IOException e) {
+                mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
+            }
+            for (int i = 0; i < clientFileClass.getExtensions().length; i++) {
+                String ext = clientFileClass.getExtensions()[i];
+                if (ext != null && !ext.isEmpty() && !ext.equals("*.*") && !ext.equals("*")) {
+                    fileClass.extensions.add(mimeMap.getContentType("idleName." + ext));
+                } else {
+                    fileClass.extensions.add(ext);
+                }
+            }
+        }
+        return fileClass;
+    }
+
     @Converter(from = ClientPDFClass.class)
     public GPDFType convertPDFClass(ClientPDFClass pdfClass) {
-        return GPDFType.instance;
+        return initializeFileClass(pdfClass, new GPDFType());
     }
 
     @Converter(from = ClientImageClass.class)
     public GImageType convertImageClass(ClientImageClass imageClass) {
-        return GImageType.instance;
+        return initializeFileClass(imageClass, new GImageType());
     }
 
     @Converter(from = ClientWordClass.class)
     public GWordType convertWordClass(ClientWordClass wordClass) {
-        return GWordType.instance;
+        return initializeFileClass(wordClass, new GWordType());
     }
 
     @Converter(from = ClientExcelClass.class)
     public GExcelType convertExcelClass(ClientExcelClass excelClass) {
-        return GExcelType.instance;
+        return initializeFileClass(excelClass, new GExcelType());
     }
 
     @Converter(from = ClientCustomStaticFormatFileClass.class)
     public GCustomStaticFormatFileType convertCustomStaticFormatFileClass(ClientCustomStaticFormatFileClass customClass) {
-        return GCustomStaticFormatFileType.instance;
+        GCustomStaticFormatFileType customFormatFileType = initializeFileClass(customClass, new GCustomStaticFormatFileType());
+        customFormatFileType.description = customClass.filterDescription;
+        return customFormatFileType;
     }
 
     @Converter(from = ClientDynamicFormatFileClass.class)
     public GCustomDynamicFormatFileType convertCustomDynamicFormatClass(ClientDynamicFormatFileClass customClass) {
-        return GCustomDynamicFormatFileType.instance;
+        return initializeFileClass(customClass, new GCustomDynamicFormatFileType());
     }
 
     @Converter(from = ClientStringClass.class)

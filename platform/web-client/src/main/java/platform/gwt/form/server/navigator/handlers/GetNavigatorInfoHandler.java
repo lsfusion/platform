@@ -8,7 +8,7 @@ import platform.client.navigator.ClientNavigatorWindow;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.server.convert.ClientNavigatorToGwtConverter;
-import platform.gwt.form.server.convert.ImageHandler;
+import platform.gwt.form.server.convert.FileManager;
 import platform.gwt.form.shared.actions.navigator.GetNavigatorInfo;
 import platform.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
 import platform.gwt.form.shared.view.GNavigatorElement;
@@ -28,7 +28,7 @@ public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorI
 
     @Override
     public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws DispatchException, IOException {
-        ImageHandler.initializeAppFolder(servlet.getServletContext().getRealPath(""));
+        FileManager.initializeAppFolder(servlet.getServletContext().getRealPath(""));
         ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter();
 
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(servlet.getNavigator().getNavigatorTree());
