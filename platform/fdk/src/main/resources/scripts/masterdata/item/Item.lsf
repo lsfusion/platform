@@ -150,8 +150,8 @@ FORM item 'Товар'
     PROPERTIES(st2) SELECTOR name
 
     OBJECTS ct = calcPriceListType
-    PROPERTIES(ct) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionCalcPriceListType,
-                   nameBasePriceListTypeCalcPriceListType
+    PROPERTIES(ct) READONLY name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionCalcPriceListType,
+                            nameBasePriceListTypeCalcPriceListType
     PROPERTIES(ct, i, st2) READONLY currentBasePricePriceListTypeSkuStock
     PROPERTIES(ct, i) dataMarkupCalcPriceListTypeSku
     PROPERTIES(ct, i, st2) READONLY currentCalcPricePriceListTypeSkuStock
@@ -637,3 +637,21 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
 }
 
 createSkuBarcodeDate(barcode, date) += createItemBarcodeDate(barcode, date);
+
+inItem 'Отм.' = DATA SESSION BOOLEAN (item);
+
+replaceItem 'Объединить выбранные товары с текущим' = ACTION (item){
+    FOR inItem(i) DO{
+        IF i != item THEN {
+            EXEC replaceSkuSku(i, item);
+            SET inItem(i) <- NULL;
+            EXEC delete(i);
+        } ELSE {
+            MESSAGE 'Выделенный товар не может совпадать с объединяемым';
+        }
+    }
+}
+
+EXTEND FORM items
+    PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem TODRAW i FORCE PANEL DRAWTOTOOLBAR
+;

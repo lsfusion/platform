@@ -250,6 +250,8 @@ isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
 
 inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (sku) PERSISTENT;
 
+replaceSkuSku = ABSTRACT ACTION(sku, sku);
+
 // ----------------------------------- Ledger ------------------------------------------ //
 
 CLASS ABSTRACT skuLedger 'Изменение остатка по товару';
@@ -897,6 +899,7 @@ META defineDocumentDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
+    replaceSkuSku(s, d) += ACTION (s, d){SET prefix###skuClass###detail(detail) <- d WHERE prefix###skuClass###detail(detail) == s;}
 END
 META defineDocumentAbstractDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
     prefix###skuClass###detail = ABSTRACT skuClass (detail) PERSISTENT;
