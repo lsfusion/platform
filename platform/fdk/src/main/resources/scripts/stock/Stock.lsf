@@ -1705,11 +1705,11 @@ META defineDocumentSkuPriceListType(object, stockProp)
     @defineDocumentSku(object, sku, stockProp);
     priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
-    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
+    priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
 END
 META defineDocumentSkuSystemLedgerPriceListType(object, priceListTypeProp, stockProp)
     @defineDocumentSku(object, sku, stockProp);
-    priceSku###object 'Цена' (sku, object) = pricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp, sku, stockProp###object(object), dateTime###object(object));
+    priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp, sku, stockProp###object(object), dateTime###object(object));
 END
 
 

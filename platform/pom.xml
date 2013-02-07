@@ -33,6 +33,7 @@
         <module>paas-logics</module>
         <module>paas-web</module>
         <module>serveragent</module>
+        <module>sot-logics</module>
     </modules>
 
 </project>

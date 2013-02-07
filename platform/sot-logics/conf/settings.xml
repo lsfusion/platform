@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="exportPort" class="java.lang.Integer">
+        <constructor-arg type="int" value="7652"/>
+    </bean>
+    
+    <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
+        <constructor-arg value="#{systemProperties['platform.server.logics.dbname'] ?: 'sot'}"/>
+        <constructor-arg value="localhost"/>
+        <constructor-arg value="postgres"/>
+        <constructor-arg value="11111"/>
+    </bean>
+
+    <bean id="businessLogics" class="platform.server.logics.scripted.ScriptingBusinessLogics">
+        <constructor-arg value="scriptedLogics"/>
+        <constructor-arg ref="dataAdapter"/>
+        <constructor-arg ref="exportPort"/>
+        <constructor-arg value="scripts"/>
+        <constructor-arg value="scripts/system"/>
+    </bean>
+
+    <bean id="settings" class="platform.server.Settings">
+        <property name="locale" value="ru"/>
+    </bean>
+
+    <bean id="serverAgentServer" class="java.lang.String">
+        <constructor-arg type="java.lang.String" value="localhost:6666"/>
+    </bean>
+
+</beans>
