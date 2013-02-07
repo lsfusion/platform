@@ -41,9 +41,7 @@
 	<field name="toDateOrder" class="java.util.Date"/>
 	<field name="noteOrder" class="java.lang.String"/>
 	<field name="quantityProductDetailOrder" class="java.lang.Double"/>
-	<field name="productsSumProductDetailOrder" class="java.lang.Double"/>
 	<field name="overQuantityComponentDetailOrder" class="java.lang.Double"/>
-	<field name="nameCalcPriceListTypeOrder" class="java.lang.String"/>
 	<field name="pd" class="java.lang.Integer"/>
 	<field name="indexProductDetail" class="java.lang.Integer"/>
 	<field name="nameSkuProductDetail" class="java.lang.String"/>
@@ -55,18 +53,16 @@
 	<field name="componentsPriceProductDetail" class="java.lang.Double"/>
 	<field name="markupProductDetail" class="java.lang.Double"/>
 	<field name="productsPriceProductDetail" class="java.lang.Double"/>
-	<field name="productsSumProductDetail" class="java.lang.Double"/>
+	<field name="productsSumInBOMProductDetail" class="java.lang.Double"/>
 	<field name="densityPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
 	<field name="VATSumProductDetail" class="java.lang.Double"/>
 	<field name="calcPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumComponentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumComponentsSumProductDetail" class="java.lang.Double"/>
-	<field name="calcVATComponentsSumProductDetail" class="java.lang.Double"/>
+	<field name="premiumComponentsSumInBOMProductDetail" class="java.lang.Double"/>
 	<field name="s" class="java.lang.Integer"/>
 	<field name="quantityProductDetailSku" class="java.lang.Double"/>
 	<field name="quantityProductProductDetailSku" class="java.lang.Double"/>
-	<field name="componentsPriceProductDetailSku" class="java.lang.Double"/>
-	<field name="totalSumProductProductDetailSku" class="java.lang.Double"/>
+	<field name="componentsSumProductDetailSku" class="java.lang.Double"/>
+	<field name="premiumComponentsSumProductDetailSku" class="java.lang.Double"/>
 	<field name="totalVATSumProductDetailSku" class="java.lang.Double"/>
 	<field name="nameSkuSkuOrder" class="java.lang.String"/>
 	<field name="idBarcodeSkuSkuOrder" class="java.lang.String"/>
@@ -75,12 +71,12 @@
 	<field name="valueVATSkuOrder" class="java.lang.Double"/>
 	<field name="markupSkuOrder" class="java.lang.Double"/>
 	<field name="retailMarkupPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailMarkupSumProductDetail" class="java.lang.Double"/>
+	<field name="retailMarkupSumInBOMProductDetail" class="java.lang.Double"/>
 	<field name="retailVATPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailVATSumProductDetail" class="java.lang.Double"/>
+	<field name="retailVATSumInBOMProductDetail" class="java.lang.Double"/>
 	<field name="totalPremiumPriceSkuOrder" class="java.lang.Double"/>
-	<field name="componentsSumProductProductDetail" class="java.lang.Double"/>
-	<field name="quantityProductProductDetail" class="java.lang.Double"/>
+	<field name="componentsSumInBOMProductDetail" class="java.lang.Double"/>
+	<field name="quantityInBOMProductDetail" class="java.lang.Double"/>
 	<field name="shortNameUOMProductProductDetail" class="java.lang.String"/>
 	<field name="seriesNumberObject" class="java.lang.String"/>
 	<group name="captionGroup10">
@@ -142,7 +138,7 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Себестоимость (в розн.ценах)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Себестоимость (цена компонентов)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="55" height="12"/>
@@ -211,7 +207,7 @@
 					<textElement textAlignment="Center">
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantityProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{quantityInBOMProductDetail}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="70" height="12"/>
@@ -246,7 +242,7 @@
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Выход готового изделия: "+($F{quantityProductProductDetail}!=null?$F{quantityProductProductDetail}:"")+" "+($F{shortNameUOMProductProductDetail}!=null?$F{shortNameUOMProductProductDetail}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Выход готового изделия: "+($F{quantityInBOMProductDetail}!=null?$F{quantityInBOMProductDetail}:"")+" "+($F{shortNameUOMProductProductDetail}!=null?$F{shortNameUOMProductProductDetail}:"")]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="19">
@@ -299,7 +295,7 @@
 					<textElement textAlignment="Center">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Надбавка"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Надбавка, %"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="423" y="0" width="69" height="18"/>
@@ -355,7 +351,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{calcPremiumComponentsSumProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{premiumComponentsSumInBOMProductDetail}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="255" y="0" width="118" height="12"/>
@@ -368,7 +364,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top">
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{componentsSumProductProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{componentsSumInBOMProductDetail}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="12">
@@ -396,7 +392,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{productsPriceProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{productsPriceProductDetail}!=null?$F{productsPriceProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="220" y="0" width="37" height="12"/>
@@ -422,7 +418,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{densityPremiumVATComponentsPriceProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{densityPremiumVATComponentsPriceProductDetail}!=null?$F{densityPremiumVATComponentsPriceProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="70" height="12"/>
@@ -461,7 +457,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retailMarkupPriceProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{retailMarkupPriceProductDetail}!=null?$F{retailMarkupPriceProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.##">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="486" y="0" width="65" height="12"/>
@@ -474,7 +470,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retailVATPriceProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{retailVATPriceProductDetail}!=null?$F{retailVATPriceProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="432" y="0" width="54" height="12"/>
@@ -515,7 +511,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{productsSumProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{productsSumInBOMProductDetail}!=null?$F{productsSumInBOMProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="77" y="0" width="78" height="12"/>
@@ -541,7 +537,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retailMarkupSumProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{retailMarkupSumInBOMProductDetail}!=null?$F{retailMarkupSumInBOMProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="70" height="12"/>
@@ -580,7 +576,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{retailVATSumProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{retailVATSumInBOMProductDetail}!=null?$F{retailVATSumInBOMProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="0" y="12" width="551" height="1"/>
@@ -864,7 +860,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalSumProductProductDetailSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{premiumComponentsSumProductDetailSku}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="310" y="0" width="63" height="10"/>
@@ -877,7 +873,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{componentsPriceProductDetailSku}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{componentsSumProductDetailSku}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -69,8 +69,32 @@ backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
 
 @defineDocumentHeaderPricingCommittee(order, goodsStock);
 
+//-- Свойства для аггрегированных производств/расценок
+
+componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail)= roundCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail));
+VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  outputProductsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
+retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
+retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail);
+retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail),componentsSumProductDetail(productDetail));
+
+pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
+createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
+
+supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+
+valueRetailVATOutputDetail(outputDetail) += densityPremiumVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailMarkupOutputDetail(outputDetail) +=retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailVATSumOutputDetail(outputDetail)+= retailVATSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailMarkupSumOutputDetail(outputDetail) += retailMarkupSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailSumOutputDetail(outputDetail) += outputProductsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+
 EXTEND FORM order
     PROPERTIES(o)  BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder SHOWIF createPricingOrder(o)
+    PROPERTIES(pd) BACKGROUND backgroundRetailOrder(o) SHOWIF createPricingOrder(o) READONLY BEFORE outputProductsSumProductDetail
+                   componentsSumProductDetail, retailMarkupProductDetail, retailMarkupSumProductDetail, retailVATSumProductDetail
+
 ;
 EXTEND DESIGN order {
     headerRow1 {
@@ -85,20 +109,10 @@ EXTEND DESIGN order {
 
 EXTEND FORM orders
     PROPERTIES(o) READONLY BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder
+    PROPERTIES(pd) BACKGROUND backgroundRetailOrder(o) SHOWIF createPricingOrder(o) READONLY BEFORE outputProductsSumProductDetail
+                   componentsSumProductDetail, retailMarkupProductDetail, retailMarkupSumProductDetail, retailVATSumProductDetail
 ;
 
-pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
-createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
-
-supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
-supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
-
-valueRetailVATOutputDetail(outputDetail) += densityPremiumVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailMarkupOutputDetail(outputDetail) +=retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailVATSumOutputDetail(outputDetail)+= retailVATSumProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailMarkupSumOutputDetail(outputDetail) += retailMarkupSumProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailSumOutputDetail(outputDetail) += productsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 
 //-- аггр.расценка на основе производства
 

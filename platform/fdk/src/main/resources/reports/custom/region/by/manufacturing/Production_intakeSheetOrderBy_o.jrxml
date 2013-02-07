@@ -22,11 +22,9 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="o" class="java.lang.Integer"/>
-	<field name="objectClassName" class="java.lang.String"/>
 	<field name="nameGoodsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="nameComponentsStockOrder" class="java.lang.String"/>
 	<field name="nameGoodsStockOrder" class="java.lang.String"/>
-	<field name="nameNumeratorObject" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="seriesObject" class="java.lang.String"/>
 	<field name="seriesNumberObject" class="java.lang.String"/>
@@ -35,35 +33,14 @@
 	<field name="fromDateOrder" class="java.util.Date"/>
 	<field name="toDateOrder" class="java.util.Date"/>
 	<field name="noteOrder" class="java.lang.String"/>
-	<field name="quantityProductDetailOrder" class="java.lang.Double"/>
-	<field name="productsSumProductDetailOrder" class="java.lang.Double"/>
-	<field name="overQuantityComponentDetailOrder" class="java.lang.Double"/>
-	<field name="nameCalcPriceListTypeOrder" class="java.lang.String"/>
 	<field name="pd" class="java.lang.Integer"/>
 	<field name="indexProductDetail" class="java.lang.Integer"/>
 	<field name="idBarcodeSkuProductDetail" class="java.lang.String"/>
 	<field name="descriptionBOMProductDetail" class="java.lang.String"/>
-	<field name="quantityProductProductDetail" class="java.lang.Double"/>
-	<field name="shortNameUOMProductProductDetail" class="java.lang.String"/>
 	<field name="nameSkuProductDetail" class="java.lang.String"/>
-	<field name="nameProductProductDetail" class="java.lang.String"/>
 	<field name="shortNameUOMProductDetail" class="java.lang.String"/>
-	<field name="quantityProductDetail" class="java.lang.Double"/>
 	<field name="componentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="componentsSumProductProductDetail" class="java.lang.Double"/>
-	<field name="markupProductDetail" class="java.lang.Double"/>
 	<field name="productsPriceProductDetail" class="java.lang.Double"/>
-	<field name="productsSumProductDetail" class="java.lang.Double"/>
-	<field name="densityPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="VATSumProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumComponentsPriceProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumComponentsSumProductDetail" class="java.lang.Double"/>
-	<field name="calcVATComponentsSumProductDetail" class="java.lang.Double"/>
-	<field name="retailMarkupPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailMarkupSumProductDetail" class="java.lang.Double"/>
-	<field name="retailVATPriceProductDetail" class="java.lang.Double"/>
-	<field name="retailVATSumProductDetail" class="java.lang.Double"/>
 	<field name="UNPGoodsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="addressGoodsLegalEntityStockOrder" class="java.lang.String"/>
 	<group name="captionGroup10">
@@ -362,288 +339,252 @@
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="461" y="0" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="426" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="391" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="286" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="356" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="0" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="511" y="10" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="461" y="10" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="426" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="391" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="286" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="356" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="10" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="356" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="286" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="511" y="30" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="426" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="286" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="321" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="461" y="20" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="461" y="30" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="426" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="391" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="356" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="391" y="20" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="511" y="20" width="50" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="30" width="35" height="10"/>
 					<textElement textAlignment="Center">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="711" y="0" width="50" height="10"/>
@@ -712,8 +653,7 @@
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Итого"
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Итого"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="111" y="10" width="105" height="10"/>
@@ -726,8 +666,7 @@
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Всего по документу"
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Всего по документу"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="111" y="20" width="105" height="10"/>
@@ -740,8 +679,7 @@
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Изделия сдал, подпись"
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Изделия сдал, подпись"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="111" y="30" width="105" height="10"/>
@@ -754,8 +692,7 @@
 					<textElement textAlignment="Right">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Изделия получил, подпись"
-]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Изделия получил, подпись"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -783,10 +720,10 @@
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{seriesNumberObject}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{seriesNumberObject}!=null?$F{seriesNumberObject}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="747" y="70" width="55" height="10"/>
@@ -916,7 +853,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Отдел (отправитель): "+($F{nameGoodsStockOrder}!=null?$F{nameGoodsStockOrder}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Отдел (отправитель): "+($F{nameGoodsStockOrder}!=null?$F{nameGoodsStockOrder}:"___________________________________________")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="704" y="70" width="43" height="10"/>
@@ -939,10 +876,10 @@
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
-				<textElement textAlignment="Center">
-					<font size="8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{dateOrder})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{dateOrder}!=null?platform.base.BaseUtils.formatRussian($F{dateOrder}):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="672" y="90" width="75" height="20"/>
@@ -1020,8 +957,8 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+($F{nameGoodsLegalEntityStockOrder}!=null?$F{nameGoodsLegalEntityStockOrder}:"")+
-", адрес: "+($F{addressGoodsLegalEntityStockOrder}!=null?$F{addressGoodsLegalEntityStockOrder}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+($F{nameGoodsLegalEntityStockOrder}!=null?$F{nameGoodsLegalEntityStockOrder}:"___________________________________________")+
+", адрес: "+($F{addressGoodsLegalEntityStockOrder}!=null?$F{addressGoodsLegalEntityStockOrder}:"___________________________________________")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="622" y="90" width="50" height="20"/>
@@ -1182,13 +1119,12 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="187" y="0" width="29" height="10"/>
-				<textElement textAlignment="Center">
-					<font size="8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{shortNameUOMProductDetail}]]></textFieldExpression>
 			</textField>
@@ -1197,22 +1133,21 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="111" y="0" width="76" height="10"/>
-				<textElement textAlignment="Center">
-					<font size="8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{idBarcodeSkuProductDetail}!=null?$F{idBarcodeSkuProductDetail}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="561" y="0" width="50" height="10"/>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Right">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{componentsPriceProductDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{componentsPriceProductDetail}!=null?$F{componentsPriceProductDetail}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="611" y="0" width="50" height="10"/>
@@ -1226,29 +1161,26 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="511" y="0" width="50" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="286" y="0" width="35" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="111" height="10"/>
-				<textElement textAlignment="Center">
-					<font size="8"/>
+				<textElement>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nameSkuProductDetail}]]></textFieldExpression>
 			</textField>
@@ -1257,8 +1189,7 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="761" y="0" width="41" height="10"/>
@@ -1269,10 +1200,10 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="661" y="0" width="50" height="10"/>
-				<textElement textAlignment="Center">
+				<textElement textAlignment="Right">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{productsPriceProductDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{productsPriceProductDetail}!=null?$F{productsPriceProductDetail}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="711" y="0" width="50" height="10"/>
@@ -1286,24 +1217,21 @@
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="0" width="35" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="216" y="0" width="35" height="10"/>
 				<textElement textAlignment="Center">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""
-]]></textFieldExpression>
+				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -1318,7 +1246,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement>
-					<font size="8"/>
+					<font size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Всего за день (натуральных единиц)"]]></textFieldExpression>
 			</textField>

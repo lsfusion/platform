@@ -86,14 +86,9 @@ ordersOutput 'Заказы' (output) = GROUP CONCAT toString255(descriptionOrder
 outputProductDetail 'Кол-во (произведено)' (productDetail) = GROUP SUM quantityOutputDetail(outputDetail) IF isPostedOutputDetail(outputDetail)
                                                                    BY productDetailOutputDetail(outputDetail) PERSISTENT;
 
-//costOutputDetailBatch = ABSTRACT NUMERIC[14,3] (outputDetail, batch);
-//costProductDetailBatch (productDetail, batch) = GROUP SUM costOutputDetailBatch(outputDetail, batch) BY productDetailOutputDetail(outputDetail), batch;
-//countBatchProductDetail 'Кол-во партий' (productDetail) = GROUP SUM 1 IF costProductDetailBatch(productDetail, batch) BY productDetail PERSISTENT;
-//maxBatchProductDetail (productDetail) = GROUP MAX batch IF costProductDetailBatch(productDetail, batch) BY productDetail;
-
 toOutputProductDetail 'Не произведено' (productDetail) = quantityProductDetail (productDetail) (-) outputProductDetail(productDetail);
 
-toOutputProductDetailOrder 'Не оприходовано заказу' (order) =
+toOutputProductDetailOrder 'Не прозиведено по заказу' (order) =
     GROUP SUM toOutputProductDetail(productDetail) IF toOutputProductDetail(productDetail) > 0
           BY orderProductDetail(productDetail);
 
@@ -105,15 +100,6 @@ EXTEND DESIGN productDetails {
         PROPERTY(toOutputProductDetail) { background = #FFFFCC; }
     }
 }
-EXTEND FORM order
-            PROPERTIES(pd) READONLY toOutputProductDetail AFTER quantityProductDetail
-;
-EXTEND FORM orders
-            PROPERTIES(pd) READONLY toOutputProductDetail AFTER quantityProductDetail
-;
-
-
-
 
 priceUserOutputDetail(detail) <- IF priceListTypeUserOutputDetail(detail) THEN
                                     prevPricePriceListTypeSkuStockDateTime(priceListTypeUserOutputDetail(detail),
@@ -219,8 +205,28 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(le
 @defineDocumentHeaderCreate (order, createOutput, 'Создать документ производства');
 @defineDocumentDetailCreateCustom (order, productDetail, createOutput, 'Создать документ производства');
 
+@defineDocumentDetailQuantityCustomPrefix (productDetail, output, '(произведено)');
+outputQuantityProductDetail(detail) <- quantityProductDetail(detail) WHEN CHANGED(quantityProductDetail(detail));
+
+outputProductsSumProductDetail 'Сумма произведенного изделия' = DATA NUMERIC[16,2] (productDetail);
+outputProductsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+    WHEN CHANGED (outputQuantityProductDetail(productDetail)) OR
+         CHANGED (productsPriceProductDetail(productDetail)) OR
+         CHANGED(currencyProductDetail(productDetail));
+
+outputProductsSumProductDetailOrder 'Сумма произведенного изделия'(order) = GROUP SUM outputProductsSumProductDetail(detail) BY orderProductDetail(detail) IN documentSumGroup;
+
+backgroundOutputOrder 'Цвет' (order) = RGB(255, 224, 255) IF order IS order;
+showOutputOrder (order) =  order IS order AND NOT createOutputOrder(order);
+
 EXTEND FORM order
-            PROPERTIES(o)  createOutputOrder
+    PROPERTIES(o)  BACKGROUND backgroundOutputOrder(o) createOutputOrder
+    PROPERTIES(o)  BACKGROUND backgroundOutputOrder(o) SHOWIF createOutputOrder(o) outputProductsSumProductDetailOrder
+
+    PROPERTIES(pd) BEFORE delete(pd) SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o) outputProductsSumProductDetail
+
+    PROPERTIES(pd) READONLY outputProductDetail AFTER quantityProductDetail SHOWIF showOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
+    PROPERTIES(pd) outputQuantityProductDetail AFTER quantityProductDetail SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
 ;
 EXTEND DESIGN order {
     headerRow112 {
@@ -232,7 +238,13 @@ EXTEND DESIGN order {
 }
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY createOutputOrder
+
+    PROPERTIES(o)  READONLY BACKGROUND backgroundOutputOrder(o) createOutputOrder
+    PROPERTIES(o)  READONLY BACKGROUND backgroundOutputOrder(o) outputProductsSumProductDetailOrder
+
+    PROPERTIES(pd) READONLY SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o) outputProductsSumProductDetail
+    PROPERTIES(pd) READONLY outputProductDetail AFTER quantityProductDetail SHOWIF showOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
+    PROPERTIES(pd) READONLY outputQuantityProductDetail AFTER quantityProductDetail SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
 ;
 
 CLASS orderOutput 'Производство на основе заказа' : output;
@@ -277,12 +289,12 @@ descriptionOutput (output) += descriptionOrderOutput(output);
 
 productDetailOutputDetail (outputDetail) += productDetailOrderOutputDetail(outputDetail);
 skuOutputDetail(outputDetail) +=  skuProductDetail(productDetailOrderOutputDetail(outputDetail));
-quantityOutputDetail(outputDetail) += quantityProductDetail(productDetailOrderOutputDetail(outputDetail));
+quantityOutputDetail(outputDetail) += outputQuantityProductDetail(productDetailOrderOutputDetail(outputDetail));
 
 priceListTypeOutputDetail(outputDetail) += calcPriceListTypeProductDetail(productDetailOrderOutputDetail(outputDetail));
 
 priceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
-sumOutputDetail(outputDetail) += productsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
+sumOutputDetail(outputDetail) += outputProductsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 
 editOutput(output) += ACTION EXEC editOrder(orderOrderOutput(output));
 

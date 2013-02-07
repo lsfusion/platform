@@ -303,10 +303,10 @@ backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS ord
 
 //-- Подсчет цены изделия с учетом замен
 
-calcComponentsPriceProductDetail 'Цена расчетная (с/с)' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)/100
+calcComponentsPriceProductDetail 'Цена расчетная (с/с)' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)/(100 *quantityProduct(product))
     BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 
-calcPremiumComponentsPriceProductDetail 'Цена компонентов с надбавкой' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)/100
+calcPremiumComponentsPriceProductDetail 'Цена компонентов с надбавкой' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)/(100 *quantityProduct(product))
     BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 
 calcPremiumPriceProductDetail 'Цена расчетная (с надбавками)' (productDetail) = IF calcPriceListTypeProductDetail(productDetail) THEN
@@ -335,7 +335,7 @@ deleteComponentOrder 'Очистить' =  ACTION (order) {
 
 //-- Расчет НДС с надбавками
 calcPremiumVATComponentsPriceProductDetail 'Сумма НДС с надбавками' (productDetail)=
-    [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)*(valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/100
+    [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)*(valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/(100 *quantityProduct(product))
     BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 densityPremiumVATComponentsPriceProductDetail 'Уд.вес НДС изделия' (productDetail)= [100*X/(Y-X)](
     calcPremiumVATComponentsPriceProductDetail(productDetail),calcPremiumComponentsPriceProductDetail(productDetail));
@@ -347,16 +347,6 @@ fillPriceProductsOrder 'Заполнить цены для изделий' = ACT
         SET productsPriceProductDetail(productDetail) <- calcPremiumPriceProductDetail(productDetail);
     }
 } TOOLBAR;
-
-
-
-//-- Свойства для аггрегированных производств/расценок
-
-componentsSumProductDetail(productDetail)= roundCurrency((componentsPriceProductDetail(productDetail)*quantityProductDetail(productDetail)),currencyProductDetail(productDetail));
-VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  productsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
-retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
-retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail);
-retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail),componentsSumProductDetail(productDetail));
 
 //-- Замены для компонентов
 
@@ -617,7 +607,7 @@ DESIGN componentDetails FROM DEFAULT {
 FORM productDetails 'Строка изделия'
     OBJECTS d = productDetail
     PROPERTIES(d) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, descriptionProductDetail,
-                  quantityProductDetail, productsPriceProductDetail, productsSumProductDetail //componentsPriceProductDetail, componentsSumProductDetail, markupProductDetail,
+                  quantityProductDetail, productsPriceProductDetail, productsSumProductDetail
 
     DIALOG productDetail OBJECT d
 ;
