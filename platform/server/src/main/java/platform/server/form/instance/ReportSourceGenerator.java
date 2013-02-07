@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.Result;
 import platform.base.col.MapFact;
@@ -215,7 +216,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                     }
 
-                    data.add(keyList.mapOrder(resultData.getKey(i)).toJavaList(), propertyValues);
+                    data.add(BaseUtils.mapList(keyList.toJavaList(), resultData.getKey(i)), propertyValues);
                 }
 
                 sources.put(sid, data);
