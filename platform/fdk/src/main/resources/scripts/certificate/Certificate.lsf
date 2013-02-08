@@ -22,10 +22,15 @@ NAVIGATOR {
 // -------------------------- Метакод по расширению форм и созданию свойств -------------------- //
 META extendCertificateForm(prop, char)
 
+    text###prop##Detail 'Дополнительные документы' = ABSTRACT TEXT (prop##Detail);
+    textUser###prop##Detail 'Дополнительные документы' = DATA TEXT (user###prop##Detail);
+    text###prop##Detail(detail) += textUser###prop##Detail(detail);
+
     EXTEND FORM user###prop
         OBJECTS d2 = user###prop##Detail
         PROPERTIES (d2) indexUser###prop##Detail, idBarcodeSkuUser###prop##Detail, nameSkuUser###prop##Detail,
-                        descriptionBatchUser###prop##Detail ON CHANGE EXEC batchDialogUser###prop##Detail(d)
+                        descriptionBatchUser###prop##Detail ON CHANGE EXEC batchDialogUser###prop##Detail(d),
+                        textUser###prop##Detail
         FILTERS user###prop##User###prop##Detail(d2) == char
     ;
 
@@ -34,7 +39,11 @@ META extendCertificateForm(prop, char)
             NEW certContainer AFTER d.box {
                 caption = 'Сертификаты';
                 NEW headerCertContainer;
-                ADD d2.box;
+                ADD d2.box{
+                    PROPERTY(textUser###prop##Detail){
+                        preferredSize = (300, 18);
+                    }
+                }
             }
         }
     }
@@ -42,7 +51,7 @@ META extendCertificateForm(prop, char)
     EXTEND FORM prop##s
         OBJECTS d2 = prop##Detail
         PROPERTIES(d2) READONLY index###prop##Detail, idBarcodeSku###prop##Detail, nameSku###prop##Detail,
-                                descriptionBatch###prop##Detail
+                                descriptionBatch###prop##Detail, text###prop##Detail
         FILTERS prop###prop##Detail(d2) == char
     ;
 
@@ -51,7 +60,11 @@ META extendCertificateForm(prop, char)
             NEW certContainer AFTER d.box {
                 caption = 'Сертификаты';
                 NEW headerCertContainer;
-                ADD d2.box;
+                ADD d2.box{
+                    PROPERTY(text###prop##Detail){
+                        preferredSize = (300, 18);
+                    }
+                }
             }
         }
     }
@@ -71,7 +84,7 @@ META defineCertificateInvoice(prop, caption)
 
     EXTEND FORM userInvoice
         PROPERTIES(i) description###prop###userInvoice
-        PROPERTIES(d2) description###prop###userInvoiceDetail
+        PROPERTIES(d2) description###prop###userInvoiceDetail BEFORE textUserInvoiceDetail
     ;
 
     EXTEND DESIGN userInvoice{
@@ -81,7 +94,7 @@ META defineCertificateInvoice(prop, caption)
     }
 
     EXTEND FORM invoices
-        PROPERTIES(d2) READONLY description###prop###invoiceDetail
+        PROPERTIES(d2) READONLY description###prop###invoiceDetail BEFORE textInvoiceDetail
     ;
 END
 
@@ -99,7 +112,7 @@ META defineCertificateShipment(prop, caption)
 
     EXTEND FORM userShipment
         PROPERTIES(s) description###prop###userShipment
-        PROPERTIES(d2) description###prop###userShipmentDetail
+        PROPERTIES(d2) description###prop###userShipmentDetail BEFORE textUserShipmentDetail
     ;
 
     EXTEND DESIGN userShipment{
@@ -109,7 +122,7 @@ META defineCertificateShipment(prop, caption)
     }
 
     EXTEND FORM shipments
-        PROPERTIES(d2) READONLY description###prop###shipmentDetail
+        PROPERTIES(d2) READONLY description###prop###shipmentDetail BEFORE textShipmentDetail
     ;
 END
 
