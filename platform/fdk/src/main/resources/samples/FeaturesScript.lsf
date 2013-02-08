@@ -279,13 +279,13 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // Exec action
 // statement syntax:
-// EXEC actionPropertyName(propertyExpr1, ..., propertyExprN)
+// [EXEC] actionPropertyName(propertyExpr1, ..., propertyExprN)
 // or
-// EXEC [actionPropertyExpr](propertyExpr1, ..., propertyExprN)
+// [EXEC] [actionPropertyExpr](propertyExpr1, ..., propertyExprN)
 
 // Set action
 // statement syntax:
-// SET propertyExpressionTo <- propertyExpressionFrom [WHERE conditionalExpression]
+// [SET] name(param1, .., paramN) <- propertyExpressionFrom [WHERE conditionalExpression]
 
 // If action
 // statement syntax:
