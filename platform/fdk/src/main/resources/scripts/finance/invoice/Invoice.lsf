@@ -291,10 +291,15 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                             ADD PROPERTY(isCommissionUserInvoice);
                         }
                     }
-                    ADD i.documentPrmGroup {
-                        childConstraints = TO THE RIGHTBOTTOM;
-                        ADD PROPERTY(toShowProp###userInvoice);
+
+                    NEW headerRow10 {
+                        childConstraints = TO THE BOTTOM;
+                        ADD i.documentPrmGroup {
+                            childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(toShowProp###userInvoice);
+                        }
                     }
+
                     NEW headerRow13 {  // title = 'Сооздать на основании';
                         childConstraints = TO THE RIGHTBOTTOM;
                     }
@@ -598,12 +603,50 @@ META extendFormDocumentPackageSkuCustom(object, form, concrete, toShowProp)
     ;
 END
 
-//numberDocument(invoice) += numberInvoice(invoice);
-//seriesDocument(invoice) += seriesInvoice(invoice);
-//dateDocument(invoice) += dateInvoice(invoice);
-//
-//skuDocumentDetail(invoiceDetail) += skuInvoiceDetail(invoiceDetail);
-//quantityDocumentDetail(invoiceDetail) += quantityInvoiceDetail(invoiceDetail);
-//priceDocumentDetail(invoiceDetail) += priceInvoiceDetail(invoiceDetail);
-//
-//documentDocumentDetail(invoiceDetail) += invoiceInvoiceDetail(invoiceDetail);
+
+// вторая валюта
+META defineHomeCurrencyInvoice(invoice)
+    isHomeCurrency 'Доп. валюта' = DATA BOOLEAN(invoice) IN documentPrmGroup;
+
+    homeCurrencyInvoice = ABSTRACT currency(invoice);
+    homeCurrencyUserInvoice = DATA currency(invoice);
+    homeCurrencyInvoice(invoice) += homeCurrencyUserInvoice(invoice);
+    nameHomeCurrencyUserInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyUserInvoice(invoice));
+
+    typeExchangeInvoice = ABSTRACT typeExchange(invoice);
+    typeExchangeUserInvoice = DATA typeExchange(invoice);
+    typeExchangeInvoice(invoice) += typeExchangeUserInvoice(invoice);
+    nameTypeExchangeUserInvoice 'Тип обмена' (invoice) = name(typeExchangeUserInvoice(invoice));
+
+    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), homeCurrencyInvoice(invoice), dateInvoice(invoice));
+
+    roundCurrencyInvoice(number, invoice) = roundCurrency(number, currencyInvoice(invoice));
+    ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
+
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](invoice##Detail);
+    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](user###invoice##Detail);
+    homePriceInvoiceDetail(invoiceDetail) += homePriceUserInvoiceDetail(invoiceDetail);
+
+    homePriceUserInvoiceDetail(invoice##Detail) <- ratePriceInvoiceDetail(invoice##Detail) WHEN CHANGED (dateInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
+                                                                                                CHANGED (homeCurrencyUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
+                                                                                                CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail)));
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice
+        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
+        PROPERTIES(d) homePriceUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isHomeCurrency(i)
+    ;
+
+    EXTEND DESIGN userInvoice {
+        headerRow10 {
+            NEW headerRow100 {
+                title = 'Конвертация';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(nameHomeCurrencyUserInvoice);
+                ADD PROPERTY(nameTypeExchangeUserInvoice);
+                ADD PROPERTY(rateExchangeInvoice);
+            }
+        }
+    }
+END
+

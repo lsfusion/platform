@@ -2730,6 +2730,10 @@ DESIGN documents FROM DEFAULT{
     }
 }
 
+//META implementDocumentDetail
+//
+//END
+
 META implementDocument(object)
     numberDocument(object) += number###object(object);
     seriesDocument(object) += series###object(object);

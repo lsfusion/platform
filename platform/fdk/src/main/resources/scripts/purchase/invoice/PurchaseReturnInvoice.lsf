@@ -14,6 +14,9 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
+// вторая валюта
+@defineHomeCurrencyInvoice(invoice);
+
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 @implementContractLedger(, userInvoice, contractSku);
@@ -46,3 +49,5 @@ EXTEND FORM userInvoice
             FILTER 'С поступлением ' 'F8' inUserInvoiceSku(i, s)
             FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
 ;
+
+
