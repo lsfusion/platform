@@ -453,7 +453,7 @@ resetDataSkuLedgerBatchCost 'Перерассчитать себестоимос
     IF formResult() == formResult.ok THEN {
 
         FOR d == chosenDate('d') DO {
-            SET costDataSkuLedgerBatch(ledger, batch) AND dateDataSkuLedger(ledger) >= (d AS DATE) <- NULL;
+            SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE dateDataSkuLedger(ledger) >= (d AS DATE);
             EXEC apply();
 
             FOR dateSkuLedger(ledger) >= (d AS DATE) AND isPostedDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger) DO {

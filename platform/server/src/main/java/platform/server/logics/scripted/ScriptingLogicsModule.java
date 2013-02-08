@@ -29,10 +29,8 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
@@ -643,8 +641,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedJProp(LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        //            assert mainProp instanceof LAP; should use JoinAction
-        if(mainProp instanceof LAP)
+        //  checkCalculationProperty(mainProp);
+        if (mainProp instanceof LAP)    // todo [dale]: Это нужно убирать, пока оставил для += действий.
             return addScriptedJoinAProp(mainProp, paramProps);
 
         checkParamCount(mainProp, paramProps.size());
@@ -1023,11 +1021,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LPWithParams addScriptedSetPropertyAProp(List<String> context, LPWithParams toProperty, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toProperty + ", " + fromProperty + ", " + whereProperty + ");");
-        if (toProperty.property == null) {
-            errLog.emitLeftSideMustBeAProperty(parser);
-        }
+    public LPWithParams addScriptedSetPropertyAProp(List<String> context, String toPropertyName, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSetPropertyAProp(" + context + ", " + toPropertyName + ", " + fromProperty + ", " + whereProperty + ");");
+        LP toPropertyLP = findLPByCompoundName(toPropertyName);
+        LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
         List<LPWithParams> lpList = BaseUtils.toList(toProperty, fromProperty);
         if (whereProperty != null) {
@@ -1353,37 +1350,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(Integer.parseInt(text.substring(0, 2)), Integer.parseInt(text.substring(3, 5)), 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, List<LPWithParams> props, String className, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + props + ", " + className + ", " + modalityType + ", " + sessionScope + ");");
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
 
         FormEntity form = findFormByCompoundName(formName);
         checkFormActionObjectsMapping(objectNames, mapping);
-
-        DataClass cls = null;
-        if (className != null) {
-            ValueClass valueClass = findClassByCompoundName(className);
-            checkFormDataClass(valueClass);
-            cls = (DataClass) valueClass;
-        }
 
         ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
         for (int i = 0; i < objectNames.size(); i++) {
             objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
-        ActionPropertyObjectEntity<?>[] propObjects = new ActionPropertyObjectEntity<?>[props == null ? 0 : props.size()];
-        if (props != null) {
-            for (int i = 0; i < props.size(); i++) {
-                PropertyObjectInterfaceEntity[] params = new PropertyObjectInterfaceEntity[props.get(i).usedParams.size()];
-                for (int j = 0; j < props.get(i).usedParams.size(); j++) {
-                    params[j] = objects[props.get(i).usedParams.get(j)];
-                }
-                propObjects[i] = form.addPropertyObject((LAP<?>) props.get(i).property, params);
-            }
-        }
-        assert propObjects.length<=1;
-        assert cls==null;
-        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, propObjects.length==0?null:propObjects[0], sessionScope, modalityType, checkOnOk), new ArrayList<Integer>());
+        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, null, sessionScope, modalityType, checkOnOk), new ArrayList<Integer>());
         if (mapping.size() > 0) {
             res = addScriptedJoinAProp(res.property, mapping);
         }

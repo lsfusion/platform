@@ -1602,13 +1602,11 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, $exprList.props, $className.sid, modalityType, sessionScope, checkOnOk);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, modalityType, sessionScope, checkOnOk);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })? 
-		('INIT' exprList=nonEmptyPropertyExpressionList[objects, false])?
-		('CLASS' className=classId)?
 		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
@@ -1831,7 +1829,7 @@ execActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 		$property = self.addScriptedJoinAProp($prop.property, $exprList.props);
 	}
 }
-	:	'EXEC'
+	:	('EXEC')?
 		prop=propertyObject
 		{ if (inPropParseState()) self.checkActionProperty($prop.property); }
 		'('
@@ -1846,13 +1844,14 @@ setActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSetPropertyAProp(context, $p1.property, $p2.property, condition);
+		$property = self.addScriptedSetPropertyAProp(context, $propName.sid, $params.props, $expr.property, condition);
 	}
 }
-	:	'SET'
-		p1=propertyExpression[newContext, true]
+	:	('SET')?
+		propName=compoundID
+		'(' params=singleParameterList[newContext, true] ')'
 		'<-'
-		p2=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left expression
+		expr=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left side
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
@@ -2614,6 +2613,14 @@ nonEmptyCompoundIdList returns [List<String> ids]
 }
 	:	firstId=compoundID	{ $ids.add($firstId.sid); }
 		(',' nextId=compoundID	{ $ids.add($nextId.sid); })*
+	;
+
+singleParameterList[List<String> context, boolean dynamic] returns [List<LPWithParams> props]
+@init {
+	props = new ArrayList<LPWithParams>();
+}
+	:	(first=singleParameter[context, dynamic] { props.add($first.property); }
+		(',' next=singleParameter[context, dynamic] { props.add($next.property); })*)?
 	;
 
 propertyExpressionList[List<String> context, boolean dynamic] returns [List<LPWithParams> props] 

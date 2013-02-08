@@ -168,10 +168,10 @@ createCustomsZone 'Задать таможенную зону и связать 
         SET customsZoneCustomCategory9(customCategory9) <- g WHERE customCategory9 IS customCategory9;
         SET customsZoneSubCategory(subCategory) <- g WHERE subCategory IS subCategory;
         SET customsZoneTypeDuty(typeDuty) <- g WHERE typeDuty IS typeDuty;
-        SET customCategory10DataSkuCustomsZone(s, xxx) IF xxx == g <- customCategory10DataSku(s);
+        SET customCategory10DataSkuCustomsZone(s, xxx) <- customCategory10DataSku(s) WHERE xxx == g ;
         SET subCategoryDataSkuCustomsZone(sku, customsZone) <- subCategoryDataSku(sku) WHERE customsZone IS customsZone;
-        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, xxx) IF xxx == g <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d);
-        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) IF xxx == g <- customCategory10CustomCategoryOrigin(customCategoryOrigin);
+        SET customCategory10CategoryGenderCompositionTypeFabricCustomsZone(a, b, c, d, xxx) <- customCategory10FreightCategoryGenderCompositionTypeFabric(a, b, c, d) WHERE xxx == g;
+        SET customCategory10CustomCategoryOriginCustomsZone(customCategoryOrigin, xxx) <- customCategory10CustomCategoryOrigin(customCategoryOrigin) WHERE xxx == g;
     }
 } CONFIRM;
 

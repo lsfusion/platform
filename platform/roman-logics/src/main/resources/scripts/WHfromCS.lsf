@@ -254,7 +254,7 @@ addDialogSkuFreightUnitWHfromCSRBarcode 'Ввод штрих-кода' = ACTION 
                 FORM addBarcodeWHfromCSRSku OBJECTS w = WHfromCSR MODAL;
             }
             IF formResult() == formResult.ok THEN {
-                SET barcode(sku) IF sku == chosenObject('s') <- barcode;
+                SET barcode(sku) <- barcode WHERE sku == chosenObject('s') ;
                 SET dialogBarcodeSku() <- chosenObject('s');
             } ELSE {
                 EXEC createSkuWHfromCSR(barcode);
@@ -265,8 +265,9 @@ addDialogSkuFreightUnitWHfromCSRBarcode 'Ввод штрих-кода' = ACTION 
         IF dialogBarcodeSku() IS sku THEN {
 
             IF dialogBarcodeDetail() IS WHfromCSRDetail  THEN {
-                SET quantityWHfromCSRDetail(detail) IF detail == dialogBarcodeDetail() <-
-                    quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail);
+                SET quantityWHfromCSRDetail(detail) <-
+                    quantityWHfromCSRDetail(detail) (+) (1.0 IF detail IS WHfromCSRDetail)
+                    WHERE detail == dialogBarcodeDetail();
                 } ELSE {
 
                 ADDOBJ WHfromCSRDetail;

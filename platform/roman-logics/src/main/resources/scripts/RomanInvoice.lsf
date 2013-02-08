@@ -19,17 +19,17 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 changeNameSkuLanguageInvoice = ACTION (sku, invoice) {
     REQUEST STRING[50] INPUT;
-    SET translateNameSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+    SET translateNameSkuLanguage(sku, language) <- requestedString() WHERE language == languageInvoice(invoice);
 }
 
 changeMainCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+    SET mainCompositionSkuLanguage(sku, language) <- requestedString() WHERE language == languageInvoice(invoice);
 }
 
 changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionSkuLanguage(sku, language) IF language == languageInvoice(invoice) <- requestedString();
+    SET additionalCompositionSkuLanguage(sku, language) <- requestedString() WHERE language == languageInvoice(invoice);
 }
 
 // ----------- Групповое изменение составов ----------------- //

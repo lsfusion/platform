@@ -19,12 +19,12 @@ PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
 
 changeMainCompositionSkuLanguage = ACTION (sku, freight) {
     REQUEST STRING[200] INPUT;
-    SET mainCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
+    SET mainCompositionSkuLanguage(sku, language) <- requestedString() WHERE language == languageFreight(freight);
 }
 
 changeAdditionalCompositionSkuLanguage = ACTION (sku, freight) {
     REQUEST STRING[200] INPUT;
-    SET additionalCompositionSkuLanguage(sku, language) IF language == languageFreight(freight) <- requestedString();
+    SET additionalCompositionSkuLanguage(sku, language) <- requestedString() WHERE language == languageFreight(freight);
 }
 
 mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);

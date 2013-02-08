@@ -219,7 +219,7 @@ addDetailDialogTerminalListInventory 'Заполнить из документа
     IF formResult() == formResult.ok THEN {
         LOCAL document = terminalDocument ();
         SET document() <- chosenObject('td');
-        SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
+        SET usedTerminalDocument(terminalDocument) <- TRUE WHERE terminalDocument == document();
 
         LOCAL page = pageInventory ();
         LOCAL detailCount = INTEGER();

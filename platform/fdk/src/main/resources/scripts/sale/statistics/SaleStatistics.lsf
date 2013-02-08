@@ -583,7 +583,7 @@ loadDefaultStatisticGroup 'Добавить стат. группы' = ACTION (id
 
 
 loadDefaultResidentCountry 'Добавить отеч. производ' = ACTION (idCountry, idCountry2)  {
-    SET residentCountryCountry(a,b) IF a IS country AND b IS country <- TRUE WHERE a == countrySID(idCountry) AND b == countrySID(idCountry2);
+    SET residentCountryCountry(a,b) <- TRUE WHERE a == countrySID(idCountry) AND b == countrySID(idCountry2) AND a IS country AND b IS country ;
 }
 
 loadDefaultStatisticGroups 'Загрузить стандартные статистические группы' = ACTION () {

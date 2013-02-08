@@ -216,7 +216,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         ADDOBJ labelTransaction;
         FOR t == addedObject() DO {
             SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
-            SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- 1;
+            SET quantityLabelTransactionBarcode(t, barcode) <- 1 WHERE inLabelTransactionBarcode(t, barcode);
             EXEC createLabelTransactionFillParams(t, departmentStore);
             FORM customLabelTransaction OBJECTS l = t AS labelTransaction MODAL;
             IF formResult() == formResult.ok THEN {
@@ -230,7 +230,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
             ADDOBJ labelTransaction;
             FOR t == addedObject() DO {
                 SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelTypeBarcodeDepartmentStoreDate(barcode, departmentStore, date) == l;
-                SET quantityLabelTransactionBarcode(t, barcode) AND inLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStoreDate(barcode, departmentStore, date);
+                SET quantityLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStoreDate(barcode, departmentStore, date) WHERE inLabelTransactionBarcode(t, barcode);
                 SET labelTypeLabelTransaction(t) <- l;
                 EXEC createLabelTransactionFillParams(t, departmentStore);
                 // вызываем печатную форму для каждого из них

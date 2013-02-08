@@ -408,7 +408,7 @@ certificatedDeclarationSku 'Необходимость сертификации'
 
 changeCertificatedDeclarationSku = ACTION (declarationDetail) {
     REQUEST BOOLEAN INPUT;
-    SET certificatedDeclarationSku(declaration, sku) IF declaration == declarationDeclarationDetail(declarationDetail) AND sku == skuDeclarationDetail(declarationDetail) <- requestedLogical();
+    SET certificatedDeclarationSku(declaration, sku) <- requestedLogical() WHERE declaration == declarationDeclarationDetail(declarationDetail) AND sku == skuDeclarationDetail(declarationDetail);
 }
 
 certificatedDeclarationDetail 'Необходимость сертификации' (declarationDetail) = certificatedDeclarationSku(declarationDeclarationDetail(declarationDetail),

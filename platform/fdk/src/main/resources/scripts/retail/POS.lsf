@@ -385,7 +385,7 @@ openCurrentZReport 'Открыть Z-отчет' = ACTION () {
         SET numberZReport(z) <- toString255(z);
         SET cashRegisterZReport(z) <- currentCashRegister();
         SET departmentStoreZReport(z) <- departmentStoreCashRegister(currentCashRegister()); // todo : приходится ставить из-за того, что на ADDOBJ срабатывает resolveAdd
-        SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- z AS zReport;
+        SET zReportCashRegister(cashRegister) <- z AS zReport WHERE cashRegister == currentCashRegister();
         EXEC apply();
     }
 } CONFIRM IN receiptZReportGroup;
@@ -404,7 +404,7 @@ closeCurrentZReport 'Закрыть Z-отчет' = ACTION () {
             SET sumCashOutcomeCashOperation(o) <- curSumCashCashOperation(cashRegisterZReport(currentZReport()));
         }
     }
-    SET zReportCashRegister(cashRegister) IF cashRegister == currentCashRegister() <- NULL;
+    SET zReportCashRegister(cashRegister) <- NULL WHERE cashRegister == currentCashRegister();
     EXEC apply();
 } CONFIRM IN receiptZReportGroup;
 

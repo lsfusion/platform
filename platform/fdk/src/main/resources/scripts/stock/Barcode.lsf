@@ -130,8 +130,9 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
             LOCAL dialogBarcodeDetail = idetail();
             SET dialogBarcodeDetail() <- idetail###object##Sku(object, dialogBarcodeSku());
             IF dialogBarcodeDetail() IS idetail THEN {
-                SET quantity###idetail(detail) IF detail == dialogBarcodeDetail() <-
-                    quantity###idetail(detail) (+) (amountBarcode(barcodeIdDate(barcode, date###object(object))) IF detail IS idetail);
+                SET quantity###idetail(detail) <-
+                    quantity###idetail(detail) (+) (amountBarcode(barcodeIdDate(barcode, date###object(object))) IF detail IS idetail)
+                    WHERE detail == dialogBarcodeDetail();
             } ELSE {
                 FOR ADDOBJ w = idetail DO {
                     SET object###idetail(w) <- object;

@@ -29,9 +29,9 @@ countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF rang
 maxDataRangeTax(tax, country) = UNION OVERRIDE 0 IF tax IS tax AND country IS country, [GROUP MAX numberRange(range) BY taxRange(range), countryRange(range)](tax, country);
 addNewRange 'Добавить шкалу' = ACTION (tax, country) {
     ADDOBJ range;
-    SET numberRange(r) IF r == addedObject() <- maxDataRangeTax(tax, country) + 1;
-    SET countryRange(r) IF r == addedObject() <- country AS country;
-    SET taxRange(r) IF r == addedObject() <- tax AS tax;
+    SET numberRange(r) <- maxDataRangeTax(tax, country) + 1 WHERE r == addedObject();
+    SET countryRange(r) <- country AS country WHERE r == addedObject();
+    SET taxRange(r) <- tax AS tax WHERE r == addedObject();
 } TOOLBAR IMAGE 'add.png';
 
 CLASS STATIC rangeType 'Для каких подразделений действует шкала'

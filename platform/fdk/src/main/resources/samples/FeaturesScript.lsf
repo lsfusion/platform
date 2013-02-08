@@ -366,25 +366,25 @@ PROPERTIES(d) store, script, evalScript;
 
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
-    SET (name(a) AND a IS article) <- (name(s) AND s IS store);
+    name(a) <- (name(s) AND s IS store) WHERE a IS article;
 };
 
 copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION AUTOAPPLY {
-    SET name(a) <- [FORMULA STRING[20] '$1 || $2'](name(a), name(s));
+    name(a) <- [FORMULA STRING[20] '$1 || $2'](name(a), name(s));
 };
 
 copyStoreNameToArticleError 'Скопировать имя склада в имя артикля (с ошибкой)' (s, a) = ACTION(s, a) NEWSESSION {
-    SET name(a) <- name(s);
-    EXEC apply();
+    name(a) <- name(s);
+    apply();
 };
 
 createNewStore 'Добавить большой склад' = ACTION () {
     ADDOBJ store;
 
-    SET sessionObj() <- addedObject();
+    sessionObj() <- addedObject();
 
-    SET name(k) IF k == sessionObj() <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', sessionObj());
-    SET storeSize(k) IF k == sessionObj() <- storeSize.big;
+    name(k) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', sessionObj()) WHERE k == sessionObj() ;
+    storeSize(k) <- storeSize.big WHERE k == sessionObj();
 } TOOLBAR IMAGE 'add.png';
 
 //////////////// TEST PUSHING FOR //////
@@ -395,26 +395,26 @@ selArt = DATA SESSION BOOLEAN (article);
 
 testExec = ACTION (document, article) {
     IF quantity(document, article) > 3 THEN
-        SET name(article) <- 'More then 3';
+        name(article) <- 'More then 3';
 }
 
 testPush = ACTION(document) {
 
     FOR selArt(article) DO // to be pushed
-        EXEC testExec(document, article);
+        testExec(document, article);
 
     FOR selCur(document, article) ORDER date(document) DO {  // to be pushed
-        SET quantity(document, article) <- 5;
+        quantity(document, article) <- 5;
     }
 
     LOCAL i = INTEGER ();
-    SET i() <- 0;
+    i() <- 0;
     FOR selArt(article) DO // not to be pushed
-        SET i() <- i() + 1;
+        i() <- i() + 1;
     MESSAGE [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('I= ', i());
 
     FOR selAll(document2, article) ORDER date(document2) DO { // to be pushed
-        SET name(article) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('Article ', quantity(document2, article));
+        name(article) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('Article ', quantity(document2, article));
     }
 
     FOR ADDOBJ article DO {
@@ -426,29 +426,29 @@ testPush = ACTION(document) {
 testPush2 = ACTION(document) {
 
     FOR date(document2) DO { // to be pushed
-        SET name(article) <- 'NEW' IF article IS article IF document IS incomeDocument;
+        name(article) <- 'NEW' IF article IS article IF document IS incomeDocument;
     }
 
     FOR quantity(document2, article) ORDER date(document2) DO { // to be pushed
-        SET quantity(document2, article) <- 6;
-        SET name(article) <- 'Changed';
+        quantity(document2, article) <- 6;
+        name(article) <- 'Changed';
     }
 
     LOCAL i = INTEGER ();
-    SET i() <- 0;
+    i() <- 0;
     FOR date(document2) DO
         FOR quantity(document2, article) > 3 DO {
-            SET i() <- i() + 1;
+            i() <- i() + 1;
         }
     MESSAGE [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('I= ', i());
 
-    SET date(document) <- NULL;
+    date(document) <- NULL;
 }
 
 copy = ACTION(document) {
     FOR quantity(document, article) ADDOBJ article DO {
-        SET name(added) <- name(article);
-        SET quantity(document, added) <- quantity(document, article);
+        name(added) <- name(article);
+        quantity(document, added) <- quantity(document, article);
     }
 }
 
@@ -491,14 +491,14 @@ constraintAction (store, article) = ACTION (store, article) {
     }
 };
 
-WHEN foo(store,article)>10000 DO EXEC constraintAction(store, article) ORDER name(article) SESSION;
+WHEN foo(store,article)>10000 DO constraintAction(store, article) ORDER name(article) SESSION;
 
 /////////////GLOBAL EVENT STATEMENT//////////////
 // Syntax:
 // ON (APPLY | SESSION) action;
 
 globalInt() = DATA INTEGER ();
-ON SESSION SET globalInt() <- globalInt() (+) 1;
+ON SESSION globalInt() <- globalInt() (+) 1;
 
 ///////////////////ASPECT STATEMENT//////////////
 // Syntax:
@@ -567,7 +567,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
     ADDOBJ article;
 
     FOR (k == addedObject()) DO {
-        SET name(k) <- 'this is new article';
+        name(k) <- 'this is new article';
         BREAK;
     } ELSE
         MESSAGE 'Object wasnt added';
@@ -579,10 +579,10 @@ showDocumentArticleModalForm 'Показать модальную "По доку
         MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
 
         FOR (k == chosenObject('article')) DO {
-            SET name(k) <- 'THIS article was chosen in modal form';
+            name(k) <- 'THIS article was chosen in modal form';
         };
         FOR (k == store(chosenObject('document'))) DO {
-            SET name(k) <- 'Document for THIS store was chosen in modal form';
+            name(k) <- 'Document for THIS store was chosen in modal form';
         };
 
         RETURN;
@@ -593,7 +593,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
 
 i() = DATA SESSION INTEGER ();
 testAction 'Показать "По документам" 3 раза' = ACTION() {
-    SET i() <- 0;
+    i() <- 0;
     WHILE (i() < 3) DO {
         FORM documentArticle MODAL CHECK;
         IF (formResult() == formResult.ok) THEN {
@@ -602,7 +602,7 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
             MESSAGE 'You pressed "close"';
         };
 
-        SET i() <- i() + 1;
+        i() <- i() + 1;
     };
 };
 
@@ -613,8 +613,8 @@ PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 
 showTestModalForm 'Показать док-модальную форму' = ACTION() {
     FORM testModalForm NEWSESSION DOCKED_MODAL;
-    SET name(k) IF k == chosenObject('store') IF (formResult() == formResult.ok) <- chosenString('s');
-    SET name(k) IF k == chosenObject('article') IF (formResult() == formResult.ok) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i'));
+    name(k) <- chosenString('s') WHERE k == chosenObject('store') IF (formResult() == formResult.ok);
+    name(k) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i')) WHERE k == chosenObject('article') IF (formResult() == formResult.ok);
 };
 
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
@@ -651,21 +651,24 @@ testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
         REQUEST COLOR {
             REQUEST COLOR INPUT;
             IF (requestedColor() == #FF0000) THEN {
-                SET requestedColor() <- #00FF00;
+                requestedColor() <- #00FF00;
             }
-            SET scolor(s) IF s IS store <- requestedColor();
+            scolor(s) <- requestedColor() WHERE s IS store;
         }
     } ELSE {
         MESSAGE 'Нет... ';
     }
 };
 
+loadf(s) = ACTION OPENFILE simage(s);
+savef(s) = ACTION LOADFILE simage(s);
+
 FORM storeArticle 'По складам'
 OBJECTS s=store '-Склад-', a=article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() DRAWTOTOOLBAR, testRequestInput(s) DRAWTOTOOLBAR
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest
+PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
 FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)

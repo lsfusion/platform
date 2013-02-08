@@ -286,7 +286,7 @@ META defineAddDetailDialogTerminal (object, skuProp)
         IF formResult() == formResult.ok THEN {
             LOCAL document = terminalDocument ();
             SET document() <- chosenObject('td');
-            SET usedTerminalDocument(terminalDocument) IF terminalDocument == document()  <- TRUE;
+            SET usedTerminalDocument(terminalDocument) <- TRUE WHERE terminalDocument == document()  ;
 
             FOR terminalDocumentTerminalDocumentDetail(tdd) == document()  DO {
                 ADDOBJ object##Detail;
@@ -331,7 +331,7 @@ loadDefaultTerminalModels 'Загрузить стандартные модел�
 
 // Виды справочников терминалов сбора данных
 loadDefaultTerminalHandbookType 'Добавить вид справочника ТСД' = ACTION (handbookTypeName, idString) {
-    SET idTerminalHandbookType(x) IF x==handbookTypeName <- idString AS STRING[110];
+    SET idTerminalHandbookType(x) <- idString AS STRING[110] WHERE x==handbookTypeName;
 }
 
 loadDefaultTerminalHandbookTypes 'Загрузить стандартные виды справочников ТСД' = ACTION () {
