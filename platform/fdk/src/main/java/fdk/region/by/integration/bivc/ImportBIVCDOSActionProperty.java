@@ -405,18 +405,14 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String line;
         String[] patterns = new String[]{"(.*)ОТ(\\d{2}\\.\\d{2}\\.\\d{2})ДО(\\d{2}\\.\\d{2}\\.\\d{2}).*",
                 "()()ДО\\s(\\d{2}-\\d{2}-\\d{2}).*",
-                "(.*)\\s?ОТ\\s?(\\d{1,2}\\.?\\d{1,2}\\.?\\d{2,4})Г?",
-                "()(\\d{1,2}\\/\\d{1,2}\\-\\d{2,4})", /*предполагаем, что это "ОТ"*/
-                "(.*?)\\s?(\\d{1,2}\\.?\\/?\\d{1,2}\\.?\\d{2,4})Г?",
-                "(ЛИЦ.*)\\s(\\d{6})", /*предполагаем, что это "ОТ"*/
+                "(.*)\\s?ОТ\\s?(\\d{1,2}\\.?\\d{1,2}\\.?\\d{1,4})\\d?$",
+                "()(\\d{1,2}\\/\\d{1,2}\\-\\d{2,4})",
+                "(.*?)\\s?(\\d{1,2}\\.?\\/?\\d{1,2}\\.?\\d{2,4})\\d?$",
+                "(ЛИЦ.*)\\s(\\d{6})",
                 "((?:ДОГ|КОНТР).*)", /*ловим договоры вообще без дат*/
-                "(.*\\d{1,2}\\s(.+)\\s\\d{4}).*", //месяц написан прописью. всё пишем в номер (апреля)
                 "(.*)/?\\s?(?:ИП|СПК|ОП)"
-                //"(Г.БОРИСОВ|Ц|0)", /*просто чтобы словить*/
-                //"(.*)/?\\s?Р-Н",/*видимо, ошибочно пишут продолжение адреса*/
-                //"(\\d{6})"/*видимо, ошибочно пишут индекс*/
         };
-        String[] datePatterns = new String[]{"dd-mm-yy", "dd.mm.yy", "dd.mm.yyГ", "ddmmyy", "dd/mm-yyyy"};
+        String[] datePatterns = new String[]{"dd-mm-yy", "dd.mm.yy", "dd.mm.yyГ", "ddmmyy", "dd/mm-yyyy", "dd.mm.y", "dd.mmyy"};
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^SWTP")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
@@ -450,7 +446,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 break;
                             }
                         }
-                        if (!number.isEmpty() && found) {
+                        if (found) {
                             contractsList.add(new Contract(contractID1, legalEntity1ID, legalEntity2ID,
                                     number, dateFrom, dateTo));
                             contractsList.add(new Contract(contractID2, legalEntity2ID, legalEntity1ID,
