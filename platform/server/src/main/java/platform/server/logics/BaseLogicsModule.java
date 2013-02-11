@@ -17,7 +17,6 @@ import platform.interop.Compare;
 import platform.interop.KeyStrokes;
 import platform.interop.PropertyEditType;
 import platform.interop.form.layout.ContainerType;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -212,6 +211,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     static private IDGenerator idGenerator = new DefaultIDGenerator();
     
     public LCP calculatedHash;
+
+    public LCP forbidChangePasswordCustomUser;
+    public LCP forbidEditProfileCustomUser;
 
     T BL;
 
@@ -496,6 +498,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sha256PasswordCustomUser = addDProp(publicGroup, "sha256PasswordCustomUser", getString("logics.user.password.hash"), StringClass.get(100), customUser);
         sha256PasswordCustomUser.setEchoSymbols(true);
         calculatedHash = addDProp(null, "calculatedHash", "Значение hash", StringClass.get(100), false);
+
+        forbidChangePasswordCustomUser = addDProp(publicGroup, "forbidChangePasswordCustomUser", getString("logics.user.forbid.change.password"), LogicalClass.instance, customUser);
+        forbidEditProfileCustomUser = addDProp(publicGroup, "forbidEditProfileCustomUser", getString("logics.user.forbid.change.profile"), LogicalClass.instance, customUser);
 
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));

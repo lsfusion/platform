@@ -87,7 +87,8 @@ changeSHA256PasswordCustomUser = ACTION(customUser) {
 FORM customUser 'Пользователь'
     OBJECTS u=customUser FIXED PANEL
     PROPERTIES(u) userFirstName, userLastName, userLogin,
-    sha256PasswordCustomUser ON CHANGE EXEC changeSHA256PasswordCustomUser(u), emailContact, nameMainRoleUser
+    sha256PasswordCustomUser ON CHANGE EXEC changeSHA256PasswordCustomUser(u), emailContact, nameMainRoleUser,
+    forbidChangePasswordCustomUser, forbidEditProfileCustomUser
 
     OBJECTS ur=userRole
     PROPERTIES(ur) READONLY name, sidUserRole
@@ -105,14 +106,16 @@ EXTEND DESIGN customUser {
 FORM customUsers 'Пользователи'
     OBJECTS u=customUser
     PROPERTIES(u) READONLY nameMainRoleUser, commonName, userLogin, emailContact
-    PROPERTIES(u) ADDFORM, EDITFORM FORCE PANEL, delete
+    PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser,
+                  ADDFORM, EDITFORM FORCE PANEL, delete
 
     DIALOG customUser OBJECT u
 ;
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=customUser FIXED PANEL
-    PROPERTIES(u) userLogin READONLY, userFirstName, userLastName, emailContact
+    PROPERTIES(u) userLogin READONLY
+    PROPERTIES(u) READONLYIF forbidEditProfileCustomUser(u) userFirstName, userLastName, emailContact
 
     FILTERS u==currentUser()
 ;
@@ -423,7 +426,12 @@ changePasswordUser = ACTION (customUser) {
 }
 
 changePassword = ACTION () {
-      EXEC changePasswordUser(currentUser());
+      IF forbidChangePasswordCustomUser(currentUser()) THEN {
+        MESSAGE 'Вы не можете изменить свой пароль';
+      }
+      ELSE {
+            EXEC changePasswordUser(currentUser());
+      }
 }
 
 NAVIGATOR {
