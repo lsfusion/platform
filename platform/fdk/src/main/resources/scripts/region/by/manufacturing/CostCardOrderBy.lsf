@@ -87,12 +87,3 @@ printIntakeSheetOrder 'Заборный лист' (order) = ACTION FORM intakeSh
 EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printCostCardOrder, printIntakeSheetOrder
 ;
-EXTEND DESIGN orders {printContainer { ADD o.printGroup;}}
-
-NAVIGATOR {
-    manufacturingDocuments {
-        ADD costCardOrderBy;
-    }
-}
-
-

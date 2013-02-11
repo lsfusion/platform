@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="o" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="20" rightMargin="10" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="1.9487171000000019"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle1" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="o" class="java.lang.Integer"/>
+	<field name="nameGoodsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="nameComponentsStockOrder" class="java.lang.String"/>
+	<field name="nameGoodsStockOrder" class="java.lang.String"/>
+	<field name="numberObject" class="java.lang.String"/>
+	<field name="seriesObject" class="java.lang.String"/>
+	<field name="seriesNumberObject" class="java.lang.String"/>
+	<field name="dateOrder" class="java.util.Date"/>
+	<field name="timeOrder" class="java.sql.Time"/>
+	<field name="fromDateOrder" class="java.util.Date"/>
+	<field name="toDateOrder" class="java.util.Date"/>
+	<field name="cd" class="java.lang.Integer"/>
+	<field name="indexComponentDetail" class="java.lang.Integer"/>
+	<field name="nameComponentComponentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMOverSkuComponentDetail" class="java.lang.String"/>
+	<field name="overQuantityComponentDetail" class="java.lang.Double"/>
+	<field name="overNameSkuComponentDetail" class="java.lang.String"/>
+	<field name="idBarcodeOverSkuComponentDetail" class="java.lang.String"/>
+	<group name="captionGroup10">
+		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>
+	</group>
+	<group name="textGroup10">
+		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>
+	</group>
+	<title>
+		<band height="69">
+			<textField>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="10" y="10" width="373" height="12"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ТРЕБОВАНИЕ НА СЫРЬЕ N " +($F{seriesNumberObject}!=null?$F{seriesNumberObject}:"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="81" y="22" width="302" height="12"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["от "+platform.base.BaseUtils.formatRussian($F{dateOrder})+" года"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="52" width="293" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["На изготовление изделий (зав.цеха)"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="62" width="293" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="12">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="0" y="0" width="67" height="12"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA["Штрих-код"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="67" y="0" width="184" height="12"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA["Наименование сырья"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="251" y="0" width="42" height="12"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA["Ед.изм."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="293" y="0" width="90" height="12"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA["Требуется"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="10">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="67" height="10"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{idBarcodeOverSkuComponentDetail}!=null?$F{idBarcodeOverSkuComponentDetail}:""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="67" y="0" width="184" height="10"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{overNameSkuComponentDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="0" width="42" height="10"/>
+				<textElement textAlignment="Left">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shortNameUOMOverSkuComponentDetail}!=null?$F{shortNameUOMOverSkuComponentDetail}:""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="293" y="0" width="90" height="10"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{overQuantityComponentDetail}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="32">
+			<line>
+				<reportElement x="0" y="15" width="293" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="5" width="293" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Расчет составил бухгалтер"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="31" width="293" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="0" y="21" width="293" height="10"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Сверил старший бухгалтер"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

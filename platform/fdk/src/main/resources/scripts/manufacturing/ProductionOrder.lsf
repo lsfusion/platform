@@ -362,6 +362,9 @@ overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) O
 overNameSkuComponentDetail 'SKU' (componentDetail) = nameSku(overSkuComponentDetail(componentDetail));
 overQuantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
 
+idBarcodeOverSkuComponentDetail 'Штрих-код' (componentDetail) = idBarcodeSku(overSkuComponentDetail(componentDetail));
+shortNameUOMOverSkuComponentDetail 'Ед.изм.' (componentDetail) = shortNameUOMSku(overSkuComponentDetail(componentDetail));
+
 calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order);
 calcPriceComponentDetail (componentDetail)= calcPriceSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
 priceComponentDetail(detail) <- calcPriceComponentDetail(detail) WHEN CHANGED(calcPriceComponentDetail(detail));    // наверное надо READONLY и JProp
@@ -614,6 +617,26 @@ FORM productDetails 'Строка изделия'
 DESIGN productDetails FROM DEFAULT {
 
 }
+
+FORM requestForMaterialsOrder 'Требование на сырье' PRINT
+
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES(o) nameGoodsLegalEntityStockOrder, nameComponentsStockOrder, nameGoodsStockOrder, numberObject, seriesObject, seriesNumberObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder
+
+    OBJECTS cd = componentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail, shortNameUOMOverSkuComponentDetail,
+                   idBarcodeOverSkuComponentDetail, overQuantityComponentDetail
+
+    FILTERS orderComponentDetail(cd)==o
+
+;
+printRequestForMaterialsOrder 'Требование на сырье' (order) = ACTION FORM requestForMaterialsOrder OBJECTS o IMAGE 'print.png' IN printGroup;
+EXTEND FORM orders
+    PROPERTIES(o) FORCE PANEL printRequestForMaterialsOrder
+;
+EXTEND DESIGN orders {printContainer { ADD o.printGroup;}}
+
 
 NAVIGATOR {
     manufacturingDocuments {

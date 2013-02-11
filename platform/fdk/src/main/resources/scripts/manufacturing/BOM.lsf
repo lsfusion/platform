@@ -164,11 +164,8 @@ DESIGN technologies FROM DEFAULT{
 CLASS BOM 'Спецификация' : named, numeratedObject, historizable;
 TABLE BOM (BOM);
 
-CLASS BOMPosted 'Проведенная спецификация' : BOM;
-
 @defineDocumentHeaderNote(BOM);
 @defineNumeratedObjectDefault(BOM, 'Нумератор для спецификаций', 'СП');
-@defineDocumentHeaderPosted (BOM);
 
 descriptionBOM 'Название документа' (BOM) =
     [FORMULA STRING[200]  ' CAST($1 AS TEXT) || \' / \' || CAST($2 AS TEXT) || \' № \' || CAST($3 AS TEXT)'](
@@ -201,7 +198,6 @@ UOMProduct(product) <-UOMSku(skuProduct(product)) WHEN CHANGED (skuProduct(produ
 
 @defineDocumentRelation (BOM, product, ' (изделие)');
 descriptionProduct 'Название документа' (product)= descriptionBOM(BOMProduct(product));
-@defineDocumentDetailPosted (BOM, product);
 
 @defineDocumentDetailIndex (BOM, product);
 @defineDocumentDetailActionsCustom (BOM, product);
@@ -239,7 +235,6 @@ TABLE component (component);
 @defineDocumentRelation (BOM, component, ' (компонент)');
 descriptionComponent 'Название документа' (component)= descriptionBOM(BOMComponent(component));
 
-@defineDocumentDetailPosted (BOM, component);
 @defineDocumentDetailIndex (BOM, component);
 @defineDocumentDetailActionsCustom (BOM, component);
 
@@ -340,9 +335,6 @@ FORM BOM 'Спецификация'
     PROPERTIES(b) TODRAW c deleteComponentBOM
     FILTERS       BOMComponent(c) == b
 
-    EVENTS
-        ON OK EXEC prePostBOM(b)
-
     EDIT BOM OBJECT b
 ;
 
@@ -379,9 +371,6 @@ DESIGN BOM FROM DEFAULT{
                 childConstraints = TO THE BOTTOM;
             }
         }
-        PROPERTY(formOk) {
-            caption = 'Провести';
-        }
     }
 }
 
@@ -389,8 +378,7 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY isPostedBOM FORCE GRID, objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
-//                  bruttoQuantityComponentBOM
+    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
     PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -431,7 +419,6 @@ DESIGN BOMs FROM DEFAULT {
                     title = 'История';
 
                     ADD b.historyGroup;
-                    ADD b.postedGroup;
                 }
                 NEW printTab {
                     title = 'Печатные формы';
@@ -461,17 +448,6 @@ recBruttoQuantityBOMBOMDate (parent, child, date) = GROUP SUM recBruttoQuantityB
 recBruttoQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMSkuDate(childBOM, sku, date) BY BOM, sku, date; //](BOM, sku);
 
 recBruttoNodeQuantityBOMSkuDate (BOM, sku, date) = GROUP SUM recBruttoQuantityBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMMaterialDate(childBOM, material, date) BY BOM, skuMaterial(material), date; //](BOM, sku);
-
-//EXTEND FORM BOM
-//    OBJECTS d = DATE FIXED PANEL
-//    PROPERTIES(d) OBJVALUE
-//
-//    OBJECTS s = sku
-//    PROPERTIES nameSku(s), recBruttoQuantityBOMSkuDate(b, s, d)
-//
-//    OBJECTS bs = BOM
-//    PROPERTIES name(bs), recBruttoQuantityBOMBOMDate(b, bs, d), bruttoQuantityBOMBOMDate(b, bs, d)
-//;
 
 // Расчет цены
 priceCoeffBOMBOMDate(parent, child, date) = GROUP SUM bruttoQuantityBOMMaterialDate(BOM, material, date) * priceCoeffProduct(material) / quantityProduct(material) BY BOM, BOMProduct(material), date;

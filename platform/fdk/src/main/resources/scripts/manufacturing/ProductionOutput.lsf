@@ -1,6 +1,6 @@
 MODULE  ProductionOutput;
 
-REQUIRE ProductionOrder, StockDocument;
+REQUIRE ProductionOrder, StockDocument, PurchaseSaleShipment;
 NAMESPACE Production;
 
 // ---------------- Производство ------------------- //
@@ -32,9 +32,8 @@ priceListTypeUserOutputDetail(detail) <- priceListTypeUserOutput(userOutputUserO
 @defineDocumentInterfaceDetailQuantity(output);
 
 @defineDocumentInterfaceDetailPrice(output); // объявляем цену. Записываем цену: см ниже.
-//@deriveDocumentDetailPricePriceListType (userOutput, stock); // записываем цену
 
-expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail); // PERSISTENT INDEXED   надо ли?
+expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail); //
 expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
 expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetail);
 
@@ -408,12 +407,35 @@ copyOutput 'Копировать' = ACTION (userOutput) NEWSESSION {
     }
 } TOOLBAR;
 
+createShipmentOutput 'Создать поставку для ГП' = ACTION (output)  {
+
+    FOR ADDOBJ sh = Sale.userShipment DO {
+        SET Sale.supplierUserShipment(sh) <- legalEntityStockOutput(output);
+        SET Sale.customerUserShipment(sh) <- legalEntityStockOutput(output);
+        SET Sale.supplierStockUserShipment(sh) <- stockOutput(output);
+        SET createPurchaseUserShipment(sh) <- TRUE;
+        SET Sale.noteUserShipment(sh) <- [FORMULA STRING[100] 'CAST($1 AS TEXT)'](descriptionOutput(output));
+
+        FOR outputOutputDetail(outputDetail)== output ADDOBJ d = Sale.userShipmentDetail DO {
+            SET Sale.userShipmentUserShipmentDetail(d) <- sh;
+            SET Sale.skuUserShipmentDetail(d) <- skuOutputDetail(outputDetail);
+            SET Sale.quantityUserShipmentDetail(d) <- quantityOutputDetail(outputDetail);
+            SET Sale.priceUserShipmentDetail(d) <- priceOutputDetail(outputDetail);
+        }
+
+    FORM Sale.userShipment OBJECTS s=sh MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        }
+    }
+} TOOLBAR;
 
 FORM outputs 'Производство'
     OBJECTS o = output
     PROPERTIES (o) READONLY isPostedOutput FORCE GRID, objectClassName, numberOutput, seriesOutput, dateOutput, timeOutput,
                             nameStockOutput, nameCurrencyOutput, namePriceListTypeOutput, noteOutput,
                             countOutputDetailOutput, quantityOutputDetailOutput, sumOutputDetailOutput
+    PROPERTIES (o) createShipmentOutput
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -470,9 +492,6 @@ NAVIGATOR {
         ADD outputs;
     }
 }
-
-
-
 
 
 
