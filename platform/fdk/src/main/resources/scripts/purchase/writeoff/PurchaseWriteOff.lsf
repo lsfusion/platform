@@ -5,7 +5,7 @@ NAMESPACE Purchase;
 
 
 //---------------------------------- Норма отходов ------------------------------------//
-CLASS writeOffRate 'Норма отходов' : named, externalizable;
+CLASS writeOffRate 'Норма отходов' : named;
 TABLE writeOffRate(writeOffRate);
 
 percentWriteOffRate 'Норма,%' = DATA NUMERIC[10,3] (writeOffRate);

@@ -23,7 +23,7 @@ FORM ownership 'Форма собственности'
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS legalEntity 'Организация' : named, externalizable, taxUnitGroup;
+CLASS legalEntity 'Организация' : named, taxUnitGroup;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
@@ -99,7 +99,7 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
  ;
 // ----------------------------------- Банк ------------------------------------------- //
 
-CLASS bank 'Банк' : named, externalizable;
+CLASS bank 'Банк' : named;
 TABLE bank (bank);
 TABLE bankDate (bank, DATE);
 

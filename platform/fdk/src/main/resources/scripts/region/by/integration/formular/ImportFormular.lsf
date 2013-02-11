@@ -1,27 +1,6 @@
 MODULE ImportFormular;
 
-REQUIRE System,
-        Barcode,
-        Country,
-        Currency,
-        Integration,
-        Item,
-        LegalEntity,
-        LegalEntityBy,
-        Numerator,
-        PriceList,
-        PurchaseInvoice,
-        PurchaseWriteOff,
-        PricingPurchase,
-        ScalesItem,
-        Stock,
-        Store,
-        Tax,
-        TaxItem,
-        Ware,
-        Warehouse,
-        WareItem,
-        WriteOffItem;
+REQUIRE Import;
 
 GROUP formularGroup 'Formular' : public;
 

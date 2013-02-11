@@ -8,9 +8,11 @@ public class ImportData {
     private List<ItemGroup> parentGroupsList;
     private List<Bank> banksList;
     private List<LegalEntity> legalEntitiesList;
+    private List<WarehouseGroup> warehouseGroupsList;
     private List<Warehouse> warehousesList;
     private List<LegalEntity> storesList;
     private List<DepartmentStore> departmentStoresList;
+    private List<Contract> contractsList;
     private List<RateWaste> rateWastesList;
     private List<Ware> waresList;
     private List<Price> pricesList;
@@ -19,6 +21,7 @@ public class ImportData {
     private List<UserInvoiceDetail> userInvoicesList;
     private Integer numberOfItemsAtATime;
     private Boolean importInactive;
+    private Boolean importUserInvoicesPosted;
 
     public ImportData() {
     }
@@ -63,6 +66,14 @@ public class ImportData {
         this.legalEntitiesList = legalEntitiesList;
     }
 
+    public List<WarehouseGroup> getWarehouseGroupsList() {
+        return warehouseGroupsList;
+    }
+
+    public void setWarehouseGroupsList(List<WarehouseGroup> warehouseGroupsList) {
+        this.warehouseGroupsList = warehouseGroupsList;
+    }
+
     public List<Warehouse> getWarehousesList() {
         return warehousesList;
     }
@@ -85,6 +96,14 @@ public class ImportData {
 
     public void setDepartmentStoresList(List<DepartmentStore> departmentStoresList) {
         this.departmentStoresList = departmentStoresList;
+    }
+
+    public List<Contract> getContractsList() {
+        return contractsList;
+    }
+
+    public void setContractsList(List<Contract> contractsList) {
+        this.contractsList = contractsList;
     }
 
     public List<RateWaste> getRateWastesList() {
@@ -149,5 +168,13 @@ public class ImportData {
 
     public void setImportInactive(Boolean importInactive) {
         this.importInactive = importInactive;
+    }
+
+    public Boolean getImportUserInvoicesPosted() {
+        return importUserInvoicesPosted==null ? false : importUserInvoicesPosted;
+    }
+
+    public void setImportUserInvoicesPosted(Boolean importUserInvoicesPosted) {
+        this.importUserInvoicesPosted = importUserInvoicesPosted;
     }
 }

@@ -4,7 +4,7 @@ REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 
-CLASS chainStores 'Торговая сеть' : stockGroup, externalizable, employeeDivisionGroup;
+CLASS chainStores 'Торговая сеть' : stockGroup, employeeDivisionGroup;
 TABLE chainStores (chainStores);
 
 // -------------------------------------- Формат магазина ----------------------------- //
@@ -36,7 +36,7 @@ FORM chainStores 'Торговая сеть'
 
 // -------------------------------------- Магазин ------------------------------- //
 
-CLASS store 'Магазин' : stockGroup, externalizable, taxUnit, employeeDivisionGroup, POI;
+CLASS store 'Магазин' : stockGroup, taxUnit, employeeDivisionGroup, POI;
 TABLE store (store);
 
 legalEntityStore = DATA legalEntity (store) NOT NULL;
@@ -81,7 +81,7 @@ inChainStoresStoreTypeStore (chainStores, storeType, store) =
 
 // -------------------------------------- Отдел магазина ------------------------------- //
 
-CLASS departmentStore 'Отдел магазина' : stock, externalizable, employeeDivision;
+CLASS departmentStore 'Отдел магазина' : stock, employeeDivision;
 TABLE departmentStore (departmentStore);
 TABLE departmentStoreDate (departmentStore, DATE);
 

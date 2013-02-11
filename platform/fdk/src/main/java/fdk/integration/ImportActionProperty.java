@@ -12,6 +12,7 @@ import platform.server.session.DataSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.*;
 
 public class ImportActionProperty {
@@ -40,11 +41,15 @@ public class ImportActionProperty {
 
             importLegalEntities(importData.getLegalEntitiesList());
 
+            importWarehouseGroups(importData.getWarehouseGroupsList());
+
             importWarehouses(importData.getWarehousesList());
 
             importStores(importData.getStoresList());
 
             importDepartmentStores(importData.getDepartmentStoresList());
+
+            importContracts(importData.getContractsList());
 
             importRateWastes(importData.getRateWastesList());
 
@@ -56,7 +61,7 @@ public class ImportActionProperty {
 
             importAssortment(importData.getAssortmentsList(), importData.getStockSuppliersList());
 
-            importUserInvoices(importData.getUserInvoicesList());
+            importUserInvoices(importData.getUserInvoicesList(), importData.getImportUserInvoicesPosted());
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
@@ -79,7 +84,7 @@ public class ImportActionProperty {
                         LM.object(LM.findClassByCompoundName("itemGroup")).getMapping(parentGroupKey)));
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (ItemGroup p : parentGroupsList) {
-                    data.add(Arrays.asList((Object) ("ig_" + p.sid), p.parent != null ? ("ig_" + p.parent) : p.parent));
+                    data.add(Arrays.asList((Object) (p.sid == null ? null : ("IG" + p.sid)), p.parent == null ? null : ("IG" + p.parent)));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemGroupID, parentGroupID), data);
 
@@ -110,7 +115,7 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (ItemGroup i : itemGroupsList) {
-                    data.add(Arrays.asList((Object) ("ig_" + i.sid), i.name));
+                    data.add(Arrays.asList((Object) (i.sid == null ? null : ("IG" + i.sid)), i.name));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemGroupID, itemGroupName), data);
 
@@ -146,7 +151,7 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (Ware w : waresList) {
-                    data.add(Arrays.asList((Object) ("w_" + w.wareID), w.name, w.price));
+                    data.add(Arrays.asList((Object) (w.wareID == null ? null : ("W" + w.wareID)), w.name, w.price));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(wareIDField, wareNameField, warePriceField), data);
 
@@ -197,20 +202,19 @@ public class ImportActionProperty {
         ImportField nameCountryField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField barcodeField = new ImportField(LM.findLCPByCompoundName("idBarcode"));
         ImportField dateField = new ImportField(DateClass.instance);
-        //ImportField importerPriceField = new ImportField(LM.findLCPByCompoundName("dataImporterPriceItemDate"));
-        //ImportField percentWholesaleMarkItemField = new ImportField(LM.findLCPByCompoundName("percentWholesaleMarkItem"));
-        //ImportField isFixPriceItemField = new ImportField(LM.findLCPByCompoundName("isFixPriceItem"));
-        //ImportField isLoafCutItemField = new ImportField(LM.findLCPByCompoundName("isLoafCutItem"));
         ImportField isWeightItemField = new ImportField(LM.findLCPByCompoundName("isWeightItem"));
         ImportField compositionField = new ImportField(LM.findLCPByCompoundName("compositionScalesItem"));
-        //ImportField dataSuppliersRangeItemField = new ImportField(LM.findLCPByCompoundName("valueRate"));
-        //ImportField valueRetailVATItemField = new ImportField(LM.findLCPByCompoundName("valueRate"));
         ImportField valueVATItemCountryDateField = new ImportField(LM.findLCPByCompoundName("valueVATItemCountryDate"));
-//        ImportField quantityPackItemField = new ImportField(LM.findLCPByCompoundName("quantityPackItem"));
         ImportField wareIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
         ImportField priceWareField = new ImportField(LM.findLCPByCompoundName("dataWarePriceDate"));
         ImportField ndsWareField = new ImportField(LM.findLCPByCompoundName("valueRate"));
         ImportField writeOffRateIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+        ImportField retailCalcPriceListTypeIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+        ImportField retailCalcPriceListTypeNameField = new ImportField(LM.findLCPByCompoundName("name"));
+        ImportField retailMarkupCalcPriceListTypeField = new ImportField(LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku"));
+        ImportField baseCalcPriceListTypeIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+        ImportField baseCalcPriceListTypeNameField = new ImportField(LM.findLCPByCompoundName("name"));
+        ImportField baseMarkupCalcPriceListTypeField = new ImportField(LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku"));
 
         DataObject defaultCountryObject = (DataObject) LM.findLCPByCompoundName("defaultCountry").readClasses(context.getSession());
 
@@ -232,12 +236,6 @@ public class ImportActionProperty {
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("barcode"),
                 LM.findLCPByCompoundName("barcodeIdDate").getMapping(barcodeField, dateField));
 
-        //ImportKey<?> supplierVATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("range"),
-        //        LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(dataSuppliersRangeItemField));
-
-        //ImportKey<?> retailVATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("range"),
-        //        LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(valueRetailVATItemField));
-
         ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("range"),
                 LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(valueVATItemCountryDateField));
 
@@ -249,6 +247,12 @@ public class ImportActionProperty {
 
         ImportKey<?> writeOffRateKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("writeOffRate"),
                 LM.findLCPByCompoundName("externalizableSID").getMapping(writeOffRateIDField));
+
+        ImportKey<?> baseCalcPriceListTypeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("calcPriceListType"),
+                LM.findLCPByCompoundName("externalizableSID").getMapping(baseCalcPriceListTypeIDField));
+
+        ImportKey<?> retailCalcPriceListTypeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("calcPriceListType"),
+                LM.findLCPByCompoundName("externalizableSID").getMapping(retailCalcPriceListTypeIDField));
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -279,24 +283,14 @@ public class ImportActionProperty {
         props.add(new ImportProperty(itemIDField, LM.findLCPByCompoundName("skuBarcode").getMapping(barcodeKey),
                 LM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
 
-        //props.add(new ImportProperty(importerPriceField, LM.findLCPByCompoundName("dataImporterPriceItemDate").getMapping(itemKey, dateField)));
-        //props.add(new ImportProperty(percentWholesaleMarkItemField, LM.findLCPByCompoundName("percentWholesaleMarkItem").getMapping(itemKey)));
-        //props.add(new ImportProperty(isFixPriceItemField, LM.findLCPByCompoundName("isFixPriceItem").getMapping(itemKey)));
-        //props.add(new ImportProperty(isLoafCutItemField, LM.findLCPByCompoundName("isLoafCutItem").getMapping(itemKey)));
         props.add(new ImportProperty(isWeightItemField, LM.findLCPByCompoundName("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, LM.findLCPByCompoundName("compositionScalesItem").getMapping(itemKey)));
-        //props.add(new ImportProperty(dataSuppliersRangeItemField, LM.findLCPByCompoundName("dataSupplierVATItemDate").getMapping(itemKey, dateField, supplierVATKey),
-        //        LM.object(LM.findClassByCompoundName("range")).getMapping(supplierVATKey)));
-        //props.add(new ImportProperty(valueRetailVATItemField, LM.findLCPByCompoundName("dataRetailVATItemDate").getMapping(itemKey, dateField, retailVATKey),
-        //        LM.object(LM.findClassByCompoundName("range")).getMapping(retailVATKey)));
         props.add(new ImportProperty(valueVATItemCountryDateField, LM.findLCPByCompoundName("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
                 LM.object(LM.findClassByCompoundName("range")).getMapping(VATKey)));
-//        props.add(new ImportProperty(quantityPackItemField, LM.findLCPByCompoundName("quantityPackItem").getMapping(itemKey)));
 
         props.add(new ImportProperty(wareIDField, LM.findLCPByCompoundName("wareItem").getMapping(itemKey),
                 LM.object(LM.findClassByCompoundName("ware")).getMapping(wareKey)));
 
-//        props.add(new ImportProperty(wareIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(wareKey))); // нельзя включать, потому то будут проблемы, если ссылается на товар, который не lgrmsec
         props.add(new ImportProperty(priceWareField, LM.findLCPByCompoundName("dataWarePriceDate").getMapping(wareKey, dateField)));
         props.add(new ImportProperty(ndsWareField, LM.findLCPByCompoundName("dataRangeWareDate").getMapping(wareKey, dateField, rangeKey),
                 LM.object(LM.findClassByCompoundName("range")).getMapping(rangeKey)));
@@ -304,22 +298,34 @@ public class ImportActionProperty {
         props.add(new ImportProperty(writeOffRateIDField, LM.findLCPByCompoundName("writeOffRateCountryItem").getMapping(defaultCountryObject, itemKey),
                 LM.object(LM.findClassByCompoundName("writeOffRate")).getMapping(writeOffRateKey)));
 
+        props.add(new ImportProperty(retailCalcPriceListTypeIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(retailCalcPriceListTypeKey)));
+        props.add(new ImportProperty(retailCalcPriceListTypeNameField, LM.findLCPByCompoundName("name").getMapping(retailCalcPriceListTypeKey)));
+        props.add(new ImportProperty(retailMarkupCalcPriceListTypeField, LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku").getMapping(retailCalcPriceListTypeKey, itemKey)));
+        props.add(new ImportProperty(baseCalcPriceListTypeIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(baseCalcPriceListTypeKey)));
+        props.add(new ImportProperty(baseCalcPriceListTypeNameField, LM.findLCPByCompoundName("name").getMapping(baseCalcPriceListTypeKey)));
+        props.add(new ImportProperty(baseMarkupCalcPriceListTypeField, LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku").getMapping(baseCalcPriceListTypeKey, itemKey)));
+
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Item i : dataItems) {
-            data.add(Arrays.asList((Object) ("i_" + i.itemID), "ig_" + i.k_grtov, i.name, i.uomName, i.uomID, i.brandName, i.brandID,
-                    i.country, i.barcode, i.date, i.isWeightItem, i.composition, i.retailVAT, i.wareID == null ? null : ("w_" + i.wareID), i.priceWare,
-                    i.ndsWareField, "rw_" + i.writeOffRateID));
+            data.add(Arrays.asList((Object) (i.itemID == null ? null : ("I" + i.itemID)),
+                    i.k_grtov == null ? null : ("IG" + i.k_grtov), i.name, i.uomName,
+                    i.uomID == null ? null : ("UOM" + i.uomID), i.brandName, i.brandID, i.country, i.barcode, i.date,
+                    i.isWeightItem, i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID),
+                    i.priceWare, i.ndsWareField, i.writeOffRateID == null ? null : ("RW" + i.writeOffRateID),
+                    "cplt_retail", "Розничная надбавка", i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup));
         }
 
-        ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, UOMIDField,
-                nameUOMField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
-                /*importerPriceField, percentWholesaleMarkItemField, isFixPriceItemField, isLoafCutItemField, */isWeightItemField,
-                compositionField, /*dataSuppliersRangeItemField, valueRetailVATItemField, */valueVATItemCountryDateField, wareIDField, //quantityPackItemField, wareIDField,
-                priceWareField, ndsWareField, writeOffRateIDField), data);
+        ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, nameUOMField,
+                UOMIDField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
+                isWeightItemField, compositionField, valueVATItemCountryDateField, wareIDField, priceWareField,
+                ndsWareField, writeOffRateIDField, retailCalcPriceListTypeIDField, retailCalcPriceListTypeNameField,
+                retailMarkupCalcPriceListTypeField, baseCalcPriceListTypeIDField, baseCalcPriceListTypeNameField,
+                baseMarkupCalcPriceListTypeField), data);
 
         DataSession session = LM.getBL().createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
-                brandKey, countryKey, barcodeKey, /*supplierVATKey, retailVATKey, */VATKey, wareKey, rangeKey, writeOffRateKey), props);
+                brandKey, countryKey, barcodeKey, VATKey, wareKey, rangeKey, writeOffRateKey, retailCalcPriceListTypeKey,
+                baseCalcPriceListTypeKey), props);
         service.synchronize(true, false);
         session.apply(LM.getBL());
         session.close();
@@ -354,7 +360,8 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (Price p : dataPrice) {
-                    data.add(Arrays.asList((Object) ("i_" + p.item), "ds_" + p.departmentStore, p.date, p.price, p.markup));
+                    data.add(Arrays.asList((Object) (p.item==null ? null : ("I" + p.item)),
+                            p.departmentStore==null ? null : ("WH" + p.departmentStore), p.date, p.price, p.markup));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemIDField, departmentStoreIDField, dateField, priceField, markupField), data);
 
@@ -368,7 +375,7 @@ public class ImportActionProperty {
         }
     }
 
-    private void importUserInvoices(List<UserInvoiceDetail> userInvoiceDetailsList) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    private void importUserInvoices(List<UserInvoiceDetail> userInvoiceDetailsList, Boolean posted) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
             if (userInvoiceDetailsList != null) {
@@ -390,16 +397,22 @@ public class ImportActionProperty {
                     ImportField createPricingUserInvoiceField = new ImportField(LM.findLCPByCompoundName("Purchase.createPricingUserInvoice"));
                     ImportField createShipmentUserInvoiceField = new ImportField(LM.findLCPByCompoundName("Purchase.createShipmentUserInvoice"));
                     ImportField dateUserInvoiceField = new ImportField(LM.findLCPByCompoundName("Purchase.dateUserInvoice"));
+                    ImportField timeUserInvoiceField = new ImportField(TimeClass.instance);
 
                     ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                     ImportField userInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                     ImportField quantityUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.quantityUserInvoiceDetail"));
                     ImportField priceUserInvoiceDetail = new ImportField(LM.findLCPByCompoundName("Purchase.priceUserInvoiceDetail"));
+                    ImportField manufacturingPriceInvoiceDetail = new ImportField(LM.findLCPByCompoundName("Purchase.manufacturingPriceInvoiceDetail"));
                     ImportField chargePriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail"));
                     ImportField retailPriceUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.retailPriceUserInvoiceDetail"));
                     ImportField retailMarkupUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("Purchase.retailMarkupUserInvoiceDetail"));
+                    ImportField numberComplianceField = new ImportField(LM.findLCPByCompoundName("numberCertificate"));
+                    ImportField dateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("dateTimeCompliance"));
+                    ImportField toDateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("toDateTimeCompliance"));
+                    ImportField textComplianceField = new ImportField(LM.findLCPByCompoundName("textCompliance"));
 
-                    ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Purchase.userInvoice"),
+                    ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName(posted ? "Purchase.userInvoicePosted" : "Purchase.userInvoice"),
                             LM.findLCPByCompoundName("Purchase.numberSeriesToUserInvoice").getMapping(numberUserInvoiceField, seriesUserInvoiceField));
 
                     ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("legalEntity"),
@@ -417,12 +430,16 @@ public class ImportActionProperty {
                     ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("item"),
                             LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
 
+                    ImportKey<?> complianceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("compliance"),
+                            LM.findLCPByCompoundName("numberToCompliance").getMapping(numberComplianceField));
+
                     List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
                     props.add(new ImportProperty(numberUserInvoiceField, LM.findLCPByCompoundName("numberObject").getMapping(userInvoiceKey)));
                     props.add(new ImportProperty(seriesUserInvoiceField, LM.findLCPByCompoundName("seriesObject").getMapping(userInvoiceKey)));
                     props.add(new ImportProperty(createShipmentUserInvoiceField, LM.findLCPByCompoundName("Purchase.createShipmentUserInvoice").getMapping(userInvoiceKey)));
                     props.add(new ImportProperty(dateUserInvoiceField, LM.findLCPByCompoundName("Purchase.dateUserInvoice").getMapping(userInvoiceKey)));
+                    props.add(new ImportProperty(timeUserInvoiceField, LM.findLCPByCompoundName("Purchase.timeUserInvoice").getMapping(userInvoiceKey)));
 
                     props.add(new ImportProperty(supplierIDField, LM.findLCPByCompoundName("Purchase.supplierUserInvoice").getMapping(userInvoiceKey),
                             LM.object(LM.findClassByCompoundName("legalEntity")).getMapping(supplierKey)));
@@ -437,6 +454,7 @@ public class ImportActionProperty {
                     props.add(new ImportProperty(userInvoiceDetailField, LM.findLCPByCompoundName("sidExternalizable").getMapping(userInvoiceDetailKey)));
                     props.add(new ImportProperty(quantityUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.quantityUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                     props.add(new ImportProperty(priceUserInvoiceDetail, LM.findLCPByCompoundName("Purchase.priceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                    props.add(new ImportProperty(manufacturingPriceInvoiceDetail, LM.findLCPByCompoundName("Purchase.manufacturingPriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                     props.add(new ImportProperty(chargePriceUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.chargePriceUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                     // розничная расценка
@@ -448,28 +466,40 @@ public class ImportActionProperty {
                             LM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
 
                     props.add(new ImportProperty(userInvoiceField, LM.findLCPByCompoundName("Purchase.userInvoiceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
-                            LM.object(LM.findClassByCompoundName("Purchase.userInvoice")).getMapping(userInvoiceKey)));
+                            LM.object(LM.findClassByCompoundName(posted ? "Purchase.userInvoicePosted" : "Purchase.userInvoice")).getMapping(userInvoiceKey)));
+
+                    props.add(new ImportProperty(numberComplianceField, LM.findLCPByCompoundName("numberCertificate").getMapping(complianceKey)));
+                    props.add(new ImportProperty(dateTimeComplianceField, LM.findLCPByCompoundName("dateTimeCompliance").getMapping(complianceKey)));
+                    props.add(new ImportProperty(toDateTimeComplianceField, LM.findLCPByCompoundName("toDateTimeCompliance").getMapping(complianceKey)));
+                    props.add(new ImportProperty(textComplianceField, LM.findLCPByCompoundName("textCompliance").getMapping(complianceKey)));
+                    props.add(new ImportProperty(numberComplianceField, LM.findLCPByCompoundName("complianceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
+                            LM.object(LM.findClassByCompoundName("compliance")).getMapping(complianceKey)));
 
                     List<List<Object>> data = new ArrayList<List<Object>>();
                     for (UserInvoiceDetail u : dataUserInvoiceDetail) {
-                        data.add(Arrays.asList((Object) u.number, u.series, u.createPricing, u.createShipment, "uid_"+ u.sid,
-                                u.date, "i_" + u.item, u.quantity, "l_" + u.supplier, "wh_" + u.warehouse, "wh_" + u.supplierWarehouse, u.price,
-                                u.chargePrice, u.retailPrice, u.retailMarkup));
+                        data.add(Arrays.asList((Object) u.number, u.series, u.createPricing, u.createShipment,
+                                u.sid==null ? null : ("UID" + u.sid), u.date, new Time(12, 0, 0), u.item==null ? null : ("I" + u.item),
+                                u.quantity, u.supplier==null ? null : ("L" + u.supplier),
+                                u.warehouse==null ? null : ("WH" + u.warehouse),
+                                u.supplierWarehouse==null ? null : ("WH" + u.supplierWarehouse), u.price, u.price, u.chargePrice,
+                                u.retailPrice, u.retailMarkup, u.numberCompliance== null ? null : ("CM" + u.numberCompliance), u.dateTimeCompliance, u.toDateTimeCompliance,
+                                u.textCompliance));
                     }
                     ImportTable table = new ImportTable(Arrays.asList(numberUserInvoiceField, seriesUserInvoiceField,
                             createPricingUserInvoiceField, createShipmentUserInvoiceField, userInvoiceDetailField,
-                            dateUserInvoiceField, itemField, quantityUserInvoiceDetailField, supplierIDField,
+                            dateUserInvoiceField, timeUserInvoiceField, itemField, quantityUserInvoiceDetailField, supplierIDField,
                             customerDepartmentStoreIDField, supplierWarehouseIDField, priceUserInvoiceDetail,
+                            manufacturingPriceInvoiceDetail,
                             chargePriceUserInvoiceDetailField, retailPriceUserInvoiceDetailField,
-                            retailMarkupUserInvoiceDetailField), data);
+                            retailMarkupUserInvoiceDetailField, numberComplianceField, dateTimeComplianceField,
+                            toDateTimeComplianceField, textComplianceField), data);
 
                     DataSession session = LM.getBL().createSession();
-                    IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey, itemKey, supplierKey, customerDepartmentStoreKey), props);
+                    IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey,
+                            itemKey, supplierKey, customerDepartmentStoreKey, complianceKey), props);
                     service.synchronize(true, false);
                     session.apply(LM.getBL());
                     session.close();
-
-                    System.out.println("done shipment " + start);
                 }
             }
         } catch (SQLException e) {
@@ -537,7 +567,11 @@ public class ImportActionProperty {
 
                     List<List<Object>> data = new ArrayList<List<Object>>();
                     for (Assortment a : dataAssortment) {
-                        data.add(Arrays.asList((Object) ("i_" + a.item), "l_" + a.supplier, "pl_" + a.userPriceList, "ds_" + a.departmentStore, a.currency, a.price, a.inPriceList));
+                        data.add(Arrays.asList((Object) (a.item==null ? null : ("I" + a.item)),
+                                a.supplier==null ? null : ("L" + a.supplier),
+                                a.userPriceList==null ? null : ("PL" + a.userPriceList),
+                                a.departmentStore==null ? null : ("WH" + a.departmentStore), a.currency, a.price,
+                                a.inPriceList));
                     }
                     ImportTable table = new ImportTable(Arrays.asList(itemField, legalEntityField, userPriceListField, departmentStoreField, currencyField, pricePriceListDetailDataPriceListTypeField, inPriceListPriceListTypeField), data);
 
@@ -566,7 +600,9 @@ public class ImportActionProperty {
 
                     data = new ArrayList<List<Object>>();
                     for (StockSupplier s : stockSuppliersList) {
-                        data.add(Arrays.asList((Object) ("pl_" + s.userPriceListID), "ds_" + s.departmentStore, s.inPriceList, s.inPriceListStock));
+                        data.add(Arrays.asList((Object) (s.userPriceListID==null ? null : ("PL" + s.userPriceListID)),
+                                s.departmentStore==null ? null : ("WH" + s.departmentStore), s.inPriceList,
+                                s.inPriceListStock));
                     }
 
                     table = new ImportTable(Arrays.asList(userPriceList2Field, departmentStore2Field, inPriceList2Field, inPriceListStock2Field), data);
@@ -663,9 +699,12 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (LegalEntity l : legalEntitiesList) {
-                    data.add(Arrays.asList((Object) ("l_" + l.legalEntityID), l.nameLegalEntity, l.address, l.unp, l.okpo, l.phone, l.email,
-                            l.nameOwnership, l.shortNameOwnership, l.account, "cs_" + l.chainStoresID, l.nameChainStores, "b_" + l.bankID, l.country,
-                            l.isSupplierLegalEntity, l.isCompanyLegalEntity, l.isCustomerLegalEntity));
+                    data.add(Arrays.asList((Object) (l.legalEntityID==null ? null : ("L" + l.legalEntityID)),
+                            l.nameLegalEntity, l.address, l.unp, l.okpo, l.phone, l.email,
+                            l.nameOwnership, l.shortNameOwnership, l.account,
+                            l.chainStoresID==null ? null : ("CS" + l.chainStoresID), l.nameChainStores,
+                            l.bankID==null ? null : ("B" + l.bankID), l.country, l.isSupplierLegalEntity,
+                            l.isCompanyLegalEntity, l.isCustomerLegalEntity));
                 }
 
                 ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, nameLegalEntityField, legalAddressField,
@@ -684,17 +723,55 @@ public class ImportActionProperty {
         }
     }
 
+    private void importWarehouseGroups(List<WarehouseGroup> warehouseGroupsList) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+
+        try {
+            if (warehouseGroupsList != null) {
+                ImportField warehouseGroupIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField nameWarehouseGroupField = new ImportField(LM.findLCPByCompoundName("name"));
+
+                ImportKey<?> warehouseGroupKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("warehouseGroup"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(warehouseGroupIDField));
+
+                List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+                props.add(new ImportProperty(warehouseGroupIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(warehouseGroupKey)));
+                props.add(new ImportProperty(nameWarehouseGroupField, LM.findLCPByCompoundName("name").getMapping(warehouseGroupKey)));
+
+                List<List<Object>> data = new ArrayList<List<Object>>();
+                for (WarehouseGroup wg : warehouseGroupsList) {
+                    data.add(Arrays.asList((Object) (wg.warehouseGroupID==null ? null : ("WG" + wg.warehouseGroupID)),
+                            wg.name));
+                }
+
+                ImportTable table = new ImportTable(Arrays.asList(warehouseGroupIDField, nameWarehouseGroupField), data);
+
+                DataSession session = LM.getBL().createSession();
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(warehouseGroupKey), props);
+                service.synchronize(true, false);
+                session.apply(LM.getBL());
+                session.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void importWarehouses(List<Warehouse> warehousesList) throws SQLException, ScriptingErrorLog.SemanticErrorException {
 
         try {
             if (warehousesList != null) {
                 ImportField legalEntityIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField warehouseGroupIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField warehouseIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField nameWarehouseField = new ImportField(LM.findLCPByCompoundName("name"));
                 ImportField addressWarehouseField = new ImportField(LM.findLCPByCompoundName("name"));
 
                 ImportKey<?> legalEntityKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("legalEntity"),
                         LM.findLCPByCompoundName("externalizableSID").getMapping(legalEntityIDField));
+
+                ImportKey<?> warehouseGroupKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("warehouseGroup"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(warehouseGroupIDField));
 
                 ImportKey<?> warehouseKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("warehouse"),
                         LM.findLCPByCompoundName("externalizableSID").getMapping(warehouseIDField));
@@ -706,17 +783,21 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(addressWarehouseField, LM.findLCPByCompoundName("addressWarehouse").getMapping(warehouseKey)));
                 props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("legalEntityWarehouse").getMapping(warehouseKey),
                         LM.object(LM.findClassByCompoundName("legalEntity")).getMapping(legalEntityKey)));
+                props.add(new ImportProperty(warehouseGroupIDField, LM.findLCPByCompoundName("warehouseGroupWarehouse").getMapping(warehouseKey),
+                        LM.object(LM.findClassByCompoundName("warehouseGroup")).getMapping(warehouseGroupKey)));
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (Warehouse w : warehousesList) {
-                    data.add(Arrays.asList((Object) ("l_" + w.legalEntityID), "wh_" + w.sid, w.name, w.address));
+                    data.add(Arrays.asList((Object) (w.legalEntityID == null ? null : ("L" + w.legalEntityID)),
+                            w.warehouseGroupID == null ? null : ("WG" + w.warehouseGroupID),
+                            w.sid == null ? null : ("WH" + w.sid), w.name, w.address));
                 }
 
-                ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseIDField,
-                        nameWarehouseField, addressWarehouseField), data);
+                ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseGroupIDField,
+                        warehouseIDField, nameWarehouseField, addressWarehouseField), data);
 
                 DataSession session = LM.getBL().createSession();
-                IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, warehouseKey), props);
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, warehouseKey, warehouseGroupKey), props);
                 service.synchronize(true, false);
                 session.apply(LM.getBL());
                 session.close();
@@ -766,7 +847,7 @@ public class ImportActionProperty {
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (LegalEntity l : storesList) {
                     Store s = (Store) l;
-                    data.add(Arrays.asList((Object) ("s_" + s.storeID), s.nameLegalEntity, s.address, "l_" + s.legalEntityID, s.storeType, "cs_" + s.chainStoresID));
+                    data.add(Arrays.asList((Object) ("S" + s.storeID), s.nameLegalEntity, s.address, "L" + s.legalEntityID, s.storeType, "CS" + s.chainStoresID));
                 }
 
                 ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, legalEntityIDField, storeTypeField, chainStoresIDField), data);
@@ -805,7 +886,7 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (DepartmentStore s : departmentStoresList) {
-                    data.add(Arrays.asList((Object) ("ds_" + s.departmentStoreID), s.name, "s_" + s.storeID));
+                    data.add(Arrays.asList((Object) ("WH" + s.departmentStoreID), s.name, "S" + s.storeID));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(departmentStoreIDField, nameDepartmentStoreField, storeIDField), data);
 
@@ -847,7 +928,7 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (Bank b : banksList) {
-                    data.add(Arrays.asList((Object) ("b_" + b.bankID), b.name, b.address, b.department, b.mfo, b.cbu));
+                    data.add(Arrays.asList((Object) ("B" + b.bankID), b.name, b.address, b.department, b.mfo, b.cbu));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(bankIDField, nameBankField, addressBankField, departmentBankField, mfoBankField, cbuBankField), data);
 
@@ -887,12 +968,65 @@ public class ImportActionProperty {
 
                 List<List<Object>> data = new ArrayList<List<Object>>();
                 for (RateWaste r : rateWastesList) {
-                    data.add(Arrays.asList((Object) ("rw_" + r.rateWasteID), r.name, r.coef, r.country));
+                    data.add(Arrays.asList((Object) ("RW" + r.rateWasteID), r.name, r.coef, r.country));
                 }
                 ImportTable table = new ImportTable(Arrays.asList(writeOffRateIDField, nameWriteOffRateField, percentWriteOffRateField, countryWriteOffRateField), data);
 
                 DataSession session = LM.getBL().createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(writeOffRateKey, countryKey), props);
+                service.synchronize(true, false);
+                session.apply(LM.getBL());
+                session.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void importContracts(List<Contract> contractsList) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+
+        try {
+            if (contractsList != null) {
+                ImportField contractIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField supplierIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField customerIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField numberContractField = new ImportField(LM.findLCPByCompoundName("numberContract"));
+                ImportField dateFromContractField = new ImportField(LM.findLCPByCompoundName("dateFromContract"));
+                ImportField dateToContractField = new ImportField(LM.findLCPByCompoundName("dateToContract"));
+
+                ImportKey<?> contractKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("userContractSku"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(contractIDField));
+
+                ImportKey<?> supplierKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("legalEntity"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(supplierIDField));
+
+                ImportKey<?> customerKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("legalEntity"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(customerIDField));
+
+
+                List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+                props.add(new ImportProperty(contractIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(contractKey)));
+                props.add(new ImportProperty(numberContractField, LM.findLCPByCompoundName("numberContract").getMapping(contractKey)));
+                props.add(new ImportProperty(dateFromContractField, LM.findLCPByCompoundName("dateFromContract").getMapping(contractKey)));
+                props.add(new ImportProperty(dateToContractField, LM.findLCPByCompoundName("dateToContract").getMapping(contractKey)));
+                props.add(new ImportProperty(supplierIDField, LM.findLCPByCompoundName("supplierContractSku").getMapping(contractKey),
+                        LM.object(LM.findClassByCompoundName("legalEntity")).getMapping(supplierKey)));
+                props.add(new ImportProperty(customerIDField, LM.findLCPByCompoundName("customerContractSku").getMapping(contractKey),
+                        LM.object(LM.findClassByCompoundName("legalEntity")).getMapping(customerKey)));
+
+                List<List<Object>> data = new ArrayList<List<Object>>();
+                for (Contract c : contractsList) {
+                    data.add(Arrays.asList((Object) ("CN" + c.contractID), c.number, c.dateFrom, c.dateTo,
+                            c.supplierID==null ? c.supplierID : ("L" + c.supplierID),
+                            c.customerID==null ? c.customerID : ("L" + c.customerID)));
+                }
+                ImportTable table = new ImportTable(Arrays.asList(contractIDField, numberContractField,
+                        dateFromContractField, dateToContractField, supplierIDField, customerIDField), data);
+
+                DataSession session = LM.getBL().createSession();
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(contractKey,
+                        supplierKey, customerKey), props);
                 service.synchronize(true, false);
                 session.apply(LM.getBL());
                 session.close();

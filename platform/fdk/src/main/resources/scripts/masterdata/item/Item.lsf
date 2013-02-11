@@ -4,7 +4,7 @@ REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 
-CLASS itemGroup 'Товарная группа' : named, externalizable, skuGroup;
+CLASS itemGroup 'Товарная группа' : named, skuGroup;
 
 @defineHierarchy(itemGroup);
 
@@ -80,7 +80,7 @@ NAVIGATOR {
 }
 // ----------------------------------- Товары ----------------------------------- //
 
-CLASS item 'Товар' : sku, externalizable;
+CLASS item 'Товар' : sku;
 TABLE item(item);
 
 TABLE itemDate (item, DATE);
@@ -448,7 +448,7 @@ UOMSku(item) += UOMItem(item);
 @implementObjectShortItemAttribute(UOM, 'Единица измерения (сокр.)');
 
 // Брэнд
-CLASS brand 'Бренд' : named, externalizable;
+CLASS brand 'Бренд' : named;
 TABLE brand(brand);
 
 @defineObjectItemAttribute(brand, name, 'Бренд', itemBaseGroup);

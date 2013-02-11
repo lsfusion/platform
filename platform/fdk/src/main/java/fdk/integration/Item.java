@@ -21,10 +21,12 @@ public class Item {
     public Double priceWare;
     public Double ndsWareField;
     public String writeOffRateID;
+    public Double baseMarkup;
+    public Double retailMarkup;
 
     public Item(String itemID, String k_grtov, String name, String uomName, String uomID, String brandName, String brandID, String country,
                 String barcode, Date date, Boolean isWeightItem, String composition, Double retailVAT, String wareID,
-                Double priceWare, Double ndsWareField, String writeOffRateID) {
+                Double priceWare, Double ndsWareField, String writeOffRateID,Double baseMarkup,  Double retailMarkup) {
         this.itemID = itemID;
         this.k_grtov = k_grtov;
         this.name = name;
@@ -42,5 +44,7 @@ public class Item {
         this.priceWare = priceWare;
         this.ndsWareField = ndsWareField;
         this.writeOffRateID = writeOffRateID;
+        this.baseMarkup = baseMarkup;
+        this.retailMarkup = retailMarkup;
     }
 }

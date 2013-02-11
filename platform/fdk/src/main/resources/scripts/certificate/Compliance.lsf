@@ -10,6 +10,8 @@ CLASS compliance 'Сертификат соответствия' : certificate, 
 @implementDocumentHeaderTimePrefix(certificate, to, compliance, to);
 seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS compliance;
 numberCertificate(compliance) += numberObject(compliance) AND compliance IS compliance;
+textCompliance 'Текст сертификата' = DATA TEXT (compliance);
+numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compliance) WHERE compliance IS compliance;
 
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
@@ -37,13 +39,13 @@ DESIGN compliance FROM DEFAULT{
 
 FORM compliances 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, textCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, textCompliance
 
     DIALOG compliance OBJECT c
 ;

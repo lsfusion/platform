@@ -21,7 +21,7 @@ CLASS wareGroup 'Группа посуды' : named, externalizable, skuGroup;
 parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);
 
 // ------------------------------------------ Посуда ----------------------------------------------- //
-CLASS ware 'Посуда' : named, externalizable, sku;
+CLASS ware 'Посуда' : named, sku;
 TABLE ware(ware);
 
 wareGroupWare = DATA wareGroup(ware) AUTOSET;

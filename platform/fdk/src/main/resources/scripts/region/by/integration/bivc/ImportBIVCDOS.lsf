@@ -1,0 +1,37 @@
+MODULE ImportBIVCDOS;
+
+REQUIRE Import;
+
+
+//---------------------------------------------- Импорт данных -----------------------------------------------------//
+
+GROUP bivcDosGroup 'bivcDos' : public;
+
+importBIVCDOSDataAction 'Импортировать данные (BIVCDOS)' = ACTION CUSTOM 'fdk.region.by.integration.bivc.ImportBIVCDOSActionProperty' IN bivcDosGroup;
+importBIVCDOSDirectory 'Папка' = DATA STRING[200] () IN bivcDosGroup;
+importBIVCDOSNumberItems 'Кол-во' = DATA INTEGER () IN bivcDosGroup;
+importBIVCDOSNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN bivcDosGroup;
+
+importBIVCDOSGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN bivcDosGroup;
+importBIVCDOSItems 'Импортировать товары' = DATA BOOLEAN () IN bivcDosGroup;
+importBIVCDOSUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSUserInvoicesPosted 'Импортировать проведёнными' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSBanks 'Импортировать банки' = DATA BOOLEAN () IN bivcDosGroup;
+importBIVCDOSLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSWarehouses 'Импортировать склады' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSMag2 'Импортировать коды MAG2' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSContracts 'Импортировать контракты' = DATA BOOLEAN() IN bivcDosGroup;
+
+EXTEND FORM integrationData
+    PROPERTIES() importBIVCDOSDataAction, importBIVCDOSDirectory, importBIVCDOSNumberItems, importBIVCDOSNumberItemsAtATime,
+    importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSUserInvoices, importBIVCDOSUserInvoicesPosted,
+    importBIVCDOSBanks, importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2, importBIVCDOSContracts
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW bivcDos {
+            title = 'BIVCDOS';
+            ADD NOGROUP.bivcDosGroup;
+        }
+    }
+}
