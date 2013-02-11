@@ -2639,6 +2639,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public String getVMInfo() throws SQLException {
+        Long freeMemory = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+        Long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+        Long totalMemory = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+        Integer processors = Runtime.getRuntime().availableProcessors();
+        return "Processors: " + processors + "\n" +
+               "Free Memory: " + freeMemory + " MB\n" +
+               "Total Memory: " + totalMemory + " MB\n" +
+               "Max Memory: " + maxMemory + " MB";
+    }
+
     public void updateRestartProperty() throws SQLException {
         Boolean isRestarting = restartController.isPendingRestart() ? Boolean.TRUE : null;
         navigatorsController.updateEnvironmentProperty((CalcProperty) serviceLM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
