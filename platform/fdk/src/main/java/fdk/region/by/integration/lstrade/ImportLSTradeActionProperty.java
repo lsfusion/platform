@@ -251,8 +251,8 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String rateWasteID = "RW_" + new String(itemsImportFile.getField("K_VGRTOV").getBytes(), "Cp1251").trim();
 
             if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
-                data.add(new Item(itemID, k_grtov, pol_naim, UOM, "U_" + UOM, brand, "B_" + brand, country, barcode,
-                        date, isWeightItem ? isWeightItem : null,
+                data.add(new Item(itemID, k_grtov, pol_naim, UOM, UOM, "U_" + UOM, brand, "B_" + brand, country, barcode,
+                        date, isWeightItem ? isWeightItem : null, null, null,
                         "".equals(composition) ? null : composition, retailVAT, wareID,
                         wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
                         "RW_".equals(rateWasteID) ? null : rateWasteID, null, null));

@@ -197,12 +197,15 @@ public class ImportActionProperty {
         ImportField itemCaptionField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField UOMIDField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField nameUOMField = new ImportField(LM.findLCPByCompoundName("name"));
+        ImportField shortNameUOMField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField brandIDField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField nameBrandField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField nameCountryField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField barcodeField = new ImportField(LM.findLCPByCompoundName("idBarcode"));
         ImportField dateField = new ImportField(DateClass.instance);
         ImportField isWeightItemField = new ImportField(LM.findLCPByCompoundName("isWeightItem"));
+        ImportField netWeightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
+        ImportField grossWeightItemField = new ImportField(LM.findLCPByCompoundName("grossWeightItem"));
         ImportField compositionField = new ImportField(LM.findLCPByCompoundName("compositionScalesItem"));
         ImportField valueVATItemCountryDateField = new ImportField(LM.findLCPByCompoundName("valueVATItemCountryDate"));
         ImportField wareIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
@@ -264,7 +267,7 @@ public class ImportActionProperty {
 
         props.add(new ImportProperty(UOMIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(UOMKey)));
         props.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("name").getMapping(UOMKey)));
-        props.add(new ImportProperty(nameUOMField, LM.findLCPByCompoundName("shortName").getMapping(UOMKey)));
+        props.add(new ImportProperty(shortNameUOMField, LM.findLCPByCompoundName("shortName").getMapping(UOMKey)));
         props.add(new ImportProperty(UOMIDField, LM.findLCPByCompoundName("UOMItem").getMapping(itemKey),
                 LM.object(LM.findClassByCompoundName("UOM")).getMapping(UOMKey)));
 
@@ -284,6 +287,8 @@ public class ImportActionProperty {
                 LM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
 
         props.add(new ImportProperty(isWeightItemField, LM.findLCPByCompoundName("isWeightItem").getMapping(itemKey)));
+        props.add(new ImportProperty(netWeightItemField, LM.findLCPByCompoundName("netWeightItem").getMapping(itemKey)));
+        props.add(new ImportProperty(grossWeightItemField, LM.findLCPByCompoundName("grossWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(compositionField, LM.findLCPByCompoundName("compositionScalesItem").getMapping(itemKey)));
         props.add(new ImportProperty(valueVATItemCountryDateField, LM.findLCPByCompoundName("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
                 LM.object(LM.findClassByCompoundName("range")).getMapping(VATKey)));
@@ -308,19 +313,19 @@ public class ImportActionProperty {
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Item i : dataItems) {
             data.add(Arrays.asList((Object) (i.itemID == null ? null : ("I" + i.itemID)),
-                    i.k_grtov == null ? null : ("IG" + i.k_grtov), i.name, i.uomName,
+                    i.k_grtov == null ? null : ("IG" + i.k_grtov), i.name, i.uomName, i.uomShortName,
                     i.uomID == null ? null : ("UOM" + i.uomID), i.brandName, i.brandID, i.country, i.barcode, i.date,
-                    i.isWeightItem, i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID),
+                    i.isWeightItem, i.netWeightItem, i.grossWeightItem, i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID),
                     i.priceWare, i.ndsWareField, i.writeOffRateID == null ? null : ("RW" + i.writeOffRateID),
                     "cplt_retail", "Розничная надбавка", i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup));
         }
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, nameUOMField,
-                UOMIDField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
-                isWeightItemField, compositionField, valueVATItemCountryDateField, wareIDField, priceWareField,
-                ndsWareField, writeOffRateIDField, retailCalcPriceListTypeIDField, retailCalcPriceListTypeNameField,
-                retailMarkupCalcPriceListTypeField, baseCalcPriceListTypeIDField, baseCalcPriceListTypeNameField,
-                baseMarkupCalcPriceListTypeField), data);
+                shortNameUOMField, UOMIDField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
+                isWeightItemField, netWeightItemField, grossWeightItemField, compositionField, valueVATItemCountryDateField,
+                wareIDField, priceWareField, ndsWareField, writeOffRateIDField, retailCalcPriceListTypeIDField,
+                retailCalcPriceListTypeNameField, retailMarkupCalcPriceListTypeField, baseCalcPriceListTypeIDField,
+                baseCalcPriceListTypeNameField, baseMarkupCalcPriceListTypeField), data);
 
         DataSession session = LM.getBL().createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,

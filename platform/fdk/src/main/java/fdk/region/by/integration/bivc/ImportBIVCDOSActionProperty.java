@@ -11,14 +11,12 @@ import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
-import sun.misc.Regexp;
 
 import java.io.*;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -156,25 +154,40 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return banksList;
     }
 
-    private List<Item> importItems(String path, String path2, String path3, Integer numberOfItems) throws IOException, xBaseJException {
+    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException {
 
         List<Item> itemsList = new ArrayList<Item>();
+        String[] patterns = new String[]{
+                "\\d:(.*?)(?:\\s|\\.)([\\d\\.]+)\\s?(КГ|Г|ГР|Л|МЛ)?\\.?",
+                "\\d:(.*?)" //ловим всё остальное без массы
+        };
 
-        Map<String, String> uoms = new HashMap<String, String>();
-        BufferedReader uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(path2), "cp866"));
+        Map<String, UOM> uomMap = new HashMap<String, UOM>();
+        BufferedReader uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(sediPath), "cp866"));
         String line;
         while ((line = uomReader.readLine()) != null) {
             if (line.startsWith("^SEDI")) {
                 String[] splittedLine = line.split("\\(|\\)|,|\"");
                 if (splittedLine.length == 2) {
-                    String uom = uomReader.readLine().split(":| ")[1];
-                    uoms.put(splittedLine[1], uom.length() <= 5 ? uom : uom.substring(0, 5));
+                    String uomLine = uomReader.readLine().trim().replace(",", ".");
+                    for (String p : patterns) {
+                        Pattern r = Pattern.compile(p);
+                        Matcher m = r.matcher(uomLine);
+                        if (m.matches()) {
+                            String uomName = m.group(1).trim();
+                            Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г")||m.group(3).equals("ГР")||m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
+                            Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
+                            uomMap.put(splittedLine[1], new UOM(uomName,
+                                    uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
+                            break;
+                        }
+                    }
                 }
             }
         }
 
         Map<String, Double> retailMarkups = new HashMap<String, Double>();
-        uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(path3), "cp866"));
+        uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(prcPath), "cp866"));
         while ((line = uomReader.readLine()) != null) {
             if (line.startsWith("^PRC")) {
                 String[] splittedLine = line.split("\\(|\\)");
@@ -188,7 +201,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             }
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "cp866"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
         String pnt13;
         String pnt48;
@@ -221,10 +234,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     retailVAT = splittedLine.length > 18 ? Double.parseDouble(splittedLine[18]) : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
-                    String uom = uoms.get(groupID.split(":")[0]);
-                    itemsList.add(new Item(groupID + ":" + name/*pnt13 + pnt48*/, groupID, name, uom, uom, null,
-                            null, null, null, date, null, null, retailVAT, null, null, null, null,
-                            baseMarkup, retailMarkups.get(markupID)));
+                    UOM uom = uomMap.get(groupID.split(":")[0]);
+                    itemsList.add(new Item(groupID + ":" + name/*pnt13 + pnt48*/, groupID, name,
+                            uom==null ? null : uom.uomName, uom==null ? null : uom.uomShortName,
+                            uom==null ? null : uom.uomName,null, null, null, null, date, null,
+                            uom==null ? null : uom.netWeight, uom==null ? null : uom.grossWeight, null,
+                            retailVAT, null, null, null, null, baseMarkup, retailMarkups.get(markupID)));
                 }
             }
         }

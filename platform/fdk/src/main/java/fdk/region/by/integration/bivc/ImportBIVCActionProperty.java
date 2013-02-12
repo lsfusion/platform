@@ -168,6 +168,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         Double retailMarkup = null;
         String uomID = null;
         String uomName = null;
+        String uomShortName = null;
         String group1ID = null;
         String group2ID = null;
         String group3ID = null;
@@ -192,7 +193,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         String[] splittedLine = reader.readLine().split(":");
                         uomID = splittedLine.length > 0 ? splittedLine[0] : null;
                         uomName = splittedLine.length > 1 ? splittedLine[1] : null;
-                        uomName = uomName == null ? null : uomName.length() <= 5 ? uomName : uomName.substring(0, 5);
+                        uomShortName = uomName == null ? null : uomName.length() <= 5 ? uomName : uomName.substring(0, 5);
                         break;
                     case 12:
                         splittedLine = reader.readLine().split(":");
@@ -217,14 +218,15 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             String groupID = (group1ID == null ? "" : (group1ID + "/")) + group2ID + "/" + group3ID + "/" + "ВСЕ";
                             String d = reader.readLine().trim();
                             java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
-                            itemsList.add(new Item(itemID, groupID, itemName, uomName, uomID, null, null, nameCountry,
-                                    null, date, null, null, retailVAT, null, null, null, null,
+                            itemsList.add(new Item(itemID, groupID, itemName, uomName, uomShortName, uomID, null, null,
+                                    nameCountry, null, date, null, null, null, null, retailVAT, null, null, null, null,
                                     baseMarkup, retailMarkup));
                             group1ID = null;
                             group2ID = null;
                             group3ID = null;
                             itemName = null;
                             uomName = null;
+                            uomShortName = null;
                             uomID = null;
                             retailVAT = null;
                         }
