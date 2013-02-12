@@ -112,43 +112,6 @@ batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvo
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 
 
-//isConvertedInvoice 'Доп. валюта' = DATA BOOLEAN(invoice) IN documentPrmGroup;
-//
-//homeCurrencyInvoice = DATA currency(invoice);
-//nameHomeCurrencyInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyInvoice(invoice));
-//
-//typeExchangeInvoice = DATA typeExchange(invoice);
-//nameTypeExchangeInvoice 'Тип обмена' (invoice) = name(typeExchangeInvoice(invoice));
-//
-//rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), homeCurrencyInvoice(invoice), dateInvoice(invoice));
-//
-//roundCurrencyInvoice(number, invoice) = roundCurrency(number, currencyInvoice(invoice));
-//ratePriceUserInvoiceDetail 'Цена (пост.)' (invoiceDetail) = roundCurrencyInvoice(priceUserInvoiceDetail(invoiceDetail)*rateExchangeInvoice(invoiceInvoiceDetail(invoiceDetail)), invoiceInvoiceDetail(invoiceDetail));
-//
-//homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](invoiceDetail);
-//homePriceUserInvoiceDetail(invoiceDetail) <- ratePriceUserInvoiceDetail(invoiceDetail) WHEN CHANGED (dateInvoice(invoiceInvoiceDetail(invoiceDetail))) OR
-//                                                                                            CHANGED (homeCurrencyInvoice(invoiceInvoiceDetail(invoiceDetail))) OR
-//                                                                                            CHANGED (typeExchangeInvoice(invoiceInvoiceDetail(invoiceDetail)));
-//
-//EXTEND FORM userInvoice
-//    PROPERTIES(i) isConvertedInvoice
-//    PROPERTIES(i) SHOWIF isConvertedInvoice(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, rateExchangeInvoice
-//    PROPERTIES(d) homePriceUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isConvertedInvoice(i)
-//;
-//
-//EXTEND DESIGN userInvoice {
-//    headerRow10 {
-//        NEW headerRow100 {
-//            title = 'Конвертация';
-//            childConstraints = TO THE RIGHT;
-//            ADD PROPERTY(nameHomeCurrencyInvoice);
-//            ADD PROPERTY(nameTypeExchangeInvoice);
-//            ADD PROPERTY(rateExchangeInvoice);
-//        }
-//    }
-//}
-//
-
 
 
 

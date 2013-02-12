@@ -8,3 +8,64 @@ NAMESPACE Purchase;
 @defineCertificateShipment(declaration, 'Таможенная декларация');
 
 @implementCertificateBatch(declaration);
+
+legalEntityDeclaration = DATA legalEntity(declaration);
+namelegalEntityDeclaration 'Импортёр' (declaration) = name(legalEntityDeclaration(declaration));
+
+currencyDeclaration = DATA currency(declaration);
+nameCurrencyDeclaration 'Валюта' (declaration) = name(currencyDeclaration(declaration));
+
+homeCurrencyDeclaration = DATA currency(declaration);
+nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = name(homeCurrencyDeclaration(declaration));
+
+inDeclarationInvoice 'Вкл.' (declaration, invoice) = declarationUserInvoice(invoice)==declaration;
+
+stringInvoice (invoice) =
+    [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+    seriesNumberObject(invoice), dateUserInvoice(invoice));
+
+invoicesDeclaration 'Инвойсы' (declaration) =
+    GROUP CONCAT stringInvoice(invoice) IF inDeclarationInvoice (declaration, invoice), ','
+          BY declaration ORDER invoice  MINCHARWIDTH 40 PREFCHARWIDTH 150;
+
+customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
+codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (invoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(invoiceDetail));
+
+
+EXTEND FORM declaration
+    PROPERTIES(d) namelegalEntityDeclaration, nameCurrencyDeclaration, invoicesDeclaration
+
+    OBJECTS i=userInvoice
+    PROPERTIES(i) numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
+    PROPERTIES(d, i) inDeclarationInvoice
+    FILTERS customerUserInvoice(i)==legalEntityDeclaration(d)
+
+    OBJECTS id=userInvoiceDetail
+    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
+    PROPERTIES(id) codeCustomsGroupUserInvoiceDetail
+    PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail
+    FILTERS declarationUserInvoiceDetail(id) == d
+;
+
+
+EXTEND DESIGN declaration {
+    main {
+        headContainer {
+            ADD PROPERTY(namelegalEntityDeclaration);
+            ADD PROPERTY(nameCurrencyDeclaration);
+            ADD PROPERTY(invoicesDeclaration);
+        }
+
+        ADD i.box {
+            fillVertical = 1;
+        };
+        ADD id.box{
+            fillVertical = 2;
+        };
+    }
+    ADD functions.box;
+}
+
+EXTEND FORM declarations
+    PROPERTIES(d) READONLY namelegalEntityDeclaration, nameCurrencyDeclaration
+;

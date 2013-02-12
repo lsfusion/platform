@@ -1,6 +1,6 @@
 MODULE Declaration;
 
-REQUIRE Certificate, Shipment;
+REQUIRE Certificate, Shipment, CustomsGroup;
 
 CLASS declaration 'Таможенная декларация' : certificate, numberedObject;
 
@@ -23,15 +23,18 @@ FORM declaration 'Таможенная декларация'
 
 DESIGN declaration FROM DEFAULT{
     main{
-        ADD PROPERTY(seriesObject);
-        ADD PROPERTY(numberObject);
-        ADD PROPERTY(dateDeclaration);
-        ADD PROPERTY(timeDeclaration);
+        NEW headContainer {
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(dateDeclaration);
+            ADD PROPERTY(timeDeclaration);
+        }
     }
     ADD functions.box;
 }
 
-FORM declarations 'Таможенные декларация'
+FORM declarations 'Таможенные декларации'
     OBJECTS d = declaration
     PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete

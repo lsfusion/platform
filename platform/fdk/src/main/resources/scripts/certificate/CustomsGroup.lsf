@@ -1,0 +1,77 @@
+MODULE CustomsGroup;
+
+REQUIRE Certificate, Hierarchy, Utils;
+
+CLASS customsZone 'Таможенная зона' : named;
+CLASS customsGroup 'Позиция ТН ВЭД' : named;
+
+codeCustomsGroup 'Код' = DATA STRING[10](customsGroup);
+
+@defineHierarchy(customsGroup);
+
+customsZoneCustomsGroup = DATA customsZone(customsGroup);
+nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup));
+
+FORM customsZone 'Таможенная зона'
+    OBJECTS cz = customsZone FIXED PANEL
+    PROPERTIES(cz) name
+    EDIT customsGroup OBJECT cz
+;
+
+FORM customsZones 'Таможенная зона'
+    OBJECTS cz = customsZone
+    PROPERTIES(cz) READONLY name
+    PROPERTIES(cz) ADDFORM, EDITFORM, delete
+;
+
+FORM customsGroup 'Позиция ТН ВЭД'
+    OBJECTS cg = customsGroup FIXED PANEL
+    PROPERTIES(cg) codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup
+    EDIT customsGroup OBJECT cg
+;
+
+addCustomsGroup 'Добавить' = ACTION (customsGroup) NEWSESSION {
+    ADDOBJ customsGroup;
+    FOR cg == addedObject() DO {
+        SET parentCustomsGroup(cg) <- customsGroup AS customsGroup;
+        FORM customsGroup OBJECTS cg=addedObject() MODAL;
+        IF formResult() == formResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+
+FORM customsGroups 'Позиции ТН ВЭД'
+    OBJECTS cz = customsZone FIXED PANEL
+    PROPERTIES (cz) name
+
+    TREE treeGroups gcg=customsGroup PARENT parentCustomsGroup
+    PROPERTIES READONLY name(gcg)
+    PROPERTIES(gcg) addCustomsGroup, EDITFORM
+    ORDER BY name
+
+    OBJECTS cg = customsGroup
+    PROPERTIES(cg) READONLY codeCustomsGroup, name, canonicalNameCustomsGroup, nameParentCustomsGroup
+    PROPERTIES(cg) ADDFORM, EDITFORM, delete
+
+    FILTERS customsZoneCustomsGroup(cg) == cz
+
+    FILTERGROUP filters
+        FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) DEFAULT
+        FILTER 'Всех потомков' 'F9' isParentCustomsGroupCustomsGroup(cg, gcg)
+        FILTER 'Только непосредственных потомков' 'F8' parentCustomsGroup(cg) == gcg
+
+    DIALOG customsGroup OBJECT cg
+;
+
+
+NAVIGATOR {
+    certificateNavigator {
+        ADD customsZones;
+        ADD customsGroups;
+    }
+}
+
+
+
+
+

@@ -63,7 +63,6 @@ quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(disparityDetail, stock);
 sumOutSkuLedger (ledger) += sumDisparityDetail(ledger);
 
-
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
 CLASS inputDisparityDetail 'Приход пересортицы';
