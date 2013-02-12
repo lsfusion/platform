@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import platform.gwt.base.client.GwtClientUtils;
@@ -143,14 +144,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GRunPrintReportAction action) {
-    }
-
-    @Override
-    public void execute(GRunOpenInExcelAction action) {
-    }
-
-    @Override
     public void execute(GHideFormAction action) {
     }
 
@@ -179,5 +172,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GEditNotPerformedAction action) {
+    }
+
+    @Override
+    public void execute(GOpenFileAction action) {
+        if (action.filePath != null) {
+            String reportUrl = GWT.getHostPageBaseURL() + "downloadFile?name=" + action.filePath;
+            Window.open(reportUrl, action.filePath, "");
+        }
     }
 }

@@ -1,8 +1,10 @@
 package platform.gwt.form.server.convert;
 
 import platform.client.logics.*;
+import platform.client.logics.classes.ClientFileClass;
 import platform.client.logics.classes.ClientImageClass;
 import platform.gwt.base.shared.GwtSharedUtils;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
@@ -91,10 +93,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 Object propValue = convertOrCast(clientValues.getValue());
-                if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
+                if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientFileClass) {
                     propValues.put(
                             groupObjectValue,
-                            FileManager.createPropertyImage((byte[]) propValue, ((ClientPropertyDraw) reader).getSID())
+                            convertFileValue((ClientPropertyDraw) reader, propValue)
                     );
                 } else {
                     propValues.put(groupObjectValue, propValue);
@@ -118,6 +120,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         return dto;
+    }
+
+    private Object convertFileValue(ClientPropertyDraw property, Object value) {
+        if (property.baseType instanceof ClientImageClass) {
+            return FileUtils.createPropertyImage((byte[]) value, property.getSID());
+        } else {
+            return value == null ? null : true;
+        }
     }
 
     @Converter(from = Color.class)

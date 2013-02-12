@@ -1,10 +1,13 @@
 package platform.gwt.form.shared.view.classes;
 
+import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.FileGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
+import platform.gwt.form.shared.view.grid.renderer.FileGridCellRenderer;
+import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
 import java.util.ArrayList;
 
@@ -36,5 +39,20 @@ public abstract class GFileType extends GDataType {
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return new FileGridCellEditor(editManager, editProperty, description, multiple, extensions);
+    }
+
+    @Override
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new FileGridCellRenderer();
+    }
+
+    @Override
+    public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
+        return 18;
+    }
+
+    @Override
+    public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
+        return 18;
     }
 }

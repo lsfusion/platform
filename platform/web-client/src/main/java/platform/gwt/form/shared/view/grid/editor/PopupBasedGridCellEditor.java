@@ -1,13 +1,15 @@
 package platform.gwt.form.shared.view.grid.editor;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -80,32 +82,14 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
-        String text = value == null ? null : renderToString(value);
-
-        DivElement div;
-        if (textAlign != null) {
-            div = cellParent.appendChild(Document.get().createDivElement());
-            div.getStyle().setTextAlign(textAlign);
-        } else {
-            div = cellParent;
-        }
-
-        Style divStyle = div.getStyle();
-        divStyle.setPaddingTop(0, Style.Unit.PX);
-        divStyle.setPaddingRight(4, Style.Unit.PX);
-        divStyle.setPaddingBottom(0, Style.Unit.PX);
-        divStyle.setPaddingLeft(4, Style.Unit.PX);
-
-        if (property.font != null) {
-            divStyle.setProperty("font", property.font.getFullFont());
-        }
-
-        if (text == null || text.trim().isEmpty()) {
-            div.setInnerText(EscapeUtils.UNICODE_NBSP);
-        } else {
-            div.setInnerText(EscapeUtils.unicodeEscape(text.trim()));
-        }
+        //NOP
     }
+
+    @Override
+    public boolean replaceCellRenderer() {
+        return false;
+    }
+
     protected String renderToString(Object value) {
         return value == null ? "" : value.toString();
     }

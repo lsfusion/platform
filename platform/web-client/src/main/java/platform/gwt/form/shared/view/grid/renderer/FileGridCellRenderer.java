@@ -7,27 +7,24 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.cellview.client.cell.Cell;
 
-public class ImageGridCellRenderer extends AbstractGridCellRenderer {
+public class FileGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
         cellElement.setAttribute("align", "center");
 
-        ImageElement img = cellElement.appendChild(Document.get().createImageElement());
-        img.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
-        if (value instanceof String) {
-            img.setSrc(imageSrc(value));
-        }
+        ImageElement image = Document.get().createImageElement();
+        cellElement.appendChild(image);
+        image.getStyle().setVerticalAlign(Style.VerticalAlign.TEXT_BOTTOM);
+        setImageSrc(image, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
-        ImageElement img = cellElement.getFirstChild().cast();
-        if (value instanceof String) {
-            img.setSrc(imageSrc(value));
-        }
+        ImageElement image = cellElement.getFirstChild().cast();
+        setImageSrc(image, value);
     }
 
-    private String imageSrc(Object value) {
-        return GWT.getHostPageBaseURL() + "propertyImage?sid=" + value;
+    private void setImageSrc(ImageElement image, Object value) {
+        image.setSrc(value != null ? GWT.getModuleBaseURL() + "images/file.png" : GWT.getHostPageBaseURL() + "images/empty.png");
     }
 }

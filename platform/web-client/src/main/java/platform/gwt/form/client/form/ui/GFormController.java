@@ -684,13 +684,14 @@ public class GFormController extends ResizableSimplePanel {
         syncDispatch(new SingleGroupReport(groupObjectID, toExcel), new AsyncCallbackEx<StringResult>() {
             @Override
             public void success(StringResult result) {
-                if (toExcel) {
-                    runOpenInExcel(result.get());
-                } else {
-                    runPrintReport(result.get());
-                }
+                openReportWindow(result.get());
             }
         });
+    }
+
+    public void openReportWindow(String fileName) {
+        String reportUrl = GWT.getHostPageBaseURL() + "downloadFile?name=" + fileName;
+        Window.open(reportUrl, "Report", "");
     }
 
     public List<GPropertyDraw> getPropertyDraws() {
@@ -724,19 +725,6 @@ public class GFormController extends ResizableSimplePanel {
 
     public void hideForm() {
         HotkeyManager.get().removeHotkeyBinding(getElement());
-    }
-
-    public void runPrintReport(String reportSID) {
-        openReportWindow(reportSID, "pdf");
-    }
-
-    public void runOpenInExcel(String reportSID) {
-        openReportWindow(reportSID, "xls");
-    }
-
-    private void openReportWindow(String reportSID, String type) {
-        String reportUrl = GWT.getHostPageBaseURL() + "report?file=" + reportSID + "&type=" + type;
-        Window.open(reportUrl, "Report", "");
     }
 
     public void blockingConfirm(String caption, String message, final DialogBoxHelper.CloseCallback callback) {

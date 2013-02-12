@@ -5,6 +5,7 @@ import platform.client.form.EditBindingMap;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientActionClass;
 import platform.client.logics.classes.ClientFileClass;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.reader.*;
@@ -232,7 +233,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.icon= FileManager.createImage(clientPropertyDraw.design.getImage(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
+        propertyDraw.icon= FileUtils.createImage(clientPropertyDraw.design.getImage(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

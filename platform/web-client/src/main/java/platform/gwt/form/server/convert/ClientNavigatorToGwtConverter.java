@@ -3,6 +3,7 @@ package platform.gwt.form.server.convert;
 import platform.client.navigator.*;
 import platform.gwt.form.client.navigator.GNavigatorAction;
 import platform.gwt.form.client.navigator.GNavigatorForm;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GNavigatorElement;
 import platform.gwt.form.shared.view.actions.GAction;
 import platform.gwt.form.shared.view.window.*;
@@ -26,7 +27,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.caption = clientElement.caption;
         element.children = new ArrayList<GNavigatorElement>();
 
-        element.icon = FileManager.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
+        element.icon = FileUtils.createImage(clientElement.image, clientElement.imageFileName, "navigator", false);
 
         for (ClientNavigatorElement child : clientElement.children) {
             GNavigatorElement childElement = convertOrCast(child);

@@ -13,4 +13,6 @@ public interface GridCellEditor {
     void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event);
 
     void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue);
+
+    boolean replaceCellRenderer();
 }

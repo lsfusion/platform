@@ -21,6 +21,11 @@ public class LogicalGridCellEditor implements GridCellEditor {
     }
 
     @Override
+    public boolean replaceCellRenderer() {
+        return true;
+    }
+
+    @Override
     public void onBrowserEvent(Cell.Context context, Element parent, Object value, NativeEvent event) {
         //NOP
     }

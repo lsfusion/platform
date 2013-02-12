@@ -1,5 +1,6 @@
 package platform.gwt.form.shared.view.grid.editor;
 
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Widget;
@@ -41,6 +42,15 @@ public abstract class DialogBasedGridCellEditor extends AbstractGridCellEditor {
             dialog.setContentSize(width, height);
         }
         dialog.center();
+    }
+
+    @Override
+    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
+    }
+
+    @Override
+    public boolean replaceCellRenderer() {
+        return false;
     }
 
     protected final void commitEditing(Object value) {

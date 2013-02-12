@@ -6,4 +6,9 @@ import platform.gwt.cellview.client.cell.Cell;
 public abstract class AbstractGridCellEditor implements GridCellEditor {
     @Override
     public abstract void renderDom(Cell.Context context, DivElement cellParent, Object value);
+
+    @Override
+    public boolean replaceCellRenderer() {
+        return true;
+    }
 }

@@ -36,7 +36,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        form.runPrintReport(action.reportSID);
+        form.openReportWindow(action.reportFileName);
     }
 
     @Override
@@ -103,16 +103,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
                 }
             });
         }
-    }
-
-    @Override
-    public void execute(GRunPrintReportAction action) {
-        form.runPrintReport(action.getReportSID());
-    }
-
-    @Override
-    public void execute(GRunOpenInExcelAction action) {
-        form.runOpenInExcel(action.getReportSID());
     }
 
     @Override

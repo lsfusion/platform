@@ -1,10 +1,12 @@
 package platform.gwt.form.shared.view.grid.editor;
 
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.Widget;
 import net.auroris.ColorPicker.client.ColorPicker;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.cellview.client.cell.Cell;
@@ -13,7 +15,6 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
-import platform.gwt.form.shared.view.grid.renderer.ColorGridCellRenderer;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -67,10 +68,5 @@ public class ColorGridCellEditor extends PopupBasedGridCellEditor {
         }
 
         super.startEditing(editEvent, context, parent, oldValue);
-    }
-
-    @Override
-    public void renderDom(Cell.Context context, DivElement cellParent, Object value) {
-        ColorGridCellRenderer.renderColorBox(cellParent, value);
     }
 }

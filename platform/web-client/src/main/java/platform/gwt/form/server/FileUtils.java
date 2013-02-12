@@ -1,9 +1,12 @@
-package platform.gwt.form.server.convert;
+package platform.gwt.form.server;
 
 import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JasperExportManager;
 import platform.base.BaseUtils;
 import platform.gwt.form.shared.view.ImageDescription;
 import platform.gwt.form.shared.view.changes.dto.GFilesDTO;
+import platform.interop.form.ReportGenerationData;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,22 +19,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.TimeZone;
 
-public class FileManager {
+public class FileUtils {
     public static String APP_FOLDER_URL;
     public static String APP_IMAGES_FOLDER_URL;
     public static String APP_TEMP_FOLDER_URL;
 
-    public static void initializeAppFolder(String path) {
-        if (APP_FOLDER_URL == null) {
-            APP_FOLDER_URL = path;
-            APP_IMAGES_FOLDER_URL = path + "/images/";
-            APP_TEMP_FOLDER_URL = path + "/WEB-INF/temp";
-        }
-    }
-
     public static ImageDescription createImage(ImageIcon icon, String iconPath, String imagesFolderName, boolean canBeDisabled) {
-        if (APP_IMAGES_FOLDER_URL != null && icon != null) {
+        if (icon != null) {
             File imagesFolder = new File(APP_IMAGES_FOLDER_URL, imagesFolderName);
             imagesFolder.mkdir();
 
@@ -123,5 +120,39 @@ public class FileManager {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    public static String saveFile(byte[] fileBytes, String extension) {
+        try {
+            if (fileBytes != null) {
+                String fileName  = BaseUtils.randomString(15) + "." + extension;
+                File file = new File(APP_TEMP_FOLDER_URL, fileName);
+                FileOutputStream f = new FileOutputStream(file);
+                f.write(fileBytes);
+                f.close();
+                return fileName;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
+    }
+
+    public static String exportReport(boolean toExcel, ReportGenerationData reportData) {
+        try {
+            TimeZone zone = Calendar.getInstance().getTimeZone();
+            ReportGenerator generator = new ReportGenerator(reportData, zone);
+            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData, zone);
+            String fileName = "lsfReport" + BaseUtils.randomString(15) + (toExcel ? ".xls" : ".pdf");
+            File file = new File(APP_TEMP_FOLDER_URL, fileName);
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(report);
+
+            fos.close();
+            return fileName;
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 }

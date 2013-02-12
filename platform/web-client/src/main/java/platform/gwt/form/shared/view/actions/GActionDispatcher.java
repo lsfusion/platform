@@ -15,10 +15,6 @@ public interface GActionDispatcher {
 
     public void execute(GLogMessageAction action);
 
-    public void execute(GRunPrintReportAction action);
-
-    public void execute(GRunOpenInExcelAction action);
-
     public void execute(GHideFormAction action);
 
     public void execute(GProcessFormChangesAction action);
@@ -32,4 +28,6 @@ public interface GActionDispatcher {
     public void execute(GOpenUriAction action);
 
     public void execute(GEditNotPerformedAction action);
+
+    public void execute(GOpenFileAction action);
 }

@@ -19,9 +19,9 @@ import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.*;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 
-import static platform.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
+import static platform.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
 
@@ -155,8 +155,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             editCell.setEditing(true);
 
             //рендерим эдитор
-            removeAllChildren(editCellParent);
-            cellEditor.renderDom(editContext, editCellParent.<DivElement>cast(), oldValue);
+            if (cellEditor.replaceCellRenderer()) {
+                removeAllChildren(editCellParent);
+                cellEditor.renderDom(editContext, editCellParent.<DivElement>cast(), oldValue);
+            }
             cellEditor.startEditing(event, editContext, editCellParent, oldValue);
         } else {
             cancelEditing();

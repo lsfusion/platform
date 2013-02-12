@@ -2,6 +2,7 @@ package platform.gwt.form.server.convert;
 
 import com.google.common.base.Throwables;
 import platform.base.DateConverter;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GUserInputResult;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -44,7 +45,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GFilesDTO.class)
     public byte[] convertFiles(GFilesDTO filesObject) {
-        return FileManager.readFilesAndDelete(filesObject);
+        return FileUtils.readFilesAndDelete(filesObject);
     }
 
     @Converter(from = GUserInputResult.class)

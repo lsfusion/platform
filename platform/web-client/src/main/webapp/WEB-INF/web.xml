@@ -24,6 +24,10 @@
         <param-value>7652</param-value>
     </context-param>
 
+    <listener>
+        <listener-class>platform.gwt.form.server.AppContextListener</listener-class>
+    </listener>
+
     <servlet>
         <servlet-name>RemoteGwtService</servlet-name>
         <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
@@ -44,15 +48,6 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>generateReportHandler</servlet-name>
-        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>generateReportHandler</servlet-name>
-        <url-pattern>/report</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>propertyImageHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
@@ -68,6 +63,15 @@
     <servlet-mapping>
         <servlet-name>fileUploadHandler</servlet-name>
         <url-pattern>/uploadFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>fileDownloadHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>fileDownloadHandler</servlet-name>
+        <url-pattern>/downloadFile</url-pattern>
     </servlet-mapping>
 
     <servlet>

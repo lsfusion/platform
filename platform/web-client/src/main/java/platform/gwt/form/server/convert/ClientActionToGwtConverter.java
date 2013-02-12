@@ -4,9 +4,9 @@ import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.gwt.base.server.LogicsDispatchServlet;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteServiceImpl;
-import platform.gwt.form.server.ReportExporter;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
@@ -114,8 +114,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ReportClientAction.class)
-    public GReportAction convertAction(ReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GReportAction(ReportExporter.exportReport(session, false, action.generationData));
+    public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
+        return new GReportAction(FileUtils.exportReport(false, action.generationData));
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -134,13 +134,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RunPrintReportClientAction.class)
-    public GRunPrintReportAction convertAction(RunPrintReportClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunPrintReportAction(ReportExporter.exportReport(session, false, form.remoteForm.getReportData(-1, null, false, null)));
+    public GReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
+        return new GReportAction(FileUtils.exportReport(false, form.remoteForm.getReportData(-1, null, false, null)));
     }
 
     @Converter(from = RunOpenInExcelClientAction.class)
-    public GRunOpenInExcelAction convertAction(RunOpenInExcelClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GRunOpenInExcelAction(ReportExporter.exportReport(session, true, form.remoteForm.getReportData(-1, null, true, null)));
+    public GReportAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
+        return new GReportAction(FileUtils.exportReport(true, form.remoteForm.getReportData(-1, null, true, null)));
     }
 
     @Converter(from = AsyncResultClientAction.class)
@@ -161,5 +161,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = EditNotPerformedClientAction.class)
     public GEditNotPerformedAction convertAction(EditNotPerformedClientAction action) {
         return new GEditNotPerformedAction();
+    }
+
+    @Converter(from = OpenFileClientAction.class)
+    public GOpenFileAction convertAction(OpenFileClientAction action) {
+        return new GOpenFileAction(FileUtils.saveFile(action.file, action.extension));
     }
 }

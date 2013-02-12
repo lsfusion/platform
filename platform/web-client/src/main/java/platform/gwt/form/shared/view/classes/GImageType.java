@@ -6,8 +6,6 @@ import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.ImageGridCellRenderer;
 
 public class GImageType extends GFileType {
-    public static GImageType instance = new GImageType();
-
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ImageGridCellRenderer();

@@ -1,6 +1,7 @@
 package platform.gwt.form.server.convert;
 
 import platform.client.logics.classes.*;
+import platform.gwt.form.server.FileUtils;
 import platform.gwt.form.shared.view.classes.*;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -76,7 +77,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
             fileClass.extensions = new ArrayList<String>();
             MimetypesFileTypeMap mimeMap;
             try {
-                mimeMap = new MimetypesFileTypeMap(FileManager.APP_FOLDER_URL + "/WEB-INF/mimetypes");
+                mimeMap = new MimetypesFileTypeMap(FileUtils.APP_FOLDER_URL + "/WEB-INF/mimetypes");
             } catch (IOException e) {
                 mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
             }
