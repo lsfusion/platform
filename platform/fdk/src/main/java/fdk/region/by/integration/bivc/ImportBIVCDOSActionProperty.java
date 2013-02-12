@@ -435,7 +435,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 number = m.group(1).trim();
                                 try {
                                     dateFrom = (m.groupCount() >= 2 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(2), datePatterns).getTime()) : null;
-                                    dateTo = (m.groupCount() >= 3 && !m.group(2).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
+                                    dateTo = (m.groupCount() >= 3 && !m.group(3).isEmpty()) ? new Date(DateUtils.parseDate(m.group(3), datePatterns).getTime()) : null;
                                 } catch (ParseException e) {
                                     if (dateFrom == null && m.groupCount() >= 2)
                                         number = m.group(0).trim();
