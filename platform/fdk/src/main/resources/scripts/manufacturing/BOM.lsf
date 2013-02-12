@@ -433,7 +433,7 @@ DESIGN BOMs FROM DEFAULT {
     }
 }
 
-// ----- Рекурсивный расчет потребностей ---------- //
+// ----- Рекурсивный расчет потребностей брутто ---------- //
 
 // кол-во требуемых материалов материалов
 bruttoQuantityBOMMaterialDate (BOM, material, date) = GROUP SUM bruttoQuantityComponentDate(component, date) BY BOMComponent(component), materialComponent(component), date;
@@ -459,6 +459,22 @@ recPriceCoeffBOMBOMDate (parent, child, date) = GROUP SUM recPriceCoeffBOMBOMDat
 //
 recPriceCoeffBOMSkuDate (BOM, sku, date) = GROUP SUM recPriceCoeffBOMBOMDate(BOM, childBOM, date) * bruttoQuantityBOMMaterialDate(childBOM, material, date) BY BOM, skuMaterial(material), date;
 recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BOMProduct(product), sku, date) * pricePercentProduct(product);
+
+// ----- Рекурсивный расчет потребностей нетто ---------- //
+
+//nettoQuantityBOMMaterial (BOM, material) = GROUP SUM nettoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
+//nettoQuantityBOMSku(BOM, sku) = nettoQuantityBOMMaterial(BOM, sku) AND sku IS sku;
+//
+//nettoQuantityBOMBOM (parent, child) = GROUP MAX nettoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
+//
+//recNettoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM)  STEP 1.00000000000 AND q == $q * nettoQuantityBOMBOM($child, child) CYCLES;
+//recNettoQuantityBOMBOM (parent, child) = GROUP SUM recNettoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
+//
+//recNettoQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);
+//
+//recNettoNodeQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMMaterial(childBOM, material) BY BOM, skuMaterial(material); //](BOM, sku);
+
+recNettoNodeQuantityBOMSku (BOM, sku) =  DATA NUMERIC[14,3] (BOM, sku);   // пока сделал так, потому что очень тормозит.
 
 NAVIGATOR {
     manufacturingMasterData {

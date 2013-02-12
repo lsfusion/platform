@@ -237,7 +237,7 @@ sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailCons
 EXTEND FORM order
             PROPERTIES(o)  BACKGROUND backgroundConsumptionOrder(o) createConsumptionOrder
             PROPERTIES(cd) BEFORE delete(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) bruttoOutputQuantityComponentDetail, quantityOutputSubstitutesComponentDetail READONLY, outputSumComponentDetail
-            PROPERTIES(o)  TODRAW cd createOutputComponentOrder
+            PROPERTIES(o)  TODRAW cd createOutputComponentOrder SHOWIF createConsumptionOrder(o)
 ;
 EXTEND DESIGN order {
     headerRow112 {

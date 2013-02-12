@@ -1,6 +1,6 @@
 MODULE  CostCardOrderBy;
 
-REQUIRE PricingProductionOutput, LegalEntityBy;
+REQUIRE PricingProductionOutput, LegalEntityBy, ItemNutrition;
 NAMESPACE Production;
 
 // ----------------  Калькуляционная карта ------------------- //
@@ -46,6 +46,28 @@ retailVATPriceProductDetail 'Цена НДС (ед.)' (productDetail)= retailVAT
 //--
 @defineDocumentUNPLegalEntity(order, goodsLegalEntityStock, );
 
+//--  Нетто
+
+nettoQuantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recNettoNodeQuantityBOMSku (BOM, sku) * calcMultiplierSkuOrder(sku, order)
+    BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
+
+nettoQuantityProductDetailSku 'Нетто' (productDetail, sku) = nettoQuantityBOMSkuOrder(BOMProduct(productProductDetail(productDetail)), sku, orderProductDetail(productDetail));
+fatsProductDetailSku 'Жиры'(productDetail, sku) = nettoQuantityProductDetailSku (productDetail, sku)*netWeightItem(sku)*10*fatsItem(sku);
+carbohydratesProductDetailSku 'Углеводы' (productDetail, sku) = nettoQuantityProductDetailSku (productDetail, sku)*netWeightItem(sku)*10*carbohydratesItem(sku);
+proteinsProductDetailSku 'Белки' (productDetail, sku) = nettoQuantityProductDetailSku (productDetail, sku)*netWeightItem(sku)*10*proteinsItem(sku);
+energyProductDetailSku 'Энерг.ценность'(productDetail, sku) = nettoQuantityProductDetailSku (productDetail, sku)*netWeightItem(sku)*10*energyItem(sku);
+
+fatsInBOMProductDetail 'Жиры'(productDetail) = GROUP SUM fatsProductDetailSku(productDetail, sku) BY productDetail;
+carbohydratesInBOMProductDetail 'Углеводы'(productDetail) = GROUP SUM carbohydratesProductDetailSku(productDetail, sku) BY productDetail;
+proteinsInBOMProductDetail 'Белки'(productDetail) = GROUP SUM proteinsProductDetailSku(productDetail, sku) BY productDetail;
+energyInBOMProductDetail 'Энерг.ценность'(productDetail) = GROUP SUM energyProductDetailSku(productDetail, sku) BY productDetail;
+
+fatsProductDetail 'Жиры (ед.)'(productDetail) = fatsInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
+carbohydratesProductDetail 'Углеводы (ед.)'(productDetail) = carbohydratesInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
+proteinsProductDetail 'Белки (ед.)'(productDetail) = proteinsInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
+energyProductDetail 'Энерг.ценность (ед.)'(productDetail) = energyInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
+
+
 FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
     OBJECTS o = order FIXED PANEL
@@ -84,6 +106,32 @@ FORM intakeSheetOrderBy 'Заборный лист' PRINT
 
 ;
 printIntakeSheetOrder 'Заборный лист' (order) = ACTION FORM intakeSheetOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+
+FORM technologicalCardOrderBy 'Технологическая карта' PRINT
+
+    OBJECTS o = order FIXED PANEL
+    PROPERTIES(o) objectClassName, numberObject, seriesObject, seriesNumberObject,
+                  dateOrder, timeOrder
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd)indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, quantityInBOMProductDetail,
+                  shortNameUOMProductProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                  fatsInBOMProductDetail, carbohydratesInBOMProductDetail, proteinsInBOMProductDetail, energyInBOMProductDetail,
+                  fatsProductDetail, carbohydratesProductDetail, proteinsProductDetail, energyProductDetail
+
+    FILTERS orderProductDetail(pd)==o
+
+    OBJECTS s = sku
+    PROPERTIES(pd,s)quantityProductDetailSku, nettoQuantityProductDetailSku
+    PROPERTIES(pd,s)FORCE GRID fatsProductDetailSku, carbohydratesProductDetailSku, proteinsProductDetailSku, energyProductDetailSku
+    PROPERTIES(s,o) nameSkuSkuOrder, idBarcodeSkuSkuOrder, shortNameUOMSkuSkuOrder
+    PROPERTIES(s)   FORCE GRID fatsItem, carbohydratesItem, proteinsItem, energyItem
+
+    FILTERS quantityProductDetailSku(pd,s) OR nettoQuantityProductDetailSku(pd,s)
+
+;
+printTechnologicalCardOrder 'Технологическая карта' (order) = ACTION FORM technologicalCardOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+
 EXTEND FORM orders
-    PROPERTIES(o) FORCE PANEL printCostCardOrder, printIntakeSheetOrder
+    PROPERTIES(o) FORCE PANEL printTechnologicalCardOrder, printCostCardOrder, printIntakeSheetOrder
 ;
