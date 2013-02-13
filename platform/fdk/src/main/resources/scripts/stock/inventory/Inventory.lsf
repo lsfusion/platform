@@ -896,6 +896,17 @@ DESIGN listInventory FROM DEFAULT {
     }
 }
 
+addListInventoryStockInventory 'Добавить' = ACTION (stock, inventory) NEWSESSION {
+
+    FOR ADDOBJ g = listInventory DO {
+        SET stockListInventory(g) <- stock;
+        SET inventoryListInventory(g) <- inventory;
+        FORM listInventory OBJECTS li = g MODAL;
+        IF formResult() == formResult.ok THEN
+            EXEC apply();
+    };
+} TOOLBAR IMAGE 'add.png';
+
 // --------------------------------------------- Формы инвентаризаций ------------------------------------- //
 
 FORM inventory 'Инвентаризация'
@@ -915,10 +926,11 @@ FORM inventory 'Инвентаризация'
                               listInventoryPageInventory(pl) == li
 
     PROPERTIES(ds, in) READONLY countPageInventoryDetailStockInventory, quantityPageInventoryDetailStockInventory, sumPageInventoryDetailStockInventory
+    PROPERTIES(ds, in) addListInventoryStockInventory
 
     PROPERTIES(li)   READONLY countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory, objectClassName
 
-    PROPERTIES(li)   ADDFORM, editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftListInventory(li),
+    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftListInventory(li),
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
