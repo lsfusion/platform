@@ -48,6 +48,8 @@ EXTEND CLASS writeOffRate : externalizable;
 mag2LegalEntityStock 'Код MAG2'= DATA STRING[100] (legalEntity, stock);
 mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), stock);
 
+userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
+
 EXTEND FORM warehouses
     PROPERTIES (w) READONLY mag2Stock BEFORE delete(w), sidExternalizable BEFORE delete(w)
 ;

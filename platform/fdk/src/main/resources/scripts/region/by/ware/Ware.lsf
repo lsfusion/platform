@@ -14,7 +14,7 @@ EXTEND DESIGN options {
 }
 
 // ----------------------------------------- Группа посуды ----------------------------- //
-CLASS wareGroup 'Группа посуды' : named, externalizable, skuGroup;
+CLASS wareGroup 'Группа посуды' : named, skuGroup;
 
 @defineHierarchy(wareGroup);
 

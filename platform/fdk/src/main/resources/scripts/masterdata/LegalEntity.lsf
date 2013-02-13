@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE System, Historizable, Tax, Country, I18n, Integration;
+REQUIRE System, Historizable, Tax, Country, I18n;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 

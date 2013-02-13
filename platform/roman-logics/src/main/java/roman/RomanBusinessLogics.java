@@ -137,7 +137,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "scripts/pricelist/PriceList.lsf",
             "scripts/machinery/label/Label.lsf",
             "scripts/ContractCompany.lsf",
-            "scripts/utils/Integration.lsf",
+            //"scripts/utils/Integration.lsf",
             "scripts/stock/StockTax.lsf",
             "scripts/finance/Finance.lsf",
             "scripts/retail/Retail.lsf",
