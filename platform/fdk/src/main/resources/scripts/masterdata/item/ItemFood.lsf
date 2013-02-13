@@ -11,19 +11,23 @@ CLASS taste 'Вкус товара' : named;
 TABLE taste(taste);
 
 @defineObjectItemAttribute(taste, name, 'Вкус', itemFoodGroup);
+@defineObjectItemAttributeBatch (taste, name, 'Вкус');
 
 // Степень охлаждения
 CLASS coolingDegree 'Степень охлаждения товара' : doubleNamed;
 TABLE coolingDegree(coolingDegree);
 
 @defineObjectItemAttribute(coolingDegree, name, 'Степень охлаждения', itemFoodGroup);
+@defineObjectItemAttributeBatch (coolingDegree, name, 'Степень охлаждения');
 @implementObjectShortItemAttribute(coolingDegree, 'Степень охлаждения (сокр.)');
 
 // Жирность
 @defineDoubleItemAttribute(percentFat, NUMERIC[5,1], '% жирности', itemFoodGroup);
+@defineItemAttributeBatch (percentFat, '% жирности');
 
 // Алкоголь
 @defineDoubleItemAttribute(percentAlcohol, NUMERIC[5,1], '% алкоголя', itemFoodGroup);
+@defineItemAttributeBatch (percentAlcohol, '% алкоголя');
 
 overCopyItem(s, d) += ACTION (s, d) {
     SET tasteItem(d) <- tasteItem(s);

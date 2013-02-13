@@ -343,6 +343,21 @@ EXTEND DESIGN options {
     }
 }
 
+META defineItemAttributeBatch (attribute, formProperty, caption)
+    show###attribute##Batch caption (batch)= show###attribute##Item(skuBatch(batch));
+    attribute##Batch caption (batch) = attribute##Item(skuBatch(batch));
+
+    EXTEND FORM batches PROPERTIES(bt) READONLY FORCE GRID formProperty SHOWIF show###attribute##ItemGroup(sk);
+END
+META defineItemAttributeBatch (attribute, caption)
+    @defineItemAttributeBatch (attribute, attribute##Batch, caption);
+END
+
+META defineObjectItemAttributeBatch(attribute, identity, caption)
+    identity###attribute##Batch caption (batch) = identity###attribute##Item(skuBatch(batch));
+    @defineItemAttributeBatch(attribute, identity###attribute##Batch, caption);
+END
+
 // -------------------------------------------- Формирование наименования ----------------------------------- //
 
 prefixInNameItemAttribute 'Префикс' = DATA STRING[20] (itemAttribute);
@@ -438,9 +453,11 @@ GROUP itemBaseGroup 'Базовые свойства' : base;
 
 // Название
 @defineStringItemAttribute(caption, STRING[100], 'Название', itemBaseGroup);
+@defineItemAttributeBatch (caption, 'Название');
 
 // Единица измерения
 @defineObjectItemAttribute(UOM, name, 'Единица измерения', itemBaseGroup);
+@defineObjectItemAttributeBatch (UOM, name, 'Единица измерения');
 
 shortNameUOMItem 'Единица измерения' (item) = shortName(UOMItem(item)) IN itemBaseGroup;
 UOMSku(item) += UOMItem(item);
@@ -452,17 +469,20 @@ CLASS brand 'Бренд' : named;
 TABLE brand(brand);
 
 @defineObjectItemAttribute(brand, name, 'Бренд', itemBaseGroup);
+@defineObjectItemAttributeBatch (brand, name, 'Бренд');
 
 // Страна
 @defineObjectItemAttribute(country, name, 'Страна', itemBaseGroup);
 residentItem 'Отечественное производство' (item) = residentCountry(countryItem(item)) IN itemBaseGroup;
 countrySku(sku) += countryItem(sku);
+@defineObjectItemAttributeBatch (country, name, 'Страна');
 
 // Производитель
 CLASS manufacturer 'Производитель товара' : named;
 TABLE manufacturer(manufacturer);
 
 @defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
+@defineObjectItemAttributeBatch (manufacturer, name, 'Производитель');
 
 // Тара
 skuTypeItem = DATA skuType (item);
@@ -493,10 +513,12 @@ GROUP itemSizeGroup 'Габариты товара' : public;
 
 // Вес нетто
 @defineDoubleItemAttribute(netWeight, NUMERIC[9,3], 'Вес нетто, кг', itemSizeGroup);
+@defineItemAttributeBatch (netWeight, 'Вес нетто, кг');
 netWeightSku(sku) += netWeightItem(sku);
 
 // Вес брутто
 @defineDoubleItemAttribute(grossWeight, NUMERIC[9,3], 'Вес брутто, кг', itemSizeGroup);
+@defineItemAttributeBatch (grossWeight, 'Вес брутто, кг');
 grossWeightSku(sku) += grossWeightItem(sku);
 
 // Кол-во в грузовом месте

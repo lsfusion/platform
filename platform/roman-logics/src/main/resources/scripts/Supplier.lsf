@@ -382,6 +382,6 @@ END
 
 @defineDialogSkuSupplier(dialogSku);
 
-EXTEND FORM batchDialog
+EXTEND FORM batches
     PROPERTIES(bt) READONLY nameSupplierBatch AFTER nameSkuBatch
 ;

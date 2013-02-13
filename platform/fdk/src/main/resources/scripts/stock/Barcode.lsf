@@ -218,10 +218,10 @@ EXTEND DESIGN currentBalanceBatchStock{
 EXTEND FORM costSkuLedger
     PROPERTIES(bil) READONLY idBarcodeSkuSkuLedger AFTER nameSkuSkuLedger
 ;
-EXTEND FORM batchDialog
+EXTEND FORM dialogBatch
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
-EXTEND FORM dialogBatch
+EXTEND FORM batches
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
 

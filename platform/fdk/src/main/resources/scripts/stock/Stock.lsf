@@ -2023,14 +2023,6 @@ DESIGN skus FROM DEFAULT {
     }
 }
 
-FORM batchDialog 'Партии'
-
-    OBJECTS bt = batch
-    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch,
-                   quantityBatch, costBatch
-    DIALOG batch OBJECT bt
-;
-
 FORM dialogBatch 'Партии'
     OBJECTS st = stock FIXED PANEL
     OBJECTS t = DATETIME FIXED PANEL
@@ -2444,6 +2436,62 @@ DESIGN balanceBatchStock FROM DEFAULT {
     }
 }
 
+//------------------ Партии ------------------------------//
+
+FORM batches 'Партии'
+
+    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuTreeName = name(sk)
+    ORDER BY skuTreeName
+
+    OBJECTS           bt=batch
+    PROPERTIES(bt)    READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameStockBatch, quantityBatch, costBatch, expiryDateBatch
+
+    FILTERS           isParentSkuGroupBatch(sk, bt)
+    ORDER BY          dateTimeBatch
+
+    OBJECTS bil=skuLedger
+    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, skipSkuLedger
+    FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==skuBatch(bt)
+    ORDER BY dateTimeSkuLedger DESC
+
+    FILTERGROUP filterBalance
+        FILTER 'Партии пришедшие за последний 1 день' 'F10' dateTimeBatch(bt) >= currentDate() - 1
+        FILTER 'Партии пришедшие за последние 7 дней' 'F9' dateTimeBatch(bt) >= currentDate() - 7
+        FILTER 'Партии пришедшие за последние 30 дней' 'F8' dateTimeBatch(bt) >= currentDate() - 30
+
+    FILTERGROUP filterExpiry
+        FILTER 'Партии с истекшим сроком годности' 'F7' expiryDateBatch(bt) < currentDate()
+        FILTER 'Партии со сроком годности, истекающим через 1 день' 'F6' expiresBatchDate(bt, currentDate(), 1)
+        FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDate(bt, currentDate(), 7)
+        FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
+
+    DIALOG batch OBJECT bt
+;
+
+@extendFormFilterAccess(batch, bt, batches, stock);
+
+DESIGN batches FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITV;
+            childConstraints = TO THE BOTTOM;
+
+            ADD bt.box { title = 'Партии'; fillVertical = 2;}
+            NEW firstCase {
+                type = SPLITH;
+                fillVertical = 1;
+                childConstraints = TO THE RIGHT;
+                ADD skuTree.tree.box { title = 'Группы'; fillHorizontal = 1;}
+                ADD bil.box { title = 'Движение'; fillHorizontal = 2;}
+            }
+        }
+        ADD functions.box;
+    }
+}
+
 NAVIGATOR {
     NEW stockNavigator 'Склад' BEFORE financeNavigator TO toolbar IMAGE '/images/warehouse.png' {
         NEW balanceSku 'Остатки по товару' {
@@ -2453,6 +2501,7 @@ NAVIGATOR {
         NEW balanceBatch 'Остатки по партиям' {
             ADD currentBalanceBatchStock;
             ADD balanceBatchStock;
+            ADD batches;
         }
         NEW stockCost 'Себестоимость' {
             ADD costSkuLedger;

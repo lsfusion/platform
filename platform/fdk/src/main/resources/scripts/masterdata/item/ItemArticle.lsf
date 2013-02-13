@@ -11,18 +11,21 @@ CLASS article 'Артикул' : named;
 TABLE article(article);
 
 @defineObjectItemAttribute(article, name, 'Артикул', itemArticleGroup);
+@defineObjectItemAttributeBatch (article, name, 'Артикул');
 
 // Цвет
 CLASS color 'Цвет товара' : named;
 TABLE color (color);
 
 @defineObjectItemAttribute(color, name, 'Цвет', itemArticleGroup);
+@defineObjectItemAttributeBatch (color, name, 'Цвет');
 
 // Размер
 CLASS size 'Размер товара' : doubleNamed;
 TABLE size(size);
 
 @defineObjectItemAttribute(size, name, 'Размер', itemArticleGroup);
+@defineObjectItemAttributeBatch (size, name, 'Размер');
 @implementObjectShortItemAttribute(size, 'Размер (сокр.)');
 
 
