@@ -7,7 +7,7 @@ REQUIRE Import;
 
 GROUP bivcGroup 'bivc' : public;
 
-importBIVCDataAction 'Импортировать данные (BIVC)' = ACTION CUSTOM 'fdk.region.by.integration.bivc.ImportBIVCActionProperty' IN bivcGroup;
+importBIVCDataAction 'Импортировать данные (BIVC)' = ACTION CUSTOM 'integration.ImportBIVCActionProperty' IN bivcGroup;
 importBIVCDirectory 'Папка' = DATA STRING[200] () IN bivcGroup;
 importBIVCNumberItems 'Кол-во' = DATA INTEGER () IN bivcGroup;
 importBIVCNumberItemsAtATime 'Разбивать на пакеты по' = DATA INTEGER () IN bivcGroup;

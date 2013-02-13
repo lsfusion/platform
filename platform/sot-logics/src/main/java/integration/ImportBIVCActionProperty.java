@@ -1,4 +1,4 @@
-package fdk.region.by.integration.bivc;
+package integration;
 
 import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;

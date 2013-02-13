@@ -1,0 +1,33 @@
+MODULE ExportSOT;
+
+REQUIRE System,
+        Invoice,
+        Item,
+        PurchaseInvoice,
+        Shipment,
+        Warehouse;
+
+//---------------------------------------------- Экспорт данных -----------------------------------------------------//
+
+GROUP sotGroup 'sot' : public;
+
+exportSOTDataAction 'Экспортировать данные (SOT)' = ACTION CUSTOM 'integration.ExportSOTActionProperty' IN sotGroup;
+exportSOTDirectory 'Папка' = DATA STRING[200] () IN sotGroup;
+exportSOTReep 'Массив REEP' = DATA BOOLEAN () IN sotGroup;
+exportSOTDateFrom 'Дата С' = DATA DATE () IN sotGroup;
+exportSOTDateTo 'Дата По' = DATA DATE () IN sotGroup;
+exportSOTCustomerStock 'Склад покупателя' = DATA warehouse () IN sotGroup;
+nameExportSOTCustomerStock 'Склад покупателя' () = name(exportSOTCustomerStock()) IN sotGroup;
+
+EXTEND FORM integrationData
+    PROPERTIES() exportSOTDataAction, exportSOTDirectory, exportSOTReep, exportSOTDateFrom, exportSOTDateTo,
+                 nameExportSOTCustomerStock
+;
+EXTEND DESIGN integrationData {
+    pane {
+        NEW sot {
+            title = 'Экспорт SOT';
+            ADD NOGROUP.sotGroup;
+        }
+    }
+}
