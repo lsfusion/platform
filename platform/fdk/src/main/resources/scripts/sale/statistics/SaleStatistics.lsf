@@ -1,6 +1,6 @@
 MODULE SaleStatistics;
 
-REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger, Sale;
+REQUIRE System, Utils, Historizable, Stock, LegalEntity, SaleLedger, Sale, Integration;
 
 NAMESPACE Sale;
 

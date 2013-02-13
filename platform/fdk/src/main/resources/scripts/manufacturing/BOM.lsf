@@ -5,7 +5,8 @@ REQUIRE Stock,
         Barcode,
         Document,
         Utils,
-        Manufacturing;
+        Manufacturing,
+        Integration;
 
 
 // ---------------- Материалы ------------------- //
