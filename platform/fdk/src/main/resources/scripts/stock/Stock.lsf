@@ -2450,11 +2450,6 @@ FORM batches 'Партии'
     FILTERS           isParentSkuGroupBatch(sk, bt)
     ORDER BY          dateTimeBatch
 
-    OBJECTS bil=skuLedger
-    PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, skipSkuLedger
-    FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==skuBatch(bt)
-    ORDER BY dateTimeSkuLedger DESC
-
     FILTERGROUP filterBalance
         FILTER 'Партии пришедшие за последний 1 день' 'F10' dateTimeBatch(bt) >= currentDate() - 1
         FILTER 'Партии пришедшие за последние 7 дней' 'F9' dateTimeBatch(bt) >= currentDate() - 7
@@ -2476,17 +2471,10 @@ DESIGN batches FROM DEFAULT {
         preferredSize = (1024, 768);
 
         NEW topContainer {
-            type = SPLITV;
-            childConstraints = TO THE BOTTOM;
-
-            ADD bt.box { title = 'Партии'; fillVertical = 2;}
-            NEW firstCase {
-                type = SPLITH;
-                fillVertical = 1;
-                childConstraints = TO THE RIGHT;
-                ADD skuTree.tree.box { title = 'Группы'; fillHorizontal = 1;}
-                ADD bil.box { title = 'Движение'; fillHorizontal = 2;}
-            }
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+            ADD skuTree.tree.box { title = 'Группы'; fillHorizontal = 1;}
+            ADD bt.box { title = 'Партии'; fillHorizontal = 2;}
         }
         ADD functions.box;
     }
