@@ -8,6 +8,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.KeyExpr;
@@ -62,18 +63,26 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
         List<Reep> reepList = exportReepToList(context);
 
-        if (!new File(path).exists())
-            new File(path).mkdir();
+        if (reepList.size() == 0) {
+            context.requestUserInteraction(new MessageClientAction("По заданным параметрам не найдено ни одной накладной", "Ошибка"));
+            return;
+        } else {
 
-        FileOutputStream stream = new FileOutputStream(path + "//REEP");
-        OutputStreamWriter writer = new OutputStreamWriter(stream, "cp866");
+            if (!new File(path).exists())
+                new File(path).mkdir();
 
-        for (Reep reep : reepList) {
-            writer.write("^REEP(" + reep.warehouseID + "," + reep.userInvoiceNumber + "," + reep.itemID + ")\r\n");
-            writer.write(reep.uomID + " : " + reep.quantity + " : " + reep.price + " : " + reep.parentGroupID +
-                    " : " + reep.itemGroupID + " : " + reep.date + " : " + reep.itemName + "\r\n");
+            FileOutputStream stream = new FileOutputStream(path + "//REEP");
+            OutputStreamWriter writer = new OutputStreamWriter(stream, "cp866");
+
+            for (Reep reep : reepList) {
+                writer.write("^REEP(" + reep.warehouseID + "," + reep.userInvoiceNumber + "," + reep.itemID + ")\r\n");
+                writer.write(reep.uomID + " : " + reep.quantity + " : " + reep.price + " : " + reep.parentGroupID +
+                        " : " + reep.itemGroupID + " : " + reep.date + " : " + reep.itemName + "\r\n");
+            }
+            writer.close();
+            context.requestUserInteraction(new MessageClientAction("Успешно экспортировано строк накладных: " + reepList.size(), "Экспорт завершён"));
+
         }
-        writer.close();
     }
 
     private List<Reep> exportReepToList(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException {
@@ -117,10 +126,10 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
             Date dateTo = (Date) LM.findLCPByCompoundName("exportSOTDateTo").read(context);
             if ((dateFrom == null || dateFrom.getTime() <= dateInvoice.getTime()) &&
                     (dateTo == null || dateTo.getTime() >= dateInvoice.getTime()) &&
-                    (exportSOTSupplier==null || exportSOTSupplier.equals(supplierInvoice)) &&
-                    (exportSOTSupplierStock==null || exportSOTSupplierStock.equals(supplierStockInvoice)) &&
-                    (exportSOTCustomer==null || exportSOTCustomer.equals(customerInvoice)) &&
-                    (exportSOTCustomerStock==null || exportSOTCustomerStock.equals(customerStockInvoice))) {
+                    (exportSOTSupplier == null || exportSOTSupplier.equals(supplierInvoice)) &&
+                    (exportSOTSupplierStock == null || exportSOTSupplierStock.equals(supplierStockInvoice)) &&
+                    (exportSOTCustomer == null || exportSOTCustomer.equals(customerInvoice)) &&
+                    (exportSOTCustomerStock == null || exportSOTCustomerStock.equals(customerStockInvoice))) {
 
                 KeyExpr userInvoiceDetailExpr = new KeyExpr("userInvoiceDetail");
                 ImRevMap<Object, KeyExpr> uidKeys = MapFact.singletonRev((Object) "userInvoiceDetail", userInvoiceDetailExpr);
