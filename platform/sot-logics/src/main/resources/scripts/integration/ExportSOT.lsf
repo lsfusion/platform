@@ -6,7 +6,7 @@ REQUIRE System,
         Item,
         LegalEntity,
         LegalEntityBy,
-        PurchaseInvoice,
+        SaleInvoice,
         Shipment,
         Warehouse;
 
