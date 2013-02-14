@@ -62,6 +62,17 @@ CONSTRAINT supplierAgreement(agreement) AND NOT isSellerLegalEntity(supplierAgre
 priceListTypeAgreement 'Вид цены' (agreement) = DATA priceListType (agreement) NOT NULL;
 namePriceListTypeAgreement 'Вид цены' (agreement) = name(priceListTypeAgreement(agreement));
 
+RRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = DATA priceListType (agreement);
+nameRRPPriceListTypeAgreement 'Вид цены (RRP)' (agreement) = name(RRPPriceListTypeAgreement(agreement));
+nameCurrencyRRPPriceListTypeAgreement 'Валюта (RRP)' (agreement)= name(currencyPriceListType(RRPPriceListTypeAgreement(agreement))) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+RRPTypeExchangeAgreement = DATA typeExchange (agreement);
+nameRRPTypeExchangeAgreement 'Тип обмена (RRP)' (agreement) = name(RRPTypeExchangeAgreement(agreement)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+CONSTRAINT currencyPriceListType(RRPPriceListTypeAgreement(agreement)) != currencyTypeExchange(RRPTypeExchangeAgreement(agreement))
+    CHECKED BY RRPTypeExchangeAgreement MESSAGE 'Для соглашения валюта типа обмена RRP не соавпадает с валютой вида цены RRP';
+
+
 groupTypeAgreement = DATA groupType (agreement);
 nameGroupTypeAgreement 'Тип классификатора' (agreement) = name(groupTypeAgreement(agreement));
 
@@ -161,15 +172,15 @@ END
 
 
 META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
-    priceListType###user###detail(detail) <- IF agreement###user###object(object###detail(detail))
-                                             THEN priceListTypeAgreementSkuOver(agreement###user###object(object###detail(detail)), sku###user###detail(detail))
-                                             ELSE priceListType###user###object(object###detail(detail))
-    WHEN CHANGED(agreement###user###object(object###detail(detail))) OR
-         CHANGED(priceListType###user###object(object###detail(detail)));
-END
-META deriveDocumentDetailPriceListTypeAgreement (object)
-    @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
-END
+       priceListType###user###detail(detail) <- IF agreement###user###object(object###detail(detail))
+                                                THEN priceListTypeAgreementSkuOver(agreement###user###object(object###detail(detail)), sku###user###detail(detail))
+                                                ELSE priceListType###user###object(object###detail(detail))
+       WHEN CHANGED(agreement###user###object(object###detail(detail))) OR
+            CHANGED(priceListType###user###object(object###detail(detail)));
+   END
+   META deriveDocumentDetailPriceListTypeAgreement (object)
+       @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
+   END
 
 //--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
 META defineDocumentDoubleHeaderAgreement (object1, object2)
@@ -216,7 +227,9 @@ FORM agreementsCustomer 'Соглашения'
     OBJECTS ag=agreement
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                            nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                            nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY,
+                            nameRRPTypeExchangeAgreement
     PROPERTIES inAgreementCustomerOver(ag, s)
 ;
 
@@ -242,7 +255,8 @@ FORM agreement 'Соглашение'
     OBJECTS a = agreement FIXED PANEL
     PROPERTIES(a) name, nameNumeratorObject, numberObject, seriesObject, dateAgreement, timeAgreement,
                   fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement, nameSupplierAgreement,
-                  nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement
+                  nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement,
+                  nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY, nameRRPTypeExchangeAgreement
 
     TREE legalEntityGroupTree b=STRING[3], lg = legalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
@@ -283,7 +297,7 @@ DESIGN agreement FROM DEFAULT {
         childConstraints = TO THE BOTTOM;
         NEW headContainer {
             caption = 'Шапка документа';
-            childConstraints = TO THE RIGHT;
+            childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY (name);
             ADD PROPERTY (nameNumeratorObject);
             ADD PROPERTY (numberObject);
@@ -296,7 +310,7 @@ DESIGN agreement FROM DEFAULT {
             childConstraints = TO THE BOTTOM;
             NEW timeContainer{
                 caption = 'Период действия';
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY (fromDateAgreement);
                 ADD PROPERTY (fromTimeAgreement);
                 ADD PROPERTY (toDateAgreement);
@@ -304,11 +318,18 @@ DESIGN agreement FROM DEFAULT {
             }
             NEW propContainer{
                 caption = 'Параметры документа';
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameSupplierAgreement);
                 ADD PROPERTY(nameCurrencyAgreement);
                 ADD PROPERTY(namePriceListTypeAgreement);
                 ADD PROPERTY(noteAgreement);
+            }
+            NEW rrpContainer{
+                caption = 'RRP';
+                childConstraints = TO THE RIGHTBOTTOM;
+                ADD PROPERTY(nameRRPPriceListTypeAgreement);
+                ADD PROPERTY(nameCurrencyRRPPriceListTypeAgreement);
+                ADD PROPERTY(nameRRPTypeExchangeAgreement);
             }
         }
             NEW tabContainer{
@@ -385,7 +406,9 @@ FORM agreements 'Соглашения'
     OBJECTS a = agreement
     PROPERTIES(a) READONLY name, seriesNumberObject, dateTimeAgreement,
                            fromDateTimeAgreement, toDateTimeAgreement, nameSupplierAgreement,
-                           nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, noteAgreement
+                           nameCurrencyAgreement, namePriceListTypeAgreement, customerAgreement, noteAgreement,
+                           nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY,
+                           nameRRPTypeExchangeAgreement
 
     PROPERTIES(a) ADDFORM, EDITFORM, delete
 ;
@@ -399,7 +422,9 @@ EXTEND FORM legalEntity
     PROPERTIES(ags, l) inAgreementCustomerOver
     PROPERTIES(ags) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                             nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY,
+                             nameRRPTypeExchangeAgreement
     PROPERTIES(ags) delete, EDITSESSIONFORM, copySessionAgreement
     PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
     FILTERS inAgreementCustomerOver(ags, l),
@@ -415,7 +440,8 @@ EXTEND FORM legalEntity
     PROPERTIES(agc, l, c) isDefaultAgreementSupplierCustomer
     PROPERTIES(agc) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                              fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
-                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
+                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement,
+                             nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY, nameRRPTypeExchangeAgreement
     PROPERTIES(agc) delete, EDITSESSIONFORM, copySessionAgreement
 
     PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
