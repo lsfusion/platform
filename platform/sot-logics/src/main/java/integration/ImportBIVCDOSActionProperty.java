@@ -154,7 +154,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return banksList;
     }
 
-    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException {
+    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException, ParseException {
 
         List<Item> itemsList = new ArrayList<Item>();
         String[] patterns = new String[]{
@@ -175,7 +175,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         Matcher m = r.matcher(uomLine);
                         if (m.matches()) {
                             String uomName = m.group(1).trim();
-                            Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г")||m.group(3).equals("ГР")||m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
+                            Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
                             Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
                             uomMap.put(splittedLine[1], new UOM(uomName,
                                     uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
@@ -222,7 +222,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     splittedLine = reader.readLine().split(":");
                     markupID = splittedLine.length > 0 ? splittedLine[0].substring(0, 1) : null;
                     String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
-                    date = dateField == null ? null : new Date(Integer.parseInt(dateField.substring(4, 6)) + 100, Integer.parseInt(dateField.substring(2, 4)), Integer.parseInt(dateField.substring(0, 2)));
+                    date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     try {
                         baseMarkup = splittedLine.length > 15 ? Double.parseDouble(splittedLine[15].endsWith(".") ?
@@ -236,9 +236,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String groupID = reader.readLine();
                     UOM uom = uomMap.get(groupID.split(":")[0]);
                     itemsList.add(new Item(groupID + ":" + name/*pnt13 + pnt48*/, groupID, name,
-                            uom==null ? null : uom.uomName, uom==null ? null : uom.uomShortName,
-                            uom==null ? null : uom.uomName,null, null, null, null, date, null,
-                            uom==null ? null : uom.netWeight, uom==null ? null : uom.grossWeight, null,
+                            uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
+                            uom == null ? null : uom.uomName, null, null, null, null, date, null,
+                            uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
                             retailVAT, null, null, null, null, baseMarkup, retailMarkups.get(markupID)));
                 }
             }

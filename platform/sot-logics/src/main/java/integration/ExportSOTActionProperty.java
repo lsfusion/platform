@@ -158,13 +158,13 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                     String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
 
                     String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
-                    String price = String.valueOf(uidValues.get("Sale.priceInvoiceDetail"));
-                    String quantity = String.valueOf(uidValues.get("Sale.quantityInvoiceDetail"));
+                    Double price = (Double) uidValues.get("Sale.priceInvoiceDetail");
+                    Double quantity = (Double) uidValues.get("Sale.quantityInvoiceDetail");
                     reepList.add(new Reep(customerStockID == null ? "" : customerStockID.trim(),
                             numberInvoice == null ? "" : numberInvoice.trim(), itemID == null ? "" : itemID.trim(),
                             nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim(),
                             parentGroupID == null ? "" : parentGroupID.trim(), itemGroupID == null ? "" : itemGroupID.trim(),
-                            price == null ? "" : price.trim(), quantity == null ? "" : quantity.trim(),
+                            price == null ? "" : String.valueOf(price), quantity == null ? "" : String.valueOf(quantity),
                             dateInvoice == null ? "" : String.valueOf(dateInvoice)));
                 }
             }
