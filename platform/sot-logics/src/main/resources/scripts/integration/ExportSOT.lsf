@@ -1,6 +1,7 @@
 MODULE ExportSOT;
 
 REQUIRE System,
+        Integration,
         Invoice,
         Item,
         LegalEntity,
