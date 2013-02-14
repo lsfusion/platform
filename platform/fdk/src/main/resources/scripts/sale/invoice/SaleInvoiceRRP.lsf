@@ -6,8 +6,13 @@ NAMESPACE Sale;
 
 //------------------------- Рекомендуемая розничная цена-------------------------//
 @defineDocumentInterfaceDetailPriceListType (invoice, priceListType, RRP, ' (RRP)');
-nameCurrencyRRPPriceListTypeUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = nameCurrencyRRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
-nameCurrencyRRPPriceListTypeInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = nameCurrencyRRPPriceListTypeAgreement(agreementInvoice(invoiceInvoiceDetail(invoiceDetail)));
+
+currencyRRPUserInvoiceDetail (userInvoiceDetail) = currencyRRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
+nameCurrencyRRPUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = name(currencyRRPUserInvoiceDetail(userInvoiceDetail));
+
+currencyRRPInvoiceDetail (invoiceDetail) = currencyRRPPriceListTypeAgreement(agreementInvoice(invoiceInvoiceDetail(invoiceDetail)));
+nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = name(currencyRRPInvoiceDetail(invoiceDetail));
+
 toShowRRPPriceInvoice(invoice) = TRUE IF RRPPriceListTypeAgreement(agreementInvoice(invoice));
 
 RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail) <- RRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)))
@@ -23,8 +28,8 @@ RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(R
                                                          CHANGED(supplierStockUserInvoiceDetail(detail)) OR
                                                          CHANGED(dateTimeUserInvoiceDetail(detail));
 EXTEND FORM userInvoice
-    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPPriceListTypeUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail;
+    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail;
 ;
 EXTEND FORM invoices
-    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPPriceListTypeInvoiceDetail, RRPPriceInvoiceDetail;
+    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail;
 ;
