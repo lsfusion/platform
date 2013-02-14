@@ -4,10 +4,11 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 
 import java.util.Date;
 
-public class DateGridCellRenderer extends TextBasedGridCellRenderer<Date> {
+public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
     private final DateTimeFormat format;
 
     public DateGridCellRenderer(GPropertyDraw property) {
@@ -20,7 +21,12 @@ public class DateGridCellRenderer extends TextBasedGridCellRenderer<Date> {
     }
 
     @Override
-    protected String renderToString(Date value) {
-        return format.format(value, null);
+    protected String renderToString(Object value) {
+        if (value instanceof GDateDTO) {
+            GDateDTO dateDTO = (GDateDTO) value;
+            return format.format(new Date(dateDTO.year, dateDTO.month, dateDTO.day));
+        } else {
+            return value == null ? "" : format.format((Date) value);
+        }
     }
 }

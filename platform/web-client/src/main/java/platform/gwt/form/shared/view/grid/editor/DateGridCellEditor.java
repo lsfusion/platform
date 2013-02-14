@@ -16,6 +16,7 @@ import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.changes.dto.GDateDTO;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
@@ -111,10 +112,17 @@ public class DateGridCellEditor extends PopupBasedGridCellEditor {
         return value == null ? "" : format.format((Date) value);
     }
 
-    private Date parseString(String value) {
-        if (value.split("\\.").length == 2) {
-            return format.parse(value + "." + (new Date().getYear() - 100));
+    private GDateDTO parseString(String value) {
+        if (value.isEmpty()) {
+            return null;
+        } else {
+            Date resultDate;
+            if (value.split("\\.").length == 2) {
+                resultDate = format.parse(value + "." + (new Date().getYear() - 100));
+            } else {
+                resultDate = format.parse(value);
+            }
+            return new GDateDTO(resultDate.getDate(), resultDate.getMonth(), resultDate.getYear());
         }
-        return value.isEmpty() ? null : format.parse(value);
     }
 }

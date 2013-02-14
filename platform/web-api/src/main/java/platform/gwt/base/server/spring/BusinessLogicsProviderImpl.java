@@ -2,6 +2,7 @@ package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
 import platform.base.ClassUtils;
+import platform.gwt.base.server.ServerUtils;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 
@@ -71,6 +72,8 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
 
             Registry registry = LocateRegistry.getRegistry(serverHost, Integer.parseInt(serverPort));
             RemoteLoaderInterface loader = (RemoteLoaderInterface) registry.lookup("default/BusinessLogicsLoader");
+
+            ServerUtils.timeZone = loader.getRemoteLogics().getTimeZone();
 
             return loader.getRemoteLogics();
         } catch (Exception e) {

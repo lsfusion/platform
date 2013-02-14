@@ -6,9 +6,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class ServerUtils {
     private static final String DEFAULT_LOCALE_LANGUAGE = "ru";
+    public static TimeZone timeZone;
 
     public static Authentication getAuthentication() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
