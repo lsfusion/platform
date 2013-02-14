@@ -28,6 +28,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -73,6 +74,9 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
             FileOutputStream stream = new FileOutputStream(path + "//REEP");
             OutputStreamWriter writer = new OutputStreamWriter(stream, "cp866");
+
+            writer.write(new SimpleDateFormat("hh:mm a  dd-MMM-yy", Locale.ENGLISH).format(new Date(System.currentTimeMillis())));
+            writer.write("\r\n\r\n");
 
             for (Reep reep : reepList) {
                 writer.write("^REEP(" + reep.warehouseID + "," + reep.userInvoiceNumber + "," + reep.itemID + ")\r\n");
@@ -145,27 +149,30 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
                 int j = 0;
                 for (ImMap<Object, Object> uidValues : uidResult.valueIt()) {
-                    DataObject itemObject = new DataObject(uidValues.get("Sale.skuInvoiceDetail"), (ConcreteClass) LM.findClassByCompoundName("item"));
-                    String itemID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, itemObject);
-                    j++;
+                    Object sku = uidValues.get("Sale.skuInvoiceDetail");
+                    if (sku != null) {
+                        DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("item"));
+                        String itemID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, itemObject);
+                        j++;
 
-                    Object uomObject = LM.findLCPByCompoundName("UOMItem").read(context, itemObject);
-                    String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("UOM")));
-                    Object itemGroupValue = LM.findLCPByCompoundName("itemGroupItem").read(context, itemObject);
-                    DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup"));
-                    String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
-                    Object parentGroupObject = itemGroupObject == null ? null : LM.findLCPByCompoundName("parentItemGroup").read(context, itemGroupObject);
-                    String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
+                        Object uomObject = LM.findLCPByCompoundName("UOMItem").read(context, itemObject);
+                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("UOM")));
+                        Object itemGroupValue = LM.findLCPByCompoundName("itemGroupItem").read(context, itemObject);
+                        DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup"));
+                        String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
+                        Object parentGroupObject = itemGroupObject == null ? null : LM.findLCPByCompoundName("parentItemGroup").read(context, itemGroupObject);
+                        String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
 
-                    String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
-                    Double price = (Double) uidValues.get("Sale.priceInvoiceDetail");
-                    Double quantity = (Double) uidValues.get("Sale.quantityInvoiceDetail");
-                    reepList.add(new Reep(customerStockID == null ? "" : customerStockID.trim(),
-                            numberInvoice == null ? "" : numberInvoice.trim(), itemID == null ? "" : itemID.trim(),
-                            nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim(),
-                            parentGroupID == null ? "" : parentGroupID.trim(), itemGroupID == null ? "" : itemGroupID.trim(),
-                            price == null ? "" : String.valueOf(price), quantity == null ? "" : String.valueOf(quantity),
-                            dateInvoice == null ? "" : String.valueOf(dateInvoice)));
+                        String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
+                        Double price = (Double) uidValues.get("Sale.priceInvoiceDetail");
+                        Double quantity = (Double) uidValues.get("Sale.quantityInvoiceDetail");
+                        reepList.add(new Reep(customerStockID == null ? "" : customerStockID.trim(),
+                                numberInvoice == null ? "" : numberInvoice.trim(), itemID == null ? "" : itemID.trim(),
+                                nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim(),
+                                parentGroupID == null ? "" : parentGroupID.trim(), itemGroupID == null ? "" : itemGroupID.trim(),
+                                price == null ? "" : String.valueOf(price), quantity == null ? "" : String.valueOf(quantity),
+                                dateInvoice == null ? "" : String.valueOf(dateInvoice)));
+                    }
                 }
             }
         }
