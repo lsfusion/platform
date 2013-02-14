@@ -2023,6 +2023,44 @@ DESIGN skus FROM DEFAULT {
     }
 }
 
+FORM filterSkus 'Sku'
+    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    PROPERTIES READONLY skuGroupName = name(sg)
+
+    OBJECTS s = sku
+    PROPERTIES(s) READONLY nameSku, shortNameUOMSku
+    PROPERTIES() addSku TODRAW s
+    PROPERTIES(s) editSku
+    FILTERS isParentSkuGroupSku(sg, s)
+    ORDER BY nameSku
+
+    DIALOG sku OBJECT s
+;
+
+DESIGN filterSkus FROM DEFAULT {
+    main{
+        preferredSize = (1024, 768);
+
+        NEW topContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+
+            ADD skuTree.tree.box {
+                title = 'Группы SKU';
+            }
+
+            ADD s.box {
+                s.grid {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 4;
+                }
+            }
+        }
+
+        ADD functions.box;
+    }
+}
+
 FORM dialogBatch 'Партии'
     OBJECTS st = stock FIXED PANEL
     OBJECTS t = DATETIME FIXED PANEL
