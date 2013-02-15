@@ -1,9 +1,9 @@
 package platform.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import platform.gwt.form.client.ErrorHandlingCallback;
+import platform.gwt.base.client.ErrorHandlingCallback;
+import platform.gwt.base.client.ui.DialogBoxHelper;
 import platform.gwt.form.client.form.ui.GFormController;
-import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;

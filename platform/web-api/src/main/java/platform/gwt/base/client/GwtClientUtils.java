@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 public class GwtClientUtils {
-    public static BaseMessages baseMessages = BaseMessages.Instance.get();
+    public static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
     public static final String TARGET_PARAM = "targetUrl";
+
+    public static final BaseMessages baseMessages = BaseMessages.Instance.get();
 
     public static void removeLoaderFromHostedPage() {
         RootPanel p = RootPanel.get("loadingWrapper");

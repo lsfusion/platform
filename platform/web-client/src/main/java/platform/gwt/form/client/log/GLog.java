@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
-import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
+import platform.gwt.base.client.ui.DialogBoxHelper;
 
 import java.util.ArrayList;
 import java.util.Date;

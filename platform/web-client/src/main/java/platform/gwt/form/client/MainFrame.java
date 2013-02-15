@@ -12,7 +12,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.base.client.ErrorHandlingCallback;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.DefaultFormsController;
 import platform.gwt.form.client.form.dispatch.GwtActionDispatcher;
@@ -159,7 +159,7 @@ public class MainFrame implements EntryPoint {
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {
         @Override
         protected void throwInServerInvocation(Exception ex) {
-            dispatcher.execute(new ThrowInNavigatorAction(ex), new ErrorAsyncCallback<ServerResponseResult>());
+            dispatcher.execute(new ThrowInNavigatorAction(ex), new ErrorHandlingCallback<ServerResponseResult>());
         }
 
         @Override

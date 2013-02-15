@@ -4,7 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.base.client.ErrorHandlingCallback;
 import platform.gwt.base.client.GwtClientUtils;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
@@ -35,7 +35,7 @@ public class ExpertFrame implements EntryPoint {
 
     protected void update() {
         final String voteId = getVoteId();
-        expertService.execute(new GetVoteInfo(voteId), new ErrorAsyncCallback<GetVoteInfoResult>() {
+        expertService.execute(new GetVoteInfo(voteId), new ErrorHandlingCallback<GetVoteInfoResult>() {
             public void success(final GetVoteInfoResult result) {
                 final VoteInfo vi = result.voteInfo;
 
@@ -120,7 +120,7 @@ public class ExpertFrame implements EntryPoint {
                         vi.enoughDocuments = bxEnoughDocuments.getSelectedIndex() == 1;
                         vi.enoughDocumentsComment = taEnoughDocumentsComment.getText();
 
-                        expertService.execute(new SetVoteInfo(vi, voteId), new ErrorAsyncCallback() {
+                        expertService.execute(new SetVoteInfo(vi, voteId), new ErrorHandlingCallback() {
                             @Override
                             public void success(Object result) {
                                 update();

@@ -12,7 +12,7 @@ import com.smartgwt.client.widgets.layout.VLayout;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import net.customware.gwt.dispatch.shared.general.StringResult;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.base.client.ErrorHandlingCallback;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.login.shared.actions.AddUser;
 import platform.gwt.sgwtbase.client.ui.CenterLayout;
@@ -109,7 +109,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
         public void register() {
             loginService.execute(new AddUser(registerBox.getUsername(), registerBox.getEmail(), registerBox.getPassword(),
                     registerBox.getFirstName(), registerBox.getLastName(), registerBox.getCaptchaText(), registerBox.getCaptchaSalt()),
-                    new ErrorAsyncCallback<StringResult>() {
+                    new ErrorHandlingCallback<StringResult>() {
                 @Override
                 public void success(StringResult result) {
                     if (result.get() == null) {

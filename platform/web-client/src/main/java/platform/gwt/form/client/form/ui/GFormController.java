@@ -15,14 +15,14 @@ import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
-import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.base.client.ErrorHandlingCallback;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.client.jsni.Function2;
 import platform.gwt.base.client.jsni.NativeHashMap;
+import platform.gwt.base.client.ui.DialogBoxHelper;
 import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.base.shared.actions.NumberResult;
-import platform.gwt.form.client.ErrorHandlingCallback;
 import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.LoadingBlocker;
 import platform.gwt.form.client.dispatch.DeferredRunner;
@@ -33,7 +33,6 @@ import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.dispatch.GFormActionDispatcher;
 import platform.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form.client.form.ui.classes.GResizableClassDialog;
-import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
 import platform.gwt.form.client.form.ui.dialog.GResizableModalDialog;
 import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form.shared.actions.form.*;
@@ -468,7 +467,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void throwInServerInvocation(Exception exception) {
-        syncDispatch(new ThrowInInvocation(exception), new ErrorAsyncCallback<ServerResponseResult>());
+        syncDispatch(new ThrowInInvocation(exception), new ErrorHandlingCallback<ServerResponseResult>());
     }
 
     public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {

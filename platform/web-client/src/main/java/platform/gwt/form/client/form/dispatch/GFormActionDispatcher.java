@@ -3,7 +3,7 @@ package platform.gwt.form.client.form.dispatch;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.classes.ClassChosenHandler;
-import platform.gwt.form.client.form.ui.dialog.DialogBoxHelper;
+import platform.gwt.base.client.ui.DialogBoxHelper;
 import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form.client.log.GLog;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;

@@ -1,4 +1,4 @@
-package platform.gwt.form.client.form.ui.dialog;
+package platform.gwt.base.client.ui;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

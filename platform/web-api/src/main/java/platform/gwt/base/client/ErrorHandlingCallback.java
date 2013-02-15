@@ -1,50 +1,46 @@
-package platform.gwt.sgwtbase.client;
+package platform.gwt.base.client;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
-import com.smartgwt.client.util.BooleanCallback;
-import com.smartgwt.client.util.SC;
-import platform.gwt.base.client.AsyncCallbackEx;
-import platform.gwt.base.client.EscapeUtils;
-import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.base.client.ui.DialogBoxHelper;
+import platform.gwt.base.client.ui.ErrorFrameWidget;
 import platform.gwt.base.shared.MessageException;
 
-import static platform.gwt.base.client.GwtClientUtils.TIMEOUT_MESSAGE;
 import static platform.gwt.base.client.GwtClientUtils.baseMessages;
 
-public class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
+public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
+    private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
 
     @Override
     public void failure(Throwable caught) {
-        GwtClientUtils.removeLoaderFromHostedPage();
-
-        Log.debug("Failure, while performing an action. ", caught);
+        if (Log.isDebugEnabled()) {
+            Log.debug("Failure, while performing an action. ", caught);
+        } else {
+            GWT.log("Failure, while performing an action. ", caught);
+        }
 
         String message = getServerMessage(caught);
         if (message != null) {
-            SC.warn(EscapeUtils.toHtml(message));
+            DialogBoxHelper.showMessageBox(true, "Error: ", EscapeUtils.toHtml(message), null);
             return;
         } else if (caught instanceof RequestTimeoutException) {
-            SC.warn(baseMessages.actionTimeoutErrorMessage());
+            DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.actionTimeoutErrorMessage(), null);
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
-                SC.warn(baseMessages.sessionTimeoutErrorMessage(), new BooleanCallback() {
+                DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.sessionTimeoutErrorMessage(), new DialogBoxHelper.CloseCallback() {
                     @Override
-                    public void execute(Boolean value) {
+                    public void closed(DialogBoxHelper.OptionType chosenOption) {
                         relogin();
                     }
                 });
                 return;
             }
         }
-        SC.warn(baseMessages.internalServerErrorMessage());
-    }
-
-    protected void relogin() {
-        GwtClientUtils.relogin();
+        DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.internalServerErrorMessage(), null);
     }
 
     protected String getServerMessage(Throwable caught) {
@@ -52,5 +48,9 @@ public class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
             return caught.getMessage();
         }
         return null;
+    }
+
+    protected void relogin() {
+        GwtClientUtils.relogin();
     }
 }
