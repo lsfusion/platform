@@ -115,7 +115,7 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
             Object supplierStockInvoice = userInvoiceValues.get("Sale.supplierStockInvoice");
             Object customerInvoice = userInvoiceValues.get("Sale.customerInvoice");
             Object customerStockInvoice = userInvoiceValues.get("Sale.customerStockInvoice");
-            String mag2CustomerStock = (String) LM.findLCPByCompoundName("mag2Stock").read(context, new DataObject(customerStockInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
+            String mag2CustomerStock = customerStockInvoice==null ? null : (String) LM.findLCPByCompoundName("mag2Stock").read(context, new DataObject(customerStockInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
 
             Object exportSOTSupplier = LM.findLCPByCompoundName("exportSOTSupplier").read(context);
             Object exportSOTSupplierStock = LM.findLCPByCompoundName("exportSOTSupplierStock").read(context);

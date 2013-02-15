@@ -56,6 +56,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 importData.setLegalEntitiesList((getLCP("importBIVCDOSLegalEntities").read(context) != null) ?
                         importLegalEntities(path + "//swtp") : null);
 
+                importData.setEmployeesList((getLCP("importBIVCDOSEmployees").read(context) != null) ?
+                        importEmployees(path + "//swtp") : null);
+
                 importData.setWarehouseGroupsList((getLCP("importBIVCDOSWarehouses").read(context) != null) ?
                         importWarehouseGroups() : null);
 
@@ -321,6 +324,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return warehouseGroupsList;
     }
 
+    List<String> employeeFilters = Arrays.asList("БУХГ.", "ВЕД.ЮРИСТ", "ВОДИТЕЛЬ",
+            "ВОД.Л/АВ", "ВОД.ЭЛ/КАРЫ", "ВОД.", "ВОДИТ.АВТ.", "ГР.", "ГРУЗЧ.", "ГРУЗЧИК",
+            "ДИСПЕТЧЕР", "ЗАВ.СКЛ.", "ЗАМ.ДИРЕКТОРА", "КЛ.", "КЛАД.", "КЛАДОВ.", "КЛАДОВЩИК",
+            "КОЧЕГАР", "МЕХАНИК", "ОПЕРАТОР", "ПРОД.", "ПРОДАВ.", "ПРОДАВЕЦ", "СТР.", "ТОВАРОВЕД",
+            "УБОРЩ.", "УБОРЩИЦА", "ЭКОН.-ТОВАР.", "ЭКОН.", "ЭКОНОМИСТ", "ЭКСП.", "ЭКСПЕД.",
+            "ЭКСПЕДИТОР", "ЭЛЕКТР.", "ЭЛЕКТРИК");
+
     private List<Warehouse> importWarehouses(String smolPath, String swtpPath, String ostPath) throws IOException {
 
         List<Warehouse> warehousesList = new ArrayList<Warehouse>();
@@ -360,11 +370,18 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String legalEntityID = splittedLine[1].replace("\"", "");
                 String sid = (splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", "");
                 String[] dataLegalEntity = reader.readLine().split(":");
-                String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : null;
+                String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : "";
                 String warehouseAddress1 = dataLegalEntity.length > 9 ? dataLegalEntity[9].trim() : "";
                 String warehouseAddress2 = dataLegalEntity.length > 10 ? dataLegalEntity[10].trim() : "";
                 String warehouseAddress = (warehouseAddress1 + " " + warehouseAddress2).trim();
-                if (name != null && !"".equals(name))
+                Boolean filtered = false;
+                for (String filter : employeeFilters) {
+                    if (name.startsWith(filter)) {
+                        filtered = true;
+                        break;
+                    }
+                }
+                if (!name.trim().isEmpty() && !filtered)
                     warehousesList.add(new Warehouse(legalEntityID, "contractor", "S" + sid, name, warehouseAddress.isEmpty() ? null : warehouseAddress));
             }
         }
@@ -399,7 +416,14 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String address2 = splittedLine.length > 10 ? splittedLine[10].trim() : "";
                     String address = (address1 + " " + address2).trim();
                     String bankID = mfo + bankName;
-                    if (!name.isEmpty())
+                    Boolean filtered = false;
+                    for (String filter : employeeFilters) {
+                        if (name.startsWith(filter)) {
+                            filtered = true;
+                            break;
+                        }
+                    }
+                    if (!name.isEmpty() && !filtered)
                         legalEntitiesList.add(new LegalEntity(legalEntityID, name,
                                 address.isEmpty() ? null : address, unp.isEmpty() ? null : unp,
                                 okpo.isEmpty() ? null : okpo, null, null, null, null,
@@ -412,7 +436,40 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return legalEntitiesList;
     }
 
+    private List<Employee> importEmployees(String path) throws IOException {
+
+        List<Employee> employeesList = new ArrayList<Employee>();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "cp866"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("^SWTP")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                if (splittedLine.length == 2) {
+                    String legalEntityID = splittedLine[1].replace("\"", "");
+                    splittedLine = reader.readLine().split(":");
+                    String name = splittedLine.length > 0 ? splittedLine[0].trim() : "";
+                    for (String filter : employeeFilters) {
+                        if (name.startsWith(filter)) {
+                            String[] fullName = name.replaceFirst(filter, "").trim().split(" ");
+                            String firstName = "";
+                            for(int i = 1; i<fullName.length;i++)
+                              firstName += fullName[i];
+                            employeesList.add(new Employee(legalEntityID, firstName, fullName[0], filter));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        reader.close();
+        return employeesList;
+    }
+
+
     private List<Contract> importContracts(String path) throws IOException {
+
+        String shortNameCurrency = "BLR";
 
         List<Contract> contractsList = new ArrayList<Contract>();
 
@@ -420,9 +477,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String line;
         String[] patterns = new String[]{"(.*)ОТ(\\d{2}\\.\\d{2}\\.\\d{2})ДО(\\d{2}\\.\\d{2}\\.\\d{2}).*",
                 "()()ДО\\s(\\d{2}-\\d{2}-\\d{2}).*",
-                "(.*)\\s?ОТ\\s?(\\d{1,2}\\.?\\d{1,2}\\.?\\d{1,4})\\w?$",
+                "(.*)\\s?ОТ\\s?(\\d{1,2}\\.?\\d{1,2}\\.?\\d{1,4})(?:Г|Н)?$",
                 "()(\\d{1,2}\\/\\d{1,2}\\-\\d{2,4})",
-                "(.*?)\\s?(\\d{1,2}\\.?\\/?\\d{1,2}\\.?\\d{2,4})\\w?$",
+                "(.*?)\\s?(\\d{1,2}\\.?\\/?\\d{1,2}\\.?\\d{2,4})Г?$",
                 "(ЛИЦ.*)\\s(\\d{6})",
                 "((?:ДОГ|КОНТР).*)", /*ловим договоры вообще без дат*/
                 "(.*)/?\\s?(?:ИП|СПК|ОП)"
@@ -463,9 +520,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         }
                         if (found) {
                             contractsList.add(new Contract(contractID1, legalEntity1ID, legalEntity2ID,
-                                    number, dateFrom, dateTo));
+                                    number, dateFrom, dateTo, shortNameCurrency));
                             contractsList.add(new Contract(contractID2, legalEntity2ID, legalEntity1ID,
-                                    number, dateFrom, null));
+                                    number, dateFrom, null, shortNameCurrency));
                         }
                     }
                 }

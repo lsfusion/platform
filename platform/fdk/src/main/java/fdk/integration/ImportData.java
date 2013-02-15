@@ -8,6 +8,7 @@ public class ImportData {
     private List<ItemGroup> parentGroupsList;
     private List<Bank> banksList;
     private List<LegalEntity> legalEntitiesList;
+    private List<Employee> employeesList;
     private List<WarehouseGroup> warehouseGroupsList;
     private List<Warehouse> warehousesList;
     private List<LegalEntity> storesList;
@@ -64,6 +65,14 @@ public class ImportData {
 
     public void setLegalEntitiesList(List<LegalEntity> legalEntitiesList) {
         this.legalEntitiesList = legalEntitiesList;
+    }
+
+    public List<Employee> getEmployeesList() {
+        return employeesList;
+    }
+
+    public void setEmployeesList(List<Employee> employeesList) {
+        this.employeesList = employeesList;
     }
 
     public List<WarehouseGroup> getWarehouseGroupsList() {

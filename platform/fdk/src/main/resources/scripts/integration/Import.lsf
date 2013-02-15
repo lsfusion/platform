@@ -5,6 +5,7 @@ REQUIRE System,
         Compliance,
         Country,
         Currency,
+        Employee,
         Integration,
         Item,
         LegalEntity,
@@ -32,9 +33,11 @@ EXTEND CLASS brand : externalizable;
 EXTEND CLASS calcPriceListType : externalizable;
 EXTEND CLASS chainStores : externalizable;
 EXTEND CLASS departmentStore : externalizable;
+EXTEND CLASS employee : externalizable;
 EXTEND CLASS item : externalizable;
 EXTEND CLASS itemGroup : externalizable;
 EXTEND CLASS legalEntity : externalizable;
+EXTEND CLASS position : externalizable;
 EXTEND CLASS store : externalizable;
 EXTEND CLASS UOM : externalizable;
 EXTEND CLASS userContractSku : externalizable;
