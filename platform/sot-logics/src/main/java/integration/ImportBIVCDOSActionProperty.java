@@ -327,7 +327,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
     List<String> employeeFilters = Arrays.asList("БУХГ.", "ВЕД.ЮРИСТ", "ВОДИТЕЛЬ",
             "ВОД.Л/АВ", "ВОД.ЭЛ/КАРЫ", "ВОД.", "ВОДИТ.АВТ.", "ГР.", "ГРУЗЧ.", "ГРУЗЧИК",
             "ДИСПЕТЧЕР", "ЗАВ.СКЛ.", "ЗАМ.ДИРЕКТОРА", "КЛ.", "КЛАД.", "КЛАДОВ.", "КЛАДОВЩИК",
-            "КОЧЕГАР", "МЕХАНИК", "ОПЕРАТОР", "ПРОД.", "ПРОДАВ.", "ПРОДАВЕЦ", "СТР.", "ТОВАРОВЕД",
+            "КОЧЕГАР", "МЕХАНИК", "ОПЕРАТОР", "ПРОД.", "ПРОДАВ.", "ПРОДАВЕЦ", "СТР.", "СТ.КЛАД.", "ТОВАРОВЕД",
             "УБОРЩ.", "УБОРЩИЦА", "ЭКОН.-ТОВАР.", "ЭКОН.", "ЭКОНОМИСТ", "ЭКСП.", "ЭКСПЕД.",
             "ЭКСПЕДИТОР", "ЭЛЕКТР.", "ЭЛЕКТРИК");
 
@@ -406,7 +406,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (splittedLine.length == 2) {
                     String legalEntityID = splittedLine[1].replace("\"", "");
                     splittedLine = reader.readLine().split(":");
-                    String name = splittedLine.length > 0 ? splittedLine[0].trim() : "";
+                    String name = splittedLine.length > 0 ? splittedLine[0].trim().replace("\u007F", "") : "";
                     String mfo = splittedLine.length > 2 ? (splittedLine[2].length() > 3 ? splittedLine[2].substring(splittedLine[2].length() - 3) : splittedLine[2].trim()) : "";
                     String account = splittedLine.length > 3 ? splittedLine[3] : "";
                     String okpo = splittedLine.length > 4 ? splittedLine[4].trim() : "";
