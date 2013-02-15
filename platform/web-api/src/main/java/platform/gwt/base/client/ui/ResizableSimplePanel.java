@@ -11,4 +11,13 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
             }
         }
     }
+
+    boolean visible = true;
+    @Override
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            super.setVisible(visible);
+        }
+    }
 }

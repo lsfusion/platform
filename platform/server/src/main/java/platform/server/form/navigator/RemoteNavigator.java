@@ -24,11 +24,9 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
-import platform.server.classes.StringClass;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
-import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
@@ -703,7 +701,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     @Override
     public ServerResponse throwInNavigatorAction(Exception clientException) throws RemoteException {
-        return currentInvocation.resumWithException(clientException);
+        return currentInvocation.resumeWithException(clientException);
     }
 
     public String getLogMessage() {

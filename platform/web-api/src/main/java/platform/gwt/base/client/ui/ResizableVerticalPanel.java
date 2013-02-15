@@ -14,4 +14,13 @@ public class ResizableVerticalPanel extends VerticalPanel implements RequiresRes
             }
         }
     }
+
+    boolean visible = true;
+    @Override
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            super.setVisible(visible);
+        }
+    }
 }

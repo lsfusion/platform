@@ -21,6 +21,7 @@ import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import java.util.Arrays;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
+import static com.google.gwt.dom.client.Style.Unit;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 
 public class GDataFilterValueViewTable extends DataGrid implements EditManager {
@@ -50,7 +51,8 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         setRemoveKeyboardStylesOnBlur(true);
 
         setSize("100%", property.getMinimumHeight());
-        setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
+        setTableWidth(property.getPreferredPixelWidth(), Unit.PX);
+        getTableDataScroller().removeScrollbars();
 
         cell = new DataFilterValueEditableCell();
 
@@ -79,7 +81,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         int minimumPixelHeight = property.getMinimumPixelHeight();
 
-        setTableWidth(property.getPreferredPixelWidth(), com.google.gwt.dom.client.Style.Unit.PX);
+        setTableWidth(property.getPreferredPixelWidth(), Unit.PX);
         setHeight(property.getMinimumHeight());
 
         setCellHeight(minimumPixelHeight);

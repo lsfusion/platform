@@ -44,18 +44,18 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         }
 
         @Override
-        public String getHeaderStyle() {
-            return grid.getResources().style().dataGridHeader();
+        public String getCellStyle() {
+            return grid.getResources().style().dataGridHeaderCell();
         }
 
         @Override
-        public String getFirstColumnStyle() {
-            return grid.getResources().style().dataGridFirstColumnHeader();
+        public String getFirstCellStyle() {
+            return grid.getResources().style().dataGridFirstHeaderCell();
         }
 
         @Override
-        public String getLastColumnStyle() {
-            return grid.getResources().style().dataGridLastColumnHeader();
+        public String getLastCellStyle() {
+            return grid.getResources().style().dataGridLastHeaderCell();
         }
     }
 
@@ -77,18 +77,18 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         }
 
         @Override
-        public String getHeaderStyle() {
-            return grid.getResources().style().dataGridFooter();
+        public String getCellStyle() {
+            return grid.getResources().style().dataGridFooterCell();
         }
 
         @Override
-        public String getFirstColumnStyle() {
-            return grid.getResources().style().dataGridFirstColumnFooter();
+        public String getFirstCellStyle() {
+            return grid.getResources().style().dataGridFirstFooterCell();
         }
 
         @Override
-        public String getLastColumnStyle() {
-            return grid.getResources().style().dataGridLastColumnFooter();
+        public String getLastCellStyle() {
+            return grid.getResources().style().dataGridLastFooterCell();
         }
     }
 
@@ -110,9 +110,9 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         int columnCount = table.getColumnCount();
 
         // Get the common style names.
-        String headerClass = delegate.getHeaderStyle();
-        String firstColumnClass = delegate.getFirstColumnStyle();
-        String lastColumnClass = delegate.getLastColumnStyle();
+        String cellClass = delegate.getCellStyle();
+        String firstCellClass = delegate.getFirstCellStyle();
+        String lastCellClass = delegate.getLastCellStyle();
 
         // Loop through all column headers.
         int curColumn;
@@ -123,13 +123,13 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
 
             //куча if-ов, чтобы не заморачиваться с StringBuilder
             if (curColumn == 0 && curColumn == columnCount - 1) {
-                th.setClassName(headerClass + " " + firstColumnClass + " " + lastColumnClass);
+                th.setClassName(cellClass + " " + firstCellClass + " " + lastCellClass);
             } else if (curColumn == 0) {
-                th.setClassName(headerClass + " " + firstColumnClass);
+                th.setClassName(cellClass + " " + firstCellClass);
             } else if (curColumn == columnCount - 1) {
-                th.setClassName(headerClass + " " + lastColumnClass);
+                th.setClassName(cellClass + " " + lastCellClass);
             } else {
-                th.setClassName(headerClass);
+                th.setClassName(cellClass);
             }
 
             renderHeader(th, header);

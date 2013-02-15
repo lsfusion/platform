@@ -188,7 +188,7 @@ public abstract class GFilterController {
     }
 
     public void addHotKeys(Element element) {
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F1 + 1), new HotkeyManager.Binding() {
+        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2), new HotkeyManager.Binding() {
             @Override
             public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                 replaceConditionPressed();
@@ -196,7 +196,7 @@ public abstract class GFilterController {
             }
         });
 
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F1 + 1, true, false, false), new HotkeyManager.Binding() {
+        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2, true, false, false), new HotkeyManager.Binding() {
             @Override
             public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                 addPressed();
@@ -204,7 +204,7 @@ public abstract class GFilterController {
             }
         });
 
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F1 + 1, false, false, true), new HotkeyManager.Binding() {
+        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2, false, false, true), new HotkeyManager.Binding() {
             @Override
             public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                 allRemovedPressed();

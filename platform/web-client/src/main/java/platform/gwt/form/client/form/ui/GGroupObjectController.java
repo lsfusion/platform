@@ -350,12 +350,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         panel.setVisible(classViewType != GClassViewType.HIDE);
     }
 
-    void flushTable() {
-        if (grid != null) {
-            grid.flushTable();
-        }
-    }
-
     void restoreScrollPosition() {
         if (grid != null) {
             grid.restoreScrollPosition();

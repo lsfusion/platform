@@ -40,8 +40,8 @@ public class DefaultDataGridBuilder<T> extends AbstractDataGridBuilder<T> {
         Style style = cellTable.getResources().style();
         rowStyle = style.dataGridRow();
         cellStyle = style.dataGridCell();
-        firstColumnStyle = " " + style.dataGridFirstColumn();
-        lastColumnStyle = " " + style.dataGridLastColumn();
+        firstColumnStyle = " " + style.dataGridFirstCell();
+        lastColumnStyle = " " + style.dataGridLastCell();
     }
 
     @Override

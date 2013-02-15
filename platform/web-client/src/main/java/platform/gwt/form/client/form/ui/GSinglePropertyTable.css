@@ -3,39 +3,17 @@
 @def selectionBorderWidth 0px;
 @def fontSize 8pt;
 
-.dataGridWidget {
+.dataGridWidget {}
 
-}
+.dataGridHeader {}
+.dataGridHeaderCell {}
+.dataGridFirstHeaderCell {}
+.dataGridLastHeaderCell {}
 
-.dataGridFirstColumn {
-
-}
-
-.dataGridLastColumn {
-
-}
-
-.dataGridFooter {
-    border-top: 2px solid #6f7277;
-    padding: 3px 14px;
-    text-align: left;
-    color: #4b4a4a;
-    text-shadow: #ddf 1px 1px 0;
-    font-size: fontSize;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.dataGridHeader {
-    border-bottom: 2px solid #6f7277;
-    padding: 3px 14px;
-    text-align: left;
-    color: #4b4a4a;
-    text-shadow: #ddf 1px 1px 0;
-    font-size: fontSize;
-    overflow: hidden;
-    white-space: nowrap;
-}
+.dataGridFooter {}
+.dataGridFooterCell {}
+.dataGridFirstFooterCell {}
+.dataGridLastFooterCell {}
 
 .dataGridRow {
     background: #ffffff;
@@ -52,21 +30,8 @@
     white-space: nowrap;
 }
 
-.dataGridFirstColumnFooter {
-
-}
-
-.dataGridFirstColumnHeader {
-
-}
-
-.dataGridLastColumnFooter {
-
-}
-
-.dataGridLastColumnHeader {
-
-}
+.dataGridFirstCell {}
+.dataGridLastCell {}
 
 .dataGridKeyboardSelectedRow {
     background: #F0F0FF;

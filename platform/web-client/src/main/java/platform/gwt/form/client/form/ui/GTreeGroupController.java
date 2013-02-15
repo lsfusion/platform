@@ -100,10 +100,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         }
     }
 
-    void flushTree() {
-        tree.flush();
-    }
-
     void restoreScrollPosition() {
         tree.restoreScrollPosition();
     }

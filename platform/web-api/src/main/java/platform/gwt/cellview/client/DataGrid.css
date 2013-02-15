@@ -14,37 +14,34 @@
  * the License.
  */
 @def selectionBorderWidth 2px;
-.dataGridWidget {
-  
-}
 
-.dataGridFirstColumn {
-  
-}
-
-.dataGridLastColumn {
-  
-}
-
-.dataGridFooter {
-  border-top: 2px solid #6f7277;
-  padding: 3px 15px;
-  text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
+.dataGridWidget {}
 
 .dataGridHeader {
-  border-bottom: 2px solid #6f7277;
-  padding: 3px 15px;
-  text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
-  overflow: hidden;
-  white-space: nowrap;
+    border-bottom: 2px solid #6f7277;
 }
+
+.dataGridHeaderCell {
+    padding: 3px 15px;
+    color: #4b4a4a;
+    text-align: left;
+}
+
+.dataGridFirstHeaderCell {}
+.dataGridLastHeaderCell {}
+
+.dataGridFooter {
+    border-top: 2px solid #6f7277;
+}
+
+.dataGridFooterCell {
+  padding: 3px 15px;
+  color: #4b4a4a;
+  text-align: left;
+}
+
+.dataGridFirstFooterCell {}
+.dataGridLastFooterCell {}
 
 .dataGridRow {
     background: #ffffff;
@@ -56,21 +53,8 @@
   border: selectionBorderWidth solid #ffffff;
 }
 
-.dataGridFirstColumnFooter {
-  
-}
-
-.dataGridFirstColumnHeader {
-  
-}
-
-.dataGridLastColumnFooter {
-  
-}
-
-.dataGridLastColumnHeader {
-  
-}
+.dataGridFirstCell {}
+.dataGridLastCell {}
 
 .dataGridKeyboardSelectedRow {
   background: #ffc;

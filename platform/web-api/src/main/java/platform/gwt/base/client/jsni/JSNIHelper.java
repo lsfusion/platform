@@ -42,4 +42,8 @@ public class JSNIHelper {
     public static native void consoleLog(String category, String message) /*-{
         console.log(category + ":" + message);
     }-*/;
+
+    public static native void consoleLogElement(Element element) /*-{
+        console.log(element);
+    }-*/;
 }

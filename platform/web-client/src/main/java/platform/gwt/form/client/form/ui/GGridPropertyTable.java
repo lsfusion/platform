@@ -131,39 +131,19 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     void restoreScrollPosition() {
-        int currentInd = getKeyboardSelectedRow();
-
-        if (needToRestoreScrollPosition && isRowWithinBounds(currentInd)) {
-            // note: именно здесь происходит browser-flush, который обрабатывает все изменения,
-            // которые произошли в доме после вызова flush() -> resolvePendingState()
-
-            int rowHeight = getRowHeight();
-            int rowTop = rowHeight * currentInd;
-            int rowBottom = rowTop + rowHeight;
-
-            int scrollHeight = getTableDataScroller().getRealClientHeight();
-            int verticalScrollPosition = getTableDataScroller().getVerticalScrollPosition();
-
+        if (needToRestoreScrollPosition && oldKey != null && oldRowScrollTop != -1) {
+            int currentInd = getKeyboardSelectedRow();
             GGroupObjectValue currentKey = getCurrentKey();
-            int newVerticalScrollPosition;
-            if (oldKey != null && oldRowScrollTop != -1 && currentKey != null && currentKey.equals(oldKey)) {
-                newVerticalScrollPosition = max(0, rowTop - oldRowScrollTop);
-            } else {
-                newVerticalScrollPosition = verticalScrollPosition;
-            }
+            if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
+                int rowTop = currentInd * getRowHeight();
+                int newVerticalScrollPosition = max(0, rowTop - oldRowScrollTop);
 
-            if (rowBottom >= newVerticalScrollPosition + scrollHeight) {
-                newVerticalScrollPosition = rowBottom - scrollHeight;
-            }
-            if (rowTop < newVerticalScrollPosition) {
-                newVerticalScrollPosition = rowTop;
-            }
+                setDesiredVerticalScrollPosition(newVerticalScrollPosition);
 
-            setDesiredVerticalScrollPosition(newVerticalScrollPosition);
-
-            oldKey = null;
-            oldRowScrollTop = -1;
-            needToRestoreScrollPosition = false;
+                oldKey = null;
+                oldRowScrollTop = -1;
+                needToRestoreScrollPosition = false;
+            }
         }
     }
 

@@ -64,10 +64,6 @@ public class GGridController implements DefaultFocusReceiver {
         }
     }
 
-    void flushTable() {
-        table.flush();
-    }
-
     void restoreScrollPosition() {
         table.restoreScrollPosition();
     }

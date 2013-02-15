@@ -11,4 +11,13 @@ public class ResizableHorizontalPanel extends HorizontalPanel implements Require
             }
         }
     }
+
+    boolean visible = true;
+    @Override
+    public void setVisible(boolean visible) {
+        if (this.visible != visible) {
+            this.visible = visible;
+            super.setVisible(visible);
+        }
+    }
 }

@@ -19,6 +19,7 @@ import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;
+    private static final int MAX_HEADER_HEIGHT = 30; // должна быть равна .dataGridHeaderCell { height: ...; }
 
     private final GGridPropertyTable table;
 
@@ -97,12 +98,13 @@ public class GGridPropertyTableHeader extends Header<String> {
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
+        DivElement div = Document.get().createDivElement();
+        div.getStyle().setProperty("maxHeight", MAX_HEADER_HEIGHT, Style.Unit.PX);
+        div.getStyle().setOverflow(Style.Overflow.HIDDEN);
+        div.getStyle().setTextAlign(Style.TextAlign.CENTER);
+        div.setTitle(escapedCaption);
         if (sortDir != null) {
-            DivElement div = Document.get().createDivElement();
-            div.setTitle(escapedCaption);
-
             ImageElement img = Document.get().createImageElement();
-            img.getStyle().setFloat(Style.Float.LEFT);
             img.getStyle().setHeight(15, Style.Unit.PX);
             img.getStyle().setWidth(15, Style.Unit.PX);
             img.setSrc(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png"));
@@ -118,9 +120,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             div.appendChild(span);
             th.appendChild(div);
         } else {
-            DivElement div = Document.get().createDivElement();
             div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
-            div.setTitle(escapedCaption);
             div.setInnerText(escapedCaption);
 
             renderedTooltipElement = renderedCaptionElement = div;

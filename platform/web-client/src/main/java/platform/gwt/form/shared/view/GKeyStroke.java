@@ -12,7 +12,18 @@ import static com.google.gwt.event.dom.client.KeyCodes.*;
 
 public class GKeyStroke implements Serializable {
     public static final int KEY_F1 = 112;
+    public static final int KEY_F2 = KEY_F1 + 1;
+    public static final int KEY_F3 = KEY_F1 + 2;
+    public static final int KEY_F4 = KEY_F1 + 3;
+    public static final int KEY_F5 = KEY_F1 + 4;
+    public static final int KEY_F6 = KEY_F1 + 5;
+    public static final int KEY_F7 = KEY_F1 + 6;
+    public static final int KEY_F8 = KEY_F1 + 7;
+    public static final int KEY_F9 = KEY_F1 + 8;
+    public static final int KEY_F10 = KEY_F1 + 9;
+    public static final int KEY_F11 = KEY_F1 + 10;
     public static final int KEY_F12 = KEY_F1 + 11;
+
     public static final int KEY_INSERT = 45;
 
     public int keyCode;
