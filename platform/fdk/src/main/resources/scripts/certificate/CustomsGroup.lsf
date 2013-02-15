@@ -10,7 +10,7 @@ codeCustomsGroup 'Код' = DATA STRING[10](customsGroup);
 @defineHierarchy(customsGroup);
 
 customsZoneCustomsGroup = DATA customsZone(customsGroup);
-nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup));
+nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup)) IN base;
 
 FORM customsZone 'Таможенная зона'
     OBJECTS cz = customsZone FIXED PANEL

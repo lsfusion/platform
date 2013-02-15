@@ -176,3 +176,12 @@ META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrP
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty);
 END
 
+META defineAggregationCapt(sign3, prim1Object, capt1, prim2Object, capt2, prim3Object, capt3, aggrObject, aggrProperty)
+    capt1###aggrObject = DATA prim1Object (aggrObject);
+    capt2###aggrObject = DATA prim2Object (aggrObject);
+    capt3###aggrObject ''###sign3 = DATA prim3Object (aggrObject);
+
+    @defineAggregationCustom(capt1###aggrObject, capt2###aggrObject, capt3###aggrObject, capt1, capt2, capt3, aggrObject, aggrProperty);
+
+END
+
