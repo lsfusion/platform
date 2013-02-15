@@ -1,3 +1,14 @@
 MODULE SOT;
 
-REQUIRE System;
+REQUIRE System,
+        Integration,
+        LegalEntity,
+        Stock,
+        Warehouse;
+
+mag2LegalEntityStock 'Код MAG2'= DATA STRING[100] (legalEntity, stock);
+mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), stock);
+
+EXTEND FORM warehouses
+    PROPERTIES (w) READONLY mag2Stock BEFORE delete(w), sidExternalizable BEFORE delete(w)
+;

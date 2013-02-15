@@ -112,13 +112,10 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
             i++;
 
             Object supplierInvoice = userInvoiceValues.get("Sale.supplierInvoice");
-            //String supplierID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(supplierInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
             Object supplierStockInvoice = userInvoiceValues.get("Sale.supplierStockInvoice");
-            //String supplierStockID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(supplierStockInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
             Object customerInvoice = userInvoiceValues.get("Sale.customerInvoice");
-            //String customerID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(customerInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
             Object customerStockInvoice = userInvoiceValues.get("Sale.customerStockInvoice");
-            String customerStockID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(customerStockInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
+            String mag2CustomerStock = (String) LM.findLCPByCompoundName("mag2Stock").read(context, new DataObject(customerStockInvoice, (ConcreteClass) LM.findClassByCompoundName("warehouse")));
 
             Object exportSOTSupplier = LM.findLCPByCompoundName("exportSOTSupplier").read(context);
             Object exportSOTSupplierStock = LM.findLCPByCompoundName("exportSOTSupplierStock").read(context);
@@ -138,7 +135,7 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                 KeyExpr userInvoiceDetailExpr = new KeyExpr("userInvoiceDetail");
                 ImRevMap<Object, KeyExpr> uidKeys = MapFact.singletonRev((Object) "userInvoiceDetail", userInvoiceDetailExpr);
 
-                String[] userInvoiceDetailProperties = new String[]{"Sale.nameSkuInvoiceDetail", "Sale.skuInvoiceDetail", "Sale.priceInvoiceDetail", "Sale.quantityInvoiceDetail"};
+                String[] userInvoiceDetailProperties = new String[]{"Sale.nameSkuInvoiceDetail", "Sale.skuInvoiceDetail", "Sale.RRPPriceInvoiceDetail", "Sale.quantityInvoiceDetail"};
                 QueryBuilder<Object, Object> uidQuery = new QueryBuilder<Object, Object>(uidKeys);
                 for (String uidProperty : userInvoiceDetailProperties) {
                     uidQuery.addProperty(uidProperty, getLCP(uidProperty).getExpr(context.getModifier(), userInvoiceDetailExpr));
@@ -147,13 +144,11 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
                 ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> uidResult = uidQuery.execute(context.getSession().sql);
 
-                int j = 0;
                 for (ImMap<Object, Object> uidValues : uidResult.valueIt()) {
                     Object sku = uidValues.get("Sale.skuInvoiceDetail");
                     if (sku != null) {
                         DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("item"));
                         String itemID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, itemObject);
-                        j++;
 
                         Object uomObject = LM.findLCPByCompoundName("UOMItem").read(context, itemObject);
                         String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("UOM")));
@@ -164,9 +159,9 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                         String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
 
                         String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
-                        Double price = (Double) uidValues.get("Sale.priceInvoiceDetail");
+                        Double price = (Double) uidValues.get("Sale.RRPPriceInvoiceDetail");
                         Double quantity = (Double) uidValues.get("Sale.quantityInvoiceDetail");
-                        reepList.add(new Reep(customerStockID == null ? "" : customerStockID.trim(),
+                        reepList.add(new Reep(mag2CustomerStock == null ? "" : mag2CustomerStock.trim(),
                                 numberInvoice == null ? "" : numberInvoice.trim(), itemID == null ? "" : itemID.trim(),
                                 nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim(),
                                 parentGroupID == null ? "" : parentGroupID.trim(), itemGroupID == null ? "" : itemGroupID.trim(),

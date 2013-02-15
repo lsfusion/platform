@@ -7,7 +7,9 @@ REQUIRE System,
         LegalEntity,
         LegalEntityBy,
         SaleInvoice,
+        SaleInvoiceRRP,
         Shipment,
+        SOT,
         Warehouse;
 
 //---------------------------------------------- Экспорт данных -----------------------------------------------------//
