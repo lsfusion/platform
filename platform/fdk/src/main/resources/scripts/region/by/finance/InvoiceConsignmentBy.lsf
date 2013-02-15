@@ -23,6 +23,7 @@ vatConsignmentDetail (detail) += valueVATInvoiceDetail(detail);
 
 sumVATConsignmentDetail (detail) += VATSumInvoiceDetail(detail);
 sumInvoiceConsignmentDetail (detail) += invoiceSumInvoiceDetail(detail);
+noteConsignmentDetail (detail) += noteInvoiceDetail(detail);
 
 META defineInvoiceConsignment(contactA, contactB)
 

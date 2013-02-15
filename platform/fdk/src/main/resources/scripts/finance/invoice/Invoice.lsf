@@ -54,6 +54,8 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной' : documentDetail;
 @defineDocumentAbstractDetailVAT(invoice, , );
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
+@defineDocumentAbstractDetailNote (invoice);
+
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//

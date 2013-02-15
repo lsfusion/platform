@@ -1,0 +1,11 @@
+MODULE ConsignmentSOT;
+
+REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP;
+
+NAMESPACE Sale;
+
+noteRRPInvoiceDetail(invoiceDetail) = ustring3SP(string2('Над.базы: ', wholesaleMarkupInvoiceDetail(invoiceDetail)),
+                                                 string2('Цена розн.: ', RRPPriceInvoiceDetail(invoiceDetail)),
+                                                 string2('Сумма розн.: ', RRPPriceInvoiceDetail(invoiceDetail))
+                                                 ) PERSISTENT;
+Invoice.noteInvoiceDetail (invoiceDetail) += noteRRPInvoiceDetail(invoiceDetail);

@@ -5,18 +5,18 @@ REQUIRE SaleInvoice;
 NAMESPACE Sale;
 
 //------------------------- Рекомендуемая розничная цена-------------------------//
+
+@defineDocumentInterfaceHeaderCreate (invoice, toShowRRPPrice, 'Отображать RRP');
 @defineDocumentInterfaceDetailPriceListType (invoice, priceListType, RRP, ' (RRP)');
-
-currencyRRPUserInvoiceDetail (userInvoiceDetail) = currencyRRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
-nameCurrencyRRPUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = name(currencyRRPUserInvoiceDetail(userInvoiceDetail));
-
-currencyRRPInvoiceDetail (invoiceDetail) = currencyRRPPriceListTypeAgreement(agreementInvoice(invoiceInvoiceDetail(invoiceDetail)));
-nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = name(currencyRRPInvoiceDetail(invoiceDetail));
-
-toShowRRPPriceInvoice(invoice) = TRUE IF RRPPriceListTypeAgreement(agreementInvoice(invoice));
 
 RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail) <- RRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)))
     WHEN CHANGED (agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)));
+
+currencyRRPUserInvoiceDetail (userInvoiceDetail) = currencyPriceListType(RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail));
+nameCurrencyRRPUserInvoiceDetail 'Валюта (RRP)' (userInvoiceDetail) = name(currencyRRPUserInvoiceDetail(userInvoiceDetail));
+
+currencyRRPInvoiceDetail (invoiceDetail) = currencyPriceListType(RRPPriceListTypeInvoiceDetail(invoiceDetail));
+nameCurrencyRRPInvoiceDetail 'Валюта (RRP)' (invoiceDetail) = name(currencyRRPInvoiceDetail(invoiceDetail));
 
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRP, ' (RRP)');
 RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(RRPPriceListTypeUserInvoiceDetail(detail),
@@ -27,9 +27,15 @@ RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(R
                                                          CHANGED(skuUserInvoiceDetail(detail)) OR
                                                          CHANGED(supplierStockUserInvoiceDetail(detail)) OR
                                                          CHANGED(dateTimeUserInvoiceDetail(detail));
+
+RRPSumUserInvoiceDetail 'Сумма (RRP)' (detail) = roundCurrency(RRPPriceUserInvoiceDetail (detail)*quantityUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail));
+RRPSumInvoiceDetail 'Сумма (RRP)' (detail) = roundCurrency(RRPPriceInvoiceDetail(detail)*quantityInvoiceDetail(detail), currencyInvoiceDetail(detail));
+
 EXTEND FORM userInvoice
-    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail;
+    PROPERTIES(i) toShowRRPPriceUserInvoice
+    PROPERTIES(d) SHOWIF toShowRRPPriceUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
 ;
 EXTEND FORM invoices
-    PROPERTIES(d) SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail;
+    PROPERTIES(i) READONLY toShowRRPPriceInvoice
+    PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
 ;

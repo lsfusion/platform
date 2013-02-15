@@ -8,10 +8,13 @@ NAMESPACE Sale;
 
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, supplierStock);
 
+wholesaleMarkupInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceInvoiceDetail(detail),manufacturingPriceInvoiceDetail(detail)));
+wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingPriceUserInvoiceDetail(detail)));
+
 EXTEND FORM userInvoice
-    PROPERTIES(d) manufacturingPriceUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail
+    PROPERTIES(d)  AFTER invoiceSumUserInvoiceDetail  wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail AFTER invoiceSumInvoiceDetail
+    PROPERTIES(d) READONLY  AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
 ;

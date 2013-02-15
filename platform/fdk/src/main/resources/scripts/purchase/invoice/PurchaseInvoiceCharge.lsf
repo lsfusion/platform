@@ -27,11 +27,11 @@ deriveChargePriceUserInvoice 'Расписать сумму услуг по то
     SET chargePriceUserInvoiceDetail(detail) <- calcChargePriceUserInvoiceDetail(detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
 }
 
-EXTEND CLASS systemLedgerPriceListType {chargePriceStockPriceListType ' услуги (последняя по складу)' }
+EXTEND CLASS systemLedgerPriceListType {chargePriceStockPriceListType 'Услуги (последняя по складу)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType. chargePriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(ledger) WHEN CLASS(chargePriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.chargePriceStockPriceListType;
 
-EXTEND CLASS systemLedgerPriceListType { chargePricePriceListType ' услуги (последняя)' }
+EXTEND CLASS systemLedgerPriceListType { chargePricePriceListType 'Услуги (последняя)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.chargePricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.chargePricePriceListType;
 
