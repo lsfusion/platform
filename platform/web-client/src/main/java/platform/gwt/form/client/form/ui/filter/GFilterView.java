@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -60,6 +61,7 @@ public class GFilterView extends ResizableVerticalPanel implements GFilterCondit
     @Override
     public void onBrowserEvent(Event event) {
         if (event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
+            GwtClientUtils.stopPropagation(event);
             controller.allRemovedPressed();
         } else {
             super.onBrowserEvent(event);
