@@ -899,6 +899,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 listContext.addAll(lp.usedParams);
         return !listContext.containsAll(mergeAllParams(orders));
     }
+
     private List<Integer> mergeAllParams(List<LPWithParams> lpList) {
         Set<Integer> s = new TreeSet<Integer>();
         for (LPWithParams mappedLP : lpList) {
@@ -1074,14 +1075,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
-        boolean ordersNotNull = (condition !=null ? doesExtendContext(Collections.singletonList(condition), orders) : !orders.isEmpty());
+        boolean ordersNotNull = (condition != null ? doesExtendContext(Collections.singletonList(condition), orders) : !orders.isEmpty());
 
         List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
-        if(condition!=null)
+        if (condition != null) {
             creationParams.add(condition);
+        }
         creationParams.addAll(orders);
-        if(addNum!=null)
+        if(addNum != null) {
             creationParams.add(new LPWithParams(null, asList(addNum)));
+        }
         if (elseAction != null) {
             creationParams.add(elseAction);
         }
@@ -1354,7 +1357,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
 
         FormEntity form = findFormByCompoundName(formName);
-        checkFormActionObjectsMapping(objectNames, mapping);
 
         ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
         for (int i = 0; i < objectNames.size(); i++) {
@@ -2104,12 +2106,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkPartitionUngroupConsistence(LP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
             errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
-        }
-    }
-
-    private void checkFormActionObjectsMapping(List<String> objects, List<LPWithParams> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        if (objects.size() != mapping.size() && mapping.size() > 0) {
-            errLog.emitFormActionObjectsMappingError(parser);
         }
     }
 

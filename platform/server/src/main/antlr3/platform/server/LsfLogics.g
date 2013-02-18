@@ -1613,8 +1613,8 @@ formActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 	;
 
 formActionObjectList[List<String> context, boolean dynamic] returns [List<String> objects = new ArrayList<String>(), List<LPWithParams> exprs = new ArrayList<LPWithParams>()]
-	:	objName=ID { $objects.add($objName.text); } ('=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })? 
-		(',' objName=ID { $objects.add($objName.text); } ('=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })?)*
+	:	objName=ID { $objects.add($objName.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } 
+		(',' objName=ID { $objects.add($objName.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })*
 	;
 	
 customActionPropertyDefinitionBody returns [LP property]
@@ -1867,14 +1867,18 @@ ifActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [L
 		('ELSE' elsePDB=actionPropertyDefinitionBody[context, dynamic])?
 	;
 
-forAddObjClause[List<String> context] returns [Integer paramNum, String className]
+forAddObjClause[List<String> context] returns [Integer paramCnt, String className]
 @init {
 	String varName = "added";
 }
-	:
-		'ADDOBJ'
+@after {
+	if (inPropParseState()) {
+		$paramCnt = self.getParamIndex(varName, context, true, insideRecursion);
+	}
+}
+	:	'ADDOBJ'
 		(varID=ID '=' {varName = $varID.text;})?
-		addClass=classId {$className = $addClass.sid; $paramNum=context.size(); context.add(varName);}
+		addClass=classId { $className = $addClass.sid; }
 	;
 
 forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
@@ -1887,7 +1891,7 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramNum, $addObj.className, recursive, descending);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending);
 	}	
 }
 	:	(	'FOR' 
@@ -2771,7 +2775,7 @@ propertyEditTypeLiteral returns [PropertyEditType val]
 modalityTypeLiteral returns [ModalityType val]
 	:	'DOCKED' { $val = ModalityType.DOCKED; }
 	|	'MODAL' { $val = ModalityType.MODAL; }
-	|	'DOCKED_MODAL' { $val = ModalityType.DOCKED_MODAL; }
+	|	'DOCKEDMODAL' { $val = ModalityType.DOCKED_MODAL; }
 	|	'FULLSCREEN' { $val = ModalityType.FULLSCREEN_MODAL; }
 	;
 

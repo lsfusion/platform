@@ -971,7 +971,7 @@ FORM orderPickingPrint 'Подборочный лист' PRINT
 
 @extendFormDocumentDetailSkuArticleReadonly(orderPickingPrint, d, orderPicking);
 
-printOrderPicking 'Подборочный лист' (priceChangeDocument) = ACTION FORM orderPickingPrint OBJECTS p IMAGE 'print.png' IN printGroup TOOLBAR;
+printOrderPicking 'Подборочный лист' (priceChangeDocument) = ACTION FORM orderPickingPrint OBJECTS p = priceChangeDocument IMAGE 'print.png' IN printGroup TOOLBAR;
 
 EXTEND FORM innerOrders
     PROPERTIES(p)  FORCE PANEL printOrderPicking

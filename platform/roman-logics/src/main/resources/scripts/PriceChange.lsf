@@ -179,7 +179,7 @@ FORM priceChangePrint 'Акт переоценки' PRINT
                              inPriceChangeDocumentEmployee(pc, e)
 ;
 
-printPriceChange 'Акт переоценки' (priceChangeDocument) = ACTION FORM priceChangePrint OBJECTS pc IMAGE 'print.png' IN printGroup;
+printPriceChange 'Акт переоценки' (priceChangeDocument) = ACTION FORM priceChangePrint OBJECTS pc = priceChangeDocument IMAGE 'print.png' IN printGroup;
 
 
 FORM priceChangeDocuments 'Акты переоценки'

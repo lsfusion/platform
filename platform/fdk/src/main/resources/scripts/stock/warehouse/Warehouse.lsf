@@ -115,7 +115,7 @@ addWarehouseLegalEntity 'Добавить склад' = ACTION (legalEntity) {
 
     FOR ADDOBJ wr = warehouse DO {
         SET legalEntityWarehouse(wr) <- legalEntity;
-        FORM warehouse OBJECTS w = wr DOCKED_MODAL;
+        FORM warehouse OBJECTS w = wr DOCKEDMODAL;
     }
 }
 

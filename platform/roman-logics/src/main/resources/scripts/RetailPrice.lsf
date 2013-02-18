@@ -731,7 +731,7 @@ FORM logPriceArticle 'История цен'
 
 ;
 
-showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a NEWSESSION MODAL;
+showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle OBJECTS a = article NEWSESSION MODAL;
 
 // ------------------------------------------------- Форма по редактированию розничных прайсов --------------------------------- //
 
@@ -1218,7 +1218,7 @@ createPriceSetDocument 'Расценить по артикулам' =  ACTION (f
         SET currencyRRPBasePriceSetDocumentArticle(p, article) <- currencyRRPImporterFreightArticle(importer, freight, article);
         SET RRPBasePriceSetDocumentArticle(p, article) <- RRPImporterFreightArticle(importer, freight, article);
 
-        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
+        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
 
@@ -1236,7 +1236,7 @@ createPriceSetDocumentSku 'Расценить по товарам' =  ACTION (fr
         SET RRPBasePriceSetDocumentSku(p, sku) <- RRPInImporterFreightSku(importer, freight, sku);
         SET markupBasePriceSetDocumentSku (p, sku) <- markupCoefficientBrandRetailSkuDate(sku, date(freight)) WHERE inPriceSetDocumentSku(p, sku);
 
-        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKED_MODAL;
+        FORM priceSetDocument OBJECTS p = p MANAGESESSION DOCKEDMODAL;
     };
 } TOOLBAR;
 

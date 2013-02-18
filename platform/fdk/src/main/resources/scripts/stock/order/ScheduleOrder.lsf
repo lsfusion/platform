@@ -230,7 +230,7 @@ META defineScheduleOrder(sign, stockProp)
 
             EXEC overCreateOrder(o);
 
-            FORM userOrder OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+            FORM userOrder OBJECTS o = o MANAGESESSION DOCKEDMODAL;
         };
     } TOOLBAR;
 
@@ -345,7 +345,7 @@ META defineScheduleOrder(sign, stockProp)
             SET supplierScheduleOrder(s) <- supplier;
             SET customerScheduleOrder(s) <- customer;
 
-            FORM scheduleOrder OBJECTS s = s MANAGESESSION DOCKED_MODAL;
+            FORM scheduleOrder OBJECTS s = s MANAGESESSION DOCKEDMODAL;
             IF TRUE AND NOT formResult() == formResult.ok THEN {
                 EXEC delete(s);
             }

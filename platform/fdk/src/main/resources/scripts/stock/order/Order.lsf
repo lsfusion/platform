@@ -350,7 +350,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
                 }
             }
 
-            FORM userOrder OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+            FORM userOrder OBJECTS o = o MANAGESESSION DOCKEDMODAL;
         }
     } TOOLBAR;
 

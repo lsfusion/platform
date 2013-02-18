@@ -31,7 +31,7 @@ FORM printWriteOffBy 'Акт списания' PRINT
     EDIT writeOff OBJECT w
 ;
 
-printWriteOffBy 'Акт списания' (writeOff) = ACTION FORM printWriteOffBy OBJECTS w IMAGE 'print.png' IN printGroup;
+printWriteOffBy 'Акт списания' (writeOff) = ACTION FORM printWriteOffBy OBJECTS w = writeOff IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM writeOffs
 

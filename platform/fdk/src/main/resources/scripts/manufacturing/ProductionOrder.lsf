@@ -634,7 +634,7 @@ FORM requestForMaterialsOrder 'Требование на сырье' PRINT
     FILTERS orderComponentDetail(cd)==o
 
 ;
-printRequestForMaterialsOrder 'Требование на сырье' (order) = ACTION FORM requestForMaterialsOrder OBJECTS o IMAGE 'print.png' IN printGroup;
+printRequestForMaterialsOrder 'Требование на сырье' (order) = ACTION FORM requestForMaterialsOrder OBJECTS o = order IMAGE 'print.png' IN printGroup;
 EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printRequestForMaterialsOrder
 ;

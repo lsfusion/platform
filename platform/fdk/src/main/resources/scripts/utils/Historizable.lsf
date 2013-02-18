@@ -36,7 +36,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
         OBJECTS a=object FIXED PANEL, d=DATE
@@ -47,7 +47,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a MODAL SHORTCUT property DEFAULT;
+    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT property DEFAULT;
 END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
@@ -71,7 +71,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
         OBJECTS a=object FIXED PANEL, d=DATE
@@ -82,7 +82,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a MODAL SHORTCUT typeIdentity###property DEFAULT;
+    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT typeIdentity###property DEFAULT;
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
@@ -105,7 +105,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
@@ -117,8 +117,8 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT property DEFAULT;
-    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT over###property##Date;
+    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT property DEFAULT;
+    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT over###property##Date;
 END
 // ----------------------------------- Свойство объект1-объект2-дата ------------------------------------------ //
 
@@ -148,7 +148,7 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a, b MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
@@ -160,8 +160,8 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT typeName###property DEFAULT;
-    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a, b MODAL SHORTCUT over###typeName###property##Date;
+    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT typeName###property DEFAULT;
+    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT over###typeName###property##Date;
 END
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
@@ -201,7 +201,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
         OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
@@ -214,8 +214,8 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT property DEFAULT;
-    overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###property##Date;
+    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT property DEFAULT;
+    overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###property##Date;
 END
 // -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
 
@@ -242,7 +242,7 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a, b, c MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
     OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
@@ -254,8 +254,8 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT typeIdentity###property DEFAULT;
-    over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a, b, c MODAL SHORTCUT over###typeIdentity###property##Date;
+    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT typeIdentity###property DEFAULT;
+    over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###typeIdentity###property##Date;
 END
 
 // ----------------------------------- Historizable Ledger -------------------------------------- //

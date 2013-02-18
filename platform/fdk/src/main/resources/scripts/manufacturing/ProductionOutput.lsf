@@ -403,7 +403,7 @@ copyOutput 'Копировать' = ACTION (userOutput) NEWSESSION {
                 SET productDetailUserOutputDetail(d) <- productDetailUserOutputDetail(userOutputDetail);
             }
         }
-        FORM userOutput OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+        FORM userOutput OBJECTS o = o MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
 

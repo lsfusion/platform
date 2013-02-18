@@ -337,7 +337,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
     FILTERS pricingPricingDetail(d) == p
 ;
 
-printPricing 'Акт расценки' (pricing) = ACTION FORM pricing OBJECTS p IMAGE 'print.png' IN printGroup;
+printPricing 'Акт расценки' (pricing) = ACTION FORM pricing OBJECTS p = pricing IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы --------------------------------- //
 

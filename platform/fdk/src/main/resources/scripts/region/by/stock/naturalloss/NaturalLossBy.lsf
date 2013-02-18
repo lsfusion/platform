@@ -18,7 +18,7 @@ FORM printNaturalLossBy 'Ведомость естественной убыли'
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 ;
 
-printNaturalLossBy 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM printNaturalLossBy OBJECTS s IMAGE 'print.png' IN printGroup;
+printNaturalLossBy 'Ведомость естественной убыли' (naturalLoss) = ACTION FORM printNaturalLossBy OBJECTS s = naturalLoss IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM naturalLosses
 

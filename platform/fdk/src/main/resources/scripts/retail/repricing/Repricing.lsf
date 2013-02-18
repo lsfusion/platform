@@ -361,7 +361,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
 
 ;
 
-printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
+printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p = repricing IMAGE 'print.png' IN printGroup;
 
 // --------------------------- Формы --------------------------------- //
 
@@ -688,7 +688,7 @@ META defineRepricing(sign, stockProp)
 
     repricingRepricingDetail(detail) += invoiceRepricingInvoiceRepricingDetail(detail);
 
-    printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p IMAGE 'print.png' IN printGroup;
+    printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing OBJECTS p = repricing IMAGE 'print.png' IN printGroup;
     printRepricingInvoice 'Акт дооценки' (invoice) = printRepricing(invoiceRepricingInvoice(invoice)) IMAGE 'print.png' IN printGroup;
     @defineDocumentDetailIndex(invoiceRepricing);
 

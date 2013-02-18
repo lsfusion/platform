@@ -372,7 +372,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                 }
             }
 
-            FORM userInvoice OBJECTS i = i MANAGESESSION DOCKED_MODAL;
+            FORM userInvoice OBJECTS i = i MANAGESESSION DOCKEDMODAL;
         }
     } TOOLBAR;
 

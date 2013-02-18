@@ -364,10 +364,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("UNGROUP property should have %d parameter(s)", groupPropCnt));
     }
 
-    public void emitFormActionObjectsMappingError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "all objects should have mapping");
-    }
-
     public void emitChangeClassActionClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "class cannot be built-in or abstract");
     }

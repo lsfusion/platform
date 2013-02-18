@@ -462,7 +462,7 @@ overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retai
 // Магазины
 addRomanStore 'Добавить' = ACTION () NEWSESSION {
     FOR ADDOBJ st = RomanLogicsModule.store DO {
-        FORM store OBJECTS s = st MANAGESESSION DOCKED_MODAL;
+        FORM store OBJECTS s = st MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
 
@@ -485,7 +485,7 @@ FORM destinations 'Магазины'
 
 addRomanUOM 'Добавить' = ACTION () NEWSESSION {
     FOR ADDOBJ um = RomanLogicsModule.unitOfMeasure DO {
-        FORM UOM OBJECTS u = um MANAGESESSION DOCKED_MODAL;
+        FORM UOM OBJECTS u = um MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
 
@@ -566,7 +566,7 @@ EXTEND DESIGN migrationData {
 boxInvoiceAddFormInvoice 'Добавить' (supplier) = ACTION (supplier) NEWSESSION {
     FOR ADDOBJ i = RomanLogicsModule.boxInvoice DO {
         SET supplierDocument (i) <- supplier AS supplier;
-        FORM boxInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKED_MODAL;
+        FORM boxInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
 
@@ -577,7 +577,7 @@ EXTEND FORM boxInvoiceForm
 simpleInvoiceAddFormInvoice 'Добавить' (supplier) = ACTION (supplier) NEWSESSION {
     FOR ADDOBJ i = RomanLogicsModule.simpleInvoice DO {
         SET supplierDocument (i) <- supplier AS supplier;
-        FORM simpleInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKED_MODAL;
+        FORM simpleInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKEDMODAL;
         }
     } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
 

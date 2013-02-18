@@ -781,7 +781,7 @@ DESIGN dialogStockInventory FROM DEFAULT {
 }
 
 dialogStockInventory 'Выбрать склады для инвентаризации' (inventory) =
-    ACTION FORM dialogStockInventory OBJECTS in DOCKED_MODAL;
+    ACTION FORM dialogStockInventory OBJECTS in = inventory DOCKEDMODAL;
 
 //------------------------------------ Выбор SKU для сличительной ведомости ------------------------------------------//
 

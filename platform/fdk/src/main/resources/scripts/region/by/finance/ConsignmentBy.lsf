@@ -233,7 +233,7 @@ META defineConsignmentFormSimple(form, caption)
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
-    print###form caption (consignment) = ACTION FORM form OBJECTS c IMAGE 'print.png' IN printGroup;
+    print###form caption (consignment) = ACTION FORM form OBJECTS c = consignment IMAGE 'print.png' IN printGroup;
 END
 
 @defineConsignmentFormSimple(consignmentSimpleVertical, 'ТН-2, вертикальная');
@@ -267,7 +267,7 @@ META defineConsignmentForm(form, caption)
 
         FILTERS consignmentConsignmentDetail(d) == c
     ;
-    print###form caption (consignment) = ACTION FORM form OBJECTS c IMAGE 'print.png' IN printGroup;
+    print###form caption (consignment) = ACTION FORM form OBJECTS c = consignment IMAGE 'print.png' IN printGroup;
 END
 
 @defineConsignmentForm(consignmentVerticalA, 'ТТН-1, вертикальная (сторона А)');
@@ -399,7 +399,7 @@ DESIGN consignment FROM DEFAULT {
     }
 }
 
-editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c DOCKED_MODAL IMAGE 'edit.png';
+editConsignment 'Заполнить атрибуты накладной' (consignment) = ACTION FORM consignment OBJECTS c = consignment DOCKEDMODAL IMAGE 'edit.png';
 
 
 FORM printConsignment 'Печать накладных'

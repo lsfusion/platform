@@ -125,7 +125,7 @@ DESIGN filterSkuGroupMachinery FROM DEFAULT {
     }
 }
 
-showFilterSkuGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterSkuGroupMachinery OBJECTS gm MODAL;
+showFilterSkuGroupMachinery 'Выбрать группы' (groupMachinery) = ACTION FORM filterSkuGroupMachinery OBJECTS gm = groupMachinery MODAL;
 
 //---------------------------- Модели оборудования ----------------------------------------//
 CLASS ABSTRACT model 'Модель' : named;

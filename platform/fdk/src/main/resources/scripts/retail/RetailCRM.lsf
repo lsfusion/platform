@@ -486,7 +486,7 @@ copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
             };
         };
 
-        FORM promotion OBJECTS sh = p MANAGESESSION DOCKED_MODAL;
+        FORM promotion OBJECTS sh = p MANAGESESSION DOCKEDMODAL;
     };
 } TOOLBAR;
 

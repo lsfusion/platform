@@ -300,10 +300,8 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Form action
 // statement syntax:
 // FORM formName
-// [OBJECTS object1 [=mappingExpr1], ..., objectN [=mappinExprN] ]
-// [INIT propertyExpr1, ..., propertyExprM]
-// [CLASS className]
-// [NEWSESSION | MANAGESESSION | OLDSESSION] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] [CHECK]
+// [OBJECTS object1 =mappingExpr1, ..., objectN =mappinExprN]
+// [NEWSESSION | MANAGESESSION | OLDSESSION] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] [CHECK]
 
 
 // Add object action
@@ -508,7 +506,7 @@ BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
-// FORM name ['caption'] [TITLE 'title'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKED_MODAL] | EXTEND FORM name
+// FORM name ['caption'] [TITLE 'title'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] | EXTEND FORM name
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)]
 // ...
 // [(GroupObjects list | TreeGroupObjects list | Properties list | Filters list | Hints list | OrderBy list | filterGroup | dialog form | edit form | list form)];
@@ -612,7 +610,7 @@ PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 ;
 
 showTestModalForm 'Показать док-модальную форму' = ACTION() {
-    FORM testModalForm NEWSESSION DOCKED_MODAL;
+    FORM testModalForm NEWSESSION DOCKEDMODAL;
     name(k) <- chosenString('s') WHERE k == chosenObject('store') IF (formResult() == formResult.ok);
     name(k) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i')) WHERE k == chosenObject('article') IF (formResult() == formResult.ok);
 };

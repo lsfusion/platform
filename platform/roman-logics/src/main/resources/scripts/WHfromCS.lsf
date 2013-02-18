@@ -660,13 +660,13 @@ receiveWHfromCSI 'Принять' (WHfromCSI) = ACTION (WHfromCSI) NEWSESSION {
             IF r IS WHfromCSRPosted THEN {
                 CHANGECLASS r TO WHfromCSR;
             }
-            FORM WHfromCSR OBJECTS w = r MANAGESESSION DOCKED_MODAL;
+            FORM WHfromCSR OBJECTS w = r MANAGESESSION DOCKEDMODAL;
         }
     } ELSE {
         ADDOBJ WHfromCSR;
         FOR t == addedObject() DO {
             SET WHfromCSIWHfromCSR (t) <- WHfromCSI AS WHfromCSI;
-            FORM WHfromCSR OBJECTS w = t MANAGESESSION DOCKED_MODAL;
+            FORM WHfromCSR OBJECTS w = t MANAGESESSION DOCKEDMODAL;
         }
     }
 } TOOLBAR;

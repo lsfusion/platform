@@ -620,7 +620,7 @@ copyDataItem = ACTION (item, i) {
 copyItem 'Копировать' = ACTION (item) NEWSESSION {
     FOR ADDOBJ i = item DO {
         EXEC copyDataItem(item, i);
-        FORM item OBJECTS i = i MANAGESESSION DOCKED_MODAL;
+        FORM item OBJECTS i = i MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
 
@@ -638,7 +638,7 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
         FOR ADDOBJ i = item DO {
             EXEC copyDataItem(skuAddedUser(currentUser()), i);
             SET idBarcode(b) <- barcode AS STRING[14] WHERE skuBarcode(b) == i AND primaryBarcode(b);
-            FORM item OBJECTS i = i MANAGESESSION DOCKED_MODAL;
+            FORM item OBJECTS i = i MANAGESESSION DOCKEDMODAL;
         }
     } ELSE {
         FOR ADDOBJ bc = barcode DO {
@@ -649,7 +649,7 @@ createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
                 SET skuBarcode(bc) <- s AS item;
                 SET activeBarcode(bc) <- TRUE;
                 SET primaryBarcode(bc) <- TRUE;
-                FORM item OBJECTS i = s, b = bc MANAGESESSION DOCKED_MODAL;
+                FORM item OBJECTS i = s, b = bc MANAGESESSION DOCKEDMODAL;
             }
         }
     }

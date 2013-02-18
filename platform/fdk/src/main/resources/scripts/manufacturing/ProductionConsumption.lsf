@@ -406,7 +406,7 @@ copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
                 SET componentDetailUserConsumptionDetail(d) <- componentDetailUserConsumptionDetail(userConsumptionDetail);
             }
         }
-        FORM userConsumption OBJECTS o = o MANAGESESSION DOCKED_MODAL;
+        FORM userConsumption OBJECTS o = o MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
 

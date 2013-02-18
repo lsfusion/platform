@@ -148,7 +148,7 @@ addUserContractSkuSupplierCustomer 'Добавить' = ACTION (supplier, custom
     FOR ADDOBJ uc = userContractSku DO {
         SET supplierContractSku(uc) <- (supplier AS legalEntity);
         SET customerContractSku(uc) <- (customer AS legalEntity);
-        FORM userContractSku OBJECTS c = uc DOCKED_MODAL;
+        FORM userContractSku OBJECTS c = uc DOCKEDMODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(uc);
         }

@@ -90,7 +90,7 @@ FORM costCardOrderBy 'Калькуляционная карта' PRINT
     FILTERS quantityProductDetailSku(pd,s)
 
 ;
-printCostCardOrder 'Калькуляционная карта' (order) = ACTION FORM costCardOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+printCostCardOrder 'Калькуляционная карта' (order) = ACTION FORM costCardOrderBy OBJECTS o = order IMAGE 'print.png' IN printGroup;
 
 FORM intakeSheetOrderBy 'Заборный лист' PRINT
 
@@ -105,7 +105,7 @@ FORM intakeSheetOrderBy 'Заборный лист' PRINT
     FILTERS orderProductDetail(pd)==o
 
 ;
-printIntakeSheetOrder 'Заборный лист' (order) = ACTION FORM intakeSheetOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+printIntakeSheetOrder 'Заборный лист' (order) = ACTION FORM intakeSheetOrderBy OBJECTS o = order IMAGE 'print.png' IN printGroup;
 
 FORM technologicalCardOrderBy 'Технологическая карта' PRINT
 
@@ -130,7 +130,7 @@ FORM technologicalCardOrderBy 'Технологическая карта' PRINT
     FILTERS quantityProductDetailSku(pd,s) OR nettoQuantityProductDetailSku(pd,s)
 
 ;
-printTechnologicalCardOrder 'Технологическая карта' (order) = ACTION FORM technologicalCardOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+printTechnologicalCardOrder 'Технологическая карта' (order) = ACTION FORM technologicalCardOrderBy OBJECTS o = order IMAGE 'print.png' IN printGroup;
 
 EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printTechnologicalCardOrder, printCostCardOrder, printIntakeSheetOrder

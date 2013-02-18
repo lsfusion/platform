@@ -239,8 +239,8 @@ FORM inputListRegister 'Реестр цен (внутр. приход)' PRINT
     FILTERS listRegisterListRegisterDetail(d) == l
 ;
 
-printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l IMAGE 'print.png' IN printGroup;
-printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l IMAGE 'print.png' IN printGroup;
+printListRegister 'Реестр цен' (listRegister) = ACTION FORM listRegister OBJECTS l = listRegister IMAGE 'print.png' IN printGroup;
+printInputListRegister 'Реестр цен' (inputListRegister) = ACTION FORM inputListRegister OBJECTS l = inputListRegister IMAGE 'print.png' IN printGroup;
 
 printRegister 'Реестр цен' (inputListRegister) = ACTION (inputListRegister) {
     IF fullInputListRegister(inputListRegister)  THEN {

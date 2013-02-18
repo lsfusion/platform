@@ -608,7 +608,7 @@ copyUserPriceList 'Копировать' = ACTION (price) NEWSESSION {
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
             }
         }
-        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKED_MODAL;
+        FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
     }
 }
 
@@ -908,7 +908,7 @@ addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
 
     FOR ADDOBJ u = userPriceList DO {
         SET companyUserPriceList(u) <- legalEntity;
-        FORM userPriceList OBJECTS p = u DOCKED_MODAL;
+        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(u);
         }

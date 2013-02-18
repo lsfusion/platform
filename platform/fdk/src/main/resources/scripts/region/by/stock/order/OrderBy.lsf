@@ -30,4 +30,4 @@ FORM printOrderBy 'Счет-фактура (печать)' PRINT
     FILTERS orderOrderDetail(d) == o
 ;
 
-printOrderBy 'Счет-фактура' (order) = ACTION FORM printOrderBy OBJECTS o IMAGE 'print.png' IN printGroup;
+printOrderBy 'Счет-фактура' (order) = ACTION FORM printOrderBy OBJECTS o = order IMAGE 'print.png' IN printGroup;

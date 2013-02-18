@@ -359,7 +359,7 @@ createAgreementSupplierCustomer 'Добавить' = ACTION (supplier, customer)
     FOR ADDOBJ ag = agreement DO {
         SET inAgreementCustomer(ag, customer) <- TRUE;
         SET supplierAgreement(ag) <- (supplier AS legalEntity);
-        FORM agreement OBJECTS a = ag DOCKED_MODAL;
+        FORM agreement OBJECTS a = ag DOCKEDMODAL;
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(ag);
         }
@@ -385,7 +385,7 @@ copySessionAgreement 'Копировать' = ACTION (agreement) {
         SET priceListTypeAgreementGroup(a, group) <- priceListTypeAgreementGroup(agreement, group);
         SET priceListTypeAgreementSku(a, sku) <- priceListTypeAgreementSku(agreement, sku);
 
-        FORM agreement OBJECTS a = a DOCKED_MODAL;
+        FORM agreement OBJECTS a = a DOCKEDMODAL;
 
         IF TRUE AND NOT formResult() == formResult.ok THEN {
             EXEC delete(a);

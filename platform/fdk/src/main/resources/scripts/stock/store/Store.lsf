@@ -308,7 +308,7 @@ addStoreLegalEntity 'Добавить магазин' = ACTION (legalEntity) {
 
     FOR ADDOBJ st = store DO {
         SET legalEntityStore(st) <- legalEntity;
-        FORM store OBJECTS s = st DOCKED_MODAL;
+        FORM store OBJECTS s = st DOCKEDMODAL;
     }
 }
 

@@ -85,7 +85,7 @@ DESIGN dialogTypeExchangeCurrency FROM DEFAULT {
     ADD functions.box;
 }
 
-dialogTypeExchangeCurrency 'Добавить' (typeExchange, currency) = ACTION FORM dialogTypeExchangeCurrency OBJECTS t, c MODAL TOOLBAR;
+dialogTypeExchangeCurrency 'Добавить' (typeExchange, currency) = ACTION FORM dialogTypeExchangeCurrency OBJECTS t = typeExchange, c = currency MODAL TOOLBAR;
 deleteTypeExchangeCurrencyDate 'Удалить' (typeExchange, currency, date) = ACTION SET rateExchange(typeExchange, currency, date) <- NULL IMAGE 'delete.png';
 
 FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
