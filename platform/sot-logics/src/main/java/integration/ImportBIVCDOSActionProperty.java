@@ -81,6 +81,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (getLCP("importBIVCDOSMag2").read(context) != null)
                     importLegalEntityStock(path + "//magp");
 
+                if ((getLCP("importBIVCDOSItems").read(context) != null))
+                    importSotUOM(path + "//sedi", path + "//ost", numberOfItems);
+
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
@@ -180,7 +183,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                             String uomName = m.group(1).trim();
                             Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
                             Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
-                            uomMap.put(splittedLine[1], new UOM(uomName,
+                            uomMap.put(splittedLine[1], new UOM(uomName, uomName,
                                     uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
                             break;
                         }
@@ -235,6 +238,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     }
 
                     retailVAT = splittedLine.length > 18 ? Double.parseDouble(splittedLine[18]) : null;
+                    //Так как ещё остались товары со старым НДС 18%
+                    retailVAT = (retailVAT != null && retailVAT == 18) ? 20 : retailVAT;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     UOM uom = uomMap.get(groupID.split(":")[0]);
@@ -453,8 +458,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         if (name.startsWith(filter)) {
                             String[] fullName = name.replaceFirst(filter, "").trim().split(" ");
                             String firstName = "";
-                            for(int i = 1; i<fullName.length;i++)
-                              firstName += fullName[i];
+                            for (int i = 1; i < fullName.length; i++)
+                                firstName += fullName[i];
                             employeesList.add(new Employee(legalEntityID, firstName, fullName[0], filter));
                             break;
                         }
@@ -588,6 +593,106 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             }
         }
         reader.close();
+        return data;
+    }
+
+    private void importSotUOM(String sediPath, String ostPath, Integer numberOfItems) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException {
+
+        List<List<Object>> data = importSotUOMItemsFromFile(sediPath, ostPath, numberOfItems);
+
+        if (data != null) {
+            ImportField UOMField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+            ImportField sotUOMIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+            ImportField netWeightField = new ImportField(LM.findLCPByCompoundName("netWeightSotUOM"));
+            ImportField nameField = new ImportField(LM.findLCPByCompoundName("nameSotUOM"));
+            ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("item"),
+                    LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
+
+            ImportKey<?> UOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("UOM"),
+                    LM.findLCPByCompoundName("externalizableSID").getMapping(UOMField));
+
+            ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("sotUOM"),
+                    LM.findLCPByCompoundName("externalizableSID").getMapping(sotUOMIDField));
+
+            List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+            props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(netWeightField, LM.findLCPByCompoundName("netWeightSotUOM").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(nameField, LM.findLCPByCompoundName("nameSotUOM").getMapping(sotUOMKey)));
+            props.add(new ImportProperty(UOMField, LM.findLCPByCompoundName("UOMSotUOM").getMapping(sotUOMKey),
+                    LM.object(LM.findClassByCompoundName("UOM")).getMapping(UOMKey)));
+            props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
+                    LM.object(LM.findClassByCompoundName("sotUOM")).getMapping(sotUOMKey)));
+
+            ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, UOMField, netWeightField, nameField, itemField), data);
+
+            DataSession session = LM.getBL().createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(UOMKey, sotUOMKey, itemKey), props);
+            service.synchronize(true, false);
+            session.apply(LM.getBL());
+            session.close();
+        }
+    }
+
+    private List<List<Object>> importSotUOMItemsFromFile(String sediPath, String ostPath, Integer numberOfItems) throws IOException {
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+        String[] patterns = new String[]{
+                "\\d:(.*?)(?:\\s|\\.)([\\d\\.]+)\\s?(КГ|Г|ГР|Л|МЛ)?\\.?",
+                "\\d:(.*?)" //ловим всё остальное без массы
+        };
+
+        Map<String, UOM> uomMap = new HashMap<String, UOM>();
+        BufferedReader uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(sediPath), "cp866"));
+        String line;
+        while ((line = uomReader.readLine()) != null) {
+            if (line.startsWith("^SEDI")) {
+                String[] splittedLine = line.split("\\(|\\)|,|\"");
+                if (splittedLine.length == 2) {
+                    String uomLine = uomReader.readLine().trim();
+                    String uomOriginalName = uomLine.replace(",", ".");
+                    for (String p : patterns) {
+                        Pattern r = Pattern.compile(p);
+                        Matcher m = r.matcher(uomOriginalName);
+                        if (m.matches()) {
+                            String uomName = m.group(1).trim();
+                            Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
+                            Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
+                            uomMap.put(splittedLine[1], new UOM(uomLine, uomName,
+                                    uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
+
+        String name = null;
+        while ((line = reader.readLine()) != null) {
+            if (numberOfItems != null && data.size() >= numberOfItems)
+                break;
+            if (line.startsWith("^OST")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                if (extra == null && splittedLine.length > 3) {
+                    splittedLine = reader.readLine().split(":");
+                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                } else if ("9".equals(extra)) {
+                    String groupID = reader.readLine();
+                    String uom = groupID.split(":")[0];
+                    UOM uomObject = uomMap.get(uom);
+                    String uomName = uomObject==null? null : uomObject.uomName;
+                    data.add(Arrays.asList((Object) (uom == null ? null : "UOMS" + uom),
+                            uomName == null ? null : "UOM" + uomName,
+                            uomObject==null ? null : uomObject.netWeight,
+                            uomObject==null ? null : uomObject.uomFullName, "I" + groupID + ":" + name));
+                }
+            }
+        }
         return data;
     }
 }

@@ -2,13 +2,45 @@ MODULE SOT;
 
 REQUIRE System,
         Integration,
+        Item,
         LegalEntity,
         Stock,
         Warehouse;
 
+CLASS sotUOM 'Единица измерений SOT' : externalizable;
+
+nameSotUOM 'Наименование' (sotUOM) = DATA STRING[100](sotUOM) IN base;
+
+netWeightSotUOM 'Вес нетто' (sotUOM) = DATA NUMERIC[9,3](sotUOM) IN base;
+
+UOMSotUOM 'Единица измерений' = DATA UOM (sotUOM);
+nameUOMSotUOM 'Единица измерений' (sotUOM) = name(UOMSotUOM(sotUOM)) IN base;
+
+sotUOMWeightUOM (weight, uom) = GROUP MAX sotUOM BY netWeightSotUOM(sotUOM), UOMSotUOM(sotUOM) WHERE sotUOM IS sotUOM;
+
+sotUOMItem = DATA sotUOM (item);
+nameSotUOMItem 'Единица измерений SOT' (item) = nameSotUOM(sotUOMItem(item)) IN itemBaseGroup;
+
+sotUOMItem(i) <- sotUOMWeightUOM(netWeightItem(i), UOMItem(i)) WHEN CHANGED(netWeightItem(i)) OR CHANGED(UOMItem(i));
+
 mag2LegalEntityStock 'Код MAG2'= DATA STRING[100] (legalEntity, stock);
 mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), stock);
+
+EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
 
 EXTEND FORM warehouses
     PROPERTIES (w) READONLY mag2Stock BEFORE delete(w), sidExternalizable BEFORE delete(w)
 ;
+
+FORM sotUOMs 'Единицы измерений SOT'
+    OBJECTS su=sotUOM
+    PROPERTIES(su) sidExternalizable, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, delete
+;
+
+NAVIGATOR {
+    masterData {
+            skuNavigator {
+                ADD sotUOMs;
+            }
+    }
+}

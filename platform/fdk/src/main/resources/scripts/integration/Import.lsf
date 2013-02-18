@@ -16,6 +16,7 @@ REQUIRE System,
         PurchaseInvoice,
         PurchaseInvoiceCharge,
         PurchaseManufacturingPrice,
+        PurchaseShipment,
         PurchaseWriteOff,
         PricingPurchase,
         ScalesItem,
@@ -50,6 +51,9 @@ EXTEND CLASS writeOffRate : externalizable;
 
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
 
+sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (batch) PERSISTENT;
+
+sidExternalizableBatch (batch) += sidExternalizable (Purchase.invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
 
 EXTEND FORM legalEntities
     PROPERTIES (l) READONLY sidExternalizable BEFORE delete(l)
@@ -57,4 +61,8 @@ EXTEND FORM legalEntities
 
 EXTEND FORM banks
     PROPERTIES (b) READONLY sidExternalizable BEFORE delete(b)
+;
+
+EXTEND FORM batches
+    PROPERTIES (bt) READONLY sidExternalizableBatch BEFORE nameSkuBatch(bt)
 ;
