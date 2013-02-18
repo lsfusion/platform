@@ -1,6 +1,7 @@
 package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import platform.base.ClassUtils;
 import platform.gwt.base.server.ServerUtils;
 import platform.interop.RemoteLoaderInterface;
@@ -24,14 +25,11 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
 
     private final List<InvalidateListener> invlidateListeners = Collections.synchronizedList(new ArrayList<InvalidateListener>());
 
+    @Autowired
     private ServletContext servletContext;
 
     private volatile T logics;
     private final Object logicsLock = new Object();
-
-    public BusinessLogicsProviderImpl(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
 
     public T getLogics() {
         //double-check locking

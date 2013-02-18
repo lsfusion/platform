@@ -24,7 +24,7 @@ public class GForm implements Serializable {
     private transient HashMap<Integer, GPropertyDraw> idProps;
     private transient HashMap<Integer, GObject> idObjects;
 
-    public GFormChangesDTO formChanges;
+    public GFormChangesDTO initialFormChanges;
 
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {

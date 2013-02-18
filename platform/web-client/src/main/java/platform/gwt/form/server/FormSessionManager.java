@@ -41,7 +41,7 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
         gForm.sessionID = nextFormSessionID();
 
         ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1).actions[0];
-        gForm.formChanges = ClientFormChangesToGwtConverter.getInstance().convertFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm));
+        gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm));
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
 
         return gForm;

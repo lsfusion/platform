@@ -53,13 +53,9 @@
         <authentication-provider user-service-ref="logicsUserService"/>
     </authentication-manager>
 
-    <b:bean name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
-        <b:property name="businessLogicProvider" ref="blLogicProvider"/>
-    </b:bean>
+    <b:bean name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService" />
 
-    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl">
-        <b:constructor-arg ref="servletContext"/>
-    </b:bean>
+    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl" />
 
     <!--<b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.mock.MockBusinessLogicsProviderImpl">-->
         <!--<b:constructor-arg>-->

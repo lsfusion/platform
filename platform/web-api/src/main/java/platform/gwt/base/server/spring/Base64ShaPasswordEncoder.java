@@ -3,9 +3,11 @@ package platform.gwt.base.server.spring;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import platform.base.BaseUtils;
 
-import java.rmi.RemoteException;
-
 public class Base64ShaPasswordEncoder extends ShaPasswordEncoder {
+
+    public Base64ShaPasswordEncoder() {
+        this(256);
+    }
 
     public Base64ShaPasswordEncoder(int strength) {
         super(strength);

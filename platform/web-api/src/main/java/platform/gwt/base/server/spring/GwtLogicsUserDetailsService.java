@@ -1,5 +1,6 @@
 package platform.gwt.base.server.spring;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 
 public class GwtLogicsUserDetailsService implements UserDetailsService {
 
+    @Autowired
     private BusinessLogicsProvider businessLogicProvider;
 
     @Override
