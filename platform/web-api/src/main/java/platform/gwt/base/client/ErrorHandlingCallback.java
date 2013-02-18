@@ -23,15 +23,15 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
         String message = getServerMessage(caught);
         if (message != null) {
-            DialogBoxHelper.showMessageBox(true, "Error: ", EscapeUtils.toHtml(message), null);
+            DialogBoxHelper.showMessageBox(true, "Error: ", message, null);
             return;
         } else if (caught instanceof RequestTimeoutException) {
-            DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.actionTimeoutErrorMessage(), null);
+            DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.actionTimeoutErrorMessage(), false, null);
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
-                DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.sessionTimeoutErrorMessage(), new DialogBoxHelper.CloseCallback() {
+                DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.sessionTimeoutErrorMessage(), false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         relogin();
@@ -40,7 +40,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 return;
             }
         }
-        DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.internalServerErrorMessage(), null);
+        DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.internalServerErrorMessage(), false, null);
     }
 
     protected String getServerMessage(Throwable caught) {

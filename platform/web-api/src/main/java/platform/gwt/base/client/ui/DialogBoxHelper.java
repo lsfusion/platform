@@ -37,7 +37,15 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, String message, final CloseCallback closeCallback) {
-        new MessageBox(caption, message, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+        showMessageBox(isError, caption, message, true, closeCallback);
+    }
+
+    public static void showMessageBox(boolean isError, String caption, String message, boolean escapeMessage, final CloseCallback closeCallback) {
+        new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+    }
+
+    private static String escapedIf(String message, boolean escapeMessage) {
+        return escapeMessage ? EscapeUtils.toHtml(message) : message;
     }
 
     public static void showMessageBox(boolean isError, String caption, Widget contents, final CloseCallback closeCallback) {
@@ -45,7 +53,11 @@ public class DialogBoxHelper {
     }
 
     public static void showConfirmBox(String caption, String message, final CloseCallback closeCallback) {
-        new MessageBox(caption, message, closeCallback, OptionType.YES, OptionType.YES, OptionType.NO).showCenter();
+        showConfirmBox(caption, message, true, closeCallback);
+    }
+
+    public static void showConfirmBox(String caption, String message, boolean escapeMessage, final CloseCallback closeCallback) {
+        new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.YES, OptionType.YES, OptionType.NO).showCenter();
     }
 
     private static final class MessageBox extends DialogBox {
@@ -54,7 +66,7 @@ public class DialogBoxHelper {
         private Button activeButton;
 
         private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
-            this(caption, new HTML(EscapeUtils.toHtml(message)), closeCallback, activeOption, options);
+            this(caption, new HTML(message), closeCallback, activeOption, options);
         }
 
         private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {

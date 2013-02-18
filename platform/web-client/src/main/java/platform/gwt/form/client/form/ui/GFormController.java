@@ -16,6 +16,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.ErrorHandlingCallback;
+import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.client.jsni.Function2;
 import platform.gwt.base.client.jsni.NativeHashMap;
@@ -23,6 +24,7 @@ import platform.gwt.base.client.ui.DialogBoxHelper;
 import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.base.shared.actions.NumberResult;
+import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.LoadingBlocker;
 import platform.gwt.form.client.dispatch.DeferredRunner;
@@ -724,6 +726,7 @@ public class GFormController extends ResizableSimplePanel {
 
     public void hideForm() {
         HotkeyManager.get().removeHotkeyBinding(getElement());
+        dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
     }
 
     public void blockingConfirm(String caption, String message, final DialogBoxHelper.CloseCallback callback) {

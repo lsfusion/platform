@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.synchronizedMap;
+
 public class FormSessionManager implements InitializingBean, DisposableBean, InvalidateListener {
     @Autowired
     private BusinessLogicsProvider blProvider;
 
     private int nextFormId = 0;
-    private final Map<String, FormSessionObject> currentForms = new HashMap<String, FormSessionObject>();
+    private final Map<String, FormSessionObject> currentForms = synchronizedMap(new HashMap<String, FormSessionObject>());
 
     public FormSessionManager() {}
 
@@ -53,6 +55,20 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
         currentForms.clear();
     }
 
+    public FormSessionObject getFormSessionObject(String formSessionID) {
+        FormSessionObject formObject = currentForms.get(formSessionID);
+
+        if (formObject == null) {
+            throw new RuntimeException("Форма не найдена.");
+        }
+
+        return formObject;
+    }
+
+    public FormSessionObject removeFormSessionObject(String formSessionID) {
+        return currentForms.remove(formSessionID);
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(blProvider, "businessLogicProvider must be specified");
@@ -62,15 +78,5 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
     @Override
     public void destroy() throws Exception {
         blProvider.removeInvlidateListener(this);
-    }
-
-    public FormSessionObject getFormSessionObject(String formSessionID) {
-        FormSessionObject formObject = currentForms.get(formSessionID);
-
-        if (formObject == null) {
-            throw new RuntimeException("Форма не найдена.");
-        }
-
-        return formObject;
     }
 }
