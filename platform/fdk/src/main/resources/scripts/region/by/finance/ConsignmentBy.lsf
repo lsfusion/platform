@@ -158,6 +158,7 @@ grossWeightConsignmentDetail 'Масса груза, кг.' (consignmentDetail) 
 grossWeightTonConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round6(grossWeightConsignmentDetail(consignmentDetail) / 1000);
 
 noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+extraDescriptionConsignmentDetail 'Доп. наименование' (consignmentDetail) = ABSTRACT STRING[255] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 countConsignmentDetailConsignment 'Количество строк' (consignment) = GROUP SUM 1 IF consignmentDetail IS consignmentDetail
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
@@ -226,7 +227,7 @@ META defineConsignmentFormSimple(form, caption)
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      noteConsignmentDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
+                      noteConsignmentDetail, extraDescriptionConsignmentDetail, nameWareConsignmentDetail, warePriceConsignmentDetail, wareSumConsignmentDetail,
                       valueWareRangeConsignmentDetail, wareVATSumConsignmentDetail, wareSupplierPriceConsignmentDetail,
                       wareSupplierSumConsignmentDetail
 
@@ -259,7 +260,7 @@ META defineConsignmentForm(form, caption)
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail,
+                      quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail, extraDescriptionConsignmentDetail,
                       nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                       wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                       wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -295,7 +296,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES(d) nameSkuConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail,
+                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail, extraDescriptionConsignmentDetail,
                   nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                   wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                   wareVATSumConsignmentDetail, wareSumConsignmentDetail

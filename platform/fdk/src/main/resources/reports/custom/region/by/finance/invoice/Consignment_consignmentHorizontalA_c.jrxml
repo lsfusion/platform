@@ -96,6 +96,7 @@
 	<field name="wareSupplierSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareVATSumConsignmentDetail" class="java.lang.Double"/>
 	<field name="wareSupplierPriceConsignmentDetail" class="java.lang.Double"/>
+	<field name="extraDescriptionConsignmentDetail" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -668,9 +669,9 @@
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+($F{extraDescriptionConsignmentDetail}!=null?(" "+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" mode="Transparent" x="695" y="0" width="100" height="18"/>

@@ -1,11 +1,19 @@
 MODULE ConsignmentSOT;
 
-REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP;
+REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP, SaleCompliance, SaleCertificate, SaleDeclaration, SaleSanitation;
 
 NAMESPACE Sale;
 
 noteRRPInvoiceDetail(invoiceDetail) = ustring3SP(string2('Над.базы: ', wholesaleMarkupInvoiceDetail(invoiceDetail)),
                                                  string2('Цена розн.: ', RRPPriceInvoiceDetail(invoiceDetail)),
-                                                 string2('Сумма розн.: ', RRPPriceInvoiceDetail(invoiceDetail))
+                                                 string2('Сумма розн.: ', RRPSumInvoiceDetail(invoiceDetail))
                                                  ) PERSISTENT;
 Invoice.noteInvoiceDetail (invoiceDetail) += noteRRPInvoiceDetail(invoiceDetail);
+
+extraDescriptionInvoiceDetail(invoiceDetail) = ustring4CM(string2(descriptionComplianceInvoiceDetail(invoiceDetail), ''),
+                                                 string2(descriptionDeclarationInvoiceDetail(invoiceDetail), ''),
+                                                 string2(descriptionSanitationInvoiceDetail(invoiceDetail), ''),
+                                                 string2(textInvoiceDetail(invoiceDetail), '')
+                                                 ) PERSISTENT;
+
+Invoice.extraDescriptionInvoiceDetail (invoiceDetail) += extraDescriptionInvoiceDetail(invoiceDetail);
