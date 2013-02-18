@@ -27,42 +27,51 @@ RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(R
                                                          CHANGED(customerStockUserInvoiceDetail(detail)) OR
                                                          CHANGED(dateTimeUserInvoiceDetail(detail));
 
-// todo: откуда брать тип обмена????
-RRPTypeExchangeInvoiceDetail  (invoiceDetail) = ABSTRACT typeExchange (invoiceDetail) PERSISTENT;
-nameRRPTypeExchangeInvoiceDetail 'Тип обмена (RRP)' (invoiceDetail)= name(RRPTypeExchangeInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
-RRPTypeExchangeUserInvoiceDetail (userInvoiceDetail) = DATA typeExchange (userInvoiceDetail);
-nameRRPTypeExchangeUserInvoiceDetail 'Тип обмена (RRP)' (userInvoiceDetail)= name(RRPTypeExchangeUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
-
-CONSTRAINT currencyRRPUserInvoiceDetail(detail) != currencyTypeExchange(RRPTypeExchangeUserInvoiceDetail(detail))
-    CHECKED BY RRPTypeExchangeUserInvoiceDetail MESSAGE 'В накладной валюта типа обмена RRP не соавпадает с валютой вида цены RRP';
-
-RRPTypeExchangeInvoiceDetail(invoiceDetail) += RRPTypeExchangeUserInvoiceDetail(invoiceDetail);
-
-@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRPExchange, ' (RRP) конвертированная');
-
-RRPExchangePriceUserInvoiceDetail (detail)  <-  roundCurrency(           // Какое ставить округление?????
-    RRPPriceUserInvoiceDetail (detail)*rateTypeExchangeCurrencyDate(
-        RRPTypeExchangeUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)),
-            currencyUserInvoiceDetail(detail))
-
-        WHEN CHANGED(RRPTypeExchangeUserInvoiceDetail(detail)) OR
-             CHANGED(currencyUserInvoiceDetail(detail)) OR
-             CHANGED(dateUserInvoiceDetail(detail)) OR
-             CHANGED(RRPPriceUserInvoiceDetail (detail));
-
-toShowRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
-    invoice) AND toShowRRPPriceInvoice(invoice);
-
 EXTEND FORM userInvoice
     PROPERTIES(i) toShowRRPPriceUserInvoice
     PROPERTIES(d) SHOWIF toShowRRPPriceUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
-    PROPERTIES(d) SHOWIF toShowRRPExchangePriceInvoice(i) BEFORE delete(d) nameRRPTypeExchangeUserInvoiceDetail, RRPExchangePriceUserInvoiceDetail
 ;
 EXTEND FORM invoices
     PROPERTIES(i) toShowRRPPriceInvoice
     PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
-    PROPERTIES(d) READONLY SHOWIF toShowRRPExchangePriceInvoice(i) nameRRPTypeExchangeInvoiceDetail, RRPExchangePriceInvoiceDetail
 ;
+
+// Создаем виды цен
+EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoiceStockPriceListType 'Закупки (последняя RRP по складу)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(ledger) WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
+
+// Создаем вид цен по всем складам компании
+EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoicePriceListType 'Закупки (последняя RRP)' }
+batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
+
+//// Тип обмена для RRP, пок не используется.
+//RRPTypeExchangeInvoiceDetail  (invoiceDetail) = ABSTRACT typeExchange (invoiceDetail) PERSISTENT;
+//nameRRPTypeExchangeInvoiceDetail 'Тип обмена (RRP)' (invoiceDetail)= name(RRPTypeExchangeInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+//
+//RRPTypeExchangeUserInvoiceDetail (userInvoiceDetail) = DATA typeExchange (userInvoiceDetail);
+//nameRRPTypeExchangeUserInvoiceDetail 'Тип обмена (RRP)' (userInvoiceDetail)= name(RRPTypeExchangeUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+//
+//CONSTRAINT currencyRRPUserInvoiceDetail(detail) != currencyTypeExchange(RRPTypeExchangeUserInvoiceDetail(detail))
+//    CHECKED BY RRPTypeExchangeUserInvoiceDetail MESSAGE 'В накладной валюта типа обмена RRP не соавпадает с валютой вида цены RRP';
+//
+//RRPTypeExchangeInvoiceDetail(invoiceDetail) += RRPTypeExchangeUserInvoiceDetail(invoiceDetail);
+//
+//@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRPExchange, ' (RRP) конвертированная');
+//
+//RRPExchangePriceUserInvoiceDetail (detail)  <-  roundCurrency(           // Какое ставить округление?????
+//    RRPPriceUserInvoiceDetail (detail)*rateTypeExchangeCurrencyDate(
+//        RRPTypeExchangeUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)),
+//            currencyUserInvoiceDetail(detail))
+//
+//        WHEN CHANGED(RRPTypeExchangeUserInvoiceDetail(detail)) OR
+//             CHANGED(currencyUserInvoiceDetail(detail)) OR
+//             CHANGED(dateUserInvoiceDetail(detail)) OR
+//             CHANGED(RRPPriceUserInvoiceDetail (detail));
+//
+//toShowRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
+//    invoice) AND toShowRRPPriceInvoice(invoice);
+
 
 
