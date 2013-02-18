@@ -53,7 +53,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected void onBrowserEvent2(Event event) {
-        if (form.isDialog() && event.getTypeInt() == Event.ONDBLCLICK) {
+        if (form.isDialog() && event.getTypeInt() == Event.ONDBLCLICK
+                && !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
             stopPropagation(event);
             form.okPressed();
         }
