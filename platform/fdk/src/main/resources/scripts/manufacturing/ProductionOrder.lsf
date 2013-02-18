@@ -59,7 +59,7 @@ nameProductProductDetail 'Изделие' (productDetail) = nameMaterial(product
 
 UOMProductDetail = DATA UOM (productDetail);
 shortNameUOMProductDetail 'Ед.изм.' (productDetail) = shortName(UOMProductDetail(productDetail)) IN recognize;
-UOMProductDetail(productDetail) <-UOMProduct(productProductDetail(productDetail)) WHEN CHANGED (productProductDetail(productDetail));
+UOMProductDetail(productDetail) <- UOMProduct(productProductDetail(productDetail)) WHEN CHANGED (productProductDetail(productDetail));
 
 CONSTRAINT skuProductDetail(productDetail) != skuProduct(productProductDetail(productDetail)) CHECKED BY productProductDetail
     MESSAGE 'Sku изделия и строки изделия не соответствуют друг другу';
@@ -130,11 +130,14 @@ CONSTRAINT skuComponentDetail(componentDetail) != skuProduct(productComponentDet
     CHECKED BY productComponentDetail MESSAGE 'Sku изделия и строки компонента не соответствуют друг другу';
 
 //--
-quantityProductOrder 'Кол-во изделий в заказе' (product, order) = GROUP SUM quantityProductDetail(productDetail)
-    BY productProductDetail(productDetail), orderProductDetail(productDetail);
 
+TABLE productOrder(product, order);
+quantityProductOrder 'Кол-во изделий в заказе' (product, order) = GROUP SUM quantityProductDetail(productDetail)
+    BY productProductDetail(productDetail), orderProductDetail(productDetail) PERSISTENT;
+
+TABLE BOMOrder(BOM, order);
 quantityProductsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX quantityProductOrder(product, order)/ quantityProduct(product)
-    BY BOMProduct(product), order](BOM, order);
+    BY BOMProduct(product), order](BOM, order) PERSISTENT;
 
 createComponentOrder 'Заполнить компоненты из спецификации' = ACTION (order)  {
 
@@ -161,7 +164,7 @@ createComponentOrder 'Заполнить компоненты из специф�
 } TOOLBAR;
 
 quantityComponentsBOMOrder 'Кол-во спецификаций' (BOM, order) = [GROUP MAX bruttoQuantityComponentDetail(componentDetail) / bruttoQuantityComponentDate(componentComponentDetail(componentDetail), dateComponentDetail(componentDetail))  //ceil
-    BY BOMComponent(componentComponentDetail(componentDetail)), orderComponentDetail(componentDetail)](BOM, order);
+    BY BOMComponent(componentComponentDetail(componentDetail)), orderComponentDetail(componentDetail)](BOM, order) PERSISTENT;
 
 createProductOrder 'Заполнить изделия из спецификации ' = ACTION (order)  {
 
@@ -218,7 +221,7 @@ backgroundComponentDetail 'Цвет' (componentDetail) = RGB(255,255,229) IF pro
 //--  Сбивка по sku
 
 TABLE skuOrder(sku, order);
-bruttoQuantitySkuOrder 'Количество брутто' (sku,order)= GROUP SUM bruttoQuantityComponentDetail(componentDetail) BY skuComponentDetail(componentDetail), orderComponentDetail(componentDetail) PERSISTENT;
+bruttoQuantitySkuOrder 'Количество брутто' (sku,order) = GROUP SUM bruttoQuantityComponentDetail(componentDetail) BY skuComponentDetail(componentDetail), orderComponentDetail(componentDetail) PERSISTENT;
 
 dataPriceSkuOrder 'Цена' = DATA NUMERIC[14,2] (sku, order);
 dataPriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceListTypeOrder(order),
@@ -229,7 +232,7 @@ dataPriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceList
                                          CHANGED(componentsStockOrder(order)) OR
                                          CHANGED(dateTimeOrder(order));
 
-priceSkuOrder 'Цена' (sku, order) = dataPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order);
+priceSkuOrder 'Цена' (sku, order) = dataPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order) PERSISTENT;
 sumSkuOrder 'Сумма' = DATA NUMERIC[16,2] (sku, order);
 sumSkuOrder(sku, order) <- toNumeric16p2(roundCurrency((bruttoQuantitySkuOrder(sku, order) * priceSkuOrder(sku, order)), currencyOrder(order)))
     WHEN CHANGED (bruttoQuantitySkuOrder(sku, order)) OR
@@ -263,12 +266,12 @@ dataPriceSubstitutesSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTim
                                          CHANGED(componentsStockOrder(order) AND sku IS sku) OR
                                          CHANGED(substituteSkuOrder(sku, order)) OR
                                          CHANGED(dateTimeOrder(order) AND sku IS sku);
-priceSubstitutesSkuOrder 'Цена замены' (sku, order) = dataPriceSubstitutesSkuOrder(sku, order) AND quantitySubstitutesSkuOrder(sku, order);
+priceSubstitutesSkuOrder 'Цена замены' (sku, order) = dataPriceSubstitutesSkuOrder(sku, order) AND quantitySubstitutesSkuOrder(sku, order) PERSISTENT;
 
-overSkuSkuOrder (sku,order) = (sku AS sku AND order IS order) OR substituteSkuOrder(sku,order);
+overSkuSkuOrder (sku, order) = (sku AS sku AND order IS order) OR substituteSkuOrder(sku,order) PERSISTENT;
 nameSkuSkuOrder 'Итоговый sku' (sku,order)= nameSku(overSkuSkuOrder (sku,order));
-idBarcodeSkuSkuOrder 'Штрих-код' (sku,order) = idBarcodeSku(overSkuSkuOrder (sku,order));
-shortNameUOMSkuSkuOrder 'Ед.изм.' (sku,order) = shortNameUOMSku(overSkuSkuOrder (sku,order));
+idBarcodeSkuSkuOrder 'Штрих-код' (sku,order) = idBarcodeSku(overSkuSkuOrder (sku, order));
+shortNameUOMSkuSkuOrder 'Ед.изм.' (sku,order) = shortNameUOMSku(overSkuSkuOrder (sku, order));
 
 valueVATSkuOrder(sku, order) <- valueRateRangeDate(
     VATSkuCountryDate (overSkuSkuOrder (sku,order), componentsCountryOrder(order), dateOrder(order)), dateOrder(order)) AND includeVATOrder(order)
@@ -291,7 +294,7 @@ changeSubstituteSkuOrder = ACTION (substitute, sku, order) {
 quantitySubstitutesSkuOrder(sku, order) <- bruttoQuantitySkuOrder(sku,order) * multiplierSkuOrder(sku, order)
     WHEN CHANGED (bruttoQuantitySkuOrder(sku,order)) OR CHANGED(multiplierSkuOrder(sku, order));
 
-overPriceSkuOrder 'Цена с учетом коэфф. замены' (sku, order) = priceSkuOrder(sku,order) OR (priceSubstitutesSkuOrder(sku,order)*multiplierSkuOrder(sku,order));
+overPriceSkuOrder 'Цена с учетом коэфф. замены' (sku, order) = priceSkuOrder(sku,order) OR (priceSubstitutesSkuOrder(sku,order)*multiplierSkuOrder(sku,order)) PERSISTENT;
 
 multiplierCalcSkuOrder(sku, order) = ((100.00 IF sku IS sku AND order IS order) (+) markupSkuOrder(sku, order)) / 100 PERSISTENT;
 
@@ -304,14 +307,14 @@ backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS ord
 //-- Подсчет цены изделия с учетом замен
 
 calcComponentsPriceProductDetail 'Цена расчетная (с/с)' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*overPriceSkuOrder(sku, order)/(100 *quantityProduct(product))
-    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail)) PERSISTENT;
 
 calcPremiumComponentsPriceProductDetail 'Цена компонентов с надбавкой' (productDetail)= [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)/(100 *quantityProduct(product))
-    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail)) PERSISTENT;
 
 calcPremiumPriceProductDetail 'Цена расчетная (с надбавками)' (productDetail) = IF calcPriceListTypeProductDetail(productDetail) THEN
     toNumeric14p2(roundPriceRoundCondition(calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
-        ELSE toNumeric14p2(roundCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail)));
+        ELSE toNumeric14p2(roundCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail))) PERSISTENT;
 
 changeMarkupProductDetail (productDetail) = ACTION (productDetail) {
     REQUEST NUMERIC[8,2] INPUT;
@@ -336,9 +339,9 @@ deleteComponentOrder 'Очистить' =  ACTION (order) {
 //-- Расчет НДС с надбавками
 calcPremiumVATComponentsPriceProductDetail 'Сумма НДС с надбавками' (productDetail)=
     [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))*premiumPriceSkuOrder(sku, order)*(valueVATSkuOrder(sku, order)/(100+valueVATSkuOrder(sku, order)))/(100 *quantityProduct(product))
-    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
+    BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail)) PERSISTENT;
 densityPremiumVATComponentsPriceProductDetail 'Уд.вес НДС изделия' (productDetail)= [100*X/(Y-X)](
-    calcPremiumVATComponentsPriceProductDetail(productDetail),calcPremiumComponentsPriceProductDetail(productDetail));
+    calcPremiumVATComponentsPriceProductDetail(productDetail),calcPremiumComponentsPriceProductDetail(productDetail)) PERSISTENT;
 
 //--
 fillPriceProductsOrder 'Заполнить цены для изделий' = ACTION (order)  {
@@ -350,7 +353,7 @@ fillPriceProductsOrder 'Заполнить цены для изделий' = ACT
 
 //-- Замены для компонентов
 
-substituteComponentDetail(componentDetail)= substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
+substituteComponentDetail(componentDetail)= substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) PERSISTENT;
 nameSubstituteComponentDetail 'Замена' (componentDetail)= nameSku(substituteComponentDetail (componentDetail));
 multiplierSubstitutesComponentDetail 'Коэффициент замены' (componentDetail)= multiplierSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) AND
     substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
@@ -358,15 +361,15 @@ quantitySubstitutesComponentDetail 'Кол-во замены' (componentDetail)=
     substituteSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
 
 
-overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) OR substituteComponentDetail(componentDetail);
+overSkuComponentDetail (componentDetail) = skuComponentDetail(componentDetail) OR substituteComponentDetail(componentDetail) PERSISTENT;
 overNameSkuComponentDetail 'SKU' (componentDetail) = nameSku(overSkuComponentDetail(componentDetail));
-overQuantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail);
+overQuantityComponentDetail 'Кол-во' (componentDetail) = bruttoQuantityComponentDetail(componentDetail) OR quantitySubstitutesComponentDetail(componentDetail) PERSISTENT;
 
 idBarcodeOverSkuComponentDetail 'Штрих-код' (componentDetail) = idBarcodeSku(overSkuComponentDetail(componentDetail));
 shortNameUOMOverSkuComponentDetail 'Ед.изм.' (componentDetail) = shortNameUOMSku(overSkuComponentDetail(componentDetail));
 
-calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order);
-calcPriceComponentDetail (componentDetail)= calcPriceSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail));
+calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order) PERSISTENT;
+calcPriceComponentDetail (componentDetail)= calcPriceSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) PERSISTENT;
 priceComponentDetail(detail) <- calcPriceComponentDetail(detail) WHEN CHANGED(calcPriceComponentDetail(detail));    // наверное надо READONLY и JProp
 sumComponentDetail (detail) <- toNumeric16p2(roundCurrency((priceComponentDetail(detail)* overQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
         WHEN CHANGED(priceComponentDetail(detail)) OR
