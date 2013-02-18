@@ -61,25 +61,6 @@ public class ClientToolbar extends ClientComponent {
         showSettings = inStream.readBoolean();
     }
 
-//    public void setShowFind(boolean showFind) {
-//        this.showFind = showFind;
-//        updateDependency(this, "showFind");
-//    }
-//
-//    public boolean getShowFind() {
-//        return showFind;
-//    }
-//
-//    public void setShowFilter(boolean showFilter) {
-//        this.showFilter = showFilter;
-//        updateDependency(this, "showFilter");
-//    }
-//
-//    public boolean getShowFilter() {
-//        return showFilter;
-//    }
-
-
     public boolean getVisible() {
         return visible;
     }

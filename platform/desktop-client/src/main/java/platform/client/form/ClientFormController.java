@@ -865,10 +865,6 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    @SuppressWarnings({"UnusedDeclaration"})
-    public void changeFind(List<ClientPropertyFilter> conditions) {
-    }
-
     public void changeFilter(ClientGroupObject groupObject, List<ClientPropertyFilter> conditions) throws IOException {
         currentFilters.put(groupObject, new ArrayList<ClientPropertyFilter>(conditions));
         applyCurrentFilters();
