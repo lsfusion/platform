@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -16,7 +17,6 @@ import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.ErrorHandlingCallback;
-import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.client.jsni.Function2;
 import platform.gwt.base.client.jsni.NativeHashMap;
@@ -83,7 +83,6 @@ public class GFormController extends ResizableSimplePanel {
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> lastChangePropertyRequestValues = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
 
     private boolean defaultOrdersInitialized = false;
-    private boolean initialFormChangesReceived = false;
     private boolean hasColumnGroupObjects;
 
     private Timer asyncTimer;
@@ -119,10 +118,14 @@ public class GFormController extends ResizableSimplePanel {
 
         initializeDefaultOrders();
 
-        formLayout.hideEmptyContainerViews();
-        totalResize();
+        applyRemoteChanges(form.formChanges);
 
-        processRemoteChanges();
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                onInitialFormChangesReceived();
+            }
+        });
     }
 
     private void initializeRegularFilters() {
@@ -838,11 +841,6 @@ public class GFormController extends ResizableSimplePanel {
         @Override
         public void success(ServerResponseResult response) {
             actionDispatcher.dispatchResponse(response);
-
-            if (!initialFormChangesReceived) {
-                onInitialFormChangesReceived();
-                initialFormChangesReceived = true;
-            }
         }
     }
 }

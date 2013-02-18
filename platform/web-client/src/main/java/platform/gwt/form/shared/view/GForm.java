@@ -1,5 +1,7 @@
 package platform.gwt.form.shared.view;
 
+import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +23,8 @@ public class GForm implements Serializable {
 
     private transient HashMap<Integer, GPropertyDraw> idProps;
     private transient HashMap<Integer, GObject> idObjects;
+
+    public GFormChangesDTO formChanges;
 
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {

@@ -5,13 +5,16 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import platform.client.logics.ClientForm;
+import platform.client.logics.ClientFormChanges;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 import platform.gwt.base.server.spring.InvalidateListener;
 import platform.gwt.form.server.convert.ClientComponentToGwtConverter;
+import platform.gwt.form.server.convert.ClientFormChangesToGwtConverter;
 import platform.gwt.form.shared.view.GForm;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.action.ProcessFormChangesClientAction;
 import platform.interop.form.RemoteFormInterface;
 
 import java.io.ByteArrayInputStream;
@@ -37,6 +40,8 @@ public class FormSessionManager implements InitializingBean, DisposableBean, Inv
         GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
         gForm.sessionID = nextFormSessionID();
 
+        ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1).actions[0];
+        gForm.formChanges = ClientFormChangesToGwtConverter.getInstance().convertFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm));
         currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
 
         return gForm;
