@@ -57,11 +57,5 @@
 
     <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl" />
 
-    <!--<b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.mock.MockBusinessLogicsProviderImpl">-->
-        <!--<b:constructor-arg>-->
-            <!--<b:bean class="platform.gwt.paas.server.spring.mock.MockPaasLogic"/>-->
-        <!--</b:constructor-arg>-->
-    <!--</b:bean>-->
-
     <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl" />
 </b:beans>

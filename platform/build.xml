@@ -21,29 +21,20 @@
         </exec>
     </target>
 
-    <target name="recursiveTestCompile">
+    <target name="recursiveCompileWithGwt">
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
-            <arg value="-Dmaven.test.skip=false"/>
-            <!--<arg value="-X"/>-->
+            <arg value="-DgwtCompile"/>
+            <arg value="-Dnodesktop"/>
             <arg value="--also-make" />
             <arg value="--projects" />
             <arg value="by.luxsoft.platform:${artifactId}" />
-            <arg value="test-compile" />
+            <arg value="compile" />
         </exec>
     </target>
 
-    <target name="quickTestCompile">
-        <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn"/>
-            <arg value="-Dmaven.test.skip=false"/>
-            <arg value="test-compile" />
-        </exec>
-    </target>
-
-    <target name="base-recursiveCompile">
+        <target name="base-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="base"/>
         </antcall>
@@ -111,18 +102,6 @@
 
     <target name="server-quickCompile">
         <antcall target="quickCompile">
-            <param name="artifactId" value="server"/>
-        </antcall>
-    </target>
-
-    <target name="server-recursiveTestCompile">
-        <antcall target="recursiveTestCompile">
-            <param name="artifactId" value="server"/>
-        </antcall>
-    </target>
-
-    <target name="server-quickTestCompile">
-        <antcall target="quickTestCompile">
             <param name="artifactId" value="server"/>
         </antcall>
     </target>
@@ -271,31 +250,6 @@
         </antcall>
     </target>
 
-    <target name="web-client-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="web-client"/>
-        </antcall>
-    </target>
-
-    <target name="web-client-recursiveCompileWithGwt">
-        <exec dir="${basedir}" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn"/>
-            <arg value="-DgwtCompile"/>
-            <arg value="-Dnodesktop"/>
-            <arg value="--also-make" />
-            <arg value="--projects" />
-            <arg value="by.luxsoft.platform:web-client" />
-            <arg value="compile" />
-        </exec>
-    </target>
-
-    <target name="web-client-quickCompile">
-        <antcall target="quickCompile">
-            <param name="artifactId" value="web-client"/>
-        </antcall>
-    </target>
-
     <target name="web-api-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="web-api"/>
@@ -305,6 +259,24 @@
     <target name="web-api-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="web-api"/>
+        </antcall>
+    </target>
+
+    <target name="web-client-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="web-client"/>
+        </antcall>
+    </target>
+
+    <target name="web-client-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="web-client"/>
+        </antcall>
+    </target>
+
+    <target name="web-client-recursiveCompileWithGwt">
+        <antcall target="recursiveCompileWithGwt">
+            <param name="artifactId" value="web-client"/>
         </antcall>
     </target>
 
@@ -365,6 +337,18 @@
     <target name="serveragent-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="serveragent"/>
+        </antcall>
+    </target>
+
+    <target name="sot-logics-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="sot-logics"/>
+        </antcall>
+    </target>
+
+    <target name="sot-logics-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="sot-logics"/>
         </antcall>
     </target>
 

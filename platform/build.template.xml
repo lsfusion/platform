@@ -21,25 +21,16 @@
         </exec>
     </target>
 
-    <target name="recursiveTestCompile">
+    <target name="recursiveCompileWithGwt">
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
-            <arg value="-Dmaven.test.skip=false"/>
-            <!--<arg value="-X"/>-->
+            <arg value="-DgwtCompile"/>
+            <arg value="-Dnodesktop"/>
             <arg value="--also-make" />
             <arg value="--projects" />
             <arg value="by.luxsoft.platform:${artifactId}" />
-            <arg value="test-compile" />
-        </exec>
-    </target>
-
-    <target name="quickTestCompile">
-        <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn"/>
-            <arg value="-Dmaven.test.skip=false"/>
-            <arg value="test-compile" />
+            <arg value="compile" />
         </exec>
     </target>
 

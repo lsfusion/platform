@@ -31,21 +31,15 @@ public class AntBuildFileGenerator {
             "    </target>\n" +
             "\n";
 
-    private static final String moduleTestTargetsTemplate =
-            "    <target name=\"${moduleName}-recursiveTestCompile\">\n" +
-            "        <antcall target=\"recursiveTestCompile\">\n" +
-            "            <param name=\"artifactId\" value=\"${moduleName}\"/>\n" +
-            "        </antcall>\n" +
-            "    </target>\n" +
-            "\n" +
-            "    <target name=\"${moduleName}-quickTestCompile\">\n" +
-            "        <antcall target=\"quickTestCompile\">\n" +
+    private static final String webModuleWithGWTTargetTemplate =
+            "    <target name=\"${moduleName}-recursiveCompileWithGwt\">\n" +
+            "        <antcall target=\"recursiveCompileWithGwt\">\n" +
             "            <param name=\"artifactId\" value=\"${moduleName}\"/>\n" +
             "        </antcall>\n" +
             "    </target>\n" +
             "\n";
 
-    private static Set<String> modulesWithTests = new HashSet<String>(Arrays.asList("server"));
+    private static Set<String> webModulesWithGWT = new HashSet<String>(Arrays.asList("web-client"));
 
     public static void main(String[] args) {
         try {
@@ -60,8 +54,8 @@ public class AntBuildFileGenerator {
                 String moduleName = item.getTextContent();
 
                 modulesTargets += resolveString(moduleTargetsTemplate, "moduleName", moduleName);
-                if (modulesWithTests.contains(moduleName)) {
-                    modulesTargets += resolveString(moduleTestTargetsTemplate, "moduleName", moduleName);
+                if (webModulesWithGWT.contains(moduleName)) {
+                    modulesTargets += resolveString(webModuleWithGWTTargetTemplate, "moduleName", moduleName);
                 }
             }
 
