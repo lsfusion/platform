@@ -1,7 +1,7 @@
 package platform.interop;
 
-import platform.base.context.ContextObject;
 import platform.base.context.ApplicationContext;
+import platform.base.context.ContextObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,6 +35,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
         } else {
             imageHolder.setImage(image);
         }
+    }
+
+    public SerializableImageIconHolder getImageHolder() {
+        return imageHolder;
     }
 
     public ComponentDesign(ApplicationContext context) {

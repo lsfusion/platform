@@ -6,10 +6,10 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import platform.base.BaseUtils;
 import platform.gwt.form.shared.view.ImageDescription;
 import platform.gwt.form.shared.view.changes.dto.GFilesDTO;
+import platform.interop.SerializableImageIconHolder;
 import platform.interop.form.ReportGenerationData;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -27,19 +27,19 @@ public class FileUtils {
     public static String APP_IMAGES_FOLDER_URL;
     public static String APP_TEMP_FOLDER_URL;
 
-    public static ImageDescription createImage(ImageIcon icon, String iconPath, String imagesFolderName, boolean canBeDisabled) {
-        if (icon != null) {
+    public static ImageDescription createImage(SerializableImageIconHolder iconHolder, String iconPath, String imagesFolderName, boolean canBeDisabled) {
+        if (iconHolder != null) {
             File imagesFolder = new File(APP_IMAGES_FOLDER_URL, imagesFolderName);
             imagesFolder.mkdir();
 
             String iconFileName = iconPath.substring(0, iconPath.lastIndexOf("."));
             String iconFileType = iconPath.substring(iconPath.lastIndexOf(".") + 1);
 
-            createImageFile(icon.getImage(), imagesFolder, iconFileName, iconFileType, false);
+            createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName, iconFileType, false);
             if (canBeDisabled) {
-                createImageFile(icon.getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
+                createImageFile(iconHolder.getImage().getImage(), imagesFolder, iconFileName + "_Disabled", iconFileType, canBeDisabled);
             }
-            return new ImageDescription("images/" + imagesFolderName + "/" + iconPath, icon.getIconWidth(), icon.getIconHeight());
+            return new ImageDescription("images/" + imagesFolderName + "/" + iconPath, iconHolder.getImage().getIconWidth(), iconHolder.getImage().getIconHeight());
         }
         return null;
     }

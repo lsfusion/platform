@@ -77,7 +77,7 @@ public class ToolBarNavigatorView extends NavigatorView {
 
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
-        button.setIcon(element.image);
+        button.setIcon(element.image.getImage());
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);
         button.setVerticalAlignment(window.verticalAlignment);

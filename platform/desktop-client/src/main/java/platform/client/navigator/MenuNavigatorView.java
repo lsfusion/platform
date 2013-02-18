@@ -61,7 +61,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JMenuItem addLeaf(JComponent parent, ClientNavigatorElement element) {
         JMenuItem menuItem = new JMenuItem(element.toString());
-        menuItem.setIcon(element.image);
+        menuItem.setIcon(element.image.getImage());
         menuItem.addActionListener(new MenuActionListener(element));
         parent.add(menuItem);
         return menuItem;
@@ -69,7 +69,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JMenu addNode(JComponent parent, ClientNavigatorElement element) {
         JMenu menu = new JMenu(element.toString());
-        menu.setIcon(element.image);
+        menu.setIcon(element.image.getImage());
         parent.add(menu);
         return menu;
     }

@@ -80,10 +80,10 @@ public class IOUtils {
         new ObjectOutputStream(outStream).writeObject(new SerializableImageIconHolder(image));
     }
 
-    public static ImageIcon readImageIcon(InputStream inStream) throws IOException {
+    public static SerializableImageIconHolder readImageIcon(InputStream inStream) throws IOException {
         ObjectInputStream in = new ObjectInputStream(inStream);
         try {
-            return ((SerializableImageIconHolder) in.readObject()).getImage();
+            return ((SerializableImageIconHolder) in.readObject());
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -77,7 +77,7 @@ public class PanelNavigatorView extends NavigatorView {
                 return new Insets(4, 4, 4, 4);
             }
         };
-        button.setIcon(element.image);
+        button.setIcon(element.image.getImage());
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setHorizontalAlignment(JButton.LEFT);

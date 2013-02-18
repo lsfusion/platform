@@ -1,8 +1,8 @@
 package platform.client.navigator;
 
 import platform.base.IOUtils;
+import platform.interop.SerializableImageIconHolder;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class ClientNavigatorElement {
     public String sID;
     public List<ClientNavigatorElement> parents = new ArrayList<ClientNavigatorElement>();
     public List<ClientNavigatorElement> children = new ArrayList<ClientNavigatorElement>();
-    public ImageIcon image;
+    public SerializableImageIconHolder image;
     public String imageFileName;
 
     protected boolean hasChildren = false;
