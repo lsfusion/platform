@@ -119,6 +119,7 @@ public class GFormController extends ResizableSimplePanel {
         initializeDefaultOrders();
 
         applyRemoteChanges(form.formChanges);
+        form.formChanges = null;
 
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
