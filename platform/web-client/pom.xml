@@ -14,6 +14,10 @@
     <packaging>jar</packaging>
     <name>Web Client</name>
 
+    <properties>
+        <war.finalName>lsfusion-client-${project.version}</war.finalName>
+    </properties>
+
     <profiles>
         <profile>
             <id>warWithDesktopClient</id>
@@ -33,7 +37,7 @@
                                 <resource>
                                     <directory>../desktop-client/target</directory>
                                     <includes>
-                                        <include>client.jar</include>
+                                        <include>${war.finalName}.jar</include>
                                     </includes>
                                 </resource>
                                 <resource>
@@ -106,7 +110,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
-                    <warName>client</warName>
+                    <warName>${war.finalName}</warName>
                 </configuration>
             </plugin>
         </plugins>

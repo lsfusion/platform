@@ -16,7 +16,7 @@
     <properties>
         <assemble.mainClass>platform.server.logics.BusinessLogics</assemble.mainClass>
         <assemble.descriptor>../server/src/assemble/distribution.xml</assemble.descriptor>
-        <assemble.finalName>server</assemble.finalName>
+        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
 
     <dependencies>

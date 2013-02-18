@@ -13,7 +13,7 @@
 
     <properties>
         <assemble.mainClass>platform.client.Main</assemble.mainClass>
-        <assemble.finalName>client</assemble.finalName>
+        <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
     </properties>
 
     <build>
