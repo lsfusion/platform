@@ -115,6 +115,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP string2SP, istring2SP;
     public LCP string2, istring2;
     public LCP ustring2CM, ustring2SP, ustring3SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
+    public LCP ustring2CR;
 
     public LCP weekInDate;
     public LCP numberDOWInDate;
@@ -358,6 +359,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ustring3CM = addSFUProp("ustring3CM", ",", 3);
         ustring4CM = addSFUProp("ustring4CM", ",", 4);
         ustring5CM = addSFUProp("ustring5CM", ",", 5);
+
+        ustring2CR = addSFUProp("ustring2CR", "\n", 2);
 
         // Обработка строк
         upper = addSFProp("upper", "upper(prm1)", 1);

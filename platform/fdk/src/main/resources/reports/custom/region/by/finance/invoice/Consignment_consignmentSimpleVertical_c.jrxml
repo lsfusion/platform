@@ -959,7 +959,7 @@
 					<font size="7"/>
 					<paragraph leftIndent="2"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+($F{extraDescriptionConsignmentDetail}!=null?(" "+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+"\n"+($F{extraDescriptionConsignmentDetail}!=null?(" "+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="160" y="0" width="32" height="12"/>

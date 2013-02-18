@@ -296,7 +296,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES(d) nameSkuConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail, extraDescriptionConsignmentDetail,
+                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail READONLY, extraDescriptionConsignmentDetail READONLY,
                   nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                   wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                   wareVATSumConsignmentDetail, wareSumConsignmentDetail

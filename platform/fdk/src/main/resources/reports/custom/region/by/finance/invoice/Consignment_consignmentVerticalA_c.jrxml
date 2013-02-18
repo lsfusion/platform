@@ -699,7 +699,7 @@
 				<textElement textAlignment="Left">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+($F{extraDescriptionConsignmentDetail}!=null?(" "+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuConsignmentDetail}+"\n"+($F{extraDescriptionConsignmentDetail}!=null?(" "+$F{extraDescriptionConsignmentDetail}):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" mode="Transparent" x="490" y="0" width="65" height="18"/>
