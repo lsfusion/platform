@@ -547,7 +547,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
         NavigatorElement aggregateData = addNavigatorElement(baseLM.root, "aggregateData", "Сводная информация");
         aggregateData.window = baseLM.windows.toolbar;
-        FormEntity departmentBalance = new DepartmentBalanceFormEntity(aggregateData, "departmentBalance", "Баланс по отделам");
+        FormEntity departmentBalance = addFormEntity(new DepartmentBalanceFormEntity(aggregateData, "departmentBalance", "Баланс по отделам"));
         FormEntity employeeExtraSum = addFormEntity(new DepartmentRevenueFormEntity(aggregateData, "employeeExtraSum", "Обороты по отделам"));
         FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, "reimbursement", "Компенсация"));
     }

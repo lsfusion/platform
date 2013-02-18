@@ -4,13 +4,13 @@
 #
 # Adapt the following lines to your configuration
 FUSION_HOME=/usr/local/fusion
-JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/jre
-FUSION_IP=174.129.46.47
+JAVA_HOME=/usr/java/jdk1.6.0_37/jre
+FUSION_IP=lsfusion.ru
 PID_FILE=/var/run/jsvc-fusion.pid
 
-FUSION_OPTS="-Xms512m -Xmx2048m"
+FUSION_OPTS="-Xms512m -Xmx8192m"
 
-CLASSPATH=/usr/local/fusion/server.jar
+CLASSPATH=.:server.jar
 
 cd $FUSION_HOME
 
@@ -19,6 +19,7 @@ case "$1" in
     /usr/bin/jsvc \
     -home $JAVA_HOME \
     -jvm server \
+    -cwd $FUSION_HOME \
     -Djava.rmi.server.hostname=$FUSION_IP \
     -pidfile $PID_FILE \
     -outfile $FUSION_HOME/logs/stdout.log \
