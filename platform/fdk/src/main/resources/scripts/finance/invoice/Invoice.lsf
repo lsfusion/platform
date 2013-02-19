@@ -632,7 +632,8 @@ META defineHomeCurrencyInvoice(invoice)
 
     homePriceUserInvoiceDetail(invoice##Detail) <- ratePriceInvoiceDetail(invoice##Detail) WHEN CHANGED (dateInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
                                                                                                 CHANGED (homeCurrencyUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
-                                                                                                CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail)));
+                                                                                                CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
+                                                                                                CHANGED (priceInvoiceDetail(invoice##Detail));
 
     EXTEND FORM userInvoice
         PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice

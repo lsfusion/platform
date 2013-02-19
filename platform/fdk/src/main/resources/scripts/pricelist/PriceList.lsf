@@ -1015,7 +1015,7 @@ META defineDocumentInterfacePriceListType (object, detail, type, prefix, caption
                CHECKED BY prefix###type###user###object
                MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
 
-    CONSTRAINT currency###user###object(object) != currencyPriceListType(prefix###type###user###detail(detail))
+    CONSTRAINT currency###user###detail(detail) != currencyPriceListType(prefix###type###user###detail(detail))
                CHECKED BY prefix###type###user###detail
                MESSAGE 'Валюта документа должна совпадать с валютой вида цены';
 END

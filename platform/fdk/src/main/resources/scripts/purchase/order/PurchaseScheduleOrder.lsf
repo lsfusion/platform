@@ -17,9 +17,11 @@ CONSTRAINT supplier() AND NOT isSupplierLegalEntity(supplier())
 CONSTRAINT customer() AND NOT isCompanyLegalEntity(customer())
     CHECKED BY customer MESSAGE 'Выбрана в качестве покупателя организация, не являющаяся компанией';
 
+isCompanySupplier(l, s) = isCompanyLegalEntity(l) AND isSupplierLegalEntity(s);
+
 EXTEND FORM legalEntity
-    PROPERTIES(s, l) addSaleSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW ss SHOWIF isCompanyLegalEntity(l)
-    PROPERTIES(l, c) addPurchaseSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW sc SHOWIF isSupplierLegalEntity(l)
+    PROPERTIES(s, l) addSaleSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW ss SHOWIF isCompanySupplier(l, s) //isCompanyLegalEntity(l) AND isSupplierLegalEntity(s)
+    PROPERTIES(l, c) addPurchaseSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW sc SHOWIF isCompanySupplier(c, l) //isCompanyLegalEntity(c) AND isSupplierLegalEntity(l)
 ;
 
 
