@@ -9,12 +9,12 @@ TABLE numerator (numerator);
 
 seriesNumerator 'Серия' = DATA STRING[2] (numerator) IN recognize FIXEDCHARWIDTH 3;
 
-minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognize;
-maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognize;
+minValueNumerator 'Мин. значение' = DATA LONG (numerator) IN recognize MINCHARWIDTH 15;
+maxValueNumerator 'Макс. значение' = DATA LONG (numerator) IN recognize MINCHARWIDTH 15;
 
 stringLengthNumerator 'Длина' = DATA INTEGER (numerator) IN base;
 
-curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognize;
+curValueNumerator 'Тек. значение' = DATA LONG (numerator) IN recognize MINCHARWIDTH 15;
 curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN ASSIGNED(numerator IS numerator);
 
 lpadStringWithZero = FORMULA STRING[18] 'lpad(CAST($1 AS text),$2,\'0\')';

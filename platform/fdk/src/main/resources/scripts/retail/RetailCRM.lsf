@@ -512,7 +512,7 @@ FORM promotionGroup 'Группа акций'
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
                                 useCurrentReceiptPromotion, allDiscountCardPromotion
-    PROPERTIES(sh)     ADDFORM, EDITFORM, delete
+    PROPERTIES(sh)     copyPromotion, ADDFORM, EDITFORM, delete
     ORDER BY userOrderPromotion
 
     FILTERS promotionGroupPromotion(sh)==st

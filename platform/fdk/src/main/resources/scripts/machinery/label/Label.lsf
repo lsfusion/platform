@@ -153,6 +153,7 @@ FORM labelTransactions 'Печать ценников'
     OBJECTS l = labelTransaction
     PROPERTIES(l) READONLY nameLabelTypeLabelTransaction, descriptionLabelTransaction, dateLabelTransaction, timeLabelTransaction
     PROPERTIES(l) READONLY nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+    PROPERTIES(l) delete
     FILTERS departmentStoreLabelTransaction(l) == d
 
     OBJECTS b = barcode

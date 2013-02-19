@@ -74,7 +74,7 @@ quantityDaysCloseOrdersLegalEntity 'Срок автоматического за
 
 CLASS legalEntityGroup 'Группа организаций' : named;
 
-legalEntityGroupLegalEntity (legalEntity) = DATA legalEntityGroup (legalEntity) PERSISTENT;
+legalEntityGroupLegalEntity (legalEntity) = DATA legalEntityGroup (legalEntity) PERSISTENT AUTOSET;
 nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
 
 @defineHierarchy(legalEntityGroup);
