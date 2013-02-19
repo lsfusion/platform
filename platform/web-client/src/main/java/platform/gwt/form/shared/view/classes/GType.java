@@ -15,10 +15,6 @@ import platform.gwt.form.shared.view.panel.PanelRenderer;
 import java.io.Serializable;
 
 public abstract class GType implements Serializable {
-    public Object parseString(String strValue) {
-        return strValue;
-    }
-
     public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
         return new DataPanelRenderer(form, property, columnKey);
     }
