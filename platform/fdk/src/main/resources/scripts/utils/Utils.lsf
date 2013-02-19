@@ -14,6 +14,7 @@ stringEqualsAll(string) = string == 'Все';
 
 toText = FORMULA TEXT 'CAST($1 AS TEXT)';
 
+toString2 = FORMULA STRING[2] 'CAST($1 AS character(2))' FIXEDCHARWIDTH 2;
 toString3 = FORMULA STRING[3] 'CAST($1 AS character(3))' FIXEDCHARWIDTH 3;
 toString4 = FORMULA STRING[4] 'CAST($1 AS character(4))' FIXEDCHARWIDTH 4;
 toString15 = FORMULA STRING[15] 'CAST($1 AS character(15))' FIXEDCHARWIDTH 15;
@@ -58,6 +59,8 @@ sumDateWeekFromFormula = FORMULA DATE '(($1)+($2)*7)';
 sumDateWeekFrom (date, int) = sumDateWeekFromFormula(date, int) IF date IS DATE AND int IS INTEGER;
 sumDateWeekToFormula = FORMULA DATE '(($1)+($2)*7+6)';
 sumDateWeekTo (date, int) = sumDateWeekToFormula(date, int) IF date IS DATE AND int IS INTEGER;
+
+incrementYearDate = FORMULA DATE '(CAST(($1) AS date) + interval \'1 year\')';
 
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);

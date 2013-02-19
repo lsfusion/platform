@@ -112,8 +112,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP dateTimeToDateTime;
     public LCP toDateTime;
 
-    public LCP string2SP, istring2SP;
-    public LCP string2, istring2;
+    public LCP string2SP, istring2SP, string3SP, istring3SP;
+    public LCP string2, istring2, string3, istring3;
     public LCP ustring2CM, ustring2SP, ustring3SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
     public LCP ustring2CR;
 
@@ -348,6 +348,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         string2 = addSProp("string2", 2, "");
         istring2 = addInsensitiveSProp("istring2", 2, "");
+
+        string3SP = addSProp("string3SP", 3);
+        istring3SP = addInsensitiveSProp("istring3SP", 3);
+
+        string3 = addSProp("string3", 3, "");
+        istring3 = addInsensitiveSProp("istring3", 3, "");
 
         ustring2CM = addSFUProp("ustring2CM", " ", 2);
         ustring2SP = addSFUProp("ustring2SP", " ", 2);

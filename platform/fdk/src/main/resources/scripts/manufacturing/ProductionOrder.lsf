@@ -69,9 +69,6 @@ currencyProductDetail (productDetail)= currencyOrder(orderProductDetail(productD
 
 calcPriceListTypeProductDetail (productDetail) = calcPriceListTypeOrder(orderProductDetail(productDetail));
 markupProductDetail 'Надбавка, %' = DATA NUMERIC[8,2] (productDetail);
-markupProductDetail(productDetail) <- markupCalcPriceListTypeSku(calcPriceListTypeProductDetail(productDetail), skuProductDetail(productDetail))
-    WHEN CHANGED (calcPriceListTypeProductDetail(productDetail)) OR
-         CHANGED (skuProductDetail(productDetail));
 
 multiplierCalcProductDetail (productDetail) = ((100.00 IF productDetail IS productDetail) (+) markupProductDetail(productDetail)) / 100 PERSISTENT;
 
@@ -241,9 +238,6 @@ sumSkuOrder(sku, order) <- toNumeric16p2(roundCurrency((bruttoQuantitySkuOrder(s
 
 markupSkuOrder 'Надбавка, %' = DATA NUMERIC[8,2] (sku, order);
 
-markupSkuOrder(sku,order) <- markupCalcPriceListTypeSku(componentsCalcPriceListTypeOrder(order), sku) AND bruttoQuantitySkuOrder(sku, order)
-    WHEN CHANGED(componentsCalcPriceListTypeOrder(order));
-
 premiumPriceSkuOrder 'Цена с надбавкой' = DATA NUMERIC[14,2] (sku, order);
 
 valueVATSkuOrder 'НДС, %' = DATA NUMERIC[10,5] (sku, order);
@@ -298,9 +292,30 @@ overPriceSkuOrder 'Цена с учетом коэфф. замены' (sku, orde
 
 multiplierCalcSkuOrder(sku, order) = ((100.00 IF sku IS sku AND order IS order) (+) markupSkuOrder(sku, order)) / 100 PERSISTENT;
 
-premiumPriceSkuOrder(sku,order)<- overPriceSkuOrder(sku, order) * multiplierCalcSkuOrder(sku, order)
-        WHEN CHANGED(overPriceSkuOrder(sku, order)) OR
-             CHANGED(multiplierCalcSkuOrder(sku, order));
+changeValueMarkupSkuOrder (sku, order) = ACTION (sku, order) {
+    IF overPriceSkuOrder(sku, order) THEN {
+        SET premiumPriceSkuOrder(sku, order) <- overPriceSkuOrder(sku, order) * multiplierCalcSkuOrder(sku, order);
+    }
+}
+changeMarkupSkuOrder (sku, order) = ACTION (sku, order) {
+    REQUEST NUMERIC[8,2] INPUT;
+    IF requestedNumeric() THEN {
+        SET markupSkuOrder (sku, order) <- requestedNumeric();
+        EXEC changeValueMarkupSkuOrder(sku, order);
+    }
+}
+
+recordMarkupSkuOrder(sku, order) = ACTION (sku, order) {
+    IF componentsCalcPriceListTypeOrder(order) AND bruttoQuantitySkuOrder(sku, order) THEN {
+        SET markupSkuOrder(sku, order) <- markupCalcPriceListTypeSku(componentsCalcPriceListTypeOrder(order), sku);
+        EXEC changeValueMarkupSkuOrder(sku, order);
+    }
+}
+
+WHEN CHANGED(componentsCalcPriceListTypeOrder(order) AND sku IS sku)
+    DO EXEC recordMarkupSkuOrder(sku, order) SESSION;
+
+
 
 backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS order;
 
@@ -316,13 +331,29 @@ calcPremiumPriceProductDetail 'Цена расчетная (с надбавка�
     toNumeric14p2(roundPriceRoundCondition(calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
         ELSE toNumeric14p2(roundCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail))) PERSISTENT;
 
-changeMarkupProductDetail (productDetail) = ACTION (productDetail) {
-    REQUEST NUMERIC[8,2] INPUT;
-    IF requestedNumeric() THEN {
-        SET markupProductDetail (productDetail) <- requestedNumeric();
-        SET productsPriceProductDetail(productDetail) <- calcPremiumPriceProductDetail(productDetail);
+changeValueMarkupProductDetail (detail) = ACTION (detail) {
+    IF calcPremiumPriceProductDetail(detail) THEN {
+        SET productsPriceProductDetail(detail) <- calcPremiumPriceProductDetail(detail);
     }
 }
+changeMarkupProductDetail (detail) = ACTION (detail) {
+    REQUEST NUMERIC[8,2] INPUT;
+    IF requestedNumeric() THEN {
+        SET markupProductDetail (detail) <- requestedNumeric();
+        EXEC changeValueMarkupProductDetail(detail);
+    }
+}
+
+recordMarkupProductDetail(detail) = ACTION (detail) {
+    IF calcPriceListTypeProductDetail(detail) THEN {
+        SET markupProductDetail(detail) <- markupCalcPriceListTypeSku(calcPriceListTypeProductDetail(detail), skuProductDetail(detail));
+        EXEC changeValueMarkupProductDetail(detail);
+    }
+}
+
+WHEN CHANGED(calcPriceListTypeProductDetail(detail)) OR
+    CHANGED(skuProductDetail(detail))
+    DO EXEC recordMarkupProductDetail(detail) SESSION;
 
 resetSubstituteOrder 'Сбросить все замены' = ACTION (order) {
     FOR (TRUE IF substituteSkuOrder(sku, order)) OR (TRUE IF multiplierSkuOrder(sku, order)) DO {
@@ -416,7 +447,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
     PROPERTIES(s,o) priceSkuOrder, sumSkuOrder
     PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder, multiplierSkuOrder, quantitySubstitutesSkuOrder, priceSubstitutesSkuOrder
-    PROPERTIES(s,o) overPriceSkuOrder, markupSkuOrder, premiumPriceSkuOrder, valueVATSkuOrder BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o)
+    PROPERTIES(s,o) overPriceSkuOrder, markupSkuOrder  ON CHANGE EXEC changeMarkupSkuOrder(s,o), premiumPriceSkuOrder, valueVATSkuOrder BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o)
     FILTERS bruttoQuantitySkuOrder(s,o)
 
     PROPERTIES(o) FORCE PANEL namePriceListTypeOrder, includeVATOrder  BACKGROUND backgroundVATOrder(o), nameComponentsCalcPriceListTypeOrder

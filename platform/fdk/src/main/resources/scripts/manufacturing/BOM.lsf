@@ -139,12 +139,48 @@ DESIGN technology FROM DEFAULT{
     }
 }
 
+FORM yearFromTo 'Год'
+
+    OBJECTS y = INTEGER FIXED PANEL
+    PROPERTIES valY = OBJVALUE(y)
+;
+
+DESIGN yearFromTo FROM DEFAULT{
+    main {
+        preferredSize = (1024, 768);
+        PROPERTY (valY) { caption = 'Год на'; minimumCharWidth = 4; preferredCharWidth = 4; maximumCharWidth = 4; }
+    }
+}
+
+
+//fillWastageTechnology 'Заполнить технологии на другой год' = ACTION (technology) {
+//
+//    FORM yearFromTo MODAL;
+//    IF formResult() == formResult.ok THEN {
+//
+//        LOCAL newYear = INTEGER();
+//        SET newYear() <- chosenInteger('y');
+//
+//        FOR dataWastageTechnologyMaterialDate(technology, material, dateFrom) DO {
+//
+//            IF 1 == 2 THEN
+//                BREAK;
+//
+//            IF yearInDate(dateFrom) == (newYear() - 1) THEN {
+//                SET dataWastageTechnologyMaterialDate(technology, material, dateTo) <- dataWastageTechnologyMaterialDate(technology, material, dateFrom) WHERE dateTo == incrementYearDate(dateFrom);
+//            }
+//
+//        }
+//    }
+//} TOOLBAR;
+
 FORM technologies 'Технологии'
 
     OBJECTS t=technology
     PROPERTIES(t)  READONLY name
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+//    PROPERTIES (t) fillWastageTechnology
 
     OBJECTS m=material
     PROPERTIES     READONLY nameMaterial(m), shortNameUOMMaterial(m), wastageTechnologyMaterial(t,m)

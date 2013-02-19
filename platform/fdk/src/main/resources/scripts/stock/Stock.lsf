@@ -2033,8 +2033,6 @@ FORM filterSkus 'Sku'
     PROPERTIES(s) editSku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
-
-    DIALOG sku OBJECT s
 ;
 
 DESIGN filterSkus FROM DEFAULT {
