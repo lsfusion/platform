@@ -13,7 +13,7 @@
 
     <properties>
         <assemble.mainClass>platform.server.logics.BusinessLogics</assemble.mainClass>
-        <assemble.finalName>lsufion-server-${project.version}</assemble.finalName>
+        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
     </properties>
 
     <profiles>
