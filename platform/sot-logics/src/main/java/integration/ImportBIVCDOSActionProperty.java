@@ -237,9 +237,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         baseMarkup = null;
                     }
 
-                    retailVAT = splittedLine.length > 18 ? Double.parseDouble(splittedLine[18]) : null;
+                    retailVAT = splittedLine.length > 18 ? Double.parseDouble(splittedLine[18]) : 20;
                     //Так как ещё остались товары со старым НДС 18%
-                    retailVAT = (retailVAT != null && retailVAT == 18) ? 20 : retailVAT;
+                    retailVAT = (retailVAT == 18) ? 20 : retailVAT;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     UOM uom = uomMap.get(groupID.split(":")[0]);
