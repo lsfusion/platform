@@ -26,6 +26,7 @@ DESIGN mainForm FROM DEFAULT {
         }
         ADD PROPERTY(scriptStorage) BEFORE south {
             panelLabelAbove = TRUE;
+            preferredSize = ( -1, 600);
             fillVertical = 1.0;
             fillHorizontal = 1.0;
         }

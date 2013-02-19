@@ -20,6 +20,9 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
         div.getStyle().setPaddingRight(4, Style.Unit.PX);
         div.getStyle().setPaddingLeft(4, Style.Unit.PX);
+        div.getStyle().setHeight(100, Style.Unit.PCT);
+        div.getStyle().setWidth(100, Style.Unit.PCT);
+        div.getStyle().setProperty("display", "table");
 
         TextAreaElement textArea = div.appendChild(Document.get().createTextAreaElement());
         textArea.setTabIndex(-1);
@@ -31,7 +34,6 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
         textareaStyle.setWidth(100, Style.Unit.PCT);
         textareaStyle.setHeight(100, Style.Unit.PCT);
         textareaStyle.setOverflowY(Style.Overflow.HIDDEN);
-        textareaStyle.setWhiteSpace(Style.WhiteSpace.NORMAL);
         textareaStyle.setProperty("pointerEvents", "none");
         textareaStyle.setProperty("resize", "none");
 

@@ -118,6 +118,7 @@ public class GFormController extends ResizableSimplePanel {
 
         initializeDefaultOrders();
 
+        needToResize = true;
         applyRemoteChanges(form.initialFormChanges);
         form.initialFormChanges = null;
 

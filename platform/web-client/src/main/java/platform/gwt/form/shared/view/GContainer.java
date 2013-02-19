@@ -59,15 +59,30 @@ public class GContainer extends GComponent {
 
     private double getChildFill(boolean vertical) {
         double fill = 0;
+        boolean chooseMax = true;
+        if (!vertical) {
+            if (type.isSplit() && type == GContainerType.HORIZONTAL_SPLIT_PANEL || (type.isContainer() && (toFlow() || !drawVertical()))) {
+                chooseMax = false;
+            }
+        } else if (type.isSplit() && type == GContainerType.VERTICAL_SPLIT_PANEL || (type.isContainer() && !toFlow() && drawVertical())) {
+            chooseMax = false;
+        }
+
         for (GComponent child : children) {
+            double childFill = 0;
             if (vertical) {
                 if (child.fillVertical > 0) {
-                    fill += child.fillVertical;
+                    childFill = child.fillVertical;
                 }
             } else {
                 if (child.fillHorizontal > 0) {
-                    fill += child.fillHorizontal;
+                    childFill = child.fillHorizontal;
                 }
+            }
+            if (chooseMax) {
+                fill = Math.max(fill, childFill);
+            } else {
+                fill += childFill;
             }
         }
         return fill;

@@ -16,6 +16,7 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
         DivElement div = cellParent.appendChild(Document.get().createDivElement());
         div.getStyle().setPaddingRight(8, Style.Unit.PX);
         div.getStyle().setPaddingLeft(0, Style.Unit.PX);
+        div.getStyle().setHeight(100, Style.Unit.PCT);
 
         TextAreaElement textArea = div.appendChild(Document.get().createTextAreaElement());
         textArea.setTabIndex(-1);
