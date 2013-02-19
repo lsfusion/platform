@@ -29,7 +29,7 @@ CLASS ABSTRACT numeratedDocument 'Нумерируемый документ' : n
 GROUP documentHeaderGroup 'Шапка документа' : base;
 GROUP documentSumGroup 'Суммы документа': public;
 GROUP documentPrmGroup 'Параметры документа': public;
-GROUP documentShipmentGroup 'Исполенние' : base;
+GROUP documentShipmentGroup 'Исполнение' : base;
 
 // Макросы по созданию документов
 
