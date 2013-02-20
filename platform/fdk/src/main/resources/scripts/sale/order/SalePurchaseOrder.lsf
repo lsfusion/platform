@@ -8,12 +8,12 @@ PRIORITY Sale;
 
 GROUP orderSaleGroup 'Информация о заказе' : public;
 
-createPurchaseOrder 'Создать заказ' = ABSTRACT BOOLEAN (order) PERSISTENT;
-createPurchaseUserOrder 'Создать заказ' = DATA BOOLEAN (userOrder) PERSISTENT;
+createPurchaseOrder 'Создать заказ (закупка)' = ABSTRACT BOOLEAN (order) PERSISTENT;
+createPurchaseUserOrder 'Создать заказ (закупка)' = DATA BOOLEAN (userOrder) PERSISTENT;
 createPurchaseOrder(order) += createPurchaseUserOrder(order);
 
-createPurchaseOrderDetail 'Создать заказ' (orderDetail) = createPurchaseOrder(orderOrderDetail(orderDetail))PERSISTENT;
-createPurchaseUserOrderDetail 'Создать заказ' (userOrderDetail) = createPurchaseUserOrder(userOrderUserOrderDetail(userOrderDetail));
+createPurchaseOrderDetail 'Создать заказ (закупка)' (orderDetail) = createPurchaseOrder(orderOrderDetail(orderDetail))PERSISTENT;
+createPurchaseUserOrderDetail 'Создать заказ (закупка)' (userOrderDetail) = createPurchaseUserOrder(userOrderUserOrderDetail(userOrderDetail));
 backgroundPurchaseOrder 'Цвет' (order) = RGB(255, 214, 214) IF order IS order;
 EXTEND FORM userOrder
     PROPERTIES(o) BACKGROUND backgroundPurchaseOrder(o) createPurchaseUserOrder

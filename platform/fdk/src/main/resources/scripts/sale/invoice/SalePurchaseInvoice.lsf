@@ -1,6 +1,6 @@
 MODULE SalePurchaseInvoice;
 
-REQUIRE SaleInvoice, PurchaseInvoice;
+REQUIRE SaleManufacturingPrice, PurchaseManufacturingPrice;
 
 PRIORITY Sale;
 
@@ -127,5 +127,144 @@ EXTEND DESIGN Purchase.userInvoice {
         }
     }
 }
+
+//----------------------------------------------------------------------------//
+
+GROUP invoiceGroup 'Информация о накладной' : base;
+
+createPurchaseInvoice 'Создать накладную (закупка)' = ABSTRACT BOOLEAN (invoice) PERSISTENT;
+createPurchaseUserInvoice 'Создать накладную (закупка)' = DATA BOOLEAN (userInvoice) PERSISTENT;
+createPurchaseInvoice(invoice) += createPurchaseUserInvoice(invoice);
+
+createPurchaseInvoiceDetail 'Создать накладную (закупка)' (invoiceDetail) = createPurchaseInvoice(invoiceInvoiceDetail(invoiceDetail))PERSISTENT;
+createPurchaseUserInvoiceDetail 'Создать накладную (закупка)' (userInvoiceDetail) = createPurchaseUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+backgroundPurchaseInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS invoice;
+EXTEND FORM userInvoice
+    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) createPurchaseUserInvoice
+;
+EXTEND DESIGN userInvoice {
+    headerRow11{
+        NEW headerRow114 AFTER headerRow113{
+            title = 'Накладная';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(createPurchaseUserInvoice);
+        }
+    }
+}
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseInvoice(i) createPurchaseInvoice
+;
+//--  Связь поставки с поставкой
+
+invoiceDetailInvoiceDetail = ABSTRACT invoiceDetail (Purchase.invoiceDetail) PERSISTENT;
+invoiceDetailUserInvoiceDetail = DATA invoiceDetail (Purchase.userInvoiceDetail);
+invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailUserInvoiceDetail(invoiceDetail);
+
+CONSTRAINT Purchase.supplierInvoiceDetail(detail) != supplierInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) OR
+           Purchase.supplierStockInvoiceDetail(detail) != supplierStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) OR
+           Purchase.customerInvoiceDetail(detail) != customerInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) OR
+           Purchase.customerStockInvoiceDetail(detail) != customerStockInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) OR
+           Purchase.skuInvoiceDetail(detail) != skuInvoiceDetail(invoiceDetailUserInvoiceDetail(detail))
+    CHECKED BY invoiceDetailUserInvoiceDetail
+        MESSAGE 'Поставщик, покупатель, склад поставщика и склад покупателя в накладной и накладной на осове накладной должны соответствовать друг другу';
+
+
+descriptionIndexInvoiceDetailInvoiceDetail 'Строка накладной (продажа)' (detail) = descriptionIndexInvoiceDetail(invoiceDetailInvoiceDetail(detail));
+descriptionIndexInvoiceDetailUserInvoiceDetail 'Строка накладной (продажа)' (detail) = descriptionIndexInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
+
+quantityInvoiceDetailInvoiceInvoice (sale, purchase) = GROUP SUM Purchase.quantityInvoiceDetail(detail) BY invoiceInvoiceDetail(invoiceDetailInvoiceDetail(detail)), Purchase.invoiceInvoiceDetail(detail);
+
+saleInvoicesInvoice 'Поставки (продажа)' (purchase) = GROUP CONCAT toString255(descriptionInvoice(sale)) IF quantityInvoiceDetailInvoiceInvoice(sale, purchase) , ', '
+                                                        BY purchase
+                                                        ORDER sale IN invoiceGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+relationPurchaseInvoice 'Связь' (purchase) = GROUP SUM quantityInvoiceDetailInvoiceInvoice (sale, purchase) BY purchase PERSISTENT;
+
+invoicedInvoiceDetail 'Кол-во (выписано)' (invoiceDetail) = GROUP SUM Purchase.quantityInvoiceDetail(detail) IF Purchase.isPostedInvoiceDetail(detail)
+                                                                   BY invoiceDetailInvoiceDetail(detail) PERSISTENT;
+
+toInvoicedInvoiceDetail 'Не выписано' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) invoicedInvoiceDetail(invoiceDetail);
+
+CLASS purchaseInvoice 'Накладная на основе накладной': Purchase.invoice;
+CLASS purchaseInvoicePosted 'Проведенная накладная на основе накладной' : purchaseInvoice, postedObject;
+CLASS purchaseInvoiceDetail 'Строка накладной на основе накладной' : Purchase.invoiceDetail;
+
+@defineDocumentTables(purchaseInvoice);
+
+@defineDocumentAggregation(invoice, purchaseInvoice, createPurchaseInvoice);
+Purchase.invoiceInvoiceDetail(detail) += purchaseInvoicePurchaseInvoiceDetail(detail);
+
+@defineDocumentDetailIndex(purchaseInvoice);
+
+Purchase.dateInvoice(invoice) += datePurchaseInvoice(invoice);
+Purchase.timeInvoice(invoice) += timePurchaseInvoice(invoice);
+
+@defineDocumentAggregationStockPrefix(invoice, purchaseInvoice, supplierStock, 'Склад поставщика', , );
+Purchase.supplierStockInvoice(invoice) += supplierStockPurchaseInvoice(invoice);
+Purchase.dataSupplierStockInvoiceDetail(invoiceDetail) += dataSupplierStockInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+@defineDocumentAggregationStockPrefix(invoice, purchaseInvoice, customerStock, 'Склад покупателя', , );
+Purchase.customerStockInvoice(invoice) += customerStockPurchaseInvoice(invoice);
+Purchase.dataCustomerStockInvoiceDetail(invoiceDetail) += dataCustomerStockInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+@defineDocumentAggregationStockPrefix(invoice, purchaseInvoice, supplier, 'Поставщик', , );
+Purchase.supplierInvoice(invoice) += supplierPurchaseInvoice(invoice);
+@defineDocumentAggregationStockPrefix(invoice, purchaseInvoice, customer, 'Покупатель', , );
+Purchase.customerInvoice(invoice) += customerPurchaseInvoice(invoice);
+
+@defineDocumentAggregationPosted(invoice, purchaseInvoice);
+Purchase.isPostedInvoice(invoice) += isPostedPurchaseInvoice(invoice);
+
+Purchase.numberInvoice(invoice) += numberInvoice(invoicePurchaseInvoice(invoice));
+Purchase.seriesInvoice(invoice) += seriesInvoice(invoicePurchaseInvoice(invoice));
+seriesNumberPurchaseInvoice 'Серия/номер документа' (purchaseInvoice) = seriesNumberInvoice(invoicePurchaseInvoice(purchaseInvoice));
+
+noteInvoicePurchaseInvoice 'Примечание' (purchaseInvoice) = noteInvoice(invoicePurchaseInvoice(purchaseInvoice));
+Purchase.noteInvoice(invoice) += noteInvoicePurchaseInvoice(invoice);
+
+currencyPurchaseInvoice  (purchaseInvoice) = currencyInvoice(invoicePurchaseInvoice(purchaseInvoice));
+Purchase.currencyInvoice (invoice) += currencyPurchaseInvoice(invoice);
+
+agreementPurchaseInvoice  (purchaseInvoice) = agreementInvoice(invoicePurchaseInvoice(purchaseInvoice));
+Purchase.agreementInvoice (invoice) += agreementPurchaseInvoice(invoice);
+
+priceListTypeIPurchaseInvoice  (purchaseInvoice) = priceListTypeInvoice(invoicePurchaseInvoice(purchaseInvoice));
+Purchase.priceListTypeInvoice (invoice) += priceListTypeIPurchaseInvoice(invoice);
+
+@defineDocumentDescription(purchaseInvoice, purchaseInvoiceDetail, seriesNumberPurchaseInvoice, 'Поставка на основе поставки ');
+Purchase.descriptionInvoice (invoice) += descriptionPurchaseInvoice(invoice);
+
+Purchase.contractSkuInvoice (invoice) += contractSkuInvoice(invoicePurchaseInvoice(invoice));
+Purchase.isCommissionInvoice (invoice) += isCommissionInvoice(invoicePurchaseInvoice(invoice));
+
+@defineDocumentAggregationDetailSku(invoice, purchaseInvoice, sku);
+Purchase.skuInvoiceDetail(invoiceDetail) +=  skuPurchaseInvoiceDetail(invoiceDetail);
+
+@defineDocumentAggregationDetailBatch(invoice, purchaseInvoice);
+Purchase.batchInvoiceDetail(invoiceDetail) += batchPurchaseInvoiceDetail(invoiceDetail);
+
+Purchase.quantityInvoiceDetail(invoiceDetail) += quantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.priceListTypeInvoiceDetail(invoiceDetail) += priceListTypeInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+Purchase.priceInvoiceDetail(invoiceDetail) += priceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.sumInvoiceDetail(invoiceDetail) += sumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.VATInvoiceDetail(invoiceDetail) += VATInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.valueVATInvoiceDetail(invoiceDetail) += valueVATInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.invoicePriceInvoiceDetail(invoiceDetail) += invoicePriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.VATSumInvoiceDetail(invoiceDetail) += VATSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.invoiceSumInvoiceDetail(invoiceDetail) += invoiceSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.manufacturingPriceInvoiceDetail(invoiceDetail) += manufacturingPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+Purchase.editInvoice(invoice) += ACTION EXEC editInvoice(invoicePurchaseInvoice(invoice));
+
+Purchase.showPurchasePackInvoice(invoice) +=  showSalePackInvoice(invoicePurchaseInvoice(invoice));
+Purchase.barcodePackInvoiceDetail(invoiceDetail) += barcodePackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.amountPackInvoiceDetail(invoiceDetail) +=  amountPackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.quantityPackInvoiceDetail(invoiceDetail) +=  quantityPackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(invoiceDetail);
+
+
+
 
 

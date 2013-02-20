@@ -1,4 +1,4 @@
-MODULE PurchaseSaleShipment;
+MODULE SalePurchaseShipment;
 
 REQUIRE SaleShipment, PurchaseShipment;
 
@@ -8,12 +8,12 @@ PRIORITY Sale;
 
 GROUP shipmentGroup 'Информация о поставке' : base;
 
-createPurchaseShipment 'Создать поставку' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
-createPurchaseUserShipment 'Создать поставку' = DATA BOOLEAN (userShipment) PERSISTENT;
+createPurchaseShipment 'Создать поставку (закупка)' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
+createPurchaseUserShipment 'Создать поставку (закупка)' = DATA BOOLEAN (userShipment) PERSISTENT;
 createPurchaseShipment(shipment) += createPurchaseUserShipment(shipment);
 
-createPurchaseShipmentDetail 'Создать поставку' (shipmentDetail) = createPurchaseShipment(shipmentShipmentDetail(shipmentDetail))PERSISTENT;
-createPurchaseUserShipmentDetail 'Создать поставку' (userShipmentDetail) = createPurchaseUserShipment(userShipmentUserShipmentDetail(userShipmentDetail));
+createPurchaseShipmentDetail 'Создать поставку (закупка)' (shipmentDetail) = createPurchaseShipment(shipmentShipmentDetail(shipmentDetail))PERSISTENT;
+createPurchaseUserShipmentDetail 'Создать поставку (закупка)' (userShipmentDetail) = createPurchaseUserShipment(userShipmentUserShipmentDetail(userShipmentDetail));
 backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipment IS shipment;
 EXTEND FORM userShipment
     PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment

@@ -1,6 +1,6 @@
 MODULE  ProductionOutput;
 
-REQUIRE ProductionOrder, StockDocument, PurchaseSaleShipment;
+REQUIRE ProductionOrder, StockDocument, SalePurchaseShipment;
 NAMESPACE Production;
 
 // ---------------- Производство ------------------- //
