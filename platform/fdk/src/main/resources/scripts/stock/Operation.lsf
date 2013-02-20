@@ -4,87 +4,84 @@ REQUIRE Utils, Historizable;
 
 CLASS ABSTRACT operation 'Операция' : named, historizable;
 
+META defineRecursionGroupChoose(object, prefix)
+
+    levelParent###prefix###object###legalEntityGroup (object, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prefix##Group###object(parent, object)
+                                                                   BY object, legalEntityGroup PERSISTENT;
+    nearestParent###prefix##Group###legalEntityGroup (object, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prefix###object###legalEntityGroup(object, legalEntityGroup));
+    nearest###is###prefix##Group###object (legalEntityGroup, object) =
+        is###prefix##Group###object(nearestParent###prefix##Group###legalEntityGroup(object, legalEntityGroup), object) PERSISTENT;
+
+    is###prefix##Group###object##Over 'Отм' (legalEntityGroup, object) =
+        UNION OVERRIDE nearest###is###prefix##Group###object(legalEntityGroup, object),
+                       is###prefix##Group###object(legalEntityGroup, object);
+
+    is###prefix###object##Over 'Отм' (legalEntity, object) =
+        (UNION OVERRIDE nearest###is###prefix##Group###object(legalEntityGroup###legalEntity(legalEntity), object),
+                        is###prefix###object(legalEntity, object));
+
+END
+
+META defineOperationObject(prefix, object, char)
+
+    prefix###operation###object = ABSTRACT prefix###operation (object) PERSISTENT;
+    name###prefix###operation###object 'Операция' = name(prefix###operation###object(object));
+    prefix###operationUser###object = DATA prefix###operation (user###object);
+    name###prefix###operationUser###object 'Операция' = name(prefix###operationUser###object(user###object));
+    prefix###operation###object(object) += prefix###operationUser###object(object);
+
+    prefix###operation###object##Detail 'Операция' (object##Detail) = prefix###operation###object(object###object##Detail(object##Detail));
+    prefix###operationUser###object##Detail 'Операция' (user###object##Detail) = prefix###operationUser###object(user###object##User###object##Detail(user###object##Detail));
+
+    CONSTRAINT prefix###operationUser###object##Detail(user###object##Detail)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object##Detail(user###object##Detail), prefix###operationUser###object##Detail(user###object##Detail))
+    //    CHECKED BY priceListTypeUser###object##Detail
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUser###object(user###object)
+               AND NOT isSupplier###prefix###operation(supplierUser###object(user###object), prefix###operationUser###object(user###object))
+    //    CHECKED BY supplierUser###object
+        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUser###object(user###object)
+               AND NOT isCustomer###prefix###operation(customerUser###object(user###object), prefix###operationUser###object(user###object))
+    //    CHECKED BY customerUser###object
+        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
+
+    EXTEND FORM user###object
+        PROPERTIES(char) name###prefix###operationUser###object
+    ;
+
+    EXTEND DESIGN user###object{
+        char.documentPrmGroup{
+            ADD PROPERTY(name###prefix###operationUser###object) BEFORE PROPERTY(nameCurrencyUser###object);
+        }
+    }
+
+END
+
 META defineOperationPrefix(prefix, supplierFilter, customerFilter)
 
     CLASS prefix###operation 'Операция' : operation;
 
     isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
+
     isSupplier###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
+    isSupplierGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
+
     isCustomer###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
+    isCustomerGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
+
+    @defineRecursionGroupChoose(prefix###operation, supplier);
+    @defineRecursionGroupChoose(prefix###operation, customer);
 
     //------------------------------ Накладные ---------------------------------------- //
 
-    prefix###operationInvoice = ABSTRACT prefix###operation (invoice);
-    name###prefix###operationInvoice 'Операция' = name(prefix###operationInvoice(invoice));
-    prefix###operationUserInvoice = DATA prefix###operation (userInvoice);
-    name###prefix###operationUserInvoice 'Операция' = name(prefix###operationUserInvoice(userInvoice));
-    prefix###operationInvoice(invoice) += prefix###operationUserInvoice(invoice);
-
-    prefix###operationInvoiceDetail 'Операция' (invoiceDetail) = prefix###operationInvoice(invoiceInvoiceDetail(invoiceDetail));
-    prefix###operationUserInvoiceDetail 'Операция' (userInvoiceDetail) = prefix###operationUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
-
-    CONSTRAINT prefix###operationUserInvoiceDetail(userInvoiceDetail)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUserInvoiceDetail(userInvoiceDetail), prefix###operationUserInvoiceDetail(userInvoiceDetail))
-    //    CHECKED BY priceListTypeUserInvoiceDetail
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUserInvoice(userInvoice)
-               AND NOT isSupplier###prefix###operation(supplierUserInvoice(userInvoice), prefix###operationUserInvoice(userInvoice))
-    //    CHECKED BY priceListTypeUserInvoiceDetail
-        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUserInvoice(userInvoice)
-               AND NOT isCustomer###prefix###operation(customerUserInvoice(userInvoice), prefix###operationUserInvoice(userInvoice))
-    //    CHECKED BY priceListTypeUserInvoiceDetail
-        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
-
-    EXTEND FORM userInvoice
-        PROPERTIES(i) name###prefix###operationUserInvoice
-    ;
-
-    EXTEND DESIGN userInvoice{
-        i.documentPrmGroup{
-            ADD PROPERTY(name###prefix###operationUserInvoice) BEFORE PROPERTY(nameCurrencyUserInvoice);
-        }
-    }
+    @defineOperationObject(prefix, invoice, i);
 
     //------------------------------ Заказы ---------------------------------------- //
 
-    prefix###operationOrder = ABSTRACT prefix###operation (order);
-    name###prefix###operationOrder 'Операция' = name(prefix###operationOrder(order));
-    prefix###operationUserOrder = DATA prefix###operation (userOrder);
-    name###prefix###operationUserOrder 'Операция' = name(prefix###operationUserOrder(userOrder));
-    prefix###operationOrder(order) += prefix###operationUserOrder(order);
-
-    prefix###operationOrderDetail 'Операция' (orderDetail) = prefix###operationOrder(orderOrderDetail(orderDetail));
-    prefix###operationUserOrderDetail 'Операция' (userOrderDetail) = prefix###operationUserOrder(userOrderUserOrderDetail(userOrderDetail));
-
-    CONSTRAINT prefix###operationUserOrderDetail(userOrderDetail)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUserOrderDetail(userOrderDetail), prefix###operationUserOrderDetail(userOrderDetail))
-    //    CHECKED BY priceListTypeUserOrderDetail
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUserOrder(userOrder)
-               AND NOT isSupplier###prefix###operation(supplierUserOrder(userOrder), prefix###operationUserOrder(userOrder))
-    //    CHECKED BY priceListTypeUserOrderDetail
-        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUserOrder(userOrder)
-               AND NOT isCustomer###prefix###operation(customerUserOrder(userOrder), prefix###operationUserOrder(userOrder))
-    //    CHECKED BY priceListTypeUserOrderDetail
-        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
-
-    EXTEND FORM userOrder
-        PROPERTIES(o) name###prefix###operationUserOrder
-    ;
-
-    EXTEND DESIGN userOrder{
-        o.documentPrmGroup{
-            ADD PROPERTY(name###prefix###operationUserOrder) BEFORE PROPERTY(nameCurrencyUserOrder);
-        }
-    }
-
-    //------------------------------ Множественные заказы ---------------------------------------- //
+    @defineOperationObject(prefix, order, o);
 
     //------------------------------- Формы ------------------------------------------- //
 
@@ -100,9 +97,10 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
 
         TREE supplierGroupTree sg = legalEntityGroup PARENT parentLegalEntityGroup
         PROPERTIES READONLY sgTreeName = name(sg)
+        PROPERTIES isSupplierGroup###prefix###operation##Over(sg, o)
 
         OBJECTS s = legalEntity
-        PROPERTIES(s, o) isSupplier###prefix###operation
+        PROPERTIES(s, o) isSupplier###prefix###operation##Over
         PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
@@ -113,9 +111,10 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
 
         TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
         PROPERTIES READONLY cgTreeName = name(cg)
+        PROPERTIES isCustomerGroup###prefix###operation##Over(cg, o)
 
         OBJECTS c = legalEntity
-        PROPERTIES(c, o) isCustomer###prefix###operation
+        PROPERTIES(c, o) isCustomer###prefix###operation##Over
         PROPERTIES(c) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
@@ -177,7 +176,3 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
     }
 
 END
-
-
-
-
