@@ -67,7 +67,7 @@ retailMarkupUserOutputDetail(userOutputDetail) <-[round2(X*100/Y)](retailMarkupS
 @defineDocumentHeaderCreate (order, createPricing, 'Создать акт расценки');
 backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
 
-@defineDocumentHeaderPricingCommittee(order, goodsStock);
+@defineDocumentHeaderPricingCommittee(order, goodsStock, );
 
 //-- Свойства для аггрегированных производств/расценок
 

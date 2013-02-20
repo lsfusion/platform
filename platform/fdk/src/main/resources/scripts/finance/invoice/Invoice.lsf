@@ -323,6 +323,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     NEW headerRow14 { //title = 'Расценка / Дооценка';
                         childConstraints = TO THE RIGHTBOTTOM;
                     }
+                    NEW headerRow15 { //title = 'Расценка / Дооценка для закупки' ;
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
                 }
 
                 ADD i.documentSumGroup {

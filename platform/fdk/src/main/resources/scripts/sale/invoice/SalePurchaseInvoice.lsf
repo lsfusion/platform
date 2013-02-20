@@ -143,8 +143,9 @@ EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) createPurchaseUserInvoice
 ;
 EXTEND DESIGN userInvoice {
-    headerRow11{
-        NEW headerRow114 AFTER headerRow113{
+    headerRow15{
+        title = 'Закупка';
+        NEW headerRow151 {
             title = 'Накладная';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseUserInvoice);

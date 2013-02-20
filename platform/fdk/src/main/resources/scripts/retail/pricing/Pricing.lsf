@@ -113,37 +113,40 @@ FORM pricingCommitteeDialog 'Комиссии для акта расценки'
 
 GROUP pricingCommitteeGroup 'Комиссия' : public;
 
-META defineDocumentHeaderPricingCommittee(object, stockClass)
-    pricingCommittee###object (object) = DATA pricingCommittee(object);
+META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
+    prefix###pricingCommittee###object (object) = DATA pricingCommittee(object);
 
-    namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
-    pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    prefix###pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
-    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###FormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###CheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###LabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###AccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###HeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
 
 END
-META defineDocumentHeaderAbstractPricingCommittee(object, stockClass)
-    pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT;
+META defineDocumentHeaderAbstractPricingCommittee(object, stockClass, prefix)
+    prefix###pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT;
 
-    namePricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-    nameFormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameCheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameLabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameAccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
-    nameHeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###FormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###CheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###LabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###AccountantMan###object 'Бухгалтер' (object) = nameAccountantManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
+    name###prefix###HeadMan###object 'Зав. магазином' (object) = nameHeadManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
 
 END
 
+META defineDocumentInterfaceHeaderPricingCommittee (object, stockClass, prefix)
+    @defineDocumentHeaderAbstractPricingCommittee (object, stockClass, prefix);
+    @defineDocumentHeaderPricingCommittee (user###object, stockClass, prefix);
+    prefix###pricingCommittee###object (object) += prefix###pricingCommittee###user###object(object);
+END
 META defineDocumentInterfaceHeaderPricingCommittee (object, stockClass)
-    @defineDocumentHeaderAbstractPricingCommittee (object, stockClass);
-    @defineDocumentHeaderPricingCommittee (user###object, stockClass);
-    pricingCommittee###object (object) += pricingCommittee###user###object(object);
+    @defineDocumentInterfaceHeaderPricingCommittee (object, stockClass, );
 END
 
 // ---------------------------------------------- Надбавка -------------------------------------------- //
