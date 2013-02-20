@@ -700,8 +700,9 @@ groupTypeCalcPriceListType = DATA groupType (calcPriceListType);
 nameGroupTypeCalcPriceListType 'Тип классификатора' (type) = name(groupTypeCalcPriceListType(type));
 
 TABLE calcPriceListTypeGroup (calcPriceListType, group);
-
 markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, group);
+
+TABLE calcPriceListTypeSku (calcPriceListType, sku);
 dataMarkupCalcPriceListTypeSku 'Надбавка, %' = DATA NUMERIC[8,2] (calcPriceListType, sku);
 
 roundConditionCalcPriceListType 'Условие округления' = DATA roundCondition (calcPriceListType);

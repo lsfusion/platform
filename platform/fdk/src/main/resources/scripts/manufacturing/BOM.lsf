@@ -24,7 +24,7 @@ addMaterial 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INS
 skuMaterial (material) = ABSTRACT sku (material) PERSISTENT;
 
 skuGroupMaterial (material) = skuGroupSku(skuMaterial(material)) PERSISTENT;
-isParentSkuGroupMaterial (skuGroup, material) = isParentSkuGroupSkuGroup(skuGroupMaterial(material), skuGroup) PERSISTENT;
+isParentSkuGroupMaterial (skuGroup, material) = isParentSkuGroupSkuGroup(skuGroupMaterial(material), skuGroup);
 
 FORM materials 'Материалы'
 
