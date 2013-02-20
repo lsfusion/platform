@@ -52,16 +52,27 @@ public class MetaCodeFragment {
         return getTransformedCode(newTokens, tokens, oldTokensCnt, code);
     }
 
+    private int getUncommentedIndexOf(String code, String token, int startPos) {
+        while (true) {
+            int tokenPos = code.indexOf(token, startPos);
+            int nearestSlashesPos = code.lastIndexOf("//", tokenPos);
+            if (nearestSlashesPos == -1 || nearestSlashesPos < startPos || code.lastIndexOf('\n', tokenPos) > nearestSlashesPos) {
+                return tokenPos;
+            }
+            startPos = tokenPos + 1;
+        }
+    }
+
     private String getTransformedCode(ArrayList<String> newTokens, List<String> oldTokens, ArrayList<Integer> oldTokensCnt, String code) {
         String whitespaces = "";
-        StringBuffer transformedCode = new StringBuffer();
-        int codePos = code.indexOf(")") + 1;
+        StringBuilder transformedCode = new StringBuilder();
+        int codePos = getUncommentedIndexOf(code, ")", 0) + 1;
         transformedCode.append(code.substring(0, codePos));
         int oldTokenIndex = 0;
 
         for (int i = 0; i < newTokens.size(); i++) {
             for (int j = 0; j < oldTokensCnt.get(i); j++) {
-                int tokenStartPos = code.indexOf(oldTokens.get(oldTokenIndex + j), codePos);
+                int tokenStartPos = getUncommentedIndexOf(code, oldTokens.get(oldTokenIndex + j), codePos);
                 whitespaces = whitespaces + code.substring(codePos, tokenStartPos);
                 if (j == 0) {
                     transformedCode.append(whitespaces);
