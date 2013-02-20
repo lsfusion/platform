@@ -107,6 +107,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             ImageElement img = Document.get().createImageElement();
             img.getStyle().setHeight(15, Style.Unit.PX);
             img.getStyle().setWidth(15, Style.Unit.PX);
+            img.getStyle().setVerticalAlign(Style.VerticalAlign.BOTTOM);
             img.setSrc(GWT.getModuleBaseURL() + "images/" + (sortDir ? "arrowup.png" : "arrowdown.png"));
 
             SpanElement span = Document.get().createSpanElement();

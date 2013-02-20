@@ -117,6 +117,10 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
         cell.finishEditing();
     }
 
+    @Override
+    public void selectNextCellInColumn(boolean down) {
+    }
+
     class DataFilterValueEditableCell extends AbstractCell<Object> {
         private boolean isInEditingState = false;
         private GridCellEditor cellEditor;

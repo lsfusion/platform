@@ -75,6 +75,10 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             } else if (keyDown && keyCode == KeyCodes.KEY_ESCAPE) {
                 stopPropagation(event);
                 editManager.cancelEditing();
+            } else if (keyDown && keyCode == KeyCodes.KEY_DOWN) {
+                arrowPressed(event, parent, true);
+            } else if (keyDown && keyCode == KeyCodes.KEY_UP) {
+                arrowPressed(event, parent, false);
             } else {
                 currentText = getCurrentText(parent);
             }
@@ -98,6 +102,11 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     protected void enterPressed(NativeEvent event, Element parent) {
         stopPropagation(event);
         validateAndCommit(parent, false);
+    }
+
+    protected void arrowPressed(NativeEvent event, Element parent, boolean down) {
+        stopPropagation(event);
+        commitAndChangeRow(parent, down);
     }
 
     @Override
@@ -141,6 +150,15 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             if (cancelIfInvalid) {
                 editManager.cancelEditing();
             }
+        }
+    }
+
+    private void commitAndChangeRow(Element parent, boolean moveDown) {
+        try {
+            String value = getCurrentText(parent);
+            editManager.commitEditing(tryParseInputText(value));
+            editManager.selectNextCellInColumn(moveDown);
+        } catch (ParseException ignore) {
         }
     }
 

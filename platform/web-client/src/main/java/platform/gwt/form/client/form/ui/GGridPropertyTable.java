@@ -118,6 +118,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public abstract GGroupObjectValue getCurrentKey();
+    public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
 
     void storeScrollPosition() {
         int selectedRow = getKeyboardSelectedRow();
@@ -146,6 +147,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 needToRestoreScrollPosition = false;
             }
         }
+    }
+
+
+    @Override
+    public void selectNextCellInColumn(boolean down) {
+        getKeyboardSelectionHandler().selectNextCellInColumn(down);
     }
 
     public static class GridPropertyTableKeyboardSelectionHandler<T extends GridDataRecord> extends DataGridKeyboardSelectionHandler<T> {
@@ -181,6 +188,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 }
             }
             return super.handleKeyEvent(event);
+        }
+
+        public void selectNextCellInColumn(boolean down) {
+            nextRow(down);
         }
     }
 }

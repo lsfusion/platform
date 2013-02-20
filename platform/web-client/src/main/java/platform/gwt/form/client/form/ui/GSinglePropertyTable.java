@@ -114,4 +114,8 @@ public class GSinglePropertyTable extends GPropertyTable {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return value;
     }
+
+    @Override
+    public void selectNextCellInColumn(boolean down) {
+    }
 }

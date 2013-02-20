@@ -49,13 +49,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GGroupObject groupObject;
     private GGridController gridController;
 
+    GridTableKeyboardSelectionHandler keyboardSelectionHandler;
+
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
         super(iform);
 
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
 
-        setKeyboardSelectionHandler(new GridTableKeyboardSelectionHandler(this));
+        keyboardSelectionHandler =  new GridTableKeyboardSelectionHandler(this);
+        setKeyboardSelectionHandler(keyboardSelectionHandler);
         editBindingMap.setKeyAction(new GKeyStroke(GKeyStroke.KEY_F12), GEditBindingMap.GROUP_CHANGE);
 
         addKeyboardRowChangedHandler(new KeyboardRowChangedEvent.Handler() {
@@ -312,6 +315,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public GGroupObjectValue getCurrentKey() {
         return currentKey;
+    }
+
+    @Override
+    public GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler() {
+        return keyboardSelectionHandler;
     }
 
     public GPropertyDraw getCurrentProperty() {

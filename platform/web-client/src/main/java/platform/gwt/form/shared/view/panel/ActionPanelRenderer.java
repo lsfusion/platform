@@ -167,5 +167,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         public void cancelEditing() {
             editDispatcher.cancelEdit();
         }
+
+        @Override
+        public void selectNextCellInColumn(boolean down) {
+        }
     }
 }

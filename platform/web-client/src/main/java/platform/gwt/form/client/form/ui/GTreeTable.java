@@ -298,6 +298,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return selectedRecord == null ? GGroupObjectValue.EMPTY : selectedRecord.getKey();
     }
 
+    @Override
+    public GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler() {
+        return keyboardSelectionHandler;
+    }
+
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1) {

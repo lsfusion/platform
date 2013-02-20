@@ -54,6 +54,11 @@ public class TextGridCellEditor extends TextBasedGridCellEditor {
     }
 
     @Override
+    protected void arrowPressed(NativeEvent event, Element parent, boolean down) {
+        //NOP
+    }
+
+    @Override
     protected InputElement getInputElement(Element parent) {
         return parent.getFirstChild().getFirstChild().cast();
     }
