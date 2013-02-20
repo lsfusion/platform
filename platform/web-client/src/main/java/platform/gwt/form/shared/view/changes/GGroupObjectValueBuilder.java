@@ -3,11 +3,11 @@ package platform.gwt.form.shared.view.changes;
 import platform.gwt.form.shared.view.GObject;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 public class GGroupObjectValueBuilder {
 
-    private final HashMap<Integer, Object> key = new HashMap<Integer, Object>();
+    private final TreeMap<Integer, Object> key = new TreeMap<Integer, Object>();
 
     public GGroupObjectValueBuilder() {
     }
