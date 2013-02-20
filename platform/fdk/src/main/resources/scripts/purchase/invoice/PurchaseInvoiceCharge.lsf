@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 chargeSumUserInvoice 'Сумма услуг в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND isChargeSkuUserInvoiceDetail(idetail)
     BY userInvoiceUserInvoiceDetail(idetail) IN documentSumGroup;
-chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND NOT isChargeSkuInvoiceDetail(idetail)
+chargeSumInvoice 'Сумма услуг в документе' (invoice) = GROUP SUM sumInvoiceDetail(idetail) AND isChargeSkuInvoiceDetail(idetail)
     BY invoiceInvoiceDetail(idetail) IN documentSumGroup;
 
 itemSumUserInvoice 'Сумма товара в документе' (userInvoice) = GROUP SUM sumUserInvoiceDetail(idetail) AND isStockSkuUserInvoiceDetail(idetail)

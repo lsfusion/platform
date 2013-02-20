@@ -41,7 +41,9 @@ META extendCertificateForm(prop, char)
                 NEW headerCertContainer;
                 ADD d2.box{
                     PROPERTY(textUser###prop##Detail){
-                        preferredSize = (300, 18);
+                        minimumSize = (200, 36);
+                        preferredSize = (300, 36);
+                        maximumSize = (300, 36);
                     }
                 }
             }

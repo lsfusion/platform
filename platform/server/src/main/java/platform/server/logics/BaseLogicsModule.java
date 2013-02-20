@@ -325,7 +325,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         publicGroup.add(selection);
 
         objectValue = new ObjectValuePropertySet();
-        baseGroup.add(objectValue);
+        publicGroup.add(objectValue);
 
         compositeName = new CompositeNamePropertySet();
         privateGroup.add(compositeName);

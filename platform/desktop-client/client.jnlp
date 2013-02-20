@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.5+" codebase="http://localhost/lsfusion/" href="client.jnlp">
     <information>
-        <title>Fusion Client</title>
+        <title>lsFusion Client</title>
         <vendor>Nomosoft Ltd.</vendor>
         <description>Fusion</description>
         <icon href="default.png" kind="default"/>
