@@ -1,0 +1,183 @@
+MODULE Operation;
+
+REQUIRE Utils, Historizable;
+
+CLASS ABSTRACT operation 'Операция' : named, historizable;
+
+META defineOperationPrefix(prefix, supplierFilter, customerFilter)
+
+    CLASS prefix###operation 'Операция' : operation;
+
+    isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
+    isSupplier###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
+    isCustomer###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
+
+    //------------------------------ Накладные ---------------------------------------- //
+
+    prefix###operationInvoice = ABSTRACT prefix###operation (invoice);
+    name###prefix###operationInvoice 'Операция' = name(prefix###operationInvoice(invoice));
+    prefix###operationUserInvoice = DATA prefix###operation (userInvoice);
+    name###prefix###operationUserInvoice 'Операция' = name(prefix###operationUserInvoice(userInvoice));
+    prefix###operationInvoice(invoice) += prefix###operationUserInvoice(invoice);
+
+    prefix###operationInvoiceDetail 'Операция' (invoiceDetail) = prefix###operationInvoice(invoiceInvoiceDetail(invoiceDetail));
+    prefix###operationUserInvoiceDetail 'Операция' (userInvoiceDetail) = prefix###operationUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+
+    CONSTRAINT prefix###operationUserInvoiceDetail(userInvoiceDetail)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUserInvoiceDetail(userInvoiceDetail), prefix###operationUserInvoiceDetail(userInvoiceDetail))
+    //    CHECKED BY priceListTypeUserInvoiceDetail
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUserInvoice(userInvoice)
+               AND NOT isSupplier###prefix###operation(supplierUserInvoice(userInvoice), prefix###operationUserInvoice(userInvoice))
+    //    CHECKED BY priceListTypeUserInvoiceDetail
+        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUserInvoice(userInvoice)
+               AND NOT isCustomer###prefix###operation(customerUserInvoice(userInvoice), prefix###operationUserInvoice(userInvoice))
+    //    CHECKED BY priceListTypeUserInvoiceDetail
+        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) name###prefix###operationUserInvoice
+    ;
+
+    EXTEND DESIGN userInvoice{
+        i.documentPrmGroup{
+            ADD PROPERTY(name###prefix###operationUserInvoice) BEFORE PROPERTY(nameCurrencyUserInvoice);
+        }
+    }
+
+    //------------------------------ Заказы ---------------------------------------- //
+
+    prefix###operationOrder = ABSTRACT prefix###operation (order);
+    name###prefix###operationOrder 'Операция' = name(prefix###operationOrder(order));
+    prefix###operationUserOrder = DATA prefix###operation (userOrder);
+    name###prefix###operationUserOrder 'Операция' = name(prefix###operationUserOrder(userOrder));
+    prefix###operationOrder(order) += prefix###operationUserOrder(order);
+
+    prefix###operationOrderDetail 'Операция' (orderDetail) = prefix###operationOrder(orderOrderDetail(orderDetail));
+    prefix###operationUserOrderDetail 'Операция' (userOrderDetail) = prefix###operationUserOrder(userOrderUserOrderDetail(userOrderDetail));
+
+    CONSTRAINT prefix###operationUserOrderDetail(userOrderDetail)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUserOrderDetail(userOrderDetail), prefix###operationUserOrderDetail(userOrderDetail))
+    //    CHECKED BY priceListTypeUserOrderDetail
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUserOrder(userOrder)
+               AND NOT isSupplier###prefix###operation(supplierUserOrder(userOrder), prefix###operationUserOrder(userOrder))
+    //    CHECKED BY priceListTypeUserOrderDetail
+        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUserOrder(userOrder)
+               AND NOT isCustomer###prefix###operation(customerUserOrder(userOrder), prefix###operationUserOrder(userOrder))
+    //    CHECKED BY priceListTypeUserOrderDetail
+        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
+
+    EXTEND FORM userOrder
+        PROPERTIES(o) name###prefix###operationUserOrder
+    ;
+
+    EXTEND DESIGN userOrder{
+        o.documentPrmGroup{
+            ADD PROPERTY(name###prefix###operationUserOrder) BEFORE PROPERTY(nameCurrencyUserOrder);
+        }
+    }
+
+    //------------------------------ Множественные заказы ---------------------------------------- //
+
+    //------------------------------- Формы ------------------------------------------- //
+
+    FORM prefix###operation 'Операция(продажа)'
+        OBJECTS o = prefix###operation FIXED PANEL
+        PROPERTIES(o) name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+
+        OBJECTS pt = priceListType
+        PROPERTIES(pt, o) isPriceListType###prefix###operation
+        PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
+        FILTERGROUP filters
+            FILTER 'Показывать отмеченные' 'F9' isPriceListType###prefix###operation(pt, o)
+
+        TREE supplierGroupTree sg = legalEntityGroup PARENT parentLegalEntityGroup
+        PROPERTIES READONLY sgTreeName = name(sg)
+
+        OBJECTS s = legalEntity
+        PROPERTIES(s, o) isSupplier###prefix###operation
+        PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
+                               numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                               isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+        FILTERS (inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
+                supplierFilter(s)
+        FILTERGROUP filters2
+            FILTER 'Показывать отмеченные' 'F10' isSupplier###prefix###operation(s, o)
+
+        TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
+        PROPERTIES READONLY cgTreeName = name(cg)
+
+        OBJECTS c = legalEntity
+        PROPERTIES(c, o) isCustomer###prefix###operation
+        PROPERTIES(c) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
+                               numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                               isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+        FILTERS (inLegalEntityGroupLegalEntity(cg, c) OR (c IS legalEntity AND cg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(c))),
+                customerFilter(c)
+        FILTERGROUP filters3
+            FILTER 'Показывать отмеченные' 'F11' isCustomer###prefix###operation(c, o)
+
+        EDIT prefix###operation OBJECT o
+    ;
+
+    DESIGN prefix###operation FROM DEFAULT{
+        main{
+            NEW headContainer{
+                childConstraints = TO THE RIGHT;
+                NEW propertyContainer{
+                    childConstraints = TO THE BOTTOM;
+                    caption = 'Параметры';
+                    ADD PROPERTY(name);
+                }
+                ADD o.historyGroup;
+            }
+            NEW tabContainer{
+                type = TABBED;
+                ADD pt.box;
+                NEW supplierContainer{
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    caption = 'Поставщики';
+                    ADD supplierGroupTree.tree.box;
+                    ADD s.box{fillHorizontal = 2.0;}
+                }
+                NEW customerContainer{
+                    childConstraints = TO THE RIGHT;
+                    type = SPLITH;
+                    caption = 'Покупатели';
+                    ADD customerGroupTree.tree.box;
+                    ADD c.box{fillHorizontal = 2.0;}
+                }
+            }
+        }
+        ADD functions.box;
+    }
+
+    FORM prefix###operations 'Операции(продажа)'
+        OBJECTS o = prefix###operation
+        PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) ADDFORM, EDITFORM, delete
+
+        DIALOG prefix###operation OBJECT o
+    ;
+
+    NAVIGATOR {
+        prefix##Navigator {
+            NEW prefix###operationsNavigator 'Операции' {
+                ADD prefix###operations;
+            }
+        }
+    }
+
+END
+
+
+
+

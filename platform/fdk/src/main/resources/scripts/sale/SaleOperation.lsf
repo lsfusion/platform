@@ -1,0 +1,7 @@
+MODULE SaleOperation;
+
+REQUIRE Operation, SaleInvoice, SaleOrder;
+
+NAMESPACE Sale;
+
+@defineOperationPrefix(sale, isCompanyLegalEntity, isBuyerLegalEntity);

@@ -1,0 +1,7 @@
+MODULE PurchaseOperation;
+
+REQUIRE Operation, PurchaseInvoice, PurchaseOrder;
+
+NAMESPACE Purchase;
+
+@defineOperationPrefix(purchase, isSellerLegalEntity, isCompanyLegalEntity);
