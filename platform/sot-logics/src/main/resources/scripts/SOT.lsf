@@ -4,6 +4,10 @@ REQUIRE System,
         Integration,
         Item,
         LegalEntity,
+        PurchaseInvoice,
+        PurchaseShipment,
+        SalePurchaseInvoice,
+        Shipment,
         Stock,
         Warehouse;
 
@@ -20,6 +24,14 @@ sotUOMWeightUOM (weight, uom) = GROUP MAX sotUOM BY netWeightSotUOM(sotUOM), UOM
 
 sotUOMItem = DATA sotUOM (item);
 nameSotUOMItem 'Единица измерений SOT' (item) = nameSotUOM(sotUOMItem(item)) IN itemBaseGroup;
+
+sotSIDItem 'SOT SID'= DATA STRING[100] (item);
+sotSIDUserInvoiceDetail 'SOT SID' = DATA STRING[100] (Purchase.userInvoiceDetail) IN base;
+
+sotSIDBatch 'SOT SID' (batch) = ABSTRACT STRING[100] (batch) PERSISTENT;
+sotSIDBatch (batch) += sotSIDUserInvoiceDetail(invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
+
+sotSIDOverrideUserInvoiceDetail (userInvoiceDetail) = sotSIDItem (Sale.skuInvoiceDetail(userInvoiceDetail)) OR sotSIDBatch (Sale.batchInvoiceDetail(userInvoiceDetail));
 
 sotUOMItem(i) <- sotUOMWeightUOM(netWeightItem(i), UOMItem(i)) WHEN CHANGED(netWeightItem(i)) OR CHANGED(UOMItem(i));
 

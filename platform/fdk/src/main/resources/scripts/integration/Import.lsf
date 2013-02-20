@@ -53,7 +53,7 @@ userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE us
 
 sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (batch) PERSISTENT;
 
-sidExternalizableBatch (batch) += sidExternalizable (Purchase.invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
+sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
 
 EXTEND FORM legalEntities
     PROPERTIES (l) READONLY sidExternalizable BEFORE delete(l)

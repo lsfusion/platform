@@ -80,8 +80,8 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
             for (Reep reep : reepList) {
                 writer.write("^REEP(" + reep.warehouseID + "," + reep.userInvoiceNumber + "," + reep.itemID + ")\r\n");
-                writer.write(reep.uomID + " : " + reep.quantity + " : " + reep.price + " : " + reep.parentGroupID +
-                        " : " + reep.itemGroupID + " : " + reep.date + " : " + reep.itemName + "\r\n");
+                writer.write(reep.uomID + ":" + reep.quantity + ":" + reep.price + ":" + reep.parentGroupID +
+                        ":" + reep.itemGroupID + ":" + new SimpleDateFormat("ddMM").format(reep.date) + ":" + reep.itemName + "\r\n");
             }
             writer.close();
             context.requestUserInteraction(new MessageClientAction("Успешно экспортировано строк накладных: " + reepList.size(), "Экспорт завершён"));
@@ -135,7 +135,8 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                 KeyExpr userInvoiceDetailExpr = new KeyExpr("userInvoiceDetail");
                 ImRevMap<Object, KeyExpr> uidKeys = MapFact.singletonRev((Object) "userInvoiceDetail", userInvoiceDetailExpr);
 
-                String[] userInvoiceDetailProperties = new String[]{"Sale.nameSkuInvoiceDetail", "Sale.skuInvoiceDetail", "Sale.RRPPriceInvoiceDetail", "Sale.quantityInvoiceDetail"};
+                String[] userInvoiceDetailProperties = new String[]{"Sale.nameSkuInvoiceDetail", "Sale.skuInvoiceDetail",
+                        "Sale.RRPPriceInvoiceDetail", "Sale.quantityInvoiceDetail", "sotSIDOverrideUserInvoiceDetail"};
                 QueryBuilder<Object, Object> uidQuery = new QueryBuilder<Object, Object>(uidKeys);
                 for (String uidProperty : userInvoiceDetailProperties) {
                     uidQuery.addProperty(uidProperty, getLCP(uidProperty).getExpr(context.getModifier(), userInvoiceDetailExpr));
@@ -148,10 +149,9 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                     Object sku = uidValues.get("Sale.skuInvoiceDetail");
                     if (sku != null) {
                         DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("item"));
-                        String itemID = (String) LM.findLCPByCompoundName("sidExternalizable").read(context, itemObject);
 
-                        Object uomObject = LM.findLCPByCompoundName("UOMItem").read(context, itemObject);
-                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("UOM")));
+                        Object uomObject = LM.findLCPByCompoundName("sotUOMItem").read(context, itemObject);
+                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("sotUOM")));
                         Object itemGroupValue = LM.findLCPByCompoundName("itemGroupItem").read(context, itemObject);
                         DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup"));
                         String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
@@ -161,12 +161,15 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                         String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
                         Double price = (Double) uidValues.get("Sale.RRPPriceInvoiceDetail");
                         Double quantity = (Double) uidValues.get("Sale.quantityInvoiceDetail");
+                        String sotSIDOverrideUserInvoiceDetail = (String) uidValues.get("sotSIDOverrideUserInvoiceDetail");
+                        String userInvoiceNumber = numberInvoice == null ? "" : String.valueOf(Integer.parseInt(numberInvoice.trim()));
                         reepList.add(new Reep(mag2CustomerStock == null ? "" : mag2CustomerStock.trim(),
-                                numberInvoice == null ? "" : numberInvoice.trim(), itemID == null ? "" : itemID.trim(),
-                                nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim(),
-                                parentGroupID == null ? "" : parentGroupID.trim(), itemGroupID == null ? "" : itemGroupID.trim(),
+                                userInvoiceNumber, sotSIDOverrideUserInvoiceDetail== null ? "": sotSIDOverrideUserInvoiceDetail.trim(),
+                                nameSku == null ? "" : nameSku.trim(), uomID == null ? "" : uomID.trim().replaceFirst("UOMS", ""),
+                                parentGroupID == null ? "" : parentGroupID.trim().split("IG|:")[1],
+                                itemGroupID == null ? "" : itemGroupID.trim().split("IG|:")[2],
                                 price == null ? "" : String.valueOf(price), quantity == null ? "" : String.valueOf(quantity),
-                                dateInvoice == null ? "" : String.valueOf(dateInvoice)));
+                                dateInvoice));
                     }
                 }
             }

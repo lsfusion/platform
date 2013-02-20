@@ -12,11 +12,11 @@ public class Reep {
     public String itemGroupID;
     public String price;
     public String quantity;
-    public String date;
+    public Date date;
 
 
     public Reep(String warehouseID, String userInvoiceNumber, String itemID, String itemName, String uomID,
-                String parentGroupID, String itemGroupID, String price, String quantity, String date) {
+                String parentGroupID, String itemGroupID, String price, String quantity, Date date) {
         this.warehouseID = warehouseID;
         this.userInvoiceNumber = userInvoiceNumber;
         this.itemID = itemID;

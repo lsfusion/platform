@@ -45,44 +45,47 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 importData.setNumberOfItemsAtATime((Integer) getLCP("importBIVCDOSNumberItemsAtATime").read(context));
 
                 importData.setItemGroupsList((getLCP("importBIVCDOSGroupItems").read(context) != null) ?
-                        importItemGroups(path + "//stg", false) : null);
+                        importItemGroups(path + "//STG", false) : null);
 
                 importData.setParentGroupsList((getLCP("importBIVCDOSGroupItems").read(context) != null) ?
-                        importItemGroups(path + "//stg", true) : null);
+                        importItemGroups(path + "//STG", true) : null);
 
                 importData.setBanksList((getLCP("importBIVCDOSBanks").read(context) != null) ?
-                        importBanks(path + "//swtp") : null);
+                        importBanks(path + "//SWTP") : null);
 
                 importData.setLegalEntitiesList((getLCP("importBIVCDOSLegalEntities").read(context) != null) ?
-                        importLegalEntities(path + "//swtp") : null);
+                        importLegalEntities(path + "//SWTP") : null);
 
                 importData.setEmployeesList((getLCP("importBIVCDOSEmployees").read(context) != null) ?
-                        importEmployees(path + "//swtp") : null);
+                        importEmployees(path + "//SWTP") : null);
 
                 importData.setWarehouseGroupsList((getLCP("importBIVCDOSWarehouses").read(context) != null) ?
                         importWarehouseGroups() : null);
 
                 importData.setWarehousesList((getLCP("importBIVCDOSWarehouses").read(context) != null) ?
-                        importWarehouses(path + "//smol", path + "//swtp", path + "//ost") : null);
+                        importWarehouses(path + "//SMOL", path + "//SWTP", path + "//OST") : null);
 
                 importData.setContractsList((getLCP("importBIVCDOSContracts").read(context) != null) ?
-                        importContracts(path + "//swtp") : null);
+                        importContracts(path + "//SWTP") : null);
 
                 importData.setItemsList((getLCP("importBIVCDOSItems").read(context) != null) ?
-                        importItems(path + "//ost", path + "//sedi", path + "//prc", numberOfItems) : null);
+                        importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
-                        importUserInvoices(path + "//ost", numberOfItems) : null);
+                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfItems) : null);
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
                 new ImportActionProperty(LM, importData, context).makeImport();
 
                 if (getLCP("importBIVCDOSMag2").read(context) != null)
-                    importLegalEntityStock(path + "//magp");
+                    importLegalEntityStock(path + "//MAGP");
 
                 if ((getLCP("importBIVCDOSItems").read(context) != null))
-                    importSotUOM(path + "//sedi", path + "//ost", numberOfItems);
+                    importSotUOM(path + "//SEDI", path + "//OST", numberOfItems);
+
+                if ((getLCP("importBIVCDOSUserInvoices").read(context) != null))
+                    importSOTUserInvoices(path + "//SEDI", path + "//OST", numberOfItems);
 
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -160,30 +163,29 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return banksList;
     }
 
-    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException, ParseException {
-
-        List<Item> itemsList = new ArrayList<Item>();
+    private Map<String, UOM> getUOMMap(String sediPath) throws IOException {
+        Map<String, UOM> uomMap = new HashMap<String, UOM>();
         String[] patterns = new String[]{
                 "\\d:(.*?)(?:\\s|\\.)([\\d\\.]+)\\s?(КГ|Г|ГР|Л|МЛ)?\\.?",
                 "\\d:(.*?)" //ловим всё остальное без массы
         };
 
-        Map<String, UOM> uomMap = new HashMap<String, UOM>();
         BufferedReader uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(sediPath), "cp866"));
         String line;
         while ((line = uomReader.readLine()) != null) {
             if (line.startsWith("^SEDI")) {
-                String[] splittedLine = line.split("\\(|\\)|,|\"");
+                String[] splittedLine = line.replace("\"", "").split("\\(|\\)|,");
                 if (splittedLine.length == 2) {
-                    String uomLine = uomReader.readLine().trim().replace(",", ".");
+                    String uomLine = uomReader.readLine().trim();
+                    String uomOriginalName = uomLine.replace(",", ".");
                     for (String p : patterns) {
                         Pattern r = Pattern.compile(p);
-                        Matcher m = r.matcher(uomLine);
+                        Matcher m = r.matcher(uomOriginalName);
                         if (m.matches()) {
                             String uomName = m.group(1).trim();
                             Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
                             Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
-                            uomMap.put(splittedLine[1], new UOM(uomName, uomName,
+                            uomMap.put(splittedLine[1], new UOM(uomLine, uomName,
                                     uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
                             break;
                         }
@@ -191,14 +193,22 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 }
             }
         }
+        return uomMap;
+    }
 
+    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException, ParseException {
+
+        List<Item> itemsList = new ArrayList<Item>();
+        Map<String, UOM> uomMap = getUOMMap(sediPath);
         Map<String, Double> retailMarkups = new HashMap<String, Double>();
-        uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(prcPath), "cp866"));
-        while ((line = uomReader.readLine()) != null) {
+
+        BufferedReader prcReader = new BufferedReader(new InputStreamReader(new FileInputStream(prcPath), "cp866"));
+        String line;
+        while ((line = prcReader.readLine()) != null) {
             if (line.startsWith("^PRC")) {
                 String[] splittedLine = line.split("\\(|\\)");
                 if (splittedLine.length == 2) {
-                    String[] markupString = uomReader.readLine().split(":");
+                    String[] markupString = prcReader.readLine().split(":");
                     if (markupString.length > 0 && !markupString[0].trim().isEmpty()) {
                         Double markup = Double.parseDouble(markupString[0]);
                         retailMarkups.put(splittedLine[1].replace("\"", ""), markup);
@@ -212,6 +222,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String pnt13;
         String pnt48;
         String markupID = null;
+        String uomID = null;
         Date date = null;
         String name = null;
         Double baseMarkup = null;
@@ -227,6 +238,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
                     markupID = splittedLine.length > 0 ? splittedLine[0].substring(0, 1) : null;
+                    uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
                     String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
@@ -242,8 +254,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     retailVAT = (retailVAT == 18) ? 20 : retailVAT;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
-                    UOM uom = uomMap.get(groupID.split(":")[0]);
-                    itemsList.add(new Item(groupID + ":" + name/*pnt13 + pnt48*/, groupID, name,
+                    UOM uom = uomMap.get(uomID);
+                    String uomFullName = uom == null ? "" : uom.uomFullName;
+                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    itemsList.add(new Item(itemID, groupID, name,
                             uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
                             uom == null ? null : uom.uomName, null, null, null, null, date, null,
                             uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
@@ -255,13 +269,15 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private List<UserInvoiceDetail> importUserInvoices(String path, Integer numberOfItems) throws IOException, ParseException {
+    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems) throws IOException, ParseException {
 
         List<UserInvoiceDetail> userInvoiceDetailsList = new ArrayList<UserInvoiceDetail>();
+        Map<String, UOM> uomMap = getUOMMap(sediPath);
 
         String line;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "cp866"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
+        String uomID = null;
         String dateField = null;
         Date date = null;
         String name = null;
@@ -282,6 +298,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String extra = splittedLine.length > 4 ? splittedLine[4] : null;
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
+                    uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
                     dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
@@ -308,9 +325,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     }
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
+                    UOM uom = uomMap.get(uomID);
+                    String uomFullName = uom == null ? "" : uom.uomFullName;
+                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
                     if (quantity != null && quantity != 0)
                         userInvoiceDetailsList.add(new UserInvoiceDetail(warehouse + "/" + dateField,
-                                "AA", null, true, pnt13 + pnt48, date, groupID + ":" + name/*pnt13 + pnt48*/,
+                                "AA", null, true, warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
                                 quantity, "70020", warehouse, "S70020", price, chargePrice, null, null, numberCompliance,
                                 new Timestamp(date.getTime()), toDateTimeCompliance, textCompliance));
                 }
@@ -639,39 +659,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
     private List<List<Object>> importSotUOMItemsFromFile(String sediPath, String ostPath, Integer numberOfItems) throws IOException {
 
         List<List<Object>> data = new ArrayList<List<Object>>();
-        String[] patterns = new String[]{
-                "\\d:(.*?)(?:\\s|\\.)([\\d\\.]+)\\s?(КГ|Г|ГР|Л|МЛ)?\\.?",
-                "\\d:(.*?)" //ловим всё остальное без массы
-        };
-
-        Map<String, UOM> uomMap = new HashMap<String, UOM>();
-        BufferedReader uomReader = new BufferedReader(new InputStreamReader(new FileInputStream(sediPath), "cp866"));
-        String line;
-        while ((line = uomReader.readLine()) != null) {
-            if (line.startsWith("^SEDI")) {
-                String[] splittedLine = line.split("\\(|\\)|,|\"");
-                if (splittedLine.length == 2) {
-                    String uomLine = uomReader.readLine().trim();
-                    String uomOriginalName = uomLine.replace(",", ".");
-                    for (String p : patterns) {
-                        Pattern r = Pattern.compile(p);
-                        Matcher m = r.matcher(uomOriginalName);
-                        if (m.matches()) {
-                            String uomName = m.group(1).trim();
-                            Integer coefficient = (m.groupCount() >= 3 && m.group(3) != null) ? ((m.group(3).equals("Г") || m.group(3).equals("ГР") || m.group(3).equals("МЛ")) ? 1000 : 1) : 1;
-                            Double weight = m.groupCount() < 2 ? null : (Double.parseDouble(m.group(2)) / coefficient);
-                            uomMap.put(splittedLine[1], new UOM(uomLine, uomName,
-                                    uomName.length() <= 5 ? uomName : uomName.substring(0, 5), weight, weight));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        Map<String, UOM> uomMap = getUOMMap(sediPath);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
+        String uomID = null;
         String name = null;
+        String line;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && data.size() >= numberOfItems)
                 break;
@@ -680,19 +674,99 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String extra = splittedLine.length > 4 ? splittedLine[4] : null;
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
+                    uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
-                    String uom = groupID.split(":")[0];
-                    UOM uomObject = uomMap.get(uom);
-                    String uomName = uomObject==null? null : uomObject.uomName;
-                    data.add(Arrays.asList((Object) (uom == null ? null : "UOMS" + uom),
+                    UOM uomObject = uomMap.get(uomID);
+                    String uomName = uomObject == null ? null : uomObject.uomName;
+                    String uomFullName = uomObject == null ? "" : uomObject.uomFullName;
+                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    data.add(Arrays.asList((Object) (uomID == null ? null : "UOMS" + uomID),
                             uomName == null ? null : "UOM" + uomName,
-                            uomObject==null ? null : uomObject.netWeight,
-                            uomObject==null ? null : uomObject.uomFullName, "I" + groupID + ":" + name));
+                            uomObject == null ? null : uomObject.netWeight,
+                            uomObject == null ? null : uomObject.uomFullName, "I" + itemID));
                 }
             }
         }
         return data;
+    }
+
+    private void importSOTUserInvoices(String sediPath, String ostPath, Integer numberOfItems) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException, ParseException {
+
+        try {
+            List<List<Object>> data = importSOTUserInvoicesFromFile(sediPath, ostPath, numberOfItems);
+            if (data != null) {
+
+                ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField userInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+                ImportField sotSIDField = new ImportField(LM.findLCPByCompoundName("sotSIDItem"));
+
+                ImportKey<?> userInvoiceDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Purchase.userInvoiceDetail"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(userInvoiceDetailField));
+
+                ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("item"),
+                        LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
+
+                List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+
+                props.add(new ImportProperty(sotSIDField, LM.findLCPByCompoundName("sotSIDItem").getMapping(itemKey)));
+                props.add(new ImportProperty(sotSIDField, LM.findLCPByCompoundName("sotSIDUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+
+                ImportTable table = new ImportTable(Arrays.asList(itemField, userInvoiceDetailField,
+                        sotSIDField), data);
+
+                DataSession session = LM.getBL().createSession();
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceDetailKey,
+                        itemKey), props);
+                service.synchronize(true, false);
+                session.apply(LM.getBL());
+                session.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<List<Object>> importSOTUserInvoicesFromFile(String sediPath, String ostPath, Integer numberOfItems) throws IOException, ParseException {
+
+        List<List<Object>> SOTUserInvoicesList = new ArrayList<List<Object>>();
+        Map<String, UOM> uomMap = getUOMMap(sediPath);
+
+        String line;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
+
+        String uomID = null;
+        String dateField = null;
+        String name = null;
+        Double quantity = null;
+        while ((line = reader.readLine()) != null) {
+            if (numberOfItems != null && SOTUserInvoicesList.size() >= numberOfItems)
+                break;
+            if (line.startsWith("^OST")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                String warehouse = splittedLine.length > 1 ? splittedLine[1].replace("\"", "") : null;
+                String pnt13 = splittedLine.length > 2 ? splittedLine[2].replace("\"", "") : null;
+                String pnt48 = splittedLine.length > 3 ? splittedLine[3].replace("\"", "") : null;
+                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                if (extra == null && splittedLine.length > 3) {
+                    splittedLine = reader.readLine().split(":");
+                    uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
+                    dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
+                } else if ("9".equals(extra)) {
+                    String groupID = reader.readLine();
+                    UOM uom = uomMap.get(uomID);
+                    String uomFullName = uom == null ? "" : uom.uomFullName;
+                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    if (quantity != null && quantity != 0)
+                        SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
+                                pnt13 + pnt48));
+                }
+            }
+        }
+        reader.close();
+        return SOTUserInvoicesList;
     }
 }
