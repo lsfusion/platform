@@ -85,7 +85,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
             if (Element.is(eventTarget)) {
                 Element target = Element.as(eventTarget);
                 if (inputElementTagName.equals(target.getTagName().toLowerCase())) {
-                    editManager.cancelEditing();
+                    validateAndCommit(parent, true);
                 }
             }
         }
@@ -97,7 +97,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
 
     protected void enterPressed(NativeEvent event, Element parent) {
         stopPropagation(event);
-        validateAndCommit(parent);
+        validateAndCommit(parent, false);
     }
 
     @Override
@@ -132,12 +132,15 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         cellParent.appendChild(input);
     }
 
-    private void validateAndCommit(Element parent) {
+    private void validateAndCommit(Element parent, boolean cancelIfInvalid) {
         String value = getCurrentText(parent);
         try {
             editManager.commitEditing(tryParseInputText(value));
         } catch (ParseException ignore) {
-            //если выкинулся ParseException, то не заканчиваем редактирование
+            //если выкинулся ParseException и фокус ещё в эдиторе, то не заканчиваем редактирование
+            if (cancelIfInvalid) {
+                editManager.cancelEditing();
+            }
         }
     }
 

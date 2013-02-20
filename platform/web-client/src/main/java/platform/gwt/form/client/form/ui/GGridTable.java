@@ -264,8 +264,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                                 Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
 
                                 record.setValue(column.columnID, value);
-                                record.setBackground(column.columnID, background == null ? property.background : background);
-                                record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
+                                record.setBackground(getColumnIndex(column), background == null ? property.background : background);
+                                record.setForeground(getColumnIndex(column), foreground == null ? property.foreground : foreground);
                             }
                         }
                     }
