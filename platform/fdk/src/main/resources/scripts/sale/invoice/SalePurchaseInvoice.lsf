@@ -1,6 +1,6 @@
 MODULE SalePurchaseInvoice;
 
-REQUIRE SaleManufacturingPrice, PurchaseManufacturingPrice;
+REQUIRE SaleInvoice, PurchaseInvoice;
 
 PRIORITY Sale;
 
@@ -254,7 +254,6 @@ Purchase.valueVATInvoiceDetail(invoiceDetail) += valueVATInvoiceDetail(invoiceDe
 Purchase.invoicePriceInvoiceDetail(invoiceDetail) += invoicePriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.VATSumInvoiceDetail(invoiceDetail) += VATSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.invoiceSumInvoiceDetail(invoiceDetail) += invoiceSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
-Purchase.manufacturingPriceInvoiceDetail(invoiceDetail) += manufacturingPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 
 Purchase.editInvoice(invoice) += ACTION EXEC editInvoice(invoicePurchaseInvoice(invoice));
 

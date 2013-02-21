@@ -235,8 +235,3 @@ EXTEND FORM Purchase.shipments
     PROPERTIES(d) READONLY descriptionIndexShipmentDetailShipmentDetail SHOWIF relationPurchaseShipment(s)
 ;
 
-
-//EXTEND FORM currentBalanceSkuStock
-//    PROPERTIES(bil) descriptionDataSkuLedger, descriptionBatch
-//;
-

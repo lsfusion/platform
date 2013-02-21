@@ -1,0 +1,9 @@
+MODULE SalePurchaseManufacturingPrice;
+
+REQUIRE SaleManufacturingPrice, PurchaseManufacturingPrice, SalePurchaseInvoice;
+
+PRIORITY Sale;
+
+//----------------------------------------------------------------------------//
+
+Purchase.manufacturingPriceInvoiceDetail(invoiceDetail) += manufacturingPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));

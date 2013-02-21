@@ -34,7 +34,7 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
 
 @defineDocumentInterfaceCreate (invoice, createPurchasePricing, 'Создать акт расценки (закупка)');
 
-showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
+showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS departmentStore AND createPurchaseInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
 toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND createPurchasePricingInvoice(invoice);
 
@@ -84,7 +84,7 @@ EXTEND FORM invoices
                   purchaseRetailPriceInvoiceDetail, purchaseRetailSumInvoiceDetail
     PROPERTIES(d) READONLY BACKGROUND backgroundPurchaseRetailInvoice(i) purchasePricingQuantityInvoiceDetail AFTER quantityInvoiceDetail  SHOWIF toShowPurchasePricingInvoice(i)
 ;
-// Агрегации
+// Агрегации (расценка)
 Purchase.createPricingInvoice(invoice) += createPurchasePricingInvoice(invoicePurchaseInvoice(invoice));
 Purchase.pricingCommitteeInvoice(invoice) += purchasePricingCommitteeInvoice(invoicePurchaseInvoice(invoice));
 
@@ -96,4 +96,5 @@ Purchase.valueRetailVATInvoiceDetail(invoiceDetail) += valuePurchaseRetailVATInv
 Purchase.retailVATSumInvoiceDetail(invoiceDetail) += purchaseRetailVATSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.retailPriceInvoiceDetail(invoiceDetail) += purchaseRetailPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.retailSumInvoiceDetail(invoiceDetail) += purchaseRetailSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 
