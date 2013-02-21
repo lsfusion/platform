@@ -411,13 +411,38 @@ DESIGN BOM FROM DEFAULT{
         }
     }
 }
+copyBOM 'Копировать' = ACTION (BOM) NEWSESSION {
+    FOR ADDOBJ b = BOM DO {
+
+        SET noteBOM(b) <- noteBOM(BOM);
+        FOR BOMProduct(product) == BOM ADDOBJ p=product DO {
+            SET BOMProduct(p) <- b;
+            SET skuProduct(p) <- skuProduct(product);
+            SET quantityProduct(p) <- quantityProduct(product);
+            SET pricePercentProduct(p) <- pricePercentProduct(product);
+//            SET UOMProduct(p) <- UOMProduct(product);
+        }
+
+        FOR BOMComponent(component) == BOM ADDOBJ c=component DO {
+            SET BOMComponent(c) <- b;
+            SET materialComponent(c) <- materialComponent(component);
+            SET nettoQuantityComponent(c) <- nettoQuantityComponent(component);
+            SET technologyComponent(c) <- technologyComponent(component);
+//            SET UOMComponent(c) <- UOMComponent(component);
+            SET bruttoQuantityComponent(c) <- bruttoQuantityComponent(component);
+            SET wastageComponent(c) <- wastageComponent(component);
+        }
+
+        FORM BOM OBJECTS b = b MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
 
 FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
     PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
-    PROPERTIES (b) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product

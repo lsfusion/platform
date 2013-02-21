@@ -103,7 +103,6 @@ TABLE componentDetail (componentDetail);
 
 @defineDocumentDetailPriceListTypePrefix (order, componentDetail, priceListType, , );
 
-@defineDocumentDetailPriceCustomPrefix (componentDetail, , );
 @defineDocumentDetailDataSumCustomPrefix (componentDetail, , );
 
 @defineDocumentDetailSkuCustom (componentDetail, sku);
@@ -400,8 +399,7 @@ idBarcodeOverSkuComponentDetail 'Штрих-код' (componentDetail) = idBarcod
 shortNameUOMOverSkuComponentDetail 'Ед.изм.' (componentDetail) = shortNameUOMSku(overSkuComponentDetail(componentDetail));
 
 calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order) PERSISTENT;
-calcPriceComponentDetail (componentDetail)= calcPriceSkuOrder(skuComponentDetail(componentDetail), orderComponentDetail(componentDetail)) PERSISTENT;
-priceComponentDetail(detail) <- calcPriceComponentDetail(detail) WHEN CHANGED(calcPriceComponentDetail(detail));    // наверное надо READONLY и JProp
+priceComponentDetail 'Цена' (detail) = calcPriceSkuOrder(skuComponentDetail(detail), orderComponentDetail(detail)) PERSISTENT;
 sumComponentDetail (detail) <- toNumeric16p2(roundCurrency((priceComponentDetail(detail)* overQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
         WHEN CHANGED(priceComponentDetail(detail)) OR
              CHANGED(overQuantityComponentDetail(detail)) OR
@@ -419,11 +417,9 @@ FORM order 'Производственный заказ'
     OBJECTS pd=productDetail
     PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail, calcComponentsPriceProductDetail READONLY,
                    componentsPriceProductDetail
-//    PROPERTIES(pd) BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o) densityVATComponentsPriceProductDetail READONLY, componentsPriceMVATProductDetail
     PROPERTIES(pd) markupProductDetail ON CHANGE EXEC changeMarkupProductDetail(pd), calcPremiumPriceProductDetail READONLY,
                    productsPriceProductDetail, productsSumProductDetail
     PROPERTIES(pd) READONLY BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o) densityPremiumVATComponentsPriceProductDetail
-//    PROPERTIES(pd) bbbProductDetail, cccProductDetail
     PROPERTIES(pd) ADDOBJ, delete
     PROPERTIES(o) TODRAW pd createProductOrder, fillPriceProductsOrder, deleteProductDetailOrder
 
@@ -433,7 +429,7 @@ FORM order 'Производственный заказ'
     PROPERTIES(cd) BACKGROUND backgroundComponentDetail(cd) indexComponentDetail, nameSkuComponentDetail, nameMaterialComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, bruttoQuantityComponentDetail
     PROPERTIES(cd) READONLY BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteComponentDetail, multiplierSubstitutesComponentDetail, quantitySubstitutesComponentDetail
-    PROPERTIES(cd) priceComponentDetail, sumComponentDetail
+    PROPERTIES(cd) priceComponentDetail READONLY, sumComponentDetail
 
     PROPERTIES(o) TODRAW cd createComponentOrder, createRecComponentOrder
     PROPERTIES(cd) TODRAW cd createComponentDetail SHOWIF productComponentDetail(cd)
@@ -558,6 +554,42 @@ DESIGN order FROM DEFAULT{
 }
 editOrder 'Редактировать' (order) = ACTION EDITFORM order;
 
+copyOrder 'Копировать' = ACTION (order) NEWSESSION {
+    FOR ADDOBJ o = order DO {
+        SET componentsStockOrder(o) <- componentsStockOrder(order);
+        SET goodsStockOrder(o) <- goodsStockOrder(order);
+        SET fromDateOrder(o) <- fromDateOrder(order);
+        SET toDateOrder(o) <- toDateOrder(order);
+        SET calcPriceListTypeOrder(o) <- calcPriceListTypeOrder(order);
+        SET priceListTypeOrder(o) <- priceListTypeOrder(order);
+        SET includeVATOrder(o) <- includeVATOrder(order);
+        SET componentsCalcPriceListTypeOrder(o) <- componentsCalcPriceListTypeOrder(order);
+        SET noteOrder(o) <- noteOrder(order);
+
+        FOR orderProductDetail(productDetail) == order ADDOBJ p=productDetail DO {
+            SET orderProductDetail(p) <- o;
+            SET skuProductDetail(p) <- skuProductDetail(productDetail);
+            SET productProductDetail(p) <- productProductDetail(productDetail);
+            SET quantityProductDetail(p) <- quantityProductDetail(productDetail);
+            SET markupProductDetail(p) <- markupProductDetail(productDetail);
+        }
+        FOR orderComponentDetail(componentDetail) == order ADDOBJ c=componentDetail DO {
+            SET orderComponentDetail(c) <- o;
+            SET skuComponentDetail(c) <- skuComponentDetail(componentDetail);
+            SET productComponentDetail(c) <- productComponentDetail(componentDetail);
+            SET componentComponentDetail(c) <- componentComponentDetail(componentDetail);
+            SET bruttoQuantityComponentDetail(c) <- bruttoQuantityComponentDetail(componentDetail);
+        }
+        FOR bruttoQuantitySkuOrder(sku,order) DO {
+            SET dataPriceSkuOrder(sku,o) <- dataPriceSkuOrder(sku,order);
+            SET substituteSkuOrder(sku,o) <- substituteSkuOrder(sku,order);
+            SET multiplierSkuOrder(sku,o) <- multiplierSkuOrder(sku,order);
+        }
+
+        FORM order OBJECTS o = o MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
 FORM orders 'Производственные заказы'
 
     OBJECTS o = order
@@ -565,7 +597,7 @@ FORM orders 'Производственные заказы'
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
 
-    PROPERTIES(o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, delete FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=productDetail
