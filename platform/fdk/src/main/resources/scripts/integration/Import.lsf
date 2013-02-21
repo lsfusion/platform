@@ -63,6 +63,3 @@ EXTEND FORM banks
     PROPERTIES (b) READONLY sidExternalizable BEFORE delete(b)
 ;
 
-EXTEND FORM batches
-    PROPERTIES (bt) READONLY sotSIDBatch BEFORE nameSkuBatch(bt)
-;
