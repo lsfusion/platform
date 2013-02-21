@@ -55,8 +55,11 @@ META defineBlanketOrder(sign)
     @defineDocumentHeaderAgreement (blanketOrder);
     @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
 
-    userPriceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
     @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
+
+    priceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
+    namePriceListTypeBlanketOrderStock 'Вид цены' (blanketOrder, stock) = name(priceListTypeBlanketOrderStock (blanketOrder, stock)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
+    backgroundPriceListTypeBlanketOrderStock (blanketOrder, stock) = RGB(200,200,200) IF agreementBlanketOrderStock (blanketOrder, stock);
 
     @defineDocumentDetailPrice(blanketOrder); // объявляем цену без НДС
 
@@ -75,12 +78,17 @@ META defineBlanketOrder(sign)
     //  объявляем виды цен
     @defineDocumentDetailPriceListType(blanketOrder, blanketOrderDetail);
 
+    priceListTypeBlanketOrderStockSku (blanketOrder, stock, sku) =
+        IF agreementBlanketOrderStock(blanketOrder, stock) THEN
+            priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrder, stock), sku)
+        ELSE
+            priceListTypeBlanketOrderStock(blanketOrder, stock) AND sku IS sku;
     // записываем вид цены из соглашения
-    priceListTypeBlanketOrderDetail (detail) <-
-        IF TRUE AND NOT supplierStockBlanketOrder (blanketOrderBlanketOrderDetail(detail))
-            THEN priceListTypeAgreementSkuOver(defaultAgreementSupplierCustomer(legalEntityStock(supplierStockBlanketOrderDetail(detail)), legalEntityStock(customerStockBlanketOrderDetail(detail))), skuBlanketOrderDetail(detail))
-            ELSE priceListTypeBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
-        WHEN CHANGED(supplierStockBlanketOrderDetail(detail)) OR CHANGED(customerStockBlanketOrderDetail(detail)) OR CHANGED(skuBlanketOrderDetail(detail));
+     priceListTypeBlanketOrderDetail (detail) <- IF agreementBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
+        THEN priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)), skuBlanketOrderDetail(detail))
+        ELSE priceListTypeBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
+     WHEN CHANGED(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))) OR
+          CHANGED(priceListTypeBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)));
     @deriveDocumentDetailPricePriceListTypeVAT (blanketOrder, supplierStock); // записываем цены с НДС и без НДС на основе priceListType
 
     @defineDocumentDetailDataSum (blanketOrder); // объявляем сумму без НДС
@@ -129,7 +137,7 @@ META defineBlanketOrder(sign)
         OBJECTS c = stock
         PROPERTIES     name(c) READONLY, inBlanketOrderStock(o,c)
         PROPERTIES(o,c) nameNumeratorBlanketOrderStock, numberBlanketOrderStock, seriesBlanketOrderStock,
-                        nameAgreementBlanketOrderStock, namePriceListTypeBlanketOrderStock
+                        nameAgreementBlanketOrderStock, namePriceListTypeBlanketOrderStock BACKGROUND backgroundPriceListTypeBlanketOrderStock(o, c)
         PROPERTIES(o,c) READONLY countBlanketOrderDetailBlanketOrderCustomerStock, quantityBlanketOrderDetailBlanketOrderCustomerStock, sumBlanketOrderDetailBlanketOrderCustomerStock
 
         PROPERTIES(o) TODRAW d deleteBlanketOrderDetailBlanketOrder

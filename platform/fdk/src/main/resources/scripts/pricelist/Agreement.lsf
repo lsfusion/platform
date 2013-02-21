@@ -181,10 +181,6 @@ META defineDocumentDoubleHeaderAgreement (object1, object2)
     agreement###object1###object2 (object1, object2) = DATA agreement (object1, object2);
     nameAgreement###object1###object2 'Соглашение' (object1, object2)= name(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
     defaultPriceListType###object1###object2 (object1, object2) = priceListTypeAgreement(agreement###object1###object2 (object1, object2));
-    priceListType###object1###object2 (object1, object2) =
-        UNION OVERRIDE defaultPriceListType###object1###object2(object1, object2),
-                       userPriceListType###object1###object2(object1, object2);
-    namePriceListType###object1###object2 'Вид цен' (object1, object2)= name(priceListType###object1###object2(object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
 END
 
 META defineDocumentDoubleInterfaceHeaderAgreement (object1, object2, supplierProp, customerProp)

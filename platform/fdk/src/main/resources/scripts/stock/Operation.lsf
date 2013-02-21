@@ -35,17 +35,22 @@ META defineOperationObject(prefix, object, char)
 
     CONSTRAINT prefix###operationUser###object##Detail(user###object##Detail)
                AND NOT isPriceListType###prefix###operation(priceListTypeUser###object##Detail(user###object##Detail), prefix###operationUser###object##Detail(user###object##Detail))
-    //    CHECKED BY priceListTypeUser###object##Detail
+        CHECKED BY priceListTypeUser###object##Detail
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUser###object(user###object) AND priceListTypeUser###object(user###object)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object(user###object), prefix###operationUser###object(user###object))
+        CHECKED BY priceListTypeUser###object
         MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
 
     CONSTRAINT prefix###operationUser###object(user###object)
                AND NOT isSupplier###prefix###operation(supplierUser###object(user###object), prefix###operationUser###object(user###object))
-    //    CHECKED BY supplierUser###object
+        CHECKED BY supplierUser###object
         MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
 
     CONSTRAINT prefix###operationUser###object(user###object)
                AND NOT isCustomer###prefix###operation(customerUser###object(user###object), prefix###operationUser###object(user###object))
-    //    CHECKED BY customerUser###object
+        CHECKED BY customerUser###object
         MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
 
     EXTEND FORM user###object
@@ -60,7 +65,7 @@ META defineOperationObject(prefix, object, char)
 
 END
 
-META defineOperationPrefix(prefix, supplierFilter, customerFilter)
+META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
 
     CLASS prefix###operation 'Операция' : operation;
 
@@ -85,7 +90,7 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
 
     //------------------------------- Формы ------------------------------------------- //
 
-    FORM prefix###operation 'Операция(продажа)'
+    FORM prefix###operation 'Операция'##postfix
         OBJECTS o = prefix###operation FIXED PANEL
         PROPERTIES(o) name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
 
@@ -159,7 +164,7 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
         ADD functions.box;
     }
 
-    FORM prefix###operations 'Операции' TITLE 'Операции (продажа)'
+    FORM prefix###operations 'Операции' TITLE 'Операции'##postfix
         OBJECTS o = prefix###operation
         PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, delete

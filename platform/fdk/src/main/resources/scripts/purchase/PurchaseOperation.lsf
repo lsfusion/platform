@@ -4,7 +4,7 @@ REQUIRE Operation, PurchaseInvoice, PurchaseOrder;
 
 NAMESPACE Purchase;
 
-@defineOperationPrefix(purchase, isSellerLegalEntity, isCompanyLegalEntity);
+@defineOperationPrefix(purchase, isSellerLegalEntity, isCompanyLegalEntity, '(закупка)');
 
 NAVIGATOR {
     purchaseMasterData {

@@ -1816,7 +1816,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128)
         IF quantitySku###object###stockProp(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
 
-    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(priceListType###object###stock(object, contactStock), sku, stockProp, dateTime###object(object));
+    priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(priceListType###object###stock###sku(object, contactStock, sku), sku, stockProp, dateTime###object(object));
 
     changeQuantitySku###object###Stock###contactStock = ACTION (sku, object, stockProp, contactStock) {
         REQUEST NUMERIC[14,3] INPUT;
