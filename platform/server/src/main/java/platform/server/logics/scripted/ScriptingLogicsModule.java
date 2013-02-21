@@ -996,12 +996,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedConfirmProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedConfirmProp(" + length + ", " + msgProp + ");");
-        return addScriptedJoinAProp(addConfirmAProp("LS Fusion", length), asList(msgProp));
+        return addScriptedJoinAProp(addConfirmAProp("lsFusion", length), asList(msgProp));
     }
 
     public LPWithParams addScriptedMessageProp(int length, LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedMessageProp(" + length + ", " + msgProp + ");");
-        return addScriptedJoinAProp(addMAProp("LS Fusion", length), asList(msgProp));
+        return addScriptedJoinAProp(addMAProp("lsFusion", length), asList(msgProp));
     }
 
     public LPWithParams addScriptedChangeClassAProp(LPWithParams param, String className) throws ScriptingErrorLog.SemanticErrorException {

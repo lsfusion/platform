@@ -5,7 +5,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>LS Fusion</title>
+        <title>lsFusion</title>
 
         <link rel="stylesheet" href="login.css">
         <link rel="shortcut icon" href="favicon.ico" />

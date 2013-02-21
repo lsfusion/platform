@@ -5,7 +5,6 @@ import platform.base.*;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
@@ -641,7 +640,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
             if (!pushConfirm && propertyDraw.askConfirm) {
-                int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion",
+                int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion",
                         entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
                 if (result != JOptionPane.YES_OPTION) {
                     return;
@@ -1522,7 +1521,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formCancel() throws SQLException {
-        int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.undo.changes")));
+        int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
         if (result == JOptionPane.YES_OPTION) {
             cancel();
         }
@@ -1530,7 +1529,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formClose() throws SQLException {
         if (manageSession && session.hasStoredChanges()) {
-            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("LS Fusion", getString("form.do.you.really.want.to.close.form")));
+            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
             }

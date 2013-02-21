@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ErrorHandlingCallback;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.DefaultFormsController;
 import platform.gwt.form.client.form.dispatch.GwtActionDispatcher;
@@ -131,6 +132,8 @@ public class MainFrame implements EntryPoint {
         dispatcher.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
+                GwtClientUtils.removeLoaderFromHostedPage();
+
                 formsWindow = result.forms;
                 commonWindows.put(result.relevantForms, new Label(result.relevantForms.caption));
                 commonWindows.put(result.relevantClasses, new Label(result.relevantClasses.caption));

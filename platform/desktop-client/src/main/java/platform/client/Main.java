@@ -58,7 +58,7 @@ public class Main {
 
     private static ImmutableProxyMethodsAspect immutablesAspect = Aspects.aspectOf(ImmutableProxyMethodsAspect.class);
 
-    public static final String PLATFORM_TITLE = "LS Fusion";
+    public static final String PLATFORM_TITLE = "lsFusion";
     private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
 
     public static ModuleFactory module;

@@ -58,7 +58,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
                     if (property.askConfirm) {
                         String msg = property.askConfirmMessage;
 
-                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "LS Fusion", JOptionPane.QUESTION_MESSAGE);
+                        int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE);
                         if (result != JOptionPane.YES_OPTION) {
                             return true;
                         }

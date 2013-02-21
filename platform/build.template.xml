@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="LS Fusion Build Utils">
+<project name="lsFusion Build Utils">
     <target name="recursiveCompile">
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>

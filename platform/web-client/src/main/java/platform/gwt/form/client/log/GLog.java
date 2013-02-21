@@ -4,8 +4,8 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.client.ui.DialogBoxHelper;
+import platform.gwt.base.client.ui.ResizableVerticalPanel;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,7 +46,7 @@ public final class GLog {
             panel.add(table);
         }
 
-        DialogBoxHelper.showMessageBox(true, "LS Fusion", panel, null);
+        DialogBoxHelper.showMessageBox(true, "lsFusion", panel, null);
     }
 
     public static void error(String message) {

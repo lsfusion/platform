@@ -5,7 +5,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import platform.gwt.base.client.ui.DialogBoxHelper;
-import platform.gwt.base.client.ui.ErrorFrameWidget;
 import platform.gwt.base.shared.MessageException;
 
 import static platform.gwt.base.client.GwtClientUtils.baseMessages;
@@ -20,6 +19,8 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         } else {
             GWT.log("Failure, while performing an action. ", caught);
         }
+
+        GwtClientUtils.removeLoaderFromHostedPage();
 
         String message = getServerMessage(caught);
         if (message != null) {
