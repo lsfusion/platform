@@ -14,3 +14,9 @@ CONSTRAINT supplierBlanketOrder(blanketOrder) AND NOT isCompanyLegalEntity(suppl
     CHECKED BY supplierBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(customerBlanketOrder(blanketOrder))
     CHECKED BY customerBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+NAVIGATOR {
+    saleSaleNavigator {
+        ADD blanketOrders BEFORE orders;
+    }
+}

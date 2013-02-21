@@ -25,25 +25,6 @@ reserveSaleBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Sa
 reserveSaleASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Sale.reserveASkuStockDateTime(sku, stock, dateTime) (-)
     SaleReturn.reserveASkuStockDateTime(sku, stock, dateTime);
 
-NAVIGATOR {
-    saleNavigator {
-        NEW saleSaleNavigator 'Продажи' BEFORE saleLedgerNavigator {
-            ADD Sale.scheduleOrderDetails;
-            ADD Sale.blanketOrders;
-            ADD Sale.orders;
-            ADD Sale.invoices;
-            ADD Sale.shipments;
-            ADD Sale.creditNotes;
-        }
-        NEW saleReturnNavigator 'Возвраты' AFTER saleSaleNavigator {
-            ADD SaleReturn.orders;
-            ADD SaleReturn.invoices;
-            ADD SaleReturn.shipments;
-            ADD SaleReturn.creditNotes;
-        }
-    }
-}
-
 META defineDialogSkuSaleReserve (form)
 
     form###SaleReserve 'Резерв (продажи)' (sku) = currentReserveSaleSkuStock(sku, form###stock());

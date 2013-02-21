@@ -98,8 +98,13 @@ FORM customUser 'Пользователь'
 ;
 
 EXTEND DESIGN customUser {
-    main{
+    NEW container BEFORE functions.box {
+        type = SPLITH;
         childConstraints = TO THE RIGHT;
+        ADD u.box;
+        ADD ur.box {
+            fillHorizontal = 2.0;
+        }
     }
 }
 

@@ -705,7 +705,7 @@ loadDefaultStatisticGroups 'Загрузить стандартные стати
 
 NAVIGATOR {
     saleNavigator {
-        NEW statisticsNavigator 'Статистика' {
+        NEW statisticsNavigator 'Статистика' BEFORE saleMasterData {
             ADD statisticGroups;
             ADD statisticalReport;
             ADD torgSales;

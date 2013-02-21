@@ -48,26 +48,6 @@ EXTEND FORM userOrder
     PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
 ;
 
-NAVIGATOR {
-    purchaseNavigator {
-        NEW purchasePurchaseNavigator 'Закупки' BEFORE purchaseLedgerNavigator {
-            ADD Purchase.scheduleOrderDetails;
-            ADD Purchase.orders;
-            ADD Purchase.invoices;
-            ADD Purchase.shipments;
-            ADD Purchase.creditNotes;
-        }
-        NEW purchaseReturnNavigator 'Возвраты' AFTER purchasePurchaseNavigator {
-            ADD PurchaseReturn.orders;
-            ADD PurchaseReturn.invoices;
-            ADD PurchaseReturn.shipments;
-            ADD PurchaseReturn.creditNotes;
-        }
-    }
-}
-
-
-
 META defineDialogSkuPurchaseReserve (form)
 
     form###PurchaseReserve 'Резерв (закупки)' (sku) = currentReservePurchaseSkuStock(sku, form###stock());

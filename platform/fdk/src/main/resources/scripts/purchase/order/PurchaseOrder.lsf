@@ -52,3 +52,9 @@ EXTEND FORM userOrder
         FILTER 'С поступлением' 'F8' inUserOrderSku(o, s)
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT
 ;
+
+NAVIGATOR {
+    purchasePurchaseNavigator {
+        ADD orders;
+    }
+}

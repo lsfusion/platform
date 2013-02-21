@@ -34,3 +34,9 @@ EXTEND FORM userOrder
         FILTER'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o) DEFAULT
 
 ;
+
+NAVIGATOR {
+    saleReturnNavigator {
+        ADD orders;
+    }
+}

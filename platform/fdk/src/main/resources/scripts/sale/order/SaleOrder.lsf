@@ -125,3 +125,9 @@ EXTEND FORM userOrder
         FILTER 'С продажей' 'F8' inUserOrderSku(o, s)
         FILTER 'В ассортименте' 'F7' ledgerPriceSkuStockUserOrder(s, st, o) DEFAULT
 ;
+
+NAVIGATOR {
+    saleSaleNavigator {
+        ADD orders;
+    }
+}

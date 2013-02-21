@@ -3,5 +3,9 @@ MODULE Sale;
 REQUIRE System, Stock;
 
 NAVIGATOR {
-    NEW saleNavigator 'Продажи' AFTER stockNavigator TO toolbar IMAGE '/images/checkout.png';
+    NEW saleNavigator 'Продажи' AFTER stockNavigator TO toolbar IMAGE '/images/checkout.png' {
+        NEW saleSaleNavigator 'Продажи';
+        NEW saleReturnNavigator 'Возвраты';
+        NEW saleMasterData 'Справочники';
+    }
 }

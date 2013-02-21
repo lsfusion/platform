@@ -541,8 +541,8 @@ public class BudgetLogicsModule extends LogicsModule {
         FormEntity recordForm = addFormEntity(new RecordFormEntity(primaryData, "recordForm", "Прочие операции"));
         FormEntity missionForm = new MissionFormEntity(primaryData, "missionForm", "Командировка");
         FormEntity vacationForm = addFormEntity(new VacationFormEntity(primaryData, "vacationForm", "Отпуск сотрудников"));
-        FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, "exchangeRatesForm", "Курсы валют");
-        FormEntity depTransfer = new depTransfer(primaryData, "depTransfer", "Перемещение");
+        FormEntity exchangeRatesForm = addFormEntity(new ExchangeRatesFormEntity(primaryData, "exchangeRatesForm", "Курсы валют"));
+        FormEntity depTransfer = addFormEntity(new depTransfer(primaryData, "depTransfer", "Перемещение"));
 
 
         NavigatorElement aggregateData = addNavigatorElement(baseLM.root, "aggregateData", "Сводная информация");
@@ -658,7 +658,7 @@ public class BudgetLogicsModule extends LogicsModule {
             objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, baseGroup);
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseLM.objectValue);
             objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
@@ -705,7 +705,7 @@ public class BudgetLogicsModule extends LogicsModule {
             objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objPersonOp = addSingleGroupObject(person, baseGroup);
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseLM.objectValue);
             objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
@@ -892,7 +892,7 @@ public class BudgetLogicsModule extends LogicsModule {
 
             addPropertyDraw(baseCurrencyName);
 
-            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
+            ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseLM.objectValue);
             objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objMonthOp = addSingleGroupObject(absMonth, baseGroup);
@@ -924,14 +924,14 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objSrcCurrency = addSingleGroupObject(getCurrencyClass(), "Исходная валюта", baseGroup);
             ObjectEntity objDstCurrency = addSingleGroupObject(getCurrencyClass(), "Целевая валюта", baseGroup);
 
-            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
+            ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
             objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
             addPropertyDraw(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);
             addPropertyDraw(nearestExchangeRate, objSrcCurrency, objDstCurrency, objDate);
 
-            ObjectEntity objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
+            ObjectEntity objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
             addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(exchangeRate, objSrcCurrency, objDstCurrency, objDateRate)));

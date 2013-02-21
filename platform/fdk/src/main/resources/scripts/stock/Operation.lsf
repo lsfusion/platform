@@ -159,20 +159,12 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter)
         ADD functions.box;
     }
 
-    FORM prefix###operations 'Операции(продажа)'
+    FORM prefix###operations 'Операции' TITLE 'Операции (продажа)'
         OBJECTS o = prefix###operation
         PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, delete
 
         DIALOG prefix###operation OBJECT o
     ;
-
-    NAVIGATOR {
-        prefix##Navigator {
-            NEW prefix###operationsNavigator 'Операции' {
-                ADD prefix###operations;
-            }
-        }
-    }
 
 END

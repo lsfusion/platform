@@ -262,7 +262,7 @@ DESIGN purchaseSkuStock FROM DEFAULT {
 
 NAVIGATOR {
     purchaseNavigator {
-        NEW purchaseLedgerNavigator 'Поступления' {
+        NEW purchaseLedgerNavigator 'Поступления' BEFORE purchaseMasterData {
             ADD purchaseLedger;
             ADD purchaseSkuStock;
         }

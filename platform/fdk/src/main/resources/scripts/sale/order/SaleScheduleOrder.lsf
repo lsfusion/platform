@@ -24,4 +24,8 @@ EXTEND FORM legalEntity
     PROPERTIES(s, l) addPurchaseSchedulerOrder = addScheduleOrderSupplierCustomer TODRAW ss SHOWIF isCompanyCustomer(s, l) //isCompanyLegalEntity(s) AND isCustomerLegalEntity(l)
 ;
 
-
+NAVIGATOR {
+    saleSaleNavigator {
+        ADD scheduleOrderDetails BEFORE orders;
+    }
+}

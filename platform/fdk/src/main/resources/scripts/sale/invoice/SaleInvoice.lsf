@@ -118,3 +118,9 @@ quantitySaleLedger (ledger) += quantityInvoiceDetail(ledger);
 VATSaleLedger (ledger) += VATInvoiceDetail(ledger);
 sumSaleLedger (ledger) += invoiceSumInvoiceDetail(ledger);
 customerSaleLedger (ledger) += customerInvoiceDetail(ledger);
+
+NAVIGATOR {
+    saleSaleNavigator {
+        ADD invoices;
+    }
+}

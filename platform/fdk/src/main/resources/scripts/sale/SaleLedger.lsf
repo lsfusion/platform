@@ -255,7 +255,7 @@ DESIGN saleSkuStock FROM DEFAULT {
 
 NAVIGATOR {
     saleNavigator {
-        NEW saleLedgerNavigator 'Продажи' {
+        NEW saleLedgerNavigator 'Продажи' BEFORE saleMasterData {
             ADD saleLedger;
             ADD saleSkuStock;
         }

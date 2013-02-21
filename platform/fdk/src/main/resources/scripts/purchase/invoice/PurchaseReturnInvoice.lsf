@@ -50,4 +50,8 @@ EXTEND FORM userInvoice
             FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
 ;
 
-
+NAVIGATOR {
+    purchaseReturnNavigator {
+        ADD invoices;
+    }
+}

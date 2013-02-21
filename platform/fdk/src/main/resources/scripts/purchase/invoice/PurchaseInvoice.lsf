@@ -111,7 +111,8 @@ EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Заку�
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 
-
-
-
-
+NAVIGATOR {
+    purchasePurchaseNavigator {
+        ADD invoices;
+    }
+}

@@ -82,7 +82,7 @@ DESIGN stockReserve FROM DEFAULT {
 
 NAVIGATOR {
     purchaseNavigator {
-        NEW stockReserveNavigator 'Запасы' {
+        NEW stockReserveNavigator 'Запасы' BEFORE purchaseMasterData {
             ADD stockReserve;
         }
     }

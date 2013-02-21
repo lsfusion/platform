@@ -3,5 +3,9 @@ MODULE Purchase;
 REQUIRE System, Stock;
 
 NAVIGATOR {
-    NEW purchaseNavigator 'Закупки' BEFORE stockNavigator TO toolbar IMAGE '/images/boxes.png';
+    NEW purchaseNavigator 'Закупки' BEFORE stockNavigator TO toolbar IMAGE '/images/boxes.png' {
+        NEW purchasePurchaseNavigator 'Закупки';
+        NEW purchaseReturnNavigator 'Возвраты';
+        NEW purchaseMasterData 'Справочники';
+    }
 }

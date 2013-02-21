@@ -37,3 +37,9 @@ EXTEND DESIGN blanketOrder{
         ADD PROPERTY(nameSaleOperationBlanketOrder) BEFORE PROPERTY(nameCurrencyBlanketOrder);
     }
 }
+
+NAVIGATOR {
+    saleMasterData {
+        ADD saleOperations;
+    }
+}
