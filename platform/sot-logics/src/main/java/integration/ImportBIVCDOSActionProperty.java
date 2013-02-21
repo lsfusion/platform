@@ -3,6 +3,8 @@ package integration;
 import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.xBaseJException;
+import platform.interop.action.MessageClientAction;
+import platform.server.Context;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -16,6 +18,7 @@ import java.io.*;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -72,7 +75,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
-                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfItems) : null);
+                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfItems, context) : null);
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
@@ -114,12 +117,16 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String[] splittedLine = line.split("\\(|\\)|,");
                 if (splittedLine.length > 1) {
                     String parentID = splittedLine.length == 2 ? rootID : splittedLine[1];
+                    if (parentID.length() == 2)
+                        parentID = "0" + parentID;
                     String groupID = splittedLine.length == 2 ? splittedLine[1] : (parentID + ":" + splittedLine[2]);
+                    if (groupID.length() == 2)
+                        groupID = "0" + groupID;
                     String subParentID = groupID.substring(0, groupID.length() - 2) + "00";
                     Boolean subParent = splittedLine.length == 3 && !groupID.endsWith("00");
 
                     String name = reader.readLine().trim();
-                    if (!"".equals(name)) {
+                    //if (!"".equals(name)) {
                         if (!parents) {
                             //sid - name - parentSID(null)
                             itemGroupsList.add(new ItemGroup(groupID, name, null));
@@ -133,7 +140,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                             if (subParent)
                                 itemGroupsList.add(new ItemGroup(subParentID, null, parentID));
                         }
-                    }
+                    //}
                 }
             }
         }
@@ -254,6 +261,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     retailVAT = (retailVAT == 18) ? 20 : retailVAT;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
+                    if (groupID.split(":")[0].length() == 2)
+                        groupID = "0" + groupID;
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
@@ -269,7 +278,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems) throws IOException, ParseException {
+    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems, ExecutionContext context) throws IOException, ParseException {
+
+        Map<String, Double> totalSumWarehouse = new HashMap<String, Double>();
 
         List<UserInvoiceDetail> userInvoiceDetailsList = new ArrayList<UserInvoiceDetail>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
@@ -284,8 +295,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         Double quantity = null;
         Double price = null;
         Double chargePrice = null;
-        String numberCompliance = null;
-        Timestamp toDateTimeCompliance = null;
+        //String numberCompliance = null;
+        //Timestamp toDateTimeCompliance = null;
         String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && userInvoiceDetailsList.size() >= numberOfItems)
@@ -304,39 +315,54 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
+                    sumPrice = sumPrice == null ? null : ((double)(Math.round(sumPrice * 100))) / 100;
                     String chargePricePercent = splittedLine.length > 19 ? (splittedLine[19].endsWith(".00") ?
                             splittedLine[19].substring(0, splittedLine[19].length() - 3) : splittedLine[19]) : "";
-                    chargePrice = chargePricePercent.trim().isEmpty() ? null : sumPrice * Double.parseDouble(chargePricePercent) / 100;
+                    chargePrice = chargePricePercent.trim().isEmpty() ? null : ((sumPrice * Double.parseDouble(chargePricePercent)) / (100 + Double.parseDouble(chargePricePercent))) /*sumPrice * Double.parseDouble(chargePricePercent) / 100*/;
+                    chargePrice = chargePrice == null ? null : ((double)(Math.round(chargePrice * 100))) / 100;
                     price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - chargePrice);
                 } else if ("1".equals(extra)) {
                     textCompliance = reader.readLine();
-                    String[] compliance = textCompliance.split(" ДО | ПО ");
-                    numberCompliance = compliance.length > 0 ? (compliance[0].trim().length() > 17 ? compliance[0].substring(0, 17) : compliance[0].trim()) : null;
-                    if (compliance.length > 1) {
-                        compliance[1] = compliance[1].replace("+", "");
-                        while (compliance[1].matches(".*\\D"))
-                            compliance[1] = compliance[1].substring(0, compliance[1].length() - 1);
-                    }
-                    try {
-                        toDateTimeCompliance = compliance.length > 1 ?
-                                new Timestamp(DateUtils.parseDate(compliance[1], new String[]{"dd.mm.yy", "dd.mm.yyyy", "d.mm.yy", "ddmm-yy", "dd\\mm-yy", "ddmm.yy"}).getTime()) : null;
-                    } catch (ParseException e) {
-                        toDateTimeCompliance = null;
-                    }
+                    //String[] compliance = textCompliance.split(" ДО | ПО ");
+                    //numberCompliance = compliance.length > 0 ? (compliance[0].trim().length() > 17 ? compliance[0].substring(0, 17) : compliance[0].trim()) : null;
+                    //if (compliance.length > 1) {
+                    //    compliance[1] = compliance[1].replace("+", "");
+                    //    while (compliance[1].matches(".*\\D"))
+                    //        compliance[1] = compliance[1].substring(0, compliance[1].length() - 1);
+                    //}
+                    //try {
+                    //    toDateTimeCompliance = compliance.length > 1 ?
+                    //            new Timestamp(DateUtils.parseDate(compliance[1], new String[]{"dd.mm.yy", "dd.mm.yyyy", "d.mm.yy", "ddmm-yy", "dd\\mm-yy", "ddmm.yy"}).getTime()) : null;
+                    //} catch (ParseException e) {
+                    //    toDateTimeCompliance = null;
+                    //}
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
+                    if (groupID.split(":")[0].length() == 2)
+                        groupID = "0" + groupID;
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if (quantity != null && quantity != 0)
+                    if (quantity != null && quantity != 0) {
                         userInvoiceDetailsList.add(new UserInvoiceDetail(warehouse + "/" + dateField,
                                 "AA", null, true, warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
-                                quantity, "70020", warehouse, "S70020", price, chargePrice, null, null, numberCompliance,
-                                new Timestamp(date.getTime()), toDateTimeCompliance, textCompliance));
+                                quantity, "70020", warehouse, "S70020", price, chargePrice, null, null,/* numberCompliance,*/
+                                /*new Timestamp(date.getTime()), toDateTimeCompliance, */textCompliance));
+                        Double sum = ((double)(Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
+                        Double subtotal = totalSumWarehouse.get(warehouse);
+                        if (subtotal == null)
+                            totalSumWarehouse.put(warehouse, sum);
+                        else
+                            totalSumWarehouse.put(warehouse, sum + subtotal);
+                    }
                 }
             }
         }
         reader.close();
+        String message = "";
+        for (Map.Entry<String, Double> entry : totalSumWarehouse.entrySet())
+            message += entry.getKey() + ": " + NumberFormat.getNumberInstance().format(entry.getValue()) + "\r\n";
+        context.requestUserInteraction(new MessageClientAction(message, "Общая сумма"));
         return userInvoiceDetailsList;
     }
 
@@ -678,6 +704,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
+                    if (groupID.split(":")[0].length() == 2)
+                        groupID = "0" + groupID;
                     UOM uomObject = uomMap.get(uomID);
                     String uomName = uomObject == null ? null : uomObject.uomName;
                     String uomFullName = uomObject == null ? "" : uomObject.uomFullName;

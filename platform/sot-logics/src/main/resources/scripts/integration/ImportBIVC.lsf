@@ -1,6 +1,7 @@
 MODULE ImportBIVC;
 
-REQUIRE Import;
+REQUIRE Import,
+        SOT;
 
 
 //---------------------------------------------- Импорт данных -----------------------------------------------------//
@@ -17,10 +18,12 @@ importBIVCItems 'Импортировать товары' = DATA BOOLEAN () IN b
 importBIVCUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN bivcGroup;
 importBIVCLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN bivcGroup;
 importBIVCWarehouses 'Импортировать склады' = DATA BOOLEAN() IN bivcGroup;
+importBIVCContracts 'Импортировать контракты' = DATA BOOLEAN() IN bivcGroup;
 
 EXTEND FORM integrationData
     PROPERTIES() importBIVCDataAction, importBIVCDirectory, importBIVCNumberItems, importBIVCNumberItemsAtATime,
-    importBIVCGroupItems, importBIVCItems, importBIVCUserInvoices, importBIVCLegalEntities, importBIVCWarehouses
+    importBIVCGroupItems, importBIVCItems, importBIVCUserInvoices, importBIVCLegalEntities, importBIVCWarehouses,
+    importBIVCContracts
 ;
 EXTEND DESIGN integrationData {
     pane {

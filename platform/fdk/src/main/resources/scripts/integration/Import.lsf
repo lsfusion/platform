@@ -64,5 +64,5 @@ EXTEND FORM banks
 ;
 
 EXTEND FORM batches
-    PROPERTIES (bt) READONLY sidExternalizableBatch BEFORE nameSkuBatch(bt)
+    PROPERTIES (bt) READONLY sotSIDBatch BEFORE nameSkuBatch(bt)
 ;
