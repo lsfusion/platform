@@ -89,12 +89,12 @@ META defineScheduleOrder(sign, stockProp)
     CONSTRAINT transferDayScheduleOrder(scheduleOrder) != DOW.friday AND transferDayScheduleOrder(scheduleOrder) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
     //свойства "По дням недели и месяца"
-    TABLE schedulerOrderMonth(schedulerOrder, month);
+    TABLE scheduleOrderMonth(scheduleOrder, month);
     inMonthScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, month);
     inAllMonthScheduleOrder 'Включить все месяцы' = DATA BOOLEAN (scheduleOrder);
     inMonthScheduleOrder(scheduleOrder, month) <- inAllMonthScheduleOrder(scheduleOrder) WHEN ASSIGNED(inAllMonthScheduleOrder(scheduleOrder) AND month IS month);
 
-    TABLE schedulerOrderDOW(schedulerOrder, DOW);
+    TABLE scheduleOrderDOW(scheduleOrder, DOW);
     inDayScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, DOW);
 
     toShowGenDay (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genDays;
