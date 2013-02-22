@@ -528,11 +528,17 @@ grossWeightSku(sku) += grossWeightItem(sku);
 
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemSizeGroup; } }
 
+loadDefaultItemAttributes 'Загрузить стандартные атрибуты товаров' = ABSTRACT ACTION ();
+@implementLoadDefaultData(loadDefaultItemAttributes);
+
 // ---------------------------------------------- Формирование наименований -------------------------------------- //
 
 // Базовое наименование
 @defineItemAttributeName( , , recognize);
 nameSku(item) += nameAttributeItem(item);
+loadDefaultItemAttributes() += ACTION {
+    SET numberInNameItemAttribute(a) <- 1 WHERE a == stringItemAttribute.itemCaption;
+}
 
 // для оптимизации запросов
 nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
@@ -547,12 +553,16 @@ EXTEND FORM items
 @defineItemAttributeName(cashRegister, ' (кассы)', public);
 dataTitleCashRegisterBarcode 'Наименование для касс' = DATA STRING[100] (barcode);
 titleCashRegisterBarcode 'Наименование для касс' = UNION OVERRIDE nameCashRegisterAttributeItem(skuBarcode(barcode)), dataTitleCashRegisterBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-
+loadDefaultItemAttributes() += ACTION {
+    SET numberInNameCashRegisterItemAttribute(a) <- 1 WHERE a == stringItemAttribute.itemCaption;
+}
 // Весы
 @defineItemAttributeName(scales, ' (весы)', public);
 dataTitleScalesBarcode 'Наименование для весов' = DATA STRING[100] (barcode);
 titleScalesBarcode 'Наименование для весов' = UNION OVERRIDE nameScalesAttributeItem(skuBarcode(barcode)), dataTitleScalesBarcode(barcode) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-
+loadDefaultItemAttributes() += ACTION {
+    SET numberInNameScalesItemAttribute(a) <- 1 WHERE a == stringItemAttribute.itemCaption;
+}
 EXTEND FORM item PROPERTIES(b) BEFORE delete titleScalesBarcode, titleCashRegisterBarcode;
 
 // --------------------------------------- Генерация штрих-кодов --------------------------------------------- //

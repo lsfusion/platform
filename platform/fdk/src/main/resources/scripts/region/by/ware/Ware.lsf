@@ -1,6 +1,6 @@
 MODULE Ware;
 
-REQUIRE System, Historizable, Tax, Stock;
+REQUIRE System, Historizable, Tax, Stock, Integration;
 
 // ------------------------------------------ Глобальные настройки --------------------------------- //
 showWare 'Показывать стеклопосуду' = DATA BOOLEAN ();
@@ -64,7 +64,7 @@ FORM ware 'Посуда'
 
 FORM wares 'Посуда'
     OBJECTS w=ware
-    PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
+    PROPERTIES(w) READONLY sidExternalizable, name, canonicalNameWareGroupWare, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
     PROPERTIES(w)          ADDFORM, EDITFORM, delete
 
     DIALOG ware OBJECT w

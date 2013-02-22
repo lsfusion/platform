@@ -73,6 +73,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 importData.setContractsList((getLCP("importBIVCDOSContracts").read(context) != null) ?
                         importContracts(path + "//SWTP") : null);
 
+                importData.setWaresList((getLCP("importBIVCDOSWares").read(context) != null) ?
+                        importWares(path + "//OST", path + "//SEDI") : null);
+
                 importData.setItemsList((getLCP("importBIVCDOSItems").read(context) != null) ?
                         importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
@@ -172,6 +175,45 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return banksList;
     }
 
+    private List<Ware> importWares(String ostPath, String sediPath) throws IOException, xBaseJException {
+
+        List<Ware> waresList = new ArrayList<Ware>();
+        Map<String, UOM> uomMap = getUOMMap(sediPath);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
+
+        String pnt13 = null;
+        String pnt48 = null;
+        String uomID = null;
+        Double price = null;
+        String name = null;
+        String wareID;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("^OST")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                pnt13 = splittedLine.length > 2 ? splittedLine[2].trim().replace("\"", "") : null;
+                pnt48 = splittedLine.length > 3 ? splittedLine[3].trim().replace("\"", "") : null;
+                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                if (extra == null && splittedLine.length > 3) {
+                    splittedLine = reader.readLine().split(":");
+                    price = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
+                    name = splittedLine.length > 3 ? splittedLine[3] : null;
+                } else if ("9".equals(extra)) {
+                    String groupID = reader.readLine();
+                    if (groupID.startsWith("929")) {
+                        UOM uom = uomMap.get(uomID);
+                        String uomFullName = uom == null ? "" : uom.uomFullName;
+                        wareID = groupID + ":" + name + uomFullName;
+                        waresList.add(new Ware(pnt13 + pnt48, name, price));
+                    }
+                }
+            }
+        }
+        reader.close();
+        return waresList;
+    }
+
     private Map<String, UOM> getUOMMap(String sediPath) throws IOException {
         Map<String, UOM> uomMap = new HashMap<String, UOM>();
         String[] patterns = new String[]{
@@ -226,6 +268,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             }
         }
 
+        String warePattern = "(\\d{8})\\s?(.*)";
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
         String pnt13;
@@ -234,6 +278,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String uomID = null;
         Date date = null;
         String name = null;
+        String wareID = null;
         Double baseMarkup = null;
         Double retailVAT = null;
         while ((line = reader.readLine()) != null) {
@@ -251,6 +296,16 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    wareID = null;
+                    if (name != null) {
+                        Pattern r = Pattern.compile(warePattern);
+                        Matcher m = r.matcher(name);
+                        if (m.matches()) {
+                            wareID = m.group(1).trim();
+                            name = m.group(2).trim();
+                        }
+                    }
+
                     try {
                         baseMarkup = splittedLine.length > 15 ? Double.parseDouble(splittedLine[15].endsWith(".") ?
                                 splittedLine[15].substring(0, splittedLine[15].length() - 1) : splittedLine[15]) : null;
@@ -268,11 +323,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    if(!groupID.startsWith("929"))
                     itemsList.add(new Item(itemID, groupID, name,
                             uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
                             uom == null ? null : uom.uomName, null, null, null, null, date, null,
                             uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
-                            retailVAT, null, null, null, null, baseMarkup, retailMarkups.get(markupID)));
+                            retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID)));
                 }
             }
         }
@@ -416,7 +472,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     dateIsOk = startDate == null || (date != null && startDate.before(date));
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
                 }
-                if ((smol != null && !warehouses.contains(smol)) && (dateIsOk || quantity>0))
+                if ((smol != null && !warehouses.contains(smol)) && (dateIsOk || quantity > 0))
                     warehouses.add(smol);
             }
         }

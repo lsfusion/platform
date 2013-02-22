@@ -15,6 +15,7 @@ importBIVCDOSNumberItemsAtATime 'Разбивать на пакеты по' = DA
 
 importBIVCDOSGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN bivcDosGroup;
 importBIVCDOSItems 'Импортировать товары' = DATA BOOLEAN () IN bivcDosGroup;
+importBIVCDOSWares 'Импортировать посуду' = DATA BOOLEAN () IN bivcDosGroup;
 importBIVCDOSUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN bivcDosGroup;
 importBIVCDOSNumberUserInvoices 'Кол-во' = DATA INTEGER () IN bivcDosGroup;
 importBIVCDOSUserInvoicesPosted 'Импортировать проведёнными' = DATA BOOLEAN() IN bivcDosGroup;
@@ -28,7 +29,7 @@ importBIVCDOSContracts 'Импортировать контракты' = DATA BO
 
 EXTEND FORM integrationData
     PROPERTIES() importBIVCDOSDataAction, importBIVCDOSDirectory, importBIVCDOSStartDate, importBIVCDOSNumberItems,
-    importBIVCDOSNumberItemsAtATime, importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSUserInvoices,
+    importBIVCDOSNumberItemsAtATime, importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSWares, importBIVCDOSUserInvoices,
     importBIVCDOSUserInvoicesPosted, importBIVCDOSNumberUserInvoices, importBIVCDOSBanks, importBIVCDOSEmployees,
     importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2, importBIVCDOSContracts
 ;
