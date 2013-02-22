@@ -59,7 +59,17 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
                         } else
                             return value.substring(1);
                     case 1:
-                        return value.substring(1, 7); // article
+                        String sid = value.substring(1, 7);
+                        if(sid.equals("200000")){
+                            try {
+                            return getCellString(row, 4).split(" ")[0];
+                            } catch (ParseException e) {
+                                return null;
+                            }
+
+                        }
+                        else
+                            return sid; // article
                 }
             case D:
                 if (value.length() == 1) return '0' + value;
