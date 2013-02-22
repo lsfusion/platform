@@ -31,9 +31,9 @@ inSupplierSku 'Связь' (legalEntity, sku)= GROUP SUM quantityPurchaseLedger(
 sumPurchaseTypeExchangePurchaseLedger 'Сумма покупки валюта' (typeExchange, purchaseLedger)= roundCurrency((sumPurchaseLedger (purchaseLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockPurchaseLedger(purchaseLedger)), datePurchaseLedger(purchaseLedger))), currencyTypeExchange(typeExchange));
 
-CONSTRAINT quantityPurchaseLedger(purchaseLedger) == 0 MESSAGE 'ошибка: Количество покупки не должно быть равно нулю';
+//CONSTRAINT quantityPurchaseLedger(purchaseLedger) == 0 MESSAGE 'ошибка: Количество покупки не должно быть равно нулю';
 
-averagePricePurchaseLedger 'Цена покупки (средняя)' (purchaseLedger) = sumPurchaseLedger(purchaseLedger)/quantityPurchaseLedger(purchaseLedger);
+averagePricePurchaseLedger 'Цена покупки (средняя)' (purchaseLedger) = sumPurchaseLedger(purchaseLedger)/quantityPurchaseLedger(purchaseLedger) IF quantityPurchaseLedger(purchaseLedger) != 0;
 
 VATPurchaseLedger (ledger) = ABSTRACT range (purchaseLedger) PERSISTENT;
 valueVATPurchaseLedger 'НДС, %' (ledger) = valueRateRangeDate(VATPurchaseLedger(ledger), datePurchaseLedger(ledger));

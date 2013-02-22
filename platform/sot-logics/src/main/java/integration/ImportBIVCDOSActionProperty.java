@@ -41,6 +41,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         try {
             String path = (String) getLCP("importBIVCDOSDirectory").read(context);
             Integer numberOfItems = (Integer) getLCP("importBIVCDOSNumberItems").read(context);
+            Integer numberOfUserInvoices = (Integer) getLCP("importBIVCDOSNumberUserInvoices").read(context);
+            Date startDate = (Date) getLCP("importBIVCDOSStartDate").read(context);
             if (path != null && !path.isEmpty()) {
                 path = path.trim();
                 ImportData importData = new ImportData();
@@ -66,7 +68,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importWarehouseGroups() : null);
 
                 importData.setWarehousesList((getLCP("importBIVCDOSWarehouses").read(context) != null) ?
-                        importWarehouses(path + "//SMOL", path + "//SWTP", path + "//OST") : null);
+                        importWarehouses(path + "//SMOL", path + "//SWTP", path + "//OST", startDate) : null);
 
                 importData.setContractsList((getLCP("importBIVCDOSContracts").read(context) != null) ?
                         importContracts(path + "//SWTP") : null);
@@ -75,7 +77,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
-                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfItems, context) : null);
+                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfUserInvoices, startDate, context) : null);
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
@@ -88,7 +90,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     importSotUOM(path + "//SEDI", path + "//OST", numberOfItems);
 
                 if ((getLCP("importBIVCDOSUserInvoices").read(context) != null))
-                    importSOTUserInvoices(path + "//SEDI", path + "//OST", numberOfItems);
+                    importSOTUserInvoices(path + "//SEDI", path + "//OST", numberOfUserInvoices);
 
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -127,19 +129,19 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
                     String name = reader.readLine().trim();
                     //if (!"".equals(name)) {
-                        if (!parents) {
-                            //sid - name - parentSID(null)
-                            itemGroupsList.add(new ItemGroup(groupID, name, null));
-                            if (subParent && !subParentsList.contains(subParentID))
-                                itemGroupsList.add(new ItemGroup(subParentID, null, null));
-                            if (!subParentsList.contains(subParent ? subParentID : parentID))
-                                subParentsList.add(subParent ? subParentID : parentID);
-                        } else {
-                            //sid - name(null) - parentSID
-                            itemGroupsList.add(new ItemGroup(groupID, null, subParent ? subParentID : parentID));
-                            if (subParent)
-                                itemGroupsList.add(new ItemGroup(subParentID, null, parentID));
-                        }
+                    if (!parents) {
+                        //sid - name - parentSID(null)
+                        itemGroupsList.add(new ItemGroup(groupID, name, null));
+                        if (subParent && !subParentsList.contains(subParentID))
+                            itemGroupsList.add(new ItemGroup(subParentID, null, null));
+                        if (!subParentsList.contains(subParent ? subParentID : parentID))
+                            subParentsList.add(subParent ? subParentID : parentID);
+                    } else {
+                        //sid - name(null) - parentSID
+                        itemGroupsList.add(new ItemGroup(groupID, null, subParent ? subParentID : parentID));
+                        if (subParent)
+                            itemGroupsList.add(new ItemGroup(subParentID, null, parentID));
+                    }
                     //}
                 }
             }
@@ -278,7 +280,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems, ExecutionContext context) throws IOException, ParseException {
+    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems,
+                                                       Date startDate, ExecutionContext context) throws IOException, ParseException {
 
         Map<String, Double> totalSumWarehouse = new HashMap<String, Double>();
 
@@ -289,8 +292,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
         String uomID = null;
-        String dateField = null;
         Date date = null;
+        String dateField = null;
+        Boolean dateIsOk = null;
         String name = null;
         Double quantity = null;
         Double price = null;
@@ -310,16 +314,21 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
                     uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
-                    date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
+                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
+                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
+                    dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
+                    date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    dateIsOk = startDate == null || (date != null && startDate.before(date));
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
-                    sumPrice = sumPrice == null ? null : ((double)(Math.round(sumPrice * 100))) / 100;
+                    sumPrice = sumPrice == null ? null : ((double) (Math.round(sumPrice * 100))) / 100;
                     String chargePricePercent = splittedLine.length > 19 ? (splittedLine[19].endsWith(".00") ?
                             splittedLine[19].substring(0, splittedLine[19].length() - 3) : splittedLine[19]) : "";
                     chargePrice = chargePricePercent.trim().isEmpty() ? null : ((sumPrice * Double.parseDouble(chargePricePercent)) / (100 + Double.parseDouble(chargePricePercent))) /*sumPrice * Double.parseDouble(chargePricePercent) / 100*/;
-                    chargePrice = chargePrice == null ? null : ((double)(Math.round(chargePrice * 100))) / 100;
+                    chargePrice = chargePrice == null ? null : ((double) (Math.round(chargePrice * 100))) / 100;
                     price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - chargePrice);
                 } else if ("1".equals(extra)) {
                     textCompliance = reader.readLine();
@@ -343,12 +352,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if (quantity != null && quantity != 0) {
+                    if ((quantity != null && quantity != 0) || (dateIsOk)) {
                         userInvoiceDetailsList.add(new UserInvoiceDetail(warehouse + "/" + dateField,
                                 "AA", null, true, warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
                                 quantity, "70020", warehouse, "S70020", price, chargePrice, null, null,/* numberCompliance,*/
                                 /*new Timestamp(date.getTime()), toDateTimeCompliance, */textCompliance));
-                        Double sum = ((double)(Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
+                        Double sum = ((double) (Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
                         Double subtotal = totalSumWarehouse.get(warehouse);
                         if (subtotal == null)
                             totalSumWarehouse.put(warehouse, sum);
@@ -382,19 +391,32 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             "УБОРЩ.", "УБОРЩИЦА", "ЭКОН.-ТОВАР.", "ЭКОН.", "ЭКОНОМИСТ", "ЭКСП.", "ЭКСПЕД.",
             "ЭКСПЕДИТОР", "ЭЛЕКТР.", "ЭЛЕКТРИК");
 
-    private List<Warehouse> importWarehouses(String smolPath, String swtpPath, String ostPath) throws IOException {
+    private List<Warehouse> importWarehouses(String smolPath, String swtpPath, String ostPath, Date startDate) throws IOException, ParseException {
 
         List<Warehouse> warehousesList = new ArrayList<Warehouse>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
         List<String> warehouses = new ArrayList<String>();
         String smol;
+        Boolean dateIsOk = false;
+        Double quantity = 0.0;
         String line;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^OST")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
                 smol = splittedLine.length > 1 ? splittedLine[1].trim().replace("\"", "") : null;
-                if (smol != null && !warehouses.contains(smol))
+                String extra = splittedLine.length > 4 ? splittedLine[4] : null;
+                if (extra == null && splittedLine.length > 3) {
+                    splittedLine = reader.readLine().split(":");
+                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    Date date1 = date1Field == null ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
+                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    Date date2 = date2Field == null ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
+                    Date date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    dateIsOk = startDate == null || (date != null && startDate.before(date));
+                    quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
+                }
+                if ((smol != null && !warehouses.contains(smol)) && (dateIsOk || quantity>0))
                     warehouses.add(smol);
             }
         }

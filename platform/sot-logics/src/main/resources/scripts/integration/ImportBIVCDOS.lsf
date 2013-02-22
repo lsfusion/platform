@@ -16,7 +16,9 @@ importBIVCDOSNumberItemsAtATime 'Разбивать на пакеты по' = DA
 importBIVCDOSGroupItems 'Импортировать группы товаров' = DATA BOOLEAN () IN bivcDosGroup;
 importBIVCDOSItems 'Импортировать товары' = DATA BOOLEAN () IN bivcDosGroup;
 importBIVCDOSUserInvoices 'Импортировать документы прихода' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSNumberUserInvoices 'Кол-во' = DATA INTEGER () IN bivcDosGroup;
 importBIVCDOSUserInvoicesPosted 'Импортировать проведёнными' = DATA BOOLEAN() IN bivcDosGroup;
+importBIVCDOSStartDate 'Начиная с даты' = DATA DATE () IN bivcDosGroup;
 importBIVCDOSBanks 'Импортировать банки' = DATA BOOLEAN () IN bivcDosGroup;
 importBIVCDOSLegalEntities 'Импортировать организации' = DATA BOOLEAN() IN bivcDosGroup;
 importBIVCDOSEmployees 'Импортировать сотрудников' = DATA BOOLEAN() IN bivcDosGroup;
@@ -25,10 +27,10 @@ importBIVCDOSMag2 'Импортировать коды MAG2' = DATA BOOLEAN() IN
 importBIVCDOSContracts 'Импортировать контракты' = DATA BOOLEAN() IN bivcDosGroup;
 
 EXTEND FORM integrationData
-    PROPERTIES() importBIVCDOSDataAction, importBIVCDOSDirectory, importBIVCDOSNumberItems, importBIVCDOSNumberItemsAtATime,
-    importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSUserInvoices, importBIVCDOSUserInvoicesPosted,
-    importBIVCDOSBanks, importBIVCDOSEmployees, importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2,
-     importBIVCDOSContracts
+    PROPERTIES() importBIVCDOSDataAction, importBIVCDOSDirectory, importBIVCDOSStartDate, importBIVCDOSNumberItems,
+    importBIVCDOSNumberItemsAtATime, importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSUserInvoices,
+    importBIVCDOSUserInvoicesPosted, importBIVCDOSNumberUserInvoices, importBIVCDOSBanks, importBIVCDOSEmployees,
+    importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2, importBIVCDOSContracts
 ;
 EXTEND DESIGN integrationData {
     pane {

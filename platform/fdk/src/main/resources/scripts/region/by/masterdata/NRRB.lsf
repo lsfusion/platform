@@ -1,0 +1,25 @@
+MODULE NBRB;
+
+REQUIRE System,
+        Currency;
+
+
+//---------------------------------------------- Импорт курсов НБРБ -----------------------------------------------------//
+
+importNBRBExchangeRateAction 'Импортировать курс НБРБ' = ACTION CUSTOM 'fdk.region.by.masterdata.ImportNBRBExchangeRateActionProperty' IN nbrbGroup;
+
+importNBRBExchangeRate 'Импортировать курсы НБРБ' = ACTION () {
+    FOR c IS currency DO {
+        EXEC importNBRBExchangeRateAction(c);
+    }
+    EXEC apply();
+} IN nbrbGroup;
+
+EXTEND FORM typeExchangeCurrencyDate
+    PROPERTIES() importNBRBExchangeRate
+;
+EXTEND DESIGN typeExchangeCurrencyDate {
+    main {
+        ADD NOGROUP.nbrbGroup BEFORE topContainer;
+    }
+}

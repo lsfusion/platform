@@ -13,6 +13,11 @@ currencyShortName (string) = GROUP UNIQUE currency BY shortNameCurrency(currency
 precisionCurrency 'Округление (число знаков после запятой)' = DATA INTEGER(currency);
 roundCurrency (number, currency) = round(number, precisionCurrency(currency));
 
+GROUP nbrbGroup 'Курсы нацбанка' : public;
+
+importNBRBExchangeRateDateFrom 'Дата с' = DATA DATE () IN nbrbGroup;
+importNBRBExchangeRateDateTo 'Дата по' = DATA DATE () IN nbrbGroup;
+
 // Формы
 
 FORM currency 'Валюта'
@@ -40,6 +45,7 @@ TABLE rateExchange (typeExchange, currency, DATE);
 currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA currency(typeExchange);
 nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange)) IN base;
 rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (typeExchange, currency, DATE);
+typeExchangeName (name) = GROUP UNIQUE typeExchange BY name(typeExchange) WHERE typeExchange IS typeExchange;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
@@ -94,10 +100,14 @@ FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
     PROPERTIES(t) READONLY name, nameCurrencyTypeExchange
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 
+    PROPERTIES() importNBRBExchangeRateDateFrom, importNBRBExchangeRateDateTo
+
     OBJECTS c = currency
     PROPERTIES(c) READONLY name
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     PROPERTIES(t, c) READONLY curRateTypeExchangeCurrency
+
+    FILTERS curRateTypeExchangeCurrency(t, c)
 
     OBJECTS d = DATE
     PROPERTIES(d) READONLY OBJVALUE
@@ -114,7 +124,7 @@ DESIGN typeExchangeCurrencyDate FROM DEFAULT{
     main {
         childConstraints = TO THE BOTTOM;
         ADD t.box;
-
+        ADD NOGROUP.nbrbGroup;
         NEW topContainer{
             childConstraints = TO THE RIGHT;
             ADD c.box;

@@ -41,5 +41,9 @@
             <groupId>org.xBaseJ</groupId>
             <artifactId>xbasej</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+        </dependency>
     </dependencies>
 </project>
