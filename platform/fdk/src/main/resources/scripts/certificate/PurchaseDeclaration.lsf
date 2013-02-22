@@ -9,9 +9,16 @@ NAMESPACE Purchase;
 
 @implementCertificateBatch(declaration);
 
+nameCustomsSku = ABSTRACT STRING[200](sku);
+nameCustomsSku(sku) += nameSku(sku);
+
 inDeclarationInvoice 'Вкл.' (declaration, invoice) = declarationUserInvoice(invoice)==declaration;
 
 inDeclarationInvoiceDetail 'Вкл.' (declaration, invoiceDetail) = dataDeclarationUserInvoiceDetail(invoiceDetail)==declaration;
+
+importerDeclarationInvoice(declaration, invoice) = legalEntityDeclaration(declaration) == customerUserInvoice(invoice);
+
+currencyDeclarationInvoice(declaration, invoice) = currencyDeclaration(declaration) == currencyUserInvoice(invoice);
 
 forDeclaration(declaration, invoice) = inDeclarationInvoice(declaration, invoice) OR declaration AS declaration AND NOT declarationUserInvoice(invoice);
 
@@ -19,79 +26,164 @@ stringInvoice (invoice) =
     [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
     seriesNumberObject(invoice), dateUserInvoice(invoice));
 
-invoicesDeclaration 'Инвойсы' (declaration) =
+invoicesDeclaration 'Накладные' (declaration) =
     GROUP CONCAT stringInvoice(invoice) IF inDeclarationInvoice (declaration, invoice), ','
-          BY declaration ORDER invoice  MINCHARWIDTH 40 PREFCHARWIDTH 150;
+          BY declaration ORDER invoice  MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
 
 customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
 codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (invoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(invoiceDetail));
 
+nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail));
 
-// позиции декларации
-TABLE declarationSkuPrice(declaration, sku, NUMERIC[14,3]);
-
-quantityDeclarationSkuPrice 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail) BY declarationUserInvoiceDetail(userInvoiceDetail),
-                                                                                                 skuUserInvoiceDetail(userInvoiceDetail),
-                                                                                                 priceUserInvoiceDetail(userInvoiceDetail);
-
-CLASS declarationDetail 'Позиция декларации';
-
-@defineAggregationCapt('цена', declaration, declaration, sku, sku, NUMERIC[14,3], price, declarationDetail, quantityDeclarationSkuPrice);
-
-barcodeSkuDeclarationDetail 'Штрих-код' (declarationDetail) = idBarcodeSku(skuDeclarationDetail(declarationDetail));
-nameSkuDeclarationDetail 'SKU' (declarationDetail) = nameSku(skuDeclarationDetail(declarationDetail));
-
-skuGroupDeclarationDetail = skuGroupSku(skuDeclarationDetail(declarationDetail));
-nameSkuGroupDeclarationDetail 'Группа' (declarationDetail) = name(skuGroupDeclarationDetail(declarationDetail));
-
-netWeightSkuDeclarationDetail 'Вес нетто' (declarationDetail) = netWeightSku(skuDeclarationDetail(declarationDetail));
-
-countrySkuDeclarationDetail (declarationDetail) = countrySku(skuDeclarationDetail(declarationDetail));
-nameCountrySkuDeclarationDetail 'Страна' (declarationDetail) = name(countrySkuDeclarationDetail(declarationDetail));
+countryUserInvoiceDetail (userInvoiceDetail) = countrySku(skuUserInvoiceDetail(userInvoiceDetail));
+nameCountryUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countryUserInvoiceDetail(userInvoiceDetail));
 
 
-quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationSkuPrice(declarationDeclarationDetail(declarationDetail),
-                                                                                     skuDeclarationDetail(declarationDetail),
-                                                                                     priceDeclarationDetail(declarationDetail)
-                                                                                    );
-
-customsGroupDeclarationDetail = DATA customsGroup(declarationDetail);
-codeCustomsGroupDeclarationDetail 'ТН ВЭД' (declarationDetail) = codeCustomsGroup(customsGroupDeclarationDetail(declarationDetail));
-
-// строки декларации
-CLASS groupDeclaration 'Строка декларации';
-TABLE groupDeclaration(groupDeclaration);
-
-declarationGroupDeclaration = DATA declaration(groupDeclaration);
-
-customsGroupGroupDeclaration = DATA customsGroup(groupDeclaration);
-codeCustomsGroupGroupDeclaration 'ТН ВЭД' (groupDeclaration) = codeCustomsGroup(customsGroupGroupDeclaration(groupDeclaration));
-
-EXTEND FORM declaration
-    PROPERTIES(d) invoicesDeclaration
+FORM declarationInvoices 'Присоединение накладных'
+    OBJECTS d=declaration FIXED PANEL
+    PROPERTIES(d) seriesNumberObject, nameLegalEntityDeclaration, nameCurrencyDeclaration, dateTimeDeclaration
 
     OBJECTS i=userInvoice
-    PROPERTIES(d, i) inDeclarationInvoice
-    PROPERTIES(i) numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
-    FILTERS customerUserInvoice(i)==legalEntityDeclaration(d), forDeclaration(d, i)
+    PROPERTIES (d, i) inDeclarationInvoice
+    PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
+    FILTERS forDeclaration(d, i)
 
     OBJECTS id=userInvoiceDetail
     PROPERTIES(d, id) inDeclarationInvoiceDetail
-    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
+    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
+                   codeCustomsGroupUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail
+    FILTERS invoiceInvoiceDetail(id)==i
+
+    FILTERGROUP filtersCurrency
+        FILTER 'Только с валютой декларации' 'F10' currencyDeclarationInvoice(d, i) DEFAULT
+
+    FILTERGROUP filtersImporter
+        FILTER 'Только импортёра декларации' 'F11' importerDeclarationInvoice(d, i) DEFAULT
+;
+
+showFormDeclarationInvoices 'Присоединить накладные' = ACTION (declaration) {
+    FORM declarationInvoices OBJECTS d=declaration MODAL;
+    EXEC apply();
+} TOOLBAR;
+
+// позиции декларации
+TABLE declarationNameCustomsGroupCountryPrice(declaration, STRING[200], customsGroup, country, NUMERIC[14,3]);
+
+//quantityDeclarationSkuPrice 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail) BY declarationUserInvoiceDetail(userInvoiceDetail),
+//                                                                                                 skuUserInvoiceDetail(userInvoiceDetail),
+//                                                                                                 priceUserInvoiceDetail(userInvoiceDetail);
+
+// позиции декларации
+quantityDeclarationDetailing 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
+                                               BY declarationUserInvoiceDetail(userInvoiceDetail),
+                                                  nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail)),
+                                                  customsGroupUserInvoiceDetail(userInvoiceDetail),
+                                                  countrySku(skuUserInvoiceDetail(userInvoiceDetail)),
+                                                  priceUserInvoiceDetail(userInvoiceDetail);
+
+CLASS declarationDetail 'Позиция декларации';
+
+declarationDeclarationDetail = DATA declaration(declarationDetail);
+
+rateExchangeDeclarationDetail 'Курс' = rateExchangeDeclaration(declarationDeclarationDetail(declarationDetail));
+
+roundCurrencyDeclarationDetail '' (number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
+
+customsGroupDeclarationDetail = DATA customsGroup(declarationDetail);
+codeCustomsGroupDeclarationDetail 'ТН ВЭД' (declarationDetail) = codeCustomsGroup(customsGroupDeclarationDetail(declarationDetail)) MINCHARWIDTH 10 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+
+nameCustomsDeclarationDetail 'Наименование' = DATA STRING[200](declarationDetail);
+
+countryDeclarationDetail = DATA country(declarationDetail);
+nameCountryDeclarationDetail 'Страна' (declarationDetail) = name(countryDeclarationDetail(declarationDetail));
+
+priceDeclarationDetail 'Цена' = DATA NUMERIC[14,3](declarationDetail);
+
+quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetailing(declarationDeclarationDetail(declarationDetail),
+                                                                                      nameCustomsDeclarationDetail(declarationDetail),
+                                                                                      customsGroupDeclarationDetail(declarationDetail),
+                                                                                      countryDeclarationDetail(declarationDetail),
+                                                                                      priceDeclarationDetail(declarationDetail));
+
+sumDeclarationDetail 'Стоимость (валют.)' (declarationDetail) = priceDeclarationDetail(declarationDetail) * quantityDeclarationDetail(declarationDetail);
+
+sumRateDeclarationDetail 'Стоимость' (declarationDetail) = sumDeclarationDetail(declarationDetail) * rateExchangeDeclarationDetail(declarationDetail);
+
+sumNetWeightInvoiceDetail 'Вес нетто' (invoiceDetail) = netWeightSku(skuUserInvoiceDetail(invoiceDetail)) * quantityUserInvoiceDetail(invoiceDetail);
+
+declarationDetailInvoiceDetail(invoiceDetail) = DATA declarationDetail(invoiceDetail);
+
+sumNetWeightDeclarationDetail 'Вес нетто' = GROUP SUM sumNetWeightInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail);
+
+invoicesDeclarationDetail 'Накладные' (declarationDetail) =
+    GROUP CONCAT seriesNumberInvoiceDetail(invoiceDetail) , ','
+              BY declarationDetailInvoiceDetail(invoiceDetail) ORDER invoiceDetail  MINCHARWIDTH 20 PREFCHARWIDTH 40 MAXCHARWIDTH 60;
+
+toCreateDeclarationDetails 'Создать строки' = ACTION (declaration) {
+    FOR quantityDeclarationDetailing(declaration, customsName, customsGroup, country, price)>0 ADDOBJ dd=declarationDetail DO {
+        SET declarationDeclarationDetail(dd) <- declaration;
+        SET nameCustomsDeclarationDetail(dd) <- customsName;
+        SET customsGroupDeclarationDetail(dd) <- customsGroup;
+        SET countryDeclarationDetail(dd) <- country;
+        SET priceDeclarationDetail(dd) <- price;
+
+        SET declarationDetailInvoiceDetail(invoiceDetail) <- dd WHERE declarationUserInvoiceDetail(invoiceDetail) == declaration AND
+            nameCustomsUserInvoiceDetail(invoiceDetail) == customsName AND customsGroupUserInvoiceDetail(invoiceDetail) == customsGroup AND
+            countryUserInvoiceDetail(invoiceDetail) == country AND priceUserInvoiceDetail(invoiceDetail) == price;
+    };
+} TOOLBAR;
+
+
+// пошлины
+sumWeightDutyDeclarationDetail 'Пошлина по весу (валют.)' (declarationDetail) = sumNetWeightDeclarationDetail(declarationDetail)*
+                                                                       weightDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+
+sumRateWeightDutyDeclarationDetail 'Пошлина по весу' (declarationDetail) = sumWeightDutyDeclarationDetail(declarationDetail) *
+                                                                           rateExchangeCustomsZoneDeclaration(declarationDeclarationDetail(declarationDetail));
+
+sumPriceDutyDeclarationDetail 'Пошлина по стоимости (валют.)' (declarationDetail) = sumDeclarationDetail(declarationDetail) *
+                                                                                    (percentDutyCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)))/100);
+
+sumRatePriceDutyDeclarationDetail 'Пошлина по стоимости' (declarationDetail) = sumPriceDutyDeclarationDetail(declarationDetail) *
+                                                                               rateExchangeDeclarationDetail(declarationDetail);
+
+sumRateDutyDeclarationDetail 'Пошлина' (declarationDetail) = roundCurrencyDeclarationDetail((UNION MAX sumRateWeightDutyDeclarationDetail(declarationDetail),
+                                                                                                       sumRatePriceDutyDeclarationDetail(declarationDetail)), declarationDetail);
+
+sumRateDutyDeclaration 'Пошлина' (declaration) = GROUP SUM sumRateDutyDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) MINCHARWIDTH 12;
+
+//НДС
+percentVATDeclaratioDetail 'НДС, %' (declarationDetail) = valueCurrentRateSupplierVATCustomsGroup(customsGroupDeclarationDetail(declarationDetail)); // dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+
+sumRateVATDeclarationDetail 'НДС' (declarationDetail) = (sumRateDeclarationDetail(declarationDetail) + sumRateDutyDeclarationDetail(declarationDetail)) *
+                                                        (percentVATDeclaratioDetail(declarationDetail)/100);
+
+// оформление
+registrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = registrationCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+
+registrationDeclaration 'Таможенный сбор (валют.)' (declaration) = GROUP MAX registrationDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail);
+
+registrationRateDeclaration 'Таможенный сбор' (declaration) = roundCurrencyDeclaration(registrationDeclaration(declaration) * rateExchangeCustomsZoneDeclaration(declaration), declaration) MINCHARWIDTH 12;
+
+
+EXTEND FORM declaration
+    PROPERTIES(d)  invoicesDeclaration, showFormDeclarationInvoices, registrationRateDeclaration, sumRateDutyDeclaration
+
+    OBJECTS id=userInvoiceDetail
+    PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
+                   nameCustomsUserInvoiceDetail, nameCountryUserInvoiceDetail, sumNetWeightInvoiceDetail
     PROPERTIES(id) codeCustomsGroupUserInvoiceDetail
     PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail
-    FILTERS invoiceInvoiceDetail(id) == i
+    FILTERS declarationUserInvoiceDetail(id) == d
+
+    PROPERTIES (d) toCreateDeclarationDetails TODRAW id FORCE PANEL DRAWTOTOOLBAR
 
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) barcodeSkuDeclarationDetail, nameSkuDeclarationDetail, nameSkuGroupDeclarationDetail, netWeightSkuDeclarationDetail,
-                   nameCountrySkuDeclarationDetail, codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail
+    PROPERTIES(dd) READONLY invoicesDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
+                   codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
+                   sumRateDeclarationDetail, sumRateDutyDeclarationDetail, percentVATDeclaratioDetail, sumRateVATDeclarationDetail
+    PROPERTIES(dd) delete
     FILTERS declarationDeclarationDetail(dd) == d
-
-    OBJECTS gd=groupDeclaration
-    PROPERTIES(gd) codeCustomsGroupGroupDeclaration
-    FILTERS declarationGroupDeclaration(gd)==d
-
-
 ;
 
 
@@ -99,31 +191,33 @@ EXTEND DESIGN declaration {
     main {
         headContainer {
             ADD PROPERTY(invoicesDeclaration);
+            ADD PROPERTY(showFormDeclarationInvoices);
         }
 
-        NEW invoiceContainer {
-            caption = 'Присоединение';
-            childConstraints = TO THE RIGHT;
-            fillVertical = 1;
-            ADD i.box;
-            ADD id.box;
-        };
+        rightContainer {
+            NEW totalContainer {
+                caption = 'Итоги';
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(registrationRateDeclaration);
+                ADD PROPERTY(sumRateDutyDeclaration);
+            }
+        }
+
+        ADD id.box {
+            fillVertical = 2;
+        }
 
         ADD dd.box {
             fillVertical = 2;
-        };
-
-        ADD gd.box {
-            fillVertical = 2;
-        };
+        }
     }
     ADD functions.box;
 }
 
 EXTEND FORM declarations
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY barcodeSkuDeclarationDetail, nameSkuDeclarationDetail, netWeightSkuDeclarationDetail, nameCountrySkuDeclarationDetail,
-                   codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail
+    PROPERTIES(dd) READONLY nameCustomsDeclarationDetail, nameCountryDeclarationDetail, codeCustomsGroupDeclarationDetail,
+                   sumNetWeightDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail
     FILTERS declarationDeclarationDetail(dd)==d
 ;
 

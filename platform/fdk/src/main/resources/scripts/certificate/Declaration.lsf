@@ -2,7 +2,10 @@ MODULE Declaration;
 
 REQUIRE Certificate, Shipment, CustomsGroup;
 
-CLASS declaration 'Таможенная декларация' : certificate, numberedObject;
+CLASS declaration 'Таможенная декларация' : certificate, numeratedObject;
+CLASS declarationPosted 'Проведенная таможенная декларация' : declaration, postedObject;
+
+@defineNumeratedObjectDefault(declaration, 'Нумератор для деклараций', 'ДД');
 
 @defineDocumentHeaderTimePrefix(declaration, ,' создания');
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );
@@ -15,42 +18,63 @@ descriptionDeclaration 'Таможенная декларация' (declaration)
 
 @defineCertificateBatch(declaration, 'Таможенная декларация');
 
+customsZoneDeclaration = DATA customsZone(declaration);
+nameCustomsZoneDeclaration 'Таможенная зона' (declaration) = name(customsZoneDeclaration(declaration));
+currencyCustomsZoneDeclaration (declaration) = currencyCustomsZone(customsZoneDeclaration(declaration));
+
 legalEntityDeclaration = DATA legalEntity(declaration);
-namelegalEntityDeclaration 'Импортёр' (declaration) = name(legalEntityDeclaration(declaration));
+nameLegalEntityDeclaration 'Импортёр' (declaration) = name(legalEntityDeclaration(declaration));
 
 currencyDeclaration = DATA currency(declaration);
 nameCurrencyDeclaration 'Валюта' (declaration) = name(currencyDeclaration(declaration));
 
-homeCurrencyDeclaration = DATA currency(declaration);
-nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = name(homeCurrencyDeclaration(declaration));
-
-typeExchangeDeclaration 'Тип обмена (ИД)' = DATA typeExchange(declaration);
+typeExchangeDeclaration = DATA typeExchange(declaration);
 nameTypeExchangeDeclaration 'Тип обмена' (declaration) = name(typeExchangeDeclaration(declaration));
 
+homeCurrencyDeclaration = currencyTypeExchange(typeExchangeDeclaration(declaration));
+nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = name(homeCurrencyDeclaration(declaration));
+
 rateExchangeDeclaration 'Курс' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));
-roundCurrencyDeclaration(number, declaration) = roundCurrency(number, homeCurrencyDeclaration(declaration));
+roundCurrencyDeclaration(number, declaration) = roundCurrency(number, currencyTypeExchange(typeExchangeDeclaration(declaration)));
+
+rateExchangeCustomsZoneDeclaration 'Курс' = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyCustomsZoneDeclaration(declaration), dateDeclaration(declaration));
 
 
 FORM declaration 'Таможенная декларация'
     OBJECTS d = declaration FIXED PANEL
-    PROPERTIES(d) seriesObject, numberObject, dateDeclaration, timeDeclaration, namelegalEntityDeclaration, nameCurrencyDeclaration,
-                  nameHomeCurrencyDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration
+    PROPERTIES(d) objectClassName, nameNumeratorObject, seriesObject, numberObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
+                  nameCurrencyDeclaration, nameCustomsZoneDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration, rateExchangeCustomsZoneDeclaration
     EDIT declaration OBJECT d
 ;
 
 DESIGN declaration FROM DEFAULT{
     main{
-        NEW headContainer {
-            childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(dateDeclaration);
-            ADD PROPERTY(timeDeclaration);
-            ADD PROPERTY(namelegalEntityDeclaration);
-            ADD PROPERTY(nameCurrencyDeclaration);
-            ADD PROPERTY(nameHomeCurrencyDeclaration);
-            ADD PROPERTY(nameTypeExchangeDeclaration);
-            ADD PROPERTY(rateExchangeDeclaration);
+        NEW topContainer {
+            childConstraints = TO THE RIGHT;
+            NEW headContainer {
+                childConstraints = TO THE BOTTOM;
+                caption = 'Шапка документа';
+                ADD PROPERTY(objectClassName);
+                ADD PROPERTY(nameNumeratorObject);
+                ADD PROPERTY(seriesObject);
+                ADD PROPERTY(numberObject);
+                ADD PROPERTY(dateDeclaration);
+                ADD PROPERTY(timeDeclaration);
+                ADD PROPERTY(nameLegalEntityDeclaration);
+                ADD PROPERTY(nameCustomsZoneDeclaration);
+            }
+
+            NEW rightContainer {
+                childConstraints = TO THE BOTTOM;
+                NEW parameterContainer {
+                    caption = 'Валюты и курсы';
+                    childConstraints = TO THE BOTTOM;
+                    ADD PROPERTY(nameCurrencyDeclaration);
+                    ADD PROPERTY(nameTypeExchangeDeclaration);
+                    ADD PROPERTY(rateExchangeDeclaration);
+                    ADD PROPERTY(rateExchangeCustomsZoneDeclaration);
+                }
+            }
         }
     }
     ADD functions.box;
@@ -58,13 +82,13 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Таможенные декларации'
     OBJECTS d = declaration
-    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, namelegalEntityDeclaration, nameCurrencyDeclaration
+    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, nameLegalEntityDeclaration, nameCurrencyDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
 FORM declarationsDialog 'Таможенные декларация'
     OBJECTS d = declaration
-    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, namelegalEntityDeclaration, nameCurrencyDeclaration,
+    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, nameLegalEntityDeclaration, nameCurrencyDeclaration,
                   nameHomeCurrencyDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration
 
     DIALOG declaration OBJECT d
