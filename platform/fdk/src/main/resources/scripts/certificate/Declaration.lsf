@@ -3,6 +3,8 @@ MODULE Declaration;
 REQUIRE Certificate, Shipment, CustomsGroup;
 
 CLASS declaration 'Таможенная декларация' : certificate, numeratedObject;
+TABLE declaration(declaration);
+
 CLASS declarationPosted 'Проведенная таможенная декларация' : declaration, postedObject;
 
 @defineNumeratedObjectDefault(declaration, 'Нумератор для деклараций', 'ДД');

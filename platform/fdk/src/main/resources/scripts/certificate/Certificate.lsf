@@ -3,11 +3,12 @@ MODULE Certificate;
 REQUIRE Document;
 
 CLASS ABSTRACT certificate 'Документ качества';
+TABLE certificate(certificate);
 
 @defineDocumentAbstractHeaderTimePrefix(certificate, ,' создания');
 @defineDocumentAbstractHeaderTimePrefix(certificate, to, ' действия');
-numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGroup MINCHARWIDTH 7;
-seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup FIXEDCHARWIDTH 3;
+numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
+seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3;
 seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
 descriptionCertificate 'Документ качества' (certificate) =

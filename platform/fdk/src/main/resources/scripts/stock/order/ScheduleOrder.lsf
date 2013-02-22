@@ -14,7 +14,10 @@ CLASS STATIC genType 'Тип генерации' {
 };
 
 CLASS ABSTRACT scheduleOrder 'График';
+TABLE scheduleOrder(scheduleOrder);
+
 CLASS ABSTRACT scheduleOrderDetail 'Заказ по графику';
+TABLE scheduleOrderDetail(scheduleOrderDetail);
 
 startDateScheduleOrder 'Дата начала' = ABSTRACT DATE (scheduleOrder) IN base;
 endDateScheduleOrder 'Дата окончания' = ABSTRACT DATE (scheduleOrder) IN base;
@@ -86,10 +89,13 @@ META defineScheduleOrder(sign, stockProp)
     CONSTRAINT transferDayScheduleOrder(scheduleOrder) != DOW.friday AND transferDayScheduleOrder(scheduleOrder) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
     //свойства "По дням недели и месяца"
+    TABLE schedulerOrderMonth(schedulerOrder, month);
     inMonthScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, month);
-    inDayScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, DOW);
     inAllMonthScheduleOrder 'Включить все месяцы' = DATA BOOLEAN (scheduleOrder);
     inMonthScheduleOrder(scheduleOrder, month) <- inAllMonthScheduleOrder(scheduleOrder) WHEN ASSIGNED(inAllMonthScheduleOrder(scheduleOrder) AND month IS month);
+
+    TABLE schedulerOrderDOW(schedulerOrder, DOW);
+    inDayScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, DOW);
 
     toShowGenDay (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genDays;
     toShowGenNumber (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genNumber;

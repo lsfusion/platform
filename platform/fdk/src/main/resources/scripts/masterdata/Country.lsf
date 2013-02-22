@@ -4,8 +4,9 @@ REQUIRE System, Utils, DefaultData, I18n, Currency;
 
 CLASS country 'Страна' : named, multiLanguageNamed;
 
-TABLE countryDate(country, DATE);
 TABLE country(country);
+TABLE countryDate(country, DATE);
+TABLE countryCountry(country, country);
 
 nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (country) IN base; //logics.country.name.origin.country
 sidCountry 'Код страны' (country) = DATA STRING[3] (country) IN base; // logics.country.key

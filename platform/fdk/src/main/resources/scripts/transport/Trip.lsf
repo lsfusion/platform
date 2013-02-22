@@ -5,6 +5,7 @@ REQUIRE Order, Shipment, Route, ContractLedger;
 NAMESPACE Trip;
 
 CLASS trip 'Рейс' : numeratedObject;
+TABLE trip(trip);
 
 @defineDocumentHeaderTime(trip);
 @defineNumeratedObjectDefault(trip, 'Нумератор для рейсов', 'РЕ');
@@ -32,6 +33,7 @@ quantityFromTripStock (trip, stock) = GROUP SUM 1 IF quantityFromOrderStock(orde
 quantityToTripStock (trip, stock) = GROUP SUM 1 IF quantityToOrderStock(order, stock) BY tripOrder(order), stock;
 quantityTripStock(trip, stock) = UNION SUM quantityFromTripStock(trip, stock), quantityToTripStock(trip, stock);
 
+TABLE tripStock(trip, stock);
 numberStockTrip 'Порядковый номер' = DATA INTEGER(stock, trip);
 numberStockTrip(stock, trip) => quantityTripStock(trip, stock)>0 RESOLVE FALSE;
 

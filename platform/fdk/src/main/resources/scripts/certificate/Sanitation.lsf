@@ -3,6 +3,7 @@ MODULE Sanitation;
 REQUIRE Certificate, Shipment;
 
 CLASS sanitation 'ГГР' : certificate, numberedObject;
+TABLE sanitation(sanitation);
 
 @defineDocumentHeaderTimePrefix(sanitation, ,' создания');
 @defineDocumentHeaderTimePrefix(sanitation, to, ' действия');

@@ -212,6 +212,7 @@ isStockSkuType 'Складируемые' (type) = type IS skuType AND NOT type 
 CLASS ABSTRACT sku 'SKU';
 TABLE sku(sku);
 TABLE legalEntitySku(legalEntity, sku);
+TABLE countrySku(country, sku);
 
 skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
 
@@ -486,6 +487,9 @@ signedSumSkuLedger 'Сумма' (ledger) = UNION CLASS sumInSkuLedger(ledger),
 
 TABLE skuStock(sku, stock);
 TABLE skuStockDate(sku, stock, DATE);
+
+TABLE skuGroupStock(skuGroup, stock);
+TABLE skuStockGroup(sku, stockGroup);
 
 META defineSkuLedgerBalanceProperties(postfix, caption)
     skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;

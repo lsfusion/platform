@@ -3,6 +3,7 @@ MODULE Compliance;
 REQUIRE Certificate, Shipment;
 
 CLASS compliance 'Сертификат соответствия' : certificate, numberedObject;
+TABLE compliance(compliance);
 
 @defineDocumentHeaderTimePrefix(compliance, ,' создания');
 @defineDocumentHeaderTimePrefix(compliance, to, ' действия');

@@ -3,11 +3,13 @@ MODULE CustomsGroup;
 REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax;
 
 CLASS customsZone 'Таможенная зона' : named;
+TABLE customsZone(customsZone);
 
 currencyCustomsZone = DATA currency(customsZone);
 nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;
 
 CLASS customsGroup 'Позиция ТН ВЭД' : named;
+TABLE customsGroup(customsGroup);
 
 codeCustomsGroup 'Код' = DATA STRING[10](customsGroup);
 

@@ -19,6 +19,7 @@ multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (substitute);
 allBOMsSubstitute 'Во всех спецификациях'= DATA BOOLEAN (substitute);
 allBOMsSubstitute(substitute) <- TRUE WHEN ASSIGNED(substitute IS substitute);
 
+TABLE substituteComponent(substitute, component);
 includeSubstituteComponent 'Вкл.'= DATA BOOLEAN (substitute, component);
 excludeSubstituteComponent 'Искл.'= DATA BOOLEAN (substitute, component);
 toShowIncludeSubstitute (substitute) = substitute IS substitute AND NOT allBOMsSubstitute(substitute);

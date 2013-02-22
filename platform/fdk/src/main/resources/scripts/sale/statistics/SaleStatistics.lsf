@@ -64,6 +64,7 @@ addStatisticGroup 'Добавить' (statisticGroup)= addStatisticGroupCountry(
 statisticGroupCountrySku 'Статистическая группа' = ABSTRACT statisticGroup (country, sku);
 nameStatisticGroupCountrySku 'Статистическая группа' = name(statisticGroupCountrySku(country, sku));
 
+TABLE statisticGroupSku(statisticGroup, sku);
 isParentStatisticGroupSku (statisticGroup, sku) = isParentStatisticGroupStatisticGroup(statisticGroupCountrySku(countryStatisticGroup(statisticGroup),sku), statisticGroup) PERSISTENT;
 isParentLeafStatisticGroupSku (statisticGroup, sku) = isParentLeafStatisticGroupStatisticGroup(statisticGroupCountrySku(countryStatisticGroup(statisticGroup),sku), statisticGroup) PERSISTENT;
 parentStatisticGroupCountrySku (country, sku) = parentStatisticGroup(statisticGroupCountrySku(country,sku)) PERSISTENT;

@@ -4,6 +4,7 @@ REQUIRE Transport, Numerator;
 
 // ------------------------------- Route ----------------------------------- //
 CLASS route 'Маршрут' : numeratedObject;
+TABLE route(route);
 
 truckRoute = DATA truck(route);
 sidTruckRoute 'Машина' (route) = sidTruck(truckRoute(route));
@@ -31,6 +32,7 @@ legalEntityNode = ABSTRACT legalEntity(node);
 
 nameLegalEntityNode 'Юр. лицо' (node) = name(legalEntityNode(node));
 
+TABLE nodeRoute(node, route);
 inNodeRoute 'Вкючен' = DATA BOOLEAN(node, route);
 numberNodeRoute 'Порядковый номер' = DATA INTEGER(node, route);
 

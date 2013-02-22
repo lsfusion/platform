@@ -84,6 +84,7 @@ CLASS item 'Товар' : sku;
 TABLE item(item);
 
 TABLE itemDate (item, DATE);
+TABLE itemCountry (item, country);
 
 // Связь с группой товаров
 itemGroupItem = DATA itemGroup(item) AUTOSET;

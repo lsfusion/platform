@@ -457,7 +457,7 @@ DESIGN userRepricing FROM DEFAULT {
 //-- SKU
 @defineDocumentSkuSystemLedgerPriceListType(userRepricing, accountPriceListType, departmentStore);
 @extendFormDocumentSku(userRepricing, userRepricing, p);
-allSkuUserRepricing 'Весь остаток' = DATA BOOLEAN (sku, userRepricing);
+allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (sku, userRepricing);
 
 overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
     REQUEST BOOLEAN INPUT;

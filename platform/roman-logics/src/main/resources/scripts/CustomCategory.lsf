@@ -160,8 +160,7 @@ addCategory10Category9CustomsZone 'Добавить' = ACTION (customCategory9, 
 
 createCustomsZone 'Задать таможенную зону и связать ее с ТН ВЭД' = ACTION ()  {
 
-    ADDOBJ customsZone;
-    FOR g == addedObject() DO {
+    FOR ADDOBJ g = customsZone DO {
         SET name(g) <- 'Таможенный Союз';
         SET customsZoneCountry(country) <- g WHERE country IS country;
         SET customsZoneCustomCategory10(customCategory10) <- g WHERE customCategory10 IS customCategory10;

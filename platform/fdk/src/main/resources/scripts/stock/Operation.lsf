@@ -3,6 +3,7 @@ MODULE Operation;
 REQUIRE Utils, Historizable;
 
 CLASS ABSTRACT operation 'Операция' : named, historizable;
+TABLE operation(operation);
 
 META defineRecursionGroupChoose(object, prefix)
 
@@ -68,15 +69,19 @@ END
 META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
 
     CLASS prefix###operation 'Операция' : operation;
+    TABLE prefix###operation(prefix###operation);
 
+    TABLE priceListType###prefix###operation(priceListType, prefix###operation);
     isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
 
+    TABLE legalEntity###prefix###operation(legalEntity, prefix###operation);
     isSupplier###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
     isSupplierGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
 
     isCustomer###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
     isCustomerGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
 
+    TABLE legalEntityGroup###prefix###operation(legalEntityGroup, prefix###operation);
     @defineRecursionGroupChoose(prefix###operation, supplier);
     @defineRecursionGroupChoose(prefix###operation, customer);
 

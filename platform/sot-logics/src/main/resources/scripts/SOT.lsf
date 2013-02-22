@@ -12,6 +12,7 @@ REQUIRE System,
         Warehouse;
 
 CLASS sotUOM 'Единица измерений SOT' : externalizable;
+TABLE sotUOM(sotUOM);
 
 nameSotUOM 'Наименование' (sotUOM) = DATA STRING[100](sotUOM) IN base;
 
