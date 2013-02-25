@@ -268,8 +268,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                   new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
                   new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")});
         formResult = addStaticClass("formResult", "Результат вызова формы",
-                new String[]{"null", "ok", "close"},
-                new String[]{"Неизвестно", "Принять", "Закрыть"});
+                new String[]{"drop", "ok", "close"},
+                new String[]{"Сбросить", "Принять", "Закрыть"});
 
         // todo : раскидать по модулям
     }
