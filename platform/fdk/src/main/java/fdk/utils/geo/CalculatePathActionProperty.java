@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
@@ -21,9 +22,7 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class CalculatePathActionProperty extends ScriptingActionProperty {
 
@@ -49,10 +48,12 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
             String destinations = "destinations=";
             int index = 1;
 
+            boolean coordinatesFlag = true;
             Object startPathPOI = getLCP("startPathPOI").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
             if (startPathPOI != null) {
                 Map<Integer, DataObject> poiMap = new HashMap<Integer, DataObject>();
-                for (int i=0,size=result.size();i<size;i++) {
+                Map<DataObject, String> poiLatLongMap = new HashMap<DataObject, String>();
+                for (int i = 0, size = result.size(); i < size; i++) {
                     ImMap<Object, ObjectValue> values = result.getValue(i);
 
                     Double latitude = (Double) values.get("latitude").getValue();
@@ -60,41 +61,69 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
 
                     if (latitude != null && longitude != null) {
                         String prefix = index != 1 ? "|" : "";
-                        origins += prefix + latitude + "," + longitude;
-                        destinations += prefix + latitude + "," + longitude;
+                        String latLong = latitude + "," + longitude;
+                        origins += prefix + latLong;
+                        destinations += prefix + latLong;
                         DataObject POI = result.getKey(i).singleValue();
+                        poiLatLongMap.put(POI, latLong);
                         if (POI.getValue().equals(startPathPOI))
                             poiMap.put(0, POI);
                         else {
                             poiMap.put(index, POI);
                             index++;
                         }
+                    } else {
+                        coordinatesFlag = false;
+                        break;
                     }
                 }
-                int size = result.values().size();
-                if (size != 0) {
 
-                    int[][] distances = new int[size][size];
+                if (coordinatesFlag) {
+                    int size = result.values().size();
+                    if (size != 0) {
 
-                    final JSONObject response = JsonReader.read(url + origins + "&" + destinations + "&sensor=false");
-                    if (response.getString("status").equals("OK")) {
-                        JSONArray locations = response.getJSONArray("rows");
+                        int[][] distances = new int[size][size];
 
-                        for (int i = 0; i < locations.length(); i++) {
-                            JSONArray locationList = locations.getJSONObject(i).getJSONArray("elements");
-                            for (int j = 0; j < locationList.length(); j++) {
-                                JSONObject location = locationList.getJSONObject(j);
-                                if (location.get("status").equals("OK"))
-                                    distances[i][j] = (Integer) location.getJSONObject("distance").get("value");
+                        final JSONObject response = JsonReader.read(url + origins + "&" + destinations + "&sensor=false");
+                        if (response.getString("status").equals("OK")) {
+                            JSONArray locations = response.getJSONArray("rows");
+
+                            for (int i = 0; i < locations.length(); i++) {
+                                JSONArray locationList = locations.getJSONObject(i).getJSONArray("elements");
+                                for (int j = 0; j < locationList.length(); j++) {
+                                    JSONObject location = locationList.getJSONObject(j);
+                                    if (location.get("status").equals("OK"))
+                                        distances[i][j] = (Integer) location.getJSONObject("distance").get("value");
+                                }
+                            }
+
+                            int[] path = getShortestPath(distances);
+                            Map<String, Integer> addressMap = new HashMap<String, Integer>();
+                            List<Object[]> orders = new ArrayList<Object[]>();
+                            for (int element : path) {
+                                String latLong = poiLatLongMap.get(poiMap.get(element));
+                                DataObject POI = poiMap.get(element);
+                                int i = addressMap.containsKey(latLong) ? addressMap.get(latLong) : (element + 1);
+                                orders.add(new Object[]{i, POI});
+                                addressMap.put(latLong, i);
+                            }
+
+                            Collections.sort(orders, new OrdersComparator());
+
+                            int offset = 0;
+                            int previous = 0;
+                            for (Object[] entry : orders) {
+                                Integer order = (Integer) entry[0];
+                                DataObject POI = (DataObject) entry[1];
+                                if ((order - previous) > 1)
+                                    offset += order - previous - 1;
+                                previous = order;
+                                getLCP("numberPathPOI").change(order - offset, context.getSession(), POI);
                             }
                         }
-
-                        int[] path = getShortestPath(distances);
-
-                        for (int element : path) {
-                            getLCP("numberPathPOI").change(element+1, context.getSession(), poiMap.get(element));
-                        }
                     }
+                } else {
+                    context.requestUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
                 }
             }
         } catch (SQLException e) {
@@ -104,6 +133,20 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
         }
 
     }
+
+    class OrdersComparator implements Comparator {
+        public int compare(Object ord1, Object ord2) {
+            int ord1Key = (Integer) ((Object[]) ord1)[0];
+            int ord2Key = (Integer) ((Object[]) ord2)[0];
+            if (ord1Key > ord2Key)
+                return 1;
+            else if (ord1Key < ord2Key)
+                return -1;
+            else
+                return 0;
+        }
+    }
+
 
     public static int[] getShortestPath(int[][] dist) {
         int n = dist.length;
