@@ -1030,7 +1030,7 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithPar
 		$property = self.addScriptedJProp($mainPropObj.property, $exprList.props);
 	}
 }
-	:	mainPropObj=propertyObject
+	:	('JOIN')? mainPropObj=propertyObject
 		'('
 		exprList=propertyExpressionList[context, dynamic]
 		')'
@@ -2828,7 +2828,7 @@ fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
 fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'TEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
-LOGICAL_LITERAL :	'TRUE' | 'FALSE';	
+LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
 ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };

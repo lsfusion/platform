@@ -98,8 +98,8 @@ sessionObj() = DATA SESSION object ();
 
 // Join property
 // Expression syntax:
-// (name | '[' propertyDefinition ']') (param1, ..., paramN)
-storeName 'Склад' (document) = name(store(document)) IN base;
+// [JOIN] (name | '[' propertyDefinition ']') (param1, ..., paramN)
+storeName 'Склад' (document) = JOIN name(store(document)) IN base;
 storeSizeName = name(storeSize(store)) IN base; // можем не указывать именованные параметры слева от '=', но все равно пользоваться ими
 objectIsStore = [IS store](object);             // аналог: object IS store
 
