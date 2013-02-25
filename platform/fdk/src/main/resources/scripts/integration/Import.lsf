@@ -63,3 +63,7 @@ EXTEND FORM banks
     PROPERTIES (b) READONLY sidExternalizable BEFORE delete(b)
 ;
 
+EXTEND FORM wares
+    PROPERTIES (w) READONLY sidExternalizable BEFORE delete(w)
+;
+
