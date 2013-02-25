@@ -147,6 +147,10 @@
             <groupId>org.moxieapps.gwt.uploader</groupId>
             <artifactId>uploader</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.samaxes.filter</groupId>
+            <artifactId>cachefilter</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>log4j</groupId>

@@ -58,6 +58,7 @@
         <validation.api.version>1.0.0.GA</validation.api.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
+        <cachefilter.version>2.0</cachefilter.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.5.0-patched-2</gwt.version>
@@ -665,6 +666,11 @@
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
                 <version>${commons.fileupload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.samaxes.filter</groupId>
+                <artifactId>cachefilter</artifactId>
+                <version>${cachefilter.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->

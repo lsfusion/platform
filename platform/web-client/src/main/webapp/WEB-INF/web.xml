@@ -121,4 +121,22 @@
         <filter-name>springRequestContextFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <filter>
+        <filter-name>imagesCache</filter-name>
+        <filter-class>com.samaxes.filter.CacheFilter</filter-class>
+        <init-param>
+            <param-name>static</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>expirationTime</param-name>
+            <param-value>2592000</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>imagesCache</filter-name>
+        <url-pattern>/images/*</url-pattern>
+    </filter-mapping>
+
 </web-app>

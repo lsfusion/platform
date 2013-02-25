@@ -21,6 +21,9 @@
                 <includes>
                     <include>platform/gwt/**/*.*</include>
                 </includes>
+                <excludes>
+                    <exclude>platform/gwt/**/server/**/*.*</exclude>
+                </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
