@@ -21,6 +21,7 @@ public class ImportData {
     private List<StockSupplier> stockSuppliersList;
     private List<UserInvoiceDetail> userInvoicesList;
     private Integer numberOfItemsAtATime;
+    private Integer numberOfUserInvoicesAtATime;
     private Boolean importInactive;
     private Boolean importUserInvoicesPosted;
 
@@ -169,6 +170,14 @@ public class ImportData {
 
     public void setNumberOfItemsAtATime(Integer numberOfItemsAtATime) {
         this.numberOfItemsAtATime = numberOfItemsAtATime;
+    }
+
+    public Integer getNumberOfUserInvoicesAtATime() {
+        return numberOfUserInvoicesAtATime;
+    }
+
+    public void setNumberOfUserInvoicesAtATime(Integer numberOfUserInvoicesAtATime) {
+        this.numberOfUserInvoicesAtATime = numberOfUserInvoicesAtATime;
     }
 
     public Boolean getImportInactive() {

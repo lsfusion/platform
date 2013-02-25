@@ -63,7 +63,7 @@ public class ImportActionProperty {
 
             importAssortment(importData.getAssortmentsList(), importData.getStockSuppliersList());
 
-            importUserInvoices(importData.getUserInvoicesList(), importData.getImportUserInvoicesPosted());
+            importUserInvoices(importData.getUserInvoicesList(), importData.getImportUserInvoicesPosted(), importData.getNumberOfUserInvoicesAtATime());
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
@@ -383,14 +383,16 @@ public class ImportActionProperty {
         }
     }
 
-    private void importUserInvoices(List<UserInvoiceDetail> userInvoiceDetailsList, Boolean posted) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    private void importUserInvoices(List<UserInvoiceDetail> userInvoiceDetailsList, Boolean posted, Integer numberOfUserInvoicesAtATime) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+
+        if(numberOfUserInvoicesAtATime==null)
+            numberOfUserInvoicesAtATime = 20000;
 
         try {
             if (userInvoiceDetailsList != null) {
-                int count = 20000;
-                for (int start = 0; true; start += count) {
+                for (int start = 0; true; start += numberOfUserInvoicesAtATime) {
 
-                    int finish = count < userInvoiceDetailsList.size() ? count : userInvoiceDetailsList.size();
+                    int finish = (start + numberOfUserInvoicesAtATime) < userInvoiceDetailsList.size() ? (start + numberOfUserInvoicesAtATime) : userInvoiceDetailsList.size();
                     List<UserInvoiceDetail> dataUserInvoiceDetail = start < finish ? userInvoiceDetailsList.subList(start, finish) : new ArrayList<UserInvoiceDetail>();
                     if (dataUserInvoiceDetail.isEmpty())
                         return;
