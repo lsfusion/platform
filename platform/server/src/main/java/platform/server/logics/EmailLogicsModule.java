@@ -54,7 +54,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     @Override
     public void initProperties() throws RecognitionException {
-        fromAddress = addDProp(getGroupByName("emailGroup"), "fromAddress", getString("logics.email.sender"), StringClass.get(50));
+        fromAddress = addDProp(getGroupByName("email"), "fromAddress", getString("logics.email.sender"), StringClass.get(50));
         super.initProperties();
 
         // ------- Управление почтой ------ //
