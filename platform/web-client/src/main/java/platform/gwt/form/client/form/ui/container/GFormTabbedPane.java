@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 
 public class GFormTabbedPane extends GAbstractFormContainer {
     private ResizableTabPanel tabsPanel;
+    private ArrayList<GComponent> visibleComponents = new ArrayList<GComponent>();
 
     public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
@@ -24,7 +25,7 @@ public class GFormTabbedPane extends GAbstractFormContainer {
             @Override
             public void onSelection(SelectionEvent<Integer> e) {
                 int index = e.getSelectedItem();
-                formController.setTabVisible(key, (GComponent) childrenViews.keySet().toArray()[index]);
+                formController.setTabVisible(key, visibleComponents.get(index));
             }
         });
     }
@@ -37,12 +38,14 @@ public class GFormTabbedPane extends GAbstractFormContainer {
     @Override
     protected void addToContainer(GComponent childKey, Widget childView, int position) {
         tabsPanel.insert(childView, getTabTitle(childKey), position == -1 ? tabsPanel.getWidgetCount() : position);
+        visibleComponents.add(position == -1 ? visibleComponents.size() : position, childKey);
         ensureTabSelection();
     }
 
     @Override
     protected void removeFromContainer(GComponent childKey, Widget childView) {
         tabsPanel.remove(childView);
+        visibleComponents.remove(childKey);
         ensureTabSelection();
     }
 
