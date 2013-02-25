@@ -119,7 +119,7 @@ invoicesDeclarationDetail 'Накладные' (declarationDetail) =
     GROUP CONCAT seriesNumberInvoiceDetail(invoiceDetail) , ','
               BY declarationDetailInvoiceDetail(invoiceDetail) ORDER invoiceDetail  MINCHARWIDTH 20 PREFCHARWIDTH 40 MAXCHARWIDTH 60;
 
-toCreateDeclarationDetails 'Создать строки' = ACTION (declaration) {
+toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration) {
     FOR quantityDeclarationDetailing(declaration, customsName, customsGroup, country, price)>0 ADDOBJ dd=declarationDetail DO {
         SET declarationDeclarationDetail(dd) <- declaration;
         SET nameCustomsDeclarationDetail(dd) <- customsName;
@@ -153,10 +153,12 @@ sumRateDutyDeclarationDetail 'Пошлина' (declarationDetail) = roundCurrenc
 sumRateDutyDeclaration 'Пошлина' (declaration) = GROUP SUM sumRateDutyDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) MINCHARWIDTH 12;
 
 //НДС
-percentVATDeclaratioDetail 'НДС, %' (declarationDetail) = valueCurrentRateSupplierVATCustomsGroup(customsGroupDeclarationDetail(declarationDetail)); // dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+percentVATDeclaratioDetail 'НДС, %' (declarationDetail) = dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
 
 sumRateVATDeclarationDetail 'НДС' (declarationDetail) = (sumRateDeclarationDetail(declarationDetail) + sumRateDutyDeclarationDetail(declarationDetail)) *
                                                         (percentVATDeclaratioDetail(declarationDetail)/100);
+
+sumRateVATDeclaration 'НДС' (declaration) = GROUP SUM sumRateVATDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) MINCHARWIDTH 12;
 
 // оформление
 registrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = registrationCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
@@ -167,44 +169,47 @@ registrationRateDeclaration 'Таможенный сбор' (declaration) = roun
 
 
 EXTEND FORM declaration
-    PROPERTIES(d)  invoicesDeclaration, showFormDeclarationInvoices, registrationRateDeclaration, sumRateDutyDeclaration
+    PROPERTIES(d)  invoicesDeclaration, registrationRateDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS id=userInvoiceDetail
     PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                    nameCustomsUserInvoiceDetail, nameCountryUserInvoiceDetail, sumNetWeightInvoiceDetail
     PROPERTIES(id) codeCustomsGroupUserInvoiceDetail
     PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail
-    FILTERS declarationUserInvoiceDetail(id) == d
 
-    PROPERTIES (d) toCreateDeclarationDetails TODRAW id FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (d) showFormDeclarationInvoices TODRAW id FORCE PANEL DRAWTOTOOLBAR
+    FILTERS declarationUserInvoiceDetail(id) == d
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY invoicesDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
                    codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
                    sumRateDeclarationDetail, sumRateDutyDeclarationDetail, percentVATDeclaratioDetail, sumRateVATDeclarationDetail
     PROPERTIES(dd) delete
+
+    PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL DRAWTOTOOLBAR
     FILTERS declarationDeclarationDetail(dd) == d
 ;
 
 
 EXTEND DESIGN declaration {
     main {
-        headContainer {
+        parameterContainer {
             ADD PROPERTY(invoicesDeclaration);
-            ADD PROPERTY(showFormDeclarationInvoices);
         }
 
         rightContainer {
             NEW totalContainer {
-                caption = 'Итоги';
+                caption = 'Суммы документа';
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(registrationRateDeclaration);
                 ADD PROPERTY(sumRateDutyDeclaration);
+                ADD PROPERTY(sumRateVATDeclaration);
             }
         }
 
         ADD id.box {
             fillVertical = 2;
+            //ADD PROPERTY(showFormDeclarationInvoices);
         }
 
         ADD dd.box {
@@ -215,9 +220,12 @@ EXTEND DESIGN declaration {
 }
 
 EXTEND FORM declarations
+    PROPERTIES(d) registrationRateDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+
     OBJECTS dd=declarationDetail
-    PROPERTIES(dd) READONLY nameCustomsDeclarationDetail, nameCountryDeclarationDetail, codeCustomsGroupDeclarationDetail,
-                   sumNetWeightDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail
+    PROPERTIES(dd) READONLY nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
+                   codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
+                   sumRateDeclarationDetail, sumRateDutyDeclarationDetail, percentVATDeclaratioDetail, sumRateVATDeclarationDetail
     FILTERS declarationDeclarationDetail(dd)==d
 ;
 

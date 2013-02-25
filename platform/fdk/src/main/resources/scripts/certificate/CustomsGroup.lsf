@@ -21,11 +21,11 @@ TABLE customsGroupData(customsGroup, DATE);
 
 @defineHistorizableCustom(supplierVATCustomsGroup, 'НДС таможни', range, numberRange, customsGroup, codeCustomsGroup, base);
 
-dataValueSupplierVATCustomsGroupDate 'НДС поставщика, %' (customsGroup, date) = valueRateRangeDate(dataSupplierVATCustomsGroupDate(customsGroup, date), date);
+dataValueSupplierVATCustomsGroupDate 'НДС поставщика, %' (customsGroup, date) = valueRateRangeDate(supplierVATCustomsGroupDate(customsGroup, date), date);
 valueCurrentRateSupplierVATCustomsGroup 'НДС поставщика, %' (customsGroup) = valueCurrentRateRange(supplierVATCustomsGroup(customsGroup));
 
 @defineHistorizable(percentDutyCustomsGroup, 'Пошлина (%)', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
-@defineHistorizable(weightDutyCustomsGroup, 'Пошлина (евро)', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
+@defineHistorizable(weightDutyCustomsGroup, 'Пошлина (валют.)', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
 
 @defineHistorizable(registrationCustomsGroup, 'Таможенный сбор', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
 
@@ -89,7 +89,7 @@ FORM customsGroups 'Позиции ТН ВЭД'
 
 
 NAVIGATOR {
-    certificateNavigator {
+    NEW customsNavigator 'ВЭД' BEFORE masterData TO toolbar IMAGE '/images/cop.png' {
         ADD customsZones;
         ADD customsGroups;
     }
