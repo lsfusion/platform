@@ -1,0 +1,77 @@
+MODULE  BOMFood;
+
+REQUIRE BOM, ItemNutrition;
+
+
+// ------------------------------------------------------------------- //
+GROUP fastGroup 'Хим-ий состав / энерг.ценность' : base;
+
+recipesBOM 'Номер по сборнику рецептов' = DATA STRING[100] (BOM) IN documentPrmGroup;
+recipesProduct 'Номер по сборнику рецептов' (product) = recipesBOM(BOMProduct(product));
+
+fastComponent 'Жиры' = DATA NUMERIC[8,2] (component);
+carbohydratesComponent 'Углеводы' = DATA NUMERIC[8,2] (component);
+proteinsComponent 'Белки' = DATA NUMERIC[8,2] (component);
+energyComponent 'Энерг.ценность' = DATA NUMERIC[8,2] (component);
+
+fastComponent(component) <- fatsItem(materialComponent(component))*10*netWeightItem(materialComponent(component))*nettoQuantityComponent(component)
+        WHEN CHANGED (materialComponent(component)) OR
+             CHANGED (nettoQuantityComponent(component));
+carbohydratesComponent(component) <- carbohydratesItem(materialComponent(component))*10*netWeightItem(materialComponent(component))*nettoQuantityComponent(component)
+        WHEN CHANGED (materialComponent(component)) OR
+             CHANGED (nettoQuantityComponent(component));
+proteinsComponent(component) <- proteinsItem(materialComponent(component))*10*netWeightItem(materialComponent(component))*nettoQuantityComponent(component)
+        WHEN CHANGED (materialComponent(component)) OR
+             CHANGED (nettoQuantityComponent(component));
+energyComponent(component) <- energyItem(materialComponent(component))*10*netWeightItem(materialComponent(component))*nettoQuantityComponent(component)
+        WHEN CHANGED (materialComponent(component)) OR
+             CHANGED (nettoQuantityComponent(component));
+
+
+fatsBOM 'Жиры'(BOM) = GROUP SUM fastComponent(component) BY BOMComponent(component) IN fastGroup;
+carbohydratesBOM 'Углеводы'(BOM) = GROUP SUM carbohydratesComponent(component) BY BOMComponent(component) IN fastGroup;
+proteinsBOM 'Белки'(BOM) = GROUP SUM proteinsComponent(component) BY BOMComponent(component) IN fastGroup;
+energyBOM 'Энерг.ценность'(BOM) = GROUP SUM energyComponent(component) BY BOMComponent(component) IN fastGroup;
+
+fastProduct 'Жиры (ед.)' = DATA NUMERIC[8,2] (product);
+carbohydratesProduct 'Углеводы (ед.)' = DATA NUMERIC[8,2] (product);
+proteinsProduct 'Белки (ед.)' = DATA NUMERIC[8,2] (product);
+energyProduct 'Энерг.ценность (ед.)' = DATA NUMERIC[8,2] (product);
+
+compositionProduct 'Состав' = DATA STRING[255] (product) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+componentsBOM 'Компоненты' (BOM) = GROUP CONCAT toString255(nameMaterialComponent(component)), ', '
+                                       BY BOMComponent(component)
+                                       ORDER indexComponent(component) MINCHARWIDTH 100 PERSISTENT;
+componentsProduct 'Компоненты' (product)= componentsBOM(BOMProduct(product));
+
+compositionProduct(product) <- componentsProduct(product) WHEN CHANGED(componentsProduct(product));
+
+fastProduct(product) <- fatsBOM(BOMProduct(product)) / (quantityProduct(product)*10*netWeightItem(skuProduct(product)))
+        WHEN CHANGED (fatsBOM(BOMProduct(product))) OR
+             CHANGED (quantityProduct(product)) OR
+             CHANGED (skuProduct(product));
+carbohydratesProduct(product) <- carbohydratesBOM(BOMProduct(product)) / (quantityProduct(product)*10*netWeightItem(skuProduct(product)))
+        WHEN CHANGED (carbohydratesBOM(BOMProduct(product))) OR
+             CHANGED (quantityProduct(product)) OR
+             CHANGED (skuProduct(product));
+proteinsProduct(product) <- proteinsBOM(BOMProduct(product)) / (quantityProduct(product)*10*netWeightItem(skuProduct(product)))
+        WHEN CHANGED (proteinsBOM(BOMProduct(product))) OR
+             CHANGED (quantityProduct(product)) OR
+             CHANGED (skuProduct(product));
+energyProduct(product) <- energyBOM(BOMProduct(product)) / (quantityProduct(product)*10*netWeightItem(skuProduct(product)))
+        WHEN CHANGED (energyBOM(BOMProduct(product))) OR
+             CHANGED (quantityProduct(product)) OR
+             CHANGED (skuProduct(product));
+
+EXTEND FORM BOM
+    PROPERTIES(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
+    PROPERTIES(b) recipesBOM
+    PROPERTIES(p) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct
+    PROPERTIES(c) BEFORE delete(c) fastComponent, carbohydratesComponent, proteinsComponent, energyComponent
+;
+EXTEND DESIGN BOM {
+    b.box {
+        ADD b.fastGroup;
+    }
+}
+

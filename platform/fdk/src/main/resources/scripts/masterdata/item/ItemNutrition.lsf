@@ -8,11 +8,11 @@ GROUP itemNutritionGroup 'Энергетическая ценность' : publi
 
 nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN itemNutritionGroup MINCHARWIDTH 50;
 
-energyItem 'Энергетическая ценность на 100г, ккал' = DATA DOUBLE (item) IN itemNutritionGroup;
+energyItem 'Энергетическая ценность на 100г, ккал' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
 
-fatsItem 'Жиры на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
-carbohydratesItem 'Углеводы на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
-proteinsItem 'Белки на 100г, г' = DATA DOUBLE (item) IN itemNutritionGroup;
+fatsItem 'Жиры на 100г, г' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
+carbohydratesItem 'Углеводы на 100г, г' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
+proteinsItem 'Белки на 100г, г' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
 
 containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN itemNutritionGroup;
 

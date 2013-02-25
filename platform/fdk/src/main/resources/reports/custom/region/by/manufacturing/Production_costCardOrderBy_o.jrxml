@@ -58,6 +58,7 @@
 	<field name="VATSumProductDetail" class="java.lang.Double"/>
 	<field name="calcPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
 	<field name="premiumComponentsSumInBOMProductDetail" class="java.lang.Double"/>
+	<field name="recipesProductDetail" class="java.lang.String"/>
 	<field name="s" class="java.lang.Integer"/>
 	<field name="quantityProductDetailSku" class="java.lang.Double"/>
 	<field name="quantityProductProductDetailSku" class="java.lang.Double"/>
@@ -219,7 +220,7 @@
 			</band>
 			<band height="15">
 				<textField>
-					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="386" height="12"/>
+					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="373" height="12"/>
 					<box>
 						<topPen lineWidth="0.0"/>
 						<leftPen lineWidth="0.0"/>
@@ -229,7 +230,7 @@
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Номер по сборнику рецептуры:" +"   "+$F{descriptionBOMProductDetail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Номер по сборнику рецептуры:" +"   "+($F{recipesProductDetail}!=null?$F{recipesProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="386" y="0" width="165" height="12"/>

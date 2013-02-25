@@ -228,6 +228,7 @@ EXTEND FORM technology
 
 skuProduct = DATA sku (product);
 nameSkuProduct 'SKU' (product) = nameSku(skuProduct(product)) IN recognize;
+idBarcodeSkuProduct 'Штрих-код' (product)= idBarcodeSku(skuProduct(product));
 
 UOMProduct = DATA UOM (product);
 shortNameUOMProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN recognize;
@@ -245,7 +246,7 @@ descriptionProduct 'Название документа' (product) = description
 @defineDocumentHeaderQuantityCustomPrefix (BOM, product, , ' (изделие)');
 
 pricePercentProduct 'Удельный вес цены,%' = DATA NUMERIC[8,3] (product);
-pricePercentProduct(product) <- 100 WHEN ASSIGNED (product IS product);
+pricePercentProduct(product) <- 100.000 WHEN ASSIGNED (product IS product);
 priceCoeffProduct (product) = pricePercentProduct(product) / 100 PERSISTENT;
 
 pricePercentBOM 'Удельный вес цен, %' = GROUP SUM pricePercentProduct(product) BY BOMProduct(product) PERSISTENT IN documentSumGroup;
@@ -278,6 +279,7 @@ descriptionComponent 'Название документа' (component)= descript
 
 materialComponent = DATA material (component);
 nameMaterialComponent 'Материал' (component) = nameMaterial(materialComponent(component));
+idBarcodeSkuComponent 'Штрих-код' (component)= idBarcodeSku(materialComponent(component));
 
 nameComponent 'Компонент' (component) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
                                       name(BOMComponent(component)),
@@ -353,7 +355,7 @@ FORM components 'Компоненты'
 FORM BOM 'Спецификация'
 
     OBJECTS b=BOM FIXED PANEL
-    OBJECTS dt = DATE FIXED PANEL
+//    OBJECTS dt = DATE FIXED PANEL
 
     PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM//, bruttoQuantityComponentBOM
