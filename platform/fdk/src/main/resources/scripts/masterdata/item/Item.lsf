@@ -36,7 +36,7 @@ FORM itemGroups 'Товарные группы'
     TREE treeGroups g=itemGroup PARENT parentItemGroup
     PROPERTIES inItemGroup(g), moveItemGroup(g) TODRAW g FORCE PANEL DRAWTOTOOLBAR
     PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
-    PROPERTIES(g) ADDFORM, EDITFORM
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
     ORDER BY canonicalNameItemGroup
 ;
 
