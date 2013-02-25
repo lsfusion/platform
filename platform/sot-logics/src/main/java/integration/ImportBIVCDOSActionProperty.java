@@ -80,7 +80,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
-                        importUserInvoices(path + "//OST", path + "//SEDI", numberOfUserInvoices, startDate, context) : null);
+                        importUserInvoices(path + "//OST", path + "//SEDI", startDate, numberOfUserInvoices, context) : null);
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
@@ -93,7 +93,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     importSotUOM(path + "//SEDI", path + "//OST", numberOfItems);
 
                 if ((getLCP("importBIVCDOSUserInvoices").read(context) != null))
-                    importSOTUserInvoices(path + "//SEDI", path + "//OST", numberOfUserInvoices);
+                    importSOTUserInvoices(path + "//SEDI", path + "//OST", startDate, numberOfUserInvoices);
 
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -323,12 +323,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if(!groupID.startsWith("929"))
-                    itemsList.add(new Item(itemID, groupID, name,
-                            uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
-                            uom == null ? null : uom.uomName, null, null, null, null, date, null,
-                            uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
-                            retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID)));
+                    if (!groupID.startsWith("929"))
+                        itemsList.add(new Item(itemID, groupID, name,
+                                uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
+                                uom == null ? null : uom.uomName, null, null, null, null, date, null,
+                                uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
+                                retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID)));
                 }
             }
         }
@@ -336,8 +336,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Integer numberOfItems,
-                                                       Date startDate, ExecutionContext context) throws IOException, ParseException {
+    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Date startDate, Integer numberOfItems,
+                                                       ExecutionContext context) throws IOException, ParseException {
 
         Map<String, Double> totalSumWarehouse = new HashMap<String, Double>();
 
@@ -376,7 +376,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    dateIsOk = startDate == null || (date != null && startDate.before(date));
+                    dateIsOk = startDate != null && (date != null && startDate.before(date));
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
@@ -469,7 +469,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     Date date2 = date2Field == null ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     Date date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
-                    dateIsOk = startDate == null || (date != null && startDate.before(date));
+                    dateIsOk = startDate != null && (date != null && startDate.before(date));
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
                 }
                 if ((smol != null && !warehouses.contains(smol)) && (dateIsOk || quantity > 0))
@@ -798,10 +798,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private void importSOTUserInvoices(String sediPath, String ostPath, Integer numberOfItems) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException, ParseException {
+    private void importSOTUserInvoices(String sediPath, String ostPath, Date startDate, Integer numberOfItems) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException, ParseException {
 
         try {
-            List<List<Object>> data = importSOTUserInvoicesFromFile(sediPath, ostPath, numberOfItems);
+            List<List<Object>> data = importSOTUserInvoicesFromFile(sediPath, ostPath, startDate, numberOfItems);
             if (data != null) {
 
                 ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
@@ -834,7 +834,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private List<List<Object>> importSOTUserInvoicesFromFile(String sediPath, String ostPath, Integer numberOfItems) throws IOException, ParseException {
+    private List<List<Object>> importSOTUserInvoicesFromFile(String sediPath, String ostPath, Date startDate, Integer numberOfItems) throws IOException, ParseException {
 
         List<List<Object>> SOTUserInvoicesList = new ArrayList<List<Object>>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
@@ -844,6 +844,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         String uomID = null;
         String dateField = null;
+        Boolean dateIsOk = false;
         String name = null;
         Double quantity = null;
         while ((line = reader.readLine()) != null) {
@@ -858,7 +859,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (extra == null && splittedLine.length > 3) {
                     splittedLine = reader.readLine().split(":");
                     uomID = splittedLine.length > 0 ? splittedLine[0].substring(15, 18) : null;
-                    dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    String date1Field = splittedLine.length > 0 ? splittedLine[0].substring(18, 24) : null;
+                    Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
+                    String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
+                    Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
+                    dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
+                    Date date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    dateIsOk = startDate != null && (date != null && startDate.before(date));
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                 } else if ("9".equals(extra)) {
@@ -866,7 +873,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if (quantity != null && quantity != 0)
+                    if ((quantity != null && quantity != 0) || (dateIsOk))
                         SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
                                 pnt13 + pnt48));
                 }
