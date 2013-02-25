@@ -93,7 +93,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="4"/>
+					<font fontName="lsf.TimesNewRoman" size="4"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nameStoreLabelTransaction}]]></textFieldExpression>
 			</textField>
@@ -106,7 +106,7 @@
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement>
-					<font fontName="Arial" size="4"/>
+					<font fontName="lsf.TimesNewRoman" size="4"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nameCompanyLabelTransaction}]]></textFieldExpression>
 			</textField>

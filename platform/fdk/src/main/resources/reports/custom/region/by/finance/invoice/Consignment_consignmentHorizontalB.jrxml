@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" />
 	<parameter name="c_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="c_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="c_params" class="java.util.Map"/>
