@@ -10,8 +10,11 @@ import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.Header;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.CellPreviewEvent;
+import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.grid.EditEvent;
+import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +60,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 && !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
             stopPropagation(event);
             form.okPressed();
+        } else if (BrowserEvents.KEYPRESS.equals(event.getType()) && GKeyStroke.isPossibleStartFilteringEvent(event)) {
+            stopPropagation(event);
+            quickFilter(new NativeEditEvent(event));
+        } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
+            GAbstractGroupObjectController goController = getGroupController();
+            if (goController.filter != null && goController.filter.hasConditions()) {
+                event.stopPropagation();
+                goController.removeFilters();
+                return;
+            }
         }
         super.onBrowserEvent2(event);
     }
@@ -119,6 +132,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public abstract GGroupObjectValue getCurrentKey();
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
+    public abstract void quickFilter(EditEvent event);
+    public abstract GAbstractGroupObjectController getGroupController();
 
     void storeScrollPosition() {
         int selectedRow = getKeyboardSelectedRow();

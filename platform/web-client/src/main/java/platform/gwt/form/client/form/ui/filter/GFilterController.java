@@ -70,6 +70,10 @@ public abstract class GFilterController {
         return conditions;
     }
 
+    public boolean hasConditions() {
+        return !conditions.isEmpty();
+    }
+
     private void showFilterPressed() {
         if (state == State.REMOVED) {
             addPressed();

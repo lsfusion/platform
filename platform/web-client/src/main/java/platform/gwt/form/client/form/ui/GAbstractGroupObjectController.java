@@ -90,6 +90,10 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
         filter.quickEditFilter(editEvent, propertyDraw);
     }
 
+    public void removeFilters() {
+        filter.allRemovedPressed();
+    }
+
     protected abstract void changeFilter(List<GPropertyFilter> conditions);
     public abstract boolean focusFirstWidget();
 }

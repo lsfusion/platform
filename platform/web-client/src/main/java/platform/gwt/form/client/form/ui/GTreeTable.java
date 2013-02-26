@@ -308,6 +308,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return keyboardSelectionHandler;
     }
 
+    @Override
+    public GAbstractGroupObjectController getGroupController() {
+        return treeGroupController;
+    }
+
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 1) {

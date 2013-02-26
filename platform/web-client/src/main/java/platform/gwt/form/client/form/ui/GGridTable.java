@@ -326,6 +326,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return keyboardSelectionHandler;
     }
 
+    @Override
+    public GAbstractGroupObjectController getGroupController() {
+        return groupObjectController;
+    }
+
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 0) {
