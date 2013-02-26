@@ -68,6 +68,8 @@ carbohydratesProductDetail 'Углеводы (ед.)'(productDetail) = carbohydr
 proteinsProductDetail 'Белки (ед.)'(productDetail) = proteinsInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
 energyProductDetail 'Энерг.ценность (ед.)'(productDetail) = energyInBOMProductDetail(productDetail) / (quantityInBOMProductDetail(productDetail)*10*netWeightItem(skuProductDetail(productDetail)));
 
+netWeightProduct 'Вес нетто, кг' (product)= netWeightItem(skuProduct(product));
+descriptionBOMProduct 'Спецификация'(product) = descriptionBOM(BOMProduct(product));
 
 FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
@@ -111,14 +113,6 @@ EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printCostCardOrder, printIntakeSheetOrder
 ;
 
-FORM dateValue 'Дата'
-    OBJECTS dt=DATE FIXED PANEL
-    PROPERTIES (dt) dtVal=OBJVALUE
-;
-DESIGN dateValue FROM DEFAULT {
-    PROPERTY (dtVal) {font = 'Tahoma bold 36'; caption = 'Введите дату';}
-}
-
 selectDateProduct = DATA SESSION BOOLEAN (DATE, product);
 
 FORM technologicalCardsProductBy 'Технологическая карта' PRINT
@@ -139,12 +133,12 @@ FORM technologicalCardsProductBy 'Технологическая карта' PRI
 ;
 
 printTechnologicalCardBOM 'Технологическая карта'  = ACTION (BOM) NEWSESSION AUTOAPPLY {
-    FORM dateValue MODAL;
+    FORM dialogDate MODAL;
         IF formResult() == formResult.ok THEN {
             FOR BOMProduct(product) == BOM DO {
-                SET selectDateProduct(date,product) <- TRUE IF product IS product WHERE date==chosenDate('dt');
+                SET selectDateProduct(date,product) <- TRUE IF product IS product WHERE date == chosenDate('d');
             }
-            FORM technologicalCardsProductBy  OBJECTS dt = chosenDate('dt') MODAL;
+            FORM technologicalCardsProductBy  OBJECTS dt = chosenDate('d') MODAL;
         }
 } IMAGE 'print.png' IN printGroup;
 
@@ -156,6 +150,24 @@ EXTEND DESIGN BOMs {
         ADD b.printGroup;
     }
 }
+
+printTechnologicalCardOrder 'Технологическая карта'  = ACTION (order) NEWSESSION AUTOAPPLY {
+
+    FOR quantityProductOrder(product,order) DO {
+        SET selectDateProduct(date,product) <- TRUE IF product IS product WHERE date == dateOrder(order);
+    }
+    FORM technologicalCardsProductBy  OBJECTS dt = dateOrder(order) MODAL;
+
+} IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM orders
+    PROPERTIES(o) FORCE PANEL printTechnologicalCardOrder
+;
+//EXTEND DESIGN BOMs {
+//    printTab {
+//        ADD b.printGroup;
+//    }
+//}
 
 // todo: глючит иерархия, печатает то два объекта (product) то шесть. Оставил для решения вопроса, если понадобится.
 //FORM technologicalCardBOMBy 'Технологическая карта' PRINT
@@ -178,8 +190,47 @@ EXTEND DESIGN BOMs {
 //    FILTERS       BOMProduct(p) == BOMComponent(c)
 //;
 //printTechnologicalCardBOM 'Технологическая карта'  = ACTION (BOM) {
-//    FORM dateValue MODAL;
+//    FORM dialogDate MODAL;
 //    IF formResult() == formResult.ok THEN {
-//        FORM technologicalCardBOMBy OBJECTS b = BOM, dt = chosenDate('dt');
+//        FORM technologicalCardBOMBy OBJECTS b = BOM, dt = chosenDate('d');
 //    }
 //} IMAGE 'print.png' IN printGroup;
+
+FORM actStudyOfCulinaryBOM 'Акт контрольной проработки' PRINT
+
+    OBJECTS dt=DATE FIXED PANEL
+    PROPERTIES (dt) OBJVALUE
+
+    OBJECTS b=BOM FIXED PANEL
+    PROPERTIES(b) name, descriptionBOM, noteBOM
+    PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM,
+                  nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM, nameEmployeeCommitteeBOM READONLY, actStudyOfCulinaryCommitteeBOM
+    OBJECTS p = product
+    PROPERTIES(p) indexProduct, idBarcodeSkuProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct, netWeightProduct, descriptionBOMProduct
+
+    FILTERS       BOMProduct(p) == b
+
+    OBJECTS c = component
+    PROPERTIES(c) indexComponent, idBarcodeSkuComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent
+    PROPERTIES(c,dt) wastageComponentDate, bruttoQuantityComponentDate
+
+    FILTERS       BOMComponent(c) == BOMProduct(p)
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY commonName, namePositionEmployee
+    FILTERS       inCommitteeBOMEmployee(b,e)
+
+;
+printActStudyOfCulinaryBOM 'Акт контрольной проработки'  = ACTION (BOM) NEWSESSION AUTOAPPLY {
+
+    FORM dialogDate MODAL;
+        IF formResult() == formResult.ok THEN {
+            FORM actStudyOfCulinaryBOM  OBJECTS dt = chosenDate('d'), b = BOM MODAL;
+        }
+
+} IMAGE 'print.png' IN printGroup;
+
+EXTEND FORM BOMs
+    PROPERTIES(b) FORCE PANEL printActStudyOfCulinaryBOM
+;
+

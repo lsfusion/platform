@@ -656,6 +656,7 @@ DESIGN orders FROM DEFAULT {
                     title = 'Печать';
                     childConstraints = TO THE BOTTOM;
                     fillVertical = 1.0;
+                    fillHorizontal = 1.0;
                 }
             }
         }

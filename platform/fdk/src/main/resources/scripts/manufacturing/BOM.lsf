@@ -360,20 +360,20 @@ FORM BOM 'Спецификация'
     PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM//, bruttoQuantityComponentBOM
     OBJECTS p = product
-    PROPERTIES(p) indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
+    PROPERTIES(p) indexProduct, idBarcodeSkuProduct,nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
 
     PROPERTIES(p) ADDOBJ, delete
     PROPERTIES(b) TODRAW p deleteProductBOM
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
-    PROPERTIES(c) indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
+    PROPERTIES(c) indexComponent, idBarcodeSkuComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
                   overCurWastageComponent ON CHANGE EXEC changeWastageComponent(c) BACKGROUND backgroundWastageComponent(c) READONLYIF technologyComponent(c),
                   overCurBruttoQuantityComponent ON CHANGE EXEC changeBruttoQuantityComponent(c) BACKGROUND backgroundBruttoQuantityComponent(c) READONLYIF technologyComponent(c)
 
     PROPERTIES(c) ADDOBJ, delete
     PROPERTIES(b) TODRAW c deleteComponentBOM
-    FILTERS       BOMComponent(c) == b
+    FILTERS       BOMComponent(c) == BOMProduct(p)//b
 
     EDIT BOM OBJECT b
 ;
@@ -448,11 +448,11 @@ FORM BOMs 'Спецификации'
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product
-    PROPERTIES(p) READONLY indexProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
+    PROPERTIES(p) READONLY indexProduct, idBarcodeSkuProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct
     FILTERS       BOMProduct(p) == b
 
     OBJECTS c = component
-    PROPERTIES(c) READONLY indexComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
+    PROPERTIES(c) READONLY indexComponent, idBarcodeSkuComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
                   overCurWastageComponent, overCurBruttoQuantityComponent
     FILTERS       BOMComponent(c) == b
 ;
@@ -494,6 +494,105 @@ DESIGN BOMs FROM DEFAULT {
                     }
                 }
             }
+        }
+    }
+}
+
+//--------------------------------Комиссия для акта контрольной проработки----------------------------------//
+CLASS actStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции' : committee;
+
+FORM actStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции'
+    OBJECTS c=actStudyOfCulinaryCommittee FIXED PANEL
+    PROPERTIES(c)      name
+
+    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    PROPERTIES READONLY sgTreeName = name(sg)
+
+    OBJECTS ts=stock
+    PROPERTIES    READONLY tsTreeName = name(ts)
+    PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID
+
+    FILTERS isParentStockGroupStock(sg, ts)
+    ORDER BY tsTreeName
+
+
+    OBJECTS e=employee
+    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
+
+    PROPERTIES(c, e)   inCommitteeEmployee
+    FILTERS            countDivisionEmployeeCommittee (e, c)
+    FILTERGROUP filters6
+        FILTER 'Показывать только членов комиссии' 'F10' inCommitteeEmployee(c, e)
+    FILTERGROUP filters5
+        FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, ts)
+
+    EDIT actStudyOfCulinaryCommittee OBJECT c
+;
+
+DESIGN actStudyOfCulinaryCommittee FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+
+        NEW caseOne BEFORE e.box {
+            childConstraints = TO THE RIGHT;
+            title = 'Отделы, для которых действуют комиссии';
+
+            ADD stockTree.tree {
+                fillHorizontal = 1;
+            }
+
+            ADD ts.box {
+                fillHorizontal = 2;
+            }
+        }
+    }
+}
+
+FORM actStudyOfCulinaryCommittees 'Комиссии для акта контрольной проработки продукции'
+    OBJECTS a=actStudyOfCulinaryCommittee
+    PROPERTIES(a)      READONLY name, nameEmployeeCommittee
+    PROPERTIES(a)      ADDFORM, EDITFORM
+
+    DIALOG actStudyOfCulinaryCommittee OBJECT a
+;
+
+//-----------------Акт контрольной проработки--------------------//
+
+actStudyOfCulinaryCommitteeBOM (BOM) = DATA actStudyOfCulinaryCommittee(BOM);
+nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = commonName(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+nameEmployeeCommitteeBOM 'Члены комиссии' (BOM)= nameEmployeeCommittee(actStudyOfCulinaryCommitteeBOM(BOM));
+
+inCommitteeBOMEmployee (BOM, employee) = inCommitteeEmployee(actStudyOfCulinaryCommitteeBOM (BOM), employee);
+commonNameEmployeeCommitteeBOM 'Члены комиссии' (BOM) = namePositionEmployeeCommittee(actStudyOfCulinaryCommitteeBOM (BOM));
+
+companyBOM (BOM) = DATA legalEntity(BOM);
+nameCompanyBOM 'Компания' (BOM) = name(companyBOM (BOM));
+
+CONSTRAINT  companyBOM(BOM) AND NOT isCompanyLegalEntity(companyBOM (BOM)) CHECKED BY companyBOM
+    MESSAGE 'Для спецификации выбрано организация, которая не является компанией';
+
+EXTEND FORM BOM
+    PROPERTIES(b) nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM, nameEmployeeCommitteeBOM READONLY
+
+    OBJECTS e=employee
+    PROPERTIES(e) READONLY commonName, namePositionEmployee
+    FILTERS       inCommitteeBOMEmployee(b,e)
+;
+EXTEND DESIGN BOM {
+
+    specification.box {
+        NEW row {
+            childConstraints= TO THE BOTTOM;
+            title = 'Акт контрольной проработки';
+            NEW row1{
+                title = 'Акт';
+                childConstraints= TO THE RIGHTBOTTOM;
+                ADD PROPERTY(nameCompanyBOM);
+                ADD PROPERTY(nameActStudyOfCulinaryCommitteeBOM);
+                ADD PROPERTY(nameEmployeeCommitteeBOM);
+            }
+            ADD e.box {title = 'Сотрудники комиссии';}
         }
     }
 }
@@ -545,5 +644,6 @@ NAVIGATOR {
     manufacturingMasterData {
         ADD BOMs;
         ADD technologies;
+        ADD actStudyOfCulinaryCommittees;
     }
 }
