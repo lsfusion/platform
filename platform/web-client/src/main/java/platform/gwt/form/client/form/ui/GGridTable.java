@@ -16,6 +16,7 @@ import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import platform.gwt.form.shared.view.classes.GObjectType;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.*;
@@ -49,11 +50,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GGroupObject groupObject;
     private GGridController gridController;
 
-    GridTableKeyboardSelectionHandler keyboardSelectionHandler;
+    private GridTableKeyboardSelectionHandler keyboardSelectionHandler;
+
+    private GGroupObjectController groupObjectController;
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
         super(iform);
 
+        this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
 
@@ -494,6 +498,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public Object getValueAt(Cell.Context context) {
         Column column = getColumn(context.getColumn());
         return column.getValue(context.getRowValue());
+    }
+
+    @Override
+    public void quickFilter(EditEvent event) {
+        groupObjectController.quickEditFilter(event);
     }
 
     public void setValueAt(Cell.Context context, Object value) {

@@ -144,6 +144,16 @@ public class GKeyStroke implements Serializable {
         return false;
     }
 
+    public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
+        int keyCode = event.getKeyCode();
+        return KEYPRESS.equals(event.getType()) &&
+                !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
+                isChangeKeyCode(keyCode) &&
+                keyCode != KEY_DELETE &&
+                keyCode != KEY_BACKSPACE &&
+                keyCode != KEY_INSERT;
+    }
+
     public static boolean isChangeKeyCode(int keyCode) {
         return keyCode != KEY_ENTER
                 && keyCode != KEY_ESCAPE

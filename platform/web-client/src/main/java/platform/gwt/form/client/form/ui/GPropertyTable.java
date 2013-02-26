@@ -15,6 +15,7 @@ import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.classes.GObjectType;
 import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.*;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -22,6 +23,7 @@ import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import static platform.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static platform.gwt.base.client.GwtClientUtils.stopPropagation;
 import static platform.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
+import static platform.gwt.form.shared.view.GEditBindingMap.isQuickEditFilterEvent;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
 
@@ -62,6 +64,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     public abstract Object getValueAt(Cell.Context context);
 
+    public abstract void quickFilter(EditEvent event);
+
     @Override
     protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, T rowValue, Cell.Context context, HasCell<T, C> column) {
         Cell<C> cell = column.getCell();
@@ -88,6 +92,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
         String actionSID = getEditAction(property, editEvent);
 
+        if (isQuickEditFilterEvent(actionSID)) {
+            editEvent.stopPropagation();
+            quickFilter(editEvent);
+            return;
+        }
+
         if (isEditableAwareEditEvent(actionSID) && !isEditable(editContext)) {
             return;
         }
@@ -113,6 +123,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         String actionSID = null;
         if (property.editBindingMap != null) {
             actionSID = property.editBindingMap.getAction(event);
+        }
+
+        if (actionSID == null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {
+            actionSID = editBindingMap.getStartFilteringEvent(event);
         }
 
         if (actionSID == null) {

@@ -13,6 +13,7 @@ import platform.gwt.form.shared.view.GGroupObject;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.*;
@@ -34,8 +35,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private TreeTableKeyboardSelectionHandler keyboardSelectionHandler;
 
-    public GTreeTable(GFormController iformController, GForm iform) {
+    private GTreeGroupController treeGroupController;
+
+    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController) {
         super(iformController);
+
+        this.treeGroupController = treeGroupController;
 
         tree = new GTreeTableTree(iform);
         Column<GTreeGridRecord, Object> column = new Column<GTreeGridRecord, Object>(new GTreeGridControlCell(this)) {
@@ -362,6 +367,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public Object getValueAt(Cell.Context context) {
         GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
         return tree.getValue(record.getGroup(), context.getColumn() - 1, record.getKey());
+    }
+
+    @Override
+    public void quickFilter(EditEvent event) {
+        treeGroupController.quickEditFilter(event);
     }
 
     @Override

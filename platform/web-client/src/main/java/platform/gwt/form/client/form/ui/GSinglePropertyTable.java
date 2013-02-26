@@ -7,6 +7,7 @@ import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 
 import java.util.Arrays;
@@ -113,6 +114,10 @@ public class GSinglePropertyTable extends GPropertyTable {
     public Object getValueAt(Cell.Context context) {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return value;
+    }
+
+    @Override
+    public void quickFilter(EditEvent event) {
     }
 
     @Override

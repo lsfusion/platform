@@ -7,6 +7,7 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.GToolbar;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.reader.GFooterReader;
 
@@ -79,6 +80,14 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
 
     protected boolean showFilter() {
         return true;
+    }
+
+    public void quickEditFilter(EditEvent editEvent) {
+        quickEditFilter(editEvent, null);
+    }
+
+    public void quickEditFilter(EditEvent editEvent, GPropertyDraw propertyDraw) {
+        filter.quickEditFilter(editEvent, propertyDraw);
     }
 
     protected abstract void changeFilter(List<GPropertyFilter> conditions);

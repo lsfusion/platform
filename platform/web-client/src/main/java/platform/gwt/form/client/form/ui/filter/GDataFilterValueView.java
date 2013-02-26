@@ -3,6 +3,7 @@ package platform.gwt.form.client.form.ui.filter;
 import platform.gwt.base.client.ui.ResizableLayoutPanel;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GDataFilterValue;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.io.Serializable;
@@ -51,5 +52,9 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     public void applyFilter() {
+    }
+
+    public void startEditing(EditEvent keyEvent) {
+        valueTable.startEditing(keyEvent);
     }
 }

@@ -7,7 +7,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
+import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.panel.ImageButton;
 
@@ -119,5 +121,13 @@ public class GFilterView extends ResizableVerticalPanel implements GFilterCondit
     public void applyFilter() {
         controller.collapsePressed();
         controller.applyPressed();
+    }
+
+    public void startEditing(EditEvent keyEvent, GPropertyDraw propertyDraw) {
+        if (conditionViews.size() > 0) {
+            GFilterConditionView view = conditionViews.values().iterator().next();
+            view.setSelectedPropertyDraw(propertyDraw);
+            view.startEditing(keyEvent);
+        }
     }
 }

@@ -174,18 +174,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
                 getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
                 return true;
-            } else if (!ctrlPressed) {
-                if (keyCode == KeyCodes.KEY_ENTER) {
-                    if (nativeEvent.getShiftKey()) {
-                        nextRow(false);
-                    } else {
-                        nextColumn(true);
-                    }
-                    return true;
-                } else if (keyCode == KeyCodes.KEY_TAB) {
-                    nextColumn(!nativeEvent.getShiftKey());
-                    return true;
+            } else if (!ctrlPressed && keyCode == KeyCodes.KEY_ENTER) {
+                if (nativeEvent.getShiftKey()) {
+                    nextRow(false);
+                } else {
+                    nextColumn(true);
                 }
+                return true;
             }
             return super.handleKeyEvent(event);
         }

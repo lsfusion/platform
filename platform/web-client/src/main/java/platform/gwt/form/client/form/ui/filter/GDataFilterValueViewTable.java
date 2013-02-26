@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.ui.filter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
@@ -121,6 +122,10 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     public void selectNextCellInColumn(boolean down) {
     }
 
+    public void startEditing(EditEvent event) {
+        cell.beginEditing(event);
+    }
+
     class DataFilterValueEditableCell extends AbstractCell<Object> {
         private boolean isInEditingState = false;
         private GridCellEditor cellEditor;
@@ -129,6 +134,12 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
 
         public DataFilterValueEditableCell() {
             super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR);
+        }
+
+        // переопределяем, чтобы работал quick filter - иначе грид забирает себе фокус после ввода первого символа
+        @Override
+        public boolean resetFocus(Context context, Element parent, Object value) {
+            return true;
         }
 
         @Override
@@ -169,6 +180,15 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
                     valueView.applyFilter();
                 }
             }
+        }
+
+        public void beginEditing(final EditEvent event) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    startEditing(event, null, parentElement);
+                }
+            });
         }
 
         public void startEditing(EditEvent event, Context context, Element parent) {

@@ -17,6 +17,7 @@ public class GEditBindingMap implements Serializable {
     public static final String GROUP_CHANGE = "groupChange";
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
+    public static final String QUICK_FILTER = "qfilter";
 
     private HashMap<GKeyStroke, String> keyBindingMap;
     private LinkedHashMap<String, String> contextMenuBindingMap;
@@ -52,6 +53,16 @@ public class GEditBindingMap implements Serializable {
             return ((InternalEditEvent) event).getAction();
         }
 
+        return null;
+    }
+
+    public String getStartFilteringEvent(EditEvent event) {
+        if (event instanceof NativeEditEvent) {
+            NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
+            if (isPossibleStartFilteringEvent(nativeEvent)) {
+                return QUICK_FILTER;
+            }
+        }
         return null;
     }
 
@@ -98,5 +109,9 @@ public class GEditBindingMap implements Serializable {
                 || CHANGE_WYS.equals(actionSID)
                 || EDIT_OBJECT.equals(actionSID)
                 || GROUP_CHANGE.equals(actionSID);
+    }
+
+    public static boolean isQuickEditFilterEvent(String actionSID) {
+        return QUICK_FILTER.equals(actionSID);
     }
 }

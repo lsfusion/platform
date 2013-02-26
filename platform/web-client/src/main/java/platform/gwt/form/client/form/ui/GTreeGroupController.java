@@ -30,7 +30,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 
-        tree = new GTreeTable(iFormController, iForm);
+        tree = new GTreeTable(iFormController, iForm, this);
 
         CellPanel treeTableView = new ResizableVerticalPanel();
         treeTableView.setSize("100%", "100%");

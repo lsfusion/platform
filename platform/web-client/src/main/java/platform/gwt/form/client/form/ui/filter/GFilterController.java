@@ -10,6 +10,7 @@ import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.panel.ImageButton;
 
@@ -184,6 +185,13 @@ public abstract class GFilterController {
             if (state == State.HIDDEN) {
                 changeState(hiddenState);
             }
+        }
+    }
+
+    public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw) {
+        if (addNewCondition(true, propertyDraw)) {
+            changeState(State.EXPANDED);
+            filterView.startEditing(keyEvent, propertyDraw);
         }
     }
 
