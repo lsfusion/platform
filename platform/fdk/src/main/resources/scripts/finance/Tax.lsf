@@ -307,7 +307,7 @@ END
 
 // ---------- Суммы
 META defineDocumentDetailVATSumCustom(detail, prefix, currencyProp)
-    VATSum###detail 'Сумма НДС' (detail) = roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
+    VATSum###detail 'Сумма НДС' (detail) = roundPriceCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail));
     prefix###sum###detail 'Сумма с НДС' (detail) = sum###detail(detail) (+) VATSum###detail(detail);
 END
 META defineDocumentInterfaceDetailVATSumCustom(detail, prefix, currencyProp)
@@ -357,7 +357,7 @@ END
 
 // ------------ derive
 META deriveDocumentDetailVATDataSumCustom(detail, currencyProp)
-    VATSum###detail (detail)  <- roundCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
+    VATSum###detail (detail)  <- roundPriceCurrency((sum###detail(detail) * valueVAT###detail (detail) / 100), currencyProp###detail(detail))
                     WHEN CHANGED(sum###detail(detail)) OR CHANGED (valueVAT###detail (detail)) OR CHANGED (currencyProp###detail (detail));
 END
 META deriveDocumentDetailVATDataSum(object, currencyProp)
@@ -400,7 +400,7 @@ META defineDocumentInterfaceDetailVATDataSumPrefix (object, prefix)
 END
 
 META deriveDocumentDetailReverseVATSumCustomPrefix(detail, prefixA, prefixB, currencyProp)
-    prefixA###VATSum###detail (detail)  <- roundCurrency([X*Y/(100+Y)](prefixB###sum###detail(detail), value###prefixA###VAT###detail(detail)), currencyProp###detail(detail))
+    prefixA###VATSum###detail (detail)  <- roundPriceCurrency([X*Y/(100+Y)](prefixB###sum###detail(detail), value###prefixA###VAT###detail(detail)), currencyProp###detail(detail))
                     WHEN CHANGED(prefixB###sum###detail(detail)) OR CHANGED (prefixA###VAT###detail(detail)) OR CHANGED (currencyProp###detail(detail));
 
 END

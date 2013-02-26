@@ -1,6 +1,6 @@
 MODULE PurchaseLedger;
 
-REQUIRE System, Stock, Tax, Employee, Purchase;
+REQUIRE System, Stock, Tax, Employee, Purchase, PriceRound;
 
 CLASS ABSTRACT purchaseLedger 'Покупка товара';
 TABLE purchaseLedger(purchaseLedger);
@@ -28,7 +28,7 @@ nameSupplierPurchaseLedger 'Поставщик' (ledger) = name(supplierPurchase
 inSupplierSku 'Связь' (legalEntity, sku)= GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
     BY supplierPurchaseLedger(ledger), skuPurchaseLedger(ledger) PERSISTENT;
 
-sumPurchaseTypeExchangePurchaseLedger 'Сумма покупки валюта' (typeExchange, purchaseLedger)= roundCurrency((sumPurchaseLedger (purchaseLedger)/
+sumPurchaseTypeExchangePurchaseLedger 'Сумма покупки валюта' (typeExchange, purchaseLedger)= roundPriceCurrency((sumPurchaseLedger (purchaseLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockPurchaseLedger(purchaseLedger)), datePurchaseLedger(purchaseLedger))), currencyTypeExchange(typeExchange));
 
 //CONSTRAINT quantityPurchaseLedger(purchaseLedger) == 0 MESSAGE 'ошибка: Количество покупки не должно быть равно нулю';
@@ -97,7 +97,7 @@ quantityPurchaseSkuStockSupplierDateFromTo 'Закуплено за интерв
 
 //---------------------------------Тип обмена---------------------------------------//
 
-sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumPurchaseSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundPriceCurrency((sumPurchaseSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
 
 sumPurchaseTypeExchangeSkuStockDateFromTo 'Закуплено за интервал (сумма-валюта)' (typeExchange, sku, stock, dateFrom, dateTo) = GROUP SUM
         sumPurchaseTypeExchangeSkuStockDate (typeExchange, sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)

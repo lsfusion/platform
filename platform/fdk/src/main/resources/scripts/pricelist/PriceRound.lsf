@@ -168,10 +168,36 @@ loadDefaultPriceInterval  = ACTION (value, shortName) {
 }
 
 loadDefaultPriceIntervals 'Загрузить стандартные округления цен'  = ACTION () {
-    EXEC loadDefaultPriceInterval( -2, 'BLR');
-    EXEC loadDefaultPriceInterval( 2, 'RUB');
-    EXEC loadDefaultPriceInterval( 2, 'UAH');
+    EXEC loadDefaultPriceInterval(2, 'AUD');
+    EXEC loadDefaultPriceInterval(2, 'BGN');
+    EXEC loadDefaultPriceInterval(2, 'UAH');
+    EXEC loadDefaultPriceInterval(2, 'DKK');
+    EXEC loadDefaultPriceInterval(2, 'USD');
+    EXEC loadDefaultPriceInterval(2, 'EUR');
+    EXEC loadDefaultPriceInterval(2, 'PLN');
+    EXEC loadDefaultPriceInterval(2, 'ISK');
+    EXEC loadDefaultPriceInterval(2, 'CAD');
+    EXEC loadDefaultPriceInterval(2, 'CNY');
+    EXEC loadDefaultPriceInterval(2, 'KWD');
+    EXEC loadDefaultPriceInterval(2, 'LVL');
+    EXEC loadDefaultPriceInterval(2, 'LTL');
+    EXEC loadDefaultPriceInterval(2, 'MDL');
+    EXEC loadDefaultPriceInterval(2, 'NOK');
+    EXEC loadDefaultPriceInterval(2, 'RUB');
+    EXEC loadDefaultPriceInterval(2, 'XDR');
+    EXEC loadDefaultPriceInterval(2, 'SGD');
+    EXEC loadDefaultPriceInterval(2, 'KGS');
+    EXEC loadDefaultPriceInterval(2, 'KZT');
+    EXEC loadDefaultPriceInterval(2, 'TRY');
+    EXEC loadDefaultPriceInterval(2, 'GBP');
+    EXEC loadDefaultPriceInterval(2, 'CZK');
+    EXEC loadDefaultPriceInterval(2, 'SEK');
+    EXEC loadDefaultPriceInterval(2, 'CHF');
+    EXEC loadDefaultPriceInterval(2, 'JPY');
+    EXEC loadDefaultPriceInterval(2, 'IRR');
+    EXEC loadDefaultPriceInterval(0, 'BLR');
 } IN loadDefaultGroup;
+
 
 @implementLoadDefaultData(loadDefaultPriceIntervals);
 

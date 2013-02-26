@@ -42,7 +42,7 @@ CONSTRAINT currencyTypeExchange(typeExchangeDeclaration(declaration)) != homeCur
     CHECKED BY homeCurrencyDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';
 
 rateExchangeDeclaration 'Курс' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));
-roundCurrencyDeclaration(number, declaration) = roundCurrency(number, currencyTypeExchange(typeExchangeDeclaration(declaration)));
+roundCurrencyDeclaration(number, declaration) = roundPriceCurrency(number, currencyTypeExchange(typeExchangeDeclaration(declaration)));
 
 rateExchangeCustomsZoneDeclaration 'Курс платежей' = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyCustomsZoneDeclaration(declaration), dateDeclaration(declaration));
 

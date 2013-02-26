@@ -208,7 +208,7 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(le
 outputQuantityProductDetail(detail) <- quantityProductDetail(detail) WHEN CHANGED(quantityProductDetail(detail));
 
 outputProductsSumProductDetail 'Сумма произведенного изделия' = DATA NUMERIC[16,2] (productDetail);
-outputProductsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+outputProductsSumProductDetail(productDetail) <- toNumeric16p2(roundPriceCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (outputQuantityProductDetail(productDetail)) OR
          CHANGED (productsPriceProductDetail(productDetail)) OR
          CHANGED(currencyProductDetail(productDetail));

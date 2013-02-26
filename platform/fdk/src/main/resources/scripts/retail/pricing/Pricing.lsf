@@ -202,7 +202,7 @@ END
 //------------------------  derive or change ------------------------------------//
 
 META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
-    prefix###price###detail(detail)  <- roundCurrency([X*(Y+100)*(Z+100)/10000](
+    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](    // надо округление для sku?????
     0.0 IF detail IS detail OR price###detail(detail),
     0.0 IF detail IS detail OR prefix###markup###detail(detail),
     value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
@@ -229,7 +229,7 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, p
 END
 META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
 
-    calc###prefixA###price###detail(detail)  = roundCurrency([X*(Y+100)*(Z+100)/10000](
+    calc###prefixA###price###detail(detail)  = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
     0.0 IF detail IS detail OR prefixB###price###detail(detail),
     0.0 IF detail IS detail OR prefixC###markup###detail(detail),
     value###prefixD###VAT###detail(detail)), currencyProp###detail(detail));

@@ -478,7 +478,7 @@ retailPriceWHfromRFDetail(WHfromRFDetail) <- priceAPriceSetDocumentSkuCurrencyDa
                                                         WHEN CHANGED(dateTimeWHfromRFDetail(WHfromRFDetail))
                                                              OR CHANGED(skuWHfromRFDetail(WHfromRFDetail));
 
-costSumWHfromRFDetail (WHfromRFDetail) = roundCurrency(costWHfromRFDetail(WHfromRFDetail) * quantityWHfromRFDetail(WHfromRFDetail) * rateExchangeDataWHfromRFDetail(WHfromRFDetail), currencyWHfromRFDetail(WHfromRFDetail));
+costSumWHfromRFDetail (WHfromRFDetail) = roundPriceCurrency(costWHfromRFDetail(WHfromRFDetail) * quantityWHfromRFDetail(WHfromRFDetail) * rateExchangeDataWHfromRFDetail(WHfromRFDetail), currencyWHfromRFDetail(WHfromRFDetail));
 
 accountSumWHfromRFDetail 'Сумма учетная' (WHfromRFDetail) = IF stockWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)) IS departmentStore  THEN retailSumWHfromRFDetail(WHfromRFDetail)
                                                             ELSE costSumWHfromRFDetail(WHfromRFDetail);

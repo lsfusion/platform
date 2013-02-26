@@ -269,11 +269,11 @@ percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](userRep
 CONSTRAINT changePriceTypeUserRepricing(userRepricing) AND NOT percentUserRepricing(userRepricing) //CHECKED BY changePriceTypeUserRepricing
         MESSAGE 'Не задан процент для изменения цены';
 
-newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundCurrency([X+(X*Y)/100](
+newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundPriceCurrency([X+(X*Y)/100](
     curRetailPriceUserRepricingDetail(userRepricingDetail),
     percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail))), currencyUserRepricingDetail(userRepricingDetail));
 
-newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundCurrency([X*(Y+100)*(Z+100)/10000](
+newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
     0.0 IF userRepricingDetail IS userRepricingDetail OR curPriceUserRepricingDetail(userRepricingDetail),
     0.0 IF userRepricingDetail IS userRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
     valueCurVATUserRepricingDetail(userRepricingDetail)), currencyUserRepricingDetail(userRepricingDetail));
@@ -645,15 +645,15 @@ META defineRepricing(sign, stockProp)
 
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');
-    afterSumUserInvoiceDetail (detail)  <- roundCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
+    afterSumUserInvoiceDetail (detail)  <- roundPriceCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
                         WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (priceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, afterRetail, ' розничная после');
-    afterRetailSumUserInvoiceDetail (detail)  <- roundCurrency(balanceBSkuUserInvoiceDetail(detail) * retailPriceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
+    afterRetailSumUserInvoiceDetail (detail)  <- roundPriceCurrency(balanceBSkuUserInvoiceDetail(detail) * retailPriceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
                         WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (retailPriceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
 
     @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, afterRetail, ' после');
 
-    afterRetailVATSumUserInvoiceDetail (detail)  <- roundCurrency([X*Y/(100+Y)](afterRetailSumUserInvoiceDetail(detail), valueRetailVATUserInvoiceDetail(detail)), currencyUserInvoiceDetail(detail))
+    afterRetailVATSumUserInvoiceDetail (detail)  <- roundPriceCurrency([X*Y/(100+Y)](afterRetailSumUserInvoiceDetail(detail), valueRetailVATUserInvoiceDetail(detail)), currencyUserInvoiceDetail(detail))
                     WHEN CHANGED(afterRetailSumUserInvoiceDetail(detail)) OR CHANGED (valueRetailVATUserInvoiceDetail(detail)) OR CHANGED (currencyUserInvoiceDetail(detail));
 
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, afterRetail, ' после');

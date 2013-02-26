@@ -162,7 +162,7 @@ declarationCurrencyCStoWHDetail 'Валюта (ИД)' (CStoWHDetail) = currencyD
 declarationCurrencyCStoWH (CStoWH) = GROUP EQUAL declarationCurrencyCStoWHDetail(CStoWHDetail) BY CStoWHCStoWHDetail(CStoWHDetail);
 shortNameDeclarationCurrencyCStoWH 'Валюта декларации' (CStoWH) = shortNameCurrency(declarationCurrencyCStoWH(CStoWH)) IN documentPrmGroup;
 
-printSumCStoWHDetail 'Стоимость для печати накладной' (CStoWHDetail)= roundCurrency(sumCStoWHDetail(CStoWHDetail)/rateExchangeCustomDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)), declarationCurrencyCStoWHDetail(CStoWHDetail)) PERSISTENT;
+printSumCStoWHDetail 'Стоимость для печати накладной' (CStoWHDetail)= roundPriceCurrency(sumCStoWHDetail(CStoWHDetail)/rateExchangeCustomDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail)), declarationCurrencyCStoWHDetail(CStoWHDetail)) PERSISTENT;
 
 @defineDocumentCurrency(CStoWH);
 @deriveDocumentCurrency(CStoWH, destinationStock);

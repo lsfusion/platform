@@ -60,7 +60,7 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceD
 //
 //@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, RRPExchange, ' (RRP) конвертированная');
 //
-//RRPExchangePriceUserInvoiceDetail (detail)  <-  roundCurrency(           // Какое ставить округление?????
+//RRPExchangePriceUserInvoiceDetail (detail)  <-  roundPriceCurrency(           // Какое ставить округление?????
 //    RRPPriceUserInvoiceDetail (detail)*rateTypeExchangeCurrencyDate(
 //        RRPTypeExchangeUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)),
 //            currencyUserInvoiceDetail(detail))

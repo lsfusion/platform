@@ -1,6 +1,6 @@
 MODULE SaleLedger;
 
-REQUIRE System, Stock, Tax, Employee, Sale;
+REQUIRE System, Stock, Tax, Employee, Sale, PriceRound;
 
 CLASS ABSTRACT saleLedger 'Продажа товара';
 TABLE saleLedger(saleLedger);
@@ -28,7 +28,7 @@ nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger
 inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
     BY customerSaleLedger(ledger), skuSaleLedger(ledger) PERSISTENT;
 
-sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundCurrency((sumSaleLedger (saleLedger)/
+sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundPriceCurrency((sumSaleLedger (saleLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSaleLedger(saleLedger)), dateSaleLedger(saleLedger))), currencyTypeExchange(typeExchange));
 
 
@@ -92,7 +92,7 @@ quantityDaysDateToFrom 'Кол-во дней' (dateTo, dateFrom) =  subtractInte
 
 //---------------------------------Тип обмена---------------------------------------//
 
-sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date)= roundPriceCurrency((sumSoldSkuStockDate (sku, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
 
 sumSoldTypeExchangeSkuStockDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, sku, stock, dateFrom, dateTo) = GROUP SUM
         sumSoldTypeExchangeSkuStockDate (typeExchange, sku, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)

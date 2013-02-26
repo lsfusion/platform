@@ -7,6 +7,7 @@ REQUIRE System,
         PriceRound,
         UserPriceChange,
         Currency,
+        PriceRound,
         RomanSales,
         RomanLogicsModule,
         Barcode,
@@ -163,7 +164,7 @@ reasonPriceSetDocument 'Основание прайса' (priceSetDocument) = UN
 currencyPriceSetDocument = DATA currency (priceSetDocument);
 nameCurrencyPriceSetDocument 'Валюта' (priceSetDocument) = name(currencyPriceSetDocument(priceSetDocument)) MINCHARWIDTH 3 PREFCHARWIDTH 8;
 
-roundCurrencyPriceSetDocument (number, priceSetDocument) = roundCurrency(number, currencyPriceSetDocument(priceSetDocument));
+roundCurrencyPriceSetDocument (number, priceSetDocument) = roundPriceCurrency(number, currencyPriceSetDocument(priceSetDocument));
 
 // ----------------------------------------------- Спецификация --------------------------------------- //
 
@@ -191,7 +192,7 @@ currencyBasePriceSetDocumentArticle = DATA currency (basePriceSetDocument, artic
 nameCurrencyBasePriceSetDocumentArticle 'Валюта' (basePriceSetDocument, article) = name(currencyBasePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 8;
 currencyBasePriceSetDocumentArticle(document, article) => inPriceSetDocumentArticle(document, article) RESOLVE FALSE;
 
-roundCurrencyBasePriceSetDocumentArticle '' (number, basePriceSetDocument, article) = roundCurrency(number, currencyBasePriceSetDocumentArticle(basePriceSetDocument, article));
+roundCurrencyBasePriceSetDocumentArticle '' (number, basePriceSetDocument, article) = roundPriceCurrency(number, currencyBasePriceSetDocumentArticle(basePriceSetDocument, article));
 
 currencyRRPBasePriceSetDocumentArticle  = DATA currency(basePriceSetDocument, article);
 nameCurrencyRRPBasePriceSetDocumentArticle 'Валюта RRP' (basePriceSetDocument, article) = name(currencyRRPBasePriceSetDocumentArticle(basePriceSetDocument, article)) MINCHARWIDTH 8;
@@ -289,7 +290,7 @@ currencyBasePriceSetDocumentSku = DATA currency (basePriceSetDocument, sku);
 nameCurrencyBasePriceSetDocumentSku 'Валюта' (basePriceSetDocument, sku) = name(currencyBasePriceSetDocumentSku(basePriceSetDocument, sku)) MINCHARWIDTH 8;
 currencyBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
-roundCurrencyBasePriceSetDocumentSku '' (number, basePriceSetDocument, sku) = roundCurrency(number, currencyBasePriceSetDocumentSku(basePriceSetDocument, sku));
+roundCurrencyBasePriceSetDocumentSku '' (number, basePriceSetDocument, sku) = roundPriceCurrency(number, currencyBasePriceSetDocumentSku(basePriceSetDocument, sku));
 
 typeExchangeBasePriceSetDocumentSku = DATA typeExchange (basePriceSetDocument, sku);
 nameTypeExchangeBasePriceSetDocumentSku 'Тип обмена' (basePriceSetDocument, sku) = name(typeExchangeBasePriceSetDocumentSku(basePriceSetDocument, sku));
@@ -735,7 +736,7 @@ showFormLogPriceArticle 'История' (article) = ACTION FORM logPriceArticle
 
 // ------------------------------------------------- Форма по редактированию розничных прайсов --------------------------------- //
 
-averagePriceSoldArticleWeekDateFromToDocument 'Средняя цена за неделю' (article, week, dateFrom, dateTo, priceSetDocument)=  roundCurrency((sumSoldArticleWeekDateFromTo(article, week, dateFrom, dateTo) /
+averagePriceSoldArticleWeekDateFromToDocument 'Средняя цена за неделю' (article, week, dateFrom, dateTo, priceSetDocument)=  roundPriceCurrency((sumSoldArticleWeekDateFromTo(article, week, dateFrom, dateTo) /
         quantitySoldArticleWeekDateFromTo(article, week, dateFrom, dateTo)), currencyPriceSetDocument(priceSetDocument));
 
 averageSoldArticleWeekDateFromToDocument 'Продано за неделю кол-во/цена' (article, week, dateFrom, dateTo, priceSetDocument)= [FORMULA STRING[30] 'CAST($1 AS TEXT) || \'(\' || CAST($2 AS TEXT) || \')\'']

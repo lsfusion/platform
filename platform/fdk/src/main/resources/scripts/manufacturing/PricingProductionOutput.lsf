@@ -47,7 +47,7 @@ retailMarkupUserOutputDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
 
 VATMarkupSumUserOutputDetail 'НДС и надбавка' (userOutputDetail) =  retailSumUserOutputDetail(userOutputDetail) (-) supplierSumUserOutputDetail(userOutputDetail);
 
-retailVATSumUserOutputDetail(userOutputDetail) <- roundCurrency([X*Y/(100+Y)](VATMarkupSumUserOutputDetail(userOutputDetail), valueRetailVATUserOutputDetail(userOutputDetail)), currencyUserOutputDetail(userOutputDetail))
+retailVATSumUserOutputDetail(userOutputDetail) <- roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumUserOutputDetail(userOutputDetail), valueRetailVATUserOutputDetail(userOutputDetail)), currencyUserOutputDetail(userOutputDetail))
         WHEN CHANGED(VATMarkupSumUserOutputDetail(userOutputDetail)) OR
              CHANGED(valueRetailVATUserOutputDetail(userOutputDetail)) OR
              CHANGED(currencyUserOutputDetail(userOutputDetail));
@@ -71,9 +71,9 @@ backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
 
 //-- Свойства для аггрегированных производств/расценок
 
-componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail)= roundCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail));
+componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail)= roundPriceCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail));
 VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  outputProductsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
-retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
+retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
 retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail);
 retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail),componentsSumProductDetail(productDetail));
 

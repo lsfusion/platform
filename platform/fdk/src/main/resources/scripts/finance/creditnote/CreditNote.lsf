@@ -241,7 +241,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     priceUserCreditNoteDetail (detail)  <- priceInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
-    sumUserCreditNoteDetail (detail)  <- roundCurrency((quantityUserCreditNoteDetail(detail) *
+    sumUserCreditNoteDetail (detail)  <- roundPriceCurrency((quantityUserCreditNoteDetail(detail) *
         priceUserCreditNoteDetail(detail)), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
         WHEN CHANGED(quantityUserCreditNoteDetail(detail)) OR CHANGED(priceUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
 
@@ -251,7 +251,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     valueVATUserCreditNoteDetail (detail)  <- valueVATInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
-    VATSumUserCreditNoteDetail (detail) <- roundCurrency((sumUserCreditNoteDetail(detail) *
+    VATSumUserCreditNoteDetail (detail) <- roundPriceCurrency((sumUserCreditNoteDetail(detail) *
         valueVATUserCreditNoteDetail (detail) / 100), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
         WHEN CHANGED(sumUserCreditNoteDetail(detail)) OR CHANGED(VATUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
     @deriveDocumentDetailVATPrefixSum (userCreditNote, invoice);
@@ -333,7 +333,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     priceCreditNoteDetail(creditNoteDetail) += priceInvoiceCreditNoteDetail(creditNoteDetail);
 
-    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) = toNumeric16p2(roundCurrency((toShipInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+    sumInvoiceCreditNoteDetail 'Сумма' (invoiceCreditNoteDetail) = toNumeric16p2(roundPriceCurrency((toShipInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
         priceInvoiceCreditNoteDetail(invoiceCreditNoteDetail)), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
 
     sumCreditNoteDetail(creditNoteDetail) += sumInvoiceCreditNoteDetail(creditNoteDetail);
@@ -347,7 +347,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     @defineDocumentAggregationDetailProperty (invoice, invoiceCreditNote, valueVAT, 'НДС, %');
     valueVATCreditNoteDetail (creditNoteDetail) += valueVATInvoiceCreditNoteDetail(creditNoteDetail);
 
-    VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = toNumeric16p2(roundCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
+    VATSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = toNumeric16p2(roundPriceCurrency((sumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) *
     valueVATInvoiceCreditNoteDetail (invoiceCreditNoteDetail) / 100), currencyInvoiceCreditNoteDetail(invoiceCreditNoteDetail)));
 
     invoiceSumInvoiceCreditNoteDetail 'Сумма НДС' (invoiceCreditNoteDetail) = VATSumInvoiceCreditNoteDetail(invoiceCreditNoteDetail) (+)

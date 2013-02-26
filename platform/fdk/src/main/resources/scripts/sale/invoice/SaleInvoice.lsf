@@ -20,8 +20,8 @@ VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore
 
 derivedVATSumUserInvoiceDetail (userInvoiceDetail) =
     IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
-        THEN roundCurrency(invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail)/100, currencyUserInvoiceDetail(userInvoiceDetail))
-        ELSE roundCurrency((sumUserInvoiceDetail(userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail) / 100), currencyUserInvoiceDetail(userInvoiceDetail))
+        THEN roundPriceCurrency(invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail)/100, currencyUserInvoiceDetail(userInvoiceDetail))
+        ELSE roundPriceCurrency((sumUserInvoiceDetail(userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail) / 100), currencyUserInvoiceDetail(userInvoiceDetail))
     PERSISTENT;
 
 VATSumUserInvoiceDetail (userInvoiceDetail) <- derivedVATSumUserInvoiceDetail (userInvoiceDetail)

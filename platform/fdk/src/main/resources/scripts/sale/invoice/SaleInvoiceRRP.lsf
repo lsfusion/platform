@@ -28,8 +28,8 @@ RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(R
                                                          CHANGED(supplierStockUserInvoiceDetail(detail)) OR
                                                          CHANGED(dateTimeUserInvoiceDetail(detail));
 
-RRPSumUserInvoiceDetail 'Сумма (RRP)' (detail) = roundCurrency(RRPPriceUserInvoiceDetail (detail)*quantityUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail));
-RRPSumInvoiceDetail 'Сумма (RRP)' (detail) = roundCurrency(RRPPriceInvoiceDetail(detail)*quantityInvoiceDetail(detail), currencyInvoiceDetail(detail));
+RRPSumUserInvoiceDetail 'Сумма (RRP)' (detail) = roundPriceCurrency(RRPPriceUserInvoiceDetail (detail)*quantityUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail));
+RRPSumInvoiceDetail 'Сумма (RRP)' (detail) = roundPriceCurrency(RRPPriceInvoiceDetail(detail)*quantityInvoiceDetail(detail), currencyInvoiceDetail(detail));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) toShowRRPPriceUserInvoice

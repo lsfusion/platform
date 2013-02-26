@@ -467,12 +467,12 @@ typeExchangeDutyDeclaration 'Тип обмена (ИД)' = typeExchangeSTX() IF 
 nameTypeExchangeCustomDeclaration 'Тип обмена (БУ)' (declaration) = name(typeExchangeCustomDeclaration(declaration)) IN exchangeGroup;
 nameTypeExchangeManagerialDeclaration 'Тип обмена (УУ)' (declaration) = name(typeExchangeManagerialDeclaration(declaration)) IN exchangeGroup;
 
-roundCurrencyDeclaration '' (number, declaration) = roundCurrency(number, currencyDeclaration(declaration));
+roundCurrencyDeclaration '' (number, declaration) = roundPriceCurrency(number, currencyDeclaration(declaration));
 roundCurrencyDeclarationDetail(number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
 currencyToDeclaration 'Валюта страны назначения' (declaration) = currencyTypeExchange(typeExchangeCustomDeclaration(declaration));
 
-roundTypeExchangeDeclaration '' (number, declaration) = roundCurrency(number, currencyToDeclaration(declaration));
+roundTypeExchangeDeclaration '' (number, declaration) = roundPriceCurrency(number, currencyToDeclaration(declaration));
 roundTypeExchangeDeclarationDetail '' (number, declarationDetail) = roundTypeExchangeDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
 typeExchangeCustomDeclaration(declaration) <- typeExchangePayCustomCustomsZone(customsZoneDeclaration(declaration)) WHEN CHANGED (importerDeclaration(declaration));

@@ -92,7 +92,7 @@ toConsumeComponentDetailOrder 'Не списано по заказу' (order) =
 quantityOutputSubstitutesComponentDetail 'Кол-во замены (произведено)' (componentDetail) = bruttoOutputQuantityComponentDetail(componentDetail) * multiplierSubstitutesComponentDetail(componentDetail);
 overQuantityOutputComponentDetail 'Кол-во (произведено)' (componentDetail) = bruttoOutputQuantityComponentDetail(componentDetail) OR quantityOutputSubstitutesComponentDetail(componentDetail);
 
-outputSumComponentDetail (detail) <- toNumeric16p2(roundCurrency((priceComponentDetail(detail)* overQuantityOutputComponentDetail(detail)), currencyComponentDetail(detail)))
+outputSumComponentDetail (detail) <- toNumeric16p2(roundPriceCurrency((priceComponentDetail(detail)* overQuantityOutputComponentDetail(detail)), currencyComponentDetail(detail)))
         WHEN CHANGED(priceComponentDetail(detail)) OR
              CHANGED(overQuantityOutputComponentDetail(detail)) OR
              CHANGED(currencyComponentDetail(detail));

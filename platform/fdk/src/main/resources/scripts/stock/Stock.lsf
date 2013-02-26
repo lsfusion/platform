@@ -1123,7 +1123,7 @@ META defineDocumentInterfaceDetailPrice (object)
 END
 
 META defineDocumentDetailSumCustom (detail, currencyProp)
-    sum###detail 'Сумма' (detail) = toNumeric16p2(roundCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail)));
+    sum###detail 'Сумма' (detail) = toNumeric16p2(roundPriceCurrency((quantity###detail(detail) * price###detail(detail)), currencyProp###detail(detail)));
 END
 META defineDocumentDetailSumCustom (detail)
     @defineDocumentDetailSumCustom(detail, currency);
@@ -1179,7 +1179,7 @@ META defineDocumentDetailDataSum(object)
 END
 
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
-    prefix###sum###detail (detail)  <- roundCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
+    prefix###sum###detail (detail)  <- roundPriceCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))
                     WHEN CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
 

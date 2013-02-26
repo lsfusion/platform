@@ -7,6 +7,7 @@ REQUIRE System,
         Numerator,
         Document,
         Currency,
+        PriceRound,
         Barcode,
         PriceList,
         Agreement,
@@ -626,7 +627,7 @@ META defineHomeCurrencyInvoice(invoice)
 
     rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), homeCurrencyInvoice(invoice), dateInvoice(invoice));
 
-    roundCurrencyInvoice(number, invoice) = roundCurrency(number, currencyInvoice(invoice));
+    roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, currencyInvoice(invoice));
     ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
 
     homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](invoice##Detail);

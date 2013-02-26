@@ -31,8 +31,8 @@ VATUserOrder (userOrder) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(sup
 
 derivedVATSumUserOrderDetail (userOrderDetail) =
     IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == rangeType.units
-        THEN roundCurrency(invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail) * valueVATUserOrderDetail (userOrderDetail)/100, currencyUserOrderDetail(userOrderDetail))
-        ELSE roundCurrency((sumUserOrderDetail(userOrderDetail) * valueVATUserOrderDetail (userOrderDetail) / 100), currencyUserOrderDetail(userOrderDetail))
+        THEN roundPriceCurrency(invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail) * valueVATUserOrderDetail (userOrderDetail)/100, currencyUserOrderDetail(userOrderDetail))
+        ELSE roundPriceCurrency((sumUserOrderDetail(userOrderDetail) * valueVATUserOrderDetail (userOrderDetail) / 100), currencyUserOrderDetail(userOrderDetail))
     PERSISTENT;
 
 VATSumUserOrderDetail (userOrderDetail) <- derivedVATSumUserOrderDetail (userOrderDetail)

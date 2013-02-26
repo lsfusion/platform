@@ -43,7 +43,7 @@ sumSoldArticleDateFromTo 'Продано за интервал (сумма)' (ar
 
 //---------------------------------Тип обмена---------------------------------------//
 
-sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date)= roundCurrency((sumSoldArticleStockDate (article, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
+sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date)= roundPriceCurrency((sumSoldArticleStockDate (article, stock, date)/ rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stock), date)), currencyTypeExchange(typeExchange));
 
 sumSoldTypeExchangeArticleStockDateFromTo 'Продано за интервал (сумма-валюта)' (typeExchange, article, stock, dateFrom, dateTo) = GROUP SUM
         sumSoldTypeExchangeArticleStockDate (typeExchange, article, stock, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)

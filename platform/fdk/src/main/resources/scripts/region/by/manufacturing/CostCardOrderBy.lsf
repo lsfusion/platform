@@ -15,7 +15,7 @@ totalPriceSkuOrder 'Цена компонента' (sku, order) = priceSkuOrder(
 totalPremiumPriceSkuOrder 'Цена компонента с надбавкой'(sku, order) = totalPriceSkuOrder(sku,order)*multiplierCalcSkuOrder(sku, order);
 
 quantityInBOMProductDetail 'Кол-во изделий в спец.'(productDetail)= quantityProduct(productProductDetail(productDetail));
-productsSumInBOMProductDetail 'Сумма изделий в спец.' = roundCurrency((quantityInBOMProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
+productsSumInBOMProductDetail 'Сумма изделий в спец.' = roundPriceCurrency((quantityInBOMProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
 
 //--
 quantityProductSkuOrder (product, sku, order) = [GROUP SUM recPricePercentProductSkuDate (product, sku, dateOrder(order))* calcMultiplierSkuOrder(sku, order)/100 BY product, sku, order](product, sku, order) AND bruttoQuantitySkuOrder(sku, order);

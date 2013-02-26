@@ -75,7 +75,7 @@ multiplierCalcProductDetail (productDetail) = ((100.00 IF productDetail IS produ
 @defineDocumentDetailPriceCustomPrefix (productDetail, products, ' изделия');
 
 productsSumProductDetail 'Сумма изделия' = DATA NUMERIC[16,2] (productDetail);
-productsSumProductDetail(productDetail) <- toNumeric16p2(roundCurrency((quantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+productsSumProductDetail(productDetail) <- toNumeric16p2(roundPriceCurrency((quantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (quantityProductDetail(productDetail)) OR
          CHANGED (productsPriceProductDetail(productDetail)) OR
          CHANGED(currencyProductDetail(productDetail));
@@ -230,7 +230,7 @@ dataPriceSkuOrder(sku,order) <- prevPricePriceListTypeSkuStockDateTime(priceList
 
 priceSkuOrder 'Цена' (sku, order) = dataPriceSkuOrder(sku, order) AND bruttoQuantitySkuOrder(sku, order) PERSISTENT;
 sumSkuOrder 'Сумма' = DATA NUMERIC[16,2] (sku, order);
-sumSkuOrder(sku, order) <- toNumeric16p2(roundCurrency((bruttoQuantitySkuOrder(sku, order) * priceSkuOrder(sku, order)), currencyOrder(order)))
+sumSkuOrder(sku, order) <- toNumeric16p2(roundPriceCurrency((bruttoQuantitySkuOrder(sku, order) * priceSkuOrder(sku, order)), currencyOrder(order)))
     WHEN CHANGED (bruttoQuantitySkuOrder(sku, order)) OR
          CHANGED (priceSkuOrder(sku, order)) OR
          CHANGED(currencyOrder(order) AND sku IS sku);
@@ -328,7 +328,7 @@ calcPremiumComponentsPriceProductDetail 'Цена компонентов с на
 
 calcPremiumPriceProductDetail 'Цена расчетная (с надбавками)' (productDetail) = IF calcPriceListTypeProductDetail(productDetail) THEN
     toNumeric14p2(roundPriceRoundCondition(calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail), roundConditionCalcPriceListType(calcPriceListTypeProductDetail(productDetail))))
-        ELSE toNumeric14p2(roundCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail))) PERSISTENT;
+        ELSE toNumeric14p2(roundPriceCurrency((calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail)), currencyProductDetail(productDetail))) PERSISTENT;
 
 changeValueMarkupProductDetail (detail) = ACTION (detail) {
     IF calcPremiumPriceProductDetail(detail) THEN {
@@ -400,7 +400,7 @@ shortNameUOMOverSkuComponentDetail 'Ед.изм.' (componentDetail) = shortNameU
 
 calcPriceSkuOrder 'Цена материала с учетом замены' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order) PERSISTENT;
 priceComponentDetail 'Цена' (detail) = calcPriceSkuOrder(skuComponentDetail(detail), orderComponentDetail(detail)) PERSISTENT;
-sumComponentDetail (detail) <- toNumeric16p2(roundCurrency((priceComponentDetail(detail)* overQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
+sumComponentDetail (detail) <- toNumeric16p2(roundPriceCurrency((priceComponentDetail(detail)* overQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
         WHEN CHANGED(priceComponentDetail(detail)) OR
              CHANGED(overQuantityComponentDetail(detail)) OR
              CHANGED(currencyComponentDetail(detail));
