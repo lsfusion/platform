@@ -365,6 +365,12 @@ META defineOrderBlanketOrder(sign)
     priceOrderDetail(detail) += priceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     sumOrderDetail(detail) += sumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 
+    VATOrderDetail(detail) += VATBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    valueVATOrderDetail(detail) += valueVATBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
+    invoiceSumOrderDetail(detail) += invoiceSumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+    VATSumOrderDetail(detail) += VATSumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
     editOrder(order) += ACTION EXEC editBlanketOrder(blanketOrderBlanketOrderOrder(order));
 
 END
