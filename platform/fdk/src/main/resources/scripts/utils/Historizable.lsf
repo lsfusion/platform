@@ -277,7 +277,7 @@ META defineHistorizableLedger(property, caption, type, key0, key1)
 
     property###property##Ledger caption (ledger) = ABSTRACT type (property##Ledger) PERSISTENT;
 
-    orderT###property##Ledger = LIST(dateTime###property##Ledger(ledger), ledger) AND active###property##Ledger(ledger) PERSISTENT INDEXED;
+    orderT###property##Ledger = STRUCT(dateTime###property##Ledger(ledger), ledger) AND active###property##Ledger(ledger) PERSISTENT INDEXED;
 
     concatLedgerB###property###key0###key1##DateTime (key0, key1, dateTime) =
         GROUP MAX orderT###property##Ledger(ledger) AND dateTime###property##Ledger(ledger) < (dateTime AS DATETIME)

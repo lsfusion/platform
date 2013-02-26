@@ -1005,7 +1005,7 @@ expressionFriendlyPD[List<String> context, boolean dynamic] returns [LPWithParam
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
-	|	concatDef=concatenationPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
+	|	concatDef=structCreationPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
@@ -1235,13 +1235,13 @@ recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?
 	;
 
-concatenationPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property] 
+structCreationPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property] 
 @after {
 	if (inPropParseState()) {
 		$property = self.addScriptedCCProp($list.props);		
 	}
 }
-	:	'LIST'
+	:	'STRUCT'
 		'('
 			list=nonEmptyPropertyExpressionList[context, dynamic] 
 		')' 

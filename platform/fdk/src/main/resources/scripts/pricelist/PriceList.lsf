@@ -98,7 +98,7 @@ pricePriceListLedgerLedgerPriceListType = ABSTRACT NUMERIC[14,2] (priceListLedge
 TABLE priceListLedgerStock(priceListLedger, stock);
 inPriceListLedgerStock (ledger, stock) = ABSTRACT BOOLEAN (priceListLedger, stock);
 
-orderPriceListLedger(ledger) = LIST(fromDateTimePriceListLedger(ledger), ledger) AND activePriceListLedger(ledger) PERSISTENT;
+orderPriceListLedger(ledger) = STRUCT(fromDateTimePriceListLedger(ledger), ledger) AND activePriceListLedger(ledger) PERSISTENT;
 
 TABLE priceListLedgerLedgerPriceListTypeStock (priceListLedger, ledgerPriceListType, stock);
 orderPriceListLedgerLedgerPriceListTypeStock(ledger, type, stock) =

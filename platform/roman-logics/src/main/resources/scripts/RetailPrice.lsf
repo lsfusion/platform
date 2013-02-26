@@ -43,7 +43,7 @@ inArticleCoefficientBrandRetail(coefficientBrandRetail, article) = (brandSupplie
                                                                    (seasonYearArticle(article) == seasonYearCoefficientBrandRetail(coefficientBrandRetail) OR (article IS article AND coefficientBrandRetail IS coefficientBrandRetail AND NOT seasonYearCoefficientBrandRetail(coefficientBrandRetail)));
 
 dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) = dateCoefficientBrandRetail(coefficientBrandRetail) AND inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
-orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) = LIST(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
+orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) = STRUCT(dateCoefficientBrandRetailArticle(coefficientBrandRetail, article), coefficientBrandRetail) IF inArticleCoefficientBrandRetail(coefficientBrandRetail, article);
 
 concatCoefficientBrandRetailArticleDate (article, date) = GROUP MAX orderCoefficientBrandRetailArticle(coefficientBrandRetail, article) AND
                                                                     dateCoefficientBrandRetailArticle(coefficientBrandRetail, article) < (date AS DATE)
@@ -391,7 +391,7 @@ overPriceDiscountPriceSetDocumentSku 'Цена со скидкой' (discountPri
 META definePriceSetDocumentAggregations(document, caption)
 
     // ---------------------------------------- Артикулы ---------------------------------------- //
-    order###document##Article = LIST(dateTimePriceSetDocumentArticle(document, article), document) IF inPriceSetDocumentArticle(document, article) PERSISTENT;
+    order###document##Article = STRUCT(dateTimePriceSetDocumentArticle(document, article), document) IF inPriceSetDocumentArticle(document, article) PERSISTENT;
 
     concatB###document##ArticleCurrencyDateTime (article, currency, dateTime) = GROUP MAX order###document##Article(document, article) AND
                                                                                           price###document##Article(document, article) AND
@@ -425,7 +425,7 @@ META definePriceSetDocumentAggregations(document, caption)
     priceA###document##Article caption###' (действующая)' (document, article) = priceA###document##ArticleCurrencyDateTime(article, currencyPriceSetDocument(document), dateTimePriceSetDocumentArticle(document, article)) MINCHARWIDTH 15;
 
     // ---------------------------------------- Sku ---------------------------------------- //
-    order###document##Sku = LIST(overDateTimePriceSetDocumentSku(document, sku), document) IF overInPriceSetDocumentSku(document, sku) PERSISTENT;
+    order###document##Sku = STRUCT(overDateTimePriceSetDocumentSku(document, sku), document) IF overInPriceSetDocumentSku(document, sku) PERSISTENT;
 
     concatB###document##SkuCurrencyDateTime (sku, currency, dateTime) = GROUP MAX order###document##Sku(document, sku) AND
                                                                                   overPrice###document##Sku (document, sku) AND

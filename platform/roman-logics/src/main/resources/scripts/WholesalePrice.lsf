@@ -45,7 +45,7 @@ priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
     round0(priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))
     WHEN CHANGED (markupWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
-orderWholesalePriceDocument = LIST(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
+orderWholesalePriceDocument = STRUCT(dateTimeWholesalePriceDocument(wholesalePriceDocument), wholesalePriceDocument) PERSISTENT;
 
 //concatWholesalePriceDocumentArticleDateTime (article, dateTime) = GROUP MAX orderWholesalePriceDocument(wholesalePriceDocument) AND
 //                                                                   priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) AND

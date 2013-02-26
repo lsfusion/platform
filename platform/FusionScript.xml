@@ -214,6 +214,7 @@
       <keyword name="STEP" />
       <keyword name="STRICT" />
       <keyword name="STRING" />
+      <keyword name="STRUCT" />
       <keyword name="SUBJECT" />
       <keyword name="SUM" />
       <keyword name="TABBED" />

@@ -202,7 +202,7 @@ META defineScheduleOrder(sign, stockProp)
     monthInDateScheduleOrderDetail 'Месяц'(scheduleOrderDetail) = name(monthNumber(numberMonthInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
     DOWInDateScheduleOrderDetail 'День недели'(scheduleOrderDetail) = name(DOWNumber(numberDOWInDate(dateSupplyScheduleOrderDetail(scheduleOrderDetail))));
 
-    orderScheduleOrderDetail = LIST(dateSupplyScheduleOrderDetail(scheduleOrderDetail), scheduleOrderDetail) PERSISTENT;
+    orderScheduleOrderDetail = STRUCT(dateSupplyScheduleOrderDetail(scheduleOrderDetail), scheduleOrderDetail) PERSISTENT;
 
     concatNextScheduleOrderDetail(scheduleOrderDetail, scheduleOrder) = GROUP MIN orderScheduleOrderDetail(scheduleOrderDetail1) AND
                                                                                   dateSupplyScheduleOrderDetail(scheduleOrderDetail1) > dateSupplyScheduleOrderDetail(scheduleOrderDetail)

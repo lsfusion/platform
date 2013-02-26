@@ -198,10 +198,10 @@ testLimitPartition(store, article) = PARTITION UNGROUP testAmount LIMIT STRICT t
 
 // Concatenation/Deconcatenation property
 // Expression syntax:
-// LIST(propertyExpression1[, ..., propertyExpressionN])
+// STRUCT(propertyExpression1[, ..., propertyExpressionN])
 // Access expression syntax with one-base indices:
 // concatenatePropertyExpression[2]
-ioQuantity(store, article) = LIST(incomeQuantity(store, article), outcomeQuantity(store, article));
+ioQuantity(store, article) = STRUCT(incomeQuantity(store, article), outcomeQuantity(store, article));
 onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 
 // Abstract property

@@ -192,7 +192,7 @@ timeMachineryPriceTransaction (transaction) <- currentTime() WHEN ASSIGNED(trans
 
 dateTimeMachineryPriceTransaction 'Дата/время' (transaction) = dateTimeToDateTime(dateMachineryPriceTransaction(transaction), timeMachineryPriceTransaction(transaction));
 
-orderMachineryPriceTransaction (transaction) = LIST(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
+orderMachineryPriceTransaction (transaction) = STRUCT(dateTimeMachineryPriceTransaction(transaction), transaction) PERSISTENT;
 
 // Статус
 snapshotMachineryPriceTransaction 'Целиком' = DATA BOOLEAN (machineryPriceTransaction);

@@ -12,7 +12,7 @@ dataDateBarcode 'Дата действия' = DATA DATE (barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS barcode) OR dataDateBarcode(barcode) IN base PERSISTENT;
 
 dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS barcode PERSISTENT;
-orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX LIST(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN base;
+orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX STRUCT(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN base;
 barcodeIdDate (id, date) = orderBarcodeIdDate(id, date)[2];
 
 barcodeId (id) = barcodeIdDate(id, currentDate());

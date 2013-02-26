@@ -124,10 +124,10 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
         SET positionCount(stockFrom, stockTo) <- [GROUP SUM 1 IF left(sku, stockFrom) < 0 AND left(sku, stockTo) > 0 BY stockFrom, stockTo](stockFrom, stockTo);
 
         LOCAL stockFrom = stock ();
-        SET stockFrom() <- [GROUP MAX LIST(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[2];
+        SET stockFrom() <- [GROUP MAX STRUCT(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[2];
 
         LOCAL stockTo = stock ();
-        SET stockTo() <- [GROUP MAX LIST(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[3];
+        SET stockTo() <- [GROUP MAX STRUCT(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[3];
 
         LOCAL quantityTransfer = NUMERIC[14,3] (sku);
         SET quantityTransfer(sku) <- min( -left(sku, stockFrom()) IF left(sku, stockFrom()) < 0, left(sku, stockTo()) IF left(sku, stockTo()) > 0);
