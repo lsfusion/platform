@@ -405,6 +405,10 @@ DESIGN BOM FROM DEFAULT{
                 ADD b.documentPrmGroup {
                     childConstraints = TO THE RIGHTBOTTOM;
                 }
+                NEW kitchen {
+                    title = 'Кухня';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                }
 
             }
             ADD b.documentSumGroup {
@@ -573,7 +577,7 @@ CONSTRAINT  companyBOM(BOM) AND NOT isCompanyLegalEntity(companyBOM (BOM)) CHECK
     MESSAGE 'Для спецификации выбрано организация, которая не является компанией';
 
 EXTEND FORM BOM
-    PROPERTIES(b) nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM, nameEmployeeCommitteeBOM READONLY
+    PROPERTIES(b) nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM
 
     OBJECTS e=employee
     PROPERTIES(e) READONLY commonName, namePositionEmployee
@@ -590,7 +594,6 @@ EXTEND DESIGN BOM {
                 childConstraints= TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameCompanyBOM);
                 ADD PROPERTY(nameActStudyOfCulinaryCommitteeBOM);
-                ADD PROPERTY(nameEmployeeCommitteeBOM);
             }
             ADD e.box {title = 'Сотрудники комиссии';}
         }

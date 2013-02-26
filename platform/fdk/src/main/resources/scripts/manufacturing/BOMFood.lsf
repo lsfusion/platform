@@ -6,6 +6,8 @@ REQUIRE BOM, ItemNutrition;
 // ------------------------------------------------------------------- //
 GROUP fastGroup 'Хим-ий состав / энерг.ценность' : base;
 
+toShowFastBOM 'Отображать хим-ий состав' = DATA BOOLEAN(BOM) IN documentPrmGroup;
+
 recipesBOM 'Номер по сборнику рецептов' = DATA STRING[100] (BOM) IN documentPrmGroup;
 recipesProduct 'Номер по сборнику рецептов' (product) = recipesBOM(BOMProduct(product));
 
@@ -64,14 +66,19 @@ energyProduct(product) <- energyBOM(BOMProduct(product)) / (quantityProduct(prod
              CHANGED (skuProduct(product));
 
 EXTEND FORM BOM
-    PROPERTIES(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
-    PROPERTIES(b) recipesBOM
-    PROPERTIES(p) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct
-    PROPERTIES(c) BEFORE delete(c) fastComponent, carbohydratesComponent, proteinsComponent, energyComponent
+    PROPERTIES(b) toShowFastBOM
+    PROPERTIES(b) SHOWIF toShowFastBOM(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
+    PROPERTIES(b) SHOWIF toShowFastBOM(b) recipesBOM
+    PROPERTIES(p) SHOWIF toShowFastBOM(b) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct
+    PROPERTIES(c) SHOWIF toShowFastBOM(b) BEFORE delete(c) fastComponent, carbohydratesComponent, proteinsComponent, energyComponent
 ;
 EXTEND DESIGN BOM {
     b.box {
         ADD b.fastGroup;
+    }
+    kitchen {
+        ADD PROPERTY(toShowFastBOM);
+        ADD PROPERTY(recipesBOM);
     }
 }
 
