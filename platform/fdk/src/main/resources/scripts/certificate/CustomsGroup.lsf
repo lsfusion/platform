@@ -5,12 +5,20 @@ REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax;
 CLASS customsZone 'Таможенная зона' : named;
 TABLE customsZone(customsZone);
 
+customsZoneName (commonName) = GROUP UNIQUE customsZone BY name(customsZone) WHERE customsZone IS customsZone;
+
 currencyCustomsZone = DATA currency(customsZone);
 nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;
 
 CLASS customsGroup 'Позиция ТН ВЭД' : named;
 
-codeCustomsGroup 'Код' = DATA STRING[10](customsGroup);
+hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (customsGroup) IN base;
+dateFromCustomsGroup 'Дата с' = DATA DATE (customsGroup) IN base;
+dateToCustomsGroup 'Дата по' = DATA DATE (customsGroup) IN base;
+codeCustomsGroup 'Код' = DATA STRING[10](customsGroup) IN base;
+customsGroupCode (code) = GROUP UNIQUE customsGroup BY codeCustomsGroup(customsGroup) WHERE customsGroup IS customsGroup;
+
+numberCustomsGroup 'Номер строки' = DATA INTEGER(customsGroup) IN base;
 
 @defineHierarchy(customsGroup);
 
@@ -19,10 +27,10 @@ nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = nam
 
 TABLE customsGroupData(customsGroup, DATE);
 
-@defineHistorizableCustom(supplierVATCustomsGroup, 'НДС таможни', range, numberRange, customsGroup, codeCustomsGroup, base);
+@defineHistorizableCustom(supplierVATCustomsGroup, 'НДС', range, numberRange, customsGroup, codeCustomsGroup, base);
 
-dataValueSupplierVATCustomsGroupDate 'НДС поставщика, %' (customsGroup, date) = valueRateRangeDate(supplierVATCustomsGroupDate(customsGroup, date), date);
-valueCurrentRateSupplierVATCustomsGroup 'НДС поставщика, %' (customsGroup) = valueCurrentRateRange(supplierVATCustomsGroup(customsGroup));
+dataValueSupplierVATCustomsGroupDate 'НДС, %' (customsGroup, date) = valueRateRangeDate(supplierVATCustomsGroupDate(customsGroup, date), date);
+valueCurrentRateSupplierVATCustomsGroup 'НДС, %' (customsGroup) = valueCurrentRateRange(supplierVATCustomsGroup(customsGroup));
 
 @defineHistorizable(percentDutyCustomsGroup, 'Пошлина (%)', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
 @defineHistorizable(weightDutyCustomsGroup, 'Пошлина (валют.)', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
@@ -44,7 +52,8 @@ FORM customsZones 'Таможенная зона'
 
 FORM customsGroup 'Позиция ТН ВЭД'
     OBJECTS cg = customsGroup FIXED PANEL
-    PROPERTIES(cg) codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
+    PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
+                   dateFromCustomsGroup, dateToCustomsGroup,
                    registrationCustomsGroup ON CHANGE EXEC dialogRegistrationCustomsGroup(cg),
                    valueCurrentRateSupplierVATCustomsGroup ON CHANGE EXEC dialogSupplierVATCustomsGroup(cg),
                    percentDutyCustomsGroup ON CHANGE EXEC dialogPercentDutyCustomsGroup(cg),
@@ -68,16 +77,20 @@ FORM customsGroups 'Позиции ТН ВЭД'
     PROPERTIES(cz) SELECTOR name, nameCurrencyCustomsZone
 
     TREE treeGroups gcg=customsGroup PARENT parentCustomsGroup
-    PROPERTIES READONLY name(gcg)
+    PROPERTIES READONLY name(gcg), codeCustomsGroup(gcg)
     PROPERTIES(gcg) addCustomsGroup, EDITFORM
     ORDER BY name
 
     OBJECTS cg = customsGroup
-    PROPERTIES(cg) READONLY codeCustomsGroup, name, canonicalNameCustomsGroup, nameParentCustomsGroup, registrationCustomsGroup,
+    PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, name, canonicalNameCustomsGroup, nameParentCustomsGroup,
+                   dateFromCustomsGroup, dateToCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
     PROPERTIES(cg) ADDFORM, EDITFORM, delete
 
     FILTERS customsZoneCustomsGroup(cg) == cz
+
+    FILTERGROUP hasCode
+        FILTER 'Только с кодом' 'F7' hasCodeCustomsGroup(gcg) DEFAULT
 
     FILTERGROUP filters
         FILTER 'Все листья' 'F10' isParentLeafCustomsGroupCustomsGroup(cg, gcg) DEFAULT
