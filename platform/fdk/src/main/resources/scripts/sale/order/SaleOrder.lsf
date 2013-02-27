@@ -126,6 +126,10 @@ EXTEND FORM userOrder
         FILTER 'В ассортименте' 'F7' ledgerPriceSkuStockUserOrder(s, st, o) DEFAULT
 ;
 
+//--------------------- Проводим по регистру резерва ------------------//
+@implementSaleOrderLedger(order, sku, shipmentDateTime, supplierStock, customer);
+@extendFormDocumentOrderLedger(userOrder, userOrder, o);
+
 NAVIGATOR {
     saleSaleNavigator {
         ADD orders;

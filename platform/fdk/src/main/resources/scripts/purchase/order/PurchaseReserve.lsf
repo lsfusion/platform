@@ -6,26 +6,6 @@ NAMESPACE Purchase;
 
 //-----------------------------------------------------------------------------------------------------------//
 
-
-currentReservePurchaseSkuStock 'Резерв закупка (всего)'(sku, stock)  = Purchase.currentReserveSkuStock(sku, stock) (-)
-    PurchaseReturn.currentReserveSkuStock(sku, stock) PERSISTENT;
-
-// без учета текущей даты/времени
-reservePurchaseBSkuStockDate 'Остаток на начало дня' (sku, stock, date) = Purchase.reserveBSkuStockDate(sku, stock, date) (-)
-    PurchaseReturn.reserveBSkuStockDate(sku, stock, date);
-
-// с учетом текущей даты/времени
-reservePurchaseASkuStockDate 'Остаток на конец дня'(sku, stock, date) = Purchase.reserveASkuStockDate(sku, stock, date) (-)
-    PurchaseReturn.reserveASkuStockDate(sku, stock, date);
-
-// без учета текущей даты/времени
-reservePurchaseBSkuStockDateTime 'Остаток (до)' (sku, stock, dateTime) = Purchase.reserveBSkuStockDateTime(sku, stock, dateTime) (-)
-    PurchaseReturn.reserveBSkuStockDateTime(sku, stock, dateTime);
-
-// с учетом текущей даты/времени
-reservePurchaseASkuStockDateTime 'Остаток (после)'(sku, stock, dateTime) = Purchase.reserveASkuStockDateTime(sku, stock, dateTime) (-)
-    PurchaseReturn.reserveASkuStockDateTime(sku, stock, dateTime);
-
 quantitySoldSkuStockUserOrder 'Закуплено' (sku, stock, userOrder) = quantitySoldSkuStockDateFromTo(sku, stock, fromShipmentDateUserOrder(userOrder), dateUserOrder(userOrder));
 recQuantitySkuStockUserOrder  (sku, stock, userOrder) = stockReserveStockSkuDate(stock, sku, dateUserOrder(userOrder))  (+) quantitySoldSkuStockUserOrder(sku, stock, userOrder) (-)
                                                         (currentReservePurchaseSkuStock(sku, stock) AND userOrder IS userOrder)  (-) (currentBalanceSkuStock(sku, stock) AND userOrder IS userOrder);
@@ -47,14 +27,3 @@ EXTEND FORM userOrder
     PROPERTIES READONLY AFTER quantitySkuUserOrderCustomerStock(s,o,st) recommendedQuantitySkuStockUserOrder(s,st,o)
     PROPERTIES  fillRecommendedQuantityStockUserOrder(o) TODRAW s
 ;
-
-META defineDialogSkuPurchaseReserve (form)
-
-    form###PurchaseReserve 'Резерв (закупки)' (sku) = currentReservePurchaseSkuStock(sku, form###stock());
-
-    EXTEND FORM form
-        PROPERTIES(s) READONLY form###PurchaseReserve AFTER form###balance SHOWIF form###stock()
-    ;
-END
-
-@defineDialogSkuPurchaseReserve(dialogSku);

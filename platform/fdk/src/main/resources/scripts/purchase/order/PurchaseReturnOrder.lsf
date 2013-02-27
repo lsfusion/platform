@@ -34,6 +34,10 @@ EXTEND FORM userOrder
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT
 ;
 
+//--------------------- Проводим по регистру резерва ------------------//
+@implementPurchaseOrderLedger(order, sku, shipmentDateTime, customerStock, supplier);
+@extendFormDocumentOrderLedger(userOrder, userOrder, o);
+
 NAVIGATOR {
     purchaseReturnNavigator {
         ADD orders;

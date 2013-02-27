@@ -5,8 +5,8 @@ REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP, SaleCompliance, S
 NAMESPACE Sale;
 
 noteRRPInvoiceDetail(invoiceDetail) = ustring3SP(string2('Опт.над.: ', wholesaleMarkupInvoiceDetail(invoiceDetail)),
-                                                 string2('Цена розн.: ', purchaseRetailPriceInvoiceDetail(invoiceDetail)),
-                                                 string2('Сумма розн.: ', purchaseRetailSumInvoiceDetail(invoiceDetail))
+                                                 string2('Цена розн.: ', round0(purchaseRetailPriceInvoiceDetail(invoiceDetail))),
+                                                 string2('Сумма розн.: ', round0(purchaseRetailSumInvoiceDetail(invoiceDetail)))
                                                  ) PERSISTENT;
 Invoice.noteInvoiceDetail (invoiceDetail) += noteRRPInvoiceDetail(invoiceDetail);
 
