@@ -1,8 +1,0 @@
-MODULE ShipmentStore;
-
-REQUIRE Shipment, Store;
-
-EXTEND FORM departmentStore PROPERTIES createShipmentStock(d);
-EXTEND DESIGN departmentStore{
-    row21 { ADD PROPERTY(createShipmentStock);}
-}

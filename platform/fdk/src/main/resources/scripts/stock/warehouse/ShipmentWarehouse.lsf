@@ -1,5 +1,0 @@
-MODULE ShipmentWarehouse;
-
-REQUIRE Shipment, Warehouse;
-
-EXTEND FORM warehouse PROPERTIES(w) createShipmentStock;

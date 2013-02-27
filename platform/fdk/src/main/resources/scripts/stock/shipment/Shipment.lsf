@@ -34,22 +34,16 @@ editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'ed
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
-createShipmentStock 'Создавать поставку' = DATA BOOLEAN (stock) IN createGroup;
-
-META defineDocumentHeaderCreateShipment(object, stockClass)
+META defineDocumentHeaderCreateShipment(object)
     createShipment###object 'Создать поставку' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
-
-    createShipment###object (object) <- TRUE IF createShipmentStock(stockClass###object(object))
-        WHEN CHANGED(stockClass###object(object));
-
 END
-META defineDocumentAbstractHeaderCreateShipment(object, stockClass)
+META defineDocumentAbstractHeaderCreateShipment(object)
     createShipment###object 'Создать поставку' (object) = ABSTRACT BOOLEAN(object);
 END
 
-META defineDocumentInterfaceHeaderCreateShipment (object, stockClass)
-    @defineDocumentAbstractHeaderCreateShipment (object, stockClass);
-    @defineDocumentHeaderCreateShipment (user###object, stockClass);
+META defineDocumentInterfaceHeaderCreateShipment (object)
+    @defineDocumentAbstractHeaderCreateShipment (object);
+    @defineDocumentHeaderCreateShipment (user###object);
     createShipment###object (object) += createShipment###user###object(object);
 END
 
@@ -632,7 +626,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, shipment, ' (учетная)');
     @deriveDocumentDetailSumPrefix(userInvoice, shipment, currency, shipmentQuantity);
 
-    @defineDocumentInterfaceHeaderCreateShipment (invoice, stockProp);
+    @defineDocumentInterfaceHeaderCreateShipment (invoice);
     @defineDocumentInterfaceHeaderSumPrefix (invoice, shipment, ' (учетная)');
 
     overCopyInvoice(s, d) += ACTION (s, d) {
