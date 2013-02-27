@@ -2539,7 +2539,7 @@ NAVIGATOR {
         NEW stockMasterData 'Справочники';
     }
     masterData {
-        NEW skuNavigator 'Товар' BEFORE legalEntityNavigator {
+        NEW skuNavigator 'Товар' AFTER legalEntities {
             ADD UOMs;
             ADD customGroupTypes;
             ADD customGroups;

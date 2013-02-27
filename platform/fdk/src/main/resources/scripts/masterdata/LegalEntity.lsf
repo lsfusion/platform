@@ -97,65 +97,6 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
 
      DIALOG legalEntityGroup OBJECT lg
  ;
-// ----------------------------------- Банк ------------------------------------------- //
-
-CLASS bank 'Банк' : named;
-TABLE bank (bank);
-TABLE bankDate (bank, DATE);
-
-GROUP banksGroup 'Информация о банке' : base;
-
-MFOBank 'Код МФО' = DATA STRING[9] (bank) IN banksGroup;
-departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN banksGroup;
-CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN banksGroup;
-infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN banksGroup;
-
-countryBank = DATA country (bank);
-nameCountryBank 'Страна' (bank) = name(countryBank(bank)) IN banksGroup MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
-
-@defineHistorizable(addressBank, 'Адрес банка', STRING[150], bank, name, banksGroup);
-
-FORM bank 'Банк'
-    OBJECTS b=bank FIXED PANEL
-    PROPERTIES(b)  name, addressBank, dialogAddressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
-    EDIT bank OBJECT b
-;
-
-FORM banks 'Банки'
-    OBJECTS b=bank
-    PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
-    PROPERTIES(b) ADDFORM, EDITFORM, delete
-;
-
-// ----------------------------------- Расчетный счет ------------------------------------------ //
-
-CLASS account 'Расчетный счет';
-TABLE account (account);
-
-bankAccount = DATA bank (account);
-
-GROUP accountGroup 'Банковская информация' : base;
-
-numberAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
-accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS account;
-
-nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
-addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
-MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
-departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN accountGroup;
-CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN accountGroup;
-noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
-
-legalEntityAccount = DATA legalEntity (account);
-defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
-
-userAccountLegalEntity = DATA account (legalEntity);
-CONSTRAINT legalEntityAccount(userAccountLegalEntity(legalEntity)) != legalEntity CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
-
-accountLegalEntity (legalEntity) = UNION OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
-numberAccountLegalEntity 'Основной р/сч.' (legalEntity) = numberAccount(accountLegalEntity(legalEntity)) IN lawGroup;
-
-equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccountLegalEntity(legalEntity) == account;
 
 // ----------------------------------- Лицензия ------------------------------------------ //
 GROUP licenseGroup 'Лицензионная информация' : base;
@@ -206,11 +147,6 @@ FORM legalEntity 'Организация'
                    differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l),
                    quantityDaysCloseOrdersLegalEntity
 
-    OBJECTS a=account
-    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-    FILTERS legalEntityAccount(a) == l
-    PROPERTIES equalsLegalEntityAccount(l,a)
-
     OBJECTS li=license
     PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
     FILTERS legalEntityLicense(li) == l
@@ -257,7 +193,6 @@ DESIGN legalEntity FROM DEFAULT {
 
        NEW extendContainer BEFORE functions.box {
             type = TABBED;
-            ADD a.box;
             ADD li.box;
        }
    }
@@ -271,7 +206,7 @@ FORM legalEntities 'Организации'
 
     OBJECTS l=legalEntity
     PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                           numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                           addressLegalEntity, phoneLegalEntity,
                            isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
@@ -299,10 +234,7 @@ DESIGN legalEntities FROM DEFAULT{
 
 NAVIGATOR {
     masterData {
-        NEW legalEntityNavigator 'Контрагенты' BEFORE regionalData{
-            ADD legalEntities;
-            ADD banks;
-        }
+        ADD legalEntities BEFORE regionalData;
     }
 }
 // -------------------------------------------- Макросы --------------------------------------------- //
@@ -366,13 +298,6 @@ META defineDocumentInterfaceLegalEntity (object, contact, contactCaption)
     @defineDocumentInterfaceLegalEntity(object, object##Detail, contact, contactCaption);
 END
 
-META defineDocumentAccountPhoneContact(object, contact, caption)
-    numberAccount###contact###object 'Расчетный счет'###caption (object) = numberAccountLegalEntity(contact###object(object)) IN documentPrmGroup;
+META defineDocumentPhone(object, contact, caption)
     phone###contact###object 'Телефон'###caption (object) = phoneLegalEntity(contact###object(object)) IN documentPrmGroup;
-    nameBank###contact###object 'Банк'###caption (object) = nameBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
-    addressBank###contact###object 'Адрес банка'###caption (object) = addressBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
-    departmentBank###contact###object 'Отдел банка'###caption (object) = departmentBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
-    CBUBank###contact###object 'ЦБУ банка'###caption (object) = CBUBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
-    MFOBank###contact###object 'Код МФО банка'###caption (object) = MFOBankAccount(accountLegalEntity(contact###object(object))) IN documentPrmGroup;
 END
-

@@ -112,7 +112,7 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
         OBJECTS s = legalEntity
         PROPERTIES(s, o) isSupplier###prefix###operation##Over
         PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                               numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                               addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
         FILTERS (inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
                 supplierFilter(s)
@@ -126,7 +126,7 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
         OBJECTS c = legalEntity
         PROPERTIES(c, o) isCustomer###prefix###operation##Over
         PROPERTIES(c) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                               numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity,
+                               addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
         FILTERS (inLegalEntityGroupLegalEntity(cg, c) OR (c IS legalEntity AND cg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(c))),
                 customerFilter(c)

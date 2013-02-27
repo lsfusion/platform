@@ -214,7 +214,7 @@ dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment
 contractPayment 'Контракт' (payment) = DATA contract (payment) AUTOSET;
 numberContractPayment 'Номер контракта' (payment) = numberContract(contractPayment(payment));
 
-notePayment 'Примечение' (payment) = DATA STRING[200] (payment);
+notePayment 'Примечание' (payment) = DATA STRING[200] (payment);
 
 payerPayment(payment) = DATA legalEntity (payment);
 payerPayment(payment) <- partyBContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));

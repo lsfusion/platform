@@ -1,14 +1,17 @@
 MODULE OrderBy;
 
-REQUIRE LegalEntityBy, Order;
+REQUIRE LegalEntityBy, Bank, Order;
 
 NAMESPACE Order;
 
 @defineDocumentUNPLegalEntity(order, supplier, ' поставщика');
 @defineDocumentUNPLegalEntity(order, customer, ' покупателя');
 
-@defineDocumentAccountPhoneContact(order, supplier, ' поставщика');
-@defineDocumentAccountPhoneContact(order, customer, ' покупателя');
+@defineDocumentAccount(order, supplier, ' поставщика');
+@defineDocumentPhone(order, supplier, ' поставщика');
+
+@defineDocumentAccount(order, customer, ' покупателя');
+@defineDocumentPhone(order, customer, ' покупателя');
 
 FORM printOrderBy 'Счет-фактура (печать)' PRINT
     OBJECTS o = order FIXED PANEL

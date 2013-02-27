@@ -195,7 +195,7 @@ loadDefaultPriceIntervals 'Загрузить стандартные округ�
     EXEC loadDefaultPriceInterval(2, 'CHF');
     EXEC loadDefaultPriceInterval(2, 'JPY');
     EXEC loadDefaultPriceInterval(2, 'IRR');
-    EXEC loadDefaultPriceInterval(0, 'BLR');
+    EXEC loadDefaultPriceInterval(2, 'BLR');
 } IN loadDefaultGroup;
 
 
