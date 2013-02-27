@@ -13,6 +13,7 @@ import platform.gwt.cellview.client.cell.CellPreviewEvent;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
+import platform.gwt.form.shared.view.classes.GObjectType;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
@@ -61,8 +62,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             stopPropagation(event);
             form.okPressed();
         } else if (BrowserEvents.KEYPRESS.equals(event.getType()) && GKeyStroke.isPossibleStartFilteringEvent(event)) {
-            stopPropagation(event);
-            quickFilter(new NativeEditEvent(event));
+            GPropertyDraw property = getSelectedProperty();
+            if (property != null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {
+                stopPropagation(event);
+                quickFilter(new NativeEditEvent(event));
+            }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
             GAbstractGroupObjectController goController = getGroupController();
             if (goController.filter != null && goController.filter.hasConditions()) {
