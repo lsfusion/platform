@@ -51,7 +51,7 @@ FORM sanitationsDialog 'ГГР'
 ;
 
 NAVIGATOR {
-    certificateNavigator {
+    customsDocuments {
         ADD sanitations;
     }
 }

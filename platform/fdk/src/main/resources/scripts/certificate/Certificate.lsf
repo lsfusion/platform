@@ -158,3 +158,10 @@ META deriveDocumentCertificate(prop, document, stockProp, caption, prefix)
              CHANGED (skuUser###document##Detail(detail)) OR
              CHANGED (stockProp##User###document##Detail(detail));
 END
+
+NAVIGATOR {
+    NEW customsNavigator 'ВЭД' BEFORE masterData TO toolbar IMAGE '/images/cop.png' {
+        NEW customsDocuments 'Документы';
+        NEW customsMasterData 'Справочники';
+    }
+}

@@ -100,14 +100,12 @@ FORM customsGroups 'Позиции ТН ВЭД'
     DIALOG customsGroup OBJECT cg
 ;
 
-
 NAVIGATOR {
-    NEW customsNavigator 'ВЭД' BEFORE masterData TO toolbar IMAGE '/images/cop.png' {
+    customsMasterData {
         ADD customsZones;
         ADD customsGroups;
     }
 }
-
 
 
 

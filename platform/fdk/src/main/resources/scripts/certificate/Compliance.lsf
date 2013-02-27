@@ -54,7 +54,7 @@ FORM compliancesDialog 'Сертификаты соответствия'
 ;
 
 NAVIGATOR {
-    certificateNavigator {
+    customsDocuments {
         ADD compliances;
     }
 }
