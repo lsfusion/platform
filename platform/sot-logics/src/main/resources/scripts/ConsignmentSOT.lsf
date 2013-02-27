@@ -13,7 +13,7 @@ Invoice.noteInvoiceDetail (invoiceDetail) += noteRRPInvoiceDetail(invoiceDetail)
 extraDescriptionInvoiceDetail(invoiceDetail) = ustring4CM(string2(descriptionComplianceInvoiceDetail(invoiceDetail), ''),
                                                  string2(descriptionDeclarationInvoiceDetail(invoiceDetail), ''),
                                                  string2(descriptionSanitationInvoiceDetail(invoiceDetail), ''),
-                                                 string2(textInvoiceDetail(invoiceDetail), '')
+                                                 string2(certificateTextInvoiceDetail(invoiceDetail), '')
                                                  ) PERSISTENT;
 
 Invoice.extraDescriptionInvoiceDetail (invoiceDetail) += extraDescriptionInvoiceDetail(invoiceDetail);

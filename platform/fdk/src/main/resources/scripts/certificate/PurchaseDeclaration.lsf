@@ -4,10 +4,12 @@ REQUIRE Declaration, PurchaseCertificate;
 
 NAMESPACE Purchase;
 
-@defineCertificateInvoice(declaration, 'Таможенная декларация');
-@defineCertificateShipment(declaration, 'Таможенная декларация');
+@defineDocumentCertificateObject(declaration, invoice, i, 'Таможенная декларация');
 
-@implementCertificateBatch(declaration);
+@defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
+declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+declarationBatch (batch) += declarationShipmentDetail(shipmentDetailShipmentBatch(batch));
 
 nameCustomsSku = ABSTRACT STRING[200](sku);
 nameCustomsSku(sku) += nameSku(sku);

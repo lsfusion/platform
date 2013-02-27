@@ -4,5 +4,11 @@ REQUIRE Certificate, PurchaseInvoice, PurchaseShipment;
 
 NAMESPACE Purchase;
 
-@extendCertificateForm(invoice, i);
-@extendCertificateForm(shipment, s);
+@defineDocumentCertificate(invoice, i);
+@defineDocumentCertificateText(invoice);
+
+@defineDocumentCertificate(shipment, s);
+@defineDocumentCertificateText(shipment);
+certificateTextShipmentDetail(detail) += certificateTextInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+certificateTextBatch (batch) += certificateTextShipmentDetail(shipmentDetailShipmentBatch(batch));

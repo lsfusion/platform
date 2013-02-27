@@ -9,6 +9,7 @@ TABLE sanitation(sanitation);
 @defineDocumentHeaderTimePrefix(sanitation, to, ' действия');
 @implementDocumentHeaderTimePrefix(certificate, , sanitation, );
 @implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
+
 seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS sanitation;
 numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS sanitation;
 
@@ -16,7 +17,7 @@ descriptionSanitation 'ГГР' (sanitation) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberObject(sanitation), dateSanitation(sanitation), toDateSanitation(sanitation));
 
-@defineCertificateBatch(sanitation, 'ГГР');
+@defineCertificateObjectBatch(sanitation, 'ГГР');
 
 FORM sanitation 'ГГР'
     OBJECTS s = sanitation FIXED PANEL

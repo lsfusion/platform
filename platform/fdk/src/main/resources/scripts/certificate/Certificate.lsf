@@ -1,12 +1,13 @@
 MODULE Certificate;
 
-REQUIRE Document;
+REQUIRE Document, Stock;
 
 CLASS ABSTRACT certificate 'Документ качества';
 TABLE certificate(certificate);
 
 @defineDocumentAbstractHeaderTimePrefix(certificate, ,' создания');
 @defineDocumentAbstractHeaderTimePrefix(certificate, to, ' действия');
+
 numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
 seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3;
 seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
@@ -20,134 +21,140 @@ NAVIGATOR {
         NEW certificateNavigator 'Сертификаты' BEFORE regionalData;
     }
 }
-// -------------------------- Метакод по расширению форм и созданию свойств -------------------- //
-META extendCertificateForm(prop, char)
+// -------------------------- Подготовка документов под расширение сертификатами -------------------- //
 
-    text###prop##Detail 'Дополнительные документы' = ABSTRACT TEXT (prop##Detail);
-    textUser###prop##Detail 'Дополнительные документы' = DATA TEXT (user###prop##Detail);
-    text###prop##Detail(detail) += textUser###prop##Detail(detail);
+META defineDocumentCertificate(document, object)
 
-    EXTEND FORM user###prop
-        OBJECTS d2 = user###prop##Detail
-        PROPERTIES (d2) indexUser###prop##Detail, idBarcodeSkuUser###prop##Detail, nameSkuUser###prop##Detail,
-                        descriptionBatchUser###prop##Detail ON CHANGE EXEC batchDialogUser###prop##Detail(d),
-                        textUser###prop##Detail
-        FILTERS user###prop##User###prop##Detail(d2) == char
+    EXTEND FORM user###document
+        OBJECTS dc = user###document##Detail
+        PROPERTIES (dc) indexUser###document##Detail, idBarcodeSkuUser###document##Detail, nameSkuUser###document##Detail,
+                        descriptionBatchUser###document##Detail ON CHANGE EXEC batchDialogUser###document##Detail(d)
+        FILTERS user###document##User###document##Detail(dc) == object
     ;
 
-    EXTEND DESIGN user###prop{
+    EXTEND DESIGN user###document{
         specification.box{
-            NEW certContainer AFTER d.box {
+            NEW certificateContainer AFTER d.box {
                 caption = 'Сертификаты';
-                NEW headerCertContainer;
-                ADD d2.box{
-                    PROPERTY(textUser###prop##Detail){
-                        minimumSize = (200, 36);
-                        preferredSize = (300, 36);
-                        maximumSize = (300, 36);
-                    }
-                }
+                NEW headerCertificateContainer;
+                ADD dc.box;
             }
         }
     }
 
-    EXTEND FORM prop##s
-        OBJECTS d2 = prop##Detail
-        PROPERTIES(d2) READONLY index###prop##Detail, idBarcodeSku###prop##Detail, nameSku###prop##Detail,
-                                descriptionBatch###prop##Detail, text###prop##Detail
-        FILTERS prop###prop##Detail(d2) == char
+    EXTEND FORM document##s
+        OBJECTS dc = document##Detail
+        PROPERTIES(dc) READONLY index###document##Detail, idBarcodeSku###document##Detail, nameSku###document##Detail,
+                                descriptionBatch###document##Detail
+        FILTERS document###document##Detail(dc) == object
     ;
 
-    EXTEND DESIGN prop##s{
+    EXTEND DESIGN document##s{
         documentDetail{
-            NEW certContainer AFTER d.box {
+            NEW certificateContainer AFTER d.box {
                 caption = 'Сертификаты';
-                NEW headerCertContainer;
-                ADD d2.box{
-                    PROPERTY(text###prop##Detail){
-                        preferredSize = (300, 18);
-                    }
-                }
+                NEW headerCertificateContainer;
+                ADD dc.box;
             }
         }
     }
 
 END
 
-META defineCertificateInvoice(prop, caption)
-    prop###invoiceDetail = ABSTRACT prop (invoiceDetail);
-    description###prop###invoiceDetail caption (invoiceDetail) = description###prop(prop###invoiceDetail(invoiceDetail));
-    prop###userInvoice = DATA prop (userInvoice);
-    description###prop###userInvoice caption (userInvoice) = description###prop(prop###userInvoice(userInvoice));
-    data###prop###userInvoiceDetail = DATA prop (userInvoiceDetail);
-    prop###userInvoiceDetail (userInvoiceDetail) =
-        UNION OVERRIDE prop###userInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)), data###prop###userInvoiceDetail(userInvoiceDetail);
-    description###prop###userInvoiceDetail caption (userInvoiceDetail) = description###prop(prop###userInvoiceDetail(userInvoiceDetail));
-    prop###invoiceDetail(detail) += prop###userInvoiceDetail(detail);
+// ------------------------------------ Добавление сертификатов к документам ----------------------------------- //
 
-    EXTEND FORM userInvoice
-        PROPERTIES(i) description###prop###userInvoice
-        PROPERTIES(d2) description###prop###userInvoiceDetail BEFORE textUserInvoiceDetail
-    ;
+META defineDocumentCertificateText(document)
 
-    EXTEND DESIGN userInvoice{
-        headerCertContainer{
-            ADD PROPERTY(description###prop###userInvoice);
+    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (document##Detail);
+    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (user###document##Detail);
+    certificateText###document##Detail(detail) += certificateTextUser###document##Detail(detail);
+
+    EXTEND FORM user###document PROPERTIES(dc) certificateTextUser###document##Detail;
+    EXTEND DESIGN user###document {
+        PROPERTY(certificateTextUser###document##Detail){
+            minimumSize = (200, 36);
+            preferredSize = (300, 36);
+            maximumSize = (300, 36);
         }
     }
 
-    EXTEND FORM invoices
-        PROPERTIES(d2) READONLY description###prop###invoiceDetail BEFORE textInvoiceDetail
-    ;
-END
-
-META defineCertificateShipment(prop, caption)
-    prop###shipmentDetail = ABSTRACT prop (shipmentDetail);
-    description###prop###shipmentDetail caption (shipmentDetail) = description###prop(prop###shipmentDetail(shipmentDetail));
-    prop###userShipment = DATA prop (userShipment);
-    description###prop###userShipment caption (userShipment) = description###prop(prop###userShipment(userShipment));
-    data###prop###userShipmentDetail = DATA prop (userShipmentDetail);
-    prop###userShipmentDetail (userShipmentDetail) =
-        UNION OVERRIDE prop###userShipment(userShipmentUserShipmentDetail(userShipmentDetail)), data###prop###userShipmentDetail(userShipmentDetail);
-    description###prop###userShipmentDetail caption (userShipmentDetail) = description###prop(prop###userShipmentDetail(userShipmentDetail));
-    prop###shipmentDetail(detail) += prop###userShipmentDetail(detail);
-    prop###shipmentDetail(detail) += prop###invoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
-
-    EXTEND FORM userShipment
-        PROPERTIES(s) description###prop###userShipment
-        PROPERTIES(d2) description###prop###userShipmentDetail BEFORE textUserShipmentDetail
-    ;
-
-    EXTEND DESIGN userShipment{
-        headerCertContainer{
-            ADD PROPERTY(description###prop###userShipment);
+    EXTEND FORM document##s PROPERTIES(dc) certificateText###document##Detail;
+    EXTEND DESIGN document##s {
+        PROPERTY(certificateText###document##Detail){
+            minimumSize = (200, 36);
+            preferredSize = (300, 36);
+            maximumSize = (300, 36);
         }
     }
 
-    EXTEND FORM shipments
-        PROPERTIES(d2) READONLY description###prop###shipmentDetail BEFORE textShipmentDetail
+END
+
+META defineDocumentCertificateObject(prop, document, object, caption)
+
+    prop###document##Detail = ABSTRACT prop (document##Detail);
+    description###prop###document##Detail caption (detail) = description###prop(prop###document##Detail(detail));
+
+    prop###user###document = DATA prop (user###document);
+    description###prop###user###document caption (document) = description###prop(prop###user###document(document));
+
+    data###prop###user###document##Detail = DATA prop (user###document##Detail);
+    prop###user###document##Detail (detail) =
+        UNION OVERRIDE prop###user###document(user###document##User###document##Detail(detail)), data###prop###user###document##Detail(detail);
+    prop###document##Detail(detail) += prop###user###document##Detail(detail);
+
+    description###prop###user###document##Detail caption (detail) = description###prop(prop###user###document##Detail(detail));
+
+    EXTEND FORM user###document
+        PROPERTIES(object) description###prop###user###document
+        PROPERTIES(dc) description###prop###user###document##Detail
+    ;
+
+    EXTEND DESIGN user###document {
+        headerCertificateContainer {
+            ADD PROPERTY(description###prop###user###document);
+        }
+    }
+
+    EXTEND FORM document##s
+        PROPERTIES(dc) READONLY description###prop###document##Detail
     ;
 END
 
-META defineCertificateBatch(prop, caption)
-    prop###batch = ABSTRACT prop (batch);
+// ------------------------------------ Сертификаты для партий ----------------------------------- //
+
+META defineCertificateObjectBatch(prop, caption)
+    prop###batch = ABSTRACT prop (batch) PERSISTENT;
     description###prop###batch caption (batch) = description###prop(prop###batch(batch));
     batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
 
-    EXTEND FORM currentBalanceSkuStock
-        PROPERTIES description###prop###batch(bt)
-    ;
-    EXTEND FORM balanceSkuStock
-        PROPERTIES description###prop###batch(bt)
-    ;
-    EXTEND FORM currentBalanceBatchStock
-        PROPERTIES description###prop###batch(bt)
-    ;
-    EXTEND FORM balanceBatchStock
-        PROPERTIES description###prop###batch(bt)
-    ;
+    EXTEND FORM currentBalanceSkuStock PROPERTIES description###prop###batch(bt);
+    EXTEND FORM balanceSkuStock PROPERTIES description###prop###batch(bt);
+    EXTEND FORM currentBalanceBatchStock PROPERTIES description###prop###batch(bt);
+    EXTEND FORM balanceBatchStock PROPERTIES description###prop###batch(bt);
 END
 
-META implementCertificateBatch(prop)
-    prop###batch (batch) += prop###shipmentDetail(shipmentDetailShipmentBatch(batch));
+certificateTextBatch 'Дополнительные сертификаты' = ABSTRACT TEXT (batch) PERSISTENT;
+
+EXTEND FORM currentBalanceSkuStock PROPERTIES certificateTextBatch(bt);
+EXTEND FORM balanceSkuStock PROPERTIES certificateTextBatch(bt);
+EXTEND FORM currentBalanceBatchStock PROPERTIES certificateTextBatch(bt);
+EXTEND FORM balanceBatchStock PROPERTIES certificateTextBatch(bt);
+
+// ------------------------------------ Ограничение на выбор объектов ----------------------------------- //
+
+META defineDocumentCertificateConstraint(prop, document)
+    CONSTRAINT prop###user###document##Detail(detail) AND NOT batchCount###prop##Sku(prop###user###document##Detail(detail), skuUser###document##Detail(detail))
+        CHECKED BY description###prop###user###document##Detail
+        MESSAGE 'Выберите '##caption##', по которой есть в поставка';
+END
+
+// ------------------------------------ Автоматическое проставление ----------------------------------- //
+
+META deriveDocumentCertificate(prop, document, stockProp, caption, prefix)
+    prefix###prop###user###document##Detail(detail)  <- IF prop###batch(batchUser###document##Detail(detail))
+                                                            THEN prop###batch(batchUser###document##Detail(detail))
+                                                            ELSE prop###batch(lastOrderBatchSkuStock(skuUser###document##Detail(detail), stockProp##User###document##Detail(detail)))
+        WHEN CHANGED (batchUser###document##Detail(detail)) OR
+             CHANGED (skuUser###document##Detail(detail)) OR
+             CHANGED (stockProp##User###document##Detail(detail));
 END

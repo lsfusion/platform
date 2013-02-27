@@ -4,7 +4,9 @@ REQUIRE Compliance, PurchaseCertificate;
 
 NAMESPACE Purchase;
 
-@defineCertificateInvoice(compliance, 'Сертификат соответствия');
-@defineCertificateShipment(compliance, 'Сертификат соответствия');
+@defineDocumentCertificateObject(compliance, invoice, i, 'Сертификат соответствия');
 
-@implementCertificateBatch(compliance);
+@defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
+complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+complianceBatch (batch) += complianceShipmentDetail(shipmentDetailShipmentBatch(batch));

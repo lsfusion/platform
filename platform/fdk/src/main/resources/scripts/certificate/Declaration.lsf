@@ -11,6 +11,7 @@ CLASS declarationPosted 'Проведенная таможенная декла�
 
 @defineDocumentHeaderTimePrefix(declaration, ,' создания');
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );
+
 seriesCertificate(declaration) += seriesObject(declaration) AND declaration IS declaration;
 numberCertificate(declaration) += numberObject(declaration) AND declaration IS declaration;
 
@@ -18,7 +19,7 @@ descriptionDeclaration 'Таможенная декларация' (declaration)
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)']
     (seriesNumberObject(declaration), dateDeclaration(declaration));
 
-@defineCertificateBatch(declaration, 'Таможенная декларация');
+@defineCertificateObjectBatch(declaration, 'Таможенная декларация');
 
 customsZoneDeclaration = DATA customsZone(declaration);
 nameCustomsZoneDeclaration 'Таможенная зона' (declaration) = name(customsZoneDeclaration(declaration));

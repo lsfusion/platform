@@ -4,7 +4,11 @@ REQUIRE Declaration, SaleCertificate;
 
 NAMESPACE Sale;
 
-@defineCertificateInvoice(declaration, 'Таможенная декларация');
-@defineCertificateShipment(declaration, 'Таможенная декларация');
-@derivePropUserInvoiceDetail(declaration, 'Таможенная декларация');
-@derivePropUserShipmentDetail(declaration, 'Таможенная декларация');
+@defineDocumentCertificateObject(declaration, invoice, i, 'Таможенная декларация');
+@defineDocumentCertificateConstraint(declaration, invoice);
+@deriveDocumentCertificate(declaration, invoice, supplierStock, 'Таможенная декларация', data);
+
+@defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
+declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+@defineDocumentCertificateConstraint(declaration, shipment);
+@deriveDocumentCertificate(declaration, shipment, supplierStock, 'Таможенная декларация', data);

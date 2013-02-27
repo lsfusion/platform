@@ -420,7 +420,7 @@ public class ImportActionProperty {
                     //ImportField numberComplianceField = new ImportField(LM.findLCPByCompoundName("numberCertificate"));
                     //ImportField dateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("dateTimeCompliance"));
                     //ImportField toDateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("toDateTimeCompliance"));
-                    ImportField textUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("textUserInvoiceDetail"));
+                    ImportField certificateTextUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("certificateTextUserInvoiceDetail"));
 
                     ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName(posted ? "Purchase.userInvoicePosted" : "Purchase.userInvoice"),
                             LM.findLCPByCompoundName("Purchase.numberSeriesToUserInvoice").getMapping(numberUserInvoiceField, seriesUserInvoiceField));
@@ -481,7 +481,7 @@ public class ImportActionProperty {
                     //props.add(new ImportProperty(numberComplianceField, LM.findLCPByCompoundName("numberCertificate").getMapping(complianceKey)));
                     //props.add(new ImportProperty(dateTimeComplianceField, LM.findLCPByCompoundName("dateTimeCompliance").getMapping(complianceKey)));
                     //props.add(new ImportProperty(toDateTimeComplianceField, LM.findLCPByCompoundName("toDateTimeCompliance").getMapping(complianceKey)));
-                    props.add(new ImportProperty(textUserInvoiceDetailField, LM.findLCPByCompoundName("textUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                    props.add(new ImportProperty(certificateTextUserInvoiceDetailField, LM.findLCPByCompoundName("certificateTextUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                     //props.add(new ImportProperty(numberComplianceField, LM.findLCPByCompoundName("complianceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
                     //        LM.object(LM.findClassByCompoundName("compliance")).getMapping(complianceKey)));
 
@@ -502,7 +502,7 @@ public class ImportActionProperty {
                             manufacturingPriceInvoiceDetail,
                             chargePriceUserInvoiceDetailField, retailPriceUserInvoiceDetailField,
                             retailMarkupUserInvoiceDetailField, /*numberComplianceField, dateTimeComplianceField,
-                            toDateTimeComplianceField,*/ textUserInvoiceDetailField), data);
+                            toDateTimeComplianceField,*/ certificateTextUserInvoiceDetailField), data);
 
                     DataSession session = LM.getBL().createSession();
                     IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey,

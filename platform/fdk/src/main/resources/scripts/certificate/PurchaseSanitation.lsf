@@ -4,7 +4,9 @@ REQUIRE Sanitation, PurchaseCertificate;
 
 NAMESPACE Purchase;
 
-@defineCertificateInvoice(sanitation, 'ГГР');
-@defineCertificateShipment(sanitation, 'ГГР');
+@defineDocumentCertificateObject(sanitation, invoice, i, 'ГГР');
 
-@implementCertificateBatch(sanitation);
+@defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
+sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
+
+sanitationBatch (batch) += sanitationShipmentDetail(shipmentDetailShipmentBatch(batch));

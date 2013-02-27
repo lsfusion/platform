@@ -9,16 +9,18 @@ TABLE compliance(compliance);
 @defineDocumentHeaderTimePrefix(compliance, to, ' действия');
 @implementDocumentHeaderTimePrefix(certificate, , compliance, );
 @implementDocumentHeaderTimePrefix(certificate, to, compliance, to);
+
 seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS compliance;
 numberCertificate(compliance) += numberObject(compliance) AND compliance IS compliance;
-textCompliance 'Текст сертификата' = DATA TEXT (compliance);
 numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compliance) WHERE compliance IS compliance;
+
+textCompliance 'Текст сертификата' = DATA TEXT (compliance);
 
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberObject(compliance), dateCompliance(compliance), toDateCompliance(compliance));
 
-@defineCertificateBatch(compliance, 'Сертификат соответствия');
+@defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 
 FORM compliance 'Сертификат соответствия'
     OBJECTS c = compliance FIXED PANEL
