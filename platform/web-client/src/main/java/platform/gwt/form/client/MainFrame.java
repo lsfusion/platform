@@ -1,5 +1,6 @@
 package platform.gwt.form.client;
 
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -50,6 +51,7 @@ public class MainFrame implements EntryPoint {
             @Override
             public void onUncaughtException(Throwable t) {
                 GWT.log("Необработанная ошибка в GWT: ", t);
+                Log.debug("Необработанная ошибка в GWT: ", t);
             }
         });
 

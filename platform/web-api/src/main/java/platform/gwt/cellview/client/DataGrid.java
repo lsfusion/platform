@@ -33,7 +33,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
-import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.Cell.Context;
 import platform.gwt.cellview.client.cell.CellPreviewEvent;
@@ -1513,12 +1512,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         // Reset focus if needed.
         cellIsEditing = column.getCell().isEditing(context, cellParent, column.getValue(rowValue));
         if (cellWasEditing && !cellIsEditing) {
-            CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    setFocus(true);
-                }
-            });
+            setFocus(true);
         }
     }
 
@@ -1756,6 +1750,20 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         isResolvingState = false;
     }
 
+    private void resetFocus(boolean wasFocused) {
+        // Ensure that the keyboard selected element is focusable.
+        if (wasFocused) {
+            CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    if (!resetFocusOnCell()) {
+                        setFocus(true);
+                    }
+                }
+            });
+        }
+    }
+
     private void beforeUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
 
         int rowCount = pendingState.rowData.size();
@@ -1932,24 +1940,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             if (topTD != null) {
                 setStyleName(topTD, topOfFocusedCellStyle, focused);
             }
-        }
-    }
-
-    private void resetFocus(boolean wasFocused) {
-        // Ensure that the keyboard selected element is focusable.
-        if (isFocused) {
-            onFocus();
-        }
-
-        if (wasFocused) {
-            CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    if (!resetFocusOnCell()) {
-                        setFocus(true);
-                    }
-                }
-            });
         }
     }
 
