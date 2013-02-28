@@ -103,6 +103,9 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
 
+    CONSTRAINT repricingCommittee###object(object) AND NOT inCommitteeEmployeeDivision(repricingCommittee###object(object), stockProp###object(object))
+        CHECKED BY repricingCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
+
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
     commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
     commonNameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));

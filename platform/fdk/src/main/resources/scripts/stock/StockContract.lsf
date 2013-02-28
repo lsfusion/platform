@@ -27,11 +27,11 @@ CLASS STATIC contractSkuForm 'Порядок оплаты договора на 
 
 CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
 
-supplierContractSku = DATA legalEntity (contractSku) AUTOSET;
+supplierContractSku = DATA legalEntity (contractSku);
 nameSupplierContractSku 'Поставщик' (contract) = name(supplierContractSku(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyAContract (contract) += supplierContractSku(contract);
 
-customerContractSku = DATA legalEntity (contractSku) AUTOSET;
+customerContractSku = DATA legalEntity (contractSku);
 nameCustomerContractSku 'Покупатель' (contract) = name(customerContractSku(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 partyBContract (contract) += customerContractSku(contract);
 

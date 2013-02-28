@@ -120,6 +120,9 @@ META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
     prefix###pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
+    CONSTRAINT prefix###pricingCommittee###object (object) AND NOT inCommitteeEmployeeDivision(prefix###pricingCommittee###object(object), stockClass###object(object))
+        CHECKED BY prefix###pricingCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
+
     name###prefix###FormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
     name###prefix###CheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
     name###prefix###LabeledMan###object 'Товар промаркировал' (object) = nameLabeledManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
