@@ -1,6 +1,7 @@
 MODULE I18n;
 
-REQUIRE System;
+REQUIRE System,
+        Utils;
 
 // ------------------------------------------------ Язык ---------------------------------------------- //
 
@@ -8,6 +9,11 @@ CLASS dictionary 'Словарь' : named;
 TABLE dictionary (dictionary);
 
 insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (dictionary);
+
+languageFromDictionary = DATA language (dictionary);
+nameLanguageFromDictionary 'С языка'(dictionary) = name(languageFromDictionary(dictionary));
+languageToDictionary = DATA language (dictionary);
+nameLanguageToDictionary 'На язык'(dictionary) = name(languageToDictionary(dictionary));
 
 CLASS dictionaryEntry 'Слова';
 TABLE dictionaryEntry (dictionaryEntry);
@@ -55,6 +61,71 @@ NAVIGATOR {
     }
 }
 
+// ------------------------------------ Перевод через Google Translate -------------------------------- //
+
+translationOriginal 'Текст для перевода' = DATA SESSION TEXT ();
+translationResult 'Переведённый текст' = DATA SESSION TEXT ();      //STRING[50]
+
+languageFromTranslation = DATA language ();
+nameLanguageFromTranslation 'С языка'() = name(languageFromTranslation());
+languageToTranslation = DATA language ();
+nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
+
+translate  = ACTION CUSTOM 'platform.server.logics.i18n.TranslateActionProperty';
+
+translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
+
+    EXEC translate (toText(termDictionaryEntry(dictionaryEntry)),
+            languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
+            languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
+    SET translationDictionaryEntry(dictionaryEntry) <- toString50(translationResult());
+}
+
+translateText 'Перевести' = ACTION () {
+    EXEC translate (translationOriginal(), languageFromTranslation(), languageToTranslation());
+}
+
+FORM translation 'Перевод'
+    PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
+                 translateText
+;
+
+EXTEND DESIGN translation {
+    main {
+        NEW specContainer {
+            NEW textContainer {
+                childConstraints = TO THE BOTTOM;
+                ADD PROPERTY(nameLanguageFromTranslation());
+                ADD PROPERTY(nameLanguageToTranslation());
+                ADD PROPERTY(translationOriginal());
+                ADD PROPERTY(translationResult());
+                ADD PROPERTY(translateText());
+                fillHorizontal = 1;
+                fillVertical = 1;
+                PROPERTY (translationOriginal()) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+                PROPERTY (translationResult()) {
+                    fillHorizontal = 1;
+                    fillVertical = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelLabelAbove = TRUE;
+                }
+            }
+            ADD functions.box;
+        }
+    }
+}
+
+NAVIGATOR {
+    regionalData {
+        ADD translation;
+    }
+}
+
 // ---------------------------------------------- Мультиязычный объект -------------------------------- //
 
 CLASS multiLanguageNamed 'Мультиязычный объект';
@@ -66,10 +137,10 @@ languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLangua
 
 FORM dictionary 'Словарь'
     OBJECTS d = dictionary FIXED PANEL
-    PROPERTIES(d) name, insensitiveDictionary
+    PROPERTIES(d) name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     OBJECTS e = dictionaryEntry
-    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, ADDOBJ, delete
+    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, delete
     FILTERS       dictionaryDictionaryEntry(e) == d
 
     EDIT dictionary OBJECT d
@@ -77,7 +148,7 @@ FORM dictionary 'Словарь'
 
 FORM dictionaries 'Словари'
     OBJECTS d = dictionary
-    PROPERTIES(d) READONLY name, insensitiveDictionary
+    PROPERTIES(d) READONLY name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 

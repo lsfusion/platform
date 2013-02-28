@@ -18,6 +18,7 @@ toString2 = FORMULA STRING[2] 'CAST($1 AS character(2))' FIXEDCHARWIDTH 2;
 toString3 = FORMULA STRING[3] 'CAST($1 AS character(3))' FIXEDCHARWIDTH 3;
 toString4 = FORMULA STRING[4] 'CAST($1 AS character(4))' FIXEDCHARWIDTH 4;
 toString15 = FORMULA STRING[15] 'CAST($1 AS character(15))' FIXEDCHARWIDTH 15;
+toString50 = FORMULA STRING[50] 'CAST($1 AS character(50))';
 toString255 = FORMULA STRING[255] 'CAST($1 AS character(255))';
 
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE 0 END';
