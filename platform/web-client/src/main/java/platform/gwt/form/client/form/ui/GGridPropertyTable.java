@@ -70,7 +70,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
             GAbstractGroupObjectController goController = getGroupController();
             if (goController.filter != null && goController.filter.hasConditions()) {
-                event.stopPropagation();
+                stopPropagation(event);
                 goController.removeFilters();
                 return;
             }
