@@ -136,12 +136,6 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR);
         }
 
-        // переопределяем, чтобы работал quick filter - иначе грид забирает себе фокус после ввода первого символа
-        @Override
-        public boolean resetFocus(Context context, Element parent, Object value) {
-            return true;
-        }
-
         @Override
         public boolean isEditing(Context context, Element parent, Object value) {
             return isInEditingState;
@@ -176,9 +170,9 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
             }
             if (isInEditingState) {
                 cellEditor.onBrowserEvent(context, parent, value, event);
-                if (event.getKeyCode() == KeyCodes.KEY_ENTER && !isInEditingState) {
-                    valueView.applyFilter();
-                }
+            }
+            if (event.getKeyCode() == KeyCodes.KEY_ENTER) {
+                valueView.applyFilter();
             }
         }
 

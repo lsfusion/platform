@@ -1540,12 +1540,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         return null;
     }
 
-    private <C> boolean resetFocusOnCellImpl(Context context, T value, HasCell<T, C> column, Element cellParent) {
-        C cellValue = column.getValue(value);
-        Cell<C> cell = column.getCell();
-        return cell.resetFocus(context, cellParent, cellValue);
-    }
-
     /**
      * Apply a style to a row and all cells in the row.
      *
@@ -1743,25 +1737,9 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
         updateSelectedRowStyles();
 
-        resetFocus(pendingState.pendingWasFocused);
-
         state = pendingState;
         pendingState = null;
         isResolvingState = false;
-    }
-
-    private void resetFocus(boolean wasFocused) {
-        // Ensure that the keyboard selected element is focusable.
-        if (wasFocused) {
-            CellBasedWidgetImpl.get().resetFocus(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    if (!resetFocusOnCell()) {
-                        setFocus(true);
-                    }
-                }
-            });
-        }
     }
 
     private void beforeUpdateTableData(State<T> pendingState, int rowToShow, int colToShow) {
@@ -1941,21 +1919,6 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                 setStyleName(topTD, topOfFocusedCellStyle, focused);
             }
         }
-    }
-
-    private boolean resetFocusOnCell() {
-        Element elem = getKeyboardSelectedElement();
-        if (elem == null) {
-            // There is no selected element.
-            return false;
-        }
-
-        int row = getKeyboardSelectedRow();
-        int col = getKeyboardSelectedColumn();
-        T value = getRowValue(row);
-        Context context = new Context(row, col, value);
-        HasCell<T, ?> column = tableBuilder.getColumn(context, value, elem);
-        return column != null && resetFocusOnCellImpl(context, value, column, elem);
     }
 
     private void updateHeadersImpl(boolean columnsChanged) {

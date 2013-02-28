@@ -106,17 +106,4 @@ public abstract class AbstractCell<C> implements Cell<C> {
     public abstract void renderDom(Context context, DivElement cellElement, C value);
 
     public abstract void updateDom(Context context, DivElement cellElement, C value);
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>
-     * This method is a no-op and returns false. If your cell is editable or can
-     * be focused by the user, override this method to reset focus when the
-     * containing widget is refreshed.
-     * </p>
-     */
-    public boolean resetFocus(Context context, Element parent, C value) {
-        return false;
-    }
 }

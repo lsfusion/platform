@@ -412,7 +412,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
         if (open) {
             if (!node.isOpen()) {
-                keyboardSelectionHandler.tryingToExpand = true;
+                keyboardSelectionHandler.nodeTryingToExpand = node;
                 fireExpandNode(node);
                 return true;
             }
@@ -424,19 +424,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public class TreeTableKeyboardSelectionHandler extends GridPropertyTableKeyboardSelectionHandler<GTreeGridRecord> {
-        public boolean tryingToExpand = false;
+        public GTreeTableNode nodeTryingToExpand = null;
 
         public TreeTableKeyboardSelectionHandler(DataGrid<GTreeGridRecord> table) {
             super(table);
         }
 
         public void dataUpdated() {
-            if (tryingToExpand) {
-                GTreeTableNode currentNode = tree.getNodeByRecord(selectedRecord);
-                if (currentNode != null && !currentNode.isOpen()) {
+            if (nodeTryingToExpand != null) {
+                if (!nodeTryingToExpand.isOpen()) {
                     nextColumn(true);
                 }
-                tryingToExpand = false;
+                nodeTryingToExpand = null;
             }
         }
 

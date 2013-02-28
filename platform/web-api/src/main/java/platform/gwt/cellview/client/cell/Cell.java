@@ -175,15 +175,4 @@ public interface Cell<C> {
     void renderDom(Context context, DivElement cellElement, C value);
 
     void updateDom(Context context, DivElement cellElement, C value);
-
-    /**
-     * Reset focus on the Cell. This method is called if the cell has focus when
-     * it is refreshed.
-     *
-     * @param context the {@link Context} of the cell
-     * @param parent  the parent Element
-     * @param value   the value associated with the cell
-     * @return true if focus is taken, false if not
-     */
-    boolean resetFocus(Context context, Element parent, C value);
 }

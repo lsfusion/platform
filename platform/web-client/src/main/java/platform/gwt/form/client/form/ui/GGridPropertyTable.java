@@ -61,7 +61,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 && !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
             stopPropagation(event);
             form.okPressed();
-        } else if (BrowserEvents.KEYPRESS.equals(event.getType()) && GKeyStroke.isPossibleStartFilteringEvent(event)) {
+        } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
             GPropertyDraw property = getSelectedProperty();
             if (property != null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {
                 stopPropagation(event);

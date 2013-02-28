@@ -48,8 +48,11 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
                 currentText = "";
                 selectAll = false;
             } else if (KEYPRESS.equals(eventType)) {
-                currentText = String.valueOf((char)nativeEvent.getCharCode());
-                selectAll = false;
+                int charCode = nativeEvent.getCharCode();
+                if (charCode != 0) {
+                    currentText = String.valueOf((char)charCode);
+                    selectAll = false;
+                }
             }
         }
         inputElement.setValue(currentText);

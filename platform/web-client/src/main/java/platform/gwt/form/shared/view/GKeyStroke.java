@@ -136,7 +136,6 @@ public class GKeyStroke implements Serializable {
                     keyCode == KEY_BACKSPACE ||
                     keyCode == KEY_INSERT ||
                     keyCode == KEY_ESCAPE ||
-                    keyCode == KEY_ENTER ||
                     (KEY_F1 <= keyCode && keyCode <= KEY_F12);
         } else if (KEYPRESS.equals(eventType)) {
             return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() && isChangeKeyCode(keyCode);
@@ -145,13 +144,14 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isPossibleStartFilteringEvent(NativeEvent event) {
-        int keyCode = event.getKeyCode();
-        return KEYPRESS.equals(event.getType()) &&
-                !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                isChangeKeyCode(keyCode) &&
-                keyCode != KEY_DELETE &&
-                keyCode != KEY_BACKSPACE &&
-                keyCode != KEY_INSERT;
+        if (KEYPRESS.equals(event.getType())) {
+            int keyCode = event.getKeyCode();
+            int charCode = event.getCharCode();
+            return  !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
+                    keyCode != KEY_TAB &&
+                    charCode != 0;
+        }
+        return false;
     }
 
     public static boolean isChangeKeyCode(int keyCode) {
