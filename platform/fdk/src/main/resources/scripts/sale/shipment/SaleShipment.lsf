@@ -37,8 +37,8 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(cust
 //------------------------------ Создание аггрегированных объектов через операции -------------------------//
 
 createShipmentSaleOperation 'Создавать поставку' = DATA BOOLEAN (saleOperation) IN createGroup;
-createShipmentInvoice(invoice) <- TRUE IF createShipmentSaleOperation(saleOperationInvoice(invoice))
-    WHEN CHANGED(saleOperationInvoice(invoice));
+createShipmentUserInvoice(invoice) <- TRUE IF createShipmentSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));
 
 EXTEND FORM saleOperation
     PROPERTIES(o) createShipmentSaleOperation

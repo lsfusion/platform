@@ -661,8 +661,8 @@ public class ImportActionProperty {
                 ImportKey<?> ownershipKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("ownership"),
                         LM.findLCPByCompoundName("shortNameToOwnership").getMapping(shortNameOwnershipField));
 
-                ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("account"),
-                        LM.findLCPByCompoundName("accountNumber").getMapping(accountField));
+                ImportKey<?> accountKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Bank.account"),
+                        LM.findLCPByCompoundName("Bank.accountNumber").getMapping(accountField));
 
                 ImportKey<?> bankKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("bank"),
                         LM.findLCPByCompoundName("externalizableSID").getMapping(bankIDField));
@@ -693,14 +693,14 @@ public class ImportActionProperty {
                 props.add(new ImportProperty(shortNameOwnershipField, LM.findLCPByCompoundName("ownershipLegalEntity").getMapping(legalEntityKey),
                         LM.object(LM.findClassByCompoundName("ownership")).getMapping(ownershipKey)));
 
-                props.add(new ImportProperty(accountField, LM.findLCPByCompoundName("numberAccount").getMapping(accountKey)));
-                props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("legalEntityAccount").getMapping(accountKey),
+                props.add(new ImportProperty(accountField, LM.findLCPByCompoundName("Bank.numberAccount").getMapping(accountKey)));
+                props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("Bank.legalEntityAccount").getMapping(accountKey),
                         LM.object(LM.findClassByCompoundName("legalEntity")).getMapping(legalEntityKey)));
 
                 props.add(new ImportProperty(chainStoresIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(chainStoresKey)));
                 props.add(new ImportProperty(nameChainStoresField, LM.findLCPByCompoundName("name").getMapping(chainStoresKey)));
 
-                props.add(new ImportProperty(bankIDField, LM.findLCPByCompoundName("bankAccount").getMapping(accountKey),
+                props.add(new ImportProperty(bankIDField, LM.findLCPByCompoundName("Bank.bankAccount").getMapping(accountKey),
                         LM.object(LM.findClassByCompoundName("bank")).getMapping(bankKey)));
 
                 props.add(new ImportProperty(nameCountryField, LM.findLCPByCompoundName("name").getMapping(countryKey)));
