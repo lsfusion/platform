@@ -124,6 +124,9 @@ VATSaleLedger (ledger) += VATInvoiceDetail(ledger);
 sumSaleLedger (ledger) += invoiceSumInvoiceDetail(ledger);
 customerSaleLedger (ledger) += customerInvoiceDetail(ledger);
 
+//--------------------- Расширяем форму Подбор инвойса резервами -------//
+@extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+
 NAVIGATOR {
     saleSaleNavigator {
         ADD invoices;

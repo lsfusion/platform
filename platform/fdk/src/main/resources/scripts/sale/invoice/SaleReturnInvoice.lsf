@@ -52,6 +52,9 @@ EXTEND FORM userInvoice
         FILTER'В ассортименте' 'F7' priceSkuUserInvoice(s, i)
 ;
 
+//--------------------- Расширяем форму Подбор инвойса резервами -------//
+@extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+
 NAVIGATOR {
     saleReturnNavigator {
         ADD invoices;

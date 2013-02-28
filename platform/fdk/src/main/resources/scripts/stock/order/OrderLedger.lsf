@@ -215,26 +215,21 @@ EXTEND DESIGN currentBalanceSkuStock {
     }
 }
 
-//---------------------Расширение закладки подбара формы заказа резервами---------------//
+//---------------------Расширение закладки подбара формы заказа резервами ---------------//
 
 availableQuantitySkuStockDateTime 'Доступное количество' (sku, stock, dateTime) = (currentBalanceSkuStock(sku, stock) AND dateTime AS DATETIME) (+) reserveBSkuStockDateTime(sku, stock, dateTime);
 
-META extendFormDocumentOrderLedger(object, form, concrete)
+META extendFormDocumentOrderLedgerStock(object, form, concrete)
 
     availableQuantitySkuStock###object 'Доступное количество' (sku, stock, object)= availableQuantitySkuStockDateTime(sku, stock, shipmentDateTime###object(object));
 
     reserveBPurchaseSkuStock###object 'Резерв (закупка)' (sku, stock, object) = reserveBPurchaseSkuStockDateTime(sku, stock, shipmentDateTime###object(object));
     reserveBSaleSkuStock###object 'Резерв (продажа)' (sku, stock, object) = reserveBSaleSkuStockDateTime(sku, stock, shipmentDateTime###object(object));
 
-    reviewReserveSaleSkuStock###object###dateTime (sku,stock, dateTime) = ACTION FORM orderLedger OBJECTS t=(dateTime AS DATETIME), st=stock, sk = sku MODAL SHORTCUT currentReserveSaleSkuStock DEFAULT;
-    reviewReservePurchaseSkuStock###object###dateTime  (sku,stock, dateTime) = ACTION FORM orderLedger OBJECTS t=(dateTime AS DATETIME), st=stock, sk = sku MODAL SHORTCUT currentReservePurchaseSkuStock DEFAULT;
-    reviewReserveBSaleSkuStock###object###dateTime (sku,stock, dateTime) = ACTION FORM orderLedger OBJECTS t=(dateTime AS DATETIME), st=stock, sk = sku MODAL SHORTCUT reserveBSaleSkuStock###object DEFAULT;
-    reviewReserveBPurchaseSkuStock###object###dateTime (sku,stock, dateTime) = ACTION FORM orderLedger OBJECTS t=(dateTime AS DATETIME), st=stock, sk = sku MODAL SHORTCUT reserveBPurchaseSkuStock###object DEFAULT;
-
-    reviewReserveSaleSkuStock###object 'Резерв' (sku,stock, object) = reviewReserveSaleSkuStock###object###dateTime(sku,stock,shipmentDateTime###object(object));
-    reviewReservePurchaseSkuStock###object 'Резерв' (sku,stock, object) = reviewReservePurchaseSkuStock###object###dateTime(sku,stock,shipmentDateTime###object(object));
-    reviewReserveBSaleSkuStock###object 'Резерв' (sku,stock, object) = reviewReserveBSaleSkuStock###object###dateTime(sku,stock,shipmentDateTime###object(object));
-    reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = reviewReserveBPurchaseSkuStock###object###dateTime(sku,stock,shipmentDateTime###object(object));
+    reviewReserveSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT currentReserveSaleSkuStock DEFAULT;
+    reviewReservePurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT currentReservePurchaseSkuStock DEFAULT;
+    reviewReserveBSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT reserveBSaleSkuStock###object DEFAULT;
+    reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT reserveBPurchaseSkuStock###object DEFAULT;
 
     EXTEND FORM form
         PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete)
@@ -249,9 +244,44 @@ META extendFormDocumentOrderLedger(object, form, concrete)
         PROPERTY(availableQuantitySkuStock###object) { background = #F4FFBD; }
         PROPERTY(currentReservePurchaseSkuStock) { background = #CCFFCC; }
         PROPERTY(reserveBPurchaseSkuStock###object) { background = #CCFFCC; }
-        PROPERTY(currentReservePurchaseSkuStock) { background = #CCFFCC; }
         PROPERTY(currentReserveSaleSkuStock) { background = #BDE3FF; }
         PROPERTY(reserveBSaleSkuStock###object) { background = #BDE3FF; }
+    }
+
+END
+
+//---------------------Расширение закладки подбара формы накладной резервами ---------------//
+
+META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
+
+    availableQuantitySku###object 'Доступное количество' (sku, object)= availableQuantitySkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
+
+    reserveBPurchaseSku###object 'Резерв (закупка)' (sku, object) = reserveBPurchaseSkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
+    currentReservePurchaseSku###object 'Резерв закупка (всего)' (sku, object) = currentReservePurchaseSkuStock(sku, stockProp###object(object));
+
+    reserveBSaleSku###object 'Резерв (продажа)' (sku, object) = reserveBSaleSkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
+    currentReserveSaleSku###object 'Резерв продажа (всего)' (sku, object) = currentReserveSaleSkuStock(sku, stockProp###object(object));
+
+    reviewReserveSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT currentReserveSaleSku###object DEFAULT;
+    reviewReservePurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT currentReservePurchaseSku###object DEFAULT;
+    reviewReserveBSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT reserveBSaleSku###object DEFAULT;
+    reviewReserveBPurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT reserveBPurchaseSku###object DEFAULT;
+
+    EXTEND FORM form
+        PROPERTIES READONLY BEFORE currentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)
+
+        PROPERTIES AFTER currentBalanceSku###object(s, concrete)
+                   currentReserveSaleSku###object(s,concrete) ON CHANGE EXEC reviewReserveSaleSku###object(s,concrete),
+                   currentReservePurchaseSku###object(s,concrete) ON CHANGE EXEC reviewReservePurchaseSku###object(s,concrete),
+                   reserveBSaleSku###object(s, concrete) ON CHANGE EXEC reviewReserveBSaleSku###object(s,concrete),
+                   reserveBPurchaseSku###object(s, concrete) ON CHANGE EXEC reviewReserveBPurchaseSku###object(s,concrete)
+    ;
+    EXTEND DESIGN form {
+        PROPERTY(availableQuantitySku###object) { background = #F4FFBD; }
+        PROPERTY(currentReservePurchaseSku###object) { background = #CCFFCC; }
+        PROPERTY(reserveBPurchaseSku###object) { background = #CCFFCC; }
+        PROPERTY(currentReserveSaleSku###object) { background = #BDE3FF; }
+        PROPERTY(reserveBSaleSku###object) { background = #BDE3FF; }
     }
 
 END

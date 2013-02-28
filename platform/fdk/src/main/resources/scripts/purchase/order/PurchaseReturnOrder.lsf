@@ -41,7 +41,8 @@ EXTEND FORM userOrder
 
 //--------------------- Проводим по регистру резерва ------------------//
 @implementPurchaseOrderLedger(order, sku, shipmentDateTime, customerStock, supplier);
-@extendFormDocumentOrderLedger(userOrder, userOrder, o);
+//--------------------- Расширяем форму Подбор заказа резервами -------//
+@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
 
 NAVIGATOR {
     purchaseReturnNavigator {
