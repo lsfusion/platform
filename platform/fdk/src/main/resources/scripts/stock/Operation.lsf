@@ -137,7 +137,8 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
     ;
 
     DESIGN prefix###operation FROM DEFAULT{
-        main{
+        NEW topContainer{
+            type = SPLITV;
             NEW headContainer{
                 childConstraints = TO THE RIGHT;
                 NEW propertyContainer{
