@@ -15,9 +15,10 @@ TABLE agreement (agreement);
 @defineDocumentHeaderTime(agreement);
 @defineDocumentHeaderTimePrefix(agreement, from, ' с');
 
-@defineDocumentHeaderTimePrefix(agreement, to, ' по');
-toDateAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
-toTimeAgreement(agreement) <- NULL WHEN ASSIGNED(agreement IS agreement);
+toDateAgreement 'Дата по' = DATA DATE(agreement);
+toTimeAgreement 'Время по' = DATA TIME(agreement);
+toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(toDateAgreement(agreement), toTimeAgreement(agreement));
+
 
 @defineDocumentHeaderNote(agreement);
 @defineDocumentHeaderCurrency(agreement);
