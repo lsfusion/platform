@@ -1,6 +1,6 @@
 MODULE SaleInvoice;
 
-REQUIRE SaleOrder, OrderInvoice, StockTax, Store;
+REQUIRE SaleOrder, OrderInvoice, StockTax, Store, SaleOperation;
 
 NAMESPACE Sale;
 
@@ -132,3 +132,9 @@ NAVIGATOR {
         ADD invoices;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, invoice, i);
+@definePriceListTypeConstraintOperationObject(sale, invoice);
+@defineSupplierCustomerConstraintOperationObject(sale, invoice);

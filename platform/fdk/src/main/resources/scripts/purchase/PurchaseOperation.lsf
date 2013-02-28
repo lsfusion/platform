@@ -1,6 +1,6 @@
 MODULE PurchaseOperation;
 
-REQUIRE Operation, PurchaseInvoice, PurchaseOrder;
+REQUIRE Operation, PriceList, Purchase;
 
 NAMESPACE Purchase;
 

@@ -1053,10 +1053,6 @@ END
 META defineDocumentAbstractHeaderCreate(object, createProp, caption)
     createProp###object caption (object) = ABSTRACT BOOLEAN(object) PERSISTENT IN documentPrmGroup;
 END
-META deriveDocumentHeaderCreate(object, createProp, stockClass, stockProp)
-    createProp###object (object) <- TRUE IF createProp###stockClass(stockProp###object(object))
-        WHEN CHANGED(stockProp###object(object));
-END
 
 META defineDocumentInterfaceHeaderCreate (object, createProp, caption)
     @defineDocumentAbstractHeaderCreate (object, createProp, caption);

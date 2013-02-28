@@ -1,6 +1,6 @@
 MODULE SaleBlanketOrder;
 
-REQUIRE SaleOrder, BlanketOrder;
+REQUIRE SaleOrder, BlanketOrder, SaleOperation;
 
 NAMESPACE Sale;
 
@@ -21,5 +21,42 @@ CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(cust
 NAVIGATOR {
     saleSaleNavigator {
         ADD blanketOrders BEFORE orders;
+    }
+}
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+saleOperationBlanketOrder = DATA saleOperation (blanketOrder);
+nameSaleOperationBlanketOrder 'Операция' = name(saleOperationBlanketOrder(blanketOrder));
+
+saleOperationBlanketOrderDetail 'Операция' (blanketOrderDetail) = saleOperationBlanketOrder(blanketOrderBlanketOrderDetail(blanketOrderDetail));
+
+CONSTRAINT saleOperationBlanketOrderDetail(blanketOrderDetail) AND priceListTypeBlanketOrderDetail(blanketOrderDetail)
+           AND NOT isPriceListTypeSaleOperation(priceListTypeBlanketOrderDetail(blanketOrderDetail), saleOperationBlanketOrderDetail(blanketOrderDetail))
+    CHECKED BY priceListTypeBlanketOrderDetail
+    MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+CONSTRAINT saleOperationBlanketOrder(blanketOrder) AND priceListTypeBlanketOrderStock(blanketOrder, stock)
+           AND NOT isPriceListTypeSaleOperation(priceListTypeBlanketOrderStock(blanketOrder, stock), saleOperationBlanketOrder(blanketOrder))
+    CHECKED BY priceListTypeBlanketOrderStock
+    MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+CONSTRAINT saleOperationBlanketOrder(blanketOrder)
+           AND NOT isSupplierSaleOperation(supplierBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
+    CHECKED BY supplierBlanketOrder
+    MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
+
+CONSTRAINT saleOperationBlanketOrder(blanketOrder)
+           AND NOT isCustomerSaleOperation(customerBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
+    CHECKED BY customerBlanketOrder
+    MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
+
+EXTEND FORM blanketOrder
+    PROPERTIES(o) nameSaleOperationBlanketOrder
+;
+
+EXTEND DESIGN blanketOrder{
+    o.documentPrmGroup{
+        ADD PROPERTY(nameSaleOperationBlanketOrder) BEFORE PROPERTY(nameCurrencyBlanketOrder);
     }
 }

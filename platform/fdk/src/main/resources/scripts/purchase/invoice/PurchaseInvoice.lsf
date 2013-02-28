@@ -1,6 +1,6 @@
 MODULE PurchaseInvoice;
 
-REQUIRE Utils, PurchaseOrder, OrderInvoice;
+REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation;
 
 NAMESPACE Purchase;
 
@@ -123,3 +123,9 @@ NAVIGATOR {
         ADD invoices;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, invoice, i);
+@definePriceListTypeConstraintOperationObject(purchase, invoice);
+@defineSupplierCustomerConstraintOperationObject(purchase, invoice);

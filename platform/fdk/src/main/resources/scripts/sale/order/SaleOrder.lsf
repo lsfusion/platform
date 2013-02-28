@@ -1,6 +1,6 @@
 MODULE SaleOrder;
 
-REQUIRE Order, Store;
+REQUIRE Order, Store, SaleOperation;
 
 NAMESPACE Sale;
 
@@ -141,3 +141,9 @@ NAVIGATOR {
         ADD orders;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, order, o);
+@definePriceListTypeConstraintOperationObject(sale, order);
+@defineSupplierCustomerConstraintOperationObject(sale, order);

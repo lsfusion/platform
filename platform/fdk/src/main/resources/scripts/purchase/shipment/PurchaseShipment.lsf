@@ -84,10 +84,15 @@ CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supp
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией';
 
-//------------------------------ Создание аггрегированных объектов через операции -------------------------//
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, shipment, s);
+@defineSupplierCustomerConstraintOperationObject(purchase, shipment);
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
 createShipmentPurchaseOperation 'Создавать поставку' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-createShipmentUserInvoice(invoice) <- TRUE IF createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
+createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
     WHEN CHANGED(purchaseOperationUserInvoice(invoice));
 
 EXTEND FORM purchaseOperation

@@ -34,26 +34,6 @@ META defineOperationObject(prefix, object, char)
     prefix###operation###object##Detail 'Операция' (object##Detail) = prefix###operation###object(object###object##Detail(object##Detail));
     prefix###operationUser###object##Detail 'Операция' (user###object##Detail) = prefix###operationUser###object(user###object##User###object##Detail(user###object##Detail));
 
-    CONSTRAINT prefix###operationUser###object##Detail(user###object##Detail)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object##Detail(user###object##Detail), prefix###operationUser###object##Detail(user###object##Detail))
-        CHECKED BY priceListTypeUser###object##Detail
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUser###object(user###object) AND priceListTypeUser###object(user###object)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY priceListTypeUser###object
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isSupplier###prefix###operation(supplierUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY supplierUser###object
-        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isCustomer###prefix###operation(customerUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY customerUser###object
-        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
-
     EXTEND FORM user###object
         PROPERTIES(char) name###prefix###operationUser###object
     ;
@@ -64,6 +44,30 @@ META defineOperationObject(prefix, object, char)
         }
     }
 
+END
+
+META definePriceListTypeConstraintOperationObject(prefix, object)
+    CONSTRAINT prefix###operationUser###object##Detail(user###object##Detail)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object##Detail(user###object##Detail), prefix###operationUser###object##Detail(user###object##Detail))
+        CHECKED BY priceListTypeUser###object##Detail
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUser###object(user###object) AND priceListTypeUser###object(user###object)
+               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object(user###object), prefix###operationUser###object(user###object))
+        CHECKED BY priceListTypeUser###object
+        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+END
+
+META defineSupplierCustomerConstraintOperationObject(prefix, object)
+    CONSTRAINT prefix###operationUser###object(user###object)
+               AND NOT isSupplier###prefix###operation(supplierUser###object(user###object), prefix###operationUser###object(user###object))
+        CHECKED BY supplierUser###object
+        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operationUser###object(user###object)
+               AND NOT isCustomer###prefix###operation(customerUser###object(user###object), prefix###operationUser###object(user###object))
+        CHECKED BY customerUser###object
+        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
 END
 
 META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
@@ -85,13 +89,22 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
     @defineRecursionGroupChoose(prefix###operation, supplier);
     @defineRecursionGroupChoose(prefix###operation, customer);
 
-    //------------------------------ Накладные ---------------------------------------- //
+//    //------------------------------ Накладные ---------------------------------------- //
+//
+//    @defineOperationObject(prefix, invoice, i);
+//    @definePriceListTypeConstraintOperationObject(prefix, invoice);
+//    @defineSupplierCustomerConstraintOperationObject(prefix, invoice);
 
-    @defineOperationObject(prefix, invoice, i);
+//    //------------------------------ Заказы ---------------------------------------- //
+//
+//    @defineOperationObject(prefix, order, o);
+//    @definePriceListTypeConstraintOperationObject(prefix, order);
+//    @defineSupplierCustomerConstraintOperationObject(prefix, order);
 
-    //------------------------------ Заказы ---------------------------------------- //
-
-    @defineOperationObject(prefix, order, o);
+//    //------------------------------ Поставки ---------------------------------------- //
+//
+//    @defineOperationObject(prefix, shipment, s);
+//    @defineSupplierCustomerConstraintOperationObject(prefix, shipment);
 
     //------------------------------- Формы ------------------------------------------- //
 
@@ -178,4 +191,9 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
         DIALOG prefix###operation OBJECT o
     ;
 
+END
+
+META deriveDocumentHeaderCreate(object, createProp, prefix)
+    createProp###object (object) <- createProp###prefix##Operation(prefix##Operation###object(object))
+        WHEN CHANGED(prefix##Operation###object(object));
 END

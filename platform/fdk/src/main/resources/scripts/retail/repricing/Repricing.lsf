@@ -674,7 +674,7 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
 
     @defineDocumentInterfaceCreate (invoice, createRepricing, 'Создать акт дооценки');
-    @deriveDocumentHeaderCreate(userInvoice, createRepricing, departmentStore, stockProp);
+    //@deriveDocumentHeaderCreate(userInvoice, createRepricing, departmentStore, stockProp);
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
                                                    AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore

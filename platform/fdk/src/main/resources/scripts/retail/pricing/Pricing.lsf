@@ -561,7 +561,7 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     @deriveDocumentDetailVAT(userInvoice, retail, date, sku, stockProp);
 
     @defineDocumentInterfaceCreate (invoice, createPricing, 'Создать акт расценки');
-    @deriveDocumentHeaderCreate(userInvoice, createPricing, departmentStore, stockProp);
+    //@deriveDocumentHeaderCreate(userInvoice, createPricing, departmentStore, stockProp);
 
     showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);

@@ -31,12 +31,23 @@ FORM writeOffRateDialog 'Нормы отходов'
 
 // ----------------------------------- Создавать по умолчанию для склада ------------------------------------------ //
 
-createPurchaseWriteOffStock 'Создавать акт списания' = DATA BOOLEAN (stock) IN createGroup;
+createPurchaseWriteOffPurchaseOperation 'Создавать акт списания' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+
+EXTEND FORM purchaseOperation
+    PROPERTIES(o) createPurchaseWriteOffPurchaseOperation
+;
+
+EXTEND DESIGN purchaseOperation{
+    aggrContainer{
+        caption = 'Создание объектов';
+        ADD PROPERTY(createPurchaseWriteOffPurchaseOperation);
+    }
+}
 
 //---------------------------------- Extend Invoice ------------------------------------//
 
 @defineDocumentInterfaceCreate (invoice, createPurchaseWriteOff, 'Создать акт списания');
-@deriveDocumentHeaderCreate(userInvoice, createPurchaseWriteOff, stock, customerStock);
+@deriveDocumentHeaderCreate(userInvoice, createPurchaseWriteOff, purchase);
 
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(invoice, writeOff, ' (списания)');
@@ -113,7 +124,7 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 //createPurchaseWriteOffUserShipmentDetail 'Создать акт списания' (detail) = createPurchaseWriteOffUserShipment(userShipmentUserShipmentDetail(detail));
 
 @defineDocumentInterfaceCreate (shipment, createPurchaseWriteOff, 'Создать акт списания');
-@deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, stock, customerStock);
+@deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, purchase);
 
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPurchaseWriteOffUserInvoice(d) <- createPurchaseWriteOffUserInvoice(s);

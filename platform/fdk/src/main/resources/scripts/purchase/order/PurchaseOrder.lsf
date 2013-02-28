@@ -1,6 +1,6 @@
 MODULE PurchaseOrder;
 
-REQUIRE Order;
+REQUIRE Order, PurchaseOperation;
 
 NAMESPACE Purchase;
 
@@ -67,3 +67,9 @@ NAVIGATOR {
         ADD orders;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, order, o);
+@definePriceListTypeConstraintOperationObject(purchase, order);
+@defineSupplierCustomerConstraintOperationObject(purchase, order);

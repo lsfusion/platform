@@ -5,7 +5,7 @@ REQUIRE Disparity,
 
 @defineDocumentHeaderCreate(disparity, createRepricing, 'Создать акт переоценки');
 @defineDocumentDetailCreateCustom(disparity, disparityDetail, createRepricing, 'Создать акт переоценки');
-@deriveDocumentHeaderCreate(disparity, createRepricing, departmentStore, stock);
+//@deriveDocumentHeaderCreate(disparity, createRepricing, departmentStore, stock);
 
 
 // До
