@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
@@ -119,13 +120,16 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
+        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue());
+    }
+
+    public Where getWhere(GetValue<Expr, K> mapExprs) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
             result = result.or(andWhere.getWhere(mapExprs));
         return result;
-
     }
-    
+
     public <T> ClassWhere<T> remap(ImRevMap<K, ? extends T> map) {
         And<T>[] remapWheres = new And[wheres.length];
         for(int i=0;i<wheres.length;i++)

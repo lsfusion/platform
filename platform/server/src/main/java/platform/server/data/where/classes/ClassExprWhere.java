@@ -10,6 +10,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
@@ -83,10 +84,6 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         if(isTrue()) return Where.TRUE;
         if(isFalse()) return Where.FALSE;
         return new PackClassWhere(this);
-    }
-
-    public boolean means(CheckWhere where) {
-        return getPackWhere().means(where);
     }
 
     private ClassExprWhere(boolean isTrue) {

@@ -166,13 +166,19 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         RecursiveTable recTable = new RecursiveTable(name, recKeys.keys(), recProps.valuesSet(),
                 classWhere.map(recKeys), statKeys.mapBack(recKeys));
 
+        return new RemapJoin<String, PropertyField>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
+    }
+
+    private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {
         final ImRevMap<KeyExpr, KeyExpr> mapIterate = getMapIterate();
-        ImMap<KeyField, KeyExpr> joinKeys = recKeys.mapValues(new GetValue<KeyExpr, KeyExpr>() {
+        return group.keys().mapRevValues(new GetValue<KeyExpr, KeyExpr>() {
             public KeyExpr getMapValue(KeyExpr recKey) {
                 return BaseUtils.nvl(mapIterate.get(recKey), recKey);
-            }});
-
-        return new RemapJoin<String, PropertyField>(recTable.join(joinKeys), recProps); // mapp'им на предыдушие ключи
+            }
+        });
+    }
+    public Where getIsClassWhere() {
+        return getClassWhere().map(group.keys().toRevMap()).getWhere(getFullMapIterate());
     }
 
     public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {

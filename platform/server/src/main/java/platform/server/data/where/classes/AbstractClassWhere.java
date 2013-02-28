@@ -127,10 +127,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return who.containsAll(what);
         }
 
-        public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
+        public Where getWhere(GetValue<Expr, K> mapExprs) {
             Where result = Where.TRUE;
             for(int i=0,size=size();i<size;i++)
-                result = result.and(mapExprs.get(getKey(i)).isClass(getValue(i)));
+                result = result.and(mapExprs.getMapValue(getKey(i)).isClass(getValue(i)));
             return result;
         }
 

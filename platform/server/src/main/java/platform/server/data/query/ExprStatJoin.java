@@ -43,6 +43,11 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
         this.valueJoins = valueJoins;
     }
 
+    @Override
+    public InnerJoins getInnerJoins() {
+        return super.getInnerJoins().and(valueJoins);
+    }
+
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
         return new StatKeys<Integer>(SetFact.singleton(0), getStat());
     }

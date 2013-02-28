@@ -276,7 +276,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("groupObjectPropertyDraw", BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr));
             query.and(BL.reflectionLM.formPropertyDraw.getExpr(propertyDrawExpr).compare(formObject.getExpr(), Compare.EQUALS));
 
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(session.sql);
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
 
             for (ImMap<String, Object> values : result.valueIt()) {
                 String propertyDrawSID = values.get("sidPropertyDraw").toString().trim();
@@ -753,7 +753,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
         query.addProperty("sum", expr);
-        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(session.sql);
+        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(this);
         return result.getValue(0).get("sum");
     }
 

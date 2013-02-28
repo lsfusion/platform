@@ -375,7 +375,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             String from;
             Iterator<JoinSelect> ij = joins.iterator();
             JoinSelect first = ij.next();
+            boolean inner = false;
             if(first.isInner()) {
+                inner = true;
                 from = first.getSource(env) + " " + first.alias;
                 if(!(first.join.length()==0))
                     whereSelect.add(first.join);
@@ -386,6 +388,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             while(ij.hasNext()) {
                 JoinSelect join = ij.next();
+                if(inner)
+                    inner = join.isInner();
+                else // предполагается что сначала идут inner'ы а потом не inner'ы
+                    assert !join.isInner();
                 from = from + (join.isInner() ?"":" LEFT")+" JOIN " + join.getSource(env) + " " + join.alias  + " ON " + (join.join.length()==0?Where.TRUE_STRING:join.join);
             }
 
@@ -786,6 +792,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 String recName = subcontext.wrapRecursion("rectable"); Result<ImRevMap<String, KeyExpr>> recKeys = new Result<ImRevMap<String, KeyExpr>>();
                 final Join<String> recJoin = tableInnerJoin.getRecJoin(props, recName, recKeys);
+                
+                final Where wrapClassWhere = wrapStep ? tableInnerJoin.getIsClassWhere() : null;
 
                 ImRevMap<String, Expr> initialExprs;
                 ImMap<String, Expr> stepExprs;
@@ -806,7 +814,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         public Expr getMapValue(String key, RecursiveExpr.Query value) {
                             Expr step = value.step;
                             if (wrapStep)
-                                step = SubQueryExpr.create(step);
+                                step = SubQueryExpr.create(step.and(wrapClassWhere));
                             return recJoin.getExpr(key).mult(step, (IntegralClass) value.getType());
                         }});
                     propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
@@ -822,14 +830,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     havingSelect = SetFact.EMPTY();
 
                 if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
-                    stepWhere = SubQueryExpr.create(stepWhere);
+                    stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere));
 
                 Where recWhere;
                 if(cyclePossible && (!isLogical || useRecursionFunction)) {
                     Expr prevPath = recJoin.getExpr(rowPath);
 
                     Where noNodeCycle = concKeys.compare(prevPath, Compare.INARRAY).not();
-                    if(isLogical)
+                     if(isLogical)
                         recWhere = recJoin.getWhere().and(noNodeCycle);
                     else {
                         recWhere = Where.TRUE;

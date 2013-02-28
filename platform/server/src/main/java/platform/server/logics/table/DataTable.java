@@ -125,7 +125,7 @@ public abstract class DataTable extends GlobalTable {
         ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
         for(int i=0,size=keys.size();i<size;i++) {
             Object keyValue;
-            if (statDefault || (keyValue = reflectionLM.tableColumnSID.read(session, new DataObject(name + "." + keys.get(i).name))) == null) {
+            if (statDefault || (keyValue = reflectionLM.tableKeySID.read(session, new DataObject(name + "." + keys.get(i).name))) == null) {
                 mvDistinctKeys.mapValue(i, Stat.DEFAULT);
             } else {
                 DataObject keyObject = new DataObject(keyValue, reflectionLM.tableKey);
