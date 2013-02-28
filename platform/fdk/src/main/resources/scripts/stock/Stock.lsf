@@ -1672,9 +1672,6 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         ORDER BY          nameSku, stockName
 
         PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
-        FILTERGROUP filter
-            FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st)
-            FILTER 'В заказе ' 'F9' quantitySku###object###stockProp(s, concrete, st)
     ;
 
     EXTEND DESIGN form {
@@ -1775,10 +1772,6 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
 
         FILTERS                isParentSkuGroupSku(sk, s)
         ORDER BY inputName
-
-        FILTERGROUP filter
-            FILTER 'С остатком ' 'F10' currentBalanceSku###object(s, concrete)
-            FILTER 'В документе ' 'F9' quantity###detail###skuProp###object(s, concrete)
 
     ;
 
@@ -1891,7 +1884,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
-            FILTER 'С остатком' 'F10' currentBalanceSkuStock(s, st)
+            FILTER 'С остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
             FILTER 'В заказе' 'F9' quantitySku###object###fromStock(s, concrete, st)
 
 

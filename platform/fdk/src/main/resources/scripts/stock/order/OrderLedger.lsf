@@ -137,15 +137,6 @@ DESIGN orderLedger FROM DEFAULT {
     ADD functions.box;
 }
 
-NAVIGATOR {
-    stockNavigator {
-        NEW orderLedgerNavigator 'Резерв'  {
-            ADD orderLedger;
-        }
-    }
-}
-
-
 //---------------------------------------------- Макросы для имплементаций Продажа-------------------------------------//
 
 META implementSaleOrderLedgerCustom(concrete, skuProp, dateTimeProp, stockProp, contactProp)

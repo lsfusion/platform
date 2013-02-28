@@ -48,6 +48,10 @@ toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantity
 
 EXTEND FORM userOrder
 
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st)
+        FILTER 'В заказе ' 'F9' quantitySkuUserOrderCustomerStock(s, o, st)
+
     FILTERGROUP filter1
         FILTER 'С поступлением' 'F8' inUserOrderSku(o, s)
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT

@@ -457,6 +457,13 @@ DESIGN userRepricing FROM DEFAULT {
 //-- SKU
 @defineDocumentSkuSystemLedgerPriceListType(userRepricing, accountPriceListType, departmentStore);
 @extendFormDocumentSku(userRepricing, userRepricing, p);
+EXTEND FORM userRepricing
+
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' currentBalanceSkuUserRepricing(s, p) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(s, p)
+;
+
 allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (sku, userRepricing);
 
 overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {

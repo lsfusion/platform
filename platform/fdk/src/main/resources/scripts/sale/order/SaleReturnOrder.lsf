@@ -29,6 +29,11 @@ overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
 
 inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku);
 EXTEND FORM userOrder
+
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' currentBalanceSkuStock(s, st)
+        FILTER 'В заказе ' 'F9' quantitySkuUserOrderSupplierStock(s, o, st)
+
     FILTERGROUP filter1
         FILTER 'С продажей' 'F8' inUserOrderSku(o, s)
         FILTER'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o) DEFAULT

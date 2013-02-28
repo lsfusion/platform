@@ -42,9 +42,14 @@ overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
 
 inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice
-       FILTERGROUP filter2
-            FILTER 'Товары с продажей ' 'F8' inUserInvoiceSku(i, s)
-            FILTER'В ассортименте' 'F7' priceSkuUserInvoice(s, i)
+
+    FILTERGROUP filter
+        FILTER 'С остатком ' 'F10' currentBalanceSkuUserInvoice(s, i)
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
+
+    FILTERGROUP filter2
+        FILTER 'Товары с продажей ' 'F8' inUserInvoiceSku(i, s)
+        FILTER'В ассортименте' 'F7' priceSkuUserInvoice(s, i)
 ;
 
 NAVIGATOR {
