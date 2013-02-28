@@ -1669,6 +1669,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F4' legalEntityStock(st) == legalEntityProp###object(concrete) DEFAULT
 
+        FILTERS           nameSku(s), name(st)
         ORDER BY          nameSku, stockName
 
         PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
@@ -1771,8 +1772,9 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
 
         FILTERS                isParentSkuGroupSku(sk, s)
-        ORDER BY inputName
 
+        FILTERS nameSku(s)
+        ORDER BY inputName
     ;
 
     EXTEND DESIGN form {
@@ -1874,6 +1876,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
         FILTERGROUP stockFilters
             FILTER 'Собственные склады' 'F4' legalEntityStock(st) == fromLegalEntity###object(concrete) DEFAULT
 
+        FILTERS           nameSku(s), name(st)
         ORDER BY          nameSku, stockName
 
         PROPERTIES quantitySku###object###fromStock(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
