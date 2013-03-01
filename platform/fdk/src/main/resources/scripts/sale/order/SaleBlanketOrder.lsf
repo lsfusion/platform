@@ -42,12 +42,12 @@ CONSTRAINT saleOperationBlanketOrder(blanketOrder) AND priceListTypeBlanketOrder
     MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
 
 CONSTRAINT saleOperationBlanketOrder(blanketOrder)
-           AND NOT isSupplierSaleOperation(supplierBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
+           AND NOT isSupplierSaleOperationOver(supplierBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
     CHECKED BY supplierBlanketOrder
     MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
 
 CONSTRAINT saleOperationBlanketOrder(blanketOrder)
-           AND NOT isCustomerSaleOperation(customerBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
+           AND NOT isCustomerSaleOperationOver(customerBlanketOrder(blanketOrder), saleOperationBlanketOrder(blanketOrder))
     CHECKED BY customerBlanketOrder
     MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
 

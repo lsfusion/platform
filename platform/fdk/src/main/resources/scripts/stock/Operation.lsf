@@ -60,12 +60,12 @@ END
 
 META defineSupplierCustomerConstraintOperationObject(prefix, object)
     CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isSupplier###prefix###operation(supplierUser###object(user###object), prefix###operationUser###object(user###object))
+               AND NOT isSupplier###prefix###operation##Over(supplierUser###object(user###object), prefix###operationUser###object(user###object))
         CHECKED BY supplierUser###object
         MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
 
     CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isCustomer###prefix###operation(customerUser###object(user###object), prefix###operationUser###object(user###object))
+               AND NOT isCustomer###prefix###operation##Over(customerUser###object(user###object), prefix###operationUser###object(user###object))
         CHECKED BY customerUser###object
         MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
 END
@@ -88,23 +88,6 @@ META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
     TABLE legalEntityGroup###prefix###operation(legalEntityGroup, prefix###operation);
     @defineRecursionGroupChoose(prefix###operation, supplier);
     @defineRecursionGroupChoose(prefix###operation, customer);
-
-//    //------------------------------ Накладные ---------------------------------------- //
-//
-//    @defineOperationObject(prefix, invoice, i);
-//    @definePriceListTypeConstraintOperationObject(prefix, invoice);
-//    @defineSupplierCustomerConstraintOperationObject(prefix, invoice);
-
-//    //------------------------------ Заказы ---------------------------------------- //
-//
-//    @defineOperationObject(prefix, order, o);
-//    @definePriceListTypeConstraintOperationObject(prefix, order);
-//    @defineSupplierCustomerConstraintOperationObject(prefix, order);
-
-//    //------------------------------ Поставки ---------------------------------------- //
-//
-//    @defineOperationObject(prefix, shipment, s);
-//    @defineSupplierCustomerConstraintOperationObject(prefix, shipment);
 
     //------------------------------- Формы ------------------------------------------- //
 
