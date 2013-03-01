@@ -70,8 +70,10 @@ public abstract class SingleCellTable extends ClientPropertyTable {
                 tooltip = String.valueOf((double) Math.round(((Double) value) * 1000) /1000);
             } else if (value instanceof Color) {
                 tooltip = "#" + Integer.toHexString(((Color) value).getRGB()).substring(2, 8);
+            } else if (getProperty().echoSymbols) {
+                tooltip = null;
             }
-            return SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), createToolTip().getFont());
+            return tooltip == null ? null : SwingUtils.toMultilineHtml(BaseUtils.rtrim(tooltip), createToolTip().getFont());
         } else {
             return null;
         }

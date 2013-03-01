@@ -136,6 +136,7 @@ public class GKeyStroke implements Serializable {
                     keyCode == KEY_BACKSPACE ||
                     keyCode == KEY_INSERT ||
                     keyCode == KEY_ESCAPE ||
+                    keyCode == KEY_ENTER||
                     (KEY_F1 <= keyCode && keyCode <= KEY_F12);
         } else if (KEYPRESS.equals(eventType)) {
             return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() && isChangeKeyCode(keyCode);

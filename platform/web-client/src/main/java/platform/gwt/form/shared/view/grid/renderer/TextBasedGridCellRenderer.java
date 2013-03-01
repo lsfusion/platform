@@ -60,7 +60,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         } else {
             String stringValue = EscapeUtils.unicodeEscape(text.trim());
             div.setInnerText(stringValue);
-            div.setTitle(stringValue);
+            div.setTitle(property.echoSymbols ? "" : stringValue);
         }
     }
 

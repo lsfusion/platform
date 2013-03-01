@@ -155,4 +155,12 @@ public class GwtClientUtils {
         strut.setWidth(size + "px");
         return strut;
     }
+
+    public static String multiplyString(String string, int multiplier) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < multiplier; i++) {
+            sb.append(string);
+        }
+        return sb.toString();
+    }
 }

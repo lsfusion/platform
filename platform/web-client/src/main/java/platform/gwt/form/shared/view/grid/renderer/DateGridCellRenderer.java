@@ -26,7 +26,7 @@ public class DateGridCellRenderer extends TextBasedGridCellRenderer<Object> {
             GDateDTO dateDTO = (GDateDTO) value;
             return format.format(new Date(dateDTO.year, dateDTO.month, dateDTO.day));
         } else {
-            return value == null ? "" : format.format((Date) value);
+            return format.format((Date) value);
         }
     }
 }
