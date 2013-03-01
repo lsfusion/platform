@@ -6,6 +6,25 @@ NAMESPACE Sale;
 
 @defineOperationPrefix(sale, isCompanyLegalEntity, isBuyerLegalEntity, '(продажа)');
 
+createShipmentSaleOperation 'Создавать поставку' = DATA BOOLEAN (saleOperation) IN createGroup;
+createPricingSaleOperation 'Создавать акт расценки' = DATA BOOLEAN (saleOperation) IN createGroup;
+createCreditNoteSaleOperation 'Создавать акт расхождения' = DATA BOOLEAN (saleOperation) IN createGroup;
+
+EXTEND FORM saleOperation
+    PROPERTIES(o) createShipmentSaleOperation, createPricingSaleOperation, createCreditNoteSaleOperation
+;
+
+EXTEND DESIGN saleOperation{
+    tabContainer{
+        NEW aggrContainer{
+            caption = 'Создание объектов';
+            ADD PROPERTY(createShipmentSaleOperation);
+            ADD PROPERTY(createCreditNoteSaleOperation);
+            ADD PROPERTY(createPricingSaleOperation);
+        }
+    }
+}
+
 NAVIGATOR {
     saleMasterData {
         ADD saleOperations;

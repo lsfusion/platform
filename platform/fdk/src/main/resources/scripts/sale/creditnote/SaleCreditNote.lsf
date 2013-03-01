@@ -1,6 +1,6 @@
 MODULE SaleCreditNote;
 
-REQUIRE CreditNote, SaleShipment;
+REQUIRE CreditNote, SaleShipment, SaleOperation;
 
 NAMESPACE Sale;
 
@@ -14,6 +14,10 @@ CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(s
     CHECKED BY supplierUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCustomerLegalEntity(customerUserCreditNote(userCreditNote))
     CHECKED BY customerUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createCreditNote, sale);
 
 NAVIGATOR {
     saleSaleNavigator {

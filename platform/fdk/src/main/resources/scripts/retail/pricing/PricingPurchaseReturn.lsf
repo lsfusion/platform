@@ -1,13 +1,12 @@
 MODULE PricingPurchaseReturn;
 
-REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment;
+REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment;//, PurchaseOperation;
 
 NAMESPACE PurchaseReturn;
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 @definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
-
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
@@ -24,4 +23,6 @@ skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;
 //--
 
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
+//@deriveDocumentHeaderCreate(userInvoice, createRepricing, purchase);

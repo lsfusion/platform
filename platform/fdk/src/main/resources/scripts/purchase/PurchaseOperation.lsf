@@ -6,6 +6,30 @@ NAMESPACE Purchase;
 
 @defineOperationPrefix(purchase, isSellerLegalEntity, isCompanyLegalEntity, '(закупка)');
 
+createShipmentPurchaseOperation 'Создавать поставку' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+createPurchaseWriteOffPurchaseOperation 'Создавать акт списания' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+createCreditNotePurchaseOperation 'Создавать акт расхождения' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+createPricingPurchaseOperation 'Создавать акт расценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+createRepricingPurchaseOperation 'Создавать акт дооценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+
+EXTEND FORM purchaseOperation
+    PROPERTIES(o) createShipmentPurchaseOperation, createPurchaseWriteOffPurchaseOperation,
+                  createCreditNotePurchaseOperation, createPricingPurchaseOperation, createRepricingPurchaseOperation
+;
+
+EXTEND DESIGN purchaseOperation{
+    tabContainer{
+        NEW aggrContainer{
+            caption = 'Создание объектов';
+            ADD PROPERTY(createShipmentPurchaseOperation);
+            ADD PROPERTY(createPurchaseWriteOffPurchaseOperation);
+            ADD PROPERTY(createCreditNotePurchaseOperation);
+            ADD PROPERTY(createPricingPurchaseOperation);
+            ADD PROPERTY(createRepricingPurchaseOperation);
+        }
+    }
+}
+
 NAVIGATOR {
     purchaseMasterData {
         ADD purchaseOperations;

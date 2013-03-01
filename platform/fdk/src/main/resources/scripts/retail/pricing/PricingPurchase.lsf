@@ -1,6 +1,6 @@
 MODULE PricingPurchase;
 
-REQUIRE Pricing, PurchaseInvoice, Repricing, PurchaseShipment;
+REQUIRE Pricing, PurchaseInvoice, Repricing, PurchaseShipment, PurchaseOperation;
 
 NAMESPACE Purchase;
 
@@ -85,6 +85,7 @@ overCopyInvoice(s, d) += ACTION (s, d) {
     SET retailPriceListTypeUserInvoice(d) <- retailPriceListTypeUserInvoice(s);
 }
 
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-
-
+@deriveDocumentHeaderCreate(userInvoice, createPricing, purchase);
+@deriveDocumentHeaderCreate(userInvoice, createRepricing, purchase);

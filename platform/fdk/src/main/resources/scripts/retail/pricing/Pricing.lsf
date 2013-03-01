@@ -8,13 +8,6 @@ REQUIRE Invoice, Employee, Store, Label, Machinery;
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
-createPricingDepartmentStore 'Создавать акт расценки' = DATA BOOLEAN (departmentStore) IN createGroup;
-EXTEND FORM departmentStore PROPERTIES createPricingDepartmentStore(d);
-
-EXTEND DESIGN departmentStore{
-    row21 { ADD PROPERTY(createPricingDepartmentStore);}
-}
-
 // ----------------------------------- Комиссия ------------------------------------------ //
 
 CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
@@ -533,6 +526,11 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 
 //-- аггр.объект
 META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, prefix)
+    //@deriveDocumentHeaderCreate(userInvoice, createPricing, departmentStore, stockProp);
+//    META deriveDocumentHeaderCreate(object, createProp, stockClass, stockProp)
+//        createProp###object (object) <- TRUE IF createProp###stockClass(stockProp###object(object))
+//            WHEN CHANGED(stockProp###object(object));
+//    END
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
@@ -561,7 +559,6 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     @deriveDocumentDetailVAT(userInvoice, retail, date, sku, stockProp);
 
     @defineDocumentInterfaceCreate (invoice, createPricing, 'Создать акт расценки');
-    //@deriveDocumentHeaderCreate(userInvoice, createPricing, departmentStore, stockProp);
 
     showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);

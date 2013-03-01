@@ -29,25 +29,9 @@ FORM writeOffRateDialog 'Нормы отходов'
     DIALOG writeOffRate OBJECT r
 ;
 
-// ----------------------------------- Создавать по умолчанию для склада ------------------------------------------ //
-
-createPurchaseWriteOffPurchaseOperation 'Создавать акт списания' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-
-EXTEND FORM purchaseOperation
-    PROPERTIES(o) createPurchaseWriteOffPurchaseOperation
-;
-
-EXTEND DESIGN purchaseOperation{
-    aggrContainer{
-        caption = 'Создание объектов';
-        ADD PROPERTY(createPurchaseWriteOffPurchaseOperation);
-    }
-}
-
 //---------------------------------- Extend Invoice ------------------------------------//
 
 @defineDocumentInterfaceCreate (invoice, createPurchaseWriteOff, 'Создать акт списания');
-@deriveDocumentHeaderCreate(userInvoice, createPurchaseWriteOff, purchase);
 
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceDetailPricePrefix(invoice, writeOff, ' (списания)');
@@ -55,6 +39,10 @@ EXTEND DESIGN purchaseOperation{
 @deriveDocumentDetailSumPrefix(userInvoice, writeOff, currency, writeOffQuantity);
 @defineDocumentInterfaceHeaderSumPrefix (invoice, writeOff, ' (списания)');
 @defineDocumentInterfaceHeaderWriteOffCommittee(invoice, customerStock);
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createPurchaseWriteOff, purchase);
 
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT reason (invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA reason (userInvoice);

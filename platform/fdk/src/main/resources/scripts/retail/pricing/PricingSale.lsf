@@ -1,6 +1,6 @@
 MODULE PricingSale;
 
-REQUIRE Pricing, SaleInvoice, SaleShipment;
+REQUIRE Pricing, SaleInvoice, SaleShipment, SaleOperation;
 
 NAMESPACE Sale;
 
@@ -12,6 +12,9 @@ NAMESPACE Sale;
 
 @definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
 
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createPricing, sale);
 
 //overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
 //    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
