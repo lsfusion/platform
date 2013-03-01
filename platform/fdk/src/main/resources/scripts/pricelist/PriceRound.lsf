@@ -16,6 +16,7 @@ minPriceRoundCondition 'Нижний порог (округление цен)' =
 priceRoundRoundCondition 'До скольки знаков округлять цену' (roundCondition)=  DATA INTEGER (roundCondition);
 
 defaultRoundConditionCurrency = DATA roundCondition(currency);
+defaultRoundCurrency 'Округление' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency)) PERSISTENT;
 isDefaultRoundConditionCurrency 'По умолчанию' (roundCondition, currency) = defaultRoundConditionCurrency(currency) == roundCondition;
 
 priceRoundCurrency 'Округление по умолчанию' (currency) = priceRoundRoundCondition(defaultRoundConditionCurrency(currency)) PERSISTENT;
@@ -62,7 +63,8 @@ TABLE currencyRoundGroup(currency, roundGroup);
 roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) PERSISTENT;
 
 roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
-roundPriceCurrency(price, currency) = roundPriceRoundCondition(price, defaultRoundConditionCurrency(currency));
+
+roundPriceCurrency(price, currency) = round(price, defaultRoundCurrency(currency));
 
 FORM priceIntervals 'Округления цен'
 

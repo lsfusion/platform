@@ -25,7 +25,7 @@ priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)
                                      homePriceInvoiceDetail(detail)
                                 ELSE priceInvoiceDetail(detail);
 
-priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
+priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDetail(detail)) THEN
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 

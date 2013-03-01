@@ -596,18 +596,22 @@ expiryDateSkuStock 'Годен до (max.)' (sku, stock) = GROUP MAX expiryDateB
 
 // -------------------------------------- Последнее движение ---------------------------------- //
 
-dateLastMovedSkuStock 'Дата последнего движения товара' (sku, stock) =
+dateTimeLastMovedSkuStock 'Время последнего движения' (sku, stock) =
     GROUP MAX dateTimeSkuLedger(ledger)
     BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
+dateTimeLastMovedSku 'Время последнего движения' (sku) =
+    GROUP MAX dateTimeLastMovedSkuStock(sku, stock)
+    BY sku;
+
 movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
-    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(toDate(dateTime), period AS INTEGER);
+    dateTimeLastMovedSkuStock(item, departmentStore) >= subtractDate(toDate(dateTime), period AS INTEGER);
 
 balanceSkuStockDateTimePeriod (item, departmentStore, dateTime, period) =
     movedSkuStockDateTimePeriod (item, departmentStore, dateTime, period) OR (period IS INTEGER) IF balanceASkuStockDateTime(item, departmentStore, dateTime);
 
 movedSkuStockDatePeriod (item, departmentStore, date, period) =
-    dateLastMovedSkuStock(item, departmentStore) >= subtractDate(date, period AS INTEGER);
+    dateTimeLastMovedSkuStock(item, departmentStore) >= subtractDate(date, period AS INTEGER);
 
 balanceSkuStockDatePeriod (item, departmentStore, date, period) =
     movedSkuStockDatePeriod (item, departmentStore, date, period) OR (period IS INTEGER) IF balanceASkuStockDate(item, departmentStore, date);
@@ -2181,7 +2185,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY          nameSku
 
 
-    PROPERTIES(s, st) READONLY currentBalanceSkuStock, averagePriceSkuStock, currentSumSkuStock, dateLastMovedSkuStock
+    PROPERTIES(s, st) READONLY currentBalanceSkuStock, averagePriceSkuStock, currentSumSkuStock, dateTimeLastMovedSkuStock
 
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
@@ -2261,7 +2265,7 @@ FORM balanceSkuStock 'Остатки на дату'
                       st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
-    PROPERTIES(s, st) READONLY dateLastMovedSkuStock
+    PROPERTIES(s, st) READONLY dateTimeLastMovedSkuStock
 
     FILTERGROUP filters
         FILTER 'Товары с остатком' 'F10' balanceASkuStockDateTime(s, st, t) DEFAULT

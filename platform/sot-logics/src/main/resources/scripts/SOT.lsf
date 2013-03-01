@@ -40,6 +40,7 @@ mag2LegalEntityStock 'Код MAG2'= DATA STRING[100] (legalEntity, stock);
 mag2Stock 'Код MAG2' (stock) = mag2LegalEntityStock(legalEntityStock(stock), stock);
 
 EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showUOMItem(i);
+EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternalizable;
 
 EXTEND FORM warehouses
     PROPERTIES (w) READONLY mag2Stock BEFORE delete(w), sidExternalizable BEFORE delete(w)
