@@ -141,7 +141,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "scripts/retail/Retail.lsf",
             "scripts/sale/Sale.lsf",
             "scripts/purchase/Purchase.lsf",
-            "scripts/retail/ZReport.lsf"
+            "scripts/retail/ZReport.lsf",
+            "scripts/finance/PaymentLedger.lsf",
+            "scripts/finance/Bank.lsf"
         );
         RomanLM = addModule(new RomanLogicsModule(LM, this));
 

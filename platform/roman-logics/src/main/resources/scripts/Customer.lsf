@@ -6,7 +6,8 @@ REQUIRE System,
         LegalEntity,
         Stock,
         StockContract,
-        Agreement;
+        Agreement,
+        Bank;
 
 
 // ---------------------------------------- Договоры ------------------------------------ //
@@ -96,7 +97,7 @@ FORM customer 'Покупатель'
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(cu),
                    emailLegalEntity, siteLegalEntity
 
-    OBJECTS a=account
+    OBJECTS a=Bank.account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == cu
 

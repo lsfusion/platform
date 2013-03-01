@@ -76,9 +76,14 @@ DESIGN declaration FROM DEFAULT{
                 childConstraints = TO THE RIGHT;
                 NEW parameterContainer {
                     caption = 'Параметры документа';
-                    childConstraints = TO THE RIGHTBOTTOM;
+                    childConstraints = TO THE BOTTOM;
                     ADD PROPERTY(nameLegalEntityDeclaration);
                     ADD PROPERTY(nameCustomsZoneDeclaration);
+                }
+
+                NEW currencyContainer {
+                    caption = 'Валюты и курсы';
+                    childConstraints = TO THE BOTTOM;
                     ADD PROPERTY(nameHomeCurrencyDeclaration);
                     ADD PROPERTY(nameTypeExchangeDeclaration);
                     ADD PROPERTY(nameCurrencyDeclaration);

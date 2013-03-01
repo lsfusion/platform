@@ -1,6 +1,6 @@
 MODULE Company;
 
-REQUIRE LegalEntity;
+REQUIRE LegalEntity, Bank;
 
 NAMESPACE LegalEntity;
 
@@ -20,7 +20,7 @@ FORM company 'Компания'
                    phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(co),
                    emailLegalEntity, siteLegalEntity
 
-    OBJECTS a=account
+    OBJECTS a=Bank.account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == co
 

@@ -114,7 +114,7 @@ NAVIGATOR {
             ADD seasonYears AFTER categories;
             ADD UOMs AFTER seasonYears;
         }
-        legalEntityNavigator {
+        NEW legalEntityNavigator 'Компании' {
             ADD companies;
             ADD colorSizeSupplierForm;
             ADD customers;

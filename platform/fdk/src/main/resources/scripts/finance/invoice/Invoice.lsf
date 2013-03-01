@@ -625,9 +625,9 @@ META defineHomeCurrencyInvoice(invoice)
     typeExchangeInvoice(invoice) += typeExchangeUserInvoice(invoice);
     nameTypeExchangeUserInvoice 'Тип обмена' (invoice) = name(typeExchangeUserInvoice(invoice));
 
-    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), homeCurrencyInvoice(invoice), dateInvoice(invoice));
+    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateInvoice(invoice));
 
-    roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, currencyInvoice(invoice));
+    roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, homeCurrencyInvoice(invoice));
     ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
 
     homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](invoice##Detail);
@@ -639,10 +639,16 @@ META defineHomeCurrencyInvoice(invoice)
                                                                                                 CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
                                                                                                 CHANGED (priceInvoiceDetail(invoice##Detail));
 
+    sumHomeUserInvoiceDetail 'Стоимость' (user###invoice##Detail) = quantityInvoiceDetail(user###invoice##Detail) * homePriceUserInvoiceDetail(user###invoice##Detail);
+
+    sumDutyUserInvoiceDetail 'Пошлина' = DATA NUMERIC[14,3](user###invoice##Detail);
+    sumRegistrationUserInvoiceDetail 'Таможенный сбор' = DATA NUMERIC[14,3](user###invoice##Detail);
+
     EXTEND FORM userInvoice
         PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice
         PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
         PROPERTIES(d) homePriceUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d) sumHomeUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isHomeCurrency(i)
     ;
 
     EXTEND DESIGN userInvoice {

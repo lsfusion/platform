@@ -6,7 +6,8 @@ REQUIRE System,
         LegalEntity,
         Stock,
         StockContract,
-        Agreement;
+        Agreement,
+        Bank;
 
 CLASS supplier 'Поставщик' : legalEntity;
 TABLE supplier (supplier);
@@ -118,7 +119,7 @@ FORM supplier 'Поставщик'
                   afterDaysSupplier, periodicitySupply,
                   returnLossSupplier
 
-    OBJECTS a=account
+    OBJECTS a=Bank.account
     PROPERTIES(a) numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount,
                   ADDOBJ, delete
     FILTERS legalEntityAccount(a) == s
