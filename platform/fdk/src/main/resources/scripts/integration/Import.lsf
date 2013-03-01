@@ -32,6 +32,7 @@ REQUIRE System,
         WriteOffItem;
 
 EXTEND CLASS bank : externalizable;
+EXTEND CLASS barcode : externalizable;
 EXTEND CLASS brand : externalizable;
 EXTEND CLASS calcPriceListType : externalizable;
 EXTEND CLASS chainStores : externalizable;

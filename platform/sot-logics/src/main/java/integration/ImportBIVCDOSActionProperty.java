@@ -283,6 +283,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String wareID = null;
         Double baseMarkup = null;
         Double retailVAT = null;
+        Double packAmount = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && itemsList.size() >= numberOfItems)
                 break;
@@ -298,6 +299,12 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    packAmount = null;
+                    Pattern rPack = Pattern.compile(".*\\/(\\d+)\\/?");
+                    Matcher mPack = rPack.matcher(name);
+                    if(mPack.matches()) {
+                        packAmount = Double.parseDouble(mPack.group(1));
+                    }
                     wareID = null;
                     if (name != null) {
                         Pattern r = Pattern.compile(warePattern);
@@ -328,9 +335,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     if (!groupID.startsWith("929"))
                         itemsList.add(new Item(itemID, groupID, name,
                                 uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
-                                uom == null ? null : uom.uomName, null, null, null, null, date, null,
+                                uom == null ? null : uom.uomName, null, null, null, null, itemID, date, null,
                                 uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
-                                retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID)));
+                                retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID),
+                                null, itemID, packAmount));
                 }
             }
         }

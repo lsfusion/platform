@@ -192,7 +192,7 @@ public class ImportActionProperty {
 
     private void importPackOfItems(List<Item> itemsList, Integer start, Integer numberOfItems) throws SQLException, IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException {
         List<Item> dataItems = itemsList.subList(start, start + numberOfItems);
-        if (dataItems == null) return;
+        if (dataItems.size()==0) return;
 
         ImportField itemIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
         ImportField itemGroupIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
@@ -204,6 +204,7 @@ public class ImportActionProperty {
         ImportField nameBrandField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField nameCountryField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField barcodeField = new ImportField(LM.findLCPByCompoundName("idBarcode"));
+        ImportField barcodeIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
         ImportField dateField = new ImportField(DateClass.instance);
         ImportField isWeightItemField = new ImportField(LM.findLCPByCompoundName("isWeightItem"));
         ImportField netWeightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
@@ -220,6 +221,9 @@ public class ImportActionProperty {
         ImportField baseCalcPriceListTypeIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
         ImportField baseCalcPriceListTypeNameField = new ImportField(LM.findLCPByCompoundName("name"));
         ImportField baseMarkupCalcPriceListTypeField = new ImportField(LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku"));
+        ImportField barcodePackField = new ImportField(LM.findLCPByCompoundName("idBarcode"));
+        ImportField barcodePackIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
+        ImportField amountBarcodePackField = new ImportField(LM.findLCPByCompoundName("amountBarcode"));
 
         DataObject defaultCountryObject = (DataObject) LM.findLCPByCompoundName("defaultCountry").readClasses(context.getSession());
 
@@ -239,7 +243,7 @@ public class ImportActionProperty {
                 LM.findLCPByCompoundName("countryName").getMapping(nameCountryField));
 
         ImportKey<?> barcodeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("barcode"),
-                LM.findLCPByCompoundName("barcodeIdDate").getMapping(barcodeField, dateField));
+                LM.findLCPByCompoundName(/*"barcodeIdDate"*/"externalizableSID").getMapping(barcodeIDField));
 
         ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("range"),
                 LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(valueVATItemCountryDateField));
@@ -258,6 +262,9 @@ public class ImportActionProperty {
 
         ImportKey<?> retailCalcPriceListTypeKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("calcPriceListType"),
                 LM.findLCPByCompoundName("externalizableSID").getMapping(retailCalcPriceListTypeIDField));
+
+        ImportKey<?> barcodePackKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("barcode"),
+                LM.findLCPByCompoundName(/*"barcodeIdDate"*/"externalizableSID").getMapping(barcodePackIDField));
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
@@ -282,7 +289,8 @@ public class ImportActionProperty {
         props.add(new ImportProperty(nameCountryField, LM.findLCPByCompoundName("countryItem").getMapping(itemKey),
                 LM.object(LM.findClassByCompoundName("country")).getMapping(countryKey)));
 
-        props.add(new ImportProperty(barcodeField, LM.findLCPByCompoundName("idBarcode").getMapping(barcodeKey)/*, BL.LM.toEAN13.getMapping(barcodeField)*/));
+        props.add(new ImportProperty(barcodeIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(barcodeKey)));
+        props.add(new ImportProperty(barcodeField, LM.findLCPByCompoundName("idBarcode").getMapping(barcodeKey)));
         props.add(new ImportProperty(dateField, LM.findLCPByCompoundName("dataDateBarcode").getMapping(barcodeKey)));
 
         props.add(new ImportProperty(itemIDField, LM.findLCPByCompoundName("skuBarcode").getMapping(barcodeKey),
@@ -313,27 +321,41 @@ public class ImportActionProperty {
         props.add(new ImportProperty(baseCalcPriceListTypeNameField, LM.findLCPByCompoundName("name").getMapping(baseCalcPriceListTypeKey)));
         props.add(new ImportProperty(baseMarkupCalcPriceListTypeField, LM.findLCPByCompoundName("dataMarkupCalcPriceListTypeSku").getMapping(baseCalcPriceListTypeKey, itemKey)));
 
+        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(barcodePackKey)));
+        props.add(new ImportProperty(barcodePackField, LM.findLCPByCompoundName("idBarcode").getMapping(barcodePackKey)));
+        props.add(new ImportProperty(dateField, LM.findLCPByCompoundName("dataDateBarcode").getMapping(barcodePackKey)));
+        props.add(new ImportProperty(amountBarcodePackField, LM.findLCPByCompoundName("amountBarcode").getMapping(barcodePackKey)));
+        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("purchasePackBarcodeSku").getMapping(itemKey),
+                LM.object(LM.findClassByCompoundName("barcode")).getMapping(barcodePackKey)));
+        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("salePackBarcodeSku").getMapping(itemKey),
+                LM.object(LM.findClassByCompoundName("barcode")).getMapping(barcodePackKey)));
+        props.add(new ImportProperty(itemIDField, LM.findLCPByCompoundName("skuBarcode").getMapping(barcodePackKey),
+                LM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));
+
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Item i : dataItems) {
             data.add(Arrays.asList((Object) (i.itemID == null ? null : ("I" + i.itemID)),
                     i.k_grtov == null ? null : ("IG" + i.k_grtov), i.name, i.uomName, i.uomShortName,
-                    i.uomID == null ? null : ("UOM" + i.uomID), i.brandName, i.brandID, i.country, i.barcode, i.date,
-                    i.isWeightItem, i.netWeightItem, i.grossWeightItem, i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID),
-                    i.priceWare, i.ndsWareField, i.writeOffRateID == null ? null : ("RW" + i.writeOffRateID),
-                    "cplt_retail", "Розничная надбавка", i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup));
+                    i.uomID == null ? null : ("UOM" + i.uomID), i.brandName, i.brandID, i.country, i.barcode,
+                    i.barcodeID==null ? null : "BI" + i.barcodeID, i.date, i.isWeightItem, i.netWeightItem, i.grossWeightItem,
+                    i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID), i.priceWare, i.ndsWareField,
+                    i.writeOffRateID == null ? null : ("RW" + i.writeOffRateID), "cplt_retail", "Розничная надбавка",
+                    i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup, i.packBarcode,
+                    i.packBarcodeID==null ? null : "BP" + i.packBarcodeID, i.amountPack));
         }
 
         ImportTable table = new ImportTable(Arrays.asList(itemIDField, itemGroupIDField, itemCaptionField, nameUOMField,
-                shortNameUOMField, UOMIDField, nameBrandField, brandIDField, nameCountryField, barcodeField, dateField,
-                isWeightItemField, netWeightItemField, grossWeightItemField, compositionField, valueVATItemCountryDateField,
-                wareIDField, priceWareField, ndsWareField, writeOffRateIDField, retailCalcPriceListTypeIDField,
-                retailCalcPriceListTypeNameField, retailMarkupCalcPriceListTypeField, baseCalcPriceListTypeIDField,
-                baseCalcPriceListTypeNameField, baseMarkupCalcPriceListTypeField), data);
+                shortNameUOMField, UOMIDField, nameBrandField, brandIDField, nameCountryField, barcodeField, barcodeIDField,
+                dateField, isWeightItemField, netWeightItemField, grossWeightItemField, compositionField,
+                valueVATItemCountryDateField, wareIDField, priceWareField, ndsWareField, writeOffRateIDField,
+                retailCalcPriceListTypeIDField, retailCalcPriceListTypeNameField, retailMarkupCalcPriceListTypeField,
+                baseCalcPriceListTypeIDField, baseCalcPriceListTypeNameField, baseMarkupCalcPriceListTypeField,
+                barcodePackField, barcodePackIDField, amountBarcodePackField), data);
 
         DataSession session = LM.getBL().createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
                 brandKey, countryKey, barcodeKey, VATKey, wareKey, rangeKey, writeOffRateKey, retailCalcPriceListTypeKey,
-                baseCalcPriceListTypeKey), props);
+                baseCalcPriceListTypeKey, barcodePackKey), props);
         service.synchronize(true, false);
         session.apply(LM.getBL());
         session.close();

@@ -14,6 +14,7 @@ public class Item {
     public String brandID;
     public String country;
     public String barcode;
+    public String barcodeID;
     public Date date;
     public Boolean isWeightItem;
     public Double netWeightItem;
@@ -26,11 +27,15 @@ public class Item {
     public String writeOffRateID;
     public Double baseMarkup;
     public Double retailMarkup;
+    public String packBarcode;
+    public String packBarcodeID;
+    public Double amountPack;
 
     public Item(String itemID, String k_grtov, String name, String uomName, String uomShortName, String uomID,
-                String brandName, String brandID, String country, String barcode, Date date, Boolean isWeightItem,
-                Double netWeightItem, Double grossWeightItem, String composition, Double retailVAT, String wareID,
-                Double priceWare, Double ndsWareField, String writeOffRateID, Double baseMarkup,  Double retailMarkup) {
+                String brandName, String brandID, String country, String barcode, String barcodeID, Date date,
+                Boolean isWeightItem, Double netWeightItem, Double grossWeightItem, String composition,
+                Double retailVAT, String wareID, Double priceWare, Double ndsWareField, String writeOffRateID,
+                Double baseMarkup, Double retailMarkup, String packBarcode, String packBarcodeID, Double amountPack) {
         this.itemID = itemID;
         this.k_grtov = k_grtov;
         this.name = name;
@@ -41,6 +46,7 @@ public class Item {
         this.brandID = brandID;
         this.country = country;
         this.barcode = barcode;
+        this.barcodeID = barcodeID;
         this.date = date;
         this.isWeightItem = isWeightItem;
         this.netWeightItem = netWeightItem;
@@ -53,5 +59,8 @@ public class Item {
         this.writeOffRateID = writeOffRateID;
         this.baseMarkup = baseMarkup;
         this.retailMarkup = retailMarkup;
+        this.packBarcode = packBarcode;
+        this.packBarcodeID = packBarcodeID;
+        this.amountPack = amountPack;
     }
 }
