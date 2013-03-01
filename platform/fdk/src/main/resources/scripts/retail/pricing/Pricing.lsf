@@ -425,7 +425,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
 
     PROPERTIES ()  addUserPricing TODRAW p
     PROPERTIES (p) editUserPricing
-    PROPERTIES (p) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserPricing(p)
+    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPricing(p)
     PROPERTIES (p) printPricing FORCE PANEL
 
     OBJECTS d = pricingDetail

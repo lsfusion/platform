@@ -441,7 +441,7 @@ FORM outputs 'Производство'
 
     PROPERTIES ()  addUserOutput TODRAW o
     PROPERTIES (o) editOutput, copyOutput
-    PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOutput(o)
+    PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOutput(o)
 
     OBJECTS d=outputDetail
     PROPERTIES (d) READONLY indexOutputDetail, idBarcodeSkuOutputDetail, nameSkuOutputDetail, shortNameUOMSkuOutputDetail

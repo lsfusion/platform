@@ -497,7 +497,7 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
 
     PROPERTIES ()  addUserRepricing TODRAW p
     PROPERTIES (p) editUserRepricing
-    PROPERTIES (p) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserRepricing(p)
+    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserRepricing(p)
     PROPERTIES (p) printRepricing FORCE PANEL
 
     OBJECTS d = repricingDetail

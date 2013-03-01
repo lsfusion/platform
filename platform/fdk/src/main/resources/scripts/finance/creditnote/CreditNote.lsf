@@ -156,7 +156,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
         PROPERTIES ()  addUserCreditNote TODRAW c
         PROPERTIES (c) editUserCreditNote
-        PROPERTIES (c) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserCreditNote(c)
+        PROPERTIES (c) delete FORCE PANEL TOOLBAR SHOWIF isUserCreditNote(c)
 
         OBJECTS d = creditNoteDetail
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,

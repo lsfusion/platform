@@ -208,7 +208,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES (u)          printPriceChange FORCE PANEL,
-                            ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+                            ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS d=userPriceChangeDetail
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,

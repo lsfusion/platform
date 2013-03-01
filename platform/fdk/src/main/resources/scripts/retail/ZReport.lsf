@@ -435,8 +435,8 @@ FORM zReports 'Z-отчеты'
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
                             numberZReport, basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport,
                             sumReceiptDetailZReport, discountSumReceiptDetailZReport, VATSumSaleZReport, VATSumReturnZReport
-    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftZReport(z),
-                            exportReceiptsZReport FORCE PANEL DRAWTOTOOLBAR, importReceiptsZReport FORCE PANEL DRAWTOTOOLBAR,
+    PROPERTIES (z) ADDFORM, EDITFORM SHOWIF isDraftZReport(z), delete FORCE PANEL TOOLBAR SHOWIF isDraftZReport(z),
+                            exportReceiptsZReport FORCE PANEL TOOLBAR, importReceiptsZReport FORCE PANEL TOOLBAR,
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
     OBJECTS b=receipt

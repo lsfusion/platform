@@ -228,11 +228,11 @@ FORM stores 'Магазины'
     FILTERS stringEqualsAll(a)
     FILTERS inChainStoresStoreType (t, st)
 
-    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(t)          addT=ADDFORM FORCE PANEL, editT=EDITFORM FORCE PANEL, delete FORCE PANEL TOOLBAR
 
     OBJECTS s=store
     PROPERTIES(s) READONLY name, addressStore, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
-    PROPERTIES(s)          ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
+    PROPERTIES(s)          ADDFORM, EDITFORM, delete TOOLBAR
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
     OBJECTS d=departmentStore
@@ -314,6 +314,6 @@ addStoreLegalEntity 'Добавить магазин' = ACTION (legalEntity) {
 
 EXTEND FORM legalEntity
 
-    PROPERTIES addStoreLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addStoreLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
 ;
 

@@ -19,7 +19,7 @@ FORM truckModel 'Модель машины'
 FORM truckModels 'Модели машин'
     OBJECTS m=truckModel
     PROPERTIES(m) READONLY name
-    PROPERTIES(m) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(m) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     DIALOG truckModel OBJECT m
 ;
@@ -48,7 +48,7 @@ FORM truck 'Машина'
 FORM trucks 'Машины'
     OBJECTS t=truck
     PROPERTIES(t) READONLY sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
-    PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     DIALOG truck OBJECT t
 ;
@@ -70,7 +70,7 @@ FORM driver 'Водитель'
 FORM drivers 'Водители'
     OBJECTS d=driver
     PROPERTIES(d) READONLY name, userFirstName, userLastName, commonName, sidDriver, typeDriver
-    PROPERTIES(d) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(d) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     DIALOG driver OBJECT d
 ;

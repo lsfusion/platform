@@ -1178,12 +1178,12 @@ FORM declaration 'Декларация'
                     sumDataGroupDeclaration, dutyDataGroupDeclaration, VATDataGroupDeclaration, numberVATRangeGroupDeclaration, valueVATRangeGroupDeclaration, ADDOBJ, delete
     PROPERTIES (c, gd) sumCorrectionGroupDeclaration
 
-    PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationUAAllow(d)
-    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF importExportDeclarationBYAllow(d)
-    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
-    PROPERTIES (d) exportDeclaration TODRAW gd FORCE PANEL DRAWTOTOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
+    PROPERTIES (d) showFormDeclarationInvoices TODRAW dd FORCE PANEL TOOLBAR
+    PROPERTIES (d) toCreateGroupsDeclaration TODRAW gd FORCE PANEL TOOLBAR, setSumGroupDeclaration TODRAW gd FORCE PANEL TOOLBAR
+    PROPERTIES (d) importGroupsXLSDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF importExportDeclarationUAAllow(d)
+    PROPERTIES (d) importGroupsXMLDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF importExportDeclarationBYAllow(d)
+    PROPERTIES (d) fillInGroupDeclarationDeclarationDetail  TODRAW gd FORCE PANEL TOOLBAR SHOWIF allowImportExportXLSDeclarationUA(d)
+    PROPERTIES (d) exportDeclaration TODRAW gd FORCE PANEL TOOLBAR SHOWIF allowImportExportXMLDeclarationBY(d)
 
     FILTERGROUP filterDetail
         FILTER 'Для текущей позиции' 'F11' inGroupDeclarationDeclarationDetail(gd, dd)
@@ -1391,7 +1391,7 @@ FORM declarations 'Декларации'
                            rateExchangeCustomDataDeclaration, rateExchangeManagerialDataDeclaration, sumRegistrationUnionDeclaration,
                            dutyReverseDeclaration, VATReverseDeclaration, totalCustomSum,
                            expenseCertificateDeclaration, canonicalBrandDeclaration, nameExecuterDeclaration
-    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
+    PROPERTIES(d) FORCE PANEL ADDFORM, EDITFORM, delete TOOLBAR
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, sidInnerInvoiceDeclarationDetail, barcodeDeclarationDetail, nameInvoiceDeclarationDetail,

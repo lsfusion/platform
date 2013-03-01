@@ -230,7 +230,7 @@ FORM surplusOuts 'Реализации излишков'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS d = surplusOutDetail
 

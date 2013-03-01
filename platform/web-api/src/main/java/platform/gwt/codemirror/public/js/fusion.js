@@ -15,7 +15,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "CHECKED CLASS CLOSE COLOR COLUMNS CONCAT CONFIRM CONSTRAINT " + 
                            "CONTAINER CUSTOM CUSTOMFILE CYCLES DATA DEFAULT DELETE " + 
                            "DESC DESIGN DIALOG DO DOCKED DOCKEDMODAL DOCX DRAWROOT " +
-                           "DRAWTOTOOLBAR DROP ECHO EDIT EDITABLE EDITFORM EDITKEY " + 
+                           "DROP ECHO EDIT EDITABLE EDITFORM EDITKEY " +
                            "EDITSESSIONFORM ELSE EMAIL END EQUAL EVAL EVENTID EVENTS EXCELFILE " +
                            "EXCEPTLAST EXCLUSIVE EXEC EXTEND FALSE FILTER FILTERGROUP " + 
                            "FILTERS FIXED FIXEDCHARWIDTH FOOTER FOR FORCE FOREGROUND " + 

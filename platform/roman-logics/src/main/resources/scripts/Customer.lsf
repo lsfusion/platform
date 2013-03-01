@@ -123,7 +123,7 @@ FORM customer 'Покупатель'
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES createAgreementSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(ag, cu),
             supplierAgreement(ag) == co2
 
@@ -177,7 +177,7 @@ DESIGN customer FROM DEFAULT {
 FORM customers 'Покупатели'
     TREE customerGroupTree cg = customerGroup PARENT parentCustomerGroup
     PROPERTIES READONLY cgTreeName = name(cg)
-    PROPERTIES(cg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(cg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS cu=customer
     PROPERTIES(cu) READONLY name, fullNameLegalEntity, nameCustomerGroupCustomer, shortNameOwnershipLegalEntity, numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity

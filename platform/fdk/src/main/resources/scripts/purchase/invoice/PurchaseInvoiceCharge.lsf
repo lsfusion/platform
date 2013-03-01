@@ -38,7 +38,7 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoi
 extraCostPriceUserInvoiceDetail(detail) += chargePriceUserInvoiceDetail(detail);
 
 EXTEND FORM userInvoice
-    PROPERTIES(i) chargeSumUserInvoice, deriveChargePriceUserInvoice TODRAW d FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(i) chargeSumUserInvoice, deriveChargePriceUserInvoice TODRAW d FORCE PANEL TOOLBAR
     PROPERTIES(d) chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)
 ;
 

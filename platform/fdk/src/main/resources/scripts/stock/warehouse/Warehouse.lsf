@@ -87,7 +87,7 @@ FORM warehouses 'Склады'
 
     TREE warehouseTree b=STRING[3], wg = warehouseGroup PARENT parentWarehouseGroup
     PROPERTIES READONLY OBJVALUE(b), wgTreeName = name(wg)
-    PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
     ORDER BY wgTreeName
     FILTERS stringEqualsAll(b)
 
@@ -121,7 +121,7 @@ addWarehouseLegalEntity 'Добавить склад' = ACTION (legalEntity) {
 
 EXTEND FORM legalEntity
 
-    PROPERTIES addWarehouseLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addWarehouseLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
 ;
 
 NAVIGATOR {

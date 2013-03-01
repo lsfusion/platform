@@ -395,7 +395,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         PROPERTIES ()  addUserInvoice TODRAW i
         PROPERTIES (i) editInvoice, copyInvoice
-        PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserInvoice(i)
+        PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserInvoice(i)
 
         OBJECTS d = invoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail

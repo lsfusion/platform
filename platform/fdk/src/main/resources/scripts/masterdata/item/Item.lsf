@@ -34,7 +34,7 @@ FORM itemGroup 'Товарная группа'
 
 FORM itemGroups 'Товарные группы'
     TREE treeGroups g=itemGroup PARENT parentItemGroup
-    PROPERTIES inItemGroup(g), moveItemGroup(g) TODRAW g FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES inItemGroup(g), moveItemGroup(g) TODRAW g FORCE PANEL TOOLBAR
     PROPERTIES READONLY name(g), canonicalNameItemGroup (g)
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     ORDER BY canonicalNameItemGroup
@@ -246,7 +246,7 @@ FORM items 'Товары'
     OBJECTS i=item
     PROPERTIES(i) READONLY idBarcodeSku
     PROPERTIES(i) ADDFORM, EDITFORM, delete
-    PROPERTIES seekBarcode() TODRAW i FORCE PANEL DRAWTOTOOLBAR ON CHANGE EXEC seekSkuBarcode()
+    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
 
     DIALOG item OBJECT i
 ;
@@ -683,5 +683,5 @@ replaceItem 'Объединить' = ACTION (item){
 }
 
 EXTEND FORM items
-    PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem TODRAW i FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem TODRAW i FORCE PANEL TOOLBAR
 ;

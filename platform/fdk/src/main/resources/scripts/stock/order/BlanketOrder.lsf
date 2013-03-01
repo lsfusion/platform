@@ -230,7 +230,7 @@ META defineBlanketOrder(sign)
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+        PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
         PROPERTIES (o) closeBlanketOrder SHOWIF isOpenedBlanketOrder(o)
 
 

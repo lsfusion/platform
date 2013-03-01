@@ -1085,7 +1085,7 @@ FORM priceSetDocuments 'Розничные прайсы'
     PROPERTIES(p) READONLY statusPriceSetDocument, objectClassName, numberObject, seriesObject, datePriceSetDocument,
                            timePriceSetDocument, dateTimeToPriceSetDocument, nameCurrencyPriceSetDocument, canonicalBrandPriceSetDocument, reasonPriceSetDocument
     PROPERTIES() importPriceList FORCE PANEL TODRAW p
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     TREE stockTree sg = stockGroup PARENT parentStockGroup
     PROPERTIES READONLY sgTreeName = name(sg)

@@ -166,7 +166,7 @@ FORM contractSkus 'Договора на поставку'
                            nameFormContractSku
 
     PROPERTIES() addUserContractSku TODRAW c
-    PROPERTIES(c) editContractSku, delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserContractSku(c)
+    PROPERTIES(c) editContractSku, delete FORCE PANEL TOOLBAR SHOWIF isUserContractSku(c)
 
     DIALOG contractSku OBJECT c
 ;
@@ -184,7 +184,7 @@ EXTEND FORM legalEntity
     OBJECTS css = userContractSku
     PROPERTIES(css) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addUserContractSkuSupplierCustomer(s, l) TODRAW css FORCE PANEL TOOLBAR
     PROPERTIES(css)  EDITSESSIONFORM, delete SHOWIF isUserContractSku(css)
     FILTERS customerContractSku(css) == l,
             supplierContractSku(css) == s
@@ -195,7 +195,7 @@ EXTEND FORM legalEntity
     OBJECTS csc = userContractSku
     PROPERTIES(csc) READONLY numberContract, nameTypeContractSku, nameFormContractSku, dateFromContract,
                     dateToContract, nameCurrencyContract, noteContract
-    PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addUserContractSkuSupplierCustomer(l, c) TODRAW csc FORCE PANEL TOOLBAR
     PROPERTIES(csc) EDITSESSIONFORM, delete SHOWIF isUserContractSku(csc)
     FILTERS customerContractSku(csc) == c,
             supplierContractSku(csc) == l

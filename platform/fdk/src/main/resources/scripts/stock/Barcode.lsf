@@ -211,7 +211,7 @@ EXTEND FORM filterSkus
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
-    PROPERTIES seekBarcode() TODRAW s FORCE PANEL DRAWTOTOOLBAR ON CHANGE EXEC seekSkuBarcode()
+    PROPERTIES seekBarcode() TODRAW s FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
 ;
 EXTEND DESIGN currentBalanceSkuStock{
     sts.box{
@@ -223,7 +223,7 @@ EXTEND DESIGN currentBalanceSkuStock{
 
 EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
-    PROPERTIES seekBarcode() TODRAW bt FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES seekBarcode() TODRAW bt FORCE PANEL TOOLBAR
     FILTERS (bt IS batch AND NOT seekBarcode()) OR (skuBarcodeIdDate(seekBarcode(), currentDate()) == skuBatch(bt))
 ;
 EXTEND DESIGN currentBalanceBatchStock{

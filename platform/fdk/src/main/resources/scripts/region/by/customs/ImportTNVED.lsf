@@ -11,6 +11,6 @@ importTNVEDClassifierAction 'Импортировать справочник' = 
 importTNVEDCustomsRatesAction 'Импортировать платежи' = ACTION CUSTOM 'fdk.region.by.customs.ImportTNVEDCustomsRatesActionProperty' IN tnvedGroup;
 
 EXTEND FORM customsGroups
-    PROPERTIES() importTNVEDClassifierAction TODRAW gcg DRAWTOTOOLBAR,
-                 importTNVEDCustomsRatesAction TODRAW cg DRAWTOTOOLBAR
+    PROPERTIES() importTNVEDClassifierAction TODRAW gcg TOOLBAR,
+                 importTNVEDCustomsRatesAction TODRAW cg TOOLBAR
 ;

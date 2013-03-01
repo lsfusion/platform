@@ -447,7 +447,7 @@ FORM consumptions 'Списания сырья'
 
     PROPERTIES ()  addUserConsumption TODRAW o
     PROPERTIES (o) editConsumption, copyConsumption
-    PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserConsumption(o)
+    PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserConsumption(o)
 
     OBJECTS d=consumptionDetail
     PROPERTIES (d) READONLY indexConsumptionDetail, idBarcodeSkuConsumptionDetail, nameSkuConsumptionDetail, shortNameUOMSkuConsumptionDetail

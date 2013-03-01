@@ -213,7 +213,7 @@ FORM range 'Шкала'
     OBJECTS r=range
     PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
                   dateToActingRateRange
-    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL TOOLBAR
     DIALOG range OBJECT r
 ;
 
@@ -222,7 +222,7 @@ FORM rangeDialog 'Шкала'
     OBJECTS r=range
     PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
                   dateToActingRateRange
-    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL TOOLBAR
     FILTERS countryRange(r) == c
 ;
 

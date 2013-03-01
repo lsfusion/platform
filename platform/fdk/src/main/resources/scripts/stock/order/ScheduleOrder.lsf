@@ -266,7 +266,7 @@ META defineScheduleOrder(sign, stockProp)
         ORDER BY dateSupplyScheduleOrderDetail
         PROPERTIES createScheduleOrder(s) TODRAW sd
 
-        PROPERTIES(sd) ADDOBJ DRAWTOTOOLBAR
+        PROPERTIES(sd) ADDOBJ TOOLBAR
 
         FILTERS scheduleOrderScheduleOrderDetail(sd)==s
 
@@ -426,7 +426,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES(s) READONLY nameSupplierScheduleOrder, nameSupplierStockScheduleOrder,
                       nameCustomerScheduleOrder, nameCustomerStockScheduleOrder, nameTypeScheduleOrder
 
-        PROPERTIES(s) ADDFORM, EDITFORM, delete DRAWTOTOOLBAR
+        PROPERTIES(s) ADDFORM, EDITFORM, delete TOOLBAR
 
         OBJECTS sd=scheduleOrderDetail
         PROPERTIES(sd) READONLY dateOrderScheduleOrderDetail, dateSupplyScheduleOrderDetail,

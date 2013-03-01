@@ -174,7 +174,7 @@ FORM customGroups 'Дополнительные группы'
     PROPERTIES(t) SELECTOR name
 
     TREE treeGroups g=customGroup PARENT parentCustomGroup
-    PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL TOOLBAR
     PROPERTIES(g) READONLY name, canonicalNameCustomGroup
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS customGroupTypeCustomGroup(g) == t
@@ -2711,8 +2711,8 @@ EXTEND FORM legalEntity
 
     OBJECTS st=stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock, nameCountryStock, addressStock
-    PROPERTIES(st) FORCE PANEL DRAWTOTOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
-    PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(st) FORCE PANEL TOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
+    PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
     FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 

@@ -530,8 +530,8 @@ FORM operationCashRegister 'Кассовые операции'
                            numberCashRegisterCashOperation, sumCashOperation, basisCashOperation
     PROPERTIES(c) delete
     PROPERTIES(c) isCompleteCashOperation FORCE GRID
-    PROPERTIES addIncomeCashOperationForm() TODRAW c FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES addOutcomeCashOperationForm() TODRAW c FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addIncomeCashOperationForm() TODRAW c FORCE PANEL TOOLBAR
+    PROPERTIES addOutcomeCashOperationForm() TODRAW c FORCE PANEL TOOLBAR
     PROPERTIES editIncomeCashOperation(c) SHOWIF isIncomeCashOperation(c)
     PROPERTIES editOutcomeCashOperation(c) SHOWIF isOutcomeCashOperation(c)
 
@@ -583,7 +583,7 @@ FORM centralCashRegister 'Центральная касса'
     PROPERTIES(i) READONLY objectClassName, numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashIncomeCashOrder, basisCashDocument, isPrintedIncomeCashOrder
     PROPERTIES(i) READONLY isCompleteCashOperation FORCE GRID
-    PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addOutcomeCashOperationForm() TODRAW i FORCE PANEL TOOLBAR
     PROPERTIES editOutcomeCashOperation(i) SHOWIF isOutcomeCashOperation(i)
     PROPERTIES(i) delete
     ORDER BY dateCashDocument, timeCashDocument
@@ -595,8 +595,8 @@ FORM centralCashRegister 'Центральная касса'
     OBJECTS o = outcomeCashOrder
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameDepartmentStoreCashDocument,
                            numberCashRegisterCashDocument, sumCashOutcomeCashOrder, basisCashDocument, isPrintedOutcomeCashOrder
-    PROPERTIES addIncomeCashOperationForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES addCollectionForm() TODRAW o FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES addIncomeCashOperationForm() TODRAW o FORCE PANEL TOOLBAR
+    PROPERTIES addCollectionForm() TODRAW o FORCE PANEL TOOLBAR
     PROPERTIES editIncomeCashOperation(o) SHOWIF isIncomeCashOperation(o)
     PROPERTIES editCollection(o) SHOWIF isCollection(o)
     PROPERTIES(o) delete

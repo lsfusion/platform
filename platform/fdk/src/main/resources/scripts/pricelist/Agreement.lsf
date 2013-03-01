@@ -415,7 +415,7 @@ EXTEND FORM legalEntity
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
 
     PROPERTIES(ags) delete, EDITSESSIONFORM, copySessionAgreement
-    PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, l) TODRAW ags FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(ags, l),
             supplierAgreement(ags) == s,
             isSellerLegalEntity(s),
@@ -433,7 +433,7 @@ EXTEND FORM legalEntity
                              nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
     PROPERTIES(agc) delete, EDITSESSIONFORM, copySessionAgreement
 
-    PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementSupplierCustomer(l, c) TODRAW agc FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer (l, c) TODRAW agc FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(agc, c),
             supplierAgreement(agc) == l,
             isBuyerLegalEntity(c),

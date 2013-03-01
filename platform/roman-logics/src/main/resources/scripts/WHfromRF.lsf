@@ -671,7 +671,7 @@ FORM WHfromRFs 'Приход товара из РФ'
                            countWHfromRFDetailWHfromRF, quantityWHfromRFDetailWHfromRF, statusRecWHfromRF,
                            descriptionFreightWHfromRF, nameLegalEntityStockWHfromRF, accountSumWHfromRF
 
-    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(w) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
                                         hostnameComputerClosed

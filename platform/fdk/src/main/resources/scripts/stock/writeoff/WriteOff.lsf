@@ -270,7 +270,7 @@ FORM writeOffs 'Списания'
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES ()  addUserWriteOff TODRAW w
     PROPERTIES (w) editUserWriteOff
-    PROPERTIES (w) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserWriteOff(w)
+    PROPERTIES (w) delete FORCE PANEL TOOLBAR  SHOWIF isUserWriteOff(w)
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,

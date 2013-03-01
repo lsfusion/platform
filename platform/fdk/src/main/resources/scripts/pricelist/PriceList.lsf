@@ -454,7 +454,7 @@ FORM userPriceList 'Прайс'
     OBJECTS d = userPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
-    PROPERTIES(p) TODRAW d FORCE PANEL DRAWTOTOOLBAR addUnderPriceListUserPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
+    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addUnderPriceListUserPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
 
     TREE stockTree a=STRING[3], sg = stockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
@@ -467,7 +467,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES READONLY name(ts), stockName = name(ts) FORCE PANEL
     PROPERTIES(p, ts) inPriceListStockOver
 
-    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL TOOLBAR
 
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
@@ -618,8 +618,8 @@ FORM userPriceLists 'Прайсы'
     PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
                            fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList,
                            nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList, stocksPriceList
-    PROPERTIES(p) copyUserPriceList TODRAW p FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES(p) ADDFORM, EDITFORM, delete TODRAW p FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p) copyUserPriceList TODRAW p FORCE PANEL TOOLBAR
+    PROPERTIES(p) ADDFORM, EDITFORM, delete TODRAW p FORCE PANEL TOOLBAR
 
     OBJECTS t = dataPriceListType
 
@@ -923,7 +923,7 @@ EXTEND FORM legalEntity
                            nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList,
                            stocksPriceList
     PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL
-    PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;
 

@@ -369,7 +369,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editOrder, copyOrder
         PROPERTIES (o) closeOrder SHOWIF isOpenedOrder(o), openOrder SHOWIF isClosedOrder(o)
-        PROPERTIES     delete(o) FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserOrder(o)
+        PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=orderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail

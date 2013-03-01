@@ -293,7 +293,7 @@ FORM CStoWHs 'Расходы с СВХ'
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     PROPERTIES (t)  FORCE PANEL printConsignmentVerticalA, printConsignmentHorizontalA,
                      printConsignmentVerticalB, printConsignmentHorizontalB,

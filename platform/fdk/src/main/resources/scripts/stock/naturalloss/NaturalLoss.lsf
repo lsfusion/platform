@@ -136,12 +136,12 @@ FORM naturalLossGroups 'Справочник норм естественной �
 
     TREE treeNaturalLoss a=STRING[3], n=naturalLossGroup
     PROPERTIES READONLY OBJVALUE(a)
-    PROPERTIES name(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), delete(n) FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES name(n), nameCountryNaturalLossGroup(n), ADDOBJ(n), delete(n) FORCE PANEL TOOLBAR
     ORDER BY name(n)
 
     OBJECTS sg=subNaturalLossGroup, d=subNaturalLossGroupDetail
     PROPERTIES(sg) name, nameCountrySubNaturalLossGroup, nameParentNaturalLossGroup,
-                   codeSubNaturalLossGroup, ADDFORM TODRAW sg, delete FORCE PANEL DRAWTOTOOLBAR
+                   codeSubNaturalLossGroup, ADDFORM TODRAW sg, delete FORCE PANEL TOOLBAR
     PROPERTIES(d) dayFromNaturalLossGroupDetail, nameMonthFromNaturalLossGroupDetail,
                   dayToNaturalLossGroupDetail, nameMonthToNaturalLossGroupDetail,
                   percentNaturalLossGroupDetail, ADDOBJ, delete
@@ -346,7 +346,7 @@ FORM naturalLosses 'Ведомости естественной убыли'
     PROPERTIES(s) READONLY numberObject, seriesObject, dateNaturalLoss, timeNaturalLoss,
                            nameStockNaturalLoss, dateFromNaturalLoss, dateToNaturalLoss,
                            quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
-    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(s) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
     PROPERTIES(s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     OBJECTS d=naturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,

@@ -109,7 +109,7 @@ FORM innerOrders 'Внутренние заказы'
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS d = innerOrderDetail
 
@@ -623,7 +623,7 @@ EXTEND FORM innerOrders
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, quantityInnerDocumentOrderPicking,
         quantityPostedInnerDocumentOrderPicking, quantityDraftInnerDocumentOrderPicking, statusOrderPicking
 
-    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS pd=orderPickingDetail
 

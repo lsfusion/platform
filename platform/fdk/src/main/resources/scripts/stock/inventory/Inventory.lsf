@@ -930,7 +930,7 @@ FORM inventory 'Инвентаризация'
 
     PROPERTIES(li)   READONLY countPageInventoryDetailListInventory, quantityPageInventoryDetailListInventory, sumPageInventoryDetailListInventory, objectClassName
 
-    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftListInventory(li),
+    PROPERTIES(li)   editLI = EDITFORM FORCE PANEL SHOWIF isDraftListInventory(li), delete FORCE PANEL TOOLBAR SHOWIF isDraftListInventory(li),
                      postListInventory FORCE PANEL SHOWIF isDraftListInventory(li), unpostListInventory FORCE PANEL SHOWIF isPostedListInventory(li)
 
     PROPERTIES(pl)   READONLY countPageInventoryDetailPageInventory, quantityPageInventoryDetailPageInventory, sumPageInventoryDetailPageInventory, dumb1
@@ -1153,7 +1153,7 @@ FORM inventories 'Инвентаризации'
     PROPERTIES(in) READONLY             isBatchInventory, objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
                                         nameStockInventory, nameInventory, noteInventory
     PROPERTIES(in) FORCE PANEL READONLY nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
-    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInventory(in),
+    PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL TOOLBAR SHOWIF isDraftInventory(in),
                                         postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)
 
     OBJECTS il=inventorySkuDetail

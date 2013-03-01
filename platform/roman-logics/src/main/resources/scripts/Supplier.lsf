@@ -147,7 +147,7 @@ FORM supplier 'Поставщик'
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
-    PROPERTIES createAgreementSupplierCustomer(s, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR, addAgreementsSupplierCustomer(s, co2) TODRAW ag FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES createAgreementSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(ag, s),
             supplierAgreement(ag) == co2
 
@@ -237,7 +237,7 @@ DESIGN supplier FROM DEFAULT {
 FORM suppliers 'Поставщики'
     TREE supplierGroupTree sg = supplierGroup PARENT parentSupplierGroup
     PROPERTIES READONLY sgTreeName = name(sg)
-    PROPERTIES(sg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(sg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS s=supplier
     PROPERTIES(s) READONLY name, fullNameLegalEntity, nameSupplierGroupSupplier, shortNameOwnershipLegalEntity,

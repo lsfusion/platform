@@ -597,7 +597,7 @@ FORM orders 'Производственные заказы'
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
 
-    PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, delete FORCE PANEL TOOLBAR
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS pd=productDetail

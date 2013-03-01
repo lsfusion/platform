@@ -239,7 +239,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 
         PROPERTIES ()  addUserShipment TODRAW s
         PROPERTIES (s) editShipment
-        PROPERTIES (s) delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isUserShipment(s)
+        PROPERTIES (s) delete FORCE PANEL TOOLBAR SHOWIF isUserShipment(s)
 
         OBJECTS d = shipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail

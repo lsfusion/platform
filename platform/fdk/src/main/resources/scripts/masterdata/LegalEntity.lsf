@@ -202,7 +202,7 @@ FORM legalEntities 'Организации'
 
     TREE legalEntityGroupTree lg = legalEntityGroup PARENT parentLegalEntityGroup
     PROPERTIES READONLY lgTreeName = name(lg)
-    PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS l=legalEntity
     PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,

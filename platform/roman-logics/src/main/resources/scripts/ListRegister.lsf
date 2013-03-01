@@ -260,7 +260,7 @@ FORM inputListRegisters 'Реестры цен' // форма в частнос�
                     markupSumListRegisterDetailListRegister,
                     retailVATSumListRegisterDetailListRegister, retailSumListRegisterDetailListRegister, nameRegisterCommitteeListRegister
 
-    PROPERTIES (l)  printRegister FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (l)  printRegister FORCE PANEL TOOLBAR
 
     OBJECTS d=inputListRegisterDetail
     PROPERTIES (d)  indexListRegisterDetail, idBarcodeSkuListRegisterDetail, nameSkuListRegisterDetail, shortNameUOMSkuListRegisterDetail, quantityListRegisterDetail,

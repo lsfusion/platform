@@ -133,7 +133,7 @@ FORM invoiceWHOuts 'Реализации товара по безналично�
 
     PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL DRAWTOTOOLBAR SHOWIF isDraftInvoiceWHOut(t),
+    PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL TOOLBAR SHOWIF isDraftInvoiceWHOut(t),
                    postInvoiceWHOut SHOWIF isDraftInvoiceWHOut(t), unpostInvoiceWHOut SHOWIF isPostedInvoiceWHOut(t)
 
     OBJECTS d = invoiceWHOutDetail

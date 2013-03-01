@@ -526,7 +526,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
-		|   'DRAWTOTOOLBAR' { $options.setDrawToToolbar(true); }
+		|   'TOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' mappedProp=mappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }  // refactor to formPropertyObject? 
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
@@ -810,7 +810,7 @@ propertyStatement
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); property = $expr.property.property; } }
 		)
-		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context]
+		propertyOptions[property, $declaration.name, $declaration.caption, context]
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 
@@ -1313,7 +1313,7 @@ propertyObject returns [LP property]
 	;
 
 
-commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams]
+propertyOptions[LP property, String propertyName, String caption, List<String> namedParams]
 @init {
 	String groupName = null;
 	String table = null;

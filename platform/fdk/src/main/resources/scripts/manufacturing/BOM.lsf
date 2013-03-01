@@ -179,7 +179,7 @@ FORM technologies 'Технологии'
     OBJECTS t=technology
     PROPERTIES(t)  READONLY name
 
-    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 //    PROPERTIES (t) fillWastageTechnology
 
     OBJECTS m=material
@@ -448,7 +448,7 @@ FORM BOMs 'Спецификации'
     OBJECTS b=BOM
 
     PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
-    PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL TOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
     OBJECTS p = product

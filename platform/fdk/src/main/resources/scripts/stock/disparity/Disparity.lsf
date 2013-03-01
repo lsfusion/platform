@@ -176,7 +176,7 @@ FORM disparities 'Изменения сортности'
 
     PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
 
-    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS d=disparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,

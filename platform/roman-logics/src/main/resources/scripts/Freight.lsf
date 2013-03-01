@@ -187,7 +187,7 @@ EXTEND FORM freightListForm
     PROPERTIES (freight) READONLY dateArrivalFreight BEFORE nameRouteFreight(freight), nameCountryFreight BEFORE nameRouteFreight(freight), nameLanguageFreight BEFORE nameRouteFreight(freight)
     PROPERTIES (freight) FORCE GRID toShipFreight, toArrivedFreight
 
-    PROPERTIES (freight) ADDFORM, EDITFORM, deleteApply FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (freight) ADDFORM, EDITFORM, deleteApply FORCE PANEL TOOLBAR
 ;
 
 EXTEND DESIGN freightListForm{

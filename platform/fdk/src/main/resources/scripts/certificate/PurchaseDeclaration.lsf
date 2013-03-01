@@ -230,7 +230,7 @@ EXTEND FORM declaration
     PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeUserInvoiceDetail,
                    sumDutyUserInvoiceDetail, sumRegistrationUserInvoiceDetail, sumCustomsInvoiceDetail
 
-    PROPERTIES (d) showFormDeclarationInvoices TODRAW id FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (d) showFormDeclarationInvoices TODRAW id FORCE PANEL TOOLBAR
     FILTERS declarationUserInvoiceDetail(id) == d
 
     OBJECTS dd=declarationDetail
@@ -246,8 +246,8 @@ EXTEND FORM declaration
     PROPERTIES(dd) READONLY percentVATDeclaratioDetail, sumRateVATDeclarationDetail
     PROPERTIES(dd) sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail, delete
 
-    PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL DRAWTOTOOLBAR
-    PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL DRAWTOTOOLBAR
+    PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
+    PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL TOOLBAR
     FILTERS declarationDeclarationDetail(dd) == d
 ;
 

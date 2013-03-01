@@ -176,7 +176,7 @@ FORM adjustments 'Изменения остатков'
 
     PROPERTIES ()  addUserAdjustment TODRAW i
     PROPERTIES (i) editAdjustment
-    PROPERTIES (i) delete FORCE PANEL DRAWTOTOOLBAR  SHOWIF isUserAdjustment(i)
+    PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserAdjustment(i)
 
     OBJECTS d = adjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
