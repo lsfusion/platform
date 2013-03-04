@@ -1,0 +1,18 @@
+MODULE ExportDeclaration;
+
+REQUIRE System,
+        Item,
+        PurchaseDeclaration
+        ;
+
+exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'fdk.region.by.declaration.ExportDeclarationActionProperty';
+
+EXTEND FORM declaration
+    PROPERTIES (d) exportDeclaration
+;
+
+EXTEND DESIGN declaration {
+    main {
+        ADD PROPERTY(exportDeclaration) BEFORE PROPERTY(toCreateDeclarationDetails);
+    }
+}

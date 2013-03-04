@@ -93,7 +93,8 @@ nameCustomsDeclarationDetail 'Наименование' = DATA STRING[200](decla
 
 countryDeclarationDetail = DATA country(declarationDetail);
 nameCountryDeclarationDetail 'Страна' (declarationDetail) = name(countryDeclarationDetail(declarationDetail));
-
+sidCountryDeclarationDetail 'Код страны' (declarationDetail) = sidCountry(countryDeclarationDetail(declarationDetail));
+sidOrigin2CountryDeclarationDetail 'Код страны' (declarationDetail) = sidOrigin2Country(countryDeclarationDetail(declarationDetail));
 priceDeclarationDetail 'Цена' = DATA NUMERIC[14,3](declarationDetail);
 
 numberDefaultDeclarationDetail 'Номер' (declarationDetail) =
