@@ -29,7 +29,9 @@ REQUIRE System,
         TaxItem,
         Ware,
         Warehouse,
+        WareInvoice,
         WareItem,
+        WarePurchaseInvoice,
         WriteOffItem;
 
 EXTEND CLASS bank : externalizable;

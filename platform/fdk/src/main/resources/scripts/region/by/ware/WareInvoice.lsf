@@ -3,6 +3,8 @@ MODULE WareInvoice;
 REQUIRE Item, WareItem, Invoice, Shipment;
 
 META defineInvoiceWare(NS)
+    skipCreateWareUserInvoiceDetail = DATA BOOLEAN (NS.userInvoiceDetail);
+
     wareUserInvoiceDetailUserInvoiceDetail = DATA NS.userInvoiceDetail(NS.userInvoiceDetail);
     itemWareUserInvoiceDetailUserInvoiceDetail (userInvoiceDetail) =
         GROUP UNIQUE userInvoiceDetail BY wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
@@ -24,7 +26,7 @@ META defineInvoiceWare(NS)
     }
 
     WHEN (CHANGED(NS.skuUserInvoiceDetail(detail)) OR CHANGED(NS.quantityUserInvoiceDetail(detail)))
-         AND wareItem(NS.skuUserInvoiceDetail(detail))
+         AND wareItem(NS.skuUserInvoiceDetail(detail)) AND NOT skipCreateWareUserInvoiceDetail(detail)
          DO EXEC createWareUserInvoiceDetail(detail) SESSION;
 
     NS.skipCreateShipmentInvoiceDetail(detail) += TRUE IF itemWareUserInvoiceDetailUserInvoiceDetail(detail);

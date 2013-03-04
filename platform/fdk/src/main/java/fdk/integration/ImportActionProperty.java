@@ -443,6 +443,7 @@ public class ImportActionProperty {
                     //ImportField dateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("dateTimeCompliance"));
                     //ImportField toDateTimeComplianceField = new ImportField(LM.findLCPByCompoundName("toDateTimeCompliance"));
                     ImportField certificateTextUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("certificateTextUserInvoiceDetail"));
+                    ImportField skipCreateWareUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("skipCreateWareUserInvoiceDetail"));
 
                     ImportKey<?> userInvoiceKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName(posted ? "Purchase.userInvoicePosted" : "Purchase.userInvoice"),
                             LM.findLCPByCompoundName("Purchase.numberSeriesToUserInvoice").getMapping(numberUserInvoiceField, seriesUserInvoiceField));
@@ -506,6 +507,7 @@ public class ImportActionProperty {
                     props.add(new ImportProperty(certificateTextUserInvoiceDetailField, LM.findLCPByCompoundName("certificateTextUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
                     //props.add(new ImportProperty(numberComplianceField, LM.findLCPByCompoundName("complianceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
                     //        LM.object(LM.findClassByCompoundName("compliance")).getMapping(complianceKey)));
+                    props.add(new ImportProperty(skipCreateWareUserInvoiceDetailField, LM.findLCPByCompoundName("skipCreateWareUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                     List<List<Object>> data = new ArrayList<List<Object>>();
                     for (UserInvoiceDetail u : dataUserInvoiceDetail) {
@@ -515,7 +517,7 @@ public class ImportActionProperty {
                                 u.warehouse == null ? null : ("WH" + u.warehouse),
                                 u.supplierWarehouse == null ? null : ("WH" + u.supplierWarehouse), u.price, u.price, u.chargePrice,
                                 u.retailPrice, u.retailMarkup, /*u.numberCompliance == null ? null : ("CM" + u.numberCompliance), u.dateTimeCompliance, u.toDateTimeCompliance,*/
-                                u.textCompliance));
+                                u.textCompliance, true));
                     }
                     ImportTable table = new ImportTable(Arrays.asList(numberUserInvoiceField, seriesUserInvoiceField,
                             createPricingUserInvoiceField, createShipmentUserInvoiceField, userInvoiceDetailField,
@@ -524,7 +526,7 @@ public class ImportActionProperty {
                             manufacturingPriceInvoiceDetail,
                             chargePriceUserInvoiceDetailField, retailPriceUserInvoiceDetailField,
                             retailMarkupUserInvoiceDetailField, /*numberComplianceField, dateTimeComplianceField,
-                            toDateTimeComplianceField,*/ certificateTextUserInvoiceDetailField), data);
+                            toDateTimeComplianceField,*/ certificateTextUserInvoiceDetailField, skipCreateWareUserInvoiceDetailField), data);
 
                     DataSession session = LM.getBL().createSession();
                     IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey,
