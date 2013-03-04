@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GFormLayout extends ResizableFlowPanel {
+    private GFormController formController;
+
     private Panel mainContainer;
     private GContainer mainKey;
     private Map<GContainer, GAbstractFormContainer> containerViews = new HashMap<GContainer, GAbstractFormContainer>();
@@ -24,16 +26,17 @@ public class GFormLayout extends ResizableFlowPanel {
 
         addStyleName("formLayout");
 
+        this.formController = formController;
         mainKey = mainContainer;
         mainKey.calculateFills();
-        createContainerViews(formController, mainContainer);
+        createContainerViews(mainContainer);
 
         setSize("100%", "100%");
 
         add(this.mainContainer);
     }
 
-    private void createContainerViews(GFormController formController, GContainer container) {
+    private void createContainerViews(GContainer container) {
         GAbstractFormContainer formContainer;
         if (container.type.isSplit()) {
             formContainer = new GFormSplitPane(container, formController.getForm().allowScrollSplits);
@@ -55,7 +58,7 @@ public class GFormLayout extends ResizableFlowPanel {
 
         for (GComponent child : container.children) {
             if (child instanceof GContainer) {
-                createContainerViews(formController, (GContainer) child);
+                createContainerViews((GContainer) child);
             }
         }
     }
@@ -146,7 +149,7 @@ public class GFormLayout extends ResizableFlowPanel {
             } else {
                 GAbstractFormContainer formContainer = getFormContainer(container);
                 if (formContainer != null && formContainer.isChildVisible(child)) {
-                    return true;
+                    return !(child instanceof GGrid && isGridWithNoColumns((GGrid) child));
                 }
             }
         }
@@ -239,7 +242,7 @@ public class GFormLayout extends ResizableFlowPanel {
             List<GGrid> grids = ((GContainer) component).getAllGrids();
             for (GGrid grid : grids) {
                 GAbstractFormContainer gridContainer = getFormContainer(grid.container);
-                if (gridContainer != null && gridContainer.isChildVisible(grid)) {
+                if (gridContainer != null && gridContainer.isChildVisible(grid) && !isGridWithNoColumns(grid)) {
                     return false;
                 }
             }
@@ -281,5 +284,10 @@ public class GFormLayout extends ResizableFlowPanel {
             return mainContainer.getOffsetHeight();
         }
         return -1;
+    }
+
+    private boolean isGridWithNoColumns(GGrid grid) {
+        GGroupObjectController goController = formController.getGroupObjectController(grid.groupObject);
+        return goController != null && goController.isGridEmpty();
     }
 }

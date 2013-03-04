@@ -356,12 +356,12 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
     }
 
-    public void relayoutTable() {
-        grid.relayoutTable();
-    }
-
     public boolean isInGridClassView() {
         return classViewType == GClassViewType.GRID;
+    }
+
+    public boolean isGridEmpty() {
+        return grid == null || grid.getTable().isEmpty();
     }
 
     public GGroupObjectValue getCurrentKey() {

@@ -514,6 +514,10 @@ public class GFormController extends ResizableSimplePanel {
         return fullKey.toGroupObjectValue();
     }
 
+    public GGroupObjectController getGroupObjectController(GGroupObject group) {
+        return controllers.get(group);
+    }
+
     private GGroupObjectLogicsSupplier getGroupObjectLogicsSupplier(GGroupObject group) {
         GGroupObjectController groupObjectController = controllers.get(group);
         if (groupObjectController != null) {

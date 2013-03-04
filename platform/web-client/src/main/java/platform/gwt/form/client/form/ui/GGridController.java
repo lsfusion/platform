@@ -76,10 +76,6 @@ public class GGridController implements DefaultFocusReceiver {
 //        formLayout.setTableCellSize(grid.container, gridView, "100%", false);
     }
 
-    public void relayoutTable() {
-        table.onResize();
-    }
-
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         table.updateCellBackgroundValues(propertyDraw, values);
     }

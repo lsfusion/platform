@@ -42,7 +42,7 @@ public class GFormSplitPane extends GAbstractFormContainer {
     @Override
     public void setChildSize(GComponent child, String width, String height) {
         Widget childView = childrenViews.get(child);
-        if (childView != null && !initialSizeSet) {
+        if (childView != null && !initialSizeSet && splitPane.getComponent().isVisible()) {
             splitPane.setWidgetSize(childView, width, height);
             initialSizeSet = true;
         }

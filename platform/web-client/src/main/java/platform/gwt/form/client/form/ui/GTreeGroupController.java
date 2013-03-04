@@ -136,10 +136,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         panel.update();
     }
 
-    public void relayoutTable() {
-        tree.onResize();
-    }
-
     @Override
     public void updatePropertyDrawValues(GPropertyDraw reader, Map<GGroupObjectValue, Object> values, boolean updateKeys) {
         GPropertyDraw property = formController.getProperty(reader.ID);
