@@ -21,6 +21,8 @@ extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
 extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
 
+customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
+
 priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
                                      homePriceInvoiceDetail(detail)
                                 ELSE priceInvoiceDetail(detail);
@@ -29,8 +31,8 @@ priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDe
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 
-costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail);
-costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail);
+costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+) customCostPriceInvoiceDetail(detail);
+costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+) (customCostPriceInvoiceDetail(detail) AND detail IS userInvoiceDetail);
 
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 
