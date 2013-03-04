@@ -423,7 +423,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             if (remoteForm == null) {
 
                 remoteForm = createRemoteForm(
-                        createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, interactive)
+                        createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, false, interactive)
                 );
             }
             openForms.put(formEntity, remoteForm);
@@ -718,11 +718,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     }
 
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
         return new FormInstance<T>(formEntity, BL,
                                    sessionScope.isNewSession() ? session.createSession() : session,
                                    securityPolicy, this, this, computer, connection, mapObjects, isModal, sessionScope.isManageSession(),
-                                   checkOnOk, interactive, null);
+                                   checkOnOk, showDrop, interactive, null);
     }
 
     @Override

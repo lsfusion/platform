@@ -301,7 +301,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // statement syntax:
 // FORM formName
 // [OBJECTS object1 =mappingExpr1, ..., objectN =mappinExprN]
-// [NEWSESSION | MANAGESESSION | OLDSESSION] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] [CHECK]
+// [NEWSESSION | MANAGESESSION | OLDSESSION] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] [CHECK] [SHOWDROP]
 
 
 // Add object action

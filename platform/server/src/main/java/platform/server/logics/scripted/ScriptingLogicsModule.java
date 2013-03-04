@@ -1353,7 +1353,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new Time(Integer.parseInt(text.substring(0, 2)), Integer.parseInt(text.substring(3, 5)), 0);
     }
 
-    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping, ModalityType modalityType, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
 
         FormEntity form = findFormByCompoundName(formName);
@@ -1363,7 +1363,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             objects[i] = findObjectEntity(form, objectNames.get(i));
         }
 
-        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, null, sessionScope, modalityType, checkOnOk), new ArrayList<Integer>());
+        LPWithParams res = new LPWithParams(addFAProp(null, genSID(), "", form, objects, null, sessionScope, modalityType, checkOnOk, showDrop), new ArrayList<Integer>());
         if (mapping.size() > 0) {
             res = addScriptedJoinAProp(res.property, mapping);
         }

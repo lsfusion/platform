@@ -23,9 +23,6 @@ import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Set;
-
-import static java.util.Collections.singletonMap;
 
 public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T> {
     private static Logger logger = Logger.getLogger(DialogInstance.class);
@@ -72,6 +69,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               true,
               false,
               false,
+              true,
               true,
               additionalFilters
         );

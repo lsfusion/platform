@@ -64,6 +64,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty("manageSession", "Manage session", LogicalClass.instance);
     public static final SessionDataProperty isReadOnly = new SessionDataProperty("isReadOnly", "Is read only form", LogicalClass.instance);
+    public static final SessionDataProperty showDrop = new SessionDataProperty("showDrop", "Show drop", LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;

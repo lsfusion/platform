@@ -16,7 +16,6 @@ import platform.interop.KeyStrokes;
 import platform.interop.ModalityType;
 import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -602,7 +601,11 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
+        return addFAProp(group, sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, false);
+    }
+
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
     protected LAP addSelectFromListAction(AbstractGroup group, String caption, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {

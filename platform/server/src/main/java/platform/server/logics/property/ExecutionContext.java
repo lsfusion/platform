@@ -31,7 +31,6 @@ import platform.server.session.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class ExecutionContext<P extends PropertyInterface> {
@@ -191,14 +190,14 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean interactive)  throws SQLException {
-        return Context.context.get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, interactive);
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
+        return Context.context.get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
     }
     public RemoteForm createRemoteForm(FormInstance formInstance) {
         return Context.context.get().createRemoteForm(formInstance);
     }
     public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false));
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false));
     }
 
     public QueryEnvironment getQueryEnv() {

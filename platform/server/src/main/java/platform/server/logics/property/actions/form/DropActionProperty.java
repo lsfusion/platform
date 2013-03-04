@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class DropActionProperty extends FormToolbarActionProperty {
 
     public DropActionProperty() {
-        super("formDrop", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.isDialog);
+        super("formDrop", ApiResourceBundle.getString("form.layout.reset"), null, FormEntity.showDrop);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

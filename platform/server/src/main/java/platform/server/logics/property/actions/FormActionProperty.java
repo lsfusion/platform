@@ -40,6 +40,7 @@ public class FormActionProperty extends SystemActionProperty {
     private final boolean checkOnOk;
     private final FormSessionScope sessionScope;
     private final ModalityType modalityType;
+    private final boolean showDrop;
 
     private final StaticCustomClass formResultClass;
     private final LCP formResultProperty;
@@ -58,7 +59,7 @@ public class FormActionProperty extends SystemActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.formResultClass = formResultClass;
@@ -67,6 +68,7 @@ public class FormActionProperty extends SystemActionProperty {
 
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
+        this.showDrop = showDrop;
         this.sessionScope = sessionScope;
         this.startAction = setProperties;
 
@@ -83,7 +85,7 @@ public class FormActionProperty extends SystemActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        final FormInstance newFormInstance = context.createFormInstance(form, mapObjects.join(context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, !form.isPrintForm);
+        final FormInstance newFormInstance = context.createFormInstance(form, mapObjects.join(context.getKeys()), context.getSession(), modalityType.isModal(), sessionScope, checkOnOk, showDrop, !form.isPrintForm);
 
         if (form.isPrintForm && !newFormInstance.areObjectsFound()) {
             context.requestUserInteraction(

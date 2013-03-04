@@ -205,6 +205,7 @@
       <keyword name="SET" />
       <keyword name="SHORTCUT" />
       <keyword name="SHOW" />
+      <keyword name="SHOWDROP" />
       <keyword name="SHOWIF" />
       <keyword name="SINGLE" />
       <keyword name="SPLITH" />
