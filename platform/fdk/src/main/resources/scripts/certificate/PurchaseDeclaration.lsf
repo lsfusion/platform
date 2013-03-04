@@ -1,6 +1,6 @@
 MODULE PurchaseDeclaration;
 
-REQUIRE Declaration, PurchaseCertificate;
+REQUIRE Declaration, PurchaseCertificate, Item;
 
 NAMESPACE Purchase;
 
@@ -39,6 +39,7 @@ nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoice
 countryUserInvoiceDetail (userInvoiceDetail) = countrySku(skuUserInvoiceDetail(userInvoiceDetail));
 nameCountryUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countryUserInvoiceDetail(userInvoiceDetail));
 
+UOMUserInvoiceDetail(userInvoiceDetail) = UOMItem(skuUserInvoiceDetail(userInvoiceDetail));
 
 FORM declarationInvoices 'Присоединение накладных'
     OBJECTS d=declaration FIXED PANEL
@@ -68,11 +69,12 @@ showFormDeclarationInvoices 'Присоединить накладные' = ACTI
 } TOOLBAR;
 
 // позиции декларации
-TABLE declarationNameCustomsGroupCountryPrice(declaration, STRING[200], customsGroup, country, NUMERIC[14,2]);
+TABLE declarationNameUOMCustomsGroupCountryPrice(declaration, STRING[200], UOM, customsGroup, country, NUMERIC[14,2]);
 
 quantityDeclarationDetailing 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
                                                BY declarationUserInvoiceDetail(userInvoiceDetail),
                                                   nameCustomsUserInvoiceDetail(userInvoiceDetail),
+                                                  UOMUserInvoiceDetail(userInvoiceDetail),
                                                   customsGroupUserInvoiceDetail(userInvoiceDetail),
                                                   countryUserInvoiceDetail(userInvoiceDetail),
                                                   priceUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
@@ -86,10 +88,13 @@ rateExchangeDeclarationDetail 'Курс' = rateExchangeDeclaration(declarationDe
 
 roundCurrencyDeclarationDetail '' (number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
 
+nameCustomsDeclarationDetail 'Наименование' = DATA STRING[200](declarationDetail);
+
+UOMDeclarationDetail = DATA UOM(declarationDetail);
+shortNameUOMDeclarationDetail 'Ед. изм.' (declarationDetail) = shortName(UOMDeclarationDetail(declarationDetail));
+
 customsGroupDeclarationDetail = DATA customsGroup(declarationDetail);
 codeCustomsGroupDeclarationDetail 'ТН ВЭД' (declarationDetail) = codeCustomsGroup(customsGroupDeclarationDetail(declarationDetail)) MINCHARWIDTH 10 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
-
-nameCustomsDeclarationDetail 'Наименование' = DATA STRING[200](declarationDetail);
 
 countryDeclarationDetail = DATA country(declarationDetail);
 nameCountryDeclarationDetail 'Страна' (declarationDetail) = name(countryDeclarationDetail(declarationDetail));
@@ -230,16 +235,18 @@ setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration)
 };
 
 toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration) {
-    FOR quantityDeclarationDetailing(declaration, customsName, customsGroup, country, price)>0 ADDOBJ dd=declarationDetail DO {
+    FOR quantityDeclarationDetailing(declaration, customsName, UOM, customsGroup, country, price)>0 ADDOBJ dd=declarationDetail DO {
         SET declarationDeclarationDetail(dd) <- declaration;
         SET nameCustomsDeclarationDetail(dd) <- customsName;
+        SET UOMDeclarationDetail(dd) <- UOM;
         SET customsGroupDeclarationDetail(dd) <- customsGroup;
         SET countryDeclarationDetail(dd) <- country;
         SET priceDeclarationDetail(dd) <- price;
 
         SET declarationDetailInvoiceDetail(invoiceDetail) <- dd WHERE declarationUserInvoiceDetail(invoiceDetail) == declaration AND
-            nameCustomsUserInvoiceDetail(invoiceDetail) == customsName AND customsGroupUserInvoiceDetail(invoiceDetail) == customsGroup AND
-            countryUserInvoiceDetail(invoiceDetail) == country AND priceUserInvoiceDetail(invoiceDetail) == price;
+            nameCustomsUserInvoiceDetail(invoiceDetail) == customsName AND UOMUserInvoiceDetail(invoiceDetail) == UOM AND
+            customsGroupUserInvoiceDetail(invoiceDetail) == customsGroup AND countryUserInvoiceDetail(invoiceDetail) == country AND
+            priceUserInvoiceDetail(invoiceDetail) == price;
     };
 
     EXEC setSumDeclarationDetail(declaration);
@@ -268,7 +275,7 @@ EXTEND FORM declaration
     PROPERTIES(id, dd) inInvoiceDetailDeclarationDetail
     PROPERTIES(dd) numberDeclarationDetail
     PROPERTIES(dd) READONLY invoicesDeclarationDetail
-    PROPERTIES(dd) nameCustomsDeclarationDetail, nameCountryDeclarationDetail
+    PROPERTIES(dd) nameCustomsDeclarationDetail, shortNameUOMDeclarationDetail, nameCountryDeclarationDetail
     PROPERTIES(dd) READONLY sumNetWeightDeclarationDetail, sumGrossWeightDeclarationDetail
     PROPERTIES(dd) codeCustomsGroupDeclarationDetail
     PROPERTIES(dd) READONLY quantityDeclarationDetail
