@@ -22,7 +22,7 @@ supplierPriceUserOutputDetail(detail) <- componentsPriceProductDetail(productDet
 retailPriceUserOutputDetail(detail) <- productsPriceProductDetail(productDetailUserOutputDetail(detail))
                   WHEN CHANGED(productDetailUserOutputDetail(detail));
 @defineDocumentInterfaceDetailVAT(output, countryStock, retail, );
-valueRetailVATUserOutputDetail(detail) <- densityPremiumVATComponentsPriceProductDetail(productDetailUserOutputDetail(detail))
+valueRetailVATUserOutputDetail(detail) <- valueVATProductDetail(productDetailUserOutputDetail(detail))
                   WHEN CHANGED(productDetailUserOutputDetail(detail));
 
 
@@ -67,15 +67,15 @@ retailMarkupUserOutputDetail(userOutputDetail) <-[round2(X*100/Y)](retailMarkupS
 @defineDocumentHeaderCreate (order, createPricing, 'Создать акт расценки');
 backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
 
-@defineDocumentHeaderPricingCommittee(order, goodsStock, );
+@defineDocumentHeaderPricingCommittee(order, productsStock, );
 
 //-- Свойства для аггрегированных производств/расценок
 
 componentsSumProductDetail 'Сумма компонентов произведенного изделия' (productDetail)= roundPriceCurrency((componentsPriceProductDetail(productDetail)*outputQuantityProductDetail(productDetail)),currencyProductDetail(productDetail));
 VATMarkupSumProductDetail 'НДС и надбавка' (productDetail) =  outputProductsSumProductDetail(productDetail) (-) componentsSumProductDetail(productDetail);
-retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail)), currencyProductDetail(productDetail));
+retailVATSumProductDetail 'Сумма НДС' (productDetail) = roundPriceCurrency([X*Y/(100+Y)](VATMarkupSumProductDetail(productDetail), valueVATProductDetail(productDetail)), currencyProductDetail(productDetail));
 retailMarkupSumProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumProductDetail(productDetail) (-) retailVATSumProductDetail(productDetail);
-retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail),componentsSumProductDetail(productDetail));
+retailMarkupProductDetail 'Надбавка, %'(productDetail) =[round2(X*100/Y)](retailMarkupSumProductDetail(productDetail), componentsSumProductDetail(productDetail));
 
 pricingCommitteeOutput(output) += pricingCommitteeOrder(orderOrderOutput(output));
 createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
@@ -83,8 +83,8 @@ createPricingOutput(output) += createPricingOrder(orderOrderOutput(output));
 supplierPriceOutputDetail(outputDetail) += componentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
 supplierSumOutputDetail(outputDetail) += componentsSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 
-valueRetailVATOutputDetail(outputDetail) += densityPremiumVATComponentsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));
-retailMarkupOutputDetail(outputDetail) +=retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
+valueRetailVATOutputDetail(outputDetail) += valueVATProductDetail(productDetailOrderOutputDetail(outputDetail));
+retailMarkupOutputDetail(outputDetail) += retailMarkupProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailVATSumOutputDetail(outputDetail)+= retailVATSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailMarkupSumOutputDetail(outputDetail) += retailMarkupSumProductDetail(productDetailOrderOutputDetail(outputDetail));
 retailPriceOutputDetail(outputDetail) += productsPriceProductDetail(productDetailOrderOutputDetail(outputDetail));

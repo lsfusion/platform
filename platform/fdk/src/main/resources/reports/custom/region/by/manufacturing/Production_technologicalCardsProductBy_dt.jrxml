@@ -52,7 +52,7 @@
 	<field name="shortNameUOMComponent" class="java.lang.String"/>
 	<field name="nettoQuantityComponent" class="java.lang.Double"/>
 	<field name="bruttoQuantityComponentDate" class="java.lang.Double"/>
-	<field name="fastComponent" class="java.lang.Double"/>
+	<field name="fatsComponent" class="java.lang.Double"/>
 	<field name="carbohydratesComponent" class="java.lang.Double"/>
 	<field name="proteinsComponent" class="java.lang.Double"/>
 	<field name="energyComponent" class="java.lang.Double"/>
@@ -427,7 +427,7 @@
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{fastComponent}!=null?$F{fastComponent}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{fatsComponent}!=null?$F{fatsComponent}:"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="443" y="0" width="55" height="10" backcolor="#FFFFFF"/>

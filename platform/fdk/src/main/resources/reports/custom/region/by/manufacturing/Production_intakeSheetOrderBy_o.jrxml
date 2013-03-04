@@ -22,9 +22,9 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="o" class="java.lang.Integer"/>
-	<field name="nameGoodsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="nameProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="nameComponentsStockOrder" class="java.lang.String"/>
-	<field name="nameGoodsStockOrder" class="java.lang.String"/>
+	<field name="nameProductsStockOrder" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="seriesObject" class="java.lang.String"/>
 	<field name="seriesNumberObject" class="java.lang.String"/>
@@ -41,8 +41,8 @@
 	<field name="shortNameUOMProductDetail" class="java.lang.String"/>
 	<field name="componentsPriceProductDetail" class="java.lang.Double"/>
 	<field name="productsPriceProductDetail" class="java.lang.Double"/>
-	<field name="UNPGoodsLegalEntityStockOrder" class="java.lang.String"/>
-	<field name="addressGoodsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="UNPProductsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="addressProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>
 	</group>
@@ -814,7 +814,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{UNPGoodsLegalEntityStockOrder}!=null?$F{UNPGoodsLegalEntityStockOrder}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{UNPProductsLegalEntityStockOrder}!=null?$F{UNPProductsLegalEntityStockOrder}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="35" y="130" width="379" height="10"/>
@@ -853,7 +853,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Отдел (отправитель): "+($F{nameGoodsStockOrder}!=null?$F{nameGoodsStockOrder}:"___________________________________________")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Отдел (отправитель): "+($F{nameProductsStockOrder}!=null?$F{nameProductsStockOrder}:"___________________________________________")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="704" y="70" width="43" height="10"/>
@@ -957,8 +957,8 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+($F{nameGoodsLegalEntityStockOrder}!=null?$F{nameGoodsLegalEntityStockOrder}:"___________________________________________")+
-", адрес: "+($F{addressGoodsLegalEntityStockOrder}!=null?$F{addressGoodsLegalEntityStockOrder}:"___________________________________________")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+($F{nameProductsLegalEntityStockOrder}!=null?$F{nameProductsLegalEntityStockOrder}:"___________________________________________")+
+", адрес: "+($F{addressProductsLegalEntityStockOrder}!=null?$F{addressProductsLegalEntityStockOrder}:"___________________________________________")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="622" y="90" width="50" height="20"/>

@@ -22,9 +22,9 @@
 		<paragraph leftIndent="2" rightIndent="2"/>
 	</style>
 	<field name="o" class="java.lang.Integer"/>
-	<field name="nameGoodsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="nameProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="nameComponentsStockOrder" class="java.lang.String"/>
-	<field name="nameGoodsStockOrder" class="java.lang.String"/>
+	<field name="nameProductsStockOrder" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="seriesObject" class="java.lang.String"/>
 	<field name="seriesNumberObject" class="java.lang.String"/>
@@ -35,10 +35,10 @@
 	<field name="cd" class="java.lang.Integer"/>
 	<field name="indexComponentDetail" class="java.lang.Integer"/>
 	<field name="nameComponentComponentDetail" class="java.lang.String"/>
-	<field name="shortNameUOMOverSkuComponentDetail" class="java.lang.String"/>
-	<field name="overQuantityComponentDetail" class="java.lang.Double"/>
-	<field name="overNameSkuComponentDetail" class="java.lang.String"/>
-	<field name="idBarcodeOverSkuComponentDetail" class="java.lang.String"/>
+	<field name="shortNameUOMSkuComponentDetail" class="java.lang.String"/>
+	<field name="quantityComponentDetail" class="java.lang.Double"/>
+	<field name="nameSkuComponentDetail" class="java.lang.String"/>
+	<field name="idBarcodeSkuComponentDetail" class="java.lang.String"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{o})]]></groupExpression>
 	</group>
@@ -125,28 +125,28 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{idBarcodeOverSkuComponentDetail}!=null?$F{idBarcodeOverSkuComponentDetail}:""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{idBarcodeSkuComponentDetail}!=null?$F{idBarcodeSkuComponentDetail}:""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="67" y="0" width="184" height="10"/>
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{overNameSkuComponentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameSkuComponentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="251" y="0" width="42" height="10"/>
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{shortNameUOMOverSkuComponentDetail}!=null?$F{shortNameUOMOverSkuComponentDetail}:""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{shortNameUOMSkuComponentDetail}!=null?$F{shortNameUOMSkuComponentDetail}:""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="293" y="0" width="90" height="10"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{overQuantityComponentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantityComponentDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -1,6 +1,6 @@
 MODULE  CostCardOrderBy;
 
-REQUIRE PricingProductionOutput, LegalEntityBy, BOMFood;
+REQUIRE PricingProductionOutput, LegalEntityBy, BOMNutrition;
 NAMESPACE Production;
 
 // ----------------  Калькуляционная карта ------------------- //
@@ -11,7 +11,7 @@ quantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recBruttoNodeQuantityBOMSkuDa
     BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
 quantityProductDetailSku 'Норма' (productDetail, sku) = quantityBOMSkuOrder(BOMProduct(productProductDetail(productDetail)), sku, orderProductDetail(productDetail));
 
-totalPriceSkuOrder 'Цена компонента' (sku, order) = priceSkuOrder(sku,order) OR priceSubstitutesSkuOrder(sku,order);
+totalPriceSkuOrder 'Цена компонента' (sku, order) = bruttoPriceSkuOrder(sku,order) OR substitutePriceSkuOrder(sku,order);
 totalPremiumPriceSkuOrder 'Цена компонента с надбавкой'(sku, order) = totalPriceSkuOrder(sku,order)*multiplierCalcSkuOrder(sku, order);
 
 quantityInBOMProductDetail 'Кол-во изделий в спец.'(productDetail)= quantityProduct(productProductDetail(productDetail));
@@ -38,14 +38,14 @@ componentsSumInBOMProductDetail 'Сумма компонента для изде
 premiumComponentsSumInBOMProductDetail 'Сумма компонента с надбавкой для изделий в спец.' (productDetail) = calcPremiumComponentsPriceProductDetail(productDetail)*quantityInBOMProductDetail(productDetail);
 //--
 VATMarkupSumInBOMProductDetail 'НДС и надбавка в спец' (productDetail) =  productsSumInBOMProductDetail(productDetail) (-) componentsSumInBOMProductDetail(productDetail);
-retailVATSumInBOMProductDetail 'Сумма НДС в спец' (productDetail) = [X*Y/(100+Y)](VATMarkupSumInBOMProductDetail(productDetail), densityPremiumVATComponentsPriceProductDetail(productDetail));
+retailVATSumInBOMProductDetail 'Сумма НДС в спец' (productDetail) = [X*Y/(100+Y)](VATMarkupSumInBOMProductDetail(productDetail), valueVATProductDetail(productDetail));
 retailMarkupSumInBOMProductDetail 'Сумма надбавки' (productDetail) =  VATMarkupSumInBOMProductDetail(productDetail) (-) retailVATSumInBOMProductDetail(productDetail);
 
 retailMarkupPriceProductDetail 'Цена надбавки (ед.)' (productDetail)= retailMarkupSumInBOMProductDetail(productDetail)/quantityInBOMProductDetail(productDetail);
 retailVATPriceProductDetail 'Цена НДС (ед.)' (productDetail)= retailVATSumInBOMProductDetail(productDetail)/quantityInBOMProductDetail(productDetail);
 
 //--
-@defineDocumentUNPLegalEntity(order, goodsLegalEntityStock, );
+@defineDocumentUNPLegalEntity(order, productsLegalEntityStock, );
 
 //--  Нетто
 
@@ -74,14 +74,14 @@ descriptionBOMProduct 'Спецификация'(product) = descriptionBOM(BOMPr
 FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
     OBJECTS o = order FIXED PANEL
-    PROPERTIES(o) objectClassName, nameGoodsLegalEntityStockOrder, UNPGoodsLegalEntityStockOrder, addressGoodsLegalEntityStockOrder,
-                  nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject, seriesNumberObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, overQuantityComponentDetailOrder
+    PROPERTIES(o) objectClassName, nameProductsLegalEntityStockOrder, UNPProductsLegalEntityStockOrder, addressProductsLegalEntityStockOrder,
+                  nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject, seriesNumberObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, quantityComponentDetailOrder
 
     OBJECTS pd=productDetail
     PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, quantityInBOMProductDetail, shortNameUOMProductProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    componentsPriceProductDetail, componentsSumInBOMProductDetail, premiumComponentsSumInBOMProductDetail, VATSumProductDetail, retailMarkupSumInBOMProductDetail
-    PROPERTIES(pd) markupProductDetail, productsPriceProductDetail, productsSumInBOMProductDetail, densityPremiumVATComponentsPriceProductDetail,
+    PROPERTIES(pd) markupProductDetail, productsPriceProductDetail, productsSumInBOMProductDetail, valueVATProductDetail,
                    retailMarkupPriceProductDetail, retailMarkupSumProductDetail, retailVATPriceProductDetail, retailVATSumInBOMProductDetail, recipesProductDetail
 
     FILTERS orderProductDetail(pd)==o
@@ -98,7 +98,7 @@ printCostCardOrder 'Калькуляционная карта' (order) = ACTION 
 FORM intakeSheetOrderBy 'Заборный лист' PRINT
 
     OBJECTS o = order FIXED PANEL
-    PROPERTIES(o) nameGoodsLegalEntityStockOrder, nameComponentsStockOrder, nameGoodsStockOrder, numberObject, seriesObject, seriesNumberObject,
+    PROPERTIES(o) nameProductsLegalEntityStockOrder, nameComponentsStockOrder, nameProductsStockOrder, numberObject, seriesObject, seriesNumberObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder
 
     OBJECTS pd=productDetail
@@ -127,7 +127,7 @@ FORM technologicalCardsProductBy 'Технологическая карта' PRI
     OBJECTS c = component
     PROPERTIES(c) indexComponent, nameMaterialComponent, idBarcodeSkuComponent, shortNameUOMComponent, nettoQuantityComponent
     PROPERTIES(c,dt) bruttoQuantityComponentDate
-    PROPERTIES(c) fastComponent, carbohydratesComponent, proteinsComponent, energyComponent
+    PROPERTIES(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
     FILTERS       BOMProduct(p) == BOMComponent(c)
 
 ;
@@ -186,7 +186,7 @@ EXTEND FORM orders
 //    OBJECTS c = component
 //    PROPERTIES(c) indexComponent, nameMaterialComponent, idBarcodeSkuComponent, shortNameUOMComponent, nettoQuantityComponent
 //    PROPERTIES(c,dt) bruttoQuantityComponentDate
-//    PROPERTIES(c) fastComponent, carbohydratesComponent, proteinsComponent, energyComponent
+//    PROPERTIES(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
 //    FILTERS       BOMProduct(p) == BOMComponent(c)
 //;
 //printTechnologicalCardBOM 'Технологическая карта'  = ACTION (BOM) {

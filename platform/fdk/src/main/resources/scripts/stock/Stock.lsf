@@ -866,6 +866,7 @@ END
 META defineDocumentInterfaceStock (object, stockClass, stockCaption, prefix)
     @defineDocumentInterfaceHeaderStock(object, stockClass, stockCaption, prefix);
     @defineDocumentDetailStock(object, prefix###stockClass, stockCaption);
+    @defineDocumentDetailStock(user###object, prefix###stockClass, stockCaption);
 END
 
 META defineDocumentDataStock (object, stockClass, stockCaption, prefix)

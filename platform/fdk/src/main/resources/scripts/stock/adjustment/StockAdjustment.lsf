@@ -24,7 +24,6 @@ CLASS userAdjustmentPosted 'Проведенное изменение остат
 @defineDocumentInterfaceNumber(adjustment);
 
 @defineDocumentInterfaceStock (adjustment, stock, 'Склад');
-@defineDocumentDetailStock (userAdjustment, stock, 'Склад');
 @defineDocumentInterfacePosted(adjustment);
 @defineNumeratedObjectDefault(adjustment, 'Нумератор для изменения остатков', 'ИО');
 

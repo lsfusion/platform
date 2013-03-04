@@ -29,9 +29,9 @@
 	</style>
 	<field name="o" class="java.lang.Integer"/>
 	<field name="objectClassName" class="java.lang.String"/>
-	<field name="nameGoodsLegalEntityStockOrder" class="java.lang.String"/>
+	<field name="nameProductsLegalEntityStockOrder" class="java.lang.String"/>
 	<field name="nameComponentsStockOrder" class="java.lang.String"/>
-	<field name="nameGoodsStockOrder" class="java.lang.String"/>
+	<field name="nameProductsStockOrder" class="java.lang.String"/>
 	<field name="nameNumeratorObject" class="java.lang.String"/>
 	<field name="numberObject" class="java.lang.String"/>
 	<field name="seriesObject" class="java.lang.String"/>
@@ -41,7 +41,7 @@
 	<field name="toDateOrder" class="java.util.Date"/>
 	<field name="noteOrder" class="java.lang.String"/>
 	<field name="quantityProductDetailOrder" class="java.lang.Double"/>
-	<field name="overQuantityComponentDetailOrder" class="java.lang.Double"/>
+	<field name="quantityComponentDetailOrder" class="java.lang.Double"/>
 	<field name="pd" class="java.lang.Integer"/>
 	<field name="indexProductDetail" class="java.lang.Integer"/>
 	<field name="nameSkuProductDetail" class="java.lang.String"/>
@@ -54,9 +54,9 @@
 	<field name="markupProductDetail" class="java.lang.Double"/>
 	<field name="productsPriceProductDetail" class="java.lang.Double"/>
 	<field name="productsSumInBOMProductDetail" class="java.lang.Double"/>
-	<field name="densityPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
+	<field name="valueVATProductDetail" class="java.lang.Double"/>
 	<field name="VATSumProductDetail" class="java.lang.Double"/>
-	<field name="calcPremiumVATComponentsPriceProductDetail" class="java.lang.Double"/>
+	<field name="calcPriceVATProductDetail" class="java.lang.Double"/>
 	<field name="premiumComponentsSumInBOMProductDetail" class="java.lang.Double"/>
 	<field name="recipesProductDetail" class="java.lang.String"/>
 	<field name="s" class="java.lang.Integer"/>
@@ -419,7 +419,7 @@
 					<textElement>
 						<font size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{densityPremiumVATComponentsPriceProductDetail}!=null?$F{densityPremiumVATComponentsPriceProductDetail}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{valueVATProductDetail}!=null?$F{valueVATProductDetail}:"")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="297" y="0" width="70" height="12"/>
@@ -667,7 +667,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Компания: "+($F{nameGoodsLegalEntityStockOrder}!=null?$F{nameGoodsLegalEntityStockOrder}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Компания: "+($F{nameProductsLegalEntityStockOrder}!=null?$F{nameProductsLegalEntityStockOrder}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="10" width="165" height="10"/>
@@ -680,7 +680,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Отдел: "+($F{nameGoodsStockOrder}!=null?$F{nameGoodsStockOrder}:"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Отдел: "+($F{nameProductsStockOrder}!=null?$F{nameProductsStockOrder}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="331" y="10" width="55" height="10"/>

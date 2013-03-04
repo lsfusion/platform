@@ -281,6 +281,10 @@ materialComponent = DATA material (component);
 nameMaterialComponent 'Материал' (component) = nameMaterial(materialComponent(component));
 idBarcodeSkuComponent 'Штрих-код' (component)= idBarcodeSku(materialComponent(component));
 
+componentsBOM 'Компоненты' (BOM) = GROUP CONCAT toString255(nameMaterialComponent(component)), ', '
+                                       BY BOMComponent(component)
+                                       ORDER indexComponent(component) MINCHARWIDTH 100 PERSISTENT;
+
 nameComponent 'Компонент' (component) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \' / \' ||  CAST($2 AS TEXT)'](
                                       name(BOMComponent(component)),
                                       nameMaterialComponent(component)) PERSISTENT;
@@ -289,20 +293,21 @@ UOMComponent = DATA UOM (component);
 shortNameUOMComponent 'Ед. изм.' (component) = shortName(UOMComponent(component));
 UOMComponent(component) <- UOMMaterial(materialComponent(component)) WHEN CHANGED (materialComponent(component));
 
+// Кол-во нетто
 @defineDocumentDetailQuantityCustomPrefix (component, netto, ' (нетто)');
 @defineDocumentHeaderQuantityCustomPrefix (BOM, component, netto, ' (нетто компонент)');
 
+// Технология
 technologyComponent = DATA technology (component);
 nameTechnologyComponent 'Технология' (component) = name(technologyComponent(component));
 
+inTechnologyMaterial 'Связь' (technology, material) = GROUP SUM 1 IF dataWastageTechnologyMaterialDate(technology, material, date) BY technology, material;
+
+CONSTRAINT technologyComponent(component) AND NOT inTechnologyMaterial(technologyComponent(component), materialComponent(component))
+    CHECKED BY technologyComponent MESSAGE 'Для компонента выбрана технология, у которой нет значения % потерь для SKU';
+
+// % Потерь
 wastageComponent '% потерь'= DATA NUMERIC[8,3] (component);
-
-wastageComponentDate '% потерь' (component, date) = IF technologyComponent(component) THEN wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), date)
-                                                    ELSE wastageComponent(component) AND date IS DATE;
-curWastageComponent '% потерь' (component) =  wastageComponentDate(component, currentDate());
-
-overCurWastageComponent '% потерь' (component) =  wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate()) OR
-                                                  wastageComponent(component);
 changeWastageComponent = ACTION (component) {
     REQUEST NUMERIC[8,3] INPUT;
 
@@ -314,24 +319,21 @@ changeWastageComponent = ACTION (component) {
 }
 backgroundWastageComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
 
+wastageComponentDate '% потерь' (component, date) = IF technologyComponent(component) THEN wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), date)
+                                                    ELSE wastageComponent(component) AND date IS DATE;
+
+curWastageComponent '% потерь' (component) =  wastageComponentDate(component, currentDate());
+
+overCurWastageComponent '% потерь' (component) =  wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate()) OR
+                                                  wastageComponent(component);
+
+// Кол-во брутто
 
 @defineDocumentDetailQuantityCustomPrefix (component, brutto, ' (брутто)');
 @defineDocumentHeaderQuantityCustomPrefix (BOM, component, brutto, ' (брутто компонент)');
 
-bruttoQuantityComponent(component) <- (nettoQuantityComponent(component)/(1 - (wastageComponent(component)/100))) WHEN CHANGED (wastageComponent(component)) OR
-                                                                                                                       CHANGED (nettoQuantityComponent(component));
-
-inTechnologyMaterial 'Связь' (technology,material) = GROUP SUM 1 IF dataWastageTechnologyMaterialDate(technology, material, date) BY technology, material;
-
-CONSTRAINT technologyComponent(component) AND NOT inTechnologyMaterial(technologyComponent(component),materialComponent(component))
-    CHECKED BY technologyComponent MESSAGE 'Для компонента выбрана технология, у которой нет значения % потерь для SKU';
-
-bruttoQuantityComponentDate(component, date) = IF technologyComponent(component) THEN (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component), materialComponent(component), date)/100)))
-                                                                                 ELSE bruttoQuantityComponent(component) AND date IS DATE;
-curBruttoQuantityComponent 'Кол-во (брутто)' (component) =  bruttoQuantityComponentDate(component, currentDate());
-
-overCurBruttoQuantityComponent 'Кол-во (брутто)' (component) = (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate())/100))) OR
-                                                            bruttoQuantityComponent(component);
+bruttoQuantityComponent(component) <- nettoQuantityComponent(component)/(1 - (wastageComponent(component)/100)) WHEN CHANGED (wastageComponent(component)) OR
+                                                                                                                     CHANGED (nettoQuantityComponent(component));
 changeBruttoQuantityComponent = ACTION (component) {
     REQUEST NUMERIC[14,3] INPUT;
 
@@ -342,6 +344,14 @@ changeBruttoQuantityComponent = ACTION (component) {
     }
 }
 backgroundBruttoQuantityComponent 'Цвет' (component) = RGB(229,229,229) IF technologyComponent(component);
+
+bruttoQuantityComponentDate(component, date) = IF technologyComponent(component) THEN (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component), materialComponent(component), date)/100)))
+                                                                                 ELSE bruttoQuantityComponent(component) AND date IS DATE;
+
+curBruttoQuantityComponent 'Кол-во (брутто)' (component) =  bruttoQuantityComponentDate(component, currentDate());
+
+overCurBruttoQuantityComponent 'Кол-во (брутто)' (component) = (nettoQuantityComponent(component)/(1 - (wastageTechnologyMaterialDate(technologyComponent(component),materialComponent(component), currentDate())/100))) OR
+                                                            bruttoQuantityComponent(component);
 
 FORM components 'Компоненты'
     OBJECTS c=component
@@ -426,7 +436,6 @@ copyBOM 'Копировать' = ACTION (BOM) NEWSESSION {
             SET skuProduct(p) <- skuProduct(product);
             SET quantityProduct(p) <- quantityProduct(product);
             SET pricePercentProduct(p) <- pricePercentProduct(product);
-//            SET UOMProduct(p) <- UOMProduct(product);
         }
 
         FOR BOMComponent(component) == BOM ADDOBJ c=component DO {
@@ -434,7 +443,6 @@ copyBOM 'Копировать' = ACTION (BOM) NEWSESSION {
             SET materialComponent(c) <- materialComponent(component);
             SET nettoQuantityComponent(c) <- nettoQuantityComponent(component);
             SET technologyComponent(c) <- technologyComponent(component);
-//            SET UOMComponent(c) <- UOMComponent(component);
             SET bruttoQuantityComponent(c) <- bruttoQuantityComponent(component);
             SET wastageComponent(c) <- wastageComponent(component);
         }
@@ -502,7 +510,7 @@ DESIGN BOMs FROM DEFAULT {
     }
 }
 
-//--------------------------------Комиссия для акта контрольной проработки----------------------------------//
+//-------------------------------- Комиссия для акта контрольной проработки ----------------------------------//
 CLASS actStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции' : committee;
 
 FORM actStudyOfCulinaryCommittee 'Комиссия для акта контрольной проработки продукции'
@@ -561,7 +569,7 @@ FORM actStudyOfCulinaryCommittees 'Комиссии для акта контро
     DIALOG actStudyOfCulinaryCommittee OBJECT a
 ;
 
-//-----------------Акт контрольной проработки--------------------//
+// ----------------- Акт контрольной проработки-------------------- //
 
 actStudyOfCulinaryCommitteeBOM (BOM) = DATA actStudyOfCulinaryCommittee(BOM);
 nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = commonName(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
@@ -629,19 +637,19 @@ recPricePercentProductSkuDate (product, sku, date) = recPriceCoeffBOMSkuDate (BO
 
 // ----- Рекурсивный расчет потребностей нетто ---------- //
 
-//nettoQuantityBOMMaterial (BOM, material) = GROUP SUM nettoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
-//nettoQuantityBOMSku(BOM, sku) = nettoQuantityBOMMaterial(BOM, sku) AND sku IS sku;
-//
-//nettoQuantityBOMBOM (parent, child) = GROUP MAX nettoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
-//
-//recNettoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM)  STEP 1.00000000000 AND q == $q * nettoQuantityBOMBOM($child, child) CYCLES;
-//recNettoQuantityBOMBOM (parent, child) = GROUP SUM recNettoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
-//
-//recNettoQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);
-//
-//recNettoNodeQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMMaterial(childBOM, material) BY BOM, skuMaterial(material); //](BOM, sku);
+nettoQuantityBOMMaterial (BOM, material) = GROUP SUM nettoQuantityComponent(component) BY BOMComponent(component), materialComponent(component);
+nettoQuantityBOMSku(BOM, sku) = nettoQuantityBOMMaterial(BOM, sku) AND sku IS sku;
 
-recNettoNodeQuantityBOMSku (BOM, sku) =  DATA NUMERIC[14,3] (BOM, sku);   // пока сделал так, потому что очень тормозит.
+nettoQuantityBOMBOM (parent, child) = GROUP MAX nettoQuantityBOMMaterial(BOM, material) / quantityProduct(material) BY BOM, BOMProduct(material);
+
+recNettoQuantityBOMBOMResult (parent, child, q) = RECURSION 1.00000000000 AND q == 1.00000000000 AND child == (parent AS BOM)  STEP 1.00000000000 AND q == $q * nettoQuantityBOMBOM($child, child) CYCLES;
+recNettoQuantityBOMBOM (parent, child) = GROUP SUM recNettoQuantityBOMBOMResult(parent, child, q) * q BY parent, child;
+
+recNettoQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMSku(childBOM, sku) BY BOM, sku; //](BOM, sku);
+
+recNettoNodeQuantityBOMSku (BOM, sku) = GROUP SUM recNettoQuantityBOMBOM(BOM, childBOM) * nettoQuantityBOMMaterial(childBOM, material) BY BOM, skuMaterial(material); //](BOM, sku);
+
+//recNettoNodeQuantityBOMSku (BOM, sku) =  DATA NUMERIC[14,3] (BOM, sku);   // пока сделал так, потому что очень тормозит.
 
 NAVIGATOR {
     manufacturingMasterData {

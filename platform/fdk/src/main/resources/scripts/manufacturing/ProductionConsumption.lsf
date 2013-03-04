@@ -17,7 +17,6 @@ CLASS userConsumptionPosted 'Проведенное списание сырья 
 @defineDocumentInterface(consumption);
 @defineDocumentInterfaceNumber(consumption);
 @defineDocumentInterfaceStock(consumption, stock, 'Склад', );
-@defineDocumentDetailStock(userConsumption, stock, 'Склад');
 @defineDocumentInterfacePosted(consumption);
 
 @defineDocumentInterfaceDescription(consumption, 'Списание сырья');
@@ -30,6 +29,9 @@ CLASS userConsumptionPosted 'Проведенное списание сырья 
 @defineDocumentInterfaceDetailQuantity(consumption);
 
 @defineDocumentInterfaceDetailPrice(consumption); // объявляем цену
+priceListTypeUserConsumptionDetail(detail) <- priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))
+        WHEN CHANGED(priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail)));
+
 @deriveDocumentDetailPricePriceListType (userConsumption, stock); // записываем цену
 
 // суммма
@@ -63,7 +65,7 @@ componentDetailUserConsumptionDetail = DATA componentDetail (userConsumptionDeta
 componentDetailConsumptionDetail(consumptionDetail) += componentDetailUserConsumptionDetail(consumptionDetail);
 
 CONSTRAINT stockConsumptionDetail(detail) != componentsStockComponentDetail(componentDetailUserConsumptionDetail(detail)) OR
-           skuConsumptionDetail(detail) != overSkuComponentDetail(componentDetailUserConsumptionDetail(detail))
+           skuConsumptionDetail(detail) != skuComponentDetail(componentDetailUserConsumptionDetail(detail))
     CHECKED BY componentDetailUserConsumptionDetail
         MESSAGE 'Склад сырья и товар в списании сырья и производственном заказе должны соответствовать друг другу';
 
@@ -77,46 +79,45 @@ ordersConsumption 'Заказы' (consumption) = GROUP CONCAT toString255(descri
                                                 BY consumption
                                                 ORDER order IN orderGroup MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
-consumeComponentDetail 'Кол-во (списано)' (componentDetail) = GROUP SUM quantityConsumptionDetail(consumptionDetail) IF isPostedConsumptionDetail(consumptionDetail)
+consumedComponentDetail 'Кол-во (списано)' (componentDetail) = GROUP SUM quantityConsumptionDetail(consumptionDetail) IF isPostedConsumptionDetail(consumptionDetail)
                                                                    BY componentDetailConsumptionDetail(consumptionDetail) PERSISTENT;
 
-toConsumeComponentDetail 'Не списано' (componentDetail) = overQuantityComponentDetail (componentDetail) (-) consumeComponentDetail(componentDetail);
+toConsumeComponentDetail 'Не списано' (componentDetail) = quantityComponentDetail (componentDetail) (-) consumedComponentDetail(componentDetail);
 
 toConsumeComponentDetailOrder 'Не списано по заказу' (order) =
     GROUP SUM toConsumeComponentDetail(componentDetail) IF toConsumeComponentDetail(componentDetail) > 0
           BY orderComponentDetail(componentDetail);
 
-@defineDocumentDetailQuantityCustomPrefix (componentDetail, bruttoOutput, ' брутто (произведено)');
-@defineDocumentDetailDataSumCustomPrefix (componentDetail, output, ' (произведено)');
+@defineDocumentDetailQuantityCustomPrefix (componentDetail, consumed, ' (произведено)');
+@defineDocumentDetailDataSumCustomPrefix (componentDetail, consumed, ' (произведено)');
 
-quantityOutputSubstitutesComponentDetail 'Кол-во замены (произведено)' (componentDetail) = bruttoOutputQuantityComponentDetail(componentDetail) * multiplierSubstitutesComponentDetail(componentDetail);
-overQuantityOutputComponentDetail 'Кол-во (произведено)' (componentDetail) = bruttoOutputQuantityComponentDetail(componentDetail) OR quantityOutputSubstitutesComponentDetail(componentDetail);
+consumedQuantityComponentDetail(detail) <- quantityComponentDetail(detail) WHEN CHANGED(quantityComponentDetail(detail));
 
-outputSumComponentDetail (detail) <- toNumeric16p2(roundPriceCurrency((priceComponentDetail(detail)* overQuantityOutputComponentDetail(detail)), currencyComponentDetail(detail)))
+consumedSumComponentDetail (detail) <- toNumeric16p2(roundPriceCurrency((priceComponentDetail(detail)* consumedQuantityComponentDetail(detail)), currencyComponentDetail(detail)))
         WHEN CHANGED(priceComponentDetail(detail)) OR
-             CHANGED(overQuantityOutputComponentDetail(detail)) OR
+             CHANGED(consumedQuantityComponentDetail(detail)) OR
              CHANGED(currencyComponentDetail(detail));
 
+// Расчет количеств компонент для произведенных изделий
 quantityOutputProductOrder 'Кол-во изделий в заказе (произведенных)' (product, order) = GROUP SUM outputQuantityProductDetail(productDetail)
     BY productProductDetail(productDetail), orderProductDetail(productDetail);
 
-quantityOutputProductsBOMOrder 'Кол-во спецификаций (произведенных)' (BOM, order) = [GROUP MAX quantityOutputProductOrder(product, order)/ quantityProduct(product)
+quantityOutputBOMOrder 'Кол-во спецификаций (произведенных)' (BOM, order) = [GROUP MAX quantityOutputProductOrder(product, order)/ quantityProduct(product)
     BY BOMProduct(product), order](BOM, order);
 
-recBruttoQuantityOutputOrderSku 'Кол-во для произ-го' (order, sku) = [GROUP SUM quantityOutputProductsBOMOrder(BOM, order) * recBruttoNodeQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku](
+recBruttoQuantityOutputOrderSku 'Кол-во для произ-го' (order, sku) = [GROUP SUM quantityOutputBOMOrder(BOM, order) * recBruttoNodeQuantityBOMSkuDate(BOM, sku, dateOrder(order)) BY order, sku](
     order, sku) AND bruttoQuantitySkuOrder(sku, order);
 
-
 createOutputComponentOrder 'Заполнить кол-во компонентов для произведенных изделий' = ACTION (order)  {
-    FOR recBruttoQuantityOutputOrderSku(order, skuComponentDetail(componentDetail)) == q DO {
-        SET bruttoOutputQuantityComponentDetail(componentDetail) <- q;
+    FOR recBruttoQuantityOutputOrderSku(order, bruttoSkuComponentDetail(componentDetail)) == q DO {
+        SET consumedQuantityComponentDetail(componentDetail) <- q;
     }
 } TOOLBAR;
 
 backgroundConsumptionOrder 'Цвет' (order) = RGB(212, 255, 212) IF order IS order;
 
 EXTEND FORM componentDetails
-            PROPERTIES(d) READONLY toConsumeComponentDetail
+    PROPERTIES(d) READONLY toConsumeComponentDetail
 ;
 EXTEND DESIGN componentDetails {
     main {
@@ -124,24 +125,7 @@ EXTEND DESIGN componentDetails {
     }
 }
 
-//EXTEND FORM order
-////            PROPERTIES(cd) READONLY toConsumeComponentDetail BEFORE priceComponentDetail(cd)
-//            PROPERTIES(cd) BEFORE delete(cd) BACKGROUND backgroundConsumptionOrder(o) bruttoOutputQuantityComponentDetail, quantityOutputSubstitutesComponentDetail READONLY, outputSumComponentDetail
-//            PROPERTIES(o)  TODRAW cd createOutputComponentOrder
-//;
-//EXTEND FORM orders
-////            PROPERTIES(cd) BACKGROUND backgroundConsumptionOrder(o) READONLY toConsumeComponentDetail BEFORE priceComponentDetail(cd),
-//            PROPERTIES(cd) BACKGROUND backgroundConsumptionOrder(o) READONLY bruttoOutputQuantityComponentDetail, quantityOutputSubstitutesComponentDetail, outputSumComponentDetail
-//
-//;
-
-priceListTypeUserConsumptionDetail(detail) <- IF priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail)) THEN
-                                                 priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))
-                                                 ELSE priceListTypeComponentDetail(componentDetailUserConsumptionDetail(detail))
-
-        WHEN CHANGED(priceListTypeUserConsumption(userConsumptionUserConsumptionDetail(detail))) OR
-             CHANGED(componentDetailUserConsumptionDetail(detail));
-//--
+// --- Создание списания на основе заказа ---------------- //
 
 FORM consumptionOrders 'Производственные заказы'
 
@@ -149,8 +133,8 @@ FORM consumptionOrders 'Производственные заказы'
 //    PROPERTIES (s) READONLY name
 
     OBJECTS o = order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, overQuantityComponentDetailOrder,
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
     FILTERS isPostedOrder(o),
             componentsStockOrder(o) == s,
@@ -162,8 +146,8 @@ FORM consumptionOrders 'Производственные заказы'
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
-    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,
-                   shortNameUOMComponentDetail, overQuantityComponentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail,
+                   shortNameUOMComponentDetail, quantityComponentDetail
 
     PROPERTIES(cd) READONLY toConsumeComponentDetail
 
@@ -210,8 +194,8 @@ fillOrderUserConsumption 'Заполнить на основе производ�
         FOR orderComponentDetail(componentDetail) == productionOrder() ADDOBJ d = userConsumptionDetail DO {
             SET userConsumptionUserConsumptionDetail(d) <- userConsumption;
             SET componentDetailUserConsumptionDetail(d) <- componentDetail;
-            SET skuUserConsumptionDetail(d) <- overSkuComponentDetail(componentDetail);
-            SET quantityUserConsumptionDetail (d) <- toConsumeComponentDetail(componentDetail);              // возможно надо overQuantityComponentDetail   ?
+            SET skuUserConsumptionDetail(d) <- skuComponentDetail(componentDetail);
+            SET quantityUserConsumptionDetail (d) <- toConsumeComponentDetail(componentDetail);              // возможно надо quantityComponentDetail   ?
         }
     }
 } IN orderGroup;
@@ -236,7 +220,7 @@ sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailCons
 
 EXTEND FORM order
             PROPERTIES(o)  BACKGROUND backgroundConsumptionOrder(o) createConsumptionOrder
-            PROPERTIES(cd) BEFORE delete(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) bruttoOutputQuantityComponentDetail, quantityOutputSubstitutesComponentDetail READONLY, outputSumComponentDetail
+            PROPERTIES(cd) BEFORE delete(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) consumedQuantityComponentDetail, consumedSumComponentDetail
             PROPERTIES(o)  TODRAW cd createOutputComponentOrder SHOWIF createConsumptionOrder(o)
 ;
 EXTEND DESIGN order {
@@ -250,8 +234,8 @@ EXTEND DESIGN order {
 
 EXTEND FORM orders
             PROPERTIES(o)  READONLY BACKGROUND backgroundConsumptionOrder(o) createConsumptionOrder
-            PROPERTIES(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) READONLY bruttoOutputQuantityComponentDetail,
-                           quantityOutputSubstitutesComponentDetail, outputSumComponentDetail
+            PROPERTIES(cd) BACKGROUND backgroundConsumptionOrder(o) SHOWIF createConsumptionOrder(o) READONLY consumedQuantityComponentDetail,
+                           consumedSumComponentDetail
 ;
 
 CLASS orderConsumption 'Списание сырья на основе заказа' : consumption;
@@ -295,13 +279,11 @@ descriptionConsumption (consumption) += descriptionOrderConsumption(consumption)
 
 
 componentDetailConsumptionDetail (consumptionDetail) += componentDetailOrderConsumptionDetail(consumptionDetail);
-skuConsumptionDetail(consumptionDetail) +=  overSkuComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
-quantityConsumptionDetail(consumptionDetail) += overQuantityOutputComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
-
-priceListTypeConsumptionDetail(consumptionDetail) += priceListTypeComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+skuConsumptionDetail(consumptionDetail) +=  skuComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+quantityConsumptionDetail(consumptionDetail) += consumedQuantityComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
 
 priceConsumptionDetail(consumptionDetail) += priceComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
-sumConsumptionDetail(consumptionDetail) += outputSumComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
+sumConsumptionDetail(consumptionDetail) += consumedSumComponentDetail(componentDetailOrderConsumptionDetail(consumptionDetail));
 
 editConsumption(consumption) += ACTION EXEC editOrder(orderOrderConsumption(consumption));
 
@@ -498,9 +480,3 @@ NAVIGATOR {
         ADD consumptions;
     }
 }
-
-
-
-
-
-

@@ -17,29 +17,30 @@ CLASS userOutputPosted 'Проведенное призводство (поль�
 @defineDocumentInterface(output);
 @defineDocumentInterfaceNumber(output);
 @defineDocumentInterfaceStock(output, stock, 'Склад', );
-@defineDocumentDetailStock(userOutput, stock, 'Склад');
 @defineDocumentInterfacePosted(output);
-
 @defineDocumentInterfaceDescription(output, 'Производство');
 
 @defineDocumentInterfaceCurrency(output);
 @deriveDocumentCurrency(userOutput, stock);
+
 @defineDocumentInterfacePriceListType(output); // объявляем вид цены
 priceListTypeUserOutputDetail(detail) <- priceListTypeUserOutput(userOutputUserOutputDetail(detail))
         WHEN CHANGED(priceListTypeUserOutput(userOutputUserOutputDetail(detail)));
 
 @defineDocumentInterfaceDetailSku(output, sku);
+
 @defineDocumentInterfaceDetailQuantity(output);
 
 @defineDocumentInterfaceDetailPrice(output); // объявляем цену. Записываем цену: см ниже.
 
-expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail); //
-expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
-expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetail);
-
 // суммма
 @defineDocumentInterfaceDetailDataSum(output);
 @deriveDocumentDetailSum(userOutput, quantity);
+
+// сроки годности
+expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail);
+expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
+expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetail);
 
 // кол-во в шапке документа
 @defineDocumentInterfaceHeaderQuantity(output);
@@ -56,10 +57,11 @@ expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetai
 
 editOutput 'Редактировать' = ABSTRACT ACTION (output) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
+// Подбор документа
 @implementDocument(output);
 supplierStockDocument(output) += stockOutput(output);
 
-//--  Связь накладной и поставки
+//--  Связь заказа и акта производства
 
 GROUP orderGroup 'Информация о заказе' : public;
 
@@ -67,7 +69,7 @@ productDetailOutputDetail = ABSTRACT productDetail (outputDetail) PERSISTENT;
 productDetailUserOutputDetail = DATA productDetail (userOutputDetail);
 productDetailOutputDetail(outputDetail) += productDetailUserOutputDetail(outputDetail);
 
-CONSTRAINT stockOutputDetail(detail) != goodsStockProductDetail(productDetailUserOutputDetail(detail)) OR
+CONSTRAINT stockOutputDetail(detail) != productsStockProductDetail(productDetailUserOutputDetail(detail)) OR
            skuOutputDetail(detail) != skuProductDetail(productDetailUserOutputDetail(detail))
     CHECKED BY productDetailUserOutputDetail
         MESSAGE 'Склад ГП и товар в производстве и производственном заказе должны соответствовать друг другу';
@@ -92,7 +94,7 @@ toOutputProductDetailOrder 'Не прозиведено по заказу' (orde
           BY orderProductDetail(productDetail);
 
 EXTEND FORM productDetails
-            PROPERTIES(d) READONLY toOutputProductDetail
+    PROPERTIES(d) READONLY toOutputProductDetail
 ;
 EXTEND DESIGN productDetails {
     main {
@@ -112,14 +114,14 @@ priceUserOutputDetail(detail) <- IF priceListTypeUserOutputDetail(detail) THEN
          CHANGED(dateTimeUserOutputDetail(detail)) OR
          CHANGED(productDetailUserOutputDetail(detail));
 
-//--
+// -- Заполнение на основе производственных заказов ---- //
 
 FORM outputOrders 'Производственные заказы'
 
     OBJECTS s = stock FIXED PANEL
 
     OBJECTS o = order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameGoodsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
     FILTERS isPostedOrder(o),
@@ -132,12 +134,10 @@ FORM outputOrders 'Производственные заказы'
     FILTERS orderProductDetail(pd)==o
 
     OBJECTS cd = componentDetail
-    PROPERTIES(cd) READONLY indexComponentDetail, overNameSkuComponentDetail, nameComponentComponentDetail,
-                   shortNameUOMComponentDetail, overQuantityComponentDetail
+    PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail,
+                   shortNameUOMComponentDetail, quantityComponentDetail
     PROPERTIES(cd) READONLY toOutputProductDetail
     FILTERS orderComponentDetail(cd)==o
-
-
 ;
 
 DESIGN outputOrders FROM DEFAULT {
@@ -199,7 +199,7 @@ sumIncStockDocumentLedger (ledger) += sumOutputDetailOutput(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemOutputDetailOutput(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(ledger);
 
-// Создание аггрегированного списания
+// Создание аггрегированного производства
 
 @defineDocumentHeaderCreate (order, createOutput, 'Создать документ производства');
 @defineDocumentDetailCreateCustom (order, productDetail, createOutput, 'Создать документ производства');
@@ -208,7 +208,8 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(le
 outputQuantityProductDetail(detail) <- quantityProductDetail(detail) WHEN CHANGED(quantityProductDetail(detail));
 
 outputProductsSumProductDetail 'Сумма произведенного изделия' = DATA NUMERIC[16,2] (productDetail);
-outputProductsSumProductDetail(productDetail) <- toNumeric16p2(roundPriceCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
+outputProductsSumProductDetail(productDetail) <-
+    toNumeric16p2(roundPriceCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (outputQuantityProductDetail(productDetail)) OR
          CHANGED (productsPriceProductDetail(productDetail)) OR
          CHANGED(currencyProductDetail(productDetail));
@@ -246,6 +247,8 @@ EXTEND FORM orders
     PROPERTIES(pd) READONLY outputQuantityProductDetail AFTER quantityProductDetail SHOWIF createOutputOrder(o) BACKGROUND backgroundOutputOrder(o)
 ;
 
+// Создание агрегированного документа
+
 CLASS orderOutput 'Производство на основе заказа' : output;
 CLASS orderOutputPosted 'Проведенное производство на основе заказа': orderOutput, postedObject;
 CLASS orderOutputDetail 'Строка производства на основе заказа' : outputDetail;
@@ -266,7 +269,7 @@ dateTimeOrderOutputDetail 'Дата/время' (orderOutputDetail) = dateProduc
 dateOutput(output) += dateOrderOutput(output);
 timeOutput(output) += timeOrderOutput(output);
 
-stockOutput(output) += goodsStockOrder(orderOrderOutput(output));
+stockOutput(output) += productsStockOrder(orderOrderOutput(output));
 isPostedOutput(output) += isPostedOrder(orderOrderOutput(output));
 
 numberOrderOutput 'Номер документа' (orderOutput) = numberObject(orderOrderOutput(orderOutput));
@@ -492,6 +495,3 @@ NAVIGATOR {
         ADD outputs;
     }
 }
-
-
-
