@@ -6,7 +6,14 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
-@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, invoice, i);
+@definePriceListTypeConstraintOperationObject(sale, invoice);
+@defineSupplierCustomerConstraintOperationObject(sale, invoice);
+
+@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
 @defineInvoiceBatch(supplierStock);
 @defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
 
@@ -133,8 +140,3 @@ NAVIGATOR {
     }
 }
 
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(sale, invoice, i);
-@definePriceListTypeConstraintOperationObject(sale, invoice);
-@defineSupplierCustomerConstraintOperationObject(sale, invoice);

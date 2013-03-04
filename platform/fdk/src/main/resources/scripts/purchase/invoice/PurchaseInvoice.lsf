@@ -6,7 +6,15 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
-@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, invoice, i);
+@definePriceListTypeConstraintOperationObject(purchase, invoice);
+@defineSupplierCustomerConstraintOperationObject(purchase, invoice);
+
+//----------------------------------------------- Накладная ---------------------------------------------------//
+@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack, purchaseOperation);
 @defineInvoiceBatch(customerStock);
 
 @defineInvoiceDestination(supplier, customer);
@@ -126,8 +134,3 @@ NAVIGATOR {
     }
 }
 
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(purchase, invoice, i);
-@definePriceListTypeConstraintOperationObject(purchase, invoice);
-@defineSupplierCustomerConstraintOperationObject(purchase, invoice);

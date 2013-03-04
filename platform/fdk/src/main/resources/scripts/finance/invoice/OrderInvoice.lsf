@@ -15,7 +15,7 @@ quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceD
 
 //--  Связь с заказом
 
-META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
+META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operation)
 
     orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
     Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
@@ -59,25 +59,33 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     inOrderSupplierStock (order, supplierStock) = GROUP SUM 1 IF supplierStockOrderDetail(orderDetail) == supplierStock BY orderOrderDetail(orderDetail), supplierStock;
     inOrderSupplier (order, supplier) = GROUP SUM 1 IF legalEntityStock(supplierStockOrderDetail(orderDetail)) == supplier BY orderOrderDetail(orderDetail), supplier;
 
-    FORM invoiceOrders 'Заказы'###sign
-        OBJECTS s = legalEntity FIXED PANEL
-        PROPERTIES (s) READONLY name
-        OBJECTS ss = stock FIXED PANEL
-        PROPERTIES (ss) READONLY name
+    supplierInvoiceOrder = DATA SESSION legalEntity ();
+    nameSupplierInvoiceOrder 'Поставщик' = name(supplierInvoiceOrder());
 
-        OBJECTS c = legalEntity FIXED PANEL
-        PROPERTIES (c) READONLY name
-        OBJECTS cs = stock FIXED PANEL
-        PROPERTIES (cs) READONLY name
+    supplierStockInvoiceOrder = DATA SESSION stock ();
+    nameSupplierStockInvoiceOrder 'Склад поставщика' = name(supplierStockInvoiceOrder());
+
+    CONSTRAINT legalEntityStock(supplierStockInvoiceOrder())!= supplierInvoiceOrder() CHECKED BY supplierStockInvoiceOrder MESSAGE 'Выбран склад не текущего поставщика';
+
+    customerInvoiceOrder = DATA SESSION legalEntity ();
+    nameCustomerInvoiceOrder 'Покупатель' = name(customerInvoiceOrder());
+
+    customerStockInvoiceOrder = DATA SESSION stock ();
+    nameCustomerStockInvoiceOrder 'Склад покупателя' = name(customerStockInvoiceOrder());
+
+    CONSTRAINT legalEntityStock(customerStockInvoiceOrder())!= customerInvoiceOrder() CHECKED BY customerStockInvoiceOrder MESSAGE 'Выбран склад не текущего покупателя';
+
+    FORM invoiceOrders 'Заказы'###sign
+        PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order
         FILTERS isPostedOrder(o),
-                inOrderSupplier(o, s),
-                customerOrder(o) == c,
-                customerStockOrder(o) == cs
+                (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS order AND NOT supplierInvoiceOrder()),
+                customerOrder(o) == customerInvoiceOrder() OR (o IS order AND NOT customerInvoiceOrder()),
+                customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder())
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -102,23 +110,6 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
                 childConstraints = TO THE BOTTOM;
 
-//                NEW headerBox {
-//                    childConstraints = TO THE RIGHT;
-//                    ADD s.box {title = 'Поставщик';};
-//                    ADD c.box {title = 'Покупатель';};
-//                }
-                NEW headerSupplierBox {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    title = 'Поставщик';
-                    ADD s.box;
-                    ADD ss.box;
-                }
-                NEW headerCustomerBox {
-                    childConstraints = TO THE RIGHTBOTTOM;
-                    title = 'Покупатель';
-                    ADD c.box;
-                    ADD cs.box;
-                }
                 ADD o.box;
                 NEW documentDetail {
                     type = TABBED;
@@ -183,6 +174,8 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
         SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
 
+        SET operation###UserInvoice(userInvoice) <- operation###Order(order);
+
         SET noteUserInvoice(userInvoice) <- noteOrder(order);
 
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
@@ -232,11 +225,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     }
     Invoice.createUserInvoicePostedOrder (order) += createUserInvoicePostedOrder(order);
 
+
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
-        FORM invoiceOrders OBJECTS s = supplierUserInvoice(userInvoice), ss = supplierStockUserInvoice(userInvoice),
-                                   c = customerUserInvoice(userInvoice), cs = customerStockUserInvoice(userInvoice) MODAL;
+        FORM invoiceOrders MODAL;
         IF formResult() == formResult.ok THEN {
-            EXEC createDetailUserInvoiceOrder(userInvoice, chosenObject('o'));
+            EXEC fillUserInvoiceOrder(userInvoice, chosenObject('o'));
         }
     } IN orderGroup;
 

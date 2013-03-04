@@ -1,12 +1,12 @@
 MODULE SaleReturnInvoice;
 
-REQUIRE OrderInvoice, SaleReturnOrder, SaleInvoice;
+REQUIRE OrderInvoice, SaleReturnOrder, SaleInvoice, SaleOperation;
 
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
-@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
+@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
