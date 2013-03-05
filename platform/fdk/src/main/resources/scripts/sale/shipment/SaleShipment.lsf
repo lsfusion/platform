@@ -34,6 +34,18 @@ CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(suppl
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся покупателем';
 
+supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userShipment IS userShipment);
+customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countIsCustomerEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userShipment IS userShipment);
+
+supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
+    IF countStocksLegalEntityEmployee (currentUser(), supplierUserShipment(userShipment)) == 1
+        WHEN CHANGED(supplierUserShipment(userShipment));
+customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserShipment(userShipment))
+    IF countStocksLegalEntityEmployee (currentUser(), customerUserShipment(userShipment)) == 1
+        WHEN CHANGED(customerUserShipment(userShipment));
+
 //------------------------------------------------- Операции ------------------------------------------------------//
 
 @defineOperationObject(sale, shipment, s);

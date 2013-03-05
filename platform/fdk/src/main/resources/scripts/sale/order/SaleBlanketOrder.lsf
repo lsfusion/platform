@@ -15,6 +15,13 @@ CONSTRAINT supplierBlanketOrder(blanketOrder) AND NOT isCompanyLegalEntity(suppl
 CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(customerBlanketOrder(blanketOrder))
     CHECKED BY customerBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
 
+supplierBlanketOrder(blanketOrder) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(blanketOrder IS blanketOrder);
+
+supplierStockBlanketOrder(blanketOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierBlanketOrder(blanketOrder))
+    IF countStocksLegalEntityEmployee (currentUser(), supplierBlanketOrder(blanketOrder)) == 1
+        WHEN CHANGED(supplierBlanketOrder(blanketOrder));
+
 //--------------------- Расширяем форму Подбор заказа резервами -------//
 @extendFormDocumentOrderLedgerStock(blanketOrder, blanketOrder, o);
 

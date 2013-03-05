@@ -238,6 +238,45 @@ seekSkuBarcode = ACTION (){
 editSku(sku) += [ACTION EDITFORM item](sku);
 addSku () += [ACTION ADDFORM item]();
 
+
+hasParentGroupGroupTypeItem(group, groupType, item) = isParentGroupGroup(groupGroupTypeSku(groupType, item), group);
+
+//FORM items 'Товары'
+//
+//    OBJECTS gt=groupType FIXED PANEL
+//    PROPERTIES(gt) SELECTOR name
+//
+//    TREE groupTree g=group PARENT parentGroup
+//    PROPERTIES READONLY name(g)
+//    FILTERS groupTypeGroup(g) == gt
+//    ORDER BY name(g)
+//
+//    OBJECTS i=item
+//    PROPERTIES(i) READONLY idBarcodeSku
+//    PROPERTIES(i) ADDFORM, EDITFORM, delete
+//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL DRAWTOTOOLBAR ON CHANGE EXEC seekSkuBarcode()
+//
+//    FILTERS hasParentGroupGroupTypeItem(g, i, gt) OR i IS item AND gt IS groupType AND NOT g
+//    DIALOG item OBJECT i
+//;
+//
+//DESIGN items FROM DEFAULT {
+//    ADD gt.box;
+//    NEW rootContainer {
+//            type = SPLITH;
+//            childConstraints = TO THE RIGHT;
+//            ADD groupTree.tree.box;
+//            ADD i.box {
+//                defaultComponent = TRUE;
+//                fillHorizontal = 4;
+//                PROPERTY(seekBarcode){
+//                    editKey = 'F4';
+//                }
+//            }
+//    }
+//    ADD functions.box;
+//}
+
 FORM items 'Товары'
     TREE treeGroup g=itemGroup PARENT parentItemGroup
     PROPERTIES READONLY name(g)
@@ -682,6 +721,17 @@ replaceItem 'Объединить' = ACTION (item){
     }
 }
 
+changeGroupItem 'Изменить группу' = ACTION (){
+    FORM dialogItemGroups MODAL;
+
+    IF formResult() == formResult.ok THEN {
+        FOR inItem(i) DO{
+            SET itemGroupItem(i) <- chosenObject('g');
+        }
+    }
+}
+
 EXTEND FORM items
     PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem TODRAW i FORCE PANEL TOOLBAR
+    PROPERTIES  changeGroupItem() TODRAW i FORCE PANEL TOOLBAR
 ;

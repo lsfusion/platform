@@ -27,6 +27,12 @@ userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock) PERSISTEN
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
+countStocksLegalEntityEmployee (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivisionOver(employee, stock)
+    BY employee, legalEntity PERSISTENT;
+
+defaultStockEmployeeLegalEntity 'Склад по умолчания' (employee, legalEntity)= GROUP MIN stock IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivisionOver(employee, stock)
+    BY employee, legalEntity PERSISTENT;
+
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
@@ -661,17 +667,17 @@ costOutBalanceBatchStockDateFromTo 'Расход' (batch, stock, dateFrom, dateT
 costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock, dateFrom, dateTo) =
     costBatch(batch) * costOutBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
-// ---------------------------------------------- Доступ ------------------------------------------------- //
+// ---------------------------------- Доступ к складам --------------------------------------------------- //
 
 META extendFormFilterAccess(object, concrete, form, stockProp)
     EXTEND FORM form
     FILTERS
-    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeDivisionEmployee(stockProp###object(concrete), currentUser());
+    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivisionOver(currentUser(),stockProp###object(concrete));
 END
 META extendFormFilterStockAccess(object, concrete, form)
     EXTEND FORM form
     FILTERS
-    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeDivisionEmployee(concrete, currentUser());
+    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivisionOver(currentUser(), concrete);
 END
 META extendFormFilterStockGroupAccess(object, concrete, form, prop)
     EXTEND FORM form

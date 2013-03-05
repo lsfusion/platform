@@ -18,6 +18,18 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(c
 
 @deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
 
+supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userCreditNote IS userCreditNote);
+customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userCreditNote IS userCreditNote);
+
+supplierStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserCreditNote(userCreditNote))
+    IF countStocksLegalEntityEmployee (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
+        WHEN CHANGED(supplierUserCreditNote(userCreditNote));
+customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserCreditNote(userCreditNote))
+    IF countStocksLegalEntityEmployee (currentUser(), customerUserCreditNote(userCreditNote)) == 1
+        WHEN CHANGED(customerUserCreditNote(userCreditNote));
+
 NAVIGATOR {
     purchasePurchaseNavigator {
         ADD creditNotes;

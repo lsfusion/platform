@@ -1,6 +1,6 @@
 MODULE LegalEntity;
 
-REQUIRE System, Historizable, Tax, Country, I18n;
+REQUIRE System, Historizable, Tax, Country, I18n, Employee;
 
 // ----------------------------------- Форма собственности ------------------------------------------ //
 
@@ -23,7 +23,7 @@ FORM ownership 'Форма собственности'
 
 // ----------------------------------- Юридическое лицо --------------------------------- //
 
-CLASS legalEntity 'Организация' : named, taxUnitGroup;
+CLASS legalEntity 'Организация' : named, taxUnitGroup, employeeDivision;
 TABLE legalEntity (legalEntity);
 TABLE legalEntityDate (legalEntity, DATE);
 
@@ -72,7 +72,7 @@ quantityDaysCloseOrdersLegalEntity 'Срок автоматического за
 
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
-CLASS legalEntityGroup 'Группа организаций' : named;
+CLASS legalEntityGroup 'Группа организаций' : named, employeeDivisionGroup;
 
 legalEntityGroupLegalEntity (legalEntity) = DATA legalEntityGroup (legalEntity) PERSISTENT AUTOSET;
 nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
@@ -83,20 +83,25 @@ inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
     UNION OVERRIDE legalEntity IS legalEntity AND NOT legalEntityGroup IS legalEntityGroup,
                    isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity), legalEntityGroup);
 
- FORM legalEntityGroup 'Группа организаций'
-     OBJECTS l = legalEntityGroup FIXED PANEL
-     PROPERTIES(l) name, nameParentLegalEntityGroup
+parentEmployeeDivisionGroup (group) += parentLegalEntityGroup(group);
+employeeDivisionGroupEmployeeDivision (legalEntity) += legalEntityGroupLegalEntity(legalEntity);
 
-     EDIT legalEntityGroup OBJECT l
- ;
+FORM legalEntityGroup 'Группа организаций'
 
- FORM legalEntityGroups 'Группы организаций'
-     TREE legalEntityGroupTree lg = legalEntityGroup PARENT parentLegalEntityGroup
-     PROPERTIES READONLY lgTreeName = name(lg)
-     ORDER BY name(lg)
+    OBJECTS l = legalEntityGroup FIXED PANEL
+    PROPERTIES(l) name, nameParentLegalEntityGroup
 
-     DIALOG legalEntityGroup OBJECT lg
- ;
+    EDIT legalEntityGroup OBJECT l
+;
+
+FORM legalEntityGroups 'Группы организаций'
+
+    TREE legalEntityGroupTree lg = legalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY lgTreeName = name(lg)
+    ORDER BY name(lg)
+
+    DIALOG legalEntityGroup OBJECT lg
+;
 
 // ----------------------------------- Лицензия ------------------------------------------ //
 GROUP licenseGroup 'Лицензионная информация' : base;
@@ -130,6 +135,22 @@ isSellerLegalEntity 'Поставщик или компания' (legalEntity) =
 isBuyerLegalEntity 'Покупатель или компания' (legalEntity) = isCustomerLegalEntity(legalEntity) OR isCompanyLegalEntity(legalEntity);
 
 differentStocksInDetailsLegalEntity 'Разные склады в строках' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
+
+countIsSupplierEntityEmployee (employee)= GROUP SUM 1 IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+countIsCompanyEntityEmployee (employee)= GROUP SUM 1 IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+countIsCustomerEntityEmployee (employee)= GROUP SUM 1 IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+
+
+defaultSupplierEmployee 'Поставщик по умолчания' (employee)= GROUP MIN legalEntity IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+defaultCompanyEmployee 'Компания по умолчания' (employee)= GROUP MIN legalEntity IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+defaultCustomerEmployee 'Покупатель по умолчания' (employee)= GROUP MIN legalEntity IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
+    BY employee PERSISTENT;
+
 
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 

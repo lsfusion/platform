@@ -33,6 +33,18 @@ CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(suppli
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся компанией';
 
+supplierUserInvoice(userInvoice) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userInvoice IS userInvoice);
+customerUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userInvoice IS userInvoice);
+
+supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
+    IF countStocksLegalEntityEmployee (currentUser(), supplierUserInvoice(userInvoice)) == 1
+        WHEN CHANGED(supplierUserInvoice(userInvoice));
+customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserInvoice(userInvoice))
+    IF countStocksLegalEntityEmployee (currentUser(), customerUserInvoice(userInvoice)) == 1
+        WHEN CHANGED(customerUserInvoice(userInvoice));
+
 @defineDocumentPackageSku(userInvoice, sku, customerStock);
 @extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showPurchasePack);
 

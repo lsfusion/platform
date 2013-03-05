@@ -81,7 +81,7 @@ FORM employee 'Сотрудник'
     PROPERTIES(e, dg) accessEmployeeEmployeeDivisionGroupOver
 
     OBJECTS           d=employeeDivision
-    PROPERTIES(d)     name
+    PROPERTIES(d)     READONLY name
     PROPERTIES(d, e)  inEmployeeDivisionEmployee
     PROPERTIES(e, d)  accessEmployeeEmployeeDivisionOver
 
@@ -136,8 +136,7 @@ FORM employees 'Сотрудники'
 
     OBJECTS dd=employeeDivision
     PROPERTIES READONLY nameDD=name(dd)
-    FILTERS accessEmployeeDivisionEmployee(dd, e)
-
+    FILTERS accessEmployeeEmployeeDivisionOver(e,dd)
 
 ;
 
