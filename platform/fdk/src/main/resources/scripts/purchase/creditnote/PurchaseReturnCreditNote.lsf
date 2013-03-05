@@ -5,7 +5,6 @@ REQUIRE CreditNote, PurchaseReturnShipment
 
 NAMESPACE PurchaseReturn;
 
-
 //----------------------------------------------- Акт ---------------------------------------------------//
 
 @defineCreditNote(' (закупка-возврат)', customerStock);
@@ -32,3 +31,7 @@ NAVIGATOR {
         ADD creditNotes;
     }
 }
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);

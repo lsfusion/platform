@@ -49,3 +49,13 @@ NAVIGATOR {
         ADD shipments;
     }
 }
+
+//------------------------------------------------- Операции ------------------------------------------------------//
+
+@defineOperationObject(sale, shipment, s);
+@defineSupplierCustomerConstraintOperationObject(sale, shipment);
+
+//------------------------------ Создание аггрегированных объектов через операции ---------------------------------//
+
+createShipmentUserInvoice(invoice) <- createShipmentSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));

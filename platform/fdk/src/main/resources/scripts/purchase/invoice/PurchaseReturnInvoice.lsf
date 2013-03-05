@@ -73,3 +73,9 @@ NAVIGATOR {
         ADD invoices;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, invoice, i);
+@definePriceListTypeConstraintOperationObject(purchase, invoice);
+@defineSupplierCustomerConstraintOperationObject(purchase, invoice);

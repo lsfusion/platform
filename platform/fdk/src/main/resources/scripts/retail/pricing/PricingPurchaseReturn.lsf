@@ -25,4 +25,4 @@ isReturnPricing(pricing) +=  pricing IS invoicePricing;
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-//@deriveDocumentHeaderCreate(userInvoice, createRepricing, purchase);
+@deriveDocumentHeaderCreate(userInvoice, createPricing, purchase);

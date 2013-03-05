@@ -1,6 +1,6 @@
 MODULE SaleReturnOrder;
 
-REQUIRE Order, SaleShipment;
+REQUIRE Order, SaleShipment, SaleOperation;
 
 NAMESPACE SaleReturn;
 
@@ -60,3 +60,9 @@ NAVIGATOR {
         ADD orders;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, order, o);
+@definePriceListTypeConstraintOperationObject(sale, order);
+@defineSupplierCustomerConstraintOperationObject(sale, order);

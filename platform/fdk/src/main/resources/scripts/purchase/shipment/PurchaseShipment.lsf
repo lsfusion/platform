@@ -96,6 +96,12 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
     IF countStocksLegalEntityEmployee (currentUser(), customerUserShipment(userShipment)) == 1
         WHEN CHANGED(customerUserShipment(userShipment));
 
+NAVIGATOR {
+    purchasePurchaseNavigator {
+        ADD shipments;
+    }
+}
+
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineOperationObject(purchase, shipment, s);
@@ -105,9 +111,3 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
 
 createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
     WHEN CHANGED(purchaseOperationUserInvoice(invoice));
-
-NAVIGATOR {
-    purchasePurchaseNavigator {
-        ADD shipments;
-    }
-}

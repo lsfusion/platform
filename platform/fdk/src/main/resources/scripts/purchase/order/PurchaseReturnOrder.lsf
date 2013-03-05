@@ -1,6 +1,6 @@
 MODULE PurchaseReturnOrder;
 
-REQUIRE Order, PurchaseShipment;
+REQUIRE Order, PurchaseShipment, PurchaseOperation;
 
 NAMESPACE PurchaseReturn;
 
@@ -60,3 +60,9 @@ NAVIGATOR {
         ADD orders;
     }
 }
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, order, o);
+@definePriceListTypeConstraintOperationObject(purchase, order);
+@defineSupplierCustomerConstraintOperationObject(purchase, order);

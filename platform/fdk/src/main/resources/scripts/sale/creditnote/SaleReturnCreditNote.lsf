@@ -32,3 +32,7 @@ NAVIGATOR {
         ADD creditNotes;
     }
 }
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createCreditNote, sale);
