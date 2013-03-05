@@ -1243,7 +1243,7 @@ END
 // Изменение цены без НДС
 META defineDocumentDetailPriceVATOnChangeCustom (detail)
     changePrice###detail (detail) = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
+        REQUEST NUMERIC[14,2] INPUT;
         IF requestedNumeric() THEN {
             IF rangeTypeRange(VAT###detail(detail)) == rangeType.units THEN {
                 SET price###detail (detail) <- requestedNumeric();
@@ -1252,6 +1252,9 @@ META defineDocumentDetailPriceVATOnChangeCustom (detail)
                 SET price###detail (detail) <- requestedNumeric();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
             }
+        } ELSE {
+            SET price###detail (detail) <- NULL;
+            SET invoicePrice###detail (detail) <- NULL;
         }
     }
 END
@@ -1263,15 +1266,19 @@ END
 // Изменение щкалы НДС
 META defineDocumentDetailNumberVATOnChangeCustom (detail, stockProp)
     changeNumberVAT###detail (detail) = ACTION (detail) {
-        FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL;
+        REQUEST OBJECT r
+            FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL SHOWDROP;
         IF formResult() == formResult.ok THEN {
             IF rangeTypeRange(chosenObject('r')) == rangeType.units THEN {
-                SET VAT###detail (detail) <- chosenObject('r');
+                SET VAT###detail (detail) <- requestedObject();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
             } ELSE {
-                SET VAT###detail (detail) <- chosenObject('r');
+                SET VAT###detail (detail) <- requestedObject();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
             }
+        } ELSE IF formResult() == formResult.drop THEN {
+            SET VAT###detail(detail) <- NULL;
+            SET invoicePrice###detail(detail) <- price###detail (detail);
         }
     }
 END
@@ -1303,7 +1310,7 @@ END
 // Изменение цены с НДС
 META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
     changeInvoicePrice###detail (detail) = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
+        REQUEST NUMERIC[14,2] INPUT;
         IF requestedNumeric() THEN {
             IF rangeTypeRange(VAT###detail(detail)) == rangeType.units THEN {
                 SET invoicePrice###detail (detail) <- requestedNumeric();
@@ -1312,6 +1319,9 @@ META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
                 SET invoicePrice###detail (detail) <- requestedNumeric();
                 SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
             }
+        } ELSE {
+            SET price###detail (detail) <- NULL;
+            SET invoicePrice###detail (detail) <- NULL;
         }
     }
 END

@@ -467,17 +467,21 @@ META defineInvoiceBatch(stockProp)
     //@deriveDocumentDetailPriceBatchPriceListType(userInvoice, stockProp);
     @deriveDocumentDetailPricePriceListTypeVATBatch(userInvoice, stockProp);
 
-    batchDialogUserInvoiceDetail = ACTION (userInvoiceDetail) {
-        FORM dialogBatch OBJECTS st = stockProp###userInvoiceDetail(userInvoiceDetail), t = dateTimeUserInvoiceDetail(userInvoiceDetail),
-        sk = skuUserInvoiceDetail(userInvoiceDetail) MODAL;
+    changeBatchUserInvoiceDetail = ACTION (userInvoiceDetail) {
+        FORM dialogBatch OBJECTS st = stockProp###userInvoiceDetail(userInvoiceDetail),
+                                 t = dateTimeUserInvoiceDetail(userInvoiceDetail),
+                                 sk = skuUserInvoiceDetail(userInvoiceDetail) MODAL SHOWDROP;
 
         IF formResult() == formResult.ok THEN {
             SET batchUserInvoiceDetail(userInvoiceDetail) <- chosenObject('bt');
+        } ELSE IF formResult() == formResult.drop THEN {
+            SET batchUserInvoiceDetail(userInvoiceDetail) <- NULL;
         }
+
     };
 
     EXTEND FORM userInvoice
-        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC batchDialogUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
+        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
         HINTTABLE LIST batchUserInvoiceDetail
     ;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;

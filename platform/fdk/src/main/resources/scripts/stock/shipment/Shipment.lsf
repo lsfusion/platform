@@ -721,16 +721,19 @@ END
 META defineShipmentBatch(stockProp)
     @defineDocumentInterfaceDetailBatch(shipment, batch);
 
-    batchDialogUserShipmentDetail = ACTION (userShipmentDetail) {
-        FORM dialogBatch OBJECTS st = stockProp###userShipmentDetail(userShipmentDetail), t = dateTimeUserShipmentDetail(userShipmentDetail),
-        sk = skuUserShipmentDetail(userShipmentDetail) MODAL;
+    changeBatchUserShipmentDetail = ACTION (userShipmentDetail) {
+        FORM dialogBatch OBJECTS st = stockProp###userShipmentDetail(userShipmentDetail),
+                                 t = dateTimeUserShipmentDetail(userShipmentDetail),
+                                 sk = skuUserShipmentDetail(userShipmentDetail) MODAL SHOWDROP;
 
         IF formResult() == formResult.ok THEN {
             SET batchUserShipmentDetail(userShipmentDetail) <- chosenObject('bt');
+        } ELSE IF formResult() == formResult.drop THEN {
+            SET batchUserShipmentDetail(userShipmentDetail) <- NULL;
         }
-    };
+    }
 
-    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE EXEC batchDialogUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE EXEC changeBatchUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
     EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
     EXTEND FORM shipmentInvoices
         PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
