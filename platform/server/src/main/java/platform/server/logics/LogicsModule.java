@@ -2173,7 +2173,7 @@ public abstract class LogicsModule {
             PropertyInterface genInterface = new PropertyInterface();
             ImSet<PropertyInterface> setInterfaces = SetFact.toExclSet(genInterface, addedInterface);
             mList.add(createSetAction(setInterfaces, lp.getImplement(addedInterface), genInterface));
-            mInnerInterfaces.add(genInterface);
+            mInnerInterfaces.exclAdd(genInterface);
 
             ValueClass valueClass = lp.property.getValueClass();
             if(valueClass instanceof CustomClass) {

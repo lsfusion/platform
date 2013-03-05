@@ -67,7 +67,7 @@ public class SetFact {
     public static <K> ImOrderSet<K> toOrderExclSet(int size, GetIndex<K> getter) {
         MOrderExclSet<K> mSet = SetFact.mOrderExclSet(size);
         for(int i=0;i<size;i++)
-            mSet.add(getter.getMapValue(i));
+            mSet.exclAdd(getter.getMapValue(i));
         return mSet.immutableOrder();
     }
 
@@ -261,7 +261,7 @@ public class SetFact {
             return new HOrderSet<K>((HOrderSet<K>)set);
 
         MOrderExclSet<K> mSet = SetFact.mOrderExclSet();
-        mSet.addAll(set);
+        mSet.exclAddAll(set);
         return mSet;
     }
 
@@ -347,7 +347,7 @@ public class SetFact {
     public static <T> ImOrderSet<T> fromJavaOrderSet(List<T> set) {
         MOrderExclSet<T> mSet = SetFact.mOrderExclSet(set.size());
         for(T element : set)
-            mSet.add(element);
+            mSet.exclAdd(element);
         return mSet.immutableOrder();
     }
 }

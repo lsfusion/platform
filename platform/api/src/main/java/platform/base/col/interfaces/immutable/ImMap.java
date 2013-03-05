@@ -93,6 +93,8 @@ public interface ImMap<K, V> {
     <M> ImRevMap<K,M> mapRevValues(GetKeyValue<M,K, V> getter);
     <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
 
+    <M> ImSet<M> mapMergeSetValues(GetKeyValue<M, K, V> getter);
+
     <M> ImMap<M,V> mapKeys(GetValue<M,K> getter);
 
     <M> ImCol<M> mapColValues(GetKeyValue<M, K, V> getter);
@@ -102,7 +104,8 @@ public interface ImMap<K, V> {
     String toString(String conc, String delimiter);
     String toString(GetKeyValue<String, K, V> getter, String delimiter);
 
-    ImOrderMap<K, V> sort(Comparator<K> comparator); // natural ordering
+    ImOrderMap<K, V> sort(Comparator<K> comparator);
+    ImOrderMap<K, V> sort();
 
     Map<K, V> toJavaMap();
     

@@ -97,10 +97,6 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return !(value != null && !fitClass(value, valueClass)) && fitInterfaceClasses(mapValues);
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return SetFact.EMPTY();
-    }
-
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {
         ImCol<Pair<Property<?>, LinkType>> actionChangeProps = getActionChangeProps(); // чтобы обnull'ить использование

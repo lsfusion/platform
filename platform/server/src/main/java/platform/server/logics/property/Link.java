@@ -1,6 +1,8 @@
 package platform.server.logics.property;
 
-public class Link {
+import platform.base.TwinImmutableObject;
+
+public class Link extends TwinImmutableObject {
 
     public final Property from;
     public final Property to;
@@ -17,11 +19,11 @@ public class Link {
         return from + " " + type + " " + to;
     }
 
-    public boolean equals(Object o) {
-        return this == o || o instanceof Link && from.equals(((Link) o).from) && to.equals(((Link) o).to) && type == ((Link) o).type;
+    public boolean twins(TwinImmutableObject o) {
+        return from.equals(((Link) o).from) && to.equals(((Link) o).to) && type == ((Link) o).type;
     }
 
-    public int hashCode() {
+    public int immutableHashCode() {
         return 31 * (31 * from.hashCode() + to.hashCode()) + type.hashCode();
     }
 }

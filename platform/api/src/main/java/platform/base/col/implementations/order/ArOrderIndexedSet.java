@@ -42,6 +42,9 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         throw new UnsupportedOperationException();
     }
 
+    public void exclAdd(K key) {
+        throw new UnsupportedOperationException();
+    }
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
         return new ArOrderIndexedMap<K, M>(this);
     }

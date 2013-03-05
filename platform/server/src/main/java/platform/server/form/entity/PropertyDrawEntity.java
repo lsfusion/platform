@@ -77,7 +77,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
         assert !finalizedColumnGroupObjects;
-        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).add(columnGroupObject);
+        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
     }
 
 

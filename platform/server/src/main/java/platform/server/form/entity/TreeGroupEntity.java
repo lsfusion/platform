@@ -48,7 +48,7 @@ public class TreeGroupEntity extends IdentityObject implements ServerIdentitySer
     public void add(GroupObjectEntity group) {
         assert !finalizedGroups;
         group.treeGroup = this;
-        ((MOrderExclSet<GroupObjectEntity>)groups).add(group);
+        ((MOrderExclSet<GroupObjectEntity>)groups).exclAdd(group);
     }
     public void setGroups(ImOrderSet<GroupObjectEntity> groups) {
         assert !finalizedGroups;

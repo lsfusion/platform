@@ -12,7 +12,6 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
@@ -124,7 +123,4 @@ public class ObjectType extends AbstractType<Integer> {
         return baseClass.getUpSet();
     }
 
-    public Stat getDefaultStat() {
-        return Stat.DEFAULT;
-    }
 }

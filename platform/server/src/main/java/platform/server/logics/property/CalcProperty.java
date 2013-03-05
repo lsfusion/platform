@@ -400,6 +400,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
     }
 
+    // возвращает от чего "зависят" изменения - с callback'ов, должен коррелировать с getDepends(Rec), который должен включать в себя все calculateUsedChanges
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+        return SetFact.EMPTY();
+    }
+
     public ImSet<CalcProperty> getDepends(boolean events) {
         MSet<CalcProperty> mDepends = SetFact.mSet();
         fillDepends(mDepends, events);
@@ -440,9 +445,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean hasChanges(StructChanges propChanges, boolean cascade) {
         return propChanges.hasChanges(getUsedChanges(propChanges, cascade));
     }
-
-    // возвращает от чего "зависят" изменения - с callback'ов
-    public abstract ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade);
 
     public ImSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade) {
         if(propChanges.isEmpty()) // чтобы рекурсию разбить
@@ -866,6 +868,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public void prereadCaches() {
+        getRecDepends();
         getClassWhere();
         getClassWhere(true);
         if(isFull())

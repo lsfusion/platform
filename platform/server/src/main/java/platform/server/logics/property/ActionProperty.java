@@ -244,6 +244,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public void prereadCaches() {
         compile();
+        getInterfaceClasses();
+        getInterfaceClasses(true);
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException;

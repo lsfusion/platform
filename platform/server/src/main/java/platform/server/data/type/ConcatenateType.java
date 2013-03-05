@@ -14,7 +14,6 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
@@ -201,12 +200,5 @@ public class ConcatenateType extends AbstractType<byte[]> {
     @Override
     public int hashCode() {
         return Arrays.hashCode(types);
-    }
-
-    public Stat getDefaultStat() {
-        Stat result = Stat.ONE;
-        for(Type type : types)
-            result = result.mult(type.getDefaultStat());
-        return result;
     }
 }

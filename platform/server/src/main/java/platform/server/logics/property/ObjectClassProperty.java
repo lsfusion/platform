@@ -35,10 +35,6 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
         finalizeInit();
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return SetFact.EMPTY();
-    }
-
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return joinImplement.singleValue().classExpr(baseClass);
     }

@@ -1291,7 +1291,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         Map<Integer, Integer> usedToResult = new HashMap<Integer, Integer>();
         for (int i = 0; i < usedParams.size(); i++) {
             if (!context.get(usedParams.get(i)).startsWith("$")) {
-                mMainParams.add(i);
+                mMainParams.exclAdd(i);
                 usedToResult.put(usedParams.get(i), i);
             }
         }

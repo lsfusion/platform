@@ -196,21 +196,23 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes.or(orClasses.first), orPropertyClasses);
     }
 
-    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) {
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, final ImMap<PropertyField, ObjectValue> propFields) {
+        return orFieldsClassWheres(DataObject.getMapClasses(keyFields), ObjectValue.getMapClasses(propFields), classes, propertyClasses);
+    }
 
-        final ImMap<KeyField, ConcreteClass> insertKeyClasses = DataObject.getMapClasses(keyFields);
-        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propFields.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ObjectValue>() {
-            public ClassWhere<Field> getMapValue(PropertyField propField, ObjectValue propValue) {
-                ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propField);
-                assert existedPropertyClasses != null;
+    public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(final ImMap<KeyField, ConcreteClass> keyFields, final ImMap<PropertyField, ConcreteClass> propFields, ClassWhere<KeyField> classes, final ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
 
-                if (propValue instanceof DataObject)
+        assert propertyClasses.keys().containsAll(propFields.keys());
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
+            public ClassWhere<Field> getMapValue(PropertyField propField, ClassWhere<Field> existedPropertyClasses) {
+                ConcreteClass propClass = propFields.get(propField);
+                if (propClass != null)
                     existedPropertyClasses = existedPropertyClasses.or(new ClassWhere<Field>(
-                            MapFact.addExcl(insertKeyClasses, propField, ((DataObject) propValue).objectClass)));
+                            MapFact.addExcl(keyFields, propField, propClass)));
                 return existedPropertyClasses;
             }});
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(
-                classes.or(new ClassWhere<KeyField>(insertKeyClasses)), orPropertyClasses);
+                classes.or(new ClassWhere<KeyField>(keyFields)), orPropertyClasses);
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> andFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) {

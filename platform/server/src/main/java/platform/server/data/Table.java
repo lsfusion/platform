@@ -154,7 +154,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         int keysNum = inStream.readInt();
         MOrderExclSet<KeyField> mKeys = SetFact.mOrderExclSet(keysNum); // десериализация, поэтому порядок важен
         for(int i=0;i<keysNum;i++)
-            mKeys.add((KeyField) Field.deserialize(inStream, version));
+            mKeys.exclAdd((KeyField) Field.deserialize(inStream, version));
         keys = mKeys.immutableOrder();
         int propNum = inStream.readInt();
         MExclSet<PropertyField> mProperties = SetFact.mExclSet(propNum);

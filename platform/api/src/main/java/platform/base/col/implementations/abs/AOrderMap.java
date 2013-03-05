@@ -130,7 +130,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     public <M> ImOrderSet<M> mapOrderSetValues(GetKeyValue<M, K, V> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(getKey(i), getValue(i)));
+            mResult.exclAdd(getter.getMapValue(getKey(i), getValue(i)));
         return mResult.immutableOrder();
     }
 
@@ -212,7 +212,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     public ImOrderSet<K> keyOrderSet() {
         MOrderExclSet<K> mList = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mList.add(getKey(i));
+            mList.exclAdd(getKey(i));
         return mList.immutableOrder();
     }
 
@@ -266,7 +266,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
                     groupList = SetFact.mOrderExclSetMax(size);
                     mResult.exclAdd(group, groupList);
                 }
-                groupList.add(key);
+                groupList.exclAdd(key);
             }
         }
         return MapFact.immutableOrder(mResult);

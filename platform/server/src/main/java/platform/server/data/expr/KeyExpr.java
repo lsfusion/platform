@@ -96,11 +96,13 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
     }
 
     public Stat getStatValue(KeyStat keyStat) {
-        return FormulaExpr.getStatValue(this, keyStat);
+        return Stat.ALOT; // временный фикс, так как при других формулах
+//        return FormulaExpr.getStatValue(this, keyStat);
     }
 
     public StatKeys<Object> getStatKeys(KeyStat keyStat) {
-        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
+        return new StatKeys<Object>(SetFact.EMPTY(), Stat.ALOT);
+//        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
     }
 
     public InnerBaseJoin<?> getBaseJoin() {

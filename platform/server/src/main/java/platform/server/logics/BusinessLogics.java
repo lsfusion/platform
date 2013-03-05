@@ -14,11 +14,9 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.HSet;
 import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.MCol;
-import platform.base.col.interfaces.mutable.MExclMap;
-import platform.base.col.interfaces.mutable.MOrderSet;
-import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
@@ -70,6 +68,7 @@ import platform.server.mail.NotificationActionProperty;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 
+import java.awt.*;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -78,6 +77,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -296,7 +296,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    private ImRevMap<String, Property> getSIDProperties() {
+        return getProperties().mapRevKeys(new GetValue<String, Property>() {
+            public String getMapValue(Property value) {
+                return value.getSID();
+            }});
+    }
+
     private void applyDefaultPolicy(User user) {
+        ImRevMap<String, Property> sidProperties = getSIDProperties();
+
         //сначала политика по умолчанию из кода
         user.addSecurityPolicy(policyManager.defaultSecurityPolicy);
         //затем политика по умолчанию из визуальной настройки
@@ -331,7 +340,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             ImCol<ImMap<String, Object>> propertyValues = qp.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : propertyValues) {
-                Property prop = getProperty(((String) valueMap.get("sid")).trim());
+                Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbidView") != null)
                     policy.property.view.deny(prop);
                 else if (valueMap.get("permitView") != null)
@@ -349,6 +358,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void applyFormDefinedUserPolicy(User user) {
+        ImRevMap<String, Property> sidProperties = getSIDProperties();
+
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
             DataSession session = createSession();
@@ -411,7 +422,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session.sql).values();
             for (ImMap<String, Object> valueMap : propValues) {
-                Property prop = getProperty(((String) valueMap.get("sid")).trim());
+                Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbidView") != null)
                     policy.property.view.deny(prop);
                 else if (valueMap.get("permitView") != null)
@@ -1242,7 +1253,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && property.isFull();
+        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || property.isFull());
     }
 
     private void synchronizeProperties() {
@@ -1410,8 +1421,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
 
     Integer getNumberInListOfChildren(AbstractNode abstractNode) {
+        Set<AbstractNode> siblings = abstractNode.getParent().children;
+        if(abstractNode instanceof Property && siblings.size() > 20) // оптимизация
+            return abstractNode.getParent().getIndexedPropChildren().get(((Property) abstractNode).getSID());
+
         int counter = 0;
-        for (AbstractNode node : abstractNode.getParent().children) {
+        for (AbstractNode node : siblings) {
             counter++;
             if (abstractNode instanceof Property) {
                 if (node instanceof Property)
@@ -1630,7 +1645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.rootGroup.getParentGroups();
     }
 
-    public Iterable<Property> getPropertyList() {
+    public ImOrderSet<Property> getPropertyList() {
         return getPropertyList(false);
     }
 
@@ -1669,7 +1684,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, List<Property> result) {
+    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult) {
         HSet<Property> proceeded;
 
         List<Property> order = new ArrayList<Property>();
@@ -1690,19 +1705,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 goUp(orderProperty, linksMap, proceeded, minLink, innerComponent);
                 assert innerComponent.size > 0;
                 if (innerComponent.size == 1) // если цикла нет все ОК
-                    result.add(innerComponent.single());
+                    mResult.exclAdd(innerComponent.single());
                 else { // нашли цикл
                     removedLinks.exclAdd(minLink.result);
 
                     if (minLink.result.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
-                        List<Property> cycle = new ArrayList<Property>();
-                        buildList(innerComponent, null, removedLinks, cycle);
+                        MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
+                        buildList(innerComponent, null, removedLinks, mCycle);
+                        ImOrderSet<Property> cycle = mCycle.immutableOrder();
+
                         String print = "";
                         for (Property property : cycle)
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
                         throw new RuntimeException(ServerResourceBundle.getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
                     }
-                    buildList(innerComponent, null, removedLinks, result);
+                    buildList(innerComponent, null, removedLinks, mResult);
                 }
                 proceeded.exclAddAll(innerComponent);
             }
@@ -1769,7 +1786,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    public List<Property> getPropertyList(boolean onlyCheck) {
+    public ImOrderSet<Property> getPropertyList(boolean onlyCheck) {
         // жестковато тут конечно написано, но пока не сильно времени жрет
 
         // сначала бежим по Action'ам с cancel'ами
@@ -1781,29 +1798,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             else
                 rest.add(property);
 
-        List<Property> cancelResult = new ArrayList<Property>();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), cancelResult);
+        MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
+        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult);
+        ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
         if (onlyCheck)
-            return BaseUtils.reverse(cancelResult);
+            return cancelResult.reverseOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
-        List<Property> restResult = new ArrayList<Property>();
+        MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
         HSet<Property> removed = new HSet<Property>();
         removed.addAll(rest.remove(proceeded));
-        buildList(removed, proceeded, new HSet<Link>(), restResult); // потом этот cast уберем
+        buildList(removed, proceeded, new HSet<Link>(), mRestResult); // потом этот cast уберем
+        ImOrderSet<Property> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге
-        assert Collections.disjoint(cancelResult, restResult);
-        return BaseUtils.mergeList(BaseUtils.reverse(cancelResult), BaseUtils.reverse(restResult));
+        assert cancelResult.getSet().disjoint(restResult.getSet());
+        return cancelResult.reverseOrder().addOrderExcl(restResult.reverseOrder());
     }
 
     @IdentityLazy
-    public List<CalcProperty> getStoredProperties() {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
-        for (Property property : getPropertyList())
-            if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
-                result.add((CalcProperty) property);
-        return result;
+    public ImOrderSet<CalcProperty> getStoredProperties() {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property property) {
+                return property instanceof CalcProperty && ((CalcProperty) property).isStored();
+            }}));
     }
 
     @IdentityLazy
@@ -1840,7 +1858,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, Set<CalcProperty>> mapDepends) {
+    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, MSet<CalcProperty>> mapDepends) {
         if (!fill.equals(applied) && fill.isStored())
             mapDepends.get(fill).add(applied);
         else
@@ -1859,27 +1877,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    private Map<CalcProperty, List<CalcProperty>> getMapAppliedDepends() {
-        Map<CalcProperty, Set<CalcProperty>> mapDepends = new HashMap<CalcProperty, Set<CalcProperty>>();
+    private ImMap<CalcProperty, ImOrderSet<CalcProperty>> getMapAppliedDepends() {
+        Map<CalcProperty, MSet<CalcProperty>> mapDepends = new HashMap<CalcProperty, MSet<CalcProperty>>();
         for (CalcProperty property : getStoredProperties()) {
-            mapDepends.put(property, new HashSet<CalcProperty>());
+            mapDepends.put(property, SetFact.<CalcProperty>mSet());
             fillAppliedDependFrom(property, property, mapDepends);
         }
         for (OldProperty old : getApplyEventDependProps())
             fillAppliedDependFrom(old.property, old, mapDepends);
 
-        Iterable<Property> propertyList = getPropertyList();
-        Map<CalcProperty, List<CalcProperty>> orderedMapDepends = new HashMap<CalcProperty, List<CalcProperty>>();
-        for (Map.Entry<CalcProperty, Set<CalcProperty>> mapDepend : mapDepends.entrySet()) {
-            List<CalcProperty> dependList = BaseUtils.orderList(mapDepend.getValue(), propertyList);
-            assert dependList.size() == mapDepend.getValue().size();
-            orderedMapDepends.put(mapDepend.getKey(), dependList);
+        ImRevMap<Property, Integer> indexMap = getPropertyList().mapOrderRevValues(new GetIndex<Integer>() {
+            public Integer getMapValue(int i) {
+                return i;
+            }
+        });
+        MExclMap<CalcProperty, ImOrderSet<CalcProperty>> mOrderedMapDepends = MapFact.mExclMap(mapDepends.size());
+        for (Map.Entry<CalcProperty, MSet<CalcProperty>> mapDepend : mapDepends.entrySet()) {
+            ImSet<CalcProperty> depends = mapDepend.getValue().immutable();
+            ImOrderSet<CalcProperty> dependList = indexMap.filterInclRev(depends).reverse().sort().valuesList().toOrderExclSet();
+            assert dependList.size() == depends.size();
+            mOrderedMapDepends.exclAdd(mapDepend.getKey(), dependList);
         }
-        return orderedMapDepends;
+        return mOrderedMapDepends.immutable();
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public List<CalcProperty> getAppliedDependFrom(CalcProperty property) {
+    public ImOrderSet<CalcProperty> getAppliedDependFrom(CalcProperty property) {
         assert property.isStored();
         return getMapAppliedDepends().get(property);
     }
@@ -2540,10 +2563,37 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             updateStats(false);
     }
 
+    private ImMap<String, Integer> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp) throws SQLException {
+        QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
+        Expr sidToObject = sIDProp.getExpr(session.getModifier(), query.getMapExprs().singleValue());
+        query.and(sidToObject.getWhere());
+        query.addProperty("property", statsProp.getExpr(session.getModifier(), sidToObject));
+        return query.execute(session).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
+                    public String getMapValue(ImMap<String, Object> key) {
+                        return ((String) key.singleValue()).trim();
+                    }}, new GetValue<Integer, ImMap<String, Object>>() {
+                    public Integer getMapValue(ImMap<String, Object> value) {
+                        return (Integer)value.singleValue();
+                    }});
+    }
     public void updateStats(boolean statDefault) throws SQLException {
         DataSession session = createSession();
+
+        ImMap<String, Integer> tableStats;
+        ImMap<String, Integer> keyStats;
+        ImMap<String, Integer> propStats;
+        if(statDefault) {
+            tableStats = MapFact.EMPTY();
+            keyStats = MapFact.EMPTY();
+            propStats = MapFact.EMPTY();
+        } else {
+            tableStats = readStatsFromDB(session, reflectionLM.tableSID, reflectionLM.rowsTable);
+            keyStats = readStatsFromDB(session, reflectionLM.tableKeySID, reflectionLM.quantityTableKey);
+            propStats = readStatsFromDB(session, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn);
+        }
+
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
-            dataTable.updateStat(this.reflectionLM, session, statDefault);
+            dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
         }
     }
 

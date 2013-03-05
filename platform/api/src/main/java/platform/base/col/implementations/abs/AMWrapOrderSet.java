@@ -27,4 +27,8 @@ public abstract class AMWrapOrderSet<K, W extends AMSet<K>> extends AMOrderSet<K
     public void add(K key) {
         wrapSet.add(key);
     }
+
+    public void exclAdd(K key) {
+        wrapSet.exclAdd(key);
+    }
 }

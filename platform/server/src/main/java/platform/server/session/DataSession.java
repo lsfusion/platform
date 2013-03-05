@@ -852,7 +852,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
-        List<CalcProperty> dependProps = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<CalcProperty> dependProps = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
 
         if(neededProps!=null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for(CalcProperty<D> depend : dependProps)

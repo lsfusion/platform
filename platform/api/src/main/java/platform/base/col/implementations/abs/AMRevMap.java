@@ -74,7 +74,7 @@ public abstract class AMRevMap<K, V> extends ARevMap<K, V> implements MMap<K, V>
     }
 
     public void revAdd(K key, V value) {
-        assert value!=null && !containsValue(value);
+        assert value!=null && (size() > 100 || !containsValue(value)); // тормознутый assertion поэтому так
         exclAdd(key, value);
     }
 

@@ -51,5 +51,4 @@ public interface Type<T> extends ClassReader<T> {
     
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
-    Stat getDefaultStat();
 }

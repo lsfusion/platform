@@ -308,7 +308,16 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public <EK extends K> ImMap<EK, V> filter(ImSet<? extends EK> keys) {
-        return BaseUtils.immutableCast(filterFn(BaseUtils.<FunctionSet<K>>immutableCast(keys)));
+        if(size()<=keys.size())
+            return BaseUtils.immutableCast(filterFn(BaseUtils.<FunctionSet<K>>immutableCast(keys)));
+
+        ImFilterValueMap<EK, V> mapFilter = ((ImSet<EK>)keys).mapFilterValues();
+        for(int i=0,size=keys.size();i<size;i++) {
+            V value = get(keys.get(i));
+            if(value!=null)
+                mapFilter.mapValue(i, value);
+        }
+        return mapFilter.immutableValue();
     }
 
     public <EK extends K> ImMap<EK, V> filterIncl(ImSet<? extends EK> keys) {
@@ -400,6 +409,13 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mvResult.immutableValue();
     }
 
+    public <M> ImSet<M> mapMergeSetValues(GetKeyValue<M, K, V> getter) {
+        MSet<M> mResult = SetFact.mSetMax(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.add(getter.getMapValue(getKey(i), getValue(i)));
+        return mResult.immutable();
+    }
+
     public <M> ImMap<K, M> mapValues(GetStaticValue<M> getter) {
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
@@ -465,6 +481,10 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
 
     public ImOrderMap<K, V> sort(Comparator<K> comparator) { // можно indexes с перегруженным comparator'ом делать
         return keys().sort(comparator).toOrderExclSet().mapOrderMap(this);
+    }
+
+    public ImOrderMap<K, V> sort() {
+        return keys().sort().mapOrderMap(this);
     }
 
     public Map<K, V> toJavaMap() {

@@ -146,7 +146,7 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
     public ImOrderSet<K> toOrderExclSet() {
         MOrderExclSet<K> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(get(i));
+            mResult.exclAdd(get(i));
         return mResult.immutableOrder();
     }
 

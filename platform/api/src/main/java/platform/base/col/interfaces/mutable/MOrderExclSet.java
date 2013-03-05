@@ -4,8 +4,8 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 
 public interface MOrderExclSet<K> {
 
-    void add(K key);
-    void addAll(ImOrderSet<? extends K> set);
+    void exclAdd(K key);
+    void exclAddAll(ImOrderSet<? extends K> set);
 
     ImOrderSet<K> immutableOrder();
 }

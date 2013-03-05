@@ -157,7 +157,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             MOrderExclSet<GroupObjectInstance> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
             for (GroupObjectEntity group : groupList) {
                 GroupObjectInstance groupInstance = idToInstance.get(group.getID());
-                mLocalGroups.add(groupInstance);
+                mLocalGroups.exclAdd(groupInstance);
             }
 
             ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет

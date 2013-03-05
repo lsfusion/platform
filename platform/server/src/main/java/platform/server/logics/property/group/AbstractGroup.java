@@ -1,13 +1,13 @@
 package platform.server.logics.property.group;
 
 import platform.base.col.ListFact;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImCol;
-import platform.base.col.interfaces.immutable.ImList;
-import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MOrderSet;
+import platform.server.caches.IdentityLazy;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
@@ -53,6 +53,18 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
             prop.getParent().remove(prop);
         children.add(prop);
         prop.parent = this;
+    }
+
+    @IdentityLazy
+    public ImMap<String, Integer> getIndexedPropChildren() { // оптимизация
+        MExclMap<String, Integer> mResult = MapFact.mExclMap(children.size());
+        int count = 0;
+        for(AbstractNode child : children) {
+            count++;
+            if(child instanceof Property)
+                mResult.exclAdd(((Property)child).getSID(), count);
+        }
+        return mResult.immutable();
     }
 
     public void remove(AbstractNode prop) {

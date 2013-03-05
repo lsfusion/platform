@@ -112,25 +112,20 @@ public abstract class DataTable extends GlobalTable {
         }
     }
 
-    public void updateStat(ReflectionLogicsModule reflectionLM, DataSession session, boolean statDefault) throws SQLException {
-        Object tableValue;
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Integer> propStats, boolean statDefault) throws SQLException {
         Stat rowStat;
-        if (statDefault || (tableValue = reflectionLM.tableSID.read(session, new DataObject(name))) == null) {
+        if (!tableStats.containsKey(name))
             rowStat = Stat.DEFAULT;
-        } else {
-            DataObject tableObject = new DataObject(tableValue, reflectionLM.table);
-            rowStat = new Stat(BaseUtils.nvl((Integer) reflectionLM.rowsTable.read(session, tableObject), 0));
-        }
+        else
+            rowStat = new Stat(BaseUtils.nvl(tableStats.get(name), 0));
 
         ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
         for(int i=0,size=keys.size();i<size;i++) {
-            Object keyValue;
-            if (statDefault || (keyValue = reflectionLM.tableKeySID.read(session, new DataObject(name + "." + keys.get(i).name))) == null) {
+            String keySID = name + "." + keys.get(i).name;
+            if (!keyStats.containsKey(keySID))
                 mvDistinctKeys.mapValue(i, Stat.DEFAULT);
-            } else {
-                DataObject keyObject = new DataObject(keyValue, reflectionLM.tableKey);
-                mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableKey.read(session, keyObject), 0)));
-            }
+            else
+                mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl(keyStats.get(keySID), 0)));
         }
         statKeys = new StatKeys<KeyField>(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
@@ -140,13 +135,10 @@ public abstract class DataTable extends GlobalTable {
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
                 mvUpdateStatProps.mapValue(i, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else {
-                Object propertyValue;
-                if (statDefault || (propertyValue = reflectionLM.tableColumnSID.read(session, new DataObject(prop.name))) == null) {
+                if (!propStats.containsKey(prop.name))
                     mvUpdateStatProps.mapValue(i, Stat.DEFAULT);
-                } else {
-                    DataObject propertyObject = new DataObject(propertyValue, reflectionLM.tableColumn);
-                    mvUpdateStatProps.mapValue(i, new Stat(BaseUtils.nvl((Integer) reflectionLM.quantityTableColumn.read(session, propertyObject), 0)));
-                }
+                else
+                    mvUpdateStatProps.mapValue(i, new Stat(BaseUtils.nvl((Integer) propStats.get(prop.name), 0)));
             }
         }
         statProps = mvUpdateStatProps.immutableValue();

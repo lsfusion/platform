@@ -5,6 +5,9 @@ import platform.base.FunctionSet;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.NotFunctionSet;
+import platform.base.col.implementations.ArSet;
+import platform.base.col.implementations.order.ArOrderIndexedSet;
+import platform.base.col.implementations.order.ArOrderSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.mapvalue.*;
@@ -26,13 +29,13 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         if(map.isEmpty()) return this; // полиморфизм по правой части
 
         MOrderExclSet<K> mResult = SetFact.mOrderExclSet(this);
-        mResult.addAll(map);
+        mResult.exclAddAll(map);
         return mResult.immutableOrder();
     }
 
     public ImOrderSet<K> addOrderExcl(K element) {
         MOrderExclSet<K> mResult = SetFact.mOrderExclSet(this);
-        mResult.add(element);
+        mResult.exclAdd(element);
         return mResult.immutableOrder();
     }
 
@@ -77,7 +80,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         for(int i=0,size=size();i<size;i++) {
             K element = get(i);
             if(!BaseUtils.hashEquals(remove, element))
-                mResult.add(element);
+                mResult.exclAdd(element);
         }
         return mResult.immutableOrder();
     }
@@ -90,7 +93,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     public ImOrderSet<K> reverseOrder() {
         MOrderExclSet<K> mResult = SetFact.mOrderExclSet(size());
         for(int i=size()-1;i>=0;i--)
-            mResult.add(get(i));
+            mResult.exclAdd(get(i));
         return mResult.immutableOrder();
     }
 
@@ -114,14 +117,14 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     public ImOrderSet<K> subOrder(int from, int to) {
         MOrderExclSet<K> mResult = SetFact.mOrderExclSet(to-from);
         for(int j=from;j<to;j++)
-            mResult.add(get(j));
+            mResult.exclAdd(get(j));
         return mResult.immutableOrder();
     }
 
     public <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(get(i)));
+            mResult.exclAdd(getter.getMapValue(get(i)));
         return mResult.immutableOrder();
     }
 
@@ -135,7 +138,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     public <M> ImOrderSet<M> mapOrderSetValues(GetIndexValue<M, K> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
-            mResult.add(getter.getMapValue(i, get(i)));
+            mResult.exclAdd(getter.getMapValue(i, get(i)));
         return mResult.immutableOrder();
     }
 

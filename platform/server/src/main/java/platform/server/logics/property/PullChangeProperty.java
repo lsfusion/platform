@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.server.session.StructChanges;
 
 public abstract class PullChangeProperty<T extends PropertyInterface, P extends PropertyInterface, I extends PropertyInterface> extends ChangeProperty<I> {
@@ -29,4 +30,9 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
         return getUsedChanges(onChange,toChange, propChanges);
     }
 
+    @Override
+    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
+        depends.add(onChange);
+        depends.add(toChange);
+    }
 }

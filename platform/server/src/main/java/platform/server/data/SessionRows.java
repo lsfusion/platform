@@ -9,11 +9,13 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.expr.where.extra.CompareWhere;
@@ -139,8 +141,14 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> getClasses(ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
         Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, ImMap<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>FALSE(), properties.toMap(ClassWhere.<Field>FALSE()));
-        for(int i=0,size=rows.size();i<size;i++)
-            orClasses = SessionTable.orFieldsClassWheres(orClasses.first, orClasses.second, rows.getKey(i), rows.getValue(i));
+        ImSet<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>> rowClasses = rows.mapMergeSetValues(new GetKeyValue<Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
+            public Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
+                return new Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>>(DataObject.getMapClasses(key), ObjectValue.getMapClasses(value));
+            }});
+        for(int i=0,size=rowClasses.size();i<size;i++) {
+            Pair<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> classes = rowClasses.get(i);
+            orClasses = SessionTable.orFieldsClassWheres(classes.first, classes.second, orClasses.first, orClasses.second);
+        }
         return orClasses;
     }
 

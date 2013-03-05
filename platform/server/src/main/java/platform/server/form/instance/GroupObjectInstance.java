@@ -76,7 +76,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public static ImOrderSet<ObjectInstance> getOrderObjects(ImOrderSet<GroupObjectInstance> groups) {
         MOrderExclSet<ObjectInstance> mResult = SetFact.mOrderExclSet();
         for(GroupObjectInstance group : groups)
-            mResult.addAll(group.getOrderObjects());
+            mResult.exclAddAll(group.getOrderObjects());
         return mResult.immutableOrder();
     }
 
@@ -767,7 +767,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 if (objectInstance.getBaseClass() instanceof ConcreteCustomClass)
                     mvObjectKeys.mapValue(j, form.addFormObject((CustomObjectInstance)objectInstance, (ConcreteCustomClass) objectInstance.getBaseClass(), null));
             }
-            mResultSet.add(mvObjectKeys.immutableValue());
+            mResultSet.exclAdd(mvObjectKeys.immutableValue());
         }
         return mResultSet.immutableOrder();
     }

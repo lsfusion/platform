@@ -4,6 +4,7 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.server.Message;
@@ -57,15 +58,15 @@ public class IntegrationService {
     @Message("message.synchronize")
     public SessionTableUsage<String, ImportField> synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
-
+        
+        MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
         int counter = 0;
-        for (final PlainDataTable.Row row : table) {
-            ImMap<ImportField, ObjectValue> insertRow = table.fields.getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
+        for (final PlainDataTable.Row row : table)
+            mRows.exclAdd(MapFact.singleton("key", new DataObject(counter++)), table.fields.getSet().mapValues(new GetValue<ObjectValue, ImportField>() {
                 public ObjectValue getMapValue(ImportField value) {
                     return ObjectValue.getValue(row.getValue(value), value.getFieldClass());
-                }});
-            importTable.modifyRecord(session.sql, new DataObject(counter++), insertRow, Modify.ADD);
-        }
+                }}));
+        importTable.writeRows(session.sql, mRows.immutable());
 
         if (deletes != null) {
             deleteObjects(importTable);
@@ -80,10 +81,8 @@ public class IntegrationService {
 
         DataChanges propertyChanges = DataChanges.EMPTY;
         for (ImportProperty<?> property : properties)
-            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, mAddedKeys.immutable(), replaceNull, replaceEqual));
+            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
         
-        System.gc();
-
         session.change(propertyChanges);
 
         return importTable;

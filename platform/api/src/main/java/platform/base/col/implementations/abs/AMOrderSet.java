@@ -12,6 +12,11 @@ public abstract class AMOrderSet<K> extends AOrderSet<K> implements MOrderSet<K>
             add(ks.get(i));
     }
 
+    public void exclAddAll(ImOrderSet<? extends K> ks) {
+        for(int i=0,size=ks.size();i<size;i++)
+            exclAdd(ks.get(i));
+    }
+
     public void keep(K element) {
         add(element);
     }

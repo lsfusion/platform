@@ -696,7 +696,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 ObjectInstance objectInstance = getObjectInstance(objectId.getKey());
                 mKey.exclAdd(objectInstance, session.getDataObject(objectId.getValue(), objectInstance.getType()));
             }
-            mResult.add(mKey.immutable());
+            mResult.exclAdd(mKey.immutable());
         }
         return mResult.immutableOrder();
     }

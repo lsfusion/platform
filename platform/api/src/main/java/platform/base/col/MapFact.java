@@ -115,7 +115,7 @@ public class MapFact {
             for (int i=0;i<sizeNames;i++) {
                 K key = revMap.getKey(i);
                 mResult.exclAdd(revMap.getValue(i), map.get(key));
-                mOrder.add(key);
+                mOrder.exclAdd(key);
             }
             order.set(mOrder.immutableOrder());
         } else {

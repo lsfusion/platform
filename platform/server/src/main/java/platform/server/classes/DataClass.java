@@ -258,10 +258,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return true;
     }
 
-    public Stat getDefaultStat() {
-        return getTypeStat().min(Stat.DEFAULT);
-    }
-
     private IsClassProperty property;
     @ManualLazy
     public IsClassProperty getProperty() {

@@ -188,7 +188,8 @@ public class MapCacheAspect {
         if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (ImSet<CalcProperty>) thisJoinPoint.proceed();
 
-        return (ImSet<CalcProperty>) CacheAspect.callMethod(property, thisJoinPoint, false);
+        // оптимизация самого верхнего уровня
+        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{implement.filter(property.getRecDepends()), cascade}, true, false);
     }
 
     @Around("execution(* platform.server.logics.property.CalcProperty.getUsedChanges(platform.server.session.StructChanges,boolean)) " +
@@ -317,7 +318,7 @@ public class MapCacheAspect {
     }
 
     public static class QueryInterfaceImplement<K extends PropertyInterface> extends AbstractValuesContext<QueryInterfaceImplement<K>> {
-        private final PropertyChanges usedChanges;
+        public final PropertyChanges usedChanges;
         private final PropertyQueryType changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
         private final ImMap<K, ? extends Expr> values;
         private final boolean propClasses;
@@ -397,7 +398,7 @@ public class MapCacheAspect {
                 }
             }
             if(cacheQuery==null || checkCaches) {
-                query = (IQuery<K, String>) thisJoinPoint.proceed();
+                query = (IQuery<K, String>) thisJoinPoint.proceed(new Object[] {property, propClasses, implement.usedChanges, queryType, interfaceValues} );
 
                 assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getContextValues())); // в query не должно быть элементов не из implement.getContextValues
 
@@ -426,7 +427,7 @@ public class MapCacheAspect {
     }
 
     public static class JoinExprInterfaceImplement<P extends PropertyInterface> extends AbstractInnerContext<JoinExprInterfaceImplement<P>> {
-        private final PropertyChanges usedChanges;
+        public final PropertyChanges usedChanges;
         private final ImMap<P, Expr> joinImplement;
         private final boolean where;
         private final boolean propClasses;
@@ -530,7 +531,7 @@ public class MapCacheAspect {
 
             logger.debug("getExpr - not cached "+property);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
-            Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cacheWheres});
+            Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, implement.usedChanges, cacheWheres});
 
             cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
             if(checkCaches && !BaseUtils.hashEquals(expr, cacheResult))
@@ -582,7 +583,7 @@ public class MapCacheAspect {
                 }
             }
             if(cacheChange==null || checkCaches) {
-                change = (PropertyChange<K>) thisJoinPoint.proceed();
+                change = (PropertyChange<K>) thisJoinPoint.proceed(new Object[]{property, implement});
 
                 assert implement.getContextValues().containsAll(ValueExpr.removeStatic(change.getInnerValues())); // в query не должно быть элементов не из implement.getContextValues
 

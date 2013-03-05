@@ -141,7 +141,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public void add(ObjectEntity objectEntity) {
         assert !finalizedObjects;
         objectEntity.groupTo = this;
-        ((MOrderExclSet<ObjectEntity>)objects).add(objectEntity);
+        ((MOrderExclSet<ObjectEntity>)objects).exclAdd(objectEntity);
     }
     public void setObjects(ImOrderSet<ObjectEntity> objects) {
         assert !finalizedObjects;

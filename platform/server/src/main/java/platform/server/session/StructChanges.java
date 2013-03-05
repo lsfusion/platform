@@ -83,12 +83,20 @@ public class StructChanges extends TwinImmutableObject {
     public int size() {
         return changes.size();
     }
-    
+
     public boolean hasChanges(ImSet<CalcProperty> props) {
         for(int i=0,size=props.size();i<size;i++)
             if(changes.get(props.get(i))!=Type.NOUPDATE)
                 return true;
         return false;
+    }
+
+    private StructChanges(ImMap<CalcProperty, Type> changes) {
+        this.changes = changes;
+    }
+
+    public StructChanges filter(ImSet<CalcProperty> props) {
+        return new StructChanges(changes.filter(props));
     }
 
     public ImSet<CalcProperty> getUsedChanges(CalcProperty property, boolean cascade) {

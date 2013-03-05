@@ -111,12 +111,6 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         finalizeInit();
     }
 
-    @Override
-    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
-        depends.add(onChange);
-        depends.add(toChange);
-    }
-
     protected Expr calculateExpr(ImMap<Interface<T, P>, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(propClasses) // пока так
             propClasses = false;
