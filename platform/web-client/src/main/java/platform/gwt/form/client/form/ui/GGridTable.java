@@ -3,7 +3,10 @@ package platform.gwt.form.client.form.ui;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.ScrollEvent;
+import com.google.gwt.event.dom.client.ScrollHandler;
 import platform.gwt.base.client.jsni.Function;
 import platform.gwt.base.client.jsni.NativeHashMap;
 import platform.gwt.base.shared.GwtSharedUtils;
@@ -90,6 +93,26 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 return key;
             }
         };
+
+        getTableDataScroller().addScrollHandler(new ScrollHandler() {
+            @Override
+            public void onScroll(ScrollEvent event) {
+                int selectedRow = getKeyboardSelectedRow();
+                GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
+                if (selectedRecord != null) {
+                    TableRowElement childElement = getChildElement(selectedRow);
+                    if (childElement != null) {
+                        int oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
+                        int scrollerHeight = getTableDataScroller().getClientHeight();
+                        if (oldRowScrollTop < 0) {
+                            setKeyboardSelectedRow(selectedRow + Math.abs(oldRowScrollTop / getRowHeight()));
+                        } else if (oldRowScrollTop + getRowHeight() > scrollerHeight) {
+                            setKeyboardSelectedRow(selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public void update() {
