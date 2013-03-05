@@ -9,9 +9,12 @@ NAMESPACE Sale;
 createShipmentSaleOperation 'Создавать поставку' = DATA BOOLEAN (saleOperation) IN createGroup;
 createPricingSaleOperation 'Создавать акт расценки' = DATA BOOLEAN (saleOperation) IN createGroup;
 createCreditNoteSaleOperation 'Создавать акт расхождения' = DATA BOOLEAN (saleOperation) IN createGroup;
+createPurchaseInvoiceSaleOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
+createPurchasePricingSaleOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
 
 EXTEND FORM saleOperation
-    PROPERTIES(o) createShipmentSaleOperation, createPricingSaleOperation, createCreditNoteSaleOperation
+    PROPERTIES(o) createShipmentSaleOperation, createPricingSaleOperation, createCreditNoteSaleOperation,
+                  createPurchaseInvoiceSaleOperation, createPurchasePricingSaleOperation
 ;
 
 EXTEND DESIGN saleOperation{
@@ -21,6 +24,8 @@ EXTEND DESIGN saleOperation{
             ADD PROPERTY(createShipmentSaleOperation);
             ADD PROPERTY(createCreditNoteSaleOperation);
             ADD PROPERTY(createPricingSaleOperation);
+            ADD PROPERTY(createPurchaseInvoiceSaleOperation);
+            ADD PROPERTY(createPurchasePricingSaleOperation);
         }
     }
 }

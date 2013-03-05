@@ -132,15 +132,15 @@ EXTEND DESIGN Purchase.userInvoice {
 
 GROUP invoiceGroup 'Информация о накладной' : base;
 
-createPurchaseInvoice 'Создать накладную (закупка)' = ABSTRACT BOOLEAN (invoice) PERSISTENT;
-createPurchaseUserInvoice 'Создать накладную (закупка)' = DATA BOOLEAN (userInvoice) PERSISTENT;
-createPurchaseInvoice(invoice) += createPurchaseUserInvoice(invoice);
+createPurchaseInvoiceInvoice 'Создать накладную (закупка)' = ABSTRACT BOOLEAN (invoice) PERSISTENT;
+createPurchaseInvoiceUserInvoice 'Создать накладную (закупка)' = DATA BOOLEAN (userInvoice) PERSISTENT;
+createPurchaseInvoiceInvoice(invoice) += createPurchaseInvoiceUserInvoice(invoice);
 
-createPurchaseInvoiceDetail 'Создать накладную (закупка)' (invoiceDetail) = createPurchaseInvoice(invoiceInvoiceDetail(invoiceDetail))PERSISTENT;
-createPurchaseUserInvoiceDetail 'Создать накладную (закупка)' (userInvoiceDetail) = createPurchaseUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
+createPurchaseInvoiceInvoiceDetail 'Создать накладную (закупка)' (invoiceDetail) = createPurchaseInvoiceInvoice(invoiceInvoiceDetail(invoiceDetail))PERSISTENT;
+createPurchaseInvoiceUserInvoiceDetail 'Создать накладную (закупка)' (userInvoiceDetail) = createPurchaseInvoiceUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 backgroundPurchaseInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS invoice;
 EXTEND FORM userInvoice
-    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) createPurchaseUserInvoice
+    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) createPurchaseInvoiceUserInvoice
 ;
 EXTEND DESIGN userInvoice {
     headerRow15{
@@ -148,13 +148,13 @@ EXTEND DESIGN userInvoice {
         NEW headerRow151 {
             title = 'Накладная';
             childConstraints = TO THE RIGHTBOTTOM;
-            ADD PROPERTY(createPurchaseUserInvoice);
+            ADD PROPERTY(createPurchaseInvoiceUserInvoice);
         }
     }
 }
 
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseInvoice(i) createPurchaseInvoice
+    PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseInvoice(i) createPurchaseInvoiceInvoice
 ;
 //--  Связь поставки с поставкой
 
@@ -193,7 +193,7 @@ CLASS purchaseInvoiceDetail 'Строка накладной на основе �
 
 @defineDocumentTables(purchaseInvoice);
 
-@defineDocumentAggregation(invoice, purchaseInvoice, createPurchaseInvoice);
+@defineDocumentAggregation(invoice, purchaseInvoice, createPurchaseInvoiceInvoice);
 Purchase.invoiceInvoiceDetail(detail) += purchaseInvoicePurchaseInvoiceDetail(detail);
 
 @defineDocumentDetailIndex(purchaseInvoice);
@@ -264,6 +264,9 @@ Purchase.quantityPackInvoiceDetail(invoiceDetail) +=  quantityPackInvoiceDetail(
 
 invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(invoiceDetail);
 
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createPurchaseInvoice, sale);
 
 
 

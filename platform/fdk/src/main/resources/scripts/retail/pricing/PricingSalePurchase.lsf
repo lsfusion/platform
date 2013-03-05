@@ -34,7 +34,7 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
 
 @defineDocumentInterfaceCreate (invoice, createPurchasePricing, 'Создать акт расценки (закупка)');
 
-showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS departmentStore AND createPurchaseInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
+showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS departmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
 toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND createPurchasePricingInvoice(invoice);
 
@@ -97,4 +97,8 @@ Purchase.retailVATSumInvoiceDetail(invoiceDetail) += purchaseRetailVATSumInvoice
 Purchase.retailPriceInvoiceDetail(invoiceDetail) += purchaseRetailPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.retailSumInvoiceDetail(invoiceDetail) += purchaseRetailSumInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createPurchasePricing, sale);
 

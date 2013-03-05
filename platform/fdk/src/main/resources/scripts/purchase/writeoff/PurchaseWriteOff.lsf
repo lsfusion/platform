@@ -111,6 +111,7 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 //createPurchaseWriteOffShipmentDetail 'Создать акт списания' (detail) = createPurchaseWriteOffShipment(shipmentShipmentDetail(detail));
 //createPurchaseWriteOffUserShipmentDetail 'Создать акт списания' (detail) = createPurchaseWriteOffUserShipment(userShipmentUserShipmentDetail(detail));
 
+
 @defineDocumentInterfaceCreate (shipment, createPurchaseWriteOff, 'Создать акт списания');
 @deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, purchase);
 
@@ -126,6 +127,10 @@ overCopyInvoice(s, d) += ACTION (s, d) {
 @deriveDocumentDetailSumPrefix(userShipment, writeOff, currency, writeOffQuantity);
 @defineDocumentInterfaceHeaderSumPrefix (shipment, writeOff, ' (списания)');
 @defineDocumentInterfaceHeaderWriteOffCommittee(shipment, customerStock);
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, purchase);
 
 reasonShipment 'Причина списания (ИД)' = ABSTRACT reason (shipment);
 reasonUserShipment 'Причина списания (ИД)' = DATA reason (userShipment);
