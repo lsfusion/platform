@@ -526,11 +526,6 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 
 //-- аггр.объект
 META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, prefix)
-    //@deriveDocumentHeaderCreate(userInvoice, createPricing, departmentStore, stockProp);
-//    META deriveDocumentHeaderCreate(object, createProp, stockClass, stockProp)
-//        createProp###object (object) <- TRUE IF createProp###stockClass(stockProp###object(object))
-//            WHEN CHANGED(stockProp###object(object));
-//    END
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');

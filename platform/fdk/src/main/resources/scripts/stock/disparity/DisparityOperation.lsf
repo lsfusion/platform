@@ -3,3 +3,45 @@ MODULE DisparityOperation;
 REQUIRE Operation, Disparity;
 
 @defineOperationPrefix(disparity, isSellerLegalEntity, isCompanyLegalEntity, '(изменение сортности)');
+
+createRepricingDisparityOperation 'Создать акт переоценки' = DATA BOOLEAN (disparityOperation) IN createGroup;
+
+EXTEND FORM disparityOperation
+    PROPERTIES(o) createRepricingDisparityOperation
+;
+
+EXTEND DESIGN disparityOperation {
+    REMOVE pt.box;
+    REMOVE supplierContainer;
+    REMOVE customerContainer;
+
+    tabContainer{
+        NEW aggrContainer{
+            caption = 'Создание объектов';
+            ADD PROPERTY(createRepricingDisparityOperation);
+        }
+    }
+}
+
+NAVIGATOR {
+    disparityNavigator {
+        ADD disparityOperations;
+    }
+}
+
+//------------------------------------------ Опеределение операции для disparity ------------------------------------//
+
+disparityOperationDisparity = DATA disparityOperation (disparity) PERSISTENT;
+nameDisparityOperationDisparity 'Операция' = name(disparityOperationDisparity(disparity));
+
+disparityOperationDisparityDetail 'Операция' (disparityDetail) = disparityOperationDisparity(disparityDisparityDetail(disparityDetail));
+
+EXTEND FORM disparity
+    PROPERTIES(dis) nameDisparityOperationDisparity
+;
+
+EXTEND DESIGN disparity{
+    dis.documentPrmGroup{
+        ADD PROPERTY(nameDisparityOperationDisparity) BEFORE PROPERTY(noteDisparity);
+    }
+}

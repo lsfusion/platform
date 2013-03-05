@@ -1,12 +1,15 @@
 MODULE RepricingDisparity;
 
 REQUIRE Disparity,
-        Repricing;
+        Repricing,
+        DisparityOperation;
 
 @defineDocumentHeaderCreate(disparity, createRepricing, 'Создать акт переоценки');
 @defineDocumentDetailCreateCustom(disparity, disparityDetail, createRepricing, 'Создать акт переоценки');
-//@deriveDocumentHeaderCreate(disparity, createRepricing, departmentStore, stock);
 
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(disparity, createRepricing, disparity);
 
 // До
 @defineDocumentTimeBeforePrefix (disparity, , ' до');
