@@ -3,6 +3,7 @@ package platform.gwt.form.client.form.ui;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
@@ -57,10 +58,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     @Override
     protected void onBrowserEvent2(Event event) {
-        if (form.isDialog() && event.getTypeInt() == Event.ONDBLCLICK
-                && !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
-            stopPropagation(event);
-            form.okPressed();
+        if (event.getTypeInt() == Event.ONDBLCLICK) {
+            if (form.isDialog() &&
+                    getFocusHolderElement().isOrHasChild(Node.as(event.getEventTarget())) && // не включаем header, чтобы сортировка работала
+                    !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
+                stopPropagation(event);
+                form.okPressed();
+            }
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
             GPropertyDraw property = getSelectedProperty();
             if (property != null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {

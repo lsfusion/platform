@@ -1437,7 +1437,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         headerPanel.onResize();
     }
 
-    private DivElement getFocusHolderElement() {
+    protected DivElement getFocusHolderElement() {
         return tableData.containerElement;
     }
 
