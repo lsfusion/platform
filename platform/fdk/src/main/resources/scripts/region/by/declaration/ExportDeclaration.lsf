@@ -5,14 +5,8 @@ REQUIRE System,
         PurchaseDeclaration
         ;
 
-exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'fdk.region.by.declaration.ExportDeclarationActionProperty';
+exportDeclaration 'Экспортировать' = ACTION CUSTOM 'fdk.region.by.declaration.ExportDeclarationActionProperty';
 
 EXTEND FORM declaration
     PROPERTIES (d) exportDeclaration TODRAW dd FORCE PANEL TOOLBAR
 ;
-
-//EXTEND DESIGN declaration {
-//    main {
-//        ADD PROPERTY(exportDeclaration) BEFORE PROPERTY(toCreateDeclarationDetails);
-//    }
-//}

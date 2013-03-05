@@ -109,6 +109,11 @@ numberDefaultDeclarationDetail 'Номер' (declarationDetail) =
 userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = DATA INTEGER (declarationDetail);
 numberDeclarationDetail 'Номер' (declarationDetail) = UNION OVERRIDE numberDefaultDeclarationDetail(declarationDetail), userNumberDeclarationDetail(declarationDetail);
 
+declarationDetailUserNumberNameCustoms (number, name) = GROUP UNIQUE declarationDetail BY
+        userNumberDeclarationDetail(declarationDetail), nameCustomsDeclarationDetail(declarationDetail)
+        WHERE declarationDetail IS declarationDetail;
+
+
 declarationDetailInvoiceDetail(invoiceDetail) = DATA declarationDetail(invoiceDetail);
 inInvoiceDetailDeclarationDetail 'Вкл.' (invoiceDetail, declarationDetail) = declarationDetailInvoiceDetail(invoiceDetail)==declarationDetail;
 
@@ -175,14 +180,14 @@ sumDutyUserInvoiceDetail(invoiceDetail) <- calcDutyInvoiceDetail(invoiceDetail) 
 //НДС
 VATRangeDataDeclarationDetail 'Шкала НДС (ИД)' = DATA range(declarationDetail);
 numberVATRangeDataDeclarationDetail 'Шкала НДС' (declarationDetail) = numberRange(VATRangeDataDeclarationDetail(declarationDetail));
-percentVATRangeDeclaratioDetail 'НДС, %' (declarationDetail) = valueRateRangeDate(VATRangeDataDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+percentVATRangeDeclarationDetail 'НДС, %' (declarationDetail) = valueRateRangeDate(VATRangeDataDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
 
-percentVATCustomsGroupDeclaratioDetail 'НДС, %' (declarationDetail) = dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+percentVATCustomsGroupDeclarationDetail 'НДС, %' (declarationDetail) = dataValueSupplierVATCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
 
-percentVATDeclaratioDetail 'НДС, %' (declarationDetail) = UNION OVERRIDE percentVATCustomsGroupDeclaratioDetail(declarationDetail), percentVATRangeDeclaratioDetail(declarationDetail);
+percentVATDeclarationDetail 'НДС, %' (declarationDetail) = UNION OVERRIDE percentVATCustomsGroupDeclarationDetail(declarationDetail), percentVATRangeDeclarationDetail(declarationDetail);
 
 sumRateVATDeclarationDetail 'НДС (расч.)' (declarationDetail) = (sumRateDeclarationDetail(declarationDetail) + sumRateDutyDeclarationDetail(declarationDetail)) *
-                                                                 (percentVATDeclaratioDetail(declarationDetail)/100) MINCHARWIDTH 12;
+                                                                 (percentVATDeclarationDetail(declarationDetail)/100) MINCHARWIDTH 12;
 
 sumVATDataDeclarationDetail 'НДС' (declarationDetail) = DATA NUMERIC[14,3](declarationDetail) MINCHARWIDTH 12;
 
@@ -282,7 +287,7 @@ EXTEND FORM declaration
     PROPERTIES(dd) priceDeclarationDetail
     PROPERTIES(dd) READONLY sumDeclarationDetail, sumRateDeclarationDetail, sumRateDutyDeclarationDetail
     PROPERTIES(dd) numberVATRangeDataDeclarationDetail
-    PROPERTIES(dd) READONLY percentVATDeclaratioDetail, sumRateVATDeclarationDetail
+    PROPERTIES(dd) READONLY percentVATDeclarationDetail, sumRateVATDeclarationDetail
     PROPERTIES(dd) sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail, delete
 
     PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
@@ -326,7 +331,7 @@ EXTEND FORM declarations
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,
                    codeCustomsGroupDeclarationDetail, quantityDeclarationDetail, priceDeclarationDetail, sumDeclarationDetail,
-                   sumRateDeclarationDetail, sumRateDutyDeclarationDetail, percentVATDeclaratioDetail, sumRateVATDeclarationDetail,
+                   sumRateDeclarationDetail, sumRateDutyDeclarationDetail, percentVATDeclarationDetail, sumRateVATDeclarationDetail,
                    sumDataDeclarationDetail, sumDutyDataDeclarationDetail, sumVATDataDeclarationDetail
     FILTERS declarationDeclarationDetail(dd)==d
 ;

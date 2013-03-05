@@ -59,7 +59,7 @@ public class ImportActionProperty {
 
             importItems(importData.getItemsList(), importData.getNumberOfItemsAtATime());
 
-            //importPrices(importData.pricesList);
+            //importPrices(importData.getPricesList());
 
             importAssortment(importData.getAssortmentsList(), importData.getStockSuppliersList());
 

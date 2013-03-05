@@ -25,6 +25,8 @@ residentCountry 'Отечественный производитель' (country
 
 countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS country;
 
+countrySIDOrigin2(sidOrigin2) = GROUP UNIQUE country BY sidOrigin2Country(country) WHERE country IS country;
+
 defaultCountry 'Страна по умолчанию' () = DATA country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
 

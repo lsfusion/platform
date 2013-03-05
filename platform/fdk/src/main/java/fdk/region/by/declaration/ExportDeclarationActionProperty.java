@@ -30,7 +30,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
     String row;
 
     public ExportDeclarationActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("declaration")});
+        super(LM, LM.findClassByCompoundName("declaration"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();
