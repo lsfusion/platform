@@ -17,8 +17,6 @@ nameChainStoresStoreType 'Торговая сеть' (storeType) = name(chainSto
 
 inChainStoresStoreType(chainStores, storeType) = chainStoresStoreType(storeType) == chainStores;
 
-storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP UNIQUE storeType BY name (storeType), chainStoresStoreType(storeType);
-
 parentStockGroup (storeType) += chainStoresStoreType(storeType);
 parentEmployeeDivisionGroup (storeType) += chainStoresStoreType(storeType);
 

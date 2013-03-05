@@ -59,12 +59,12 @@ META defineScheduleOrder(sign, stockProp)
     CONSTRAINT supplierScheduleOrder(scheduleOrder) AND supplierStockScheduleOrder(scheduleOrder) AND NOT
     inLegalEntityStock(supplierScheduleOrder(scheduleOrder), supplierStockScheduleOrder(scheduleOrder))
         CHECKED BY supplierScheduleOrder, supplierStockScheduleOrder
-            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+            MESSAGE 'Поставщик и склад поставщика для графика заказов не имеют связи';
 
     CONSTRAINT customerScheduleOrder(scheduleOrder) AND customerStockScheduleOrder(scheduleOrder) AND NOT
     inLegalEntityStock(customerScheduleOrder(scheduleOrder), customerStockScheduleOrder(scheduleOrder))
         CHECKED BY customerScheduleOrder, customerStockScheduleOrder
-            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+            MESSAGE 'Покупатель и склад покупателя для графика заказов не имеют связи';
 
     startDateScheduleOrder 'Дата начала' = DATA DATE (scheduleOrder) IN base;
     endDateScheduleOrder 'Дата окончания' = DATA DATE (scheduleOrder) IN base;
@@ -370,10 +370,10 @@ META defineScheduleOrder(sign, stockProp)
     nameCustomerStock 'Склад покупателя' = name(customerStock());
 
     CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())
-        CHECKED BY supplier, supplierStock MESSAGE 'Поставщик и склад поставщика не имеют связи';
+        CHECKED BY supplier, supplierStock MESSAGE 'Поставщик и склад поставщика для графика заказов не имеют связи';
 
     CONSTRAINT customer() AND customerStock() AND NOT inLegalEntityStock(customer(), customerStock())
-        CHECKED BY customer, customerStock MESSAGE 'Покупатель и склад покупателя не имеют связи';
+        CHECKED BY customer, customerStock MESSAGE 'Покупатель и склад покупателя для графика заказов не имеют связи';
 
 
     FORM scheduleOrderDetails 'Заказы по графику'

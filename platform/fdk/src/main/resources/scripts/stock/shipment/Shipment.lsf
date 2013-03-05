@@ -82,11 +82,11 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
     CONSTRAINT supplierUserShipment(userShipment) AND supplierStockUserShipment(userShipment) AND NOT
     inLegalEntityStock(supplierUserShipment(userShipment), supplierStockUserShipment(userShipment))
         CHECKED BY supplierUserShipment, supplierStockUserShipment
-            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+            MESSAGE 'Поставщик и склад поставщика для поставки не имеют связи';
     CONSTRAINT customerUserShipment(userShipment) AND customerStockUserShipment(userShipment) AND NOT
     inLegalEntityStock(customerUserShipment(userShipment), customerStockUserShipment(userShipment))
         CHECKED BY customerUserShipment, customerStockUserShipment
-            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+            MESSAGE 'Покупатель и склад покупателя для поставки не имеют связи';
 
     @defineDocumentInterfacePosted(shipment);
     Shipment.isPostedShipment (shipment) += isPostedShipment(shipment);

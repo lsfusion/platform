@@ -26,11 +26,11 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     CONSTRAINT supplierUserCreditNote(userCreditNote) AND supplierStockUserCreditNote(userCreditNote) AND NOT
                inLegalEntityStock(supplierUserCreditNote(userCreditNote), supplierStockUserCreditNote(userCreditNote))
         CHECKED BY supplierStockUserCreditNote
-            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+            MESSAGE 'Поставщик и склад поставщика для акта расхождений не имеют связи';
     CONSTRAINT customerUserCreditNote(userCreditNote) AND customerStockUserCreditNote(userCreditNote) AND NOT
                inLegalEntityStock(customerUserCreditNote(userCreditNote), customerStockUserCreditNote(userCreditNote))
         CHECKED BY customerStockUserCreditNote
-            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+            MESSAGE 'Покупатель и склад покупателя для акта расхождений не имеют связи';
 
     @defineDocumentInterfacePosted(creditNote);
 

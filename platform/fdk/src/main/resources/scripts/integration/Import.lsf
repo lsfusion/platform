@@ -57,6 +57,8 @@ EXTEND CLASS writeOffRate : externalizable;
 
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
 
+storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP UNIQUE storeType BY name (storeType), sidExternalizable(storeType);
+
 sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (batch) PERSISTENT;
 
 sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
@@ -70,6 +72,10 @@ EXTEND FORM banks
 ;
 
 EXTEND FORM wares
+    PROPERTIES (w) READONLY sidExternalizable BEFORE delete(w)
+;
+
+EXTEND FORM warehouses
     PROPERTIES (w) READONLY sidExternalizable BEFORE delete(w)
 ;
 

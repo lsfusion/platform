@@ -22,7 +22,7 @@ META defineBlanketOrder(sign)
     CONSTRAINT supplierBlanketOrder(blanketOrder) AND supplierStockBlanketOrder(blanketOrder) AND NOT
     inLegalEntityStock(supplierBlanketOrder(blanketOrder), supplierStockBlanketOrder(blanketOrder))
         CHECKED BY supplierBlanketOrder, supplierStockBlanketOrder
-            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+            MESSAGE 'Поставщик и склад поставщика для множественного заказа не имеют связи';
 
     @defineDocumentPosted(blanketOrder);
     @defineDocumentClosed (blanketOrder);

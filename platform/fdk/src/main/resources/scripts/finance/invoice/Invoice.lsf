@@ -99,11 +99,11 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
     CONSTRAINT supplierUserInvoice(userInvoice) AND supplierStockUserInvoice(userInvoice) AND NOT
     inLegalEntityStock(supplierUserInvoice(userInvoice), supplierStockUserInvoice(userInvoice))
         CHECKED BY supplierUserInvoice, supplierStockUserInvoice
-            MESSAGE 'Поставщик и склад поставщика не имеют связи';
+            MESSAGE 'Поставщик и склад поставщика для накладной не имеют связи';
     CONSTRAINT customerUserInvoice(userInvoice) AND customerStockUserInvoice(userInvoice) AND NOT
     inLegalEntityStock(customerUserInvoice(userInvoice), customerStockUserInvoice(userInvoice))
         CHECKED BY customerUserInvoice, customerStockUserInvoice
-            MESSAGE 'Покупатель и склад покупателя не имеют связи';
+            MESSAGE 'Покупатель и склад покупателя для накладной не имеют связи';
 
     @defineDocumentInterfacePosted(invoice);
     Invoice.isPostedInvoice (invoice) += isPostedInvoice(invoice);

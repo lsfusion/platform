@@ -213,6 +213,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         }
 
         List<Item> data = new ArrayList<Item>();
+        List<Double> allowedVAT = Arrays.asList(0.0, 9.09, 16.67, 10.0, 20.0, 24.0);
 
         int recordCount = (numberOfItems != null && numberOfItems != 0 && numberOfItems < totalRecordCount) ? numberOfItems : totalRecordCount;
         for (int i = 0; i < recordCount; i++) {
@@ -253,7 +254,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             if (!"".equals(k_grtov) && (!inactiveItem || importInactive) && !isWare)
                 data.add(new Item(itemID, k_grtov, pol_naim, UOM, UOM, "U_" + UOM, brand, "B_" + brand, country, barcode, barcode,
                         date, isWeightItem ? isWeightItem : null, null, null,
-                        "".equals(composition) ? null : composition, retailVAT, wareID,
+                        "".equals(composition) ? null : composition, allowedVAT.contains(retailVAT) ? retailVAT : null, wareID,
                         wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
                         "RW_".equals(rateWasteID) ? null : rateWasteID, null, null, null, null, null));
         }
