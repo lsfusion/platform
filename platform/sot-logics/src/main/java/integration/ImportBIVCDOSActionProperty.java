@@ -303,7 +303,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Pattern rPack = Pattern.compile(".*\\/(\\d+)\\/?");
                     Matcher mPack = rPack.matcher(name);
                     if(mPack.matches()) {
-                        packAmount = Double.parseDouble(mPack.group(1));
+                        Double value = Double.parseDouble(mPack.group(1));
+                        packAmount = value <=1000 ? value : null;
                     }
                     wareID = null;
                     if (name != null) {
