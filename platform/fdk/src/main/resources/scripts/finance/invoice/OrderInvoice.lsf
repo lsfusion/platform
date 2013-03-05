@@ -75,8 +75,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
 
     CONSTRAINT legalEntityStock(customerStockInvoiceOrder())!= customerInvoiceOrder() CHECKED BY customerStockInvoiceOrder MESSAGE 'Выбран склад не текущего покупателя';
 
+    operation###InvoiceOrder = DATA SESSION operation ();
+    name###operation###InvoiceOrder 'Операция' = name(operation###InvoiceOrder());
+
     FORM invoiceOrders 'Заказы'###sign
-        PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder
+        PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, name###operation###InvoiceOrder
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
@@ -85,7 +88,8 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
         FILTERS isPostedOrder(o),
                 (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS order AND NOT supplierInvoiceOrder()),
                 customerOrder(o) == customerInvoiceOrder() OR (o IS order AND NOT customerInvoiceOrder()),
-                customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder())
+                customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder()),
+                operation###Order(o) == operation###InvoiceOrder() OR (o IS order AND NOT operation###InvoiceOrder())
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -126,6 +130,14 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
                         }
                     }
                 }
+            }
+            NEW sessionPropContainer BEFORE documentContainer {
+                ADD PROPERTY(nameSupplierInvoiceOrder());
+                ADD PROPERTY(nameSupplierStockInvoiceOrder());
+                ADD PROPERTY(nameCustomerInvoiceOrder());
+                ADD PROPERTY(nameCustomerStockInvoiceOrder());
+                ADD PROPERTY(name###operation###InvoiceOrder());
+
             }
             PROPERTY(toInvoiceOrderDetail) { background = #FFFFCC; }
         }
@@ -227,6 +239,12 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
 
 
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
+        supplierInvoiceOrder() <- supplierUserInvoice(userInvoice);
+        supplierStockInvoiceOrder() <- supplierStockUserInvoice(userInvoice);
+        customerInvoiceOrder() <- customerUserInvoice(userInvoice);
+        customerStockInvoiceOrder() <- customerStockUserInvoice(userInvoice);
+        operation###InvoiceOrder() <- operation###UserInvoice(userInvoice);
+
         FORM invoiceOrders MODAL;
         IF formResult() == formResult.ok THEN {
             EXEC fillUserInvoiceOrder(userInvoice, chosenObject('o'));
