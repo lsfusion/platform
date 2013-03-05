@@ -31,7 +31,7 @@ EXTEND CLASS systemLedgerPriceListType {chargePriceStockPriceListType 'Услу�
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType. chargePriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(ledger) WHEN CLASS(chargePriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.chargePriceStockPriceListType;
 
-EXTEND CLASS systemLedgerPriceListType { chargePricePriceListType 'Услуги (последняя)' }
+EXTEND CLASS systemLedgerPriceListType { chargePricePriceListType 'Услуги (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.chargePricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(chargePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.chargePricePriceListType;
 

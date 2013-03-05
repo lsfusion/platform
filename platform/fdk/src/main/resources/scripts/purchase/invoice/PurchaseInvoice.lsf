@@ -130,9 +130,9 @@ skuPriceListLedger (ledger) += skuInvoiceDetail(invoiceDetailInvoicePriceListLed
 
 descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
 
-inPriceListLedgerStock (ledger, stock) += isCompanyStock(stock) AND ledger IS invoicePriceListLedger;
+inPriceListLedgerStock (ledger, stock) += isCompanyStock(stock) AND priceStockGroupStock(customerStockInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) == priceStockGroupStock(stock);
 
-EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя)' }
+EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 

@@ -1,0 +1,14 @@
+MODULE PriceListStore;
+
+REQUIRE PriceList, Store;
+
+//------------------------- Расширяем форму Магазина -------------------------//
+
+priceStockGroupStore = DATA priceStockGroup (store);
+namePriceStockGroupStore 'Ценовая группа' (store)= name(priceStockGroupStore(store));
+
+priceStockGroupStock(stock) += priceStockGroupStore(storeDepartmentStore(stock));
+
+EXTEND FORM store
+    PROPERTIES(s)   namePriceStockGroupStore
+;

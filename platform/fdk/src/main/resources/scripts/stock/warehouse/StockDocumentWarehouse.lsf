@@ -8,3 +8,4 @@ REQUIRE StockDocument, Warehouse;
 
 @extendStockFormStockDocumentLedger(warehouse, w);
 
+

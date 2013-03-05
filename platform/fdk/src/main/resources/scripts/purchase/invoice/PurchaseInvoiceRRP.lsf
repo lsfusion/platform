@@ -42,7 +42,7 @@ batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPI
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(ledger) WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
-EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoicePriceListType 'RRP (последняя)' }
+EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoicePriceListType 'RRP (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
 

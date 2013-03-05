@@ -10,7 +10,7 @@ EXTEND CLASS systemLedgerPriceListType { manufacturingPriceStockPriceListType '�
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType. manufacturingPriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(ledger) WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.manufacturingPriceStockPriceListType;
 
-EXTEND CLASS systemLedgerPriceListType { manufacturingPricePriceListType 'Цена изготовителя (последняя)' }
+EXTEND CLASS systemLedgerPriceListType { manufacturingPricePriceListType 'Цена изготовителя (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.manufacturingPricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.manufacturingPricePriceListType;
 
