@@ -11,8 +11,8 @@ EXTEND FORM declaration
     PROPERTIES (d) exportDeclaration TODRAW dd FORCE PANEL TOOLBAR
 ;
 
-EXTEND DESIGN declaration {
-    main {
-        ADD PROPERTY(exportDeclaration) BEFORE PROPERTY(toCreateDeclarationDetails);
-    }
-}
+//EXTEND DESIGN declaration {
+//    main {
+//        ADD PROPERTY(exportDeclaration) BEFORE PROPERTY(toCreateDeclarationDetails);
+//    }
+//}
