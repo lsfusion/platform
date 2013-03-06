@@ -55,11 +55,12 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
             if (chosenKey != null) {
                 int closeFormResultID = formResultClass.getID(FormCloseType.CLOSE.asString());
+                int dropFormResultID = formResultClass.getID(FormCloseType.DROP.asString());
 
                 Object value = formResultProperty.read(context);
 
                 if (value != null && !value.equals(closeFormResultID)) {
-                    Object chosenValue = chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
+                    Object chosenValue = value.equals(dropFormResultID) ? null : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
                     updateRequestedValue(context, chosenValue);
                 } else {
                     requestCanceledProperty.change(true, context);
