@@ -5,6 +5,8 @@ REQUIRE Country;
 CLASS ABSTRACT POI 'POI';
 TABLE POI(POI);
 
+autoSynchronizeCoordinates 'Синхронизировать координаты' = DATA BOOLEAN ();
+
 namePOI 'Название'= ABSTRACT STRING[200] (POI) PERSISTENT;
 
 countryPOI = ABSTRACT country (POI) PERSISTENT;
@@ -28,7 +30,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
     SET longitudePOI(POI) <- readLongitude();
 
 }
-WHEN CHANGED(countryPOI(POI)) OR CHANGED(addressPOI(POI)) DO EXEC changeCoordinatesPOI(POI) SESSION;
+WHEN (CHANGED(countryPOI(POI)) OR CHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI) SESSION;
 
 // Показать на карте одну точку
 showOnMap 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';
@@ -46,4 +48,14 @@ showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'fdk.
 inPathPOI 'Вкл' = DATA SESSION BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA SESSION POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'fdk.utils.geo.CalculatePathActionProperty';
+
+EXTEND FORM options
+PROPERTIES() autoSynchronizeCoordinates
+;
+
+EXTEND DESIGN options {
+    commons {
+        ADD PROPERTY(autoSynchronizeCoordinates);
+    }
+}
 
