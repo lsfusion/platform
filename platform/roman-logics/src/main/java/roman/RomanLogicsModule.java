@@ -38,6 +38,7 @@ import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import roman.actions.TNVEDImportUAActionProperty;
+import roman.actions.TranslateActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1511,7 +1512,7 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initModuleDependencies() {
-        setRequiredModules(Arrays.asList("System", "Utils", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));
+        setRequiredModules(Arrays.asList("System", "Utils", "I18n", "Hierarchy", "Historizable", "Numerator", "Stock", "Document", "Country"));
     }
 
     @Override
@@ -1522,7 +1523,7 @@ public class RomanLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-        multiLanguageNamed = (ConcreteCustomClass) BL.i18nLM.getClassByName("multiLanguageNamed");
+        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("multiLanguageNamed");
         
         destination = addAbstractClass("destination", "Пункт назначения", baseClass);
 
@@ -1894,10 +1895,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", getSidOrigin2Country());
 
-        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", BL.i18nLM.dictionary);
+        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", BL.I18n.getClassByName("dictionary"));
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
 
-        dictionaryName = addDProp(idGroup, "dictionaryName", "Словарь для названий (ИД)", BL.i18nLM.dictionary);
+        dictionaryName = addDProp(idGroup, "dictionaryName", "Словарь для названий (ИД)", BL.I18n.getClassByName("dictionary"));
         nameDictionaryName = addJProp(baseGroup, "nameDictionaryName", "Словарь для названий", baseLM.name, dictionaryName);
 
 
@@ -2331,13 +2332,13 @@ public class RomanLogicsModule extends LogicsModule {
         translateNameArticle = addDProp(supplierAttributeGroup, "translateNameArticle", "Наименование", InsensitiveStringClass.get(50), article);
         translateNameArticleSku = addJProp(supplierAttributeGroup, true, "translateNameArticleSku", "Наименование", translateNameArticle, articleSku, 1);
 
-        originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.i18nLM.getClassByName("language")), 2);
-        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.i18nLM.getClassByName("language"));
+        originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("language"));
 
         translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевести", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
         translationNameSku.property.panelLocation = new ShortcutPanelLocation(translateNameArticleSku.property);
 
-        translationNameSkuLanguage = addJoinAProp(actionGroup, "translationNameSkuLanguage", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), BL.i18nLM.getLCPByName("dictionaryNameLanguage"), 2, 1, 2);
+        translationNameSkuLanguage = addJoinAProp(actionGroup, "translationNameSkuLanguage", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), BL.I18n.getLCPByName("dictionaryNameLanguage"), 2, 1, 2);
         //translationNameSkuInvoice = addJoinAProp(actionGroup, "translationNameSkuInvoice", "Перевод наименования", addTAProp(originalNameArticleSkuLanguage, translateNameSkuLanguage), dictionaryName, 1, languageInvoice, 2);
 
         translateNameSkuInvoice = addJProp("translateNameSkuInvoice", "Наименование (иностр.)", translateNameSkuLanguage, 1, languageInvoice, 2);
@@ -2377,8 +2378,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameCategoryArticleSku.property.minimumCharWidth = 15;
         nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
 
-        nameCategoryArticleLanguage = addJProp("nameCategoryArticleLanguage", "Номенклатурная группа", BL.i18nLM.getLCPByName("languageName"), categoryArticle, 1, 2);
-        nameCategoryArticleSkuLanguage = addJProp("nameCategoryArticleSkuLanguage", "Номенклатурная группа", BL.i18nLM.getLCPByName("languageName"), categoryArticleSku, 1, 2);
+        nameCategoryArticleLanguage = addJProp("nameCategoryArticleLanguage", "Номенклатурная группа", BL.I18n.getLCPByName("languageName"), categoryArticle, 1, 2);
+        nameCategoryArticleSkuLanguage = addJProp("nameCategoryArticleSkuLanguage", "Номенклатурная группа", BL.I18n.getLCPByName("languageName"), categoryArticleSku, 1, 2);
 
         warrantyCategoryArticleSku = addJProp("warrantyCategoryArticleSku", "Гарантийный срок", warrantyCategory, categoryArticleSku, 1);
         warrantyDataSku = addDProp("warrantyDataSku", "Гарантийный срок", NumericClass.get(14, 3), sku);
@@ -2645,7 +2646,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidGenderArticleSku.property.preferredCharWidth = 5;
         sidGenderArticleSku.property.minimumCharWidth = 3;
 
-        sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.i18nLM.getLCPByName("languageName"), genderArticleSku, 1, 2);
+        sidGenderArticleSkuLanguage = addJProp("sidGenderArticleSkuLanguage", "Пол", BL.I18n.getLCPByName("languageName"), genderArticleSku, 1, 2);
 
         // Country
         countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
@@ -2680,7 +2681,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCountrySku.property.preferredCharWidth = 50;
         nameCountrySku.property.minimumCharWidth = 15;
 
-        nameCountrySkuLanguage = addJProp("nameCountrySkuLanguage", "Страна", BL.i18nLM.getLCPByName("languageName"), countryOfOriginSku, 1,  2);
+        nameCountrySkuLanguage = addJProp("nameCountrySkuLanguage", "Страна", BL.I18n.getLCPByName("languageName"), countryOfOriginSku, 1,  2);
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", baseLM.diff2,
                 supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
@@ -2688,7 +2689,7 @@ public class RomanLogicsModule extends LogicsModule {
         countryBrandSupplierSku = addJProp(idGroup, "countryBrandSupplierSku", "Страна поставки (ИД)", countryBrandSupplier, brandSupplierArticleSku, 1);
         nameCountryBrandSupplierSku = addJProp(baseGroup, "nameCountryBrandSupplierSku", "Страна поставки", baseLM.name, countryBrandSupplierSku, 1);
 
-        nameCountryBrandSupplierSkuLanguage = addJProp("nameCountryBrandSupplierSkuLanguage", "Страна поставки", BL.i18nLM.getLCPByName("languageName"), countryBrandSupplierSku, 1, 2);
+        nameCountryBrandSupplierSkuLanguage = addJProp("nameCountryBrandSupplierSkuLanguage", "Страна поставки", BL.I18n.getLCPByName("languageName"), countryBrandSupplierSku, 1, 2);
 
         // Composition
         mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
@@ -2727,14 +2728,14 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
 
-        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.i18nLM.getClassByName("language"));
-        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.i18nLM.getClassByName("language"));
+        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
 
-        mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.i18nLM.getClassByName("language")), 2);
-        additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.i18nLM.getClassByName("language")), 2);
+        mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+        additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
 
-        translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), BL.i18nLM.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
-        translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), BL.i18nLM.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
+        translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
+        translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), BL.I18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
 
         mainCompositionSkuInvoice = addJProp("mainCompositionSkuInvoice", "Состав (укр.)", mainCompositionSkuLanguage, 1, languageInvoice, 2);
 
@@ -2768,7 +2769,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameTypeFabricArticleSku = addJProp(baseGroup, "nameTypeFabricArticleSku", "Тип одежды", baseLM.name, typeFabricArticleSku, 1);
         nameTypeFabricArticleSku.property.preferredCharWidth = 10;
         nameTypeFabricArticleSku.property.minimumCharWidth = 5;
-        nameTypeFabricArticleSkuLanguage = addJProp(baseGroup, "nameTypeFabricArticleSkuLanguage", "Тип одежды", BL.i18nLM.getLCPByName("languageName"), typeFabricArticleSku, 1, 2);
+        nameTypeFabricArticleSkuLanguage = addJProp(baseGroup, "nameTypeFabricArticleSkuLanguage", "Тип одежды", BL.I18n.getLCPByName("languageName"), typeFabricArticleSku, 1, 2);
 
         // commonSize
         commonSizeDataSku = addDProp("commonSizeDataSku", "Унифицированный размер (ИД)", commonSize, sku);
@@ -3567,7 +3568,7 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory10CategoryGenderCompositionTypeFabricFreight = addJProp(true, "customCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabricCustomsZone, 1, 2, 3, 4, customsZoneFreight, 5);
         sidCustomCategory10CategoryGenderCompositionTypeFabricFreight = addJProp("sidCustomCategory10CategoryGenderCompositionTypeFabricFreight", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabricFreight, 1, 2, 3, 4, 5);
 
-        dictionaryFreight = addJProp("dictionaryFreight", "Словарь", BL.i18nLM.getLCPByName("dictionaryCompositionLanguage"), languageFreight, 1);
+        dictionaryFreight = addJProp("dictionaryFreight", "Словарь", BL.I18n.getLCPByName("dictionaryCompositionLanguage"), languageFreight, 1);
 
         dateImporterFreightTypeInvoice = addDProp(baseGroup, "dateImporterFreightTypeInvoice", "Дата инвойса", DateClass.instance, importer, freight, typeInvoice);
         dateImporterFreight = addMGProp(baseGroup, "dateImporterFreight", "Дата инвойса", dateImporterFreightTypeInvoice, 1, 2);
@@ -8795,5 +8796,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             context.getFormInstance().seekObject(objectInstance, objRouteResult);
         }
+    }
+
+    protected LAP addTAProp(LCP sourceProperty, LCP targetProperty) {
+        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", BL.I18n.getLCPByName("translationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveTranslationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveDictionary"), sourceProperty, targetProperty, BL.I18n.getClassByName("dictionary"))));
     }
 }

@@ -942,10 +942,6 @@ public abstract class LogicsModule {
         ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, readObjectImplements(eaProp, params), attachNameImpl);
     }
 
-    protected LAP addTAProp(LCP sourceProperty, LCP targetProperty) {
-        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", baseLM.BL.i18nLM.translationDictionaryEntryDictionaryTerm, baseLM.BL.i18nLM.insensitiveTranslationDictionaryEntryDictionaryTerm, baseLM.BL.i18nLM.insensitiveDictionary, sourceProperty, targetProperty, baseLM.BL.i18nLM.dictionary)));
-    }
-
     protected <P extends PropertyInterface> LCP addSCProp(LCP<P> lp) {
         return addSCProp(baseLM.privateGroup, "sys", lp);
     }

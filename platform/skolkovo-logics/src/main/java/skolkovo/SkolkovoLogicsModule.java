@@ -273,7 +273,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-        multiLanguageNamed = (ConcreteCustomClass) BL.i18nLM.getClassByName("multiLanguageNamed");
+        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("multiLanguageNamed");
 
         projectType = addStaticClass("projectType", "Тип проекта",
                 new String[]{"comparable", "surpasses", "russianbenchmark", "certainadvantages", "significantlyoutperforms", "nobenchmarks"},

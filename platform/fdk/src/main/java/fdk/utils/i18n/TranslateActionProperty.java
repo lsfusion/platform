@@ -1,15 +1,13 @@
-package platform.server.logics.i18n;
+package fdk.utils.i18n;
 
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.StringClass;
 import platform.server.classes.TextClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.*;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.*;
@@ -24,7 +22,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageFromInterface;
     public final ClassPropertyInterface languageToInterface;
 
-    public TranslateActionProperty(I18nLogicsModule LM) {
+    public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, new ValueClass[]{TextClass.instance, LM.getClassByName("language"), LM.getClassByName("language")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

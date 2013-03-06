@@ -102,7 +102,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final SystemEventsLogicsModule systemEventsLM;
     public final EmailLogicsModule emailLM;
     public final SchedulerLogicsModule schedulerLM;
-    public final I18nLogicsModule i18nLM;
     public final UtilsLogicsModule utilsLM;
     private String dbName;
 
@@ -562,7 +561,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addModule(systemEventsLM);
         addModule(emailLM);
         addModule(schedulerLM);
-        addModule(i18nLM);
         addModule(utilsLM);
     }
 
@@ -907,8 +905,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         schedulerLM = new SchedulerLogicsModule(this, this.LM);
 
         utilsLM = new UtilsLogicsModule(this, this.LM);
-
-        i18nLM = new I18nLogicsModule(this, this.LM);
 
         navigatorsController = new NavigatorsController(this);
 

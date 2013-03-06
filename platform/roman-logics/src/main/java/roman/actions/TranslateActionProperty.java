@@ -1,4 +1,4 @@
-package platform.server.logics.property.actions;
+package roman.actions;
 
 import platform.base.BaseUtils;
 import platform.server.classes.StringClass;
@@ -7,6 +7,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.logics.property.actions.UserActionProperty;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

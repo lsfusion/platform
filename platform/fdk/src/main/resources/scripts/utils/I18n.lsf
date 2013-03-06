@@ -71,7 +71,7 @@ nameLanguageFromTranslation 'С языка'() = name(languageFromTranslation());
 languageToTranslation = DATA language ();
 nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
 
-translate  = ACTION CUSTOM 'platform.server.logics.i18n.TranslateActionProperty';
+translate  = ACTION CUSTOM 'fdk.utils.i18n.TranslateActionProperty';
 
 translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
 
@@ -84,6 +84,15 @@ translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
 translateText 'Перевести' = ACTION () {
     EXEC translate (translationOriginal(), languageFromTranslation(), languageToTranslation());
 }
+
+// ------------------------------------ Перевод через словарь -------------------------------- //
+
+translationOriginalString 'Фраза' = DATA SESSION STRING[50] ();
+translationResultString 'Перевод' = DATA SESSION STRING[50] ();
+
+translateDictionary  = ACTION CUSTOM 'fdk.utils.i18n.TranslateDictionaryActionProperty';
+
+WHEN CHANGED (translationOriginalString()) AND dictionary IS dictionary DO EXEC translateDictionary(dictionary, translationOriginalString()) SESSION;
 
 FORM translation 'Перевод'
     PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
@@ -144,7 +153,31 @@ FORM dictionary 'Словарь'
     FILTERS       dictionaryDictionaryEntry(e) == d
 
     EDIT dictionary OBJECT d
+
+    PROPERTIES() translationOriginalString, translationResultString
 ;
+
+DESIGN dictionary FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        ADD d.box;
+        ADD e.box;
+        NEW test {
+            childConstraints = TO THE RIGHT;
+            ADD PROPERTY(translationOriginalString) {
+                caption = 'Фраза для перевода';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            };
+            ADD PROPERTY(translationResultString){
+                caption = 'Перевод';
+                panelLabelAbove = TRUE;
+                font = 'Tahoma bold 24';
+            };
+        }
+        ADD functions.box;
+    }
+}
 
 FORM dictionaries 'Словари'
     OBJECTS d = dictionary

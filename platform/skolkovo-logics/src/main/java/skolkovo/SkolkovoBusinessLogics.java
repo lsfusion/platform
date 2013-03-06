@@ -21,6 +21,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 import skolkovo.api.gwt.shared.ForesightInfo;
 import skolkovo.api.gwt.shared.ProfileInfo;
@@ -41,6 +42,7 @@ import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
     private SkolkovoLogicsModule SkolkovoLM;
+    public ScriptingLogicsModule I18n;
 
     public SkolkovoBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -50,6 +52,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     public void createModules() throws IOException {
         super.createModules();
         SkolkovoLM = addModule(new SkolkovoLogicsModule(LM, this));
+        I18n = addModuleFromResource("scripts/utils/I18n.lsf");
         addModulesFromResource(
                 "/scripts/masterdata/Currency.lsf",
                 "/scripts/masterdata/Country.lsf",
