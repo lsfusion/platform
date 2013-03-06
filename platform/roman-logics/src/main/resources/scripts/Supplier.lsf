@@ -149,7 +149,7 @@ FORM supplier 'Поставщик'
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(s, co2) TODRAW ag FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(ag, s),
-            supplierAgreement(ag) == co2
+            inAgreementSupplierOver(ag,co2)
 
     OBJECTS l=license
     PROPERTIES(l) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete

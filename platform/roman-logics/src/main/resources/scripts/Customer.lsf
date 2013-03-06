@@ -125,7 +125,7 @@ FORM customer 'Покупатель'
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR
     FILTERS inAgreementCustomerOver(ag, cu),
-            supplierAgreement(ag) == co2
+            inAgreementSupplierOver(ag,co2)
 
     EDIT customer OBJECT cu
 ;
