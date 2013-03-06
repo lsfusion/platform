@@ -302,9 +302,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     packAmount = null;
                     Pattern rPack = Pattern.compile(".*\\/(\\d+)\\/?");
                     Matcher mPack = rPack.matcher(name);
-                    if(mPack.matches()) {
+                    if (mPack.matches()) {
                         Double value = Double.parseDouble(mPack.group(1));
-                        packAmount = value <=1000 ? value : null;
+                        packAmount = value <= 1000 ? value : null;
                     }
                     wareID = null;
                     if (name != null) {
@@ -398,9 +398,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     sumPrice = sumPrice == null ? null : ((double) (Math.round(sumPrice * 100))) / 100;
                     String chargePricePercent = splittedLine.length > 19 ? (splittedLine[19].endsWith(".00") ?
                             splittedLine[19].substring(0, splittedLine[19].length() - 3) : splittedLine[19]) : "";
-                    chargePrice = chargePricePercent.trim().isEmpty() ? null : ((sumPrice * Double.parseDouble(chargePricePercent)) / (100 + Double.parseDouble(chargePricePercent))) /*sumPrice * Double.parseDouble(chargePricePercent) / 100*/;
-                    chargePrice = chargePrice == null ? null : ((double) (Math.round(chargePrice * 100))) / 100;
-                    price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - chargePrice);
+                    try {
+                        chargePrice = chargePricePercent.trim().isEmpty() ? null : ((sumPrice * Double.parseDouble(chargePricePercent)) / (100 + Double.parseDouble(chargePricePercent))) /*sumPrice * Double.parseDouble(chargePricePercent) / 100*/;
+                        chargePrice = chargePrice == null ? null : ((double) (Math.round(chargePrice * 100))) / 100;
+                    } catch (NumberFormatException e) {
+                        chargePrice = null;
+                    }
+                    price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - (chargePrice==null ? 0 : chargePrice));
                 } else if ("1".equals(extra)) {
                     textCompliance = reader.readLine();
                     //String[] compliance = textCompliance.split(" ДО | ПО ");
