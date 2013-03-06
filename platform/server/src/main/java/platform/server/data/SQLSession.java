@@ -105,7 +105,7 @@ public class SQLSession extends MutableObject {
         connection.setAutoCommit(!ACID);
         connection.setReadOnly(!ACID);
 
-        Statement statement = connection.createStatement();
+        Statement statement = createSingleStatement(connection);
         try {
             statement.execute("SET SESSION synchronous_commit TO " + (ACID ? "DEFAULT" : "OFF"));
             statement.execute("SET SESSION commit_delay TO " + (ACID ? "DEFAULT" : "100000"));
@@ -434,7 +434,7 @@ public class SQLSession extends MutableObject {
 
         env.before(this, connection, DDL);
 
-        Statement statement = connection.createStatement();
+        Statement statement = createSingleStatement(connection);
         try {
             statement.execute(DDL);
         } catch (SQLException e) {
@@ -509,7 +509,7 @@ public class SQLSession extends MutableObject {
         logger.debug(command);
 
         int result = 0;
-        Statement statement = connection.createStatement();
+        Statement statement = createSingleStatement(connection);
         try {
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
@@ -747,6 +747,13 @@ public class SQLSession extends MutableObject {
     private static int readInt(Object value) {
         return ((Number)value).intValue();
     }
+
+    private static Statement createSingleStatement(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        statement.setEscapeProcessing(false); // для preparedStatement'ов эту операцию не имеет смысл делать
+        return statement;
+    }
+
     // в явную без query так как часто выполняется
     public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
@@ -774,7 +781,7 @@ public class SQLSession extends MutableObject {
 
         logger.debug(select);
 
-        Statement statement = connection.createStatement();
+        Statement statement = createSingleStatement(connection);
         try {
             ResultSet result = statement.executeQuery(select);
             try {
