@@ -7,14 +7,6 @@ NAMESPACE Purchase;
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(purchase, invoice, i);
-@definePriceListTypeConstraintOperationObject(purchase, invoice);
-@defineSupplierCustomerConstraintOperationObject(purchase, invoice);
-
-//----------------------------------------------- Накладная ---------------------------------------------------//
-@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack, purchaseOperation);
 @defineInvoiceBatch(customerStock);
 
 @defineInvoiceDestination(supplier, customer);
@@ -22,6 +14,15 @@ NAMESPACE Purchase;
 
 // вторая валюта
 @defineHomeCurrencyInvoice(invoice);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(purchase, invoice, i);
+@defineDocumentOperationPriceListType(purchase, userInvoice);
+@defineDocumentOperationLegalEntity(purchase, userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(purchase, userInvoice, customer, 'Покупатель');
+
+@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack, purchaseOperation);
 
 isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
 

@@ -19,9 +19,10 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineOperationObject(purchase, invoice, i);
-@definePriceListTypeConstraintOperationObject(purchase, invoice);
-@defineSupplierCustomerConstraintOperationObject(purchase, invoice);
+@defineDocumentOperation(purchase, invoice, i);
+@defineDocumentOperationPriceListType(purchase, userInvoice);
+@defineDocumentOperationLegalEntity(purchase, userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(purchase, userInvoice, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор поставщиков -----------------------------//
 

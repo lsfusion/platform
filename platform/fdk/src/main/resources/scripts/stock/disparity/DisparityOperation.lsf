@@ -2,7 +2,7 @@ MODULE DisparityOperation;
 
 REQUIRE Operation, Disparity;
 
-@defineOperationPrefix(disparity, isSellerLegalEntity, isCompanyLegalEntity, '(изменение сортности)');
+@defineOperation(disparity, '(изменение сортности)');
 
 createRepricingDisparityOperation 'Создать акт переоценки' = DATA BOOLEAN (disparityOperation) IN createGroup;
 
@@ -11,10 +11,6 @@ EXTEND FORM disparityOperation
 ;
 
 EXTEND DESIGN disparityOperation {
-    REMOVE pt.box;
-    REMOVE supplierContainer;
-    REMOVE customerContainer;
-
     tabContainer{
         NEW aggrContainer{
             caption = 'Создание объектов';

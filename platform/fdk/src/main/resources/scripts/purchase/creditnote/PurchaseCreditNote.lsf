@@ -28,9 +28,6 @@ customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(c
     IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(customerUserCreditNote(userCreditNote));
 
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
 
 NAVIGATOR {
     purchasePurchaseNavigator {

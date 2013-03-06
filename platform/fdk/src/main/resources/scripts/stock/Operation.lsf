@@ -5,25 +5,55 @@ REQUIRE Utils, Historizable;
 CLASS ABSTRACT operation 'Операция' : named, historizable;
 TABLE operation(operation);
 
-META defineRecursionGroupChoose(object, prefix)
+// -------------------------------------- Макросы по созданию операций ---------------------------------- //
 
-    levelParent###prefix###object###legalEntityGroup (object, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prefix##Group###object(parent, object)
-                                                                   BY object, legalEntityGroup PERSISTENT;
-    nearestParent###prefix##Group###legalEntityGroup (object, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prefix###object###legalEntityGroup(object, legalEntityGroup));
-    nearest###is###prefix##Group###object (legalEntityGroup, object) =
-        is###prefix##Group###object(nearestParent###prefix##Group###legalEntityGroup(object, legalEntityGroup), object) PERSISTENT;
+META defineOperation(prefix, postfix)
 
-    is###prefix##Group###object##Over 'Отм' (legalEntityGroup, object) =
-        UNION OVERRIDE nearest###is###prefix##Group###object(legalEntityGroup, object),
-                       is###prefix##Group###object(legalEntityGroup, object);
+    CLASS prefix###operation 'Операция' : operation;
+    TABLE prefix###operation(prefix###operation);
 
-    is###prefix###object##Over 'Отм' (legalEntity, object) =
-        (UNION OVERRIDE nearest###is###prefix##Group###object(legalEntityGroup###legalEntity(legalEntity), object),
-                        is###prefix###object(legalEntity, object));
+    TABLE legalEntity###prefix###operation(legalEntity, prefix###operation);
+    TABLE legalEntityGroup###prefix###operation(legalEntityGroup, prefix###operation);
+
+    FORM prefix###operation 'Операция'##postfix
+        OBJECTS o = prefix###operation FIXED PANEL
+        PROPERTIES(o) name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+
+        EDIT prefix###operation OBJECT o
+    ;
+
+    DESIGN prefix###operation FROM DEFAULT{
+        NEW topContainer{
+            type = SPLITV;
+            NEW headContainer{
+                childConstraints = TO THE RIGHT;
+                NEW propertyContainer{
+                    childConstraints = TO THE BOTTOM;
+                    caption = 'Параметры';
+                    ADD PROPERTY(name);
+                }
+                ADD o.historyGroup;
+            }
+            NEW tabContainer{
+                type = TABBED;
+            }
+        }
+        ADD functions.box;
+    }
+
+    FORM prefix###operations 'Операции' TITLE 'Операции'##postfix
+        OBJECTS o = prefix###operation
+        PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) ADDFORM, EDITFORM, delete
+
+        DIALOG prefix###operation OBJECT o
+    ;
 
 END
 
-META defineOperationObject(prefix, object, char)
+// -------------------------------------- Макросы по объявлению операций в документах ---------------------------------- //
+
+META defineDocumentOperation(prefix, object, char)
 
     prefix###operation###object = ABSTRACT prefix###operation (object) PERSISTENT;
     name###prefix###operation###object 'Операция' = name(prefix###operation###object(object));
@@ -46,137 +76,97 @@ META defineOperationObject(prefix, object, char)
 
 END
 
-META definePriceListTypeConstraintOperationObject(prefix, object)
-    CONSTRAINT prefix###operationUser###object##Detail(user###object##Detail)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object##Detail(user###object##Detail), prefix###operationUser###object##Detail(user###object##Detail))
-        CHECKED BY priceListTypeUser###object##Detail
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+// -------------------------------------- Организации ---------------------------------- //
 
-    CONSTRAINT prefix###operationUser###object(user###object) AND priceListTypeUser###object(user###object)
-               AND NOT isPriceListType###prefix###operation(priceListTypeUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY priceListTypeUser###object
-        MESSAGE 'Вид цены должен совпадать с отмеченными в операции';
+META defineOperationLegalEntity(prefix, prop, object, filter, tabcaption)
+
+    // Отметка для групп
+    is###prop###group###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
+
+    levelParent###prop###prefix###operation###legalEntityGroup (operation, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prop##Group###prefix###operation(parent, operation)
+                                                                   BY operation, legalEntityGroup PERSISTENT;
+    nearestParent###prop##Group###legalEntityGroup (operation, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prop###prefix###operation###legalEntityGroup(operation, legalEntityGroup));
+    nearest###is###prop##Group###prefix###operation (legalEntityGroup, operation) =
+        is###prop##Group###prefix###operation(nearestParent###prop##Group###legalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
+
+    is###prop##Group###prefix###operation##Over 'Отм' (legalEntityGroup, operation) =
+        UNION OVERRIDE nearest###is###prop##Group###prefix###operation(legalEntityGroup, operation),
+                       is###prop##Group###prefix###operation(legalEntityGroup, operation);
+
+    // Отметка для организаций
+    is###prop###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
+    is###prop###prefix###operation##Over 'Отм' (legalEntity, operation) =
+        (UNION OVERRIDE nearest###is###prop##Group###prefix###operation(legalEntityGroup###legalEntity(legalEntity), operation),
+                        is###prop###prefix###operation(legalEntity, operation));
+
+    EXTEND FORM prefix###operation
+        TREE prop###groupTree object##g = legalEntityGroup PARENT parentLegalEntityGroup
+        PROPERTIES READONLY sgTreeName = name(object##g)
+        PROPERTIES is###prop###Group###prefix###operation##Over(object##g, o)
+
+        OBJECTS object = legalEntity
+        PROPERTIES(object, o) is###prop###prefix###operation##Over
+        PROPERTIES(object) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
+                               addressLegalEntity, phoneLegalEntity,
+                               isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+        FILTERS (inLegalEntityGroupLegalEntity(object##g, object) OR (object IS legalEntity AND object##g IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(object))),
+                filter(object)
+        FILTERGROUP filters2
+                FILTER 'Показывать отмеченные' 'F10' is###prop###prefix###operation(object, o)
+    ;
+
+    EXTEND DESIGN prefix###operation {
+        tabContainer {
+            NEW prop###Container{
+                childConstraints = TO THE RIGHT;
+                type = SPLITH;
+                caption = tabcaption;
+                ADD prop###groupTree.tree.box;
+                ADD object.box { fillHorizontal = 2.0; };
+            }
+        }
+    }
+
 END
 
-META defineSupplierCustomerConstraintOperationObject(prefix, object)
-    CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isSupplier###prefix###operation##Over(supplierUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY supplierUser###object
-        MESSAGE 'Поставщик должен совпадать с отмеченными в операции';
-
-    CONSTRAINT prefix###operationUser###object(user###object)
-               AND NOT isCustomer###prefix###operation##Over(customerUser###object(user###object), prefix###operationUser###object(user###object))
-        CHECKED BY customerUser###object
-        MESSAGE 'Покупатель должен совпадать с отмеченными в операции';
+META defineDocumentOperationLegalEntity(prefix, object, prop, caption)
+    CONSTRAINT prefix###operation###object(object)
+               AND NOT is###prop###prefix###operation##Over(prop###object(object), prefix###operation###object(object))
+        CHECKED BY prop###object
+        MESSAGE caption##' должен совпадать с отмеченными в операции';
 END
 
-META defineOperationPrefix(prefix, supplierFilter, customerFilter, postfix)
+// -------------------------------------- Виды цен ---------------------------------- //
 
-    CLASS prefix###operation 'Операция' : operation;
-    TABLE prefix###operation(prefix###operation);
+META defineOperationPriceListType(prefix)
 
     TABLE priceListType###prefix###operation(priceListType, prefix###operation);
     isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
 
-    TABLE legalEntity###prefix###operation(legalEntity, prefix###operation);
-    isSupplier###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
-    isSupplierGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
-
-    isCustomer###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
-    isCustomerGroup###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
-
-    TABLE legalEntityGroup###prefix###operation(legalEntityGroup, prefix###operation);
-    @defineRecursionGroupChoose(prefix###operation, supplier);
-    @defineRecursionGroupChoose(prefix###operation, customer);
-
-    //------------------------------- Формы ------------------------------------------- //
-
-    FORM prefix###operation 'Операция'##postfix
-        OBJECTS o = prefix###operation FIXED PANEL
-        PROPERTIES(o) name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-
+    EXTEND FORM prefix###operation
         OBJECTS pt = priceListType
         PROPERTIES(pt, o) isPriceListType###prefix###operation
         PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
         FILTERGROUP filters
             FILTER 'Показывать отмеченные' 'F9' isPriceListType###prefix###operation(pt, o)
-
-        TREE supplierGroupTree sg = legalEntityGroup PARENT parentLegalEntityGroup
-        PROPERTIES READONLY sgTreeName = name(sg)
-        PROPERTIES isSupplierGroup###prefix###operation##Over(sg, o)
-
-        OBJECTS s = legalEntity
-        PROPERTIES(s, o) isSupplier###prefix###operation##Over
-        PROPERTIES(s) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                               addressLegalEntity, phoneLegalEntity,
-                               isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
-        FILTERS (inLegalEntityGroupLegalEntity(sg, s) OR (s IS legalEntity AND sg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(s))),
-                supplierFilter(s)
-        FILTERGROUP filters2
-            FILTER 'Показывать отмеченные' 'F10' isSupplier###prefix###operation(s, o)
-
-        TREE customerGroupTree cg = legalEntityGroup PARENT parentLegalEntityGroup
-        PROPERTIES READONLY cgTreeName = name(cg)
-        PROPERTIES isCustomerGroup###prefix###operation##Over(cg, o)
-
-        OBJECTS c = legalEntity
-        PROPERTIES(c, o) isCustomer###prefix###operation##Over
-        PROPERTIES(c) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                               addressLegalEntity, phoneLegalEntity,
-                               isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
-        FILTERS (inLegalEntityGroupLegalEntity(cg, c) OR (c IS legalEntity AND cg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(c))),
-                customerFilter(c)
-        FILTERGROUP filters3
-            FILTER 'Показывать отмеченные' 'F11' isCustomer###prefix###operation(c, o)
-
-        EDIT prefix###operation OBJECT o
     ;
 
-    DESIGN prefix###operation FROM DEFAULT{
-        NEW topContainer{
-            type = SPLITV;
-            NEW headContainer{
-                childConstraints = TO THE RIGHT;
-                NEW propertyContainer{
-                    childConstraints = TO THE BOTTOM;
-                    caption = 'Параметры';
-                    ADD PROPERTY(name);
-                }
-                ADD o.historyGroup;
-            }
-            NEW tabContainer{
-                type = TABBED;
-                ADD pt.box;
-                NEW supplierContainer{
-                    childConstraints = TO THE RIGHT;
-                    type = SPLITH;
-                    caption = 'Поставщики';
-                    ADD supplierGroupTree.tree.box;
-                    ADD s.box{fillHorizontal = 2.0;}
-                }
-                NEW customerContainer{
-                    childConstraints = TO THE RIGHT;
-                    type = SPLITH;
-                    caption = 'Покупатели';
-                    ADD customerGroupTree.tree.box;
-                    ADD c.box{fillHorizontal = 2.0;}
-                }
-            }
+    EXTEND DESIGN prefix###operation {
+        tabContainer {
+            ADD pt.box;
         }
-        ADD functions.box;
     }
-
-    FORM prefix###operations 'Операции' TITLE 'Операции'##postfix
-        OBJECTS o = prefix###operation
-        PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
-        PROPERTIES(o) ADDFORM, EDITFORM, delete
-
-        DIALOG prefix###operation OBJECT o
-    ;
 
 END
 
-META deriveDocumentHeaderCreate(object, createProp, prefix)
-    createProp###object (object) <- createProp###prefix##Operation(prefix##Operation###object(object))
-        WHEN CHANGED(prefix##Operation###object(object));
+META defineDocumentOperationPriceListType(prefix, object)
+    CONSTRAINT prefix###operation###object(object) AND priceListType###object(object)
+               AND NOT isPriceListType###prefix###operation(priceListType###object(object), prefix###operation###object(object))
+        CHECKED BY priceListType###object
+        MESSAGE 'Вид цены для документа должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operation###object##Detail(detail)
+               AND NOT isPriceListType###prefix###operation(priceListType###object##Detail(detail), prefix###operation###object##Detail(detail))
+        CHECKED BY priceListType###object##Detail
+        MESSAGE 'Вид цены для строки документа должен совпадать с отмеченными в операции';
 END

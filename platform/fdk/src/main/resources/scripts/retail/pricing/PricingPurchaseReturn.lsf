@@ -23,6 +23,5 @@ skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;
 //--
 
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@deriveDocumentHeaderCreate(userInvoice, createPricing, purchase);
+createPricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));

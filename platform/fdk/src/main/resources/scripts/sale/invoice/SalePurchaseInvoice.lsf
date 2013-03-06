@@ -266,7 +266,8 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-@deriveDocumentHeaderCreate(userInvoice, createPurchaseInvoice, sale);
+createPurchaseInvoiceUserInvoice (invoice) <- createPurchaseInvoiceSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));
 
 
 

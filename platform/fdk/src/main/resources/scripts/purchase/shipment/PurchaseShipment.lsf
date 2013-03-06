@@ -13,8 +13,9 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineOperationObject(purchase, shipment, s);
-@defineSupplierCustomerConstraintOperationObject(purchase, shipment);
+@defineDocumentOperation(purchase, shipment, s);
+@defineDocumentOperationLegalEntity(purchase, userShipment, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(purchase, userShipment, customer, 'Покупатель');
 
 createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
     WHEN CHANGED(purchaseOperationUserInvoice(invoice));

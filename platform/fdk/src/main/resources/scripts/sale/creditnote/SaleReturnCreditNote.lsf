@@ -10,8 +10,6 @@ NAMESPACE SaleReturn;
 @defineCreditNote(' (продажа-возврат)', supplierStock);
 @defineCreditNoteBatch();
 
-@deriveDocumentHeaderCreate(userInvoice, createCreditNote, sale);
-
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(supplierUserCreditNote(userCreditNote))

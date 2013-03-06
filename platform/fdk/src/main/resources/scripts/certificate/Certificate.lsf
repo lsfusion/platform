@@ -16,11 +16,6 @@ descriptionCertificate 'Документ качества' (certificate) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
 
-NAVIGATOR {
-    masterData {
-        NEW certificateNavigator 'Сертификаты' BEFORE regionalData;
-    }
-}
 // -------------------------- Подготовка документов под расширение сертификатами -------------------- //
 
 META defineDocumentCertificate(document, object)

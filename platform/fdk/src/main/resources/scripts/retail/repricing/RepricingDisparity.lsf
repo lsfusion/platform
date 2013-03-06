@@ -9,7 +9,8 @@ REQUIRE Disparity,
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-@deriveDocumentHeaderCreate(disparity, createRepricing, disparity);
+createRepricingDisparity (disparity) <- createRepricingDisparityOperation(disparityOperationDisparity(disparity))
+    WHEN CHANGED(disparityOperationDisparity(disparity));
 
 // До
 @defineDocumentTimeBeforePrefix (disparity, , ' до');

@@ -16,6 +16,11 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 
 @defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
 
+createPricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+createRepricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoice
     PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
@@ -84,8 +89,3 @@ overCopyInvoice(s, d) += ACTION (s, d) {
     SET pricingCommitteeUserInvoice(d) <- pricingCommitteeUserInvoice(s);
     SET retailPriceListTypeUserInvoice(d) <- retailPriceListTypeUserInvoice(s);
 }
-
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@deriveDocumentHeaderCreate(userInvoice, createPricing, purchase);
-@deriveDocumentHeaderCreate(userInvoice, createRepricing, purchase);

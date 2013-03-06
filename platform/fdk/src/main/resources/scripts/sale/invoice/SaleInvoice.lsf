@@ -7,19 +7,23 @@ NAMESPACE Sale;
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
 
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(sale, invoice, i);
-@definePriceListTypeConstraintOperationObject(sale, invoice);
-@defineSupplierCustomerConstraintOperationObject(sale, invoice);
-
-@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceDestination(supplier, customer);
 @defineInvoiceStockDestination(supplierStock, customerStock);
 
 @defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(sale, invoice, i);
+@defineDocumentOperationPriceListType(sale, userInvoice);
+@defineDocumentOperationLegalEntity(sale, userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(sale, userInvoice, customer, 'Покупатель');
+
+// ---------------------------------------------- Создание инвойса по заказу ---------------------------------- //
+
+@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
 
 // --------------------- НДС расчетный ----------------------- //
 

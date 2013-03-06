@@ -14,9 +14,10 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineOperationObject(sale, order, o);
-@definePriceListTypeConstraintOperationObject(sale, order);
-@defineSupplierCustomerConstraintOperationObject(sale, order);
+@defineDocumentOperation(sale, order, o);
+@defineDocumentOperationPriceListType(sale, userOrder);
+@defineDocumentOperationLegalEntity(sale, userOrder, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(sale, userOrder, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

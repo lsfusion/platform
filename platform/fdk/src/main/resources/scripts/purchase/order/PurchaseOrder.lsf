@@ -27,6 +27,13 @@ EXTEND FORM barcodeDialog
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (закупка)', 'ЗК', purchase);
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineDocumentOperation(purchase, order, o);
+@defineDocumentOperationPriceListType(purchase, userOrder);
+@defineDocumentOperationLegalEntity(purchase, userOrder, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(purchase, userOrder, customer, 'Покупатель');
+
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUserOrder(userOrder))
@@ -90,9 +97,3 @@ NAVIGATOR {
         ADD orders;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(purchase, order, o);
-@definePriceListTypeConstraintOperationObject(purchase, order);
-@defineSupplierCustomerConstraintOperationObject(purchase, order);

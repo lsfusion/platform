@@ -100,5 +100,5 @@ Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityI
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-@deriveDocumentHeaderCreate(userInvoice, createPurchasePricing, sale);
-
+createPurchasePricingUserInvoice (invoice) <- createPurchasePricingSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));

@@ -14,8 +14,10 @@ NAMESPACE SaleReturn;
 
 //------------------------------------------------- Операции ------------------------------------------------------//
 
-@defineOperationObject(sale, shipment, s);
-@defineSupplierCustomerConstraintOperationObject(sale, shipment);
+@defineDocumentOperation(sale, shipment, s);
+@defineDocumentOperationLegalEntity(sale, userShipment, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(sale, userShipment, customer, 'Покупатель');
+
 createShipmentUserInvoice(invoice) <- createShipmentSaleOperation(saleOperationUserInvoice(invoice))
     WHEN CHANGED(saleOperationUserInvoice(invoice));
 

@@ -9,7 +9,8 @@ NAMESPACE PurchaseReturn;
 
 @defineCreditNote(' (закупка-возврат)', customerStock);
 
-@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
+createCreditNoteUserInvoice (invoice) <- createCreditNotePurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

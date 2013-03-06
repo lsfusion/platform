@@ -4,7 +4,11 @@ REQUIRE Operation, PriceList, Sale;
 
 NAMESPACE Sale;
 
-@defineOperationPrefix(sale, isCompanyLegalEntity, isBuyerLegalEntity, '(продажа)');
+@defineOperation(sale, '(продажа)');
+
+@defineOperationPriceListType(sale);
+@defineOperationLegalEntity(sale, supplier, s, isCompanyLegalEntity, 'Поставщики');
+@defineOperationLegalEntity(sale, customer, c, isBuyerLegalEntity, 'Покупатели');
 
 createShipmentSaleOperation 'Создавать поставку' = DATA BOOLEAN (saleOperation) IN createGroup;
 createPricingSaleOperation 'Создавать акт расценки' = DATA BOOLEAN (saleOperation) IN createGroup;

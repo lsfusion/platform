@@ -42,7 +42,8 @@ FORM writeOffRateDialog 'Нормы отходов'
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-@deriveDocumentHeaderCreate(userInvoice, createPurchaseWriteOff, purchase);
+createPurchaseWriteOffUserInvoice (invoice) <- createPurchaseWriteOffPurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
 
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT reason (invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA reason (userInvoice);
@@ -113,7 +114,8 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 
 
 @defineDocumentInterfaceCreate (shipment, createPurchaseWriteOff, 'Создать акт списания');
-@deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, purchase);
+createPurchaseWriteOffUserShipment (shipment) <- createPurchaseWriteOffPurchaseOperation(purchaseOperationUserShipment(shipment))
+     WHEN CHANGED(purchaseOperationUserShipment(shipment));
 
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPurchaseWriteOffUserInvoice(d) <- createPurchaseWriteOffUserInvoice(s);
@@ -129,8 +131,6 @@ overCopyInvoice(s, d) += ACTION (s, d) {
 @defineDocumentInterfaceHeaderWriteOffCommittee(shipment, customerStock);
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@deriveDocumentHeaderCreate(userShipment, createPurchaseWriteOff, purchase);
 
 reasonShipment 'Причина списания (ИД)' = ABSTRACT reason (shipment);
 reasonUserShipment 'Причина списания (ИД)' = DATA reason (userShipment);
