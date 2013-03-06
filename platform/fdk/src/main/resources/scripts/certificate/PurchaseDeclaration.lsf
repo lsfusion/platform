@@ -5,14 +5,11 @@ REQUIRE Declaration, PurchaseCertificate, Item;
 NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(declaration, invoice, i, 'Таможенная декларация');
-
 @defineDocumentCertificateObject(declaration, shipment, s, 'Таможенная декларация');
+
 declarationShipmentDetail(detail) += declarationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
 declarationBatch (batch) += declarationShipmentDetail(shipmentDetailShipmentBatch(batch));
-
-nameCustomsSku = ABSTRACT STRING[200](sku);
-nameCustomsSku(sku) += nameSku(sku);
 
 inDeclarationInvoice 'Вкл.' (declaration, invoice) = declarationUserInvoice(invoice)==declaration;
 
@@ -31,8 +28,9 @@ invoicesDeclaration 'Накладные' (declaration) =
     GROUP CONCAT stringInvoice(invoice) IF inDeclarationInvoice (declaration, invoice), ','
               BY declaration ORDER invoice PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
 
-customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
-codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (invoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10;
+// свойства товаров
+nameCustomsSku = ABSTRACT STRING[200](sku);
+nameCustomsSku(sku) += nameSku(sku);
 
 nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail));
 
@@ -84,6 +82,8 @@ TABLE declarationDetail(declarationDetail);
 
 declarationDeclarationDetail = DATA declaration(declarationDetail);
 
+@defineDocumentPosted(declaration);
+
 rateExchangeDeclarationDetail 'Курс' = rateExchangeDeclaration(declarationDeclarationDetail(declarationDetail));
 
 roundCurrencyDeclarationDetail '' (number, declarationDetail) = roundCurrencyDeclaration(number, declarationDeclarationDetail(declarationDetail));
@@ -116,12 +116,6 @@ declarationDetailUserNumberNameCustoms (number, name) = GROUP UNIQUE declaration
 
 declarationDetailInvoiceDetail(invoiceDetail) = DATA declarationDetail(invoiceDetail);
 inInvoiceDetailDeclarationDetail 'Вкл.' (invoiceDetail, declarationDetail) = declarationDetailInvoiceDetail(invoiceDetail)==declarationDetail;
-
-//quantityDeclarationDetail 'Кол-во' (declarationDetail) = quantityDeclarationDetailing(declarationDeclarationDetail(declarationDetail),
-//                                                                                      nameCustomsDeclarationDetail(declarationDetail),
-//                                                                                      customsGroupDeclarationDetail(declarationDetail),
-//                                                                                      countryDeclarationDetail(declarationDetail),
-//                                                                                      priceDeclarationDetail(declarationDetail));
 
 quantityDeclarationDetail 'Кол-во' (declarationDetail) = GROUP SUM quantityUserInvoiceDetail(invoiceDetail) BY declarationDetailInvoiceDetail(invoiceDetail) PERSISTENT;
 
@@ -167,7 +161,7 @@ sumDutyDataDeclarationDetail 'Пошлина' (declarationDetail) = DATA NUMERIC
 
 sumRateDutyDeclaration 'Пошлина' (declaration) = GROUP SUM sumDutyDataDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
-coeffInvoiceDetailDeclarationDetail 'Удельный вес' (invoiceDetail) = sumHomeUserInvoiceDetail(invoiceDetail)/sumRateDeclarationDetail(declarationDetailInvoiceDetail(invoiceDetail))
+coeffInvoiceDetailDeclarationDetail 'Удельный вес' (invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumRateDeclarationDetail(declarationDetailInvoiceDetail(invoiceDetail))
                                                                             IF declarationDetailInvoiceDetail(invoiceDetail);
 
 calcDutyInvoiceDetail 'Пошлины' (invoiceDetail) = PARTITION UNGROUP sumDutyDataDeclarationDetail
@@ -175,7 +169,16 @@ calcDutyInvoiceDetail 'Пошлины' (invoiceDetail) = PARTITION UNGROUP sumDu
                                                                 BY declarationDetailInvoiceDetail(invoiceDetail)
                                                              ORDER invoiceDetail PERSISTENT;
 
-sumDutyUserInvoiceDetail(invoiceDetail) <- calcDutyInvoiceDetail(invoiceDetail) WHEN CHANGED (calcDutyInvoiceDetail(invoiceDetail));
+priceDutyUserInvoiceDetail 'Пошлина (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+
+calcPriceDutyInvoiceDetail 'Пошлина (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcDutyInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
+                                                                                      declarationUserInvoiceDetail(invoiceDetail));
+
+priceDutyUserInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceDutyInvoiceDetail(invoiceDetail));
+
+dutyCostPriceInvoiceDetail(invoiceDetail) += priceDutyUserInvoiceDetail(invoiceDetail);
+
+sumDutyCostDeclaration 'Пошлина (факт)' (declaration) = GROUP SUM priceDutyUserInvoiceDetail(invoiceDetail) * quantityUserInvoiceDetail(invoiceDetail) BY declarationUserInvoiceDetail(invoiceDetail);
 
 //НДС
 VATRangeDataDeclarationDetail 'Шкала НДС (ИД)' = DATA range(declarationDetail);
@@ -194,7 +197,7 @@ sumVATDataDeclarationDetail 'НДС' (declarationDetail) = DATA NUMERIC[14,3](de
 sumRateVATDeclaration 'НДС' (declaration) = GROUP SUM sumVATDataDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT MINCHARWIDTH 12;
 
 // оформление
-sumRegistrationDeclarationDetail 'Таможенный сбор' (declarationDetail) = registrationCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
+sumRegistrationDeclarationDetail 'Таможенный сбор (валют.)' (declarationDetail) = registrationCustomsGroupDate(customsGroupDeclarationDetail(declarationDetail), dateDeclaration(declarationDeclarationDetail(declarationDetail)));
 
 sumRegistrationMaxDeclaration 'Таможенный сбор (валют.)' (declaration) = GROUP MAX sumRegistrationDeclarationDetail(declarationDetail) BY declarationDeclarationDetail(declarationDetail) PERSISTENT;
 
@@ -205,30 +208,24 @@ sumRegistrationDataDeclaration 'Таможенный сбор' = DATA NUMERIC[14
 
 sumRegistrationDeclaration 'Таможенный сбор' (declaration) = UNION OVERRIDE sumRegistrationRateDeclaration(declaration), sumRegistrationDataDeclaration(declaration);
 
-coeffInvoiceDetailDeclaration 'Удельный вес' (invoiceDetail) = sumHomeUserInvoiceDetail(invoiceDetail)/sumRateDeclaration(declarationInvoiceDetail(invoiceDetail))
-                                                                    IF declarationInvoiceDetail(invoiceDetail);
+coeffInvoiceDetailDeclaration 'Удельный вес' (invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumRateDeclaration(declarationInvoiceDetail(invoiceDetail))
+                                                               IF declarationInvoiceDetail(invoiceDetail);
 
 calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = PARTITION UNGROUP sumRegistrationDeclaration
-                                                                     PROPORTION STRICT ROUND(0) coeffInvoiceDetailDeclaration(invoiceDetail)
-                                                                             BY declarationInvoiceDetail(invoiceDetail)
-                                                                          ORDER invoiceDetail PERSISTENT;
+                                                                  PROPORTION STRICT ROUND(0) coeffInvoiceDetailDeclaration(invoiceDetail)
+                                                                                 BY declarationInvoiceDetail(invoiceDetail)
+                                                                              ORDER invoiceDetail PERSISTENT;
 
-sumRegistrationUserInvoiceDetail(invoiceDetail) <- calcRegistrationInvoiceDetail(invoiceDetail) WHEN CHANGED (calcRegistrationInvoiceDetail(invoiceDetail));
+priceRegistrationUserInvoiceDetail 'Таможенный сбор (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
 
-sumCustomsInvoiceDetail 'Расходы' (invoiceDetail) = sumRegistrationUserInvoiceDetail(invoiceDetail) (+)
-                                                    sumDutyUserInvoiceDetail(invoiceDetail);
+calcPriceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcRegistrationInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
+                                                                                                      declarationUserInvoiceDetail(invoiceDetail));
 
-calcPriceCustomsInvoiceDetail 'Расходы (ед.)' (invoiceDetail) = roundCurrencyDeclaration(sumCustomsInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
-                                                                                         declarationUserInvoiceDetail(invoiceDetail));
+priceRegistrationUserInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceRegistrationInvoiceDetail(invoiceDetail));
 
-priceCustomsInvoiceDetail 'Расходы (ед.)' = DATA NUMERIC[14,3](invoiceDetail);
-priceCustomsInvoiceDetail(invoiceDetail) <- calcPriceCustomsInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceCustomsInvoiceDetail(invoiceDetail));
+registrationCostPriceInvoiceDetail(invoiceDetail) += priceRegistrationUserInvoiceDetail(invoiceDetail);
 
-customCostPriceInvoiceDetail(invoiceDetail) += priceCustomsInvoiceDetail(invoiceDetail);
-
-sumDutyRegistrationDeclaration 'Расходы (план)' (declaration) = sumRateDutyDeclaration(declaration) (+) sumRegistrationDeclaration(declaration);
-
-sumCustomsDeclaration 'Расходы (факт)' (declaration) = GROUP SUM priceCustomsInvoiceDetail(invoiceDetail) * quantityUserInvoiceDetail(invoiceDetail) BY declarationUserInvoiceDetail(invoiceDetail);
+sumRegistrationCostDeclaration 'Таможенный сбор (факт)' (declaration) = GROUP SUM priceRegistrationUserInvoiceDetail(invoiceDetail) * quantityUserInvoiceDetail(invoiceDetail) BY declarationUserInvoiceDetail(invoiceDetail);
 
 
 setSumDeclarationDetail 'Рассчитать суммы' = ACTION (declaration) {
@@ -260,19 +257,17 @@ toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration
 
 
 EXTEND FORM declaration
-    PROPERTIES(d)  invoicesDeclaration, sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) invoicesDeclaration, sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration,
+                  sumRegistrationCostDeclaration, sumDutyCostDeclaration
 
     OBJECTS id=userInvoiceDetail
     PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
                    nameCustomsUserInvoiceDetail, nameCountryUserInvoiceDetail, sumNetWeightInvoiceDetail
     PROPERTIES(id) codeCustomsGroupUserInvoiceDetail
-    PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeUserInvoiceDetail
-    PROPERTIES(id) sumDutyUserInvoiceDetail, sumRegistrationUserInvoiceDetail
-    PROPERTIES(id) READONLY sumCustomsInvoiceDetail
-    PROPERTIES(id) priceCustomsInvoiceDetail
+    PROPERTIES(id) READONLY quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeInvoiceDetail
+    PROPERTIES(id) priceDutyUserInvoiceDetail, priceRegistrationUserInvoiceDetail
+    //PROPERTIES(id) READONLY sumCustomsInvoiceDetail
 
-    PROPERTIES (d) sumDutyRegistrationDeclaration TODRAW id FORCE PANEL TOOLBAR
-    PROPERTIES (d) sumCustomsDeclaration TODRAW id FORCE PANEL TOOLBAR
     PROPERTIES (d) showFormDeclarationInvoices TODRAW id FORCE PANEL TOOLBAR
     FILTERS declarationUserInvoiceDetail(id) == d
 
@@ -308,14 +303,15 @@ EXTEND DESIGN declaration {
                 childConstraints = TO THE BOTTOM;
                 ADD PROPERTY(sumRateDeclaration);
                 ADD PROPERTY(sumRegistrationDeclaration);
+                ADD PROPERTY(sumRegistrationCostDeclaration);
                 ADD PROPERTY(sumRateDutyDeclaration);
+                ADD PROPERTY(sumDutyCostDeclaration);
                 ADD PROPERTY(sumRateVATDeclaration);
             }
         }
 
         ADD id.box {
             fillVertical = 2;
-            //ADD PROPERTY(showFormDeclarationInvoices);
         }
 
         ADD dd.box {
@@ -326,7 +322,7 @@ EXTEND DESIGN declaration {
 }
 
 EXTEND FORM declarations
-    PROPERTIES(d) sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) FORCE GRID isPostedDeclaration BEFORE objectClassName(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=declarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,

@@ -3,6 +3,7 @@ MODULE Declaration;
 REQUIRE Certificate, Shipment, CustomsGroup;
 
 CLASS declaration 'Таможенная декларация' : certificate, numeratedObject;
+
 TABLE declaration(declaration);
 
 CLASS declarationPosted 'Проведенная таможенная декларация' : declaration, postedObject;
@@ -50,7 +51,7 @@ rateExchangeCustomsZoneDeclaration 'Курс платежей' = rateTypeExchang
 
 FORM declaration 'Таможенная декларация'
     OBJECTS d = declaration FIXED PANEL
-    PROPERTIES(d) objectClassName, nameNumeratorObject, seriesObject, numberObject, dateDeclaration, timeDeclaration,
+    PROPERTIES(d) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDeclaration, timeDeclaration,
                   nameLegalEntityDeclaration, nameCurrencyDeclaration, nameCustomsZoneDeclaration, nameHomeCurrencyDeclaration,
                   nameTypeExchangeDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
     EDIT declaration OBJECT d
@@ -99,8 +100,8 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Таможенные декларации'
     OBJECTS d = declaration
-    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, nameLegalEntityDeclaration, nameHomeCurrencyDeclaration,
-                  nameCurrencyDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
+    PROPERTIES(d) READONLY objectClassName, numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
+                  nameHomeCurrencyDeclaration, nameCurrencyDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 

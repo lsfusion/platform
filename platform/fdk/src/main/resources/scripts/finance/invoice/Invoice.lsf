@@ -643,16 +643,13 @@ META defineHomeCurrencyInvoice(invoice)
                                                                                                 CHANGED (typeExchangeUserInvoice(invoiceInvoiceDetail(invoice##Detail))) OR
                                                                                                 CHANGED (priceInvoiceDetail(invoice##Detail));
 
-    sumHomeUserInvoiceDetail 'Стоимость' (user###invoice##Detail) = quantityInvoiceDetail(user###invoice##Detail) * homePriceUserInvoiceDetail(user###invoice##Detail);
-
-    sumDutyUserInvoiceDetail 'Пошлина' = DATA NUMERIC[14,3](user###invoice##Detail);
-    sumRegistrationUserInvoiceDetail 'Таможенный сбор' = DATA NUMERIC[14,3](user###invoice##Detail);
+    sumHomeInvoiceDetail 'Сумма (пост.)' (invoice##Detail) = quantityInvoiceDetail(invoice##Detail) * homePriceInvoiceDetail(invoice##Detail);
 
     EXTEND FORM userInvoice
         PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice
         PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
-        PROPERTIES(d) homePriceUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isHomeCurrency(i)
-        PROPERTIES(d) sumHomeUserInvoiceDetail AFTER priceUserInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
     ;
 
     EXTEND DESIGN userInvoice {
@@ -666,5 +663,12 @@ META defineHomeCurrencyInvoice(invoice)
             }
         }
     }
+
+    EXTEND FORM invoices
+        PROPERTIES(i) isHomeCurrency
+        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
+        PROPERTIES(d) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
+    ;
 END
 

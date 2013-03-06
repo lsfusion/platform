@@ -1,6 +1,6 @@
 MODULE PurchaseInvoice;
 
-REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation;
+REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup;
 
 NAMESPACE Purchase;
 
@@ -23,13 +23,21 @@ NAMESPACE Purchase;
 // вторая валюта
 @defineHomeCurrencyInvoice(invoice);
 
+isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
+
+backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS invoice;
+
+customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
+codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (userInvoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10;
+
 // --------------------------- Себестоимость ---------------------------------- //
 
 extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
 extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
 
-customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
+dutyCostPriceInvoiceDetail 'Пошлина' = ABSTRACT NUMERIC[14,2](invoiceDetail);
+registrationCostPriceInvoiceDetail 'Таможенный сбор' = ABSTRACT NUMERIC[14,2](invoiceDetail);
 
 priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
                                      homePriceInvoiceDetail(detail)
@@ -39,10 +47,14 @@ priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDe
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 
-costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+) customCostPriceInvoiceDetail(detail);
-costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+) (customCostPriceInvoiceDetail(detail) AND detail IS userInvoiceDetail);
+costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
+                                 dutyCostPriceInvoiceDetail(detail) (+) registrationCostPriceInvoiceDetail(detail);
 
-//------------------------------ Ограничение на выбор поставщиков -----------------------------//
+costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
+                                     (dutyCostPriceInvoiceDetail(detail) AND detail IS userInvoiceDetail) (+)
+                                     (registrationCostPriceInvoiceDetail(detail) AND detail IS userInvoiceDetail);
+
+// -------------------------------------- Формирование задолженности ---------------------------------------------------
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';
@@ -80,7 +92,12 @@ overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
 // Фильтры
 inAssortmentSkuUserInvoice (sku, userInvoice) = companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
 inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
+
 EXTEND FORM userInvoice
+    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice
+    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) registrationCostPriceInvoiceDetail AFTER homePriceUserInvoiceDetail SHOWIF isCustomInvoice(i),
+                  dutyCostPriceInvoiceDetail AFTER homePriceUserInvoiceDetail SHOWIF isCustomInvoice(i),
+                  codeCustomsGroupUserInvoiceDetail AFTER homePriceUserInvoiceDetail SHOWIF isCustomInvoice(i)
 
     FILTERGROUP filter
         FILTER 'С остатком ' 'F10' currentBalanceSkuUserInvoice(s, i)
@@ -88,6 +105,13 @@ EXTEND FORM userInvoice
     FILTERGROUP filter2
         FILTER 'С поступлением ' 'F8' inUserInvoiceSku(i, s)
         FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
+;
+
+EXTEND FORM invoices
+    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice
+    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupUserInvoiceDetail AFTER homePriceInvoiceDetail SHOWIF isCustomInvoice(i),
+                  registrationCostPriceInvoiceDetail AFTER homePriceInvoiceDetail SHOWIF isCustomInvoice(i),
+                  dutyCostPriceInvoiceDetail AFTER homePriceInvoiceDetail SHOWIF isCustomInvoice(i)
 ;
 
 // Резервы
