@@ -54,7 +54,7 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
     EDIT writeOffCommittee OBJECT c
 ;
 @extendFormFilterStockAccess(stock, ts, writeOffCommittee);
-@extendFormFilterStockGroupAccess(stockGroup, sg, writeOffCommittee, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stockGroup, sg, writeOffCommittee, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN writeOffCommittee FROM DEFAULT {
     main {

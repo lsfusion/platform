@@ -11,6 +11,36 @@ NAMESPACE Purchase;
 
 @defineShipmentStockDestination(supplierStock, customerStock);
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, shipment, s);
+@defineSupplierCustomerConstraintOperationObject(purchase, shipment);
+
+createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+    
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
+CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
+    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';
+CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
+    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserShipment(userShipment) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userShipment IS userShipment);
+customerUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userShipment IS userShipment);
+
+supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
+        WHEN CHANGED(supplierUserShipment(userShipment));
+customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserShipment(userShipment))
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserShipment(userShipment)) == 1
+        WHEN CHANGED(customerUserShipment(userShipment));
+
+// ------------------------------- Расчет учетной цены для поставки ------------------------ //
 overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 calcShipmentPriceUserInvoiceDetail (detail) = costPriceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
 
@@ -25,7 +55,7 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
      CHANGED(createShipmentUserInvoiceDetail(detail)))
         AND createShipmentUserInvoiceDetail(detail);
 
-// Проводим по регистру
+// ------------------------------- Проведение по регистру остатков ------------------------ //
 
 overCreateBatchShipmentDetail = ABSTRACT BOOLEAN (shipmentDetail);
 createBatchShipmentDetail (detail) = (detail IS shipmentDetail OR overCreateBatchShipmentDetail(detail)) AND NOT batchShipmentDetail(detail);
@@ -69,45 +99,20 @@ costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) T
                                           ELSE
                                              costSkuLedgerBatch(shipmentSkuLedgerShipmentDetail(detail), batch);
 
-// Проводим по регистру учетных цен
+// ------------------------------- Проведение регистру учетных цен ------------------------ //
+
 @implementSystemLedgerPriceListType(account, shipmentSkuLedger, stock);
 batchPriceListLedger(ledger) += batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
-// Пишем в товарный отчет
+// ------------------------------- Проведение по товарному отчету ------------------------ //
 @implementStockDocumentLedgerInc(shipment, customerStock);
 sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
-CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
-    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';
-CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
-    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией';
-
-supplierUserShipment(userShipment) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
-customerUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
-
-supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserShipment(userShipment)) == 1
-        WHEN CHANGED(supplierUserShipment(userShipment));
-customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserShipment(userShipment))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserShipment(userShipment)) == 1
-        WHEN CHANGED(customerUserShipment(userShipment));
 
 NAVIGATOR {
     purchasePurchaseNavigator {
         ADD shipments;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(purchase, shipment, s);
-@defineSupplierCustomerConstraintOperationObject(purchase, shipment);
-
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));

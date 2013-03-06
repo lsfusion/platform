@@ -2,20 +2,19 @@ MODULE Warehouse;
 
 REQUIRE System,
         Stock,
-        Employee,
         Hierarchy,
         WriteOff,
         LegalEntity;
 
 // ----------------------------------------- Группы складов ------------------------------ //
-CLASS warehouseGroup 'Группа складов' : stockGroup, employeeDivisionGroup;
+CLASS warehouseGroup 'Группа складов' : stockGroup;
 
 @defineHierarchy(warehouseGroup);
 parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //
 
-CLASS warehouse 'Склад' : stock, employeeDivision;
+CLASS warehouse 'Склад' : stock;
 
 warehouseGroupWarehouse (warehouse) = DATA warehouseGroup (warehouse) AUTOSET;
 nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN base;
@@ -38,8 +37,6 @@ longitudeWarehouse 'Координата Y' = DATA NUMERIC[10,5](warehouse);
 
 latitudePOI (warehouse) += latitudeWarehouse(warehouse);
 longitudePOI (warehouse) += longitudeWarehouse(warehouse);
-
-employeeDivisionGroupEmployeeDivision (warehouse) += warehouseGroupWarehouse(warehouse);
 
 explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (warehouse);
 explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
@@ -98,7 +95,7 @@ FORM warehouses 'Склады'
     FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)
 ;
 @extendFormFilterStockAccess(warehouse, w, warehouses);
-@extendFormFilterStockGroupAccess(warehouseGroup, wg, warehouses, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(warehouseGroup, wg, warehouses, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN warehouses FROM DEFAULT{
 

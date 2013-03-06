@@ -9,21 +9,27 @@ NAMESPACE PurchaseReturn;
 
 @defineCreditNote(' (закупка-возврат)', customerStock);
 
+@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
 CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isSupplierLegalEntity(supplierUserCreditNote(userCreditNote))
     CHECKED BY supplierUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(customerUserCreditNote(userCreditNote))
     CHECKED BY customerUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве покупателя организация, не являющаяся компанией';
 
-supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
     WHEN ASSIGNED(userCreditNote IS userCreditNote);
-customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userCreditNote IS userCreditNote);
 
 supplierStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserCreditNote(userCreditNote))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(supplierUserCreditNote(userCreditNote));
 customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserCreditNote(userCreditNote))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserCreditNote(userCreditNote)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(customerUserCreditNote(userCreditNote));
 
 NAVIGATOR {
@@ -31,7 +37,3 @@ NAVIGATOR {
         ADD creditNotes;
     }
 }
-
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
-
-@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);

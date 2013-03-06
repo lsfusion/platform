@@ -12,50 +12,56 @@ NAMESPACE SaleReturn;
 
 @defineShipmentStockDestination(customerStock, supplierStock);
 
-// Берем учетную цену
-@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, , sku, supplierStock);
-@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userShipment, accountPriceListType, , , sku, supplierStock);
+//------------------------------------------------- Операции ------------------------------------------------------//
 
-// Проводим по регистру
-@implementSkuLedgerInLIFO(shipmentDetail, sku, supplierStock);
-quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
-@implementSkuLedgerInLIFOBatchBalance(shipmentDetail, supplierStock);
-sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
+@defineOperationObject(sale, shipment, s);
+@defineSupplierCustomerConstraintOperationObject(sale, shipment);
+createShipmentUserInvoice(invoice) <- createShipmentSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));
 
-@implementStockDocumentLedgerInc(shipment, supplierStock);
-sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
-sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
-sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(supplierUserShipment(userShipment))
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся покупателем';
 
-supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userShipment IS userShipment);
-customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countIsCustomerEntityEmployee (currentUser()) == 1
+customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
     WHEN ASSIGNED(userShipment IS userShipment);
 
 supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserShipment(userShipment)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
         WHEN CHANGED(supplierUserShipment(userShipment));
 customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserShipment(userShipment))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserShipment(userShipment)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserShipment(userShipment)) == 1
         WHEN CHANGED(customerUserShipment(userShipment));
+
+// ------------------------------- Расчет учетной цены для поставки ------------------------ //
+
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userInvoice, accountPriceListType, shipment, , sku, supplierStock);
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch (userShipment, accountPriceListType, , , sku, supplierStock);
+
+// ------------------------------- Проведение по регистру остатков ------------------------ //
+
+@implementSkuLedgerInLIFO(shipmentDetail, sku, supplierStock);
+quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
+@implementSkuLedgerInLIFOBatchBalance(shipmentDetail, supplierStock);
+sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
+
+// ------------------------------- Проведение по товарному отчету ------------------------ //
+
+@implementStockDocumentLedgerInc(shipment, supplierStock);
+sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
+sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
+sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
+
 
 NAVIGATOR {
     saleReturnNavigator {
         ADD shipments;
     }
 }
-
-//------------------------------------------------- Операции ------------------------------------------------------//
-
-@defineOperationObject(sale, shipment, s);
-@defineSupplierCustomerConstraintOperationObject(sale, shipment);
-
-//------------------------------ Создание аггрегированных объектов через операции ---------------------------------//
-
-createShipmentUserInvoice(invoice) <- createShipmentSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));

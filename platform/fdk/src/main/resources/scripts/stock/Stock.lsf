@@ -27,12 +27,6 @@ userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock) PERSISTEN
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
-countStocksLegalEntityEmployee (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivisionOver(employee, stock)
-    BY employee, legalEntity PERSISTENT;
-
-defaultStockEmployeeLegalEntity 'Склад по умолчания' (employee, legalEntity)= GROUP MIN stock IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivisionOver(employee, stock)
-    BY employee, legalEntity PERSISTENT;
-
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
@@ -669,20 +663,26 @@ costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock,
 
 // ---------------------------------- Доступ к складам --------------------------------------------------- //
 
+EXTEND CLASS stockGroup : employeeDivisionGroup;
+parentEmployeeDivisionGroup(stockGroup) += parentStockGroup(stockGroup);
+
+EXTEND CLASS stock : employeeDivision;
+employeeDivisionGroupEmployeeDivision (stock) += stockGroupStock(stock);
+
+countAccessStockEmployeeLegalEntity (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
+                                                               BY employee, legalEntity PERSISTENT;
+
+defaultStockEmployeeLegalEntity 'Склад по умолчанию' (employee, legalEntity)= GROUP MIN stock IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
+                                                                                    BY employee, legalEntity PERSISTENT;
+
 META extendFormFilterAccess(object, concrete, form, stockProp)
-    EXTEND FORM form
-    FILTERS
-    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivisionOver(currentUser(),stockProp###object(concrete));
+    EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivision(currentUser(),stockProp###object(concrete));
 END
 META extendFormFilterStockAccess(object, concrete, form)
-    EXTEND FORM form
-    FILTERS
-    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivisionOver(currentUser(), concrete);
+    EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivision(currentUser(), concrete);
 END
 META extendFormFilterStockGroupAccess(object, concrete, form, prop)
-    EXTEND FORM form
-    FILTERS
-    (concrete IS object AND NOT restrictAccessEmployee(currentUser())) OR prop(currentUser(), concrete);
+    EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR prop(currentUser(), concrete);
 END
 
 // ---------------------------------------------- Макросы ------------------------------------------------ //
@@ -2212,8 +2212,8 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY dateTimeBatch DESC
 ;
 @extendFormFilterStockAccess(stock, st, currentBalanceSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, currentBalanceSkuStock, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceSkuStock, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, currentBalanceSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceSkuStock FROM DEFAULT {
     main{
@@ -2292,8 +2292,8 @@ FORM balanceSkuStock 'Остатки на дату'
     ORDER BY dateTimeBatch DESC
 ;
 @extendFormFilterStockAccess(stock, st, balanceSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, balanceSkuStock, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, balanceSkuStock, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, balanceSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, balanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceSkuStock FROM DEFAULT {
     main{
@@ -2375,8 +2375,8 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
 ;
 @extendFormFilterStockAccess(stock, st, currentBalanceBatchStock);
-@extendFormFilterStockGroupAccess(stock, ts, currentBalanceBatchStock, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceBatchStock, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, currentBalanceBatchStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceBatchStock FROM DEFAULT {
     main{
@@ -2446,8 +2446,8 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDateTime(bt, t, 30)
 ;
 @extendFormFilterStockAccess(stock, st, balanceBatchStock);
-@extendFormFilterStockGroupAccess(stock, ts, balanceBatchStock, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, balanceBatchStock, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, balanceBatchStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, balanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceBatchStock FROM DEFAULT {
     main{

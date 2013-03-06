@@ -136,21 +136,21 @@ isBuyerLegalEntity 'Покупатель или компания' (legalEntity) 
 
 differentStocksInDetailsLegalEntity 'Разные склады в строках' = DATA BOOLEAN (legalEntity) IN filterEntityGroup;
 
-countIsSupplierEntityEmployee (employee)= GROUP SUM 1 IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
-countIsCompanyEntityEmployee (employee)= GROUP SUM 1 IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
-countIsCustomerEntityEmployee (employee)= GROUP SUM 1 IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
+// ------------------------------------ Доступные организации для пользователей -------------------------- //
 
+countAccessSupplierEmployee (employee) = GROUP SUM 1 IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                               BY employee PERSISTENT;
+countAccessCompanyEmployee (employee) = GROUP SUM 1 IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                              BY employee PERSISTENT;
+countAccessCustomerEmployee (employee)= GROUP SUM 1 IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                              BY employee PERSISTENT;
 
-defaultSupplierEmployee 'Поставщик по умолчания' (employee)= GROUP MIN legalEntity IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
-defaultCompanyEmployee 'Компания по умолчания' (employee)= GROUP MIN legalEntity IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
-defaultCustomerEmployee 'Покупатель по умолчания' (employee)= GROUP MIN legalEntity IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivisionOver(employee, legalEntity)
-    BY employee PERSISTENT;
-
+defaultSupplierEmployee 'Поставщик по умолчанию' (employee)= GROUP MIN legalEntity IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                                                   BY employee PERSISTENT;
+defaultCompanyEmployee 'Компания по умолчанию' (employee)= GROUP MIN legalEntity IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                                                 BY employee PERSISTENT;
+defaultCustomerEmployee 'Покупатель по умолчанию' (employee)= GROUP MIN legalEntity IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
+                                                                    BY employee PERSISTENT;
 
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 

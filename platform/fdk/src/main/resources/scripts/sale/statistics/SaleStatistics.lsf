@@ -321,8 +321,8 @@ FORM statisticalReport 'Статистика (продажи) склад/гру�
     PROPERTIES  FORCE PANEL valueByStatisticGroupDateTo(g, ts, dTo), valueResidentByStatisticGroupDateTo(g, ts, dTo)
 ;
 @extendFormFilterStockAccess(stock, st, statisticalReport);
-@extendFormFilterStockGroupAccess(stock, ts, statisticalReport, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, statisticalReport, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, statisticalReport, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, statisticalReport, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN statisticalReport FROM DEFAULT {
 

@@ -10,27 +10,6 @@ NAMESPACE Sale;
 
 numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN ASSIGNED(inBlanketOrderStock(order, stock));
 
-CONSTRAINT supplierBlanketOrder(blanketOrder) AND NOT isCompanyLegalEntity(supplierBlanketOrder(blanketOrder))
-    CHECKED BY supplierBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве поставщика организация, не являющаяся компанией';
-CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(customerBlanketOrder(blanketOrder))
-    CHECKED BY customerBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
-
-supplierBlanketOrder(blanketOrder) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
-    WHEN ASSIGNED(blanketOrder IS blanketOrder);
-
-supplierStockBlanketOrder(blanketOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierBlanketOrder(blanketOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierBlanketOrder(blanketOrder)) == 1
-        WHEN CHANGED(supplierBlanketOrder(blanketOrder));
-
-//--------------------- Расширяем форму Подбор заказа резервами -------//
-@extendFormDocumentOrderLedgerStock(blanketOrder, blanketOrder, o);
-
-NAVIGATOR {
-    saleSaleNavigator {
-        ADD blanketOrders BEFORE orders;
-    }
-}
-
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 saleOperationBlanketOrder = DATA saleOperation (blanketOrder);
@@ -65,5 +44,32 @@ EXTEND FORM blanketOrder
 EXTEND DESIGN blanketOrder{
     o.documentPrmGroup{
         ADD PROPERTY(nameSaleOperationBlanketOrder) BEFORE PROPERTY(nameCurrencyBlanketOrder);
+    }
+}
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
+CONSTRAINT supplierBlanketOrder(blanketOrder) AND NOT isCompanyLegalEntity(supplierBlanketOrder(blanketOrder))
+    CHECKED BY supplierBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(customerBlanketOrder(blanketOrder))
+    CHECKED BY customerBlanketOrder MESSAGE 'Для множественного заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierBlanketOrder(blanketOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
+    WHEN ASSIGNED(blanketOrder IS blanketOrder);
+
+supplierStockBlanketOrder(blanketOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierBlanketOrder(blanketOrder))
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierBlanketOrder(blanketOrder)) == 1
+        WHEN CHANGED(supplierBlanketOrder(blanketOrder));
+
+//------------------------------ Расширение формы -----------------------------//
+
+// Резервы
+@extendFormDocumentOrderLedgerStock(blanketOrder, blanketOrder, o);
+
+NAVIGATOR {
+    saleSaleNavigator {
+        ADD blanketOrders BEFORE orders;
     }
 }

@@ -215,8 +215,8 @@ FORM saleSkuStock 'Продажи по SKU'
 
 ;
 @extendFormFilterStockAccess(stock, st, saleSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, saleSkuStock, accessEmployeeEmployeeDivisionOver);
-@extendFormFilterStockGroupAccess(stockGroup, sg, saleSkuStock, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(stock, ts, saleSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(stockGroup, sg, saleSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN saleSkuStock FROM DEFAULT {
 

@@ -4,7 +4,8 @@ REQUIRE Order, Store, SaleOperation;
 
 NAMESPACE Sale;
 
-//-- Для продажи упаковками
+// todo : переделать
+// Упаковка
 salePackBarcodeSku 'Штрих-код для продажи' = DATA barcode (sku);
 CONSTRAINT skuBarcode(salePackBarcodeSku(item)) != item CHECKED BY salePackBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
 salePackBarcode 'Штрих-код для продажи' (barcode)=  salePackBarcodeSku(skuBarcode(barcode)) == barcode;
@@ -19,14 +20,36 @@ changeSalePackBarcodeSku = ACTION (barcode, sku) {
 EXTEND FORM barcodeDialog
     PROPERTIES (b) READONLY salePackBarcode
 ;
-//--
+
 @defineOrder(' (продажа)', supplier, supplierStock, salePack, showSalePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
+
+@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
+
+toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(supplierUserOrder(userOrder))) WHEN CHANGED(supplierUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
+
+@defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, order, o);
+@definePriceListTypeConstraintOperationObject(sale, order);
+@defineSupplierCustomerConstraintOperationObject(sale, order);
+
+// --------------------- НДС расчетный ----------------------- //
+
 @defineDocumentInterfaceHeaderTAX(order, VAT, 'НДС расч.');
+
+CONSTRAINT taxRange(VATUserOrder(userOrder)) != tax.taxVAT OR
+           countryRange(VATUserOrder(userOrder)) != countryStock(supplierStockOrder(userOrder)) OR
+           rangeTypeRange(VATUserOrder(userOrder)) != rangeType.units
+           CHECKED BY VATUserOrder
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
 VATUserOrder (userOrder) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserOrder(userOrder)))
         WHEN CHANGED(supplierStockUserOrder(userOrder));
+
 @deriveDocumentDetailVATHeader(userOrder, VAT, supplierStock);
 
 derivedVATSumUserOrderDetail (userOrderDetail) =
@@ -58,36 +81,13 @@ derivedPriceUserOrderDetail (userOrderDetail) =
 priceUserOrderDetail (userOrderDetail) <- derivedPriceUserOrderDetail (userOrderDetail)
     WHEN CHANGED(invoicePriceUserOrderDetail(userOrderDetail)) OR CHANGED(VATUserOrderDetail (userOrderDetail));
 
-@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
-
-CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))
-    CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
-CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUserOrder(userOrder))
-    CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
-
-supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
-customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countIsCustomerEntityEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
-
-supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserOrder(userOrder)) == 1
-        WHEN CHANGED(supplierUserOrder(userOrder));
-customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserOrder(userOrder)) == 1
-        WHEN CHANGED(customerUserOrder(userOrder));
-
-CONSTRAINT taxRange(VATUserOrder(userOrder)) != tax.taxVAT OR
-           countryRange(VATUserOrder(userOrder)) != countryStock(supplierStockOrder(userOrder)) OR
-           rangeTypeRange(VATUserOrder(userOrder)) != rangeType.units
-           CHECKED BY VATUserOrder
-           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
-
 isDepartmentStoreSupplierStockOrder (order) = supplierStockOrder(order) IS departmentStore;
 
 EXTEND FORM userOrder
     PROPERTIES(o) numberVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o), valueVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o);
 ;
+
+// ----------------------------- Автоматическая отсылка почты ---------------------------------- //
 
 FORM emailOrder 'Заказ' PRINT
     OBJECTS o = order FIXED PANEL
@@ -116,21 +116,41 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
 
 WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);
 
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
+CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))
+    CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
+CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUserOrder(userOrder))
+    CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userOrder IS userOrder);
+customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
+    WHEN ASSIGNED(userOrder IS userOrder);
+
+supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
+        WHEN CHANGED(supplierUserOrder(userOrder));
+customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserOrder(userOrder))
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserOrder(userOrder)) == 1
+        WHEN CHANGED(customerUserOrder(userOrder));
+
+//------------------------------ Ввод в упаковках -----------------------------//
 
 @defineDocumentPackageSkuStock(userOrder, sku, supplierStock, salePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, showSalePack);
 
 overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
     IF  salePackBarcodeSku(skuUserOrderDetail(detail)) THEN {
-
         SET quantityPackUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
     }
 }
 
-toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(supplierUserOrder(userOrder))) WHEN CHANGED(supplierUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
+//------------------------------ Расширение формы -----------------------------//
 
-@defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
-
+// Фильтры
 inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku);
 EXTEND FORM userOrder
 
@@ -143,19 +163,15 @@ EXTEND FORM userOrder
         FILTER 'В ассортименте' 'F7' ledgerPriceSkuStockUserOrder(s, st, o) DEFAULT
 ;
 
+// Резервы
+@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 //--------------------- Проводим по регистру резерва ------------------//
 @implementSaleOrderLedger(order, sku, shipmentDateTime, supplierStock, customer);
-//--------------------- Расширяем форму Подбор заказа резервами -------//
-@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 
 NAVIGATOR {
     saleSaleNavigator {
         ADD orders;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(sale, order, o);
-@definePriceListTypeConstraintOperationObject(sale, order);
-@defineSupplierCustomerConstraintOperationObject(sale, order);

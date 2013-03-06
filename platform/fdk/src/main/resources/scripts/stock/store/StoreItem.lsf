@@ -19,9 +19,9 @@ EXTEND FORM item
     PROPERTIES (dt) OBJVALUE BACKGROUND dateDiffersCurrent(dt)
 ;
 @extendFormFilterStockAccess(departmentStore, d, item);
-@extendFormFilterStockGroupAccess(chainStores, t, item, accessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(storeType, st, item, accessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(store, s, item, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(chainStores, t, item, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, item, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, item, countAccessEmployeeEmployeeDivisionGroup);
 
 EXTEND DESIGN item {
     itemDetail {

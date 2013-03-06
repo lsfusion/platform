@@ -10,22 +10,36 @@ NAMESPACE SaleReturn;
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);
 
+@defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
+
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(sale, order, o);
+@definePriceListTypeConstraintOperationObject(sale, order);
+@defineSupplierCustomerConstraintOperationObject(sale, order);
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isCompanyLegalEntity(supplierUserOrder(userOrder))
     CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUserOrder(userOrder))
     CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся покупателем';
 
-supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userOrder IS userOrder);
-customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countIsCustomerEntityEmployee (currentUser()) == 1
+customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
     WHEN ASSIGNED(userOrder IS userOrder);
 
 supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserOrder(userOrder)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
         WHEN CHANGED(supplierUserOrder(userOrder));
 customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserOrder(userOrder)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserOrder(userOrder)) == 1
         WHEN CHANGED(customerUserOrder(userOrder));
+
+//------------------------------ Ввод в упаковках -----------------------------//
 
 @defineDocumentPackageSkuStock(userOrder, sku, supplierStock, salePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, supplierStock, showSalePack);
@@ -36,9 +50,10 @@ overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
     }
 }
 
-@defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
+//------------------------------ Расширение формы -----------------------------//
 
-inUserOrderSku (userOrder, sku)= inCustomerSku(customerUserOrder(userOrder), sku);
+// Фильтры
+inUserOrderSku (userOrder, sku) = inCustomerSku(customerUserOrder(userOrder), sku);
 EXTEND FORM userOrder
 
     FILTERGROUP filter
@@ -50,19 +65,16 @@ EXTEND FORM userOrder
         FILTER'В ассортименте' 'F7' priceSkuStockUserOrder(s, st, o) DEFAULT
 
 ;
+
+// Резервы
+@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 //--------------------- Проводим по регистру резерва ------------------//
 @implementSaleOrderLedger(order, sku, shipmentDateTime, supplierStock, customer);
-//--------------------- Расширяем форму Подбор заказа резервами -------//
-@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 
 NAVIGATOR {
     saleReturnNavigator {
         ADD orders;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(sale, order, o);
-@definePriceListTypeConstraintOperationObject(sale, order);
-@defineSupplierCustomerConstraintOperationObject(sale, order);

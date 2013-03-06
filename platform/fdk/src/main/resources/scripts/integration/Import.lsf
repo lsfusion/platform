@@ -55,6 +55,8 @@ EXTEND CLASS warehouse : externalizable;
 EXTEND CLASS warehouseGroup : externalizable;
 EXTEND CLASS writeOffRate : externalizable;
 
+numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS userInvoice;
+
 userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
 
 storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP UNIQUE storeType BY name (storeType), sidExternalizable(storeType);

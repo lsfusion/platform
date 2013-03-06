@@ -42,34 +42,29 @@ priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDe
 costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+) customCostPriceInvoiceDetail(detail);
 costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+) (customCostPriceInvoiceDetail(detail) AND detail IS userInvoiceDetail);
 
-// -------------------------------------- Формирование задолженности ---------------------------------------------------
-
-@implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
-
-@implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
-
-@implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
-sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
+//------------------------------ Ограничение на выбор поставщиков -----------------------------//
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся компанией';
 
-supplierUserInvoice(userInvoice) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserInvoice(userInvoice) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
     WHEN ASSIGNED(userInvoice IS userInvoice);
-customerUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+customerUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userInvoice IS userInvoice);
 
 supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserInvoice(userInvoice)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1
         WHEN CHANGED(supplierUserInvoice(userInvoice));
 customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserInvoice(userInvoice))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserInvoice(userInvoice)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserInvoice(userInvoice)) == 1
         WHEN CHANGED(customerUserInvoice(userInvoice));
         // для импорта
-numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS userInvoice;
+
+//------------------------------ Ввод в упаковках -----------------------------//
 
 @defineDocumentPackageSku(userInvoice, sku, customerStock);
 @extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showPurchasePack);
@@ -80,7 +75,10 @@ overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
     }
 }
 
-inAssortmentSkuUserInvoice (sku, userInvoice)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
+//------------------------------ Расширение формы -----------------------------//
+
+// Фильтры
+inAssortmentSkuUserInvoice (sku, userInvoice) = companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
 inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice
 
@@ -92,14 +90,28 @@ EXTEND FORM userInvoice
         FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
 ;
 
-// Проводим по регистру закупок
+// Резервы
+@extendFormDocumentOrderLedger(userInvoice, userInvoice, customerStock, i);
+
+// ------------------- Проведение по задолженностям ----------------------- //
+
+@implementContractLedger(a, userInvoice, contractSku);
+sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
+
+@implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
+
+@implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
+sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
+
+// --------------- Проведение по регистру закупок ------------- //
+
 @implementPurchaseLedger(invoice, sku, customerStock);
 supplierPurchaseLedger (ledger) += supplierInvoiceDetail(ledger);
 quantityPurchaseLedger (ledger) += quantityInvoiceDetail(ledger);
 VATPurchaseLedger (ledger) += VATInvoiceDetail(ledger);
 sumPurchaseLedger (ledger) += sumInvoiceDetail(ledger);
 
-// Создаем виды цен
+// --------------- Проведение по регистру цен ------------- //
 
 EXTEND CLASS invoiceDetail : priceListLedger;
 
@@ -136,8 +148,6 @@ EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Заку�
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
 
-//--------------------- Расширяем форму Подбор инвойса резервами -------//
-@extendFormDocumentOrderLedger(userInvoice, userInvoice, customerStock, i);
 
 NAVIGATOR {
     purchasePurchaseNavigator {

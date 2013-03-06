@@ -14,21 +14,23 @@ CONSTRAINT supplierUserCreditNote(userCreditNote) AND NOT isSupplierLegalEntity(
 CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(customerUserCreditNote(userCreditNote))
     CHECKED BY customerUserCreditNote MESSAGE 'Для акта расхождения выбрано в качестве покупателя организация, не являющаяся компанией';
 
-//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+//------------------------------ Автоматическое проставление свойств -----------------------------//
 
-@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
-
-supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
     WHEN ASSIGNED(userCreditNote IS userCreditNote);
-customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userCreditNote IS userCreditNote);
 
 supplierStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserCreditNote(userCreditNote))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(supplierUserCreditNote(userCreditNote));
 customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserCreditNote(userCreditNote))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserCreditNote(userCreditNote)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(customerUserCreditNote(userCreditNote));
+
+//------------------------------ Создание аггрегированных объектов через операции -----------------------------//
+
+@deriveDocumentHeaderCreate(userInvoice, createCreditNote, purchase);
 
 NAVIGATOR {
     purchasePurchaseNavigator {

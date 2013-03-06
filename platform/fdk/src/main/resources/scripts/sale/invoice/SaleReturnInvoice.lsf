@@ -13,35 +13,36 @@ NAMESPACE SaleReturn;
 @defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
-// -------------------------------------- Формирование задолженности ---------------------------------------------------
+@defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
 
-@implementContractLedger(, userInvoice, contractSku);
-sumContractLedger(contractLedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractLedger);
+//----------------------------------------------- Операции -----------------------------------------------------//
 
-@implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
+@defineOperationObject(sale, invoice, i);
+@definePriceListTypeConstraintOperationObject(sale, invoice);
+@defineSupplierCustomerConstraintOperationObject(sale, invoice);
 
-@implementOutContractLedgerInContractLedgerPrefix(out, userInvoice, contractSku);
-sumOutContractLedger(outContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(outContractLedger);
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
     CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))
     CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся покупателем';
 
-supplierUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userInvoice IS userInvoice);
-customerUserInvoice(userInvoice) <- defaultCustomerEmployee(currentUser()) IF countIsCustomerEntityEmployee (currentUser()) == 1
+customerUserInvoice(userInvoice) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
     WHEN ASSIGNED(userInvoice IS userInvoice);
 
 supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserInvoice(userInvoice)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1
         WHEN CHANGED(supplierUserInvoice(userInvoice));
 customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserInvoice(userInvoice))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserInvoice(userInvoice)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserInvoice(userInvoice)) == 1
         WHEN CHANGED(customerUserInvoice(userInvoice));
 
-@defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
+//------------------------------ Ввод в упаковках -----------------------------//
 
 @defineDocumentPackageSku(userInvoice, sku, supplierStock);
 @extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showSalePack);
@@ -52,6 +53,9 @@ overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
     }
 }
 
+//------------------------------ Расширение формы -----------------------------//
+
+// Фильтры
 inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoice), sku);
 EXTEND FORM userInvoice
 
@@ -64,17 +68,23 @@ EXTEND FORM userInvoice
         FILTER'В ассортименте' 'F7' priceSkuUserInvoice(s, i)
 ;
 
-//--------------------- Расширяем форму Подбор инвойса резервами -------//
+// Резервы
 @extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+
+// --------------------------- Проведение по регистру задолженностей ------------------------------------ //
+
+@implementContractLedger(, userInvoice, contractSku);
+sumContractLedger(contractLedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractLedger);
+
+@implementContractLedger(a, userInvoice, contractSku);
+sumContractALedger(contractALedger) += -invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(out, userInvoice, contractSku);
+sumOutContractLedger(outContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(outContractLedger);
+
 
 NAVIGATOR {
     saleReturnNavigator {
         ADD invoices;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(sale, invoice, i);
-@definePriceListTypeConstraintOperationObject(sale, invoice);
-@defineSupplierCustomerConstraintOperationObject(sale, invoice);

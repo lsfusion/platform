@@ -195,6 +195,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
     @deriveDocumentQuantityPackageDetailOnChangeQuantity(userOrderDetail);
     @deriveDocumentQuantityDetailOnAmountPack(userOrderDetail);
     @deriveDocumentQuantityDetailOnChangeQuantityPack (userOrderDetail);
+
 //-- Дата следующей поставки
     @defineDocumentInterfaceDatePrefix (order, nextShipment, ' следующей поставки');
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;

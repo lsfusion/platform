@@ -57,9 +57,9 @@ FORM pricingCommittee 'Комиссия для акта расценки'
     EDIT pricingCommittee OBJECT c
 ;
 @extendFormFilterStockAccess(departmentStore, dep, pricingCommittee);
-@extendFormFilterStockGroupAccess(chainStores, t, pricingCommittee, accessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(storeType, st, pricingCommittee, accessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(store, s, pricingCommittee, accessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(chainStores, t, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(storeType, st, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(store, s, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN pricingCommittee FROM DEFAULT {
     main {

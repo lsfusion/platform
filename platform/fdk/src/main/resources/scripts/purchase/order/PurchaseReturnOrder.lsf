@@ -10,22 +10,34 @@ NAMESPACE PurchaseReturn;
 
 @defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (закупка-возврат)', 'ВЗ', purchaseReturn);
 
+//----------------------------------------------- Операции -----------------------------------------------------//
+
+@defineOperationObject(purchase, order, o);
+@definePriceListTypeConstraintOperationObject(purchase, order);
+@defineSupplierCustomerConstraintOperationObject(purchase, order);
+
+//------------------------------ Ограничение на выбор контрагентов -----------------------------//
+
 CONSTRAINT supplierUserOrder(userOrder) AND NOT isSupplierLegalEntity(supplierUserOrder(userOrder))
     CHECKED BY supplierUserOrder MESSAGE 'Для заказа выбрано в качестве поставщика организация, не являющаяся поставщиком';
 CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUserOrder(userOrder))
     CHECKED BY customerUserOrder MESSAGE 'Для заказа выбрано в качестве покупателя организация, не являющаяся компанией';
 
-supplierUserOrder(userOrder) <- defaultSupplierEmployee(currentUser()) IF countIsSupplierEntityEmployee (currentUser()) == 1
+//------------------------------ Автоматическое проставление свойств -----------------------------//
+
+supplierUserOrder(userOrder) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
     WHEN ASSIGNED(userOrder IS userOrder);
-customerUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countIsCompanyEntityEmployee (currentUser()) == 1
+customerUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
     WHEN ASSIGNED(userOrder IS userOrder);
 
 supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), supplierUserOrder(userOrder)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
         WHEN CHANGED(supplierUserOrder(userOrder));
 customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserOrder(userOrder))
-    IF countStocksLegalEntityEmployee (currentUser(), customerUserOrder(userOrder)) == 1
+    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserOrder(userOrder)) == 1
         WHEN CHANGED(customerUserOrder(userOrder));
+
+//------------------------------ Ввод в упаковках -----------------------------//
 
 @defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
 @extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
@@ -37,6 +49,9 @@ overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
     }
 }
 
+//------------------------------ Расширение формы -----------------------------//
+
+// Фильтры
 inAssortmentSkuStockUserOrder (sku, stock, userOrder)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserOrderSku(userOrder, sku), sku, stock, dateTimeUserOrder(userOrder)) == supplierUserOrder(userOrder);
 inUserOrderSku (userOrder, sku)= inSupplierSku(supplierUserOrder(userOrder), sku);
 EXTEND FORM userOrder
@@ -50,19 +65,15 @@ EXTEND FORM userOrder
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT
 ;
 
+// Резервы
+@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 //--------------------- Проводим по регистру резерва ------------------//
 @implementPurchaseOrderLedger(order, sku, shipmentDateTime, customerStock, supplier);
-//--------------------- Расширяем форму Подбор заказа резервами -------//
-@extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+
 
 NAVIGATOR {
     purchaseReturnNavigator {
         ADD orders;
     }
 }
-
-//----------------------------------------------- Операции -----------------------------------------------------//
-
-@defineOperationObject(purchase, order, o);
-@definePriceListTypeConstraintOperationObject(purchase, order);
-@defineSupplierCustomerConstraintOperationObject(purchase, order);
