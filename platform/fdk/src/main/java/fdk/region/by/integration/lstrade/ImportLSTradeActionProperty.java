@@ -42,8 +42,9 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             Integer numberOfItems = (Integer) getLCP("importNumberItems").read(context);
-            String path = getLCP("importLSTDirectory").read(context).toString().trim();
-            if (!"".equals(path)) {
+            Object pathObject = getLCP("importLSTDirectory").read(context);
+            String path = pathObject==null ? "" : ((String) pathObject).trim();
+            if (!path.isEmpty()) {
 
                 ImportData importData = new ImportData();
 
