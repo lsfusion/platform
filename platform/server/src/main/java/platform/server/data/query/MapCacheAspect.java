@@ -188,9 +188,8 @@ public class MapCacheAspect {
         if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (ImSet<CalcProperty>) thisJoinPoint.proceed();
 
-        //.filter(property.getRecDepends())
-        // оптимизация самого верхнего уровня
-        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{implement, cascade}, true, false);
+        // оптимизация самого верхнего уровня, проверка на isEmpty нужна для того чтобы до finalize'a (в CaseUnionProperty в частности) не вызвать случайно getRecDepends, там в fillDepends на это assert есть
+        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{!implement.isEmpty() ? implement.filter(property.getRecDepends()) : implement, cascade}, true, false);
     }
 
     @Around("execution(* platform.server.logics.property.CalcProperty.getUsedChanges(platform.server.session.StructChanges,boolean)) " +
@@ -399,7 +398,7 @@ public class MapCacheAspect {
                 }
             }
             if(cacheQuery==null || checkCaches) {
-                query = (IQuery<K, String>) thisJoinPoint.proceed(new Object[] {property, propClasses, propChanges, queryType, interfaceValues} );
+                query = (IQuery<K, String>) thisJoinPoint.proceed(new Object[] {property, propClasses, implement.usedChanges, queryType, interfaceValues} );
 
                 assert implement.getContextValues().containsAll(ValueExpr.removeStatic(query.getContextValues())); // в query не должно быть элементов не из implement.getContextValues
 
@@ -532,7 +531,7 @@ public class MapCacheAspect {
 
             logger.debug("getExpr - not cached "+property);
             WhereBuilder cacheWheres = CalcProperty.cascadeWhere(changedWheres);
-            Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, propChanges, cacheWheres});
+            Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, propClasses, implement.usedChanges, cacheWheres});
 
             cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
             if(checkCaches && !BaseUtils.hashEquals(expr, cacheResult))
@@ -584,7 +583,7 @@ public class MapCacheAspect {
                 }
             }
             if(cacheChange==null || checkCaches) {
-                change = (PropertyChange<K>) thisJoinPoint.proceed(new Object[]{property, propChanges});
+                change = (PropertyChange<K>) thisJoinPoint.proceed(new Object[]{property, implement});
 
                 assert implement.getContextValues().containsAll(ValueExpr.removeStatic(change.getInnerValues())); // в query не должно быть элементов не из implement.getContextValues
 

@@ -69,6 +69,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+        assert finalized;
         return getWheres().merge(getProps());
     }
 
