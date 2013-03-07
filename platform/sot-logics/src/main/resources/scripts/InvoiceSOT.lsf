@@ -1,0 +1,21 @@
+MODULE InvoiceSOT;
+
+REQUIRE PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation;
+
+NAMESPACE PurchaseInvoice;
+
+certificateTextNotNullBatch(batch) = toText('    ') IF batch IS batch OR certificateTextBatch(batch);
+
+necessaryBatchPriceCertificateText = GROUP MAX batch BY costBatch (batch), certificateTextNotNullBatch(batch);
+//necessaryBatchUserInvoiceDetail = necessaryBatch (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS userInvoiceDetail OR certificateTextUserInvoiceDetail(userInvoiceDetail));
+//descriptionNecessaryBatchUserInvoiceDetail = descriptionBatch(necessaryBatchUserInvoiceDetail(userInvoiceDetail));
+
+WHEN CHANGED(priceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(certificateTextUserInvoiceDetail(userInvoiceDetail))
+  DO {
+    batchUserInvoiceDetail (userInvoiceDetail) <-
+    necessaryBatchPriceCertificateText (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS userInvoiceDetail OR certificateTextUserInvoiceDetail(userInvoiceDetail));
+} SESSION;
+
+//EXTEND FORM userInvoice
+//    PROPERTIES(d) descriptionNecessaryBatchUserInvoiceDetail
+//    ;

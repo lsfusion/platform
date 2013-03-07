@@ -122,18 +122,18 @@ META defineCertificateObjectBatch(prop, caption)
     description###prop###batch caption (batch) = description###prop(prop###batch(batch));
     batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
 
-    EXTEND FORM currentBalanceSkuStock PROPERTIES description###prop###batch(bt);
-    EXTEND FORM balanceSkuStock PROPERTIES description###prop###batch(bt);
-    EXTEND FORM currentBalanceBatchStock PROPERTIES description###prop###batch(bt);
-    EXTEND FORM balanceBatchStock PROPERTIES description###prop###batch(bt);
+    EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM balanceSkuStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM currentBalanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
+    EXTEND FORM balanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
 END
 
 certificateTextBatch 'Дополнительные сертификаты' = ABSTRACT TEXT (batch) PERSISTENT;
 
-EXTEND FORM currentBalanceSkuStock PROPERTIES certificateTextBatch(bt);
-EXTEND FORM balanceSkuStock PROPERTIES certificateTextBatch(bt);
-EXTEND FORM currentBalanceBatchStock PROPERTIES certificateTextBatch(bt);
-EXTEND FORM balanceBatchStock PROPERTIES certificateTextBatch(bt);
+EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM balanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM currentBalanceBatchStock PROPERTIES READONLY certificateTextBatch(bt);
+EXTEND FORM balanceBatchStock PROPERTIES READONLY certificateTextBatch(bt);
 
 // ------------------------------------ Ограничение на выбор объектов ----------------------------------- //
 
