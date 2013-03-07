@@ -7,7 +7,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ public class PackActionProperty extends ScriptingActionProperty {
         BusinessLogics BL = context.getBL();
         
         sqlSession.startTransaction();
-        BL.packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
+        context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
         sqlSession.commitTransaction();
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));

@@ -25,6 +25,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import tmc.integration.scheduler.FlagSemaphoreTask;
 import platform.server.session.*;
@@ -46,9 +48,11 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
     Integer impDocID;
     Integer impSaleActionID;
     Integer impReturnDocID;
+    private ExecutionContext<ClassPropertyInterface> context;
 
-    public SinglePriceImportTask(VEDBusinessLogics BL, String impPath, String impFileName, Integer impDocID, Integer impSaleActionID, Integer impReturnDocID) {
-        this.BL = BL;
+    public SinglePriceImportTask(ExecutionContext<ClassPropertyInterface> context, String impPath, String impFileName, Integer impDocID, Integer impSaleActionID, Integer impReturnDocID) {
+        this.context = context;
+        this.BL = (VEDBusinessLogics) context.getBL();
         this.impPath = impPath;
         this.impFileName = impFileName;
         this.impDocID = impDocID;
@@ -73,7 +77,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             PropertyField priceField = new PropertyField("price", priceClass);
             PropertyField noDiscField = new PropertyField("nodisc", LogicalClass.instance);
 
-            DataSession session = BL.createSession();
+            DataSession session = context.createSession();
 
             SingleKeyTableUsage<PropertyField> table = new SingleKeyTableUsage<PropertyField>(barcodeClass, SetFact.toOrderExclSet(nameField, priceField, noDiscField), Field.<PropertyField>typeGetter());
 
@@ -96,7 +100,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 table.modifyRecord(session.sql, new DataObject(barcode), mProperties.immutable(), Modify.MODIFY);
             }
 
-            ImRevMap<PropertyInterface, KeyExpr> mapKeys = (ImRevMap<PropertyInterface,KeyExpr>) BL.VEDLM.barcodeToObject.property.getMapKeys();
+            ImRevMap<PropertyInterface, KeyExpr> mapKeys = BL.VEDLM.barcodeToObject.property.getMapKeys();
 
             QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(mapKeys);
             query.and(table.join(mapKeys.singleValue()).getWhere());
@@ -113,7 +117,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                     String barcode = (String)result.getKey(i).singleValue();
 
                     ImRevMap<PropertyInterface, KeyExpr> mapBarKeys = BL.VEDLM.barcode.property.getMapKeys();
-                    DataChanges barcodeChanges = ((CalcProperty<PropertyInterface>)BL.VEDLM.barcode.property).getDataChanges(
+                    DataChanges barcodeChanges = BL.VEDLM.barcode.property.getDataChanges(
                             new PropertyChange(mapBarKeys, new DataObject(barcode).getExpr(), mapBarKeys.singleValue().compare(article, Compare.EQUALS)),
                             session.getModifier());
 
@@ -126,7 +130,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                                                mapNameKeys.singleValue());
             Join<PropertyField> priceImpJoin = table.join(BL.VEDLM.barcode.property.getExpr(mapBarKeys, session.getModifier()));
 
-            DataChanges nameChanges = ((CalcProperty<PropertyInterface>)BL.VEDLM.baseLM.name.property).getDataChanges(
+            DataChanges nameChanges = BL.VEDLM.baseLM.name.property.getDataChanges(
                     new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
                     session.getModifier());
 

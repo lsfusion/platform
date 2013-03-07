@@ -23,7 +23,7 @@ public class FiscalDatecsAdvancePaperActionProperty extends ScriptingActionPrope
 
             String result = (String)context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(3, baudRate, comPort));
             if (result == null)
-                context.apply(LM.getBL());
+                context.apply();
             else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
 

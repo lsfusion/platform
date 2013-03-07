@@ -142,7 +142,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, Settings.instance.isApplyNoIncrement(), modifier);
+        this(override, Settings.get().isApplyNoIncrement(), modifier);
     }
 
     public OverrideSessionModifier(IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а

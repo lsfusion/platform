@@ -7,9 +7,6 @@ import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
-import tmc.VEDBusinessLogics;
-import tmc.integration.exp.DateSaleExportTask;
-import tmc.integration.exp.NewSaleExportTask;
 import tmc.integration.imp.SinglePriceImportTask;
 
 import java.sql.SQLException;
@@ -22,7 +19,7 @@ public class PriceImportTaskActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            DataSession session = createSession();
+            DataSession session = context.createSession();
             String path = (String) LM.findLCPByCompoundName("pathPriceImportTask").read(session);
             String docID = (String) LM.findLCPByCompoundName("docIDPriceImportTask").read(session);
             String actionID = (String) LM.findLCPByCompoundName("actionIDPriceImportTask").read(session);
@@ -41,8 +38,8 @@ public class PriceImportTaskActionProperty extends ScriptingActionProperty {
                 Integer impActionID = Integer.valueOf(actionIDList[impNum]);
                 Integer impReturnDocID = Integer.valueOf(returnDocIDList[impNum]);
 
-                FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask((VEDBusinessLogics) LM.getBL(), impPath, "datanew", impDocID, impActionID, impReturnDocID));
-                FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask((VEDBusinessLogics) LM.getBL(), impPath, "dataupd", impDocID, impActionID, impReturnDocID));
+                FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(context, impPath, "datanew", impDocID, impActionID, impReturnDocID));
+                FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(context, impPath, "dataupd", impDocID, impActionID, impReturnDocID));
             }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

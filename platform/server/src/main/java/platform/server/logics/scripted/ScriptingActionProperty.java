@@ -4,6 +4,7 @@ import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
@@ -51,11 +52,7 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
         return LM.findFormByCompoundName(name);
     }
 
-    protected DataSession createSession() throws SQLException {
-        return LM.getBL().createSession();
-    }
-
-    protected boolean applySession(DataSession session) throws SQLException {
-        return session.apply(LM.getBL());
+    protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException {
+        return session.apply(context.getBL());
     }
 }

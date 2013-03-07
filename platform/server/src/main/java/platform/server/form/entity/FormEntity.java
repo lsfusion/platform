@@ -18,12 +18,12 @@ import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.ModalityType;
 import platform.interop.PropertyEditType;
-import platform.server.Context;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
+import platform.server.context.ThreadLocalContext;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -137,7 +137,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         title = ititle;
         isPrintForm = iisPrintForm;
 
-        BaseLogicsModule baseLM = Context.context.get().getBL().LM;
+        BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
         printActionPropertyDraw = addPropertyDraw(baseLM.formPrint);
         editActionPropertyDraw = addPropertyDraw(baseLM.formEdit);
@@ -830,7 +830,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     @IdentityLazy
     public FunctionSet<CalcProperty> getNoHints() {
-        if (Settings.instance.isDisableChangeModifierAllHints())
+        if (Settings.get().isDisableChangeModifierAllHints())
             return BaseUtils.universal(getChangeModifierProps().isEmpty());
         else
             return CalcProperty.getDependsOnSet(getChangeModifierProps()); // тут какая то проблема есть

@@ -24,7 +24,7 @@ public class FiscalVMKZReportActionProperty extends ScriptingActionProperty {
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
-            if (context.checkApply(LM.getBL())) {
+            if (context.checkApply()) {
                String result = (String)context.requestUserInteraction(new FiscalVMKCustomOperationClientAction(2, baudRate, comPort));
                 if (result != null)
                     context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));

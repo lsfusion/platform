@@ -12,7 +12,7 @@ public abstract class NavigatorFilter {
     public final static NavigatorFilter EXPIRED = new NavigatorFilter() {
         public boolean accept(RemoteNavigator navigator) {
             long suspendTime = System.currentTimeMillis() - navigator.getLastUsedTime();
-            return suspendTime > BusinessLogics.MAX_FREE_NAVIGATOR_LIFE_TIME;
+            return suspendTime > NavigatorsManager.MAX_FREE_NAVIGATOR_LIFE_TIME;
         }
     };
 

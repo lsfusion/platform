@@ -7,7 +7,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ReflectionLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
@@ -33,7 +32,7 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
         String propertySID = (String) context.getBL().reflectionLM.sidTableColumn.read(context, tableColumnObject);
 
         sqlSession.startTransaction();
-        context.getBL().recalculateAggregationTableColumn(sqlSession, propertySID.trim());
+        context.getDbManager().recalculateAggregationTableColumn(sqlSession, propertySID.trim());
         sqlSession.commitTransaction();
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));

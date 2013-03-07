@@ -1,8 +1,8 @@
 package platform.client;
 
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
-import platform.interop.RemoteLoaderInterface;
+import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.exceptions.RemoteInternalException;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -92,7 +92,6 @@ public final class LoginAction {
                     loginDialog.setWarningMsg(getString("errors.error.cancel"));
                     break;
             }
-            loginDialog.setDefaultButtonOK();
             loginDialog.setAutoLogin(false);
             loginInfo = loginDialog.login();
             if (loginInfo == null) {
@@ -111,7 +110,7 @@ public final class LoginAction {
     }
 
     private int connect() {
-        RemoteLoaderInterface remoteLoader;
+        RemoteLogicsLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
         int computerId;
         RemoteNavigatorInterface remoteNavigator;
@@ -122,12 +121,12 @@ public final class LoginAction {
             if (remoteLoader == null) {
                 return CANCELED;
             }
-            RemoteLogicsInterface remote = remoteLoader.getRemoteLogics();
+            RemoteLogicsInterface remote = remoteLoader.getLogics();
 
             remoteLogics = new RemoteBusinessLogicProxy(remote);
-            computerId = remoteLogics.getComputer(OSUtils.getLocalHostName());
+            computerId = remoteLogics.getComputer(SystemUtils.getLocalHostName());
 
-            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, OSUtils.getHostAddress(), false);
+            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), false);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;

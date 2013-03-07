@@ -3,16 +3,13 @@ package equ.clt;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
-import platform.base.ClassUtils;
+import platform.base.SystemUtils;
 
 import java.io.IOException;
 
 public class EquipmentServerBootstrap {
 
     private static FileSystemXmlApplicationContext springContext;
-
-    public static final String SETTINGS_PATH_KEY = "lsf.settings.path";
-    public static final String DEFAULT_SETTINGS_PATH = "conf/settings.xml";
 
     public EquipmentServerBootstrap() {
     }
@@ -24,7 +21,7 @@ public class EquipmentServerBootstrap {
     public static void start() throws IOException {
         logger.info("Server is starting...");
 
-        ClassUtils.initRMICompressedSocketFactory();
+        SystemUtils.initRMICompressedSocketFactory();
 
         initSpringContext();
 
@@ -37,12 +34,7 @@ public class EquipmentServerBootstrap {
     }
 
     private static void initSpringContext() {
-        String settingsPath = System.getProperty(SETTINGS_PATH_KEY);
-        if (settingsPath == null) {
-            settingsPath = DEFAULT_SETTINGS_PATH;
-        }
-
-        springContext = new FileSystemXmlApplicationContext(settingsPath);
+        springContext = new FileSystemXmlApplicationContext("conf/settings.xml");
     }
 
     public static void stop() {

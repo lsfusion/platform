@@ -2,7 +2,7 @@ grammar AlterationScript;
 
 @header {
 	package platform.server;
-	import platform.server.logics.BusinessLogics;
+	import platform.server.logics.DBManager;
 	import java.util.*;
 	import org.antlr.runtime.BitSet;
 }
@@ -12,7 +12,7 @@ grammar AlterationScript;
 }
 
 @members {
-	public BusinessLogics self;
+	public DBManager self;
 }
 
 

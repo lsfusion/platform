@@ -9,13 +9,13 @@ import platform.base.IOUtils;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.action.ExportFileClientAction;
-import platform.server.auth.PolicyManager;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.SecurityManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 
 import java.io.File;
@@ -24,20 +24,22 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class DeclarationExportActionProperty extends UserActionProperty {
-    private RomanBusinessLogics BL;
+    private BaseLogicsModule baseLM;
+    private RomanLogicsModule RomanLM;
     private DBFExporter.CustomDBF dbfDecl02, dbfDobl, dbfG313, dbfG44, dbfG47;
     private DBFExporter.CustomDBF dbfG18, dbfG20, dbfG21, dbfG316, dbfG40, dbfGB;
     private File tempDecl02, tempDobl, tempG313, tempG44, tempG47, tempG18, tempG20, tempG21, tempG316, tempG40, tempGB;
 
-    public DeclarationExportActionProperty(String sID, String caption, RomanBusinessLogics BL, ValueClass importer, ValueClass freight) {
+    public DeclarationExportActionProperty(String sID, String caption, ValueClass importer, ValueClass freight, RomanLogicsModule RomanLM, BaseLogicsModule baseLM) {
         super(sID, caption, new ValueClass[]{importer, freight});
-        this.BL = BL;
+        this.RomanLM = RomanLM;
+        this.baseLM = baseLM;
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
             DeclarationExporter exporter = new DeclarationExporter(context.getKeys());
-            exporter.extractData();
+            exporter.extractData(context);
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
             files.put("DECL02.DBF", IOUtils.getFileBytes(dbfDecl02.getFFile()));
@@ -95,55 +97,55 @@ public class DeclarationExportActionProperty extends UserActionProperty {
             freightDO = keys.get(interfacesList.get(1));
         }
 
-        public void getPropertyDraws() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-            session = BL.createSession();
+        private void getPropertyDraws(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            session = context.createSession();
             map = new HashMap<Field, PropertyDrawInstance>();
-            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceFromFormEntity, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer), null);
-            ObjectInstance importerObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objImporter);
-            ObjectInstance freightObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objFreight);
-            ObjectInstance articleObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objArticle);
-            ObjectInstance compositionObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objComposition);
-            ObjectInstance countryObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objCountry);
-            ObjectInstance categoryObj = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceFromFormEntity.objCategory);
+            FormInstance formInstance = new FormInstance(RomanLM.invoiceFromFormEntity, context.getLogicsInstance(), session, SecurityManager.serverSecurityPolicy, null, null, context.getDbManager().getServerComputerObject(), null);
+            ObjectInstance importerObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objImporter);
+            ObjectInstance freightObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objFreight);
+            ObjectInstance articleObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objArticle);
+            ObjectInstance compositionObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objComposition);
+            ObjectInstance countryObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objCountry);
+            ObjectInstance categoryObj = formInstance.instanceFactory.getInstance(RomanLM.invoiceFromFormEntity.objCategory);
 
-            map.put(G15Decl, formInstance.getPropertyDraw(BL.LM.name, countryObj.groupTo));
-            map.put(G33Decl, formInstance.getPropertyDraw(BL.RomanLM.sidCustomCategory10));
-            map.put(G33Dobl, formInstance.getPropertyDraw(BL.RomanLM.sidCustomCategory10));
-            map.put(G542Decl, formInstance.getPropertyDraw(BL.RomanLM.date, freightObj.groupTo));
-            map.put(G542Dobl, formInstance.getPropertyDraw(BL.RomanLM.date, freightObj.groupTo));
-            map.put(G082Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
-            map.put(G142Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
-            map.put(G092Decl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
-            map.put(G083Decl, formInstance.getPropertyDraw(BL.RomanLM.addressSubject));
-            map.put(G143Decl, formInstance.getPropertyDraw(BL.RomanLM.addressSubject));
-            map.put(G093Decl, formInstance.getPropertyDraw(BL.RomanLM.addressSubject));
-            map.put(G142Dobl, formInstance.getPropertyDraw(BL.LM.name, importerObj.groupTo));
-            map.put(G143Dobl, formInstance.getPropertyDraw(BL.RomanLM.addressSubject));
-            map.put(G312Decl, formInstance.getPropertyDraw(BL.RomanLM.sidArticle));
-            map.put(G312Dobl, formInstance.getPropertyDraw(BL.RomanLM.sidArticle));
-            map.put(G022IDecl, formInstance.getPropertyDraw(BL.RomanLM.nameExporterFreight));
-            map.put(G023IDecl, formInstance.getPropertyDraw(BL.RomanLM.addressExporterFreight));
-            map.put(G41Decl, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
-            map.put(G41Dobl, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
-            map.put(G315ADecl, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
-            map.put(G315ADobl, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
-            map.put(G315BDecl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G315BDobl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G38Decl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G38Dobl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G38ADecl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G38ADobl, formInstance.getPropertyDraw(BL.RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G35Decl, formInstance.getPropertyDraw(BL.RomanLM.grossWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G35Dobl, formInstance.getPropertyDraw(BL.RomanLM.grossWeightImporterFreightArticleCompositionCountryCategory));
-            map.put(G317ADecl, formInstance.getPropertyDraw(BL.RomanLM.nameUnitOfMeasureArticle));
-            map.put(G317ADobl, formInstance.getPropertyDraw(BL.RomanLM.nameUnitOfMeasureArticle));
-            map.put(G41BDecl, formInstance.getPropertyDraw(BL.RomanLM.nameUnitOfMeasureArticle));
-            map.put(G41BDobl, formInstance.getPropertyDraw(BL.RomanLM.nameUnitOfMeasureArticle));
+            map.put(G15Decl, formInstance.getPropertyDraw(baseLM.name, countryObj.groupTo));
+            map.put(G33Decl, formInstance.getPropertyDraw(RomanLM.sidCustomCategory10));
+            map.put(G33Dobl, formInstance.getPropertyDraw(RomanLM.sidCustomCategory10));
+            map.put(G542Decl, formInstance.getPropertyDraw(RomanLM.date, freightObj.groupTo));
+            map.put(G542Dobl, formInstance.getPropertyDraw(RomanLM.date, freightObj.groupTo));
+            map.put(G082Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G142Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G092Decl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G083Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
+            map.put(G143Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
+            map.put(G093Decl, formInstance.getPropertyDraw(RomanLM.addressSubject));
+            map.put(G142Dobl, formInstance.getPropertyDraw(baseLM.name, importerObj.groupTo));
+            map.put(G143Dobl, formInstance.getPropertyDraw(RomanLM.addressSubject));
+            map.put(G312Decl, formInstance.getPropertyDraw(RomanLM.sidArticle));
+            map.put(G312Dobl, formInstance.getPropertyDraw(RomanLM.sidArticle));
+            map.put(G022IDecl, formInstance.getPropertyDraw(RomanLM.nameExporterFreight));
+            map.put(G023IDecl, formInstance.getPropertyDraw(RomanLM.addressExporterFreight));
+            map.put(G41Decl, formInstance.getPropertyDraw(RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
+            map.put(G41Dobl, formInstance.getPropertyDraw(RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
+            map.put(G315ADecl, formInstance.getPropertyDraw(RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
+            map.put(G315ADobl, formInstance.getPropertyDraw(RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
+            map.put(G315BDecl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G315BDobl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G38Decl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G38Dobl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G38ADecl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G38ADobl, formInstance.getPropertyDraw(RomanLM.netWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G35Decl, formInstance.getPropertyDraw(RomanLM.grossWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G35Dobl, formInstance.getPropertyDraw(RomanLM.grossWeightImporterFreightArticleCompositionCountryCategory));
+            map.put(G317ADecl, formInstance.getPropertyDraw(RomanLM.nameUnitOfMeasureArticle));
+            map.put(G317ADobl, formInstance.getPropertyDraw(RomanLM.nameUnitOfMeasureArticle));
+            map.put(G41BDecl, formInstance.getPropertyDraw(RomanLM.nameUnitOfMeasureArticle));
+            map.put(G41BDobl, formInstance.getPropertyDraw(RomanLM.nameUnitOfMeasureArticle));
 
-            map.put(G31_NTG313, formInstance.getPropertyDraw(BL.RomanLM.sidArticle));
-            map.put(G31_FIRMAG313, formInstance.getPropertyDraw(BL.RomanLM.nameExporterFreight));
-            map.put(G31_KTG313, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
-            map.put(G31_EIG313, formInstance.getPropertyDraw(BL.RomanLM.nameUnitOfMeasureArticle));
+            map.put(G31_NTG313, formInstance.getPropertyDraw(RomanLM.sidArticle));
+            map.put(G31_FIRMAG313, formInstance.getPropertyDraw(RomanLM.nameExporterFreight));
+            map.put(G31_KTG313, formInstance.getPropertyDraw(RomanLM.quantityImporterFreightArticleCompositionCountryCategory));
+            map.put(G31_EIG313, formInstance.getPropertyDraw(RomanLM.nameUnitOfMeasureArticle));
 
             importerObj.changeValue(session, importerDO);
             freightObj.changeValue(session, freightDO);
@@ -151,8 +153,8 @@ public class DeclarationExportActionProperty extends UserActionProperty {
             data = formInstance.getFormData(map.values(), BaseUtils.toSet(articleObj.groupTo));
         }
 
-        public void extractData() throws SQLException, xBaseJException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-            getPropertyDraws();
+        public void extractData(ExecutionContext<ClassPropertyInterface> context) throws SQLException, xBaseJException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+            getPropertyDraws(context);
             for (FormRow row : data.rows) {
                 int index = data.rows.indexOf(row) + 1;
                 if (index == 1) {

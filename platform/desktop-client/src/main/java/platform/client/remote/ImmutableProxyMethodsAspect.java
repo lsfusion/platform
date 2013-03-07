@@ -26,7 +26,7 @@ public class ImmutableProxyMethodsAspect {
             logger.debug("  Returning cached value: " + remoteObject.getProperty(name));
             return remoteObject.getProperty(name);
         } else {
-            logger.debug("  Returning direct value: ");
+            logger.debug("  Directly call immutable method:");
             return thisJoinPoint.proceed();
         }
     }

@@ -6,7 +6,6 @@ import platform.base.*;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
@@ -14,6 +13,7 @@ import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.*;
 import platform.interop.Compare;
 import platform.server.Settings;
+import platform.server.SystemProperties;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.classes.IntegralClass;
@@ -35,11 +35,12 @@ import platform.server.data.type.*;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
-import platform.server.logics.BusinessLogicsBootstrap;
 import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe
@@ -169,11 +170,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         });
 
         boolean useFJ = syntax.useFJ();
-        noExclusive = noExclusive || Settings.instance.isNoExclusiveCompile();
+        noExclusive = noExclusive || Settings.get().isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<Boolean>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
                                 top > 0 && syntax.orderTopTrouble() ? orders.keyOrderSet().mapOrder(query.properties) : SetFact.<Expr>EMPTYORDER());
-        union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.instance.isUseFJInsteadOfUnion());
+        union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             ImMap<V, Type> castTypes = BaseUtils.immutableCast(propertyReaders.filterFnValues(new SFunctionSet<ClassReader>() {
                 public boolean contains(ClassReader element) {
@@ -597,7 +598,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where innerWhere = innerJoin.getWhere();
 
                 Where fullWhere = innerWhere;
-                if(Settings.instance.isPushOrderWhere()) {
+                if(Settings.get().isPushOrderWhere()) {
                     StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
                     Where pushWhere;
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
@@ -941,7 +942,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         private boolean isSingle(QueryJoin join) { // в общем то чтобы нормально использовался ANTI-JOIN в некоторых СУБД, (а он нужен в свою очередь чтобы A LEFT JOIN B WHERE B.e IS NULL)
-            return Settings.instance.isUseSingleJoins() && (join instanceof GroupJoin || join instanceof RecursiveJoin) && !isInner(join);
+            return Settings.get().isUseSingleJoins() && (join instanceof GroupJoin || join instanceof RecursiveJoin) && !isInner(join);
         }
 
         private QuerySelect<?,?,?,?> getSingleSelect(QueryExpr queryExpr) {
@@ -970,7 +971,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         public String getSource(QueryExpr queryExpr) {
             if(queryExpr instanceof GroupExpr) {
                 GroupExpr groupExpr = (GroupExpr)queryExpr;
-                if(Settings.instance.getInnerGroupExprs() >0 && !isInner(groupExpr.getInnerJoin())) { // если left join
+                if(Settings.get().getInnerGroupExprs() >0 && !isInner(groupExpr.getInnerJoin())) { // если left join
                     String groupExprSource = groupExprSources.get(groupExpr);
                     if(groupExprSource==null) {
                         groupExprSource = groupExpr.getExprSource(this, subcontext.pushAlias(groupExprSources.size()));
@@ -1081,7 +1082,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         final InnerSelect compile = new InnerSelect(mapKeys.valuesSet(), innerSelect.where, innerSelect.where, innerSelect.where,innerSelect.joins,innerSelect.upWheres,syntax,params, subcontext);
 
-        if(Settings.instance.getInnerGroupExprs() > 0) { // если не одни joinData
+        if(Settings.get().getInnerGroupExprs() > 0) { // если не одни joinData
             final MAddSet<GroupExpr> groupExprs = SetFact.mAddSet(); final Counter repeats = new Counter();
             for(Expr property : compiledProps.valueIt())
                 property.enumerate(new ExprEnumerator() {
@@ -1094,7 +1095,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         return true;
                     }
                 });
-            if(repeats.getValue() > Settings.instance.getInnerGroupExprs())
+            if(repeats.getValue() > Settings.get().getInnerGroupExprs())
                 return fillSingleSelect(mapKeys, innerSelect, compiledProps, resultKey, resultProperty, params, syntax, subcontext, env);
         }
 
@@ -1284,7 +1285,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.isFullClientParam, env.getIsFullClient());
         mMapValues.exclAdd(SQLSession.isDebugParam, new LogicalParseInterface() {
             public boolean isTrue() {
-                return BusinessLogicsBootstrap.isDebug();
+                return SystemProperties.isDebug;
             }
         });
         return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE));

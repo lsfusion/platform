@@ -5,7 +5,7 @@ import jasperapi.ReportGenerator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.Aspects;
 import platform.base.BaseUtils;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.dock.DockableMainFrame;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
@@ -17,7 +17,7 @@ import platform.client.remote.ImmutableProxyMethodsAspect;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
-import platform.interop.RemoteLoaderInterface;
+import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
@@ -63,7 +63,7 @@ public class Main {
 
     public static ModuleFactory module;
 
-    public static RemoteLoaderInterface remoteLoader;
+    public static RemoteLogicsLoaderInterface remoteLoader;
     public static RemoteLogicsInterface remoteLogics;
     public static RemoteNavigatorInterface remoteNavigator;
 
@@ -170,7 +170,7 @@ public class Main {
 
                                         public void windowClosing(WindowEvent e) {
                                             try {
-                                                remoteLogics.endSession(OSUtils.getLocalHostName() + " " + computerId);
+                                                remoteLogics.endSession(SystemUtils.getLocalHostName() + " " + computerId);
                                             } catch (Exception ex) {
                                                 throw new RuntimeException(ex);
                                             }
@@ -185,7 +185,7 @@ public class Main {
 
                             frame.setVisible(true);
 
-                            ArrayList<IDaemonTask> tasks = remoteNavigator.getDaemonTasks(Main.computerId);
+                            ArrayList<IDaemonTask> tasks = remoteLogics.getDaemonTasks(Main.computerId);
                             daemonTasksExecutor = Executors.newScheduledThreadPool(1);
                             for (IDaemonTask task : tasks) {
                                 task.setEventBus(eventBus);
@@ -290,7 +290,7 @@ public class Main {
 
     public static void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.clientExceptionLog(info, client, message, type, erTrace);
+            remoteNavigator.logClientException(info, client, message, type, erTrace);
         }
     }
 

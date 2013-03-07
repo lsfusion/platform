@@ -47,9 +47,7 @@ public class SQLSession extends MutableObject {
         return (GetValue<String, F>) getDeclare;
     }
 
-    public DataAdapter adapter;
-
-    private ConnectionPool connectionPool;
+    private final ConnectionPool connectionPool;
 
     public Connection getConnection() throws SQLException {
         return privateConnection !=null ? privateConnection : connectionPool.getCommon(this);
@@ -77,7 +75,6 @@ public class SQLSession extends MutableObject {
     private final int isolationLevel;
     public SQLSession(DataAdapter adapter, int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
-        this.adapter = adapter;
         connectionPool = adapter;
         this.isolationLevel = isolationLevel;
     }
@@ -119,7 +116,7 @@ public class SQLSession extends MutableObject {
 
     private int prevIsolation;
     public void startTransaction() throws SQLException {
-        if(Settings.instance.isApplyVolatileStats())
+        if(Settings.get().isApplyVolatileStats())
             pushVolatileStats(null);
 
         needPrivate();
@@ -144,7 +141,7 @@ public class SQLSession extends MutableObject {
 
         tryCommon();
 
-        if(Settings.instance.isApplyVolatileStats())
+        if(Settings.get().isApplyVolatileStats())
             popVolatileStats(null);
     }
 

@@ -5,8 +5,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
-import platform.base.FunctionSet;
-import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.abs.AMap;
@@ -14,9 +12,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.add.MAddCol;
-import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.base.col.lru.MCacheMap;
 import platform.server.Settings;
 import platform.server.caches.hash.HashContext;
@@ -28,7 +24,6 @@ import platform.server.data.query.IQuery;
 import platform.server.data.query.MapCacheAspect;
 import platform.server.data.query.QueryException;
 import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.CalcProperty;
@@ -37,8 +32,6 @@ import platform.server.logics.property.PropertyQueryType;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
 import platform.server.session.SessionModifier;
-
-import java.util.HashMap;
 
 import static platform.base.BaseUtils.max;
 
@@ -112,7 +105,7 @@ public class AutoHintsAspect {
     }
 
     public <P extends PropertyInterface> Object callAutoHint(ProceedingJoinPoint thisJoinPoint, CalcProperty<P> property, ImMap<P, Expr> joinImplement, MCacheMap<Integer, MAddCol<MapCacheAspect.CacheResult<AutoHintImplement, AutoHintException>>> exprCaches, Modifier modifier) throws Throwable {
-        if(!Settings.instance.isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
+        if(!Settings.get().isDisableAutoHints() && modifier instanceof SessionModifier) { // && property.hasChanges(modifier) иначе в рекурсию уходит при changeModifier'е, надо было бы внутрь перенести
             SessionModifier sessionModifier = (SessionModifier) modifier;
 
 /*            AutoHintImplement<P> implement = new AutoHintImplement<P>(property, joinImplement, sessionModifier);
@@ -214,7 +207,7 @@ public class AutoHintsAspect {
             if(allowNoUpdate && catchHint.forceNoUpdate(property) && hintHasChanges(changed, property, propChanges))
                 throw new AutoHintException(property, false);
 
-            if(!(Settings.instance.isDisableValueAllHints() && !interfaceValues.isEmpty())) {
+            if(!(Settings.get().isDisableValueAllHints() && !interfaceValues.isEmpty())) {
                 Expr expr = result.getExpr("value");
 
                 long exprComplexity = expr.getComplexity(false);
@@ -222,14 +215,14 @@ public class AutoHintsAspect {
                 if(changed!=null)
                     whereComplexity = changed.getComplexity(false);
                 long complexity = max(exprComplexity, whereComplexity);
-                if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
+                if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                     if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
                         Expr prevExpr = property.getExpr(mapKeys);
-                        if(whereComplexity > Settings.instance.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.instance.getLimitGrowthIncrementComplexity()) {
-                            if (changed.getStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(Settings.instance.getLimitHintIncrementStat())))
+                        if(whereComplexity > Settings.get().getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.get().getLimitGrowthIncrementComplexity()) {
+                            if (changed.getStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(Settings.get().getLimitHintIncrementStat())))
                                 throw new AutoHintException(property, true);
-                            if(allowNoUpdate && complexity > Settings.instance.getLimitHintNoUpdateComplexity()) {
+                            if(allowNoUpdate && complexity > Settings.get().getLimitHintNoUpdateComplexity()) {
                                 System.out.println("AUTO HINT NOUPDATE" + property);
                                 throw new AutoHintException(property, false);
                             }
@@ -259,7 +252,7 @@ public class AutoHintsAspect {
         Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, propClasses, joinExprs, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
-        if(complexity > Settings.instance.getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
+        if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
             property.getQuery(propClasses, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
         
         if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());

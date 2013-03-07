@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.col.ListFact;
@@ -64,6 +65,8 @@ import static platform.server.logics.property.derived.DerivedProperty.*;
  */
 
 public abstract class LogicsModule {
+    protected static final Logger logger = Logger.getLogger(LogicsModule.class);
+
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
 
@@ -790,7 +793,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply,
-                singleApply, sessionUsed, local, baseLM.BL)));
+                singleApply, sessionUsed, local)));
     }
 
     protected LP addRequestUserInputAProp(AbstractGroup group, String name, String caption, LAP action, Type requestValueType, String chosenKey) {
@@ -851,7 +854,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String name, String caption, ValueClass[] params, Object[] fromAddress, Object[] subject) {
-        EmailActionProperty eaProp = new EmailActionProperty(name, caption, baseLM.BL, params);
+        EmailActionProperty eaProp = new EmailActionProperty(name, caption, params);
         LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<ClassPropertyInterface>(eaProp));
 
         if (fromAddress != null) {
@@ -1383,7 +1386,7 @@ public abstract class LogicsModule {
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LCP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, boolean ascending, LCP<R> restriction, LCP<L> ungroup, Object... params) {
-        return addUGProp(group, name, persistent, over, caption, restriction.listInterfaces.size(), ascending, Settings.instance.isDefaultOrdersNotNull(), ungroup, add(directLI(restriction), params));
+        return addUGProp(group, name, persistent, over, caption, restriction.listInterfaces.size(), ascending, Settings.get().isDefaultOrdersNotNull(), ungroup, add(directLI(restriction), params));
     }
 
     protected <L extends PropertyInterface> LCP addUGProp(AbstractGroup group, String name, boolean persistent, boolean over, String caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
@@ -1402,7 +1405,7 @@ public abstract class LogicsModule {
     }
 
     protected <R extends PropertyInterface, L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, LCP<R> proportion, LCP<L> ungroup, Object... params) {
-        return addPGProp(group, name, persistent, roundlen, roundfirst, caption, proportion.listInterfaces.size(), true, Settings.instance.isDefaultOrdersNotNull(), ungroup, add(add(directLI(proportion), params), getParams(proportion)));
+        return addPGProp(group, name, persistent, roundlen, roundfirst, caption, proportion.listInterfaces.size(), true, Settings.get().isDefaultOrdersNotNull(), ungroup, add(add(directLI(proportion), params), getParams(proportion)));
     }
 
     protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, String name, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
@@ -1545,7 +1548,7 @@ public abstract class LogicsModule {
         return addOGProp(null, name, persist, caption, type, numOrders, descending, groupProp, params);
     }
     public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean descending, LCP<T> groupProp, Object... params) {
-        return addOGProp(group, name, persist, caption, type, numOrders, Settings.instance.isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, ListFact.add(((CalcProperty<T>) groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
+        return addOGProp(group, name, persist, caption, type, numOrders, Settings.get().isDefaultOrdersNotNull(), descending, groupProp.listInterfaces, ListFact.add(((CalcProperty<T>) groupProp.property).getImplement(), readCalcImplements(groupProp.listInterfaces, params)));
     }
     public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, String name, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
@@ -2189,7 +2192,7 @@ public abstract class LogicsModule {
     }
 
     public LAP addEvalAProp(LCP<?> scriptSource) {
-        return addAProp(null, new EvalActionProperty(genSID(), "", baseLM.BL, scriptSource));
+        return addAProp(null, new EvalActionProperty(genSID(), "", scriptSource));
     }
 
     public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
@@ -2442,7 +2445,7 @@ public abstract class LogicsModule {
     private void addPersistent(AggregateProperty property, ImplementTable table) {
         assert !baseLM.isGeneratedSID(property.getSID());
 
-        baseLM.logger.debug("Initializing stored property " + property + "...");
+        logger.debug("Initializing stored property " + property + "...");
         property.markStored(baseLM.tableFactory, table);
     }
 

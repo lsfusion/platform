@@ -14,10 +14,7 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.*;
 import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PullChangeProperty;
 import platform.server.session.DataSession;
@@ -31,8 +28,10 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
     public PropertyDrawEntity initFilterPropertyDraw;
     public Boolean undecorated;
 
+    private final ImSet<PullChangeProperty> pullProps;
+
     public DialogInstance(FormEntity<T> entity,
-                          T BL,
+                          LogicsInstance logicsInstance,
                           DataSession session,
                           SecurityPolicy securityPolicy,
                           FocusListener<T> tFocusView,
@@ -41,12 +40,11 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer,
                           DataObject connection) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, connection, null, null);
+        this(entity, logicsInstance, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, connection, null, null);
     }
 
-    private final ImSet<PullChangeProperty> pullProps;
     public DialogInstance(FormEntity<T> entity,
-                          T BL,
+                          LogicsInstance logicsInstance,
                           DataSession session,
                           SecurityPolicy securityPolicy,
                           FocusListener<T> tFocusView,
@@ -58,7 +56,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ImSet<FilterEntity> additionalFilters,
                           ImSet<PullChangeProperty> pullProps) throws SQLException {
         super(entity,
-              BL,
+              logicsInstance,
               session,
               securityPolicy,
               tFocusView,

@@ -232,6 +232,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
-        return new PartitionJoin(getInner().getInnerKeys(), getInner().getInnerValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
+        return new PartitionJoin(getInner().getInnerKeys(), getInner().getInnerValues(),query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
     }
 }

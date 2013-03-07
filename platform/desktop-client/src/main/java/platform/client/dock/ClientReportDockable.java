@@ -7,7 +7,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.Main;
 import platform.interop.form.ReportGenerationData;
 
@@ -49,7 +49,7 @@ public class ClientReportDockable extends ClientDockable {
         public RViewer(JasperPrint print) {
             super(print);
 
-            lastFolder = OSUtils.loadCurrentDirectory();
+            lastFolder = SystemUtils.loadCurrentDirectory();
 
             ActionListener[] al = btnSave.getActionListeners();
 
@@ -57,7 +57,7 @@ public class ClientReportDockable extends ClientDockable {
 
             btnSave.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    OSUtils.saveCurrentDirectory(lastFolder);
+                    SystemUtils.saveCurrentDirectory(lastFolder);
                 }
             });
             btnSave.addActionListener(al[0]);

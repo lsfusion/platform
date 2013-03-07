@@ -161,13 +161,13 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             applyForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
-                        if ((permission != null) && (permission))
+                        if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
                             applyButtonPressed(true);
-                        else
+                        } else {
                             JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                     if (dialog != null) {
                         dialog.firePropertyChange("buttonPressed", null, null);
@@ -181,8 +181,8 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         resetButtonPressed(false);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                     if (dialog != null) {
                         dialog.firePropertyChange("buttonPressed", null, null);
@@ -195,13 +195,13 @@ public abstract class UserPreferencesButton extends ToolbarGridButton {
             resetForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        Boolean permission = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
-                        if ((permission != null) && (permission))
+                        if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
                             resetButtonPressed(true);
-                        else
+                        } else {
                             JOptionPane.showMessageDialog(null, getString("form.grid.hide.not.enough.rights"), getString("form.grid.hide.error"), JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                     if (dialog != null) {
                         dialog.firePropertyChange("buttonPressed", null, null);

@@ -17,7 +17,7 @@ import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.remote.RemoteForm;
+import platform.server.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;

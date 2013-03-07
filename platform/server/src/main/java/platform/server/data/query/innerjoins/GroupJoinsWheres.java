@@ -107,7 +107,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
     public <K extends BaseExpr> GroupJoinsWheres compileMeans(ImSet<K> keepStat, KeyStat keyStat) {
-        if(!Settings.instance.isCompileMeans())
+        if(!Settings.get().isCompileMeans())
             return this;
 
         Map<WhereJoins, Value> result = MapFact.mAddRemoveMap(); // remove есть

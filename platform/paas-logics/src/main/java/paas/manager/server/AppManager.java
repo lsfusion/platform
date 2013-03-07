@@ -9,27 +9,30 @@ import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import paas.PaasUtils;
-import paas.manager.common.ConfigurationEventData;
+import paas.manager.common.NotificationData;
+import platform.base.IOUtils;
 import platform.base.NullOutputStream;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.interop.remote.ApplicationTerminal;
-import platform.server.ContextAwareDaemonThreadFactory;
+import paas.terminal.ApplicationTerminal;
+import platform.server.context.Context;
+import platform.server.context.ContextAwareDaemonThreadFactory;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
+import platform.server.logics.BusinessLogicsBootstrap;
 import platform.server.logics.DataObject;
-import platform.server.logics.scripted.ScriptingBusinessLogics;
+import platform.server.logics.LogicsInstance;
 import platform.server.session.DataSession;
 
 import java.io.File;
@@ -45,18 +48,16 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 
-import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.nvl;
+import static platform.server.lifecycle.LifecycleEvent.*;
 
-public final class AppManager {
+public final class AppManager extends LifecycleAdapter implements InitializingBean {
     private final static Logger logger = Logger.getLogger(AppManager.class);
 
     private static final String javaExe = System.getProperty("java.home") + "/bin/java";
-
-    private final ManagedAppLifecycleListener lifecycleListener = new ManagedAppLifecycleListener();
 
     private final ChannelGroup openChannels = new DefaultChannelGroup();
 
@@ -64,12 +65,65 @@ public final class AppManager {
 
     private boolean started = false;
 
-    private final int acceptPort;
+    private int acceptPort;
+
+    private Context instanceContext;
+
     private PaasBusinessLogics paas;
+
     private PaasLogicsModule paasLM;
 
-    public AppManager(int acceptPort) {
+    private String dbServer;
+    private String dbUser;
+    private String dbPassword;
+
+    public void setLogicsInstance(LogicsInstance logicsInstance) {
+        instanceContext = logicsInstance.getContext();
+    }
+
+    public void setBusinessLogics(PaasBusinessLogics businessLogics) {
+        this.paas = businessLogics;
+    }
+
+    public void setAcceptPort(int acceptPort) {
         this.acceptPort = acceptPort;
+    }
+
+    public void setDbServer(String dbServer) {
+        this.dbServer = dbServer;
+    }
+
+    public void setDbUser(String dbUser) {
+        this.dbUser = dbUser;
+    }
+
+    public void setDbPassword(String dbPassword) {
+        this.dbPassword = dbPassword;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(paas, "businessLogics must be specified");
+        Assert.notNull(dbServer, "dbServer must be specified");
+        Assert.notNull(dbUser, "dbUser must be specified");
+        Assert.notNull(dbPassword, "dbPassword must be specified");
+        //assert logicsInstance by checking the context
+        Assert.notNull(instanceContext, "logicsInstance must be specified");
+
+        Assert.state(0 < acceptPort && acceptPort <= 65535, "acceptPort must be between 0 and 65535");
+    }
+
+    @Override
+    protected void onStarted(LifecycleEvent event) {
+        logger.info("Starting PAAS AppManager.");
+        paasLM = paas.paasLM;
+        start();
+    }
+
+    @Override
+    protected void onStopping(LifecycleEvent event) {
+        logger.info("Stopping PAAS AppManager.");
+        stop();
     }
 
     public void start() {
@@ -78,7 +132,7 @@ public final class AppManager {
         }
         channelFactory = new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(paas)));
+                Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(instanceContext)));
 
         ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
 
@@ -86,7 +140,7 @@ public final class AppManager {
             public ChannelPipeline getPipeline() throws Exception {
                 return Channels.pipeline(
                         new ObjectDecoder(),
-                        new AppManagerChannelHandler(AppManager.this)
+                        new AppManagerReceiveDataHandler(AppManager.this)
                 );
             }
         });
@@ -116,18 +170,9 @@ public final class AppManager {
         openChannels.add(channel);
     }
 
-    public void lifecycleEvent(LifecycleEvent event) {
-        lifecycleListener.lifecycleEvent(event);
-    }
-
-    public void setLogics(PaasBusinessLogics logics) {
-        paas = logics;
-        paasLM = paas.paasLM;
-    }
-
     public String getStatus(int port) {
         try {
-            ApplicationTerminal remoteManager = (ApplicationTerminal) Naming.lookup("rmi://localhost:" + port + "/AppTerminal");
+            getManagedAppTerminal(port);
             return "started";
         } catch (Exception e) {
             return isPortAvailable(port) ? "stopped" : "busyPort";
@@ -155,16 +200,19 @@ public final class AppManager {
     }
 
     public void stopApplication(Integer port) throws RemoteException, MalformedURLException, NotBoundException {
-        ApplicationTerminal remoteManager = (ApplicationTerminal) Naming.lookup("rmi://localhost:" + port + "/AppTerminal");
-        remoteManager.stop();
+        getManagedAppTerminal(port).stop();
     }
 
-    public void executeScriptedBL(DataSession session, DataObject confObj) throws IOException, InterruptedException, SQLException {
-        Integer port = (Integer) paasLM.configurationPort.read(session, confObj);
+    private ApplicationTerminal getManagedAppTerminal(int port) throws NotBoundException, MalformedURLException, RemoteException {
+        return (ApplicationTerminal) Naming.lookup("rmi://localhost:" + port + "/default/AppTerminal");
+    }
 
-        PaasUtils.checkPortExceptionally(port);
+    public void executeConfiguration(DataSession session, DataObject confObj) throws IOException, InterruptedException, SQLException {
+        Integer exportPort = (Integer) paasLM.configurationPort.read(session, confObj);
 
-        if (!paas.appManager.isPortAvailable(port)) {
+        PaasUtils.checkPortExceptionally(exportPort);
+
+        if (!isPortAvailable(exportPort)) {
             throw new IllegalStateException("Port is busy.");
         }
 
@@ -172,6 +220,8 @@ public final class AppManager {
         if (dbName == null) {
             throw new IllegalStateException("DB name is empty.");
         }
+
+        dbName = dbName.trim();
 
         Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
 
@@ -189,71 +239,67 @@ public final class AppManager {
         ImOrderMap<String, Boolean> orders = MapFact.singletonOrder("moduleOrder", false);
         ImOrderMap<ImMap<String,Object>, ImMap<String, Object>> values = q.execute(session.sql, orders);
 
+        //подготавливаем файлы для заупска
+        File tempProjectDir = IOUtils.createTempDirectory("paas-project");
+        File tempModulesDir = new File(tempProjectDir, "paasmodules");
+        tempModulesDir.mkdir();
+
         List<String> moduleFilePaths = new ArrayList<String>();
         for (ImMap<String, Object> entry : values.valueIt()) {
             String moduleSource = nvl((String) entry.get("moduleSource"), "");
-            moduleFilePaths.add(createTemporaryScriptFile(moduleSource));
+            moduleFilePaths.add(createTemporaryScriptFile(tempModulesDir, moduleSource));
         }
 
-        executeScriptedBL((Integer) confObj.object, port, dbName, moduleFilePaths);
+        executeScriptedBL((Integer) confObj.object, exportPort, dbName, tempProjectDir, moduleFilePaths);
     }
 
+    private void executeScriptedBL(int configurationId, int exportPort, String dbName, File tempProjectDir, List<String> scriptFilePaths) throws IOException, InterruptedException {
+        Properties properties = new Properties();
+        properties.setProperty("db.server", dbServer);
+        properties.setProperty("db.name", dbName);
+        properties.setProperty("db.user", dbUser);
+        properties.setProperty("db.password", dbPassword);
+        properties.setProperty("rmi.exportPort", String.valueOf(exportPort));
+        properties.setProperty("logics.overridingModulesList", "");
+        properties.setProperty("logics.includedPaths", "paasmodules");
+        properties.setProperty("logics.exludedPaths", "");
+        properties.setProperty("paas.manager.host", "localhost");
+        properties.setProperty("paas.manager.port", String.valueOf(acceptPort));
+        properties.setProperty("paas.configurationId", String.valueOf(configurationId));
+        FileOutputStream out = new FileOutputStream(new File(tempProjectDir, "settings.properties"));
+        properties.store(out, null);
+        out.close();
 
-    public void executeScriptedBL(int confId, int port, String dbName, List<String> scriptFilePaths) throws IOException, InterruptedException {
         CommandLine commandLine = new CommandLine(javaExe);
-        commandLine.addArgument("-Dlsf.settings.path=conf/scripted/settings.xml");
-        commandLine.addArgument("-Dpaas.manager.conf.id=" + confId);
-        commandLine.addArgument("-Dpaas.manager.host=localhost");
-        commandLine.addArgument("-Dpaas.manager.port=" + acceptPort);
-        commandLine.addArgument("-Dpaas.scripted.port=" + port);
-        commandLine.addArgument("-Dpaas.scripted.db.name=" + dbName);
-        commandLine.addArgument("-Dpaas.scripted.modules.paths=" + toParameters(scriptFilePaths), false);
+        commandLine.addArgument("-Dplatform.server.settingsPath=conf/scripted/settings.xml");
+//        commandLine.addArgument("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
+
         String rmiServerHostname = System.getProperty("java.rmi.server.hostname");
         if (rmiServerHostname != null) {
             commandLine.addArgument("-Djava.rmi.server.hostname=" + rmiServerHostname);
         }
 
         commandLine.addArgument("-cp");
-        commandLine.addArgument(System.getProperty("java.class.path"));
-        commandLine.addArgument(ScriptingBusinessLogics.class.getName());
+        commandLine.addArgument(tempProjectDir.getAbsolutePath() + System.getProperty("path.separator") + System.getProperty("java.class.path"));
+        commandLine.addArgument(BusinessLogicsBootstrap.class.getName());
+        System.out.println(commandLine.toString());
 
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(new NullOutputStream(), new NullOutputStream()));
 //        executor.setStreamHandler(new PumpStreamHandler());
         executor.setExitValue(0);
 
-        executor.execute(commandLine, new ManagedLogicsExecutionHandler(confId));
+        executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId));
     }
 
-    private String createTemporaryScriptFile(String moduleSource) throws IOException {
-        File moduleFile = File.createTempFile("paas", ".lsf");
+    private String createTemporaryScriptFile(File tempModulesDir, String moduleSource) throws IOException {
+        File moduleFile = File.createTempFile("module", ".lsf", tempModulesDir);
 
         PrintStream ps = new PrintStream(new FileOutputStream(moduleFile), false, "UTF-8");
         ps.print(moduleSource);
         ps.close();
 
         return moduleFile.getAbsolutePath();
-    }
-
-    private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {
-        private final int configurationId;
-
-        public ManagedLogicsExecutionHandler(int configurationId) {
-            this.configurationId = configurationId;
-        }
-
-        @Override
-        public void onProcessFailed(ExecuteException e) {
-            super.onProcessFailed(e);
-
-            logger.error("Error executing process: " + e.getMessage(), e.getCause());
-            lifecycleListener.onError(
-                    new LifecycleEvent(
-                            LifecycleEvent.ERROR,
-                            new ConfigurationEventData(configurationId, "Error while executing the process: " + e.getMessage())
-                    )
-            );
-        }
     }
 
     private String toParameters(List<String> strings) {
@@ -268,42 +314,39 @@ public final class AppManager {
         return result.toString();
     }
 
-    public class ManagedAppLifecycleListener extends LifecycleAdapter {
-        @Override
-        public void lifecycleEvent(LifecycleEvent event) {
-            super.lifecycleEvent(event);
-            logger.debug("Lifecycle event: " + event);
+    public void notificationReceived(NotificationData notificationData) {
+        logger.debug("Notification received from managed app: " + notificationData);
+
+        int configurationId = notificationData.configurationId;
+        String eventType = notificationData.eventType;
+        if (STARTED.equals(eventType)) {
+            paas.changeConfigurationStatus(configurationId, "started");
+        } else if (STOPPED.equals(eventType)) {
+            paas.changeConfigurationStatus(configurationId, "stopped");
+        } else if (ERROR.equals(eventType)) {
+            logger.error("Error on managed app: " + notificationData.message);
+            pushConfigurationLaunchError(configurationId, notificationData.message);
         }
+    }
 
-        private int getConfigurationId(LifecycleEvent event) {
-            return ((ConfigurationEventData) event.getData()).configurationId;
-        }
+    private void pushConfigurationLaunchError(int configurationId, String errorMsg) {
+        paas.pushConfigurationLaunchError(configurationId, errorMsg);
+    }
 
-        private Object getEventData(LifecycleEvent event) {
-            return ((ConfigurationEventData) event.getData()).data;
-        }
+    private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {
+        private final int configurationId;
 
-        @Override
-        protected void onStarted(LifecycleEvent event) {
-            paas.changeConfigurationStatus(getConfigurationId(event), "started");
-        }
-
-        @Override
-        protected void onStopped(LifecycleEvent event) {
-            paas.changeConfigurationStatus(getConfigurationId(event), "stopped");
-        }
-
-        @Override
-        protected void onError(LifecycleEvent event) {
-            String errorMsg = (String) getEventData(event);
-
-            paas.pushConfigurationLaunchError(getConfigurationId(event), errorMsg);
-            logger.error("Error on managed app: " + errorMsg);
+        public ManagedLogicsExecutionHandler(int configurationId) {
+            this.configurationId = configurationId;
         }
 
         @Override
-        protected void onOtherEvent(LifecycleEvent event) {
-            logger.warn("Unrecognized lifecycle event was received from managed application.");
+        public void onProcessFailed(ExecuteException e) {
+            super.onProcessFailed(e);
+
+            logger.error("Error executing process: " + e.getMessage(), e.getCause());
+
+            pushConfigurationLaunchError(configurationId, "Error executing process: " + e.getMessage());
         }
     }
 }

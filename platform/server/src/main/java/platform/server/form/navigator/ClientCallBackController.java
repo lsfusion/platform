@@ -13,7 +13,7 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
     private Boolean deniedRestart = null;
 
     public ClientCallBackController(int port) throws RemoteException {
-        super(port);
+        super(port, true);
     }
 
     public synchronized void disconnect() {

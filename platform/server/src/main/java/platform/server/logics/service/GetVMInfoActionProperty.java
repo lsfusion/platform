@@ -1,9 +1,8 @@
 package platform.server.logics.service;
 
+import platform.base.SystemUtils;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.data.SQLSession;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -21,7 +20,7 @@ public class GetVMInfoActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        String message = context.getBL().getVMInfo();
+        String message = SystemUtils.getVMInfo();
         context.delayUserInterfaction(new MessageClientAction(message, getString("vm.data")));
     }
 

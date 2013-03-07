@@ -184,15 +184,15 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
         ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, orderTop, false);
-        if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.instance.getLimitExclusiveCount())
+        if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.get().getLimitExclusiveCount())
             return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, whereJoins.size()<=1);
         ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
         long sortedComplexity = getComplexity(sortedWhereJoins);
-        if(sortedComplexity > Settings.instance.getLimitExclusiveComplexity())
+        if(sortedComplexity > Settings.get().getLimitExclusiveComplexity())
             return new Pair<ImCol<GroupJoinsWhere>, Boolean>(whereJoins, false);
 
         // если сложность превышает порог - просто andNot'им верхние
-        if(sortedWhereJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || sortedComplexity > Settings.instance.getLimitExclusiveSimpleComplexity()) {
+        if(sortedWhereJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || sortedComplexity > Settings.get().getLimitExclusiveSimpleComplexity()) {
             MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
             Where prevWhere = Where.FALSE;
             for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
@@ -223,7 +223,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             return statJoins;
 
         ImList<GroupStatWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
-        if(sortedStatJoins.size() > Settings.instance.getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.instance.getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние
+        if(sortedStatJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.get().getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние
             MCol<GroupStatWhere<K>> exclJoins = ListFact.mCol(sortedStatJoins.size());
             Where prevWhere = Where.FALSE;
             for(GroupStatWhere<K> statJoin : sortedStatJoins) {

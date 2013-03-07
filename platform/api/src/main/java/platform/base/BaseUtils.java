@@ -2131,14 +2131,6 @@ public class BaseUtils {
         return null;
     }
 
-    public static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Throwables.propagate(e);
-        }
-    }
-
     private static final char[] randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private final static SecureRandom random = new SecureRandom();
     public static String randomString(int len) {
@@ -2176,5 +2168,12 @@ public class BaseUtils {
         } else {
             return password + "{" + salt.toString() + "}";
         }
+    }
+
+    public static int compareInts(int a, int b) {
+        return a < b
+               ? -1
+               : a > b
+                 ? 1 : 0;
     }
 }

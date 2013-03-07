@@ -6,6 +6,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.server.SystemProperties;
 import platform.server.classes.DataClass;
 import platform.server.classes.IntegerClass;
 import platform.server.data.GlobalTable;
@@ -54,7 +55,7 @@ public abstract class DataTable extends GlobalTable {
     public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException {
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
 
-        if (!("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")))) {
+        if (!SystemProperties.doNotCalculateStats) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();

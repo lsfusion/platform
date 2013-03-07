@@ -12,7 +12,6 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
 import net.sf.jasperreports.engine.JRException;
-import platform.base.ExceptionUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
@@ -22,7 +21,6 @@ import platform.client.form.dispatch.ClientNavigatorActionDispatcher;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.*;
 import platform.interop.AbstractWindowType;
-import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportGenerationData;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -33,7 +31,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -124,11 +122,11 @@ public class DockableMainFrame extends MainFrame {
     private void focusPageIfNeeded() {
         try {
             ClientFormDockable pageToFocus = null;
-            ArrayList<String> savedForms = remoteNavigator.showDefaultForms()
+            List<String> savedForms = remoteNavigator.showDefaultForms()
                     ? remoteNavigator.getDefaultForms()
-                    : new ArrayList<String>(dockableManager.getForms().getFormsList());
+                    : dockableManager.getForms().getFormsList();
 
-            dockableManager.getForms().getFormsList().clear();
+            dockableManager.getForms().clear();
             ClientFormDockable page;
             for (String formSID : savedForms) {
                 page = dockableManager.openForm(mainNavigator, formSID);
@@ -370,8 +368,7 @@ public class DockableMainFrame extends MainFrame {
 
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Boolean configurator = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
-                    if ((configurator != null) && (configurator == true)) {
+                    if (Main.frame.remoteNavigator.isConfiguratorAllowed()) {
                         openLogicSetupForm();
                     } else {
                         JOptionPane.showMessageDialog(null, getString("descriptor.view.access.denied"), getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);

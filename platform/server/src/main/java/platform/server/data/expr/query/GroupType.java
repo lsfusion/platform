@@ -85,12 +85,12 @@ public enum GroupType implements AggrType {
 
     public boolean splitExprCases() {
         assert hasAdd();
-        return isSelect() && Settings.instance.isSplitGroupSelectExprcases();
+        return isSelect() && Settings.get().isSplitGroupSelectExprcases();
     }
 
     public boolean splitInnerJoins() {
         assert hasAdd();
-        return isSelect() && Settings.instance.isSplitSelectGroupInnerJoins();
+        return isSelect() && Settings.get().isSplitSelectGroupInnerJoins();
     }
 
     public boolean splitInnerCases() {

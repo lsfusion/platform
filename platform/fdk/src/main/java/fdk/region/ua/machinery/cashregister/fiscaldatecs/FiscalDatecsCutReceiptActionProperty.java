@@ -23,7 +23,7 @@ public class FiscalDatecsCutReceiptActionProperty extends ScriptingActionPropert
 
             String result = (String) context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(4, baudRate, comPort));
             if (result == null)
-                context.apply(LM.getBL());
+                context.apply();
             else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (SQLException e) {

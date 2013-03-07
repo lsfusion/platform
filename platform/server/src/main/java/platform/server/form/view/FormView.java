@@ -55,9 +55,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     protected OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
-    // map с названиями функций, при которых дисплей сразу будет блокироваться
-    public Map<String, String> blockedScreen = new HashMap<String, String>();
-
     public ContainerView mainContainer;
 
     protected PropertyDrawView printButton;
@@ -856,7 +853,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
-        pool.writeObject(outStream, blockedScreen);
         outStream.writeBoolean(gwtAllowScrollSplits);
     }
 

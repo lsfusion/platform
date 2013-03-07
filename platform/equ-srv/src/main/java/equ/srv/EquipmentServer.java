@@ -1,9 +1,10 @@
 package equ.srv;
 
 import equ.api.*;
-import platform.base.BaseUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import platform.base.DateConverter;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -11,13 +12,11 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.BusinessLogicsBootstrap;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
+import platform.server.lifecycle.LifecycleAdapter;
+import platform.server.lifecycle.LifecycleEvent;
+import platform.server.logics.*;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.scripted.ScriptingErrorLog;
@@ -28,36 +27,75 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-public class EquipmentServer extends UnicastRemoteObject implements EquipmentServerInterface {
-    BusinessLogics BL;
-    ScriptingLogicsModule LM;
+public class EquipmentServer extends LifecycleAdapter implements EquipmentServerInterface, InitializingBean {
+    private static final Logger logger = Logger.getLogger(EquipmentServer.class);
 
-    public EquipmentServer(ScriptingLogicsModule LM) throws RemoteException {
-        super(LM.getBL().getExportPort());
-        this.BL = LM.getBL();
-        this.LM = LM;
-        String dbName = BL.getDbName() == null ? "default" : BL.getDbName();
+    private RMIManager rmiManager;
+
+    private BusinessLogics businessLogics;
+
+    private DBManager dbManager;
+
+    private ScriptingLogicsModule LM;
+
+    public void setRmiManager(RMIManager rmiManager) {
+        this.rmiManager = rmiManager;
+    }
+
+    public void setBusinessLogics(BusinessLogics businessLogics) {
+        this.businessLogics = businessLogics;
+    }
+
+    public void setDbManager(DBManager dbManager) {
+        this.dbManager = dbManager;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(rmiManager, "rmiManager must be specified");
+        Assert.notNull(businessLogics, "businessLogics must be specified");
+        Assert.notNull(dbManager, "dbManager must be specified");
+    }
+
+    @Override
+    protected void onInit(LifecycleEvent event) {
+        LM = ((EquipmentModuleProvider)businessLogics).getEquipmentModule();
+    }
+
+    @Override
+    protected void onStarted(LifecycleEvent event) {
+        logger.info("Binding Equipment Server.");
         try {
-            BusinessLogicsBootstrap.registry.bind(dbName + "/EquipmentServer", this);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        } catch (AlreadyBoundException e) {
-            throw new RuntimeException(e);
+            rmiManager.bindAndExport(getExportName(), this);
+        } catch (Exception e) {
+            throw new RuntimeException("Error exporting Equipment Server: ", e);
         }
+    }
+
+    @Override
+    protected void onStopping(LifecycleEvent event) {
+        logger.info("Stopping Equipment Server.");
+        try {
+            rmiManager.unbindAndUnexport(getExportName(), this);
+        } catch (Exception e) {
+            throw new RuntimeException("Error stopping Equipment Server: ", e);
+        }
+    }
+
+    private String getExportName() {
+        return rmiManager.getDbName() + "/EquipmentServer";
     }
 
     @Override
     public List<TransactionInfo> readTransactionInfo(String equServerID) throws RemoteException, SQLException {
         try {
 
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             List<TransactionInfo> transactionList = new ArrayList<TransactionInfo>();
 
             LCP isMachineryPriceTransaction = LM.is(LM.findClassByCompoundName("machineryPriceTransaction"));
@@ -272,7 +310,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public List<CashRegisterInfo> readCashRegisterInfo(String equServerID) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             List<CashRegisterInfo> cashRegisterInfoList = new ArrayList<CashRegisterInfo>();
 
             LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
@@ -331,7 +369,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public List<TerminalInfo> readTerminalInfo(String equServerID) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             List<TerminalInfo> terminalInfoList = new ArrayList<TerminalInfo>();
 
             LCP<PropertyInterface> isGroupMachinery = (LCP<PropertyInterface>) LM.is(LM.findClassByCompoundName("groupMachinery"));
@@ -385,7 +423,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public List<TerminalDocumentTypeInfo> readTerminalDocumentTypeInfo() throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
 
             List<LegalEntityInfo> legalEntityInfoList = new ArrayList<LegalEntityInfo>();
 
@@ -441,7 +479,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public String sendSalesInfo(List<SalesInfo> salesInfoList, String equipmentServer) throws IOException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             ImportField cashRegisterField = new ImportField(LM.findLCPByCompoundName("numberCashRegister"));
             ImportField zReportNumberField = new ImportField(LM.findLCPByCompoundName("numberZReport"));
 
@@ -619,7 +657,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             new IntegrationService(session, new ImportTable(paymentImportFields, dataPayment), Arrays.asList(paymentKey, paymentTypeKey, receiptKey, cashRegisterKey),
                     paymentProperties).synchronize(true);
 
-            return session.applyMessage(this.BL);
+            return session.applyMessage(businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e.toString());
         }
@@ -628,7 +666,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public String sendTerminalDocumentInfo(List<TerminalDocumentInfo> terminalDocumentInfoList, String equServerID) throws IOException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             ImportField idTerminalDocumentField = new ImportField(LM.findLCPByCompoundName("idTerminalDocument"));
             ImportField typeTerminalDocumentField = new ImportField(LM.findLCPByCompoundName("idTerminalDocumentTypeTerminalDocument"));
             ImportField idTerminalHandbookType1TerminalDocumentField = new ImportField(LM.findLCPByCompoundName("idTerminalHandbookType1TerminalDocument"));
@@ -717,7 +755,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
                 LM.findLCPByCompoundName("dateEquipmentServerLog").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, logObject);
             }
 
-            return session.applyMessage(this.BL);
+            return session.applyMessage(this.businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e.toString());
         }
@@ -726,10 +764,10 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public void succeedTransaction(Integer transactionID) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             LM.findLCPByCompoundName("succeededMachineryPriceTransaction").change(true, session,
                     session.getDataObject(transactionID, LM.findClassByCompoundName("machineryPriceTransaction").getType()));
-            session.apply(this.BL);
+            session.apply(this.businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e.toString());
         }
@@ -738,7 +776,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public List<byte[][]> readLabelFormats(List<String> scalesModelsList) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
 
             List<byte[][]> fileLabelFormats = new ArrayList<byte[][]>();
 
@@ -774,7 +812,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public void errorTransactionReport(Integer transactionID, Exception e) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             DataObject errorObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("machineryPriceTransactionError"));
             LM.findLCPByCompoundName("machineryPriceTransactionMachineryPriceTransactionError").change(transactionID, session, errorObject);
             LM.findLCPByCompoundName("dataMachineryPriceTransactionError").change(e.toString(), session, errorObject);
@@ -783,7 +821,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
             e.printStackTrace(new PrintStream(os));
             LM.findLCPByCompoundName("errorTraceMachineryPriceTransactionError").change(os.toString(), session, errorObject);
 
-            session.apply(this.BL);
+            session.apply(businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e2) {
             throw new RuntimeException(e2.toString());
         }
@@ -793,7 +831,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     public void errorEquipmentServerReport(String equipmentServer, Throwable exception) throws
             RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             DataObject errorObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("equipmentServerError"));
             Object equipmentServerObject = LM.findLCPByCompoundName("sidToEquipmentServer").read(session, new DataObject(equipmentServer, StringClass.get(20)));
             LM.findLCPByCompoundName("equipmentServerEquipmentServerError").change(equipmentServerObject, session, errorObject);
@@ -804,7 +842,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
 
             LM.findLCPByCompoundName("dateEquipmentServerError").change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, errorObject);
 
-            session.apply(this.BL);
+            session.apply(businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e.toString());
         }
@@ -813,7 +851,7 @@ public class EquipmentServer extends UnicastRemoteObject implements EquipmentSer
     @Override
     public EquipmentServerSettings readEquipmentServerSettings(String equipmentServer) throws RemoteException, SQLException {
         try {
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             Integer equipmentServerID = (Integer) LM.findLCPByCompoundName("sidToEquipmentServer").read(session, new DataObject(equipmentServer, StringClass.get(20)));
             Integer delay = (Integer) LM.findLCPByCompoundName("delayEquipmentServer").read(session, new DataObject(equipmentServerID, (ConcreteClass) LM.findClassByCompoundName("equipmentServer")));
             return new EquipmentServerSettings(delay);

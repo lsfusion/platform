@@ -7,9 +7,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
@@ -27,16 +25,16 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
         BusinessLogics BL = context.getBL();
         
         sqlSession.startTransaction();
-        BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
+        context.getDbManager().recalculateAggregations(sqlSession);
         sqlSession.commitTransaction();
 
         BL.recalculateFollows(context.getSession());
 
         sqlSession.startTransaction();
-        BL.packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
+        context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
         sqlSession.commitTransaction();
 
-        BL.analyzeDB(sqlSession);
+        context.getDbManager().analyzeDB(sqlSession);
 
         BL.recalculateStats(context.getSession());
         context.getSession().apply(BL);

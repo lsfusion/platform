@@ -1,6 +1,6 @@
 package platform.client;
 
-import platform.interop.RemoteLoaderInterface;
+import platform.interop.RemoteLogicsLoaderInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,26 +18,26 @@ import java.util.concurrent.ExecutionException;
 
 import static platform.client.ClientResourceBundle.getString;
 
-public final class ReconnectWorker extends SwingWorker<RemoteLoaderInterface, Integer> {
+public final class ReconnectWorker extends SwingWorker<RemoteLogicsLoaderInterface, Integer> {
     private ProgressDialog dlg;
 
     private String serverUrl;
 
-    private RemoteLoaderInterface remoteLoader;
+    private RemoteLogicsLoaderInterface remoteLoader;
 
     public ReconnectWorker(String serverHost, String serverPort, String serverDB) {
-        this.serverUrl = MessageFormat.format("rmi://{0}:{1}/{2}/BusinessLogicsLoader", serverHost, serverPort, serverDB);
+        this.serverUrl = MessageFormat.format("rmi://{0}:{1}/{2}/RemoteLogicsLoader", serverHost, serverPort, serverDB);
         dlg = new ProgressDialog();
     }
 
     @Override
-    protected RemoteLoaderInterface doInBackground() throws Exception {
+    protected RemoteLogicsLoaderInterface doInBackground() throws Exception {
         remoteLoader = null;
         int attempts = 0;
         while (true) {
             publish(attempts++);
             try {
-                remoteLoader = (RemoteLoaderInterface) Naming.lookup(serverUrl);
+                remoteLoader = (RemoteLogicsLoaderInterface) Naming.lookup(serverUrl);
             } catch (ConnectException ignore) {
             } catch (NoSuchObjectException ignore) {
             } catch (NotBoundException ignore) {
@@ -66,7 +66,7 @@ public final class ReconnectWorker extends SwingWorker<RemoteLoaderInterface, In
         dlg.dispose();
     }
 
-    public RemoteLoaderInterface connect() throws Throwable {
+    public RemoteLogicsLoaderInterface connect() throws Throwable {
         execute();
         dlg.setVisible(true);
 

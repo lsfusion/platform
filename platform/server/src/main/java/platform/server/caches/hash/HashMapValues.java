@@ -1,7 +1,6 @@
 package platform.server.caches.hash;
 
 import platform.base.GlobalObject;
-import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.Settings;
@@ -35,7 +34,7 @@ public class HashMapValues extends HashValues {
     }
 
     public boolean isGlobal() {
-        return Settings.instance.isCacheInnerHashes();
+        return Settings.get().isCacheInnerHashes();
     }
 
     public HashValues filterValues(ImSet<Value> values) {

@@ -46,10 +46,10 @@ public class FiscalVMKUpdateDataActionProperty extends ScriptingActionProperty {
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> operatorResult = operatorQuery.execute(session.sql);
 
 
-            if (context.checkApply(LM.getBL())) {
+            if (context.checkApply()) {
                 String result = (String) context.requestUserInteraction(new FiscalVMKUpdateDataClientAction(baudRate, comPort));
                 if (result == null)
-                    context.apply(LM.getBL());
+                    context.apply();
                 else
                     context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
             }

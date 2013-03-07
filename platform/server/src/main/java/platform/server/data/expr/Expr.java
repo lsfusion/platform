@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.base.Result;
 import platform.base.SFunctionSet;
-import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImCol;
@@ -31,12 +30,12 @@ import platform.server.data.expr.where.ifs.IfExpr;
 import platform.server.data.expr.where.ifs.NullExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
+import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ClassReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -189,7 +188,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                      translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                          public Expr getMapValue(KeyExpr key) {
                              return ((DataClass)key.getType(getWhere())).getDefaultExpr();
-                         }}))).getWhere()).compile(BusinessLogics.debugSyntax);
+                         }}))).getWhere()).compile(PostgreDataAdapter.debugSyntax);
     }
 
     public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values

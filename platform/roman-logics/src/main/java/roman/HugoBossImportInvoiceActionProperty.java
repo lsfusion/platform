@@ -21,11 +21,8 @@ import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
-    private final RomanBusinessLogics BL;
-
-    public HugoBossImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL.RomanLM, BL.RomanLM.hugoBossSupplier, "csv");
-        this.BL = BL;
+    public HugoBossImportInvoiceActionProperty(RomanLogicsModule RomanLM) {
+        super(RomanLM, RomanLM.hugoBossSupplier, "csv");
     }
 
     @Override
@@ -36,7 +33,7 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 2, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28, 32);
-        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.DATE, ResultField.NUMBERSKU,
+        return new InvoicePricatMergeInputTable(RomanLM, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.DATE, ResultField.NUMBERSKU,
                 ResultField.ORIGINALNAME, ResultField.ARTICLE, ResultField.COLORCODE, ResultField.COMPOSITION, ResultField.CUSTOMCODE,
                 ResultField.CUSTOMCODE6, ResultField.COUNTRY, ResultField.BARCODE, ResultField.SIZE, ResultField.QUANTITY, ResultField.PRICE, ResultField.SEASON);
     }

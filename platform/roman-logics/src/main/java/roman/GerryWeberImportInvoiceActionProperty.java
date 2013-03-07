@@ -13,11 +13,8 @@ import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
-    private final RomanBusinessLogics BL;
-
-    public GerryWeberImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL.RomanLM, BL.RomanLM.gerryWeberSupplier, "txt");
-        this.BL = BL;
+    public GerryWeberImportInvoiceActionProperty(RomanLogicsModule RomanLM) {
+        super(RomanLM, RomanLM.gerryWeberSupplier, "txt");
     }
 
     @Override
@@ -28,7 +25,7 @@ public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActio
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 0, ';', false, 4, 4, 5, 21, 22, 22, 23, 24, 25, 26, 27, 27, 28, 29, 30);
-        return new InvoicePricatMergeInputTable(BL, invoiceTable,
+        return new InvoicePricatMergeInputTable(RomanLM, invoiceTable,
                 ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.DATE, ResultField.BARCODE,
                 ResultField.NUMBERSKU, ResultField.ARTICLE, ResultField.COLORCODE, ResultField.SIZE,
                 ResultField.ORIGINALNAME, ResultField.COLOR, ResultField.CUSTOMCODE, ResultField.CUSTOMCODE6,

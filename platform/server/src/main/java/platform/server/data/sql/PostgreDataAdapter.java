@@ -15,6 +15,8 @@ import java.sql.Types;
 
 public class PostgreDataAdapter extends DataAdapter {
 
+    public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
+
     // Для debuga конструктор
     public PostgreDataAdapter() {
     }

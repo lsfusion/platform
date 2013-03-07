@@ -19,19 +19,19 @@ import java.util.Iterator;
 
 public abstract class BaseImportActionProperty extends CustomReadValueActionProperty {
     protected final ClassPropertyInterface supplierInterface;
-    protected RomanLogicsModule LM;
+    protected RomanLogicsModule RomanLM;
     protected CustomStaticFormatFileClass valueClass;
 
-    public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass) {
-        this(LM, caption, supplierClass, "xls xlsx");
+    public BaseImportActionProperty(RomanLogicsModule RomanLM, String caption, ValueClass supplierClass) {
+        this(RomanLM, caption, supplierClass, "xls xlsx");
     }
 
-    public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass, String extensions) {
-        super(LM.baseLM.genSID(), caption, new ValueClass[]{supplierClass});
+    public BaseImportActionProperty(RomanLogicsModule RomanLM, String caption, ValueClass supplierClass, String extensions) {
+        super(RomanLM.baseLM.genSID(), caption, new ValueClass[]{supplierClass});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         supplierInterface = i.next();
-        this.LM = LM;
+        this.RomanLM = RomanLM;
 
         String[] extArray = extensions.split(" ");
         String extString = "";

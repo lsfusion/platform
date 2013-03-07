@@ -1,28 +1,25 @@
 package paas.properties;
 
 import paas.PaasBusinessLogics;
+import paas.PaasLogicsModule;
 import platform.server.classes.ValueClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 
 import java.sql.SQLException;
 
 public class RefreshStatusActionProperty extends UserActionProperty {
 
-    private PaasBusinessLogics paas;
-
-    public RefreshStatusActionProperty(PaasBusinessLogics paas, String sID, String caption) {
-        super(sID, caption, new ValueClass[]{paas.paasLM.project});
-        this.paas = paas;
+    public RefreshStatusActionProperty(String sID, String caption, PaasLogicsModule paasLM) {
+        super(sID, caption, new ValueClass[]{paasLM.project});
     }
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        paas.refreshConfigurationStatuses(context.getSingleKeyValue());
+        ((PaasBusinessLogics)context.getBL()).refreshConfigurationStatuses(context.getSingleKeyValue());
 
         context.emitExceptionIfNotInFormSession();
 

@@ -67,7 +67,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    @PendingRemoteMethod
     public void gainedFocus(long requestIndex) throws RemoteException {
         logRemoteMethodStartVoidCall("gainedFocus");
         target.gainedFocus(requestIndex);
@@ -239,9 +238,5 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         ServerResponse result = target.throwInServerInvocation(clientException);
         logRemoteMethodEndCall("throwInServerInvocation", result);
         return result;
-    }
-
-    public String getRemoteActionMessage() throws RemoteException {
-        return target.getRemoteActionMessage();
     }
 }

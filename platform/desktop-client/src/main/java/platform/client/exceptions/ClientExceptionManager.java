@@ -1,7 +1,7 @@
 package platform.client.exceptions;
 
 import org.apache.log4j.Logger;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
@@ -58,8 +58,8 @@ public class ClientExceptionManager {
 
         if (!(e instanceof ConcurrentModificationException && stackTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             try {
-                String info = ClientResourceBundle.getString("exceptions.client.error", OSUtils.getLocalHostName(), message) + lineSeparator + stackTrace;
-                Main.clientExceptionLog(info, OSUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
+                String info = ClientResourceBundle.getString("exceptions.client.error", SystemUtils.getLocalHostName(), message) + lineSeparator + stackTrace;
+                Main.clientExceptionLog(info, SystemUtils.getLocalHostName(), message, e.getClass().getName(), stackTrace);
             } catch (RemoteException ignored) {
             }
             Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, stackTrace);

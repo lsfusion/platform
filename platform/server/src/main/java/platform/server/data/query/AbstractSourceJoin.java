@@ -10,10 +10,10 @@ import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.QueryExpr;
+import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.logics.BusinessLogics;
 
 abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
@@ -26,7 +26,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             }, Where.FALSE, values.mapRevValues(new GetValue<String, Value>() {
                 public String getMapValue(Value value) {
                     return value.toString();
-                }}), BusinessLogics.debugSyntax);
+                }}), PostgreDataAdapter.debugSyntax);
         }
 
         public String getSource(KeyExpr expr) {

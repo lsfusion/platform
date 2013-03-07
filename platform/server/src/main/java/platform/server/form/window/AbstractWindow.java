@@ -2,7 +2,7 @@ package platform.server.form.window;
 
 import platform.base.identity.IdentityObject;
 import platform.interop.AbstractWindowType;
-import platform.server.logics.BusinessLogics;
+import platform.server.logics.BaseLogicsModule;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class AbstractWindow extends IdentityObject {
 
     public AbstractWindow(String sID, String caption) {
         this.sID = sID;
-        setID(BusinessLogics.generateStaticNewID());
+        setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
     }
 

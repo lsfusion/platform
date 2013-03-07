@@ -5,7 +5,6 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.caches.IdentityLazy;
 import platform.server.form.instance.FormInstance;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
 
@@ -13,17 +12,15 @@ import java.sql.SQLException;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
-    private final BusinessLogics BL;
     private final ImSet<SessionDataProperty> sessionUsed;
     private final ImSet<SessionDataProperty> localUsed;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
-                                                                  ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply, 
-                                                                  ImSet<SessionDataProperty> sessionUsed, ImSet<SessionDataProperty> localUsed, BusinessLogics BL) {
+                                                                  ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
+                                                                  ImSet<SessionDataProperty> sessionUsed, ImSet<SessionDataProperty> localUsed) {
         super(sID, caption, innerInterfaces, action);
 
-        this.BL = BL;
         this.doApply = doApply;
         this.singleApply = singleApply;
         this.sessionUsed = sessionUsed;
@@ -69,7 +66,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
         if (doApply) {
-            innerContext.apply(BL);
+            innerContext.apply();
         }
 
         innerContext.getSession().close();

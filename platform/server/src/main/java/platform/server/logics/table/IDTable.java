@@ -5,7 +5,6 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.Settings;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
@@ -65,7 +64,7 @@ public class IDTable extends GlobalTable {
             assert !dataSession.isInTransaction();
 
             if(freeID > maxReservedID) { // читаем новый пул
-                int reserveIDStep = Settings.instance.getReserveIDStep();
+                int reserveIDStep = Settings.get().getReserveIDStep();
                 freeID = reserveIDs(reserveIDStep, dataSession, idType);
                 maxReservedID = freeID + reserveIDStep - 1;
             }

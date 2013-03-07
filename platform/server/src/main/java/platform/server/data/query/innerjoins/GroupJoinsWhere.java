@@ -34,7 +34,7 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     }
 
     public boolean isComplex() {
-        return getComplexity(false) > Settings.instance.getLimitWhereJoinPack();
+        return getComplexity(false) > Settings.get().getLimitWhereJoinPack();
     }
 
     @Override

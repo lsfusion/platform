@@ -4,9 +4,9 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.codec.binary.Base64;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.interop.KeyStrokes;
-import platform.interop.RemoteServerAgentLoaderInterface;
+import platform.interop.RemoteServerAgentInterface;
 import platform.interop.ServerInfo;
 
 import javax.swing.*;
@@ -20,11 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.rmi.ConnectException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.Scanner;
 
 import static platform.client.StartupProperties.PLATFORM_CLIENT_HOSTPORT;
@@ -54,8 +50,57 @@ public class LoginDialog extends JDialog {
         setAlwaysOnTop(true);
         setUndecorated(true);
         setModal(true);
+
+        getRootPane().setDefaultButton(buttonOK);
+
+        initServerHostList((MutableComboBoxModel) serverHost.getModel());
+
+        initUIHandlers();
+
+        if (this.defaultLoginInfo.getServerHost() != null) {
+            StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
+            if (defaultLoginInfo.getServerPort() != null) {
+                server.append(":");
+                server.append(this.defaultLoginInfo.getServerPort());
+            }
+            String item = server.toString();
+            ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
+            serverHost.setSelectedItem(item);
+        }
+
+        String db = this.defaultLoginInfo.getServerDB();
+        if (db != null) {
+            if (serverDB.getItemCount() == 0)
+                ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
+            serverDB.setSelectedItem(db);
+        }
+
+        if (this.defaultLoginInfo.getUserName() != null) {
+            loginField.setText(this.defaultLoginInfo.getUserName());
+        }
+
+        if (this.defaultLoginInfo.getPassword() != null) {
+            passwordField.setText(this.defaultLoginInfo.getPassword());
+        }
+
+        warningPanel.setVisible(false);
+
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        contentPane.registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onCancel();
+            }
+        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    private void initUIHandlers() {
         getRootPane().setWindowDecorationStyle(JRootPane.PLAIN_DIALOG);
-        setDefaultButtonOK();
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -69,7 +114,6 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        initServerHostList((MutableComboBoxModel) serverHost.getModel());
         serverHost.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 update();
@@ -127,91 +171,26 @@ public class LoginDialog extends JDialog {
         serverDB.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent event) {
-                try {
-                    RemoteServerAgentLoaderInterface remoteLoader = (RemoteServerAgentLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
-                    serverDB.removeAllItems();
-                    for (String dbname : remoteLoader.getDbNames()) {
-                        ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);
-                    }
-                } catch (ConnectException e) {
-                    //To change body of catch statement use File | Settings | File Templates.
-                } catch (NotBoundException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                } catch (RemoteException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                serverDB.removeAllItems();
+                propagateServerAgents();
             }
 
             @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
 
             @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
+            public void popupMenuCanceled(PopupMenuEvent e) { }
         });
+    }
 
-        if (this.defaultLoginInfo.getServerHost() != null) {
-            StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
-            if (defaultLoginInfo.getServerPort() != null) {
-                server.append(":");
-                server.append(this.defaultLoginInfo.getServerPort());
-            }
-            String item = server.toString();
-            ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
-            serverHost.setSelectedItem(item);
-        }
-
+    private void propagateServerAgents() {
         try {
-            RemoteServerAgentLoaderInterface remoteLoader = (RemoteServerAgentLoaderInterface) Naming.lookup("rmi://localhost:6666/ServerAgentLoader");
-
+            RemoteServerAgentInterface remoteLoader = (RemoteServerAgentInterface) Naming.lookup("rmi://localhost:6666/ServerAgent");
             for (String dbname : remoteLoader.getDbNames()) {
                 ((MutableComboBoxModel) serverDB.getModel()).addElement(dbname);
             }
-        } catch (ConnectException e) {
-            //To change body of catch statement use File | Settings | File Templates.
-        } catch (NotBoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (MalformedURLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (RemoteException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception ignore) {
         }
-
-
-        String db = this.defaultLoginInfo.getServerDB();
-        if (db != null) {
-            if (serverDB.getItemCount() == 0)
-                ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
-            serverDB.setSelectedItem(db);
-        }
-
-        if (this.defaultLoginInfo.getUserName() != null) {
-            loginField.setText(this.defaultLoginInfo.getUserName());
-        }
-
-        if (this.defaultLoginInfo.getPassword() != null) {
-            passwordField.setText(this.defaultLoginInfo.getPassword());
-        }
-
-        warningPanel.setVisible(false);
-
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStrokes.getEscape(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private boolean isValid(String server) {
@@ -249,7 +228,8 @@ public class LoginDialog extends JDialog {
     }
 
     private void initServerHostList(MutableComboBoxModel serverHostModel) {
-        new ServerHostEnumerator(serverHostModel, waitMessage).execute();
+        new ServerAgentsEnumerator(serverHostModel, waitMessage).execute();
+        propagateServerAgents();
     }
 
     private LoginInfo result = null;
@@ -272,7 +252,7 @@ public class LoginDialog extends JDialog {
 
     private void storeServerData() {
         try {
-            FileWriter fileWr = new FileWriter(OSUtils.getUserFile(configName));
+            FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(configName));
             fileWr.write(result.getServerHost() + '\n');
             fileWr.write(result.getServerPort() + '\n');
             fileWr.write(result.getUserName() + '\n');
@@ -289,7 +269,7 @@ public class LoginDialog extends JDialog {
 
     private LoginInfo restoreLoginData(LoginInfo loginInfo) {
         try {
-            File file = OSUtils.getUserFile(configName, false);
+            File file = SystemUtils.getUserFile(configName, false);
             if (file.exists()) {
                 FileReader fileRd = new FileReader(file);
                 Scanner scanner = new Scanner(fileRd);
@@ -373,10 +353,6 @@ public class LoginDialog extends JDialog {
         }
 
         return defaultLoginInfo;
-    }
-
-    public void setDefaultButtonOK() {
-        getRootPane().setDefaultButton(buttonOK);
     }
 
     {

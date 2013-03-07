@@ -1,17 +1,17 @@
 package platform.interop;
 
-import platform.base.serialization.RemoteDescriptorInterface;
+import platform.interop.event.IDaemonTask;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.PendingRemoteInterface;
 import platform.interop.remote.UserInfo;
-import platform.interop.remote.PendingRemote;
-import platform.interop.remote.PingRemote;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.TimeZone;
 
-public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface, RemoteContextInterface {
+public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     String getName() throws RemoteException;
 
@@ -25,13 +25,13 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     Integer getComputer(String hostname) throws RemoteException;
 
+    ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException;
+
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
 
     ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
     
     void endSession(String clientInfo) throws RemoteException;
-
-    void ping() throws RemoteException;
 
     TimeZone getTimeZone() throws RemoteException;
 
@@ -48,4 +48,13 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
     int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
+
+    void ping() throws RemoteException;
+
+    // получает имлементации подходящие хотя бы одному из классов или по всем
+    byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException;
+
+    byte[] getBaseClassByteArray() throws RemoteException;
+
+    int generateNewID() throws RemoteException;
 }

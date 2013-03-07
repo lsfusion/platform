@@ -1,25 +1,20 @@
 package roman;
 
-import equ.srv.EquipmentServer;
-import net.sf.jasperreports.engine.JRException;
+import equ.srv.EquipmentModuleProvider;
 import platform.interop.event.IDaemonTask;
-import platform.server.auth.SecurityPolicy;
 import platform.server.daemons.ScannerDaemonTask;
 import platform.server.daemons.WeightDaemonTask;
-import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
-public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
+public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> implements EquipmentModuleProvider {
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule LegalEntity;
     public ScriptingLogicsModule Company;
@@ -36,11 +31,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule Country;
     public ScriptingLogicsModule I18n;
-    EquipmentServer equipmentServer;
 
-    public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
-        super(adapter, exportPort);
-
+    public RomanBusinessLogics() throws IOException {
+        super();
         this.setDialogUndecorated(false);
     }
 
@@ -147,18 +140,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             "scripts/finance/PaymentLedger.lsf",
             "scripts/finance/Bank.lsf"
         );
+
         RomanLM = addModule(new RomanLogicsModule(LM, this));
 
         RomanRB = addModuleFromResource("scripts/RomanRB.lsf");
-
-        equipmentServer = new EquipmentServer(RomanRB);
     }
-
-    @Override
-    protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        policyManager.userPolicies.add(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
-    }
-
 
     @Override
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
@@ -167,7 +153,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Integer scalesComPort, scalesSpeed, scannerComPort;
         Boolean scannerSingleRead;
         try {
-            DataSession session = createSession();
+            DataSession session = getDbManager().createSession();
             scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.computer));
             scalesSpeed = (Integer) RomanLM.scalesSpeed.read(session, new DataObject(compId, LM.computer));
             scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, LM.computer));
@@ -188,7 +174,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     @Override
-    public BusinessLogics getBL() {
-        return this;
+    public ScriptingLogicsModule getEquipmentModule() {
+        return RomanRB;
     }
 }

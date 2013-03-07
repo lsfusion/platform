@@ -9,8 +9,6 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 
-import static platform.server.logics.ServerResourceBundle.getString;
-
 public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     private LAP checkAggregationsAction;
@@ -46,6 +44,5 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         restartServerAction = getLAPByName("RestartAction");
         runGarbageCollector = getLAPByName("GarbageCollectorAction");
         cancelRestartServerAction = getLAPByName("CancelRestartAction");
-
     }
 }

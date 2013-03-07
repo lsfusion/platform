@@ -120,7 +120,7 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             Expr distributeExpr = distribute.mapExpr(mapValueKeys.result, mapChanges.add(propChanges));
             DataChanges dataChanges = groupProperty.mapJoinDataChanges(mapKeys.result, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere), null, propChanges);
             if(changedWhere!=null) {
-                if (Settings.instance.isCalculateGroupDataChanged())
+                if (Settings.get().isCalculateGroupDataChanged())
                     getExpr(propertyChange.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(propertyChange.where);

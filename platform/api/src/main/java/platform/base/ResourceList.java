@@ -75,7 +75,7 @@ public class ResourceList{
             if(file.isDirectory()){
                 retval.addAll(getResourcesFromDirectory(file, relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(), pattern));
             } else{
-                final String fileName = relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(); // OSUtils.convertPath(file.getCanonicalPath(), true);
+                final String fileName = relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
                 final boolean accept = pattern.matcher(fileName).matches();
                 if(accept){
                     retval.add(fileName);

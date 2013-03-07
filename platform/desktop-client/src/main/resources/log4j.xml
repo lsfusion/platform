@@ -71,11 +71,6 @@
     </appender>
 
 <!--
-    <category name="platform.client.remote.PendingExecutionAspect" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="remotelog"/>
-    </category>
-
     <category name="platform.client.remote.proxy" additivity="false">
         <priority value="DEBUG"/>
         <appender-ref ref="remotelog"/>

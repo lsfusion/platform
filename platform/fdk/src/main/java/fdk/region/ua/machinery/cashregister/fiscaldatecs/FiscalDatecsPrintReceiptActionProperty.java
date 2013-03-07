@@ -103,10 +103,10 @@ public class FiscalDatecsPrintReceiptActionProperty extends ScriptingActionPrope
                             discountPercentReceiptSaleDetail, discountSumReceiptDetail==null ? null : -discountSumReceiptDetail, taxNumber, 1));
             }
 
-            if (context.checkApply(LM.getBL())){
+            if (context.checkApply()){
                 String result = (String) context.requestUserInteraction(new FiscalDatecsPrintReceiptClientAction(baudRate, comPort, placeNumber, operatorNumber == null ? 1 : (Integer) operatorNumber, new ReceiptInstance(sumDisc, sumCard, sumCash, sumTotal, receiptSaleItemList, receiptReturnItemList)));
                 if (result == null) {
-                    context.apply(LM.getBL());
+                    context.apply();
                     LM.findLAPByCompoundName("createCurrentReceipt").execute(context);
                 }
                 else

@@ -44,14 +44,14 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     public void before(SQLSession sqlSession, Connection connection, String command) throws SQLException {
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection);
-        if(volatileStats || command.length() > Settings.instance.getCommandLengthVolatileStats())
+        if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.pushVolatileStats(connection);
     }
 
     public void after(SQLSession sqlSession, Connection connection, String command) throws SQLException {
         if(noReadOnly)
             sqlSession.popNoReadOnly(connection);
-        if(volatileStats || command.length() > Settings.instance.getCommandLengthVolatileStats())
+        if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.popVolatileStats(connection);
     }
 

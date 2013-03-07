@@ -1,14 +1,17 @@
 package platform.server;
 
 import platform.base.ApiResourceBundle;
+import platform.server.context.ThreadLocalContext;
 import platform.server.logics.ServerResourceBundle;
 
 public class Settings {
 
-    public static Settings instance;
-    private String locale;
+    public static Settings get() {
+        return ThreadLocalContext.getSettings();
+    }
 
     private int innerGroupExprs = 0; // использовать Subquery Expressions
+
     public int getInnerGroupExprs() {
         return innerGroupExprs;
     }
@@ -303,6 +306,8 @@ public class Settings {
     public void setUsedChangesCacheLimit(int usedChangesCacheLimit) {
         this.usedChangesCacheLimit = usedChangesCacheLimit;
     }
+
+    private String locale;
 
     public void setLocale(String locale) {
         this.locale = locale;

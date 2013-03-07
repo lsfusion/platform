@@ -23,7 +23,7 @@ public class FiscalVMKXReportActionProperty extends ScriptingActionProperty {
 
             String result = (String) context.requestUserInteraction(new FiscalVMKCustomOperationClientAction(1, baudRate, comPort));
             if (result == null) {
-                context.apply(LM.getBL());
+                context.apply();
             }
             else
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));

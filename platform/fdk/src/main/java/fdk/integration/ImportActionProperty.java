@@ -31,7 +31,7 @@ public class ImportActionProperty {
 
             Object countryBelarus = LM.findLCPByCompoundName("countrySID").read(context.getSession(), new DataObject("112", StringClass.get(3)));
             LM.findLCPByCompoundName("defaultCountry").change(countryBelarus, context.getSession());
-            context.getSession().apply(LM.getBL());
+            context.getSession().apply(context.getBL());
 
             importItemGroups(importData.getItemGroupsList());
 
@@ -90,10 +90,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemGroupID, parentGroupID), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey, parentGroupKey), propsParent);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -121,10 +121,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemGroupID, itemGroupName), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemGroupKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -157,10 +157,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(wareIDField, wareNameField, warePriceField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(wareKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -352,12 +352,12 @@ public class ImportActionProperty {
                 baseCalcPriceListTypeIDField, baseCalcPriceListTypeNameField, baseMarkupCalcPriceListTypeField,
                 barcodePackField, barcodePackIDField, amountBarcodePackField), data);
 
-        DataSession session = LM.getBL().createSession();
+        DataSession session = context.createSession();
         IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, itemGroupKey, UOMKey,
                 brandKey, countryKey, barcodeKey, VATKey, wareKey, rangeKey, writeOffRateKey, retailCalcPriceListTypeKey,
                 baseCalcPriceListTypeKey, barcodePackKey), props);
         service.synchronize(true, false);
-        session.apply(LM.getBL());
+        session.apply(context.getBL());
         session.close();
     }
 
@@ -395,10 +395,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(itemIDField, departmentStoreIDField, dateField, priceField, markupField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(itemKey, departmentStoreKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
                 System.out.println("done prices " + start);
             }
@@ -528,11 +528,11 @@ public class ImportActionProperty {
                             retailMarkupUserInvoiceDetailField, /*numberComplianceField, dateTimeComplianceField,
                             toDateTimeComplianceField,*/ certificateTextUserInvoiceDetailField, skipCreateWareUserInvoiceDetailField), data);
 
-                    DataSession session = LM.getBL().createSession();
+                    DataSession session = context.createSession();
                     IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceKey, userInvoiceDetailKey,
                             itemKey, supplierKey, customerDepartmentStoreKey/*, complianceKey*/), props);
                     service.synchronize(true, false);
-                    session.apply(LM.getBL());
+                    session.apply(context.getBL());
                     session.close();
                 }
             }
@@ -553,13 +553,13 @@ public class ImportActionProperty {
                     if (dataAssortment.isEmpty())
                         break;
 
-                    DataSession currencySession = LM.getBL().createSession();
+                    DataSession currencySession = context.createSession();
 
                     DataObject dataPriceListTypeObject = currencySession.addObject((ConcreteCustomClass) LM.findClassByCompoundName("dataPriceListType"));
                     Object defaultCurrency = LM.findLCPByCompoundName("currencyShortName").read(currencySession, new DataObject("BLR", StringClass.get(3)));
                     LM.findLCPByCompoundName("name").change("Поставщика", currencySession, dataPriceListTypeObject);
                     LM.findLCPByCompoundName("currencyDataPriceListType").change(defaultCurrency, currencySession, dataPriceListTypeObject);
-                    currencySession.apply(LM.getBL());
+                    currencySession.apply(context.getBL());
 
                     ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                     ImportField legalEntityField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
@@ -609,10 +609,10 @@ public class ImportActionProperty {
                     }
                     ImportTable table = new ImportTable(Arrays.asList(itemField, legalEntityField, userPriceListField, departmentStoreField, currencyField, pricePriceListDetailDataPriceListTypeField, inPriceListPriceListTypeField), data);
 
-                    DataSession session = LM.getBL().createSession();
+                    DataSession session = context.createSession();
                     IntegrationService service = new IntegrationService(session, table, Arrays.asList(userPriceListKey, userPriceListDetailKey, itemKey, legalEntityKey, currencyKey), props);
                     service.synchronize(true, false);
-                    session.apply(LM.getBL());
+                    session.apply(context.getBL());
                     session.close();
 
                     System.out.println("done assortment " + dataAssortment.size());
@@ -641,10 +641,10 @@ public class ImportActionProperty {
 
                     table = new ImportTable(Arrays.asList(userPriceList2Field, departmentStore2Field, inPriceList2Field, inPriceListStock2Field), data);
 
-                    session = LM.getBL().createSession();
+                    session = context.createSession();
                     service = new IntegrationService(session, table, Arrays.asList(userPriceList2Key, departmentStore2Key), props);
                     service.synchronize(true, false);
-                    session.apply(LM.getBL());
+                    session.apply(context.getBL());
                     session.close();
                 }
             }
@@ -746,10 +746,10 @@ public class ImportActionProperty {
                         accountField, chainStoresIDField, nameChainStoresField, bankIDField, nameCountryField,
                         isSupplierLegalEntityField, isCompanyLegalEntityField, isCustomerLegalEntityField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, ownershipKey, accountKey, bankKey, chainStoresKey, countryKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -792,10 +792,10 @@ public class ImportActionProperty {
                 ImportTable table = new ImportTable(Arrays.asList(employeeIDField, employeeFirstNameField,
                         employeeLastNameField, positionIDField, positionNameField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(employeeKey, positionKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -826,10 +826,10 @@ public class ImportActionProperty {
 
                 ImportTable table = new ImportTable(Arrays.asList(warehouseGroupIDField, nameWarehouseGroupField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(warehouseGroupKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -876,10 +876,10 @@ public class ImportActionProperty {
                 ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseGroupIDField,
                         warehouseIDField, nameWarehouseField, addressWarehouseField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(legalEntityKey, warehouseKey, warehouseGroupKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -932,10 +932,10 @@ public class ImportActionProperty {
 
                 ImportTable table = new ImportTable(Arrays.asList(storeIDField, nameStoreField, addressStoreField, legalEntityIDField, storeTypeField, chainStoresIDField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(storeKey, legalEntityKey, chainStoresKey, storeTypeKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -970,10 +970,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(departmentStoreIDField, nameDepartmentStoreField, storeIDField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(departmentStoreKey, storeKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -1012,10 +1012,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(bankIDField, nameBankField, addressBankField, departmentBankField, mfoBankField, cbuBankField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(bankKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -1052,10 +1052,10 @@ public class ImportActionProperty {
                 }
                 ImportTable table = new ImportTable(Arrays.asList(writeOffRateIDField, nameWriteOffRateField, percentWriteOffRateField, countryWriteOffRateField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(writeOffRateKey, countryKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {
@@ -1110,11 +1110,11 @@ public class ImportActionProperty {
                         dateFromContractField, dateToContractField, supplierIDField, customerIDField,
                         currencyField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(contractKey,
                         supplierKey, customerKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {

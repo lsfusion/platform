@@ -6,7 +6,6 @@ import platform.base.Result;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.Settings;
 import platform.server.caches.AbstractValuesContext;
@@ -111,7 +110,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         Result<ImMap<KeyField, DataObject>> keyValues = new Result<ImMap<KeyField, DataObject>>();
         Result<ImMap<PropertyField, ObjectValue>> propValues = new Result<ImMap<PropertyField, ObjectValue>>();
 
-        if(!Settings.instance.isDisableReadSingleValues()) {
+        if(!Settings.get().isDisableReadSingleValues()) {
             Result<IQuery<KeyField, PropertyField>> pullQuery = new Result<IQuery<KeyField, PropertyField>>();
             SessionRows singleResult = readSingleValues(session, baseClass, env, query, pullQuery, keyValues, propValues, new ResultSingleValues<SessionRows>() {
                 public SessionRows empty() {
@@ -135,7 +134,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         }, getQueryClasses(query), owner);
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
-            if(!Settings.instance.isDisableReadSingleValues()) { // чтение singleValues
+            if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
                 Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>();
                 Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues);
@@ -181,7 +180,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
 
     public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner) throws SQLException {
-        if(!Settings.instance.isDisableReadSingleValues()) {
+        if(!Settings.get().isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
                     new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
                 public SessionData empty() {

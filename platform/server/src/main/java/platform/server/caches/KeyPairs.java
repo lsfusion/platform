@@ -14,6 +14,6 @@ public class KeyPairs extends GroupPairs<GlobalObject, KeyExpr, ImRevMap<KeyExpr
     }
 
     public KeyPairs(ImMap<KeyExpr, GlobalObject> map1, ImMap<KeyExpr, GlobalObject> map2) {
-        super(map1, map2, true, Settings.instance.getMapInnerMaxIterations());
+        super(map1, map2, true, Settings.get().getMapInnerMaxIterations());
     }
 }

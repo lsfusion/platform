@@ -29,7 +29,7 @@ public class Stat {
     }
 
     public Stat(double count, int countDeg) {
-        deg = (int) Math.round((double)countDeg * (Math.log10(count) / Math.log10(Settings.instance.getStatDegree())));
+        deg = (int) Math.round((double)countDeg * (Math.log10(count) / Math.log10(Settings.get().getStatDegree())));
     }
 
     public Stat(int count, boolean isDeg) {

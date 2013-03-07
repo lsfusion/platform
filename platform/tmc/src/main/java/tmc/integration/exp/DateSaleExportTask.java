@@ -8,7 +8,8 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.instance.filter.CompareFilterInstance;
 import platform.server.logics.DataObject;
-import tmc.VEDBusinessLogics;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -18,8 +19,8 @@ import java.util.Date;
 
 public class DateSaleExportTask extends AbstractSaleExportTask {
 
-    public DateSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
-        super(BL, path, store);
+    public DateSaleExportTask(ExecutionContext<ClassPropertyInterface> context, String path, Integer store) {
+        super(context, path, store);
     }
 
     protected String getDbfName() {

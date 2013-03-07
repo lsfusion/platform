@@ -1,14 +1,13 @@
 package tmc.integration.imp;
 
 import org.xBaseJ.DBF;
-import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ListFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
+import platform.server.logics.SecurityManager;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import tmc.VEDBusinessLogics;
 
@@ -17,14 +16,13 @@ import java.sql.SQLException;
 
 public class CustomerCheckRetailImportActionProperty extends UserActionProperty {
 
-    VEDBusinessLogics BL;
-
-    public CustomerCheckRetailImportActionProperty(VEDBusinessLogics BL, String sID) {
+    public CustomerCheckRetailImportActionProperty(String sID) {
         super(sID, "Импорт покупателей", new ValueClass[] {});
-        this.BL = BL;
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+        VEDBusinessLogics BL = (VEDBusinessLogics) context.getBL();
+
         context.emitExceptionIfNotInFormSession();
 
         DBF impFile = null;
@@ -36,7 +34,7 @@ public class CustomerCheckRetailImportActionProperty extends UserActionProperty 
 
             FormInstance formInstance = new FormInstance(
                     new ListFormEntity(BL.LM, BL.VEDLM.customerCheckRetail),
-                    BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
+                    context.getLogicsInstance(), context.createSession(), SecurityManager.serverSecurityPolicy, null, null,
                     new DataObject(context.getFormInstance().instanceFactory.computer, BL.LM.computer), null);
 
             for (int i = 0; i < recordCount; i++) {

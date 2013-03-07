@@ -555,7 +555,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
     private static ImCol<GroupStatWhere<Expr>> getSplitJoins(final Where where, GroupType type, ImMap<BaseExpr, Expr> outerInner, boolean noWhere) {
         assert type.hasAdd();
         return where.getStatJoins(!noWhere && type.exclusive(), outerInner.values().toSet(),
-                (type.splitInnerJoins()?GroupStatType.NONE:(Settings.instance.isSplitGroupStatInnerJoins()?GroupStatType.STAT:GroupStatType.ALL)), noWhere);
+                (type.splitInnerJoins()?GroupStatType.NONE:(Settings.get().isSplitGroupStatInnerJoins()?GroupStatType.STAT:GroupStatType.ALL)), noWhere);
     }
 
     private static Expr createInnerSplit(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack) {

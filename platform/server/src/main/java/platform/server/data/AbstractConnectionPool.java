@@ -18,7 +18,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     private Connection common;
 
     public Connection getCommon(MutableObject object) throws SQLException {
-        if(Settings.instance.isCommonUnique())
+        if(Settings.get().isCommonUnique())
             return getPrivate(object);
         else {
             synchronized(lock) {
@@ -30,7 +30,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     public void returnCommon(MutableObject object, Connection connection) throws SQLException {
-        if(Settings.instance.isCommonUnique())
+        if(Settings.get().isCommonUnique())
             returnPrivate(object, connection);
         else
             assert common==connection;
@@ -55,7 +55,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     private void addFreeConnection(Connection connection) throws SQLException {
         // assert что synchronized lock
-        if(freeConnections.size() < Settings.instance.getFreeConnections())
+        if(freeConnections.size() < Settings.get().getFreeConnections())
             freeConnections.push(connection);
         else
             connection.close();
@@ -76,7 +76,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     public Connection getPrivate(MutableObject object) throws SQLException {
-        if(Settings.instance.isDisablePoolConnections())
+        if(Settings.get().isDisablePoolConnections())
             return newConnection();
 
         checkUsed();
@@ -90,7 +90,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     }
 
     public void returnPrivate(MutableObject object, Connection connection) throws SQLException {
-        if(Settings.instance.isDisablePoolConnections()) {
+        if(Settings.get().isDisablePoolConnections()) {
             connection.close();
             return;
         }

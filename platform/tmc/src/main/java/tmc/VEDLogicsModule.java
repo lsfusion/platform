@@ -80,7 +80,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     private LCP sumAddManfrOrderArticle;
     private LCP addManfrOrderArticle;
-    private LCP   sumAddManfrOrder;
+    private LCP sumAddManfrOrder;
     private LCP addManfrOrder;
     private LCP sumManfrOrder;
     private CustomClass storeLegalEntity;
@@ -693,7 +693,7 @@ public class VEDLogicsModule extends LogicsModule {
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(baseLM.currentDate, is(transaction), 1);
 
-        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.get().getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);
@@ -1311,12 +1311,12 @@ public class VEDLogicsModule extends LogicsModule {
                         addJProp(baseLM.equals2, subjectIncOrder, 1, 2),
                         xorActionArticle, articleFormatToSell, documentRevalued
                 ), 1, 2, baseLM.vtrue), 1, 2,
-                        addIfAProp(is(baseClass), 1, VEDBL.getBL().securityLM.getLAPByName("reloginUser"), 2), 1, 2), 1, barcodeToObject, 2);
+                        addIfAProp(is(baseClass), 1, VEDBL.securityLM.getLAPByName("reloginUser"), 2), 1, 2), 1, barcodeToObject, 2);
         barcodeAction3 = addJoinAProp("Ввод штрих-кода 3",
                 addListAProp(addSetPropertyAProp(addCUProp(
                         addSCProp(returnInnerQuantity)
                 ), 1, 2, 3, baseLM.vtrue), 1, 2, 3, 
-                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, VEDBL.getBL().securityLM.getLAPByName("reloginUser"), 2), 1, 2, 3), 1, barcodeToObject, 3, 2);
+                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, VEDBL.securityLM.getLAPByName("reloginUser"), 2), 1, 2, 3), 1, barcodeToObject, 3, 2);
 
         LCP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -1350,7 +1350,7 @@ public class VEDLogicsModule extends LogicsModule {
         VEDBL.cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
         VEDBL.cashRegController.addCashRegProperties();
 
-        LAP<?> importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(VEDBL, genSID()));
+        LAP<?> importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(genSID()));
 
         quantityCheckCommitInnerArticle = addSDProp("quantityCheckCommitInnerArticle", "Кол-во свер.", DoubleClass.instance, commitInner, article);
         barcodeActionCheck = addJoinAProp("Ввод штрих-кода (проверки)",
@@ -1850,7 +1850,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             GroupObjectEntity gobjFindClient = new GroupObjectEntity(genID());
-            ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(Settings.instance.getBarcodeLength()), "Введите штрих код");
+            ObjectEntity barcodeClient = new ObjectEntity(genID(), StringClass.get(Settings.get().getBarcodeLength()), "Введите штрих код");
             ObjectEntity nameClient = new ObjectEntity(genID(), StringClass.get(100), "Введите ФИО");
 
             gobjFindClient.add(barcodeClient);
@@ -1902,7 +1902,7 @@ public class VEDLogicsModule extends LogicsModule {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(Settings.instance.getBarcodeLength()), "Штрих-код", baseGroup, true);
+            objBarcode = addSingleGroupObject(StringClass.get(Settings.get().getBarcodeLength()), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
@@ -2639,8 +2639,8 @@ public class VEDLogicsModule extends LogicsModule {
         protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             ClientAction printAction = getClientActionOnApply((FormInstance<VEDBusinessLogics>) context.getFormInstance());
             // если чек напечатался
-            if(printAction==null || (context.checkApply(VEDBL) && (Boolean)context.requestUserInteraction(printAction)))
-                context.apply(VEDBL);
+            if(printAction==null || (context.checkApply() && (Boolean)context.requestUserInteraction(printAction)))
+                context.apply();
         }
 
         protected abstract ClientAction getClientActionOnApply(FormInstance<VEDBusinessLogics> formInstance);
@@ -4200,7 +4200,7 @@ public class VEDLogicsModule extends LogicsModule {
         public CreateArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(Settings.instance.getBarcodeLength()), "Штрих-код", baseLM.objectValue);
+            objBarcode = addSingleGroupObject(StringClass.get(Settings.get().getBarcodeLength()), "Штрих-код", baseLM.objectValue);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objArticle = addSingleGroupObject(article, "Товар", baseLM.name, articleToGroup, nameArticleGroupArticle);
@@ -4245,7 +4245,7 @@ public class VEDLogicsModule extends LogicsModule {
                 orderSalePayCash.change(null, context, document);
                 orderSalePayCard.change(sumWithDiscountObligationOrder.read(context, document), context, document);
 
-                context.apply(VEDBL);
+                context.apply();
             } else
                 context.delayUserInterfaction(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
         }
@@ -4299,7 +4299,10 @@ public class VEDLogicsModule extends LogicsModule {
         public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
             Integer shopID = (Integer) context.getKeyObject(shopInterface);
             try {
-                new AbstractSaleExportTask(VEDBL, saleExportGetPath(shopID)/*(SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID)*/, shopID) {
+                new AbstractSaleExportTask(context,
+                                           saleExportGetPath(context, shopID),
+                                           /*(SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), */
+                                           shopID) {
                     protected String getDbfName() {
                         return "datadat.dbf";
                     }
@@ -4322,9 +4325,9 @@ public class VEDLogicsModule extends LogicsModule {
         }
     }
 
-    public String saleExportGetPath(Integer storePath ) {
+    public String saleExportGetPath(ExecutionContext<ClassPropertyInterface> context, Integer storePath) {
         try{
-        DataSession session = VEDBL.createSession();
+        DataSession session = context.createSession();
         String path = (String) pathSaleExportTask.read(session);
         String store = (String) storeSaleExportTask.read(session);
         String[] pathList = path != null ? path.split(",") : null;
@@ -4405,7 +4408,7 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(StringClass.get(Settings.instance.getBarcodeLength())); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(StringClass.get(Settings.get().getBarcodeLength())); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
             properties.add(new ImportProperty(barcodeField, barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 

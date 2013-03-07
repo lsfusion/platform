@@ -194,7 +194,6 @@ public class EquipmentServer {
         }
     };
 
-
     public void stop() {
         thread.interrupt();
     }

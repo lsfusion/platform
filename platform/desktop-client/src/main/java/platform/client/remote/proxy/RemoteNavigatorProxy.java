@@ -1,6 +1,5 @@
 package platform.client.remote.proxy;
 
-import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ServerResponse;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -8,7 +7,6 @@ import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,14 +18,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         super(target);
     }
 
-    public String getForms(String formSet) throws RemoteException {
-        logRemoteMethodStartCall("getForms");
-        String result = target.getForms(formSet);
-        logRemoteMethodEndCall("getForms", result);
-        return result;
-    }
-
-    @NonPendingRemoteMethod
     public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
 
@@ -53,16 +43,14 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return proxy;
     }
 
-    @NonPendingRemoteMethod
     public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
         return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
-                MethodInvocation.create(this.getClass(), "createPreviewForm", formState));
+                          MethodInvocation.create(this.getClass(), "createPreviewForm", new Object[]{formState}));
     }
 
-    @NonFlushRemoteMethod
-    private RemoteFormProxy createForm(List<MethodInvocation> invocations, MethodInvocation creator) throws RemoteException {
+    private RemoteFormProxy createForm(List<MethodInvocation> immutableMethods, MethodInvocation creator) throws RemoteException {
 
-        Object[] result = createAndExecute(creator, invocations.toArray(new MethodInvocation[invocations.size()]));
+        Object[] result = createAndExecute(creator, immutableMethods.toArray(new MethodInvocation[immutableMethods.size()]));
 
         RemoteFormInterface remoteForm = (RemoteFormInterface) result[0];
         if (remoteForm == null) {
@@ -70,8 +58,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         }
 
         RemoteFormProxy proxy = new RemoteFormProxy(remoteForm);
-        for (int i = 0; i < invocations.size(); ++i) {
-            proxy.setProperty(invocations.get(i).name, result[i + 1]);
+        for (int i = 0; i < immutableMethods.size(); ++i) {
+            proxy.setProperty(immutableMethods.get(i).name, result[i + 1]);
         }
 
         return proxy;
@@ -107,8 +95,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return result;
     }
 
-    public void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException {
-        target.clientExceptionLog(info, client, message, type, erTrace);
+    public void logClientException(String info, String client, String message, String type, String erTrace) throws RemoteException {
+        target.logClientException(info, client, message, type, erTrace);
     }
 
     public void close() throws RemoteException {
@@ -129,7 +117,7 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @ImmutableMethod
-    public ArrayList<String> getDefaultForms() throws RemoteException {
+    public List<String> getDefaultForms() throws RemoteException {
         return target.getDefaultForms();
     }
 
@@ -144,22 +132,13 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
-    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
-        return target.getDaemonTasks(compId);
-    }
-
-    @Override
     public String getCurrentFormSID() throws RemoteException {
         return target.getCurrentFormSID();
     }
 
     @Override
-    public Boolean getConfiguratorSecurityPolicy() throws RemoteException {
-        return target.getConfiguratorSecurityPolicy();
-    }
-
-    public String getRemoteActionMessage() throws RemoteException {
-        return target.getRemoteActionMessage();
+    public boolean isConfiguratorAllowed() throws RemoteException {
+        return target.isConfiguratorAllowed();
     }
 
     @Override

@@ -107,10 +107,10 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                         }
                     }
 
-                    LM.mexxImportInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[0], ByteArrayClass.instance)), supplier);
-                    LM.mexxImportArticleInfoInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[1], ByteArrayClass.instance)), supplier);
-                    LM.mexxImportColorInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[2], ByteArrayClass.instance)), supplier);
-                    LM.mexxImportPricesInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance)),supplier);
+                    RomanLM.mexxImportInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[0], ByteArrayClass.instance)), supplier);
+                    RomanLM.mexxImportArticleInfoInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[1], ByteArrayClass.instance)), supplier);
+                    RomanLM.mexxImportColorInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[2], ByteArrayClass.instance)), supplier);
+                    RomanLM.mexxImportPricesInvoice.execute(context.pushUserInput(new DataObject(outputListInOrder[3], ByteArrayClass.instance)),supplier);
                 }
             }
             context.delayUserInterfaction(new MessageClientAction("Данные были успешно приняты", "Импорт"));

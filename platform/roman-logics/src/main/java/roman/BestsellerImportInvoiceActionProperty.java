@@ -9,17 +9,14 @@ import java.io.IOException;
 import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
-    private RomanBusinessLogics BL;
-
-    public BestsellerImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL.RomanLM, BL.RomanLM.bestsellerSupplier, "edi txt");
-        this.BL = BL;
+    public BestsellerImportInvoiceActionProperty(RomanLogicsModule RomanLM) {
+        super(RomanLM, RomanLM.bestsellerSupplier, "edi txt");
     }
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         BestsellerInvoiceEDIInputTable invoiceTable = new BestsellerInvoiceEDIInputTable(inFile);
-        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
+        return new InvoicePricatMergeInputTable(RomanLM, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
                 ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.COUNTRY, ResultField.ARTICLE,
                 ResultField.SIZE, ResultField.ORIGINALNAME, ResultField.NETWEIGHT, ResultField.PRICE, ResultField.DATE);
     }

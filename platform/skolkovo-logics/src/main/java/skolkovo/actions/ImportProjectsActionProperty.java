@@ -10,31 +10,30 @@ import org.jdom.input.JDOMParseException;
 import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.base.OrderedMap;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.MessageClientAction;
-import platform.server.RemoteContextObject;
 import platform.server.classes.ValueClass;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
+import platform.server.logics.EmailLogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.session.DataSession;
 import platform.server.session.SessionTableUsage;
-import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
@@ -44,21 +43,22 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class ImportProjectsActionProperty extends UserActionProperty {
-
-    private SkolkovoLogicsModule LM;
-    private SkolkovoBusinessLogics BL;
     private static Logger logger = Logger.getLogger("import");
-    private boolean onlyMessage;
-    private boolean onlyReplace;
-    private boolean fillSids;
 
-    public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean onlyReplace, boolean fillSids) {
+    private final SkolkovoLogicsModule LM;
+    private final EmailLogicsModule emailLM;
+
+    private final boolean onlyMessage;
+    private final boolean onlyReplace;
+    private final boolean fillSids;
+
+    public ImportProjectsActionProperty(String caption, boolean onlyMessage, boolean onlyReplace, boolean fillSids, SkolkovoLogicsModule LM, EmailLogicsModule emailLM) {
         super(LM.genSID(), caption, new ValueClass[]{});
-        this.LM = LM;
-        this.BL = BL;
         this.onlyMessage = onlyMessage;
         this.onlyReplace = onlyReplace;
         this.fillSids = fillSids;
+        this.LM = LM;
+        this.emailLM = emailLM;
     }
 
     protected ImportField dateProjectField, dateStatusProjectField,
@@ -361,8 +361,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, BL.emailLM.contactEmail.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.emailContact.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, emailLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, emailLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -701,8 +701,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, BL.emailLM.contactEmail.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, BL.emailLM.emailContact.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, emailLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, emailLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -926,9 +926,9 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
-                    RemoteContextObject.pushCurrentActionMessage("ИД проекта - " + projectId);
+                    ThreadLocalContext.pushActionMessage("ИД проекта - " + projectId);
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
-                    RemoteContextObject.popCurrentActionMessage();
+                    ThreadLocalContext.popActionMessage();
                     System.gc();
                 }
             }
@@ -2234,7 +2234,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
             throw new RuntimeException(e);
         }
 
-        String sessionApply = pInfo.session.applyMessage(BL);
+        String sessionApply = pInfo.session.applyMessage(context.getBL());
         if (sessionApply != null) {
             String info = "failed to import project " + projectId + ". Constraint: " + sessionApply;
             pInfo.toLog += info;

@@ -26,7 +26,7 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
             Integer comPort = (Integer) LM.findLCPByCompoundName("comPortCurrentCashRegister").read(context.getSession());
             Integer baudRate = (Integer) LM.findLCPByCompoundName("baudRateCurrentCashRegister").read(context.getSession());
 
-            if (context.checkApply(LM.getBL())) {
+            if (context.checkApply()) {
                 Object VATSumReceipt = context.requestUserInteraction(new FiscalDatecsCustomOperationClientAction(2, baudRate, comPort));
                 if (VATSumReceipt instanceof Double[]) {
                     ObjectValue zReportObject = LM.findLCPByCompoundName("currentZReport").readClasses(session);
@@ -34,7 +34,7 @@ public class FiscalDatecsZReportActionProperty extends ScriptingActionProperty {
                         LM.findLCPByCompoundName("VATSumSaleZReport").change(((Object[]) VATSumReceipt)[0], session, (DataObject) zReportObject);
                         LM.findLCPByCompoundName("VATSumReturnZReport").change(((Object[]) VATSumReceipt)[1], session, (DataObject) zReportObject);
                     }
-                    context.apply(LM.getBL());
+                    context.apply();
                     LM.findLAPByCompoundName("closeCurrentZReport").execute(session);
                 } else if (VATSumReceipt != null)
                     context.requestUserInteraction(new MessageClientAction((String) VATSumReceipt, "Ошибка"));

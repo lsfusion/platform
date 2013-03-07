@@ -7,7 +7,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
         SQLSession sqlSession = context.getSession().sql;
 
         sqlSession.startTransaction();
-        BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
+        context.getDbManager().recalculateAggregations(sqlSession);
         sqlSession.commitTransaction();
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));

@@ -16,6 +16,6 @@ public class ValuePairs extends GroupPairs<GlobalObject, Value, MapValuesTransla
     }
 
     public ValuePairs(ImMap<Value, GlobalObject> map1, ImMap<Value, GlobalObject> map2) {
-        super(map1, map2, true, Settings.instance.getMapInnerMaxIterations());
+        super(map1, map2, true, Settings.get().getMapInnerMaxIterations());
     }
 }

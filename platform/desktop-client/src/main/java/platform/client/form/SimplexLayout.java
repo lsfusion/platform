@@ -4,7 +4,7 @@ import com.sun.java.swing.plaf.windows.WindowsSplitPaneUI;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 import org.apache.log4j.Logger;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.SwingUtils;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
@@ -811,7 +811,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
     }
 
     public static void loadLibraries() throws IOException {
-        OSUtils.loadLibrary("lpsolve55", "/platform/client/form/", SimplexLayout.class);
-        OSUtils.loadLibrary("lpsolve55j", "/platform/client/form/", SimplexLayout.class);
+        SystemUtils.loadLibrary("lpsolve55", "/platform/client/form/", SimplexLayout.class);
+        SystemUtils.loadLibrary("lpsolve55j", "/platform/client/form/", SimplexLayout.class);
     }
 }

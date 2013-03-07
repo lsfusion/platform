@@ -11,6 +11,7 @@ import java.util.Set;
 public class SavingThread extends Thread {
     private Map<String, String> pathMap;
     public SavingThread(Map<String, String> pathMap) {
+        setDaemon(true);
         this.pathMap = pathMap;
     }
 

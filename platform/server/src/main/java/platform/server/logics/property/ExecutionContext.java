@@ -6,25 +6,25 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
+import platform.base.SystemUtils;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.ClientAction;
 import platform.interop.form.ReportGenerationData;
-import platform.server.Context;
 import platform.server.auth.SecurityPolicy;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.QueryEnvironment;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
+import platform.server.remote.RemoteForm;
+import platform.server.logics.*;
+import platform.server.logics.SecurityManager;
 import platform.server.logics.property.actions.FormEnvironment;
 import platform.server.session.*;
 
@@ -83,19 +83,53 @@ public class ExecutionContext<P extends PropertyInterface> {
     }
 
     public void delayUserInterfaction(ClientAction action) {
-        Context.context.get().delayUserInteraction(action);
+        ThreadLocalContext.delayUserInteraction(action);
     }
 
     public FormInstance<?> getFormInstance() {
         return env.getFormInstance();
     }
 
-    BusinessLogics<?> BL;
+    public FormEnvironment<P> getForm() {
+        return form;
+    }
+
+    public SecurityPolicy getSecurityPolicy() {
+        return getFormInstance().securityPolicy;
+    }
+
+    //todo: закэшировать, если скорость доступа к ThreadLocal станет критичной
+    //todo: сейчас по идее не актуально, т.к. большая часть времени в ActionProperty уходит на основную работу
+    public LogicsInstance getLogicsInstance() {
+        return ThreadLocalContext.getLogicsInstance();
+    }
+
     public BusinessLogics<?> getBL() {
-        if(BL==null) {
-            BL = Context.context.get().getBL();
-        }
-        return BL;
+        return getLogicsInstance().getBusinessLogics();
+    }
+
+    public DBManager getDbManager() {
+        return getLogicsInstance().getDbManager();
+    }
+
+    public NavigatorsManager getNavigatorsManager() {
+        return getLogicsInstance().getNavigatorsManager();
+    }
+
+    public RestartManager getRestartManager() {
+        return getLogicsInstance().getRestartManager();
+    }
+
+    public SecurityManager getSecurityManager() {
+        return getLogicsInstance().getSecurityManager();
+    }
+
+    public RMIManager getRmiManager() {
+        return getLogicsInstance().getRmiManager();
+    }
+
+    public DataSession createSession() throws SQLException {
+        return getDbManager().createSession();
     }
 
     public GroupObjectInstance getGroupObjectInstance() {
@@ -151,8 +185,16 @@ public class ExecutionContext<P extends PropertyInterface> {
         return getSession().check(BL, getFormInstance());
     }
 
+    public boolean checkApply() throws SQLException {
+        return checkApply(getBL());
+    }
+
     public boolean apply(BusinessLogics BL) throws SQLException {
         return getEnv().apply(BL);
+    }
+
+    public boolean apply() throws SQLException {
+        return apply(getBL());
     }
 
     public void cancel() throws SQLException {
@@ -189,17 +231,6 @@ public class ExecutionContext<P extends PropertyInterface> {
         return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form);
     }
 
-    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
-        return Context.context.get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
-    }
-    public RemoteForm createRemoteForm(FormInstance formInstance) {
-        return Context.context.get().createRemoteForm(formInstance);
-    }
-    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false));
-    }
-
     public QueryEnvironment getQueryEnv() {
         return env.getQueryEnv();
     }
@@ -210,15 +241,15 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     // предполагается, что например при помощи delayUserInteraction пользователь получит обновление клиента, и можно не делать remoteChanges
     public void delayRemoteChanges() {
-        Context.context.get().delayRemoteChanges();
+        ThreadLocalContext.delayRemoteChanges();
     }
 
     public void delayUserInteraction(ClientAction action) {
-        Context.context.get().delayUserInteraction(action);
+        ThreadLocalContext.delayUserInteraction(action);
     }
 
     public Object requestUserInteraction(ClientAction action) {
-        return Context.context.get().requestUserInteraction(action);
+        return ThreadLocalContext.requestUserInteraction(action);
     }
 
     public ExecutionContext<P> pushUserInput(ObjectValue overridenUserInput) {
@@ -231,19 +262,19 @@ public class ExecutionContext<P extends PropertyInterface> {
 
     // чтение пользователя
     public ObjectValue requestUserObject(RequestDialog dialog) throws SQLException { // null если canceled
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserObject(dialog);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
         env.setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserData(dataClass, oldValue);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
         env.setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
-        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : Context.context.get().requestUserClass(baseClass, defaultValue, concrete);
+        ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
         env.setLastUserInput(userInput);
         return userInput;
     }
@@ -256,12 +287,25 @@ public class ExecutionContext<P extends PropertyInterface> {
         return env.getWasUserInput();
     }
 
+    // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive)  throws SQLException {
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive);
+    }
+
+    public RemoteForm createRemoteForm(FormInstance formInstance) {
+        return ThreadLocalContext.createRemoteForm(formInstance);
+    }
+
+    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects) throws SQLException {
+        return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false));
+    }
+
     public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
 
         RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
             ReportGenerationData generationData = remoteForm.reportManager.getReportData();
-            ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());
+            ReportGenerator report = new ReportGenerator(generationData, SystemUtils.getCurrentTimeZone());
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");
 
@@ -279,13 +323,5 @@ public class ExecutionContext<P extends PropertyInterface> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public FormEnvironment<P> getForm() {
-        return form;
-    }
-
-    public SecurityPolicy getSecurityPolicy() {
-        return getFormInstance().securityPolicy;
     }
 }

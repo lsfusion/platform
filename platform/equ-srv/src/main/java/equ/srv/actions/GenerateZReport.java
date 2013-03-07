@@ -1,9 +1,7 @@
 package equ.srv.actions;
 
 import equ.api.SalesInfo;
-import equ.srv.EquipmentServerHolder;
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import equ.srv.EquipmentServer;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -12,7 +10,6 @@ import platform.interop.Compare;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.StringClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
@@ -189,7 +186,8 @@ public class GenerateZReport extends ScriptingActionProperty {
             throw new RuntimeException(e);
         }
         try {
-            String res = ((EquipmentServerHolder) LM.getBL()).getEquipmentServer().sendSalesInfo(salesInfoList, "equServer1");
+            EquipmentServer equipmentServer = context.getLogicsInstance().getCustomObject(EquipmentServer.class);
+            String res = equipmentServer.sendSalesInfo(salesInfoList, "equServer1");
             if (res != null) {
                 throw new RuntimeException(res);
             }

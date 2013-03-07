@@ -25,6 +25,7 @@ public class PingThread extends Thread {
         this.updateTime = Integer.parseInt(System.getProperty(PLATFORM_CLIENT_PINGTIME, "1000"));
         this.remoteClient = remoteClient;
         clientProcessor = new ClientCallBackProcessor(remoteClient);
+        setDaemon(true);
     }
 
     public void run() {

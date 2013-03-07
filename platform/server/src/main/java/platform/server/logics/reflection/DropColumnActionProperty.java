@@ -7,7 +7,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ReflectionLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
@@ -23,7 +22,7 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
         String columnName = (String) BL.reflectionLM.sidDropColumn.getOld().read(context, dropColumnObject);
         String tableName = (String) BL.reflectionLM.sidTableDropColumn.getOld().read(context, dropColumnObject);
         try {
-            BL.dropColumn(tableName, columnName);
+            context.getDbManager().dropColumn(tableName, columnName);
         } catch (SQLException e) {
             context.requestUserInteraction(new MessageClientAction(e.getMessage(), "Ошибка при удалении колонки"));
         }

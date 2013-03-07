@@ -1,24 +1,24 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import platform.server.classes.*;
+import platform.base.DateConverter;
+import platform.server.classes.AbstractCustomClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.StaticCustomClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
-import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.DisconnectActionProperty;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
-import platform.server.session.PropertyChange;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Calendar;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
-
-    BusinessLogics BL;
-    BaseLogicsModule baseLM;
+public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
@@ -61,8 +61,6 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/scripts/system/SystemEvents.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
-        this.BL = BL;
-        this.baseLM = baseLM;
     }
 
     @Override
@@ -89,7 +87,7 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
         connectionStatusConnection = (LCP<PropertyInterface>) getLCPByName("connectionStatusConnection");
 
         connectTimeConnection = getLCPByName("connectTimeConnection");
-        disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(BL, connection)));
+        disconnectConnection = addProperty(null, new LAP(new DisconnectActionProperty(connection)));
         addIfAProp(baseGroup, getString("logics.connection.disconnect"), true, getLCPByName("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
@@ -119,19 +117,23 @@ public class SystemEventsLogicsModule  extends ScriptingLogicsModule {
         baseLM.objectClassName.makeLoggable(baseLM, true);
     }
 
-    protected void resetConnectionStatus() {
-        try {
-            DataSession session = BL.createSession();
-
-            PropertyChange statusChanges = new PropertyChange(connectionStatus.getDataObject("disconnectedConnection"),
-                    connectionStatusConnection.property.interfaces.single(), connectionStatus.getDataObject("connectedConnection"));
-
-            session.change((CalcProperty) connectionStatusConnection.property, statusChanges);
-
-            session.apply(this.BL);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public void logException(BusinessLogics bl, String message, String errorType, String erTrace, DataObject user, String clientName, boolean client) throws SQLException {
+        DataSession session = createSession();
+        DataObject exceptionObject;
+        if (client) {
+            exceptionObject = session.addObject(clientException);
+            clientClientException.change(clientName, session, exceptionObject);
+            String userLogin = (String) baseLM.userLogin.read(session, user);
+            loginClientException.change(userLogin, session, exceptionObject);
+        } else {
+            exceptionObject = session.addObject(serverException);
         }
+        messageException.change(message, session, exceptionObject);
+        typeException.change(errorType, session, exceptionObject);
+        erTraceException.change(erTrace, session, exceptionObject);
+        dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+
+        session.apply(bl);
+        session.close();
     }
 }

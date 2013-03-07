@@ -58,11 +58,9 @@ public class PaasLogicsModule extends LogicsModule {
     public LCP databaseConfiguration;
 
     public LAP refreshStatus;
-    private final PaasBusinessLogics paas;
 
-    public PaasLogicsModule(BaseLogicsModule<PaasBusinessLogics> baseLM, PaasBusinessLogics paas) {
+    public PaasLogicsModule(BaseLogicsModule<PaasBusinessLogics> baseLM) {
         super("PaasLogicsModule");
-        this.paas = paas;
         setBaseLogicsModule(baseLM);
     }
 
@@ -85,8 +83,6 @@ public class PaasLogicsModule extends LogicsModule {
         initBaseClassAliases();
 
 //        paasUser = addConcreteClass("paasUser", "Пользователь", baseLM.user, baseLM.emailObject);
-
-
 
         project = addConcreteClass("project", "Проект", baseClass.named);
 
@@ -145,15 +141,15 @@ public class PaasLogicsModule extends LogicsModule {
     }
 
     public LAP addRefreshStatusProperty() {
-        return addProperty(baseLM.baseGroup, new LAP(new RefreshStatusActionProperty(paas, baseLM.genSID(), "")));
+        return addProperty(baseLM.baseGroup, new LAP(new RefreshStatusActionProperty(baseLM.genSID(), "", this)));
     }
 
     public LAP addStartConfigurationProperty() {
-        return addProperty(baseLM.baseGroup, new LAP(new StartConfigurationActionProperty(paas, baseLM.genSID(), "")));
+        return addProperty(baseLM.baseGroup, new LAP(new StartConfigurationActionProperty(baseLM.genSID(), "", this)));
     }
 
     public LAP addStopConfigurationProperty() {
-        return addProperty(baseLM.baseGroup, new LAP(new StopConfigurationActionProperty(paas, baseLM.genSID(), "")));
+        return addProperty(baseLM.baseGroup, new LAP(new StopConfigurationActionProperty(baseLM.genSID(), "", this)));
     }
 
     @Override

@@ -4,46 +4,37 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
+import platform.server.context.AbstractContext;
+import platform.server.context.Context;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
-import platform.server.form.instance.remote.RemoteDialog;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
+import platform.server.remote.RemoteDialog;
+import platform.server.remote.RemoteForm;
 import platform.server.logics.DataObject;
+import platform.server.logics.LogicsInstance;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 
-public class WrapperContext implements Context{
-    Context wrappedContext;
-    
-    public BusinessLogics getBL() {
-        return wrappedContext.getBL();
+public class WrapperContext extends AbstractContext implements Context {
+    private final Context wrappedContext;
+
+    public WrapperContext(Context wrappedContext) {
+        this.wrappedContext = wrappedContext;
+    }
+
+    @Override
+    public LogicsInstance getLogicsInstance() {
+        return wrappedContext.getLogicsInstance();
     }
 
     public FormInstance getFormInstance() {
         return wrappedContext.getFormInstance();
-    }
-
-    public void setActionMessage(String message) {
-        wrappedContext.setActionMessage(message);
-    }
-
-    public String getActionMessage() {
-        return wrappedContext.getActionMessage();
-    }
-
-    public void pushActionMessage(String segment) {
-        wrappedContext.pushActionMessage(segment);
-    }
-
-    public String popActionMessage() {
-        return wrappedContext.popActionMessage();
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive) throws SQLException {
@@ -88,5 +79,21 @@ public class WrapperContext implements Context{
 
     public Object[] requestUserInteraction(ClientAction... actions) {
         return wrappedContext.requestUserInteraction(actions);
+    }
+
+    public void setActionMessage(String message) {
+        wrappedContext.setActionMessage(message);
+    }
+
+    public String getActionMessage() {
+        return wrappedContext.getActionMessage();
+    }
+
+    public void pushActionMessage(String segment) {
+        wrappedContext.pushActionMessage(segment);
+    }
+
+    public String popActionMessage() {
+        return wrappedContext.popActionMessage();
     }
 }

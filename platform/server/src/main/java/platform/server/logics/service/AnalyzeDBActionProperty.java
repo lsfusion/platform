@@ -6,7 +6,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.session.DataSession;
 
@@ -22,8 +21,11 @@ public class AnalyzeDBActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         BusinessLogics BL = context.getBL();
-        DataSession session = BL.createSession();
-        BL.analyzeDB(session.sql);
+
+        DataSession session = context.createSession();
+
+        context.getDbManager().analyzeDB(session.sql);
+
         session.apply(BL);
         session.close();
 

@@ -40,7 +40,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
-    public Map<String, String> blockedScreen = new HashMap<String, String>();
 
     public boolean gwtAllowScrollSplits;
 
@@ -198,7 +197,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
-        blockedScreen = pool.readObject(inStream);
         gwtAllowScrollSplits = inStream.readBoolean();
     }
 

@@ -1,12 +1,14 @@
 package platform.client.remote.proxy;
 
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.event.IDaemonTask;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.TimeZone;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
@@ -17,7 +19,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         super(target);
     }
 
-    @NonPendingRemoteMethod
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) throws RemoteException {
         RemoteNavigatorInterface remote = target.createNavigator(isFullClient, login, password, computer, remoteAddress, forceCreateNew);
         if (remote == null) {
@@ -61,6 +62,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
+    @Override
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
+        return target.getDaemonTasks(compId);
+    }
+
     public ExternalScreen getExternalScreen(int screenID) throws RemoteException {
         logRemoteMethodStartCall("getExternalScreen");
         ExternalScreen result = target.getExternalScreen(screenID);
@@ -95,7 +101,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.generateNewID();
     }
 
-    @NonFlushRemoteMethod
     public void ping() throws RemoteException {
         target.ping();
     }
@@ -118,10 +123,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         logRemoteMethodStartCall("remindPassword");
         target.remindPassword(email, localeLanguage);
         logRemoteMethodEndVoidCall("remindPassword");
-    }
-
-    public String getRemoteActionMessage() throws RemoteException {
-        return target.getRemoteActionMessage();
     }
 
     public byte[] readFile(String sid, String... params) throws RemoteException {

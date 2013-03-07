@@ -1,8 +1,8 @@
 package fdk.utils.backup;
 
+import com.google.common.base.Throwables;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.sql.DataAdapter;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -13,10 +13,11 @@ import platform.server.session.DataSession;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Scanner;
 
 public class BackupActionProperty extends ScriptingActionProperty {
 
@@ -32,8 +33,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
 
-            DataSession session = createSession();
-            DataAdapter adapter = session.sql.adapter;
+            DataSession session = context.createSession();
             dumpDir = (String) LM.findLCPByCompoundName("dumpDirBackupTask").read(session);
             if(dumpDir!=null)
                 dumpDir = dumpDir.trim();
@@ -50,7 +50,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
             File f = new File(dumpDir);
             f.mkdir();
 
-            LM.getBL().backupDB(binPath, dumpDir + dateTime);
+            context.getDbManager().backupDB(binPath, dumpDir + dateTime);
             Thread.sleep(500);
             DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("backup"));
             LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(date.getTime()), session, backupObject);
@@ -64,15 +64,10 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 log +=scanner.nextLine() + "\r\n";
             }
             LM.findLCPByCompoundName("logBackup").change(log, session, backupObject);
-            session.apply(LM.getBL());
+            session.apply(context.getBL());
 
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Throwables.propagate(e);
         }
-
     }
 }

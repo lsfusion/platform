@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
+import platform.server.context.ThreadLocalContext;
 import platform.server.logics.ServerResourceBundle;
 
 import java.lang.annotation.Annotation;
@@ -41,11 +42,11 @@ public class MessageAspect {
                 if(stringParams.size() > 0)
                     message = message + " : " + BaseUtils.toString(stringParams, ",");
                 Object result = null;
-                RemoteContextObject.pushCurrentActionMessage(message);
+                ThreadLocalContext.pushActionMessage(message);
                 try {
                     result = thisJoinPoint.proceed();
                 } finally {
-                    RemoteContextObject.popCurrentActionMessage();
+                    ThreadLocalContext.popActionMessage();
                 }
                 return result;
             }

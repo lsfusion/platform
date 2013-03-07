@@ -4,9 +4,11 @@ import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 import platform.base.IOUtils;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.CustomStaticFormatFileClass;
+import platform.server.classes.DateClass;
 import platform.server.integration.*;
-import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -15,7 +17,6 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
@@ -39,7 +40,7 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
             if (objectValue != null) {
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());
                 for (byte[] file : fileList) {
-                    importDuties(file);
+                    importDuties(context, file);
                 }
             }
 
@@ -54,7 +55,7 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
         }
     }
 
-    private void importDuties(byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException, ParseException {
+    private void importDuties(ExecutionContext<ClassPropertyInterface> context, byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException, ParseException {
 
         File tempFile = File.createTempFile("tempTnved", ".dbf");
         IOUtils.putFileBytes(tempFile, fileBytes);
@@ -114,11 +115,11 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
         ImportTable table = new ImportTable(Arrays.asList(groupIDField, registrationCustomsGroupDateField,
                 percentDutyCustomsGroupDateField, weightDutyCustomsGroupDateField, vatField, dateFromField, dateToField), data);
 
-        DataSession session = LM.getBL().createSession();
+        DataSession session = context.createSession();
         IntegrationService service = new IntegrationService(session, table,
                 Arrays.asList(customsGroupKey, VATKey), properties);
         service.synchronize(true, false);
-        session.apply(LM.getBL());
+        session.apply(context.getBL());
         session.close();
     }
 }

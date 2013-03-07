@@ -3,19 +3,22 @@ package tmc.integration.exp;
 import platform.base.col.MapFact;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.LogicalClass;
-import platform.server.form.instance.*;
+import platform.server.form.instance.CalcPropertyObjectInstance;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.instance.filter.NotFilterInstance;
 import platform.server.form.instance.filter.NotNullFilterInstance;
 import platform.server.logics.DataObject;
-import tmc.VEDBusinessLogics;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 
 public class NewSaleExportTask extends AbstractSaleExportTask {
 
-    public NewSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
-        super(BL, path, store);
+    public NewSaleExportTask(ExecutionContext<ClassPropertyInterface> context, String path, Integer store) {
+        super(context, path, store);
     }
 
     protected String getDbfName() {

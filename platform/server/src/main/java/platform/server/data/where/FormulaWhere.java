@@ -126,7 +126,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
 
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
         GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, noWhere);
-        if(result.size() > Settings.instance.getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.instance.getLimitWhereJoinsComplexity())
+        if(result.size() > Settings.get().getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity())
             result = result.compileMeans(keepStat, keyStat);
         return result;
     }
@@ -134,7 +134,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     protected abstract MeanClassWheres calculateGroupMeanClassWheres(boolean useNots);
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
         MeanClassWheres result = calculateGroupMeanClassWheres(useNots);
-        if(!useNots && (result.size() > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()))
+        if(!useNots && (result.size() > Settings.get().getLimitClassWhereCount() || result.getComplexity(true) > Settings.get().getLimitClassWhereComplexity()))
             result = new MeanClassWheres(new MeanClassWhere(result.getClassWhere()), this);
         return result;
     }

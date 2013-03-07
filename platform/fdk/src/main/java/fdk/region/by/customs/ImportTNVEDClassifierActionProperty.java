@@ -1,12 +1,8 @@
 package fdk.region.by.customs;
 
-import fdk.integration.*;
-import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.interop.action.MessageClientAction;
 import platform.server.classes.*;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
@@ -18,15 +14,13 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty {
 
@@ -41,7 +35,7 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
 
             Object countryBelarus = LM.findLCPByCompoundName("countrySID").read(context.getSession(), new DataObject("112", StringClass.get(3)));
             LM.findLCPByCompoundName("defaultCountry").change(countryBelarus, context.getSession());
-            context.getSession().apply(LM.getBL());
+            context.getSession().apply(context.getBL());
 
             CustomStaticFormatFileClass valueClass = CustomStaticFormatFileClass.getDefinedInstance(false, "Файлы DBF", "DBF");
             ObjectValue objectValue = context.requestUserData(valueClass, null);
@@ -49,8 +43,8 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
                 List<byte[]> fileList = valueClass.getFiles(objectValue.getValue());
 
                 for (byte[] file : fileList) {
-                    importGroups(file);
-                    importParents(file);
+                    importGroups(context, file);
+                    importParents(context, file);
                 }
             }
         } catch (xBaseJException e) {
@@ -62,7 +56,7 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
         }
     }
 
-    private void importGroups(byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
+    private void importGroups(ExecutionContext<ClassPropertyInterface> context, byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
 
         File tempFile = File.createTempFile("tempTnved", ".dbf");
         IOUtils.putFileBytes(tempFile, fileBytes);
@@ -115,15 +109,15 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
         ImportTable table = new ImportTable(Arrays.asList(codeCustomsGroupField, nameCustomsGroupField,
                 numberCustomsGroupField, nameCustomsZoneField, hasCodeCustomsGroupField, vatField, dateField), data);
 
-        DataSession session = LM.getBL().createSession();
+        DataSession session = context.createSession();
         IntegrationService service = new IntegrationService(session, table,
                 Arrays.asList(customsGroupKey, customsZoneKey, VATKey), properties);
         service.synchronize(true, false);
-        session.apply(LM.getBL());
+        session.apply(context.getBL());
         session.close();
     }
 
-    private void importParents(byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
+    private void importParents(ExecutionContext<ClassPropertyInterface> context, byte[] fileBytes) throws IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
 
         File tempFile = File.createTempFile("tempTnved", ".dbf");
         IOUtils.putFileBytes(tempFile, fileBytes);
@@ -165,11 +159,11 @@ public class ImportTNVEDClassifierActionProperty extends ScriptingActionProperty
 
         ImportTable table = new ImportTable(Arrays.asList(groupIDField, parentIDField), data);
 
-        DataSession session = LM.getBL().createSession();
+        DataSession session = context.createSession();
         IntegrationService service = new IntegrationService(session, table,
                 Arrays.asList(customsGroupKey, parentCustomsGroupKey), properties);
         service.synchronize(true, false);
-        session.apply(LM.getBL());
+        session.apply(context.getBL());
         session.close();
     }
 }

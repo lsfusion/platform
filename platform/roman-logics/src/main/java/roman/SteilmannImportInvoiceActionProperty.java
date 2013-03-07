@@ -10,19 +10,14 @@ import java.io.InputStreamReader;
 
 public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
-    private final RomanBusinessLogics BL;
-
     @Override
     protected boolean hasBarCodeKey() {
         return false;
     }
 
-    public SteilmannImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL.RomanLM, BL.RomanLM.steilmannSupplier, "csv");
-        this.BL = BL;
+    public SteilmannImportInvoiceActionProperty(RomanLogicsModule RomanLM) {
+        super(RomanLM, RomanLM.steilmannSupplier, "csv");
     }
-
-
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {

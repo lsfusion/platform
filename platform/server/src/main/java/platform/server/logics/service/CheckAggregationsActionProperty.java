@@ -6,9 +6,7 @@ import platform.server.data.SQLSession;
 import platform.server.logics.ServiceLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
-import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
@@ -24,7 +22,7 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
         SQLSession sqlSession = context.getSession().sql;
 
         sqlSession.startTransaction();
-        String message = context.getBL().checkAggregations(sqlSession);
+        String message = context.getDbManager().checkAggregations(sqlSession);
         sqlSession.commitTransaction();
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.check.aggregation.was.completed") + '\n' + '\n' + message, getString("logics.checking.aggregations"), true));

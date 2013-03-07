@@ -8,18 +8,19 @@ import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
-import platform.base.col.ListFact;
-import platform.base.col.SetFact;
-import platform.server.auth.PolicyManager;
-import platform.server.form.instance.*;
-import platform.server.form.instance.filter.NotNullFilterInstance;
-import platform.server.form.instance.filter.CompareFilterInstance;
-import platform.server.logics.DataObject;
-import tmc.integration.scheduler.FlagSemaphoreTask;
-import platform.server.session.DataSession;
-import platform.server.data.type.ObjectType;
 import platform.interop.Compare;
+import platform.server.data.type.ObjectType;
+import platform.server.form.instance.*;
+import platform.server.form.instance.filter.CompareFilterInstance;
+import platform.server.form.instance.filter.NotNullFilterInstance;
+import platform.server.logics.DBManager;
+import platform.server.logics.LogicsInstance;
+import platform.server.logics.SecurityManager;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
+import platform.server.session.DataSession;
 import tmc.VEDBusinessLogics;
+import tmc.integration.scheduler.FlagSemaphoreTask;
 
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -31,12 +32,18 @@ import java.util.Map;
 
 public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
-    VEDBusinessLogics BL;
-    String path;
-    Integer store;
+    protected final LogicsInstance logicsInstance;
+    protected final VEDBusinessLogics BL;
+    protected final DBManager dbManager;
+    protected final String path;
+    protected final Integer store;
+    private ExecutionContext<ClassPropertyInterface> context;
 
-    protected AbstractSaleExportTask(VEDBusinessLogics BL, String path, Integer store) {
-        this.BL = BL;
+    public AbstractSaleExportTask(ExecutionContext<ClassPropertyInterface> context, String path, Integer store) {
+        this.context = context;
+        this.logicsInstance = context.getLogicsInstance();
+        this.BL = (VEDBusinessLogics) context.getBL();
+        this.dbManager = context.getDbManager();
         this.path = path;
         this.store = store;
     }
@@ -111,7 +118,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataSale(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.VEDLM.commitSaleBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.baseLM.computer), null); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.commitSaleBrowseForm, logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null, dbManager.getServerComputerObject(), null); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
@@ -143,7 +150,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataCert(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.VEDLM.saleCheckCertBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.baseLM.computer), null); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.saleCheckCertBrowseForm, logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null, dbManager.getServerComputerObject(), null); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
@@ -173,7 +180,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataReturn(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.VEDLM.returnSaleCheckRetailBrowse, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.baseLM.computer), null); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.returnSaleCheckRetailBrowse, logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null, dbManager.getServerComputerObject(), null); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
@@ -263,7 +270,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
             createDBF();
 
-            DataSession session = BL.createSession();
+            DataSession session = context.createSession();
 
             Map<Field, PropertyDrawInstance> mapSale = new HashMap<Field, PropertyDrawInstance>();
             FormData dataSale = getDataSale(session, mapSale);

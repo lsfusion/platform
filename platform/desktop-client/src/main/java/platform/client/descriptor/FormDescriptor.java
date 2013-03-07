@@ -6,7 +6,6 @@ import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
 import platform.base.context.IncrementView;
 import platform.base.serialization.CustomSerializable;
-import platform.base.serialization.RemoteDescriptorInterface;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.filter.FilterDescriptor;
@@ -22,6 +21,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Constants;
 import platform.interop.ModalityType;
+import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.layout.ContainerFactory;
 import platform.interop.form.layout.FormContainerSet;
 import platform.interop.form.layout.GroupObjectContainerSet;
@@ -93,7 +93,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
         initialize();
 
-        setCaption(ClientResourceBundle.getString("descriptor.newform")+" (" + ID + ")");
+        setCaption(ClientResourceBundle.getString("descriptor.newform") + " (" + ID + ")");
 
         addFormDefaultContainers();
     }
@@ -311,9 +311,15 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         for (int i = 0; i < length; ++i) {
             Object event;
             switch (inStream.readByte()) {
-                case 0 : event = pool.readString(inStream); break;
-                case 1 : event = pool.deserializeObject(inStream); break;
-                default : event = pool.readObject(inStream); break;
+                case 0:
+                    event = pool.readString(inStream);
+                    break;
+                case 1:
+                    event = pool.deserializeObject(inStream);
+                    break;
+                default:
+                    event = pool.readObject(inStream);
+                    break;
             }
             List<PropertyObjectDescriptor> actions = pool.deserializeList(inStream);
             eventActions.put(event, actions);
@@ -473,7 +479,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         return getProperties(objects, toDraw == null ? new ArrayList<ObjectDescriptor>() : toDraw.objects, Main.remoteLogics, objectMap, false, false);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteDescriptorInterface remote, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory, boolean isAny) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<GroupObjectDescriptor> groupObjects, RemoteLogicsInterface logics, ArrayList<GroupObjectDescriptor> toDraw, boolean isCompulsory, boolean isAny) {
         Collection<ObjectDescriptor> objects = new ArrayList<ObjectDescriptor>();
         Map<Integer, Integer> objectMap = new HashMap<Integer, Integer>();
         for (GroupObjectDescriptor groupObject : groupObjects) {
@@ -486,10 +492,10 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         for (GroupObjectDescriptor groupObject : toDraw) {
             objList.addAll(groupObject.objects);
         }
-        return getProperties(objects, objList, remote, objectMap, isCompulsory, isAny);
+        return getProperties(objects, objList, logics, objectMap, isCompulsory, isAny);
     }
 
-    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteDescriptorInterface remote, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
+    public static List<PropertyObjectDescriptor> getProperties(Collection<ObjectDescriptor> objects, Collection<ObjectDescriptor> atLeastOne, RemoteLogicsInterface logics, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
         Map<Integer, ObjectDescriptor> idToObjects = new HashMap<Integer, ObjectDescriptor>();
         Map<Integer, ClientClass> classes = new HashMap<Integer, ClientClass>();
         for (ObjectDescriptor object : objects) {
@@ -500,7 +506,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
             }
         }
 
-        Collection<PropertyDescriptorImplement<Integer>> properties = getProperties(remote, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny);
+        Collection<PropertyDescriptorImplement<Integer>> properties = getProperties(logics, classes, BaseUtils.filterValues(idToObjects, atLeastOne).keySet(), objectMap, isCompulsory, isAny);
 
         List<PropertyObjectDescriptor> result = new ArrayList<PropertyObjectDescriptor>();
         for (PropertyDescriptorImplement<Integer> implement : properties) {
@@ -509,12 +515,12 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         return result;
     }
 
-    public static <K> Collection<PropertyDescriptorImplement<K>> getProperties(RemoteDescriptorInterface remote, Map<K, ClientClass> classes) {
+    public static <K> Collection<PropertyDescriptorImplement<K>> getProperties(RemoteLogicsInterface logics, Map<K, ClientClass> classes) {
         // todo:
         return new ArrayList<PropertyDescriptorImplement<K>>();
     }
 
-    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteDescriptorInterface remote, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
+    public static Collection<PropertyDescriptorImplement<Integer>> getProperties(RemoteLogicsInterface logics, Map<Integer, ClientClass> classes, Collection<Integer> atLeastOne, Map<Integer, Integer> objectMap, boolean isCompulsory, boolean isAny) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -531,7 +537,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
                 }
             }
 
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remote.getPropertyObjectsByteArray(outStream.toByteArray(), isCompulsory, isAny)));
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(logics.getPropertyObjectsByteArray(outStream.toByteArray(), isCompulsory, isAny)));
             ClientSerializationPool pool = new ClientSerializationPool();
 
             List<PropertyDescriptorImplement<Integer>> result = new ArrayList<PropertyDescriptorImplement<Integer>>();

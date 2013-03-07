@@ -4,7 +4,6 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.xBaseJException;
 import platform.interop.action.MessageClientAction;
-import platform.server.Context;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -14,10 +13,12 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -89,13 +90,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 new ImportActionProperty(LM, importData, context).makeImport();
 
                 if (getLCP("importBIVCDOSMag2").read(context) != null)
-                    importLegalEntityStock(path + "//MAGP");
+                    importLegalEntityStock(context, path + "//MAGP");
 
                 if ((getLCP("importBIVCDOSItems").read(context) != null))
-                    importSotUOM(path + "//SEDI", path + "//OST", numberOfItems);
+                    importSotUOM(context, path + "//SEDI", path + "//OST", numberOfItems);
 
                 if ((getLCP("importBIVCDOSUserInvoices").read(context) != null))
-                    importSOTUserInvoices(path + "//SEDI", path + "//OST", startDate, numberOfUserInvoices);
+                    importSOTUserInvoices(context, path + "//SEDI", path + "//OST", startDate, numberOfUserInvoices);
 
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
@@ -680,7 +681,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return contractsList;
     }
 
-    private void importLegalEntityStock(String path) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException {
+    private void importLegalEntityStock(ExecutionContext context, String path) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException {
 
         List<List<Object>> data = importLegalEntityStockFromFile(path);
 
@@ -707,11 +708,11 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseIDField,
                     dataField), data);
 
-            DataSession session = LM.getBL().createSession();
+            DataSession session = context.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(
                     legalEntityKey, warehouseKey), props);
             service.synchronize(true, false);
-            session.apply(LM.getBL());
+            session.apply(context.getBL());
             session.close();
         }
     }
@@ -738,7 +739,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private void importSotUOM(String sediPath, String ostPath, Integer numberOfItems) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException {
+    private void importSotUOM(ExecutionContext context, String sediPath, String ostPath, Integer numberOfItems) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException {
 
         List<List<Object>> data = importSotUOMItemsFromFile(sediPath, ostPath, numberOfItems);
 
@@ -770,10 +771,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
             ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, UOMField, netWeightField, nameField, itemField), data);
 
-            DataSession session = LM.getBL().createSession();
+            DataSession session = context.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(UOMKey, sotUOMKey, itemKey), props);
             service.synchronize(true, false);
-            session.apply(LM.getBL());
+            session.apply(context.getBL());
             session.close();
         }
     }
@@ -816,7 +817,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return data;
     }
 
-    private void importSOTUserInvoices(String sediPath, String ostPath, Date startDate, Integer numberOfItems) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException, ParseException {
+    private void importSOTUserInvoices(ExecutionContext context, String sediPath, String ostPath, Date startDate, Integer numberOfItems) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException, ParseException {
 
         try {
             List<List<Object>> data = importSOTUserInvoicesFromFile(sediPath, ostPath, startDate, numberOfItems);
@@ -840,11 +841,11 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 ImportTable table = new ImportTable(Arrays.asList(itemField, userInvoiceDetailField,
                         sotSIDField), data);
 
-                DataSession session = LM.getBL().createSession();
+                DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceDetailKey,
                         itemKey), props);
                 service.synchronize(true, false);
-                session.apply(LM.getBL());
+                session.apply(context.getBL());
                 session.close();
             }
         } catch (SQLException e) {

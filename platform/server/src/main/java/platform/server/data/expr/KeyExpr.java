@@ -9,6 +9,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.SystemProperties;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
@@ -20,7 +21,6 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.logics.BusinessLogicsBootstrap;
 
 public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> {
 
@@ -35,7 +35,7 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         }
     };
     public static <T> ImRevMap<T, KeyExpr> getMapKeys(ImSet<T> objects) {
-        if(BusinessLogicsBootstrap.isDebug())
+        if (SystemProperties.isDebug)
             return objects.mapRevValues((GetValue<KeyExpr, T>) genStringKeys);
 
         return objects.mapRevValues(genIndexKeys);

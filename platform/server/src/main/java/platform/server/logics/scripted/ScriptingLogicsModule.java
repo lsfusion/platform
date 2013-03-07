@@ -21,6 +21,7 @@ import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.UpClassSet;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.Union;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PartitionType;
@@ -52,11 +53,13 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.mail.AttachmentFormat;
 import platform.server.mail.EmailActionProperty;
 import platform.server.mail.EmailActionProperty.FormStorageType;
+import platform.server.session.DataSession;
 
 import javax.mail.Message;
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
@@ -87,9 +90,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<ImplementTable> tableResolver = new TableNameResolver();
     private final CompoundNameResolver<ValueClass> classResolver = new ClassNameResolver();
 
+    private final BusinessLogics<?> BL;
+
     private String code = null;
     private String filename = null;
-    private final BusinessLogics<?> BL;
     private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
     private ScriptParser parser;
@@ -98,10 +102,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     private Map<String, LP<?, ?>> currentLocalProperties = new HashMap<String, LP<?, ?>>();
 
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
-
-    public BusinessLogics<?> getBL() {
-        return BL;
-    }
 
     public enum ConstType { STATIC, INT, REAL, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER}
@@ -139,6 +139,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL, String code) {
         this(baseModule, BL);
         this.code = code;
+    }
+
+    protected DataSession createSession() throws SQLException {
+        return ThreadLocalContext.getDbManager().createSession();
     }
 
     private void setModuleName(String moduleName) {

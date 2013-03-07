@@ -1,42 +1,38 @@
 package platform.server.lifecycle;
 
-import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
-import platform.server.logics.BusinessLogics;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static platform.server.lifecycle.LifecycleEvent.*;
 
 public class LifecycleManager {
     private final Object listenersLock = new Object();
 
-    private LifecycleListener listeners[] = new LifecycleListener[0];
-
-    private final static ArrayInstancer<LifecycleListener> arrayInstancer = new BaseUtils.GenericTypeInstancer<LifecycleListener>(LifecycleListener.class);
+    private final Set<LifecycleListener> listeners = new TreeSet<LifecycleListener>(LifecycleListener.ORDER_COMPARATOR);
 
     public LifecycleManager(LifecycleListener... listeners) {
-        if (listeners != null && listeners.length > 0) {
-            this.listeners = listeners;
-        }
+        addLifecycleListeners(listeners);
     }
 
-    public void addLifecycleListener(LifecycleListener listener) {
-        synchronized (listenersLock) {
-            listeners = BaseUtils.addElement(listeners, listener, arrayInstancer);
-        }
+    public synchronized void addLifecycleListener(LifecycleListener listener) {
+        listeners.add(listener);
     }
 
-    public void addLifecycleListeners(LifecycleListener... newListeners) {
-        synchronized (listenersLock) {
-            listeners = BaseUtils.add(listeners, newListeners, arrayInstancer);
-        }
+    public synchronized void addLifecycleListeners(LifecycleListener... newListeners) {
+        Collections.addAll(listeners, newListeners);
     }
 
-    public void fireLifecycleEvent(String type) {
+    public synchronized void removeLifecycleListener(LifecycleListener listener) {
+        listeners.remove(listener);
+    }
+
+    public synchronized void fireLifecycleEvent(String type) {
         fireLifecycleEvent(type, null);
     }
 
-    public void fireLifecycleEvent(String type, Object data) {
-        if (listeners.length == 0) {
+    public synchronized void fireLifecycleEvent(String type, Object data) {
+        if (listeners.size() == 0) {
             return;
         }
         LifecycleEvent event = new LifecycleEvent(type, data);
@@ -45,22 +41,12 @@ public class LifecycleManager {
         }
     }
 
-    public void removeLifecycleListener(LifecycleListener listener) {
-        synchronized (listenersLock) {
-            listeners = BaseUtils.removeElement(listeners, listener, arrayInstancer);
-        }
-    }
-
     public void fireStarting() {
-        fireLifecycleEvent(STARTING);
+        fireLifecycleEvent(INIT);
     }
 
     public void fireStarted() {
         fireLifecycleEvent(STARTED);
-    }
-
-    public void firePong() {
-        fireLifecycleEvent(PONG);
     }
 
     public void fireStopping() {
@@ -73,13 +59,5 @@ public class LifecycleManager {
 
     public void fireError(String error) {
         fireLifecycleEvent(ERROR, error);
-    }
-
-    public void fireMessage(String msg) {
-        fireLifecycleEvent(MESSAGE, msg);
-    }
-
-    public void fireBlCreated(BusinessLogics bl) {
-        fireLifecycleEvent(LOGICS_CREATED, bl);
     }
 }

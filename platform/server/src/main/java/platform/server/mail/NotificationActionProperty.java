@@ -7,8 +7,8 @@ import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.EmailLogicsModule;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CalcProperty;
@@ -35,14 +35,14 @@ public class NotificationActionProperty extends SystemActionProperty {
     private final String emailToCCNotification;
     private final String emailToBCNotification;
 
-    private final BusinessLogics<?> BL;
+    private final EmailLogicsModule emailLM;
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
         return getUsedProps(ListFact.fromJavaCol(recipients.keySet()));
     }
 
-    public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, BusinessLogics<?> BL) {
+    public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, EmailLogicsModule emailLM) {
         super(sID, caption, getValueClasses(targetProperty));
 
         this.subjectNotification = subjectNotification;
@@ -51,7 +51,8 @@ public class NotificationActionProperty extends SystemActionProperty {
         this.emailToNotification = emailToNotification;
         this.emailToCCNotification = emailToCCNotification;
         this.emailToBCNotification = emailToBCNotification;
-        this.BL = BL;
+
+        this.emailLM = emailLM;
 
         askConfirm = true;
         setImage("email.png");
@@ -63,7 +64,7 @@ public class NotificationActionProperty extends SystemActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
-        if (BL.emailLM.disableEmail.read(context) != null) {
+        if (emailLM.disableEmail.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
             return;
         }
@@ -92,7 +93,7 @@ public class NotificationActionProperty extends SystemActionProperty {
         while (m.find()) {
             String propertySID = m.group(1);
             int interfacesCount = m.group(2).split(",").length;
-            LCP replaceProperty = (LCP) BL.LM.getLP(propertySID.trim());
+            LCP replaceProperty = context.getBL().getLCP(propertySID.trim());
             Object replacePropertyValue;
             if (!"".equals(m.group(2))) {
                 DataObject[] objects = new DataObject[interfacesCount];
@@ -114,11 +115,11 @@ public class NotificationActionProperty extends SystemActionProperty {
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
         Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
-        String encryptedConnectionType = (String) BL.emailLM.nameEncryptedConnectionType.read(context);
-        String smtpHost = (String) BL.emailLM.smtpHost.read(context);
-        String smtpPort = (String) BL.emailLM.smtpPort.read(context);
-        String userName = (String) BL.emailLM.emailAccount.read(context);
-        String password = (String) BL.emailLM.emailPassword.read(context);
+        String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionType.read(context);
+        String smtpHost = (String) emailLM.smtpHost.read(context);
+        String smtpPort = (String) emailLM.smtpPort.read(context);
+        String userName = (String) emailLM.emailAccount.read(context);
+        String password = (String) emailLM.emailPassword.read(context);
 
         if (smtpHost == null || emailFromNotification == null) {
             String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");

@@ -1,8 +1,6 @@
 package fdk.utils.backup;
 
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.sql.DataAdapter;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
@@ -12,12 +10,8 @@ import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Iterator;
-import java.util.Scanner;
 
 public class DeleteBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
@@ -32,7 +26,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
 
-            DataSession session = createSession();
+            DataSession session = context.createSession();
             DataObject backupObject = context.getKeyValue(backupInterface);
 
             String fileAddress = (String) LM.findLCPByCompoundName("fileBackup").read(session, backupObject);
@@ -43,7 +37,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
                 fLog.delete();
             if (f.exists() && f.delete())
                 LM.findLCPByCompoundName("fileDeletedBackup").change(true, session, backupObject);
-            session.apply(LM.getBL());
+            session.apply(context.getBL());
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

@@ -19,9 +19,9 @@ public class ExpiredSessionFilter extends GenericFilterBean {
     private Pattern urlPattern;
 
     @Override
-     public void afterPropertiesSet() {
-         Assert.notNull(urlPattern, "urlPattern must be specified");
-     }
+    public void afterPropertiesSet() {
+        Assert.notNull(urlPattern, "urlPattern must be specified");
+    }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -39,8 +39,8 @@ public class ExpiredSessionFilter extends GenericFilterBean {
         String requestUrl = UrlUtils.buildRequestUrl(request);
 
         if (request.getRequestedSessionId() != null
-            && !request.isRequestedSessionIdValid()
-            && urlPattern.matcher(requestUrl).matches()) {
+                && !request.isRequestedSessionIdValid()
+                && urlPattern.matcher(requestUrl).matches()) {
 
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "SESSION_TIMED_OUT");
             return;

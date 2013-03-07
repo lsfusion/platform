@@ -6,6 +6,7 @@ import platform.base.identity.IdentityObject;
 import platform.interop.AbstractWindowType;
 import platform.server.auth.SecurityPolicy;
 import platform.server.form.window.NavigatorWindow;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 
 import javax.swing.*;
@@ -39,7 +40,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public NavigatorElement(NavigatorElement<T> parent, String sID, String caption, String icon) {
         this.sID = sID;
-        setID(BusinessLogics.generateStaticNewID());
+        setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
         setImage(icon != null ? icon : "/images/open.png");
         if (parent != null) {

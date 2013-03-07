@@ -1,54 +1,164 @@
 package platform.server.logics;
 
+import com.google.common.base.Throwables;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+import platform.base.DateConverter;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
-import platform.server.ContextAwareDaemonThreadFactory;
-import platform.server.SchedulerContext;
-import platform.server.classes.ConcreteCustomClass;
+import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
+import platform.server.WrapperContext;
+import platform.server.context.Context;
+import platform.server.context.ContextAwareDaemonThreadFactory;
+import platform.server.context.ContextAwareThread;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
+import platform.server.lifecycle.LifecycleAdapter;
+import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.linear.LAP;
 import platform.server.session.DataSession;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Scheduler {
-    public BusinessLogics BL;
-    public DataObject currentScheduledTaskObject;
-    public DataObject currentScheduledTaskLogObject;
-    public DataSession currentLogSession;
+public class Scheduler extends LifecycleAdapter implements InitializingBean {
+    private static final Logger logger = Logger.getLogger(Scheduler.class);
 
-    public Scheduler(BusinessLogics BL) {
-        this.BL = BL;
+    private Context instanceContext;
+
+    private BusinessLogics businessLogics;
+    private DBManager dbManager;
+
+    private DataObject currentScheduledTaskObject;
+    private DataObject currentScheduledTaskLogObject;
+    private DataSession currentLogSession;
+
+    public Scheduler() {
     }
 
-    protected void runScheduler() throws IOException, SQLException {
-        DataSession session = BL.createSession();
+    public void setBusinessLogics(BusinessLogics businessLogics) {
+        this.businessLogics = businessLogics;
+    }
+
+    public void setDbManager(DBManager dbManager) {
+        this.dbManager = dbManager;
+    }
+
+    public void setLogicsInstance(LogicsInstance logicsInstance) {
+        instanceContext = logicsInstance.getContext();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(businessLogics, "businessLogics must be specified");
+        Assert.notNull(dbManager, "dbManager must be specified");
+        //assert logicsInstance by checking the context
+        Assert.notNull(instanceContext, "logicsInstance must be specified");
+    }
+
+    @Override
+    protected void onStarted(LifecycleEvent event) {
+        logger.info("Starting Scheduler.");
+
+        try {
+            setupScheduledTasks();
+            setupCurrentDateSynchronization();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error starting Scheduler: ", e);
+        }
+    }
+
+    private void setupCurrentDateSynchronization() {
+        changeCurrentDate();
+
+        Thread thread = new ContextAwareThread(instanceContext, new Runnable() {
+            long time = 1000;
+            boolean first = true;
+
+            public void run() {
+                Calendar calendar = Calendar.getInstance();
+                int hour = calendar.get(Calendar.HOUR);
+                calendar.get(Calendar.HOUR);
+                calendar.get(Calendar.HOUR_OF_DAY);
+                if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
+                    hour += 12;
+                }
+                time = (23 - hour) * 500 * 60 * 60;
+                while (true) {
+                    try {
+                        calendar = Calendar.getInstance();
+                        hour = calendar.get(Calendar.HOUR);
+                        if (calendar.get(Calendar.AM_PM) == Calendar.PM) {
+                            hour += 12;
+                        }
+                        if (hour == 0 && first) {
+                            changeCurrentDate();
+                            time = 12 * 60 * 60 * 1000;
+                            first = false;
+                        }
+                        if (hour == 23) {
+                            first = true;
+                        }
+                        Thread.sleep(time);
+                        time = time / 2;
+                        if (time < 1000) {
+                            time = 1000;
+                        }
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void changeCurrentDate() {
+        try {
+            DataSession session = dbManager.createSession();
+
+            java.sql.Date currentDate = (java.sql.Date) businessLogics.LM.currentDate.read(session);
+            java.sql.Date newDate = DateConverter.getCurrentDate();
+            if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+                businessLogics.LM.currentDate.change(newDate, session);
+                session.apply(businessLogics);
+            }
+
+            session.close();
+        } catch (SQLException e) {
+            logger.error("Error changing current date: ", e);
+            Throwables.propagate(e);
+        }
+    }
+
+    private void setupScheduledTasks() throws SQLException {
+        DataSession session = dbManager.createSession();
 
         KeyExpr scheduledTask1Expr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTask1Expr);
 
         QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<Object, Object>(scheduledTaskKeys);
-        scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("runAtStartScheduledTask", businessLogics.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("startDateScheduledTask", businessLogics.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        scheduledTaskQuery.addProperty("periodScheduledTask", businessLogics.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
 
-        scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
+        scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTask1Expr).getWhere());
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
         for (int i=0,size=scheduledTaskResult.size();i<size;i++) {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i); ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
-            currentScheduledTaskObject = new DataObject(key.getValue(0), BL.schedulerLM.scheduledTask);
+            currentScheduledTaskObject = new DataObject(key.getValue(0), businessLogics.schedulerLM.scheduledTask);
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
             Integer period = (Integer) value.get("periodScheduledTask");
@@ -58,13 +168,13 @@ public class Scheduler {
             ImRevMap<Object, KeyExpr> propertyKeys = MapFact.<Object, KeyExpr>toRevMap("property", propertyExpr, "scheduledTask", scheduledTaskExpr);
 
             QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<Object, Object>(propertyKeys);
-            propertyQuery.addProperty("SIDProperty", BL.reflectionLM.SIDProperty.getExpr(propertyExpr));
-            propertyQuery.addProperty("orderScheduledTaskProperty", BL.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
-            propertyQuery.and(BL.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
-            propertyQuery.and(BL.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
+            propertyQuery.addProperty("SIDProperty", businessLogics.reflectionLM.SIDProperty.getExpr(propertyExpr));
+            propertyQuery.addProperty("orderScheduledTaskProperty", businessLogics.schedulerLM.orderScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr));
+            propertyQuery.and(businessLogics.schedulerLM.inScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
+            propertyQuery.and(businessLogics.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
 
-            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(this)));
+            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext()));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session.sql);
@@ -77,7 +187,7 @@ public class Scheduler {
                         orderProperty = defaultOrder;
                         defaultOrder++;
                     }
-                    LAP lap = BL.getLAP(sidProperty.trim());
+                    LAP lap = businessLogics.getLAP(sidProperty.trim());
                     propertySIDMap.put(orderProperty, lap);
                 }
             }
@@ -103,25 +213,25 @@ public class Scheduler {
     }
 
     private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
-        currentLogSession = BL.createSession();
-        currentScheduledTaskLogObject = currentLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
+        currentLogSession = dbManager.createSession();
+        currentScheduledTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
         try {
-            BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
-            BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
-            BL.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
 
-            DataSession session = BL.createSession();
+            DataSession session = dbManager.createSession();
             lap.execute(session);
-            String applyResult = session.applyMessage(BL);
+            String applyResult = session.applyMessage(businessLogics);
 
-            BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
-            BL.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
-            currentLogSession.apply(BL);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult, currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            currentLogSession.apply(businessLogics);
             return applyResult == null;
         } catch (Exception e) {
-            BL.schedulerLM.resultScheduledTaskLog.change(e, currentLogSession, currentScheduledTaskLogObject);
-            BL.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
-            currentLogSession.apply(BL);
+            businessLogics.schedulerLM.resultScheduledTaskLog.change(e, currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.dateFinishScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
+            currentLogSession.apply(businessLogics);
             return false;
         }
     }
@@ -145,7 +255,31 @@ public class Scheduler {
                     }
                 }
             } catch (SQLException e) {
-                //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                Throwables.propagate(e);
+            }
+        }
+    }
+
+    public class SchedulerContext extends WrapperContext {
+        public SchedulerContext() {
+            super(instanceContext);
+        }
+
+        @Override
+        public void delayUserInteraction(ClientAction action) {
+            if (action instanceof MessageClientAction) {
+                try {
+                    DataObject scheduledClientTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledClientTaskLog);
+
+                    businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
+                            .change(currentScheduledTaskLogObject.getValue(), currentLogSession, scheduledClientTaskLogObject);
+                    businessLogics.schedulerLM.messageScheduledClientTaskLog
+                            .change(((MessageClientAction) action).message, currentLogSession, scheduledClientTaskLogObject);
+                } catch (SQLException e) {
+                    Throwables.propagate(e);
+                }
+            } else {
+                super.delayUserInteraction(action);
             }
         }
     }

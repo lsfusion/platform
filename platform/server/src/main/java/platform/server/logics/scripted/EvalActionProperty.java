@@ -2,7 +2,6 @@ package platform.server.logics.scripted;
 
 import com.google.common.base.Throwables;
 import org.antlr.runtime.RecognitionException;
-import platform.base.BaseUtils;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.MessageClientAction;
 import platform.server.logics.BusinessLogics;
@@ -16,7 +15,6 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.SystemActionProperty;
 
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -27,15 +25,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class EvalActionProperty<P extends PropertyInterface> extends SystemActionProperty {
     private final LCP<P> source;
-    private final BusinessLogics<?> BL;
     private final ImMap<P, ClassPropertyInterface> mapSource;
     private static AtomicLong counter = new AtomicLong(0);
 
-    public EvalActionProperty(String sID, String caption, BusinessLogics<?> BL, LCP<P> source) {
+    public EvalActionProperty(String sID, String caption, LCP<P> source) {
         super(sID, caption, source.getInterfaceClasses());
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
-        this.BL = BL;
     }
 
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
@@ -47,7 +43,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
         return "UNIQUE" + counter.incrementAndGet() + "NSNAME";
     }
 
-    private String wrapScript(String script) {
+    private String wrapScript(BusinessLogics<?> BL, String script) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(getUniqueName());
@@ -68,14 +64,17 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemActio
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+        BusinessLogics BL = context.getBL();
+
         String script = getScript(context);
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(script));
+        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, script));
         String errString = "";
         try {
             module.initModuleDependencies();
             module.initModule();
             module.initAliases();
             module.initProperties();
+
             errString = module.getErrorsDescription();
 
             LAP<?> runAction = module.getLAPByName("run");

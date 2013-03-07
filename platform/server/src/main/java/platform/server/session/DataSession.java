@@ -10,12 +10,12 @@ import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import platform.interop.Compare;
-import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -575,7 +575,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
             Pair<SinglePropertyTableUsage<ClassPropertyInterface>, SinglePropertyTableUsage<ClassPropertyInterface>> split = property.splitFitClasses(changeTable, sql, baseClass, env);
 
-            applySingleStored(property, split.first, Context.context.get().getBL());
+            applySingleStored(property, split.first, ThreadLocalContext.getBusinessLogics());
             change = SinglePropertyTableUsage.getChange(split.second);
         }
 
@@ -768,7 +768,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(apply(BL))
             return null;
         else
-            return Context.context.get().getLogMessage();
+            return ThreadLocalContext.getLogMessage();
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
@@ -1348,7 +1348,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     public SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage ImSet<CalcProperty> properties) throws SQLException {
         assert isInTransaction();
 
-        final int split = Settings.instance.getSplitIncrementApply();
+        final int split = Settings.get().getSplitIncrementApply();
         if(properties.size() > split) // если слишком много групп, разделим на несколько read'ов
             return splitReadSave(table, properties);
 

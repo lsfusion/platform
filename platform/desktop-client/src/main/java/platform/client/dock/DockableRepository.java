@@ -60,7 +60,11 @@ public class DockableRepository {
         formsList.remove(formID);
     }
 
+    public void clear() {
+        formsList.clear();
+    }
+
     public List<String> getFormsList() {
-        return formsList;
+        return new ArrayList<String>(formsList);
     }
 }

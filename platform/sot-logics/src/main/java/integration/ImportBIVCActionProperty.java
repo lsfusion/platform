@@ -2,20 +2,9 @@ package integration;
 
 import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
-import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderMap;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.interop.Compare;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.StringClass;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
-import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
-import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -27,7 +16,6 @@ import java.io.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.util.*;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,7 +67,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                 new ImportActionProperty(LM, importData, context).makeImport();
 
                 if ((getLCP("importBIVCItems").read(context) != null))
-                    importSotUOM(path + "//stmc");
+                    importSotUOM(context, path + "//stmc");
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
@@ -453,7 +441,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         return contractsList;
     }
 
-    private void importSotUOM(String stmcPath) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException {
+    private void importSotUOM(ExecutionContext context, String stmcPath) throws ScriptingErrorLog.SemanticErrorException, SQLException, IOException {
 
         List<List<Object>> data = importSotUOMItemsFromFile(stmcPath);
 
@@ -477,10 +465,10 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
 
             ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, itemField, weightItemField), data);
 
-            DataSession session = LM.getBL().createSession();
+            DataSession session = context.createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(sotUOMKey, itemKey), props);
             service.synchronize(true, false);
-            session.apply(LM.getBL());
+            session.apply(context.getBL());
             session.close();
         }
     }

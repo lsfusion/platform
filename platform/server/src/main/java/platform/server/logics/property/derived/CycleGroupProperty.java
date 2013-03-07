@@ -1,7 +1,6 @@
 package platform.server.logics.property.derived;
 
 import platform.base.Result;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -9,7 +8,6 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
@@ -77,7 +75,7 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             Expr resultExpr = getChangeExpr(change, propChanges, toChangeKeys);
             DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, propChanges, toChangeKeys))), propChanges);
             if(changedWhere!=null) {
-                if (Settings.instance.isCalculateGroupDataChanged())
+                if (Settings.get().isCalculateGroupDataChanged())
                     getExpr(change.getMapExprs(), dataChanges.add(propChanges), changedWhere);
                 else
                     changedWhere.add(change.where);

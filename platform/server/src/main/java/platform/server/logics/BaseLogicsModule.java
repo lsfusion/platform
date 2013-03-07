@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import org.apache.log4j.Logger;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -73,7 +72,6 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
     // classes
     public BaseClass baseClass;
-    Logger logger;
 
     public AbstractCustomClass contact;
     public AbstractCustomClass user;
@@ -222,11 +220,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return BL;
     }
     
-    public BaseLogicsModule(T BL, Logger logger) {
+    public BaseLogicsModule(T BL) {
         super("System", "System");
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.logger = logger;
     }
 
     public LP getLP(String sID) {
@@ -314,7 +311,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         canceled = addProperty(null, new LCP<ClassPropertyInterface>(new SessionDataProperty("canceled", "Canceled", LogicalClass.instance)));
 
-        apply = addAProp(new ApplyActionProperty(BL, canceled.property));
+        apply = addAProp(new ApplyActionProperty(canceled.property));
         cancel = addAProp(new CancelActionProperty());
 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
@@ -436,7 +433,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         deleteApply.setShouldBeLast(true);
 
         // Действия на форме
-        formApply = addProperty(null, new LAP(new FormApplyActionProperty(BL)));
+        formApply = addProperty(null, new LAP(new FormApplyActionProperty()));
         formCancel = addProperty(null, new LAP(new FormCancelActionProperty()));
         formPrint = addProperty(null, new LAP(new PrintActionProperty()));
         formEdit = addProperty(null, new LAP(new EditActionProperty()));
@@ -531,7 +528,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addIndex(dataName);
     }
 
-    static int generateStaticNewID() {
+    public static int generateStaticNewID() {
         return idGenerator.idShift();
     }
 

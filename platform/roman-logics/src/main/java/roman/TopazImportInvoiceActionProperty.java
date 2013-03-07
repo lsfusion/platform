@@ -14,11 +14,8 @@ import java.io.IOException;
 import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
-    private final RomanBusinessLogics BL;
-
-    public TopazImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL.RomanLM, BL.RomanLM.topazSupplier);
-        this.BL = BL;
+    public TopazImportInvoiceActionProperty(RomanLogicsModule RomanLM) {
+        super(RomanLM, RomanLM.topazSupplier);
     }
 
     @Override
@@ -31,7 +28,7 @@ public class TopazImportInvoiceActionProperty extends ImportBoxInvoiceActionProp
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, InvalidFormatException {
         TopazInputTable invoiceTable = new TopazInputTable(inFile);
-        return new InvoicePricatMergeInputTable(BL, invoiceTable,
+        return new InvoicePricatMergeInputTable(RomanLM, invoiceTable,
                 ResultField.ARTICLE, ResultField.BARCODE, ResultField.QUANTITY, ResultField.COMPOSITION,
                 ResultField.SIZE, ResultField.COLORCODE, ResultField.COLOR, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.NUMBERSKU
         );

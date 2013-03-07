@@ -165,7 +165,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         assert isStored();
 
-        if(!Settings.instance.isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
+        if(!Settings.get().isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
         if(DataSession.fitClasses(this, changeTable))
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
@@ -666,7 +666,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ChangeEvent<T> event = new ChangeEvent<T>(this, valueImplement, whereImplement);
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps()) {
-            if(Settings.instance.isCheckUniqueEvent() && dataProperty.event!=null)
+            if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
                 throw new RuntimeException(ServerResourceBundle.getString("logics.property.already.has.event", dataProperty));
             dataProperty.event = event;
         }
@@ -861,7 +861,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // в будущем propClasses можно заменить на PropertyTables propTables
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isFull() && (Settings.instance.isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
+        if (isFull() && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
             return getQueryExpr(joinImplement, propClasses, propChanges, changedWhere);
         else
             return getJoinExpr(joinImplement, propClasses, propChanges, changedWhere);

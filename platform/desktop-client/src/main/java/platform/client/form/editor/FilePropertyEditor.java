@@ -1,8 +1,7 @@
 package platform.client.form.editor;
 
 import platform.base.BaseUtils;
-import platform.base.IOUtils;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 
@@ -59,14 +58,14 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     }
 
     private void setLatestCurrentDirectory() {
-        fileChooser.setCurrentDirectory(OSUtils.loadCurrentDirectory());
+        fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
     }
 
     @Override
     public void showDialog(Point desiredLocation) {
         returnValue = fileChooser.showOpenDialog(SwingUtils.getActiveWindow());
         if (returnValue == JFileChooser.APPROVE_OPTION) {
-            OSUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
+            SystemUtils.saveCurrentDirectory(fileChooser.getSelectedFile());
         }
     }
 

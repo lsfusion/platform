@@ -13,21 +13,22 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import org.apache.log4j.Logger;
 import platform.base.ByteArray;
+import platform.base.SystemUtils;
 import platform.base.col.MapFact;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.ReportGenerationData;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.EmailLogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.actions.SystemActionProperty;
+import platform.server.remote.RemoteForm;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -56,8 +57,6 @@ public class EmailActionProperty extends SystemActionProperty {
 
     public static enum FormStorageType {INLINE, ATTACH}
 
-    private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
-
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
 
@@ -70,18 +69,16 @@ public class EmailActionProperty extends SystemActionProperty {
     private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
 
-    @Override
-    protected boolean isVolatile() { // формы используются, не определишь getUsedProps
-        return true;
-    }
-
-    public EmailActionProperty(String sID, String caption, BusinessLogics<?> BL, ValueClass[] classes) {
+    public EmailActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);
-
-        this.BL = BL;
 
         askConfirm = true;
         setImage("email.png");
+    }
+
+    @Override
+    protected boolean isVolatile() { // формы используются, не определишь getUsedProps
+        return true;
     }
 
     public void setFromAddress(CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddress) {
@@ -114,8 +111,9 @@ public class EmailActionProperty extends SystemActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+        EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
-            if (BL.emailLM.disableEmail.read(context) != null) {
+            if (emailLM.disableEmail.read(context) != null) {
                 logger.error(getString("mail.sending.disabled"));
                 return;
             }
@@ -151,13 +149,13 @@ public class EmailActionProperty extends SystemActionProperty {
 
             Map<String, Message.RecipientType> recipients = getRecipientEmails(context);
 
-            String encryptedConnectionType = (String) BL.emailLM.nameEncryptedConnectionType.read(context);
-            String smtpHost = (String) BL.emailLM.smtpHost.read(context);
-            String smtpPort = (String) BL.emailLM.smtpPort.read(context);
+            String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionType.read(context);
+            String smtpHost = (String) emailLM.smtpHost.read(context);
+            String smtpPort = (String) emailLM.smtpPort.read(context);
             String fromAddress = (String) this.fromAddress.read(context, context.getKeys());
             String subject = (String) this.subject.read(context, context.getKeys());
-            String userName = (String) BL.emailLM.emailAccount.read(context);
-            String password = (String) BL.emailLM.emailPassword.read(context);
+            String userName = (String) emailLM.emailAccount.read(context);
+            String password = (String) emailLM.emailPassword.read(context);
 
             sendEmail(context, smtpHost, smtpPort, userName, password, encryptedConnectionType, fromAddress, subject, recipients, inlineForms, attachments, attachmentFiles);
         } catch (Exception e) {
@@ -255,7 +253,7 @@ public class EmailActionProperty extends SystemActionProperty {
 
         ReportGenerationData generationData = remoteForm.reportManager.getReportData();
 
-        ReportGenerator report = new ReportGenerator(generationData, BL.getTimeZone());
+        ReportGenerator report = new ReportGenerator(generationData, SystemUtils.getCurrentTimeZone());
         JasperPrint print = report.createReport(inlineForm, attachmentFiles);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         try {

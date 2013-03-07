@@ -48,6 +48,6 @@ public class HashMapKeys implements HashKeys {
     }
 
     public boolean isGlobal() {
-        return Settings.instance.isCacheInnerHashes();
+        return Settings.get().isCacheInnerHashes();
     }
 }

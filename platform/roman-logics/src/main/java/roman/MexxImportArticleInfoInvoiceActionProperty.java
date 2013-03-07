@@ -26,38 +26,38 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
 
     @Override
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
-        ImportField sidField = new ImportField(LM.sidArticle);
-        ImportField countryField = new ImportField(LM.baseLM.name);
-        ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
-        ImportField originalNameField = new ImportField(LM.originalNameArticle);
+        ImportField sidField = new ImportField(RomanLM.sidArticle);
+        ImportField countryField = new ImportField(RomanLM.baseLM.name);
+        ImportField compositionField = new ImportField(RomanLM.mainCompositionOriginArticle);
+        ImportField originalNameField = new ImportField(RomanLM.originalNameArticle);
         //ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
-        ImportField themeField = new ImportField(LM.sidThemeSupplier);
+        ImportField themeField = new ImportField(RomanLM.sidThemeSupplier);
 
         DataObject supplier = context.getKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
-        properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
+        ImportKey<?> articleKey = new ImportKey(RomanLM.articleComposite, RomanLM.articleSIDSupplier.getMapping(sidField, supplier));
+        properties.add(new ImportProperty(sidField, RomanLM.sidArticle.getMapping(articleKey)));
 
-        ImportKey<?> countryKey = new ImportKey(LM.countrySupplier, LM.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, LM.baseLM.name.getMapping(countryKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
-        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
+        ImportKey<?> countryKey = new ImportKey(RomanLM.countrySupplier, RomanLM.countryNameSupplier.getMapping(countryField, supplier));
+        properties.add(new ImportProperty(countryField, RomanLM.baseLM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(supplier, RomanLM.supplierCountrySupplier.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, RomanLM.countrySupplierOfOriginArticle.getMapping(articleKey), RomanLM.object(RomanLM.countrySupplier).getMapping(countryKey)));
 
         //ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
         //properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
         //properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
         //properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
 
-        ImportKey<?> themeKey = new ImportKey(LM.themeSupplier, LM.themeSIDSupplier.getMapping(themeField, supplier));
-        properties.add(new ImportProperty(themeField, LM.sidThemeSupplier.getMapping(themeKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
-        properties.add(new ImportProperty(themeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
+        ImportKey<?> themeKey = new ImportKey(RomanLM.themeSupplier, RomanLM.themeSIDSupplier.getMapping(themeField, supplier));
+        properties.add(new ImportProperty(themeField, RomanLM.sidThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(supplier, RomanLM.supplierThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(themeField, RomanLM.themeSupplierArticle.getMapping(articleKey), RomanLM.object(RomanLM.themeSupplier).getMapping(themeKey)));
 
 
-        properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
-        properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
+        properties.add(new ImportProperty(compositionField, RomanLM.mainCompositionOriginArticle.getMapping(articleKey)));
+        properties.add(new ImportProperty(originalNameField, RomanLM.originalNameArticle.getMapping(articleKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) userValue);

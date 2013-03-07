@@ -1,7 +1,6 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.base.col.ListFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -27,7 +26,6 @@ import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ClassReader;
-import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
@@ -100,14 +98,14 @@ public abstract class BaseExpr extends Expr {
             case GREATER:
                 return GreaterWhere.create(expr, this, false);
             case GREATER_EQUALS:
-                if(Settings.instance.isUseGreaterEquals())
+                if(Settings.get().isUseGreaterEquals())
                     return GreaterWhere.create(expr, this, true);
                 else
                     return GreaterWhere.create(expr, this, false).or(EqualsWhere.create(expr, this));
             case LESS:
                 return GreaterWhere.create(this, expr, false);
             case LESS_EQUALS:
-                if(Settings.instance.isUseGreaterEquals())
+                if(Settings.get().isUseGreaterEquals())
                     return GreaterWhere.create(this, expr, true);
                 else
                     return GreaterWhere.create(this, expr, false).or(EqualsWhere.create(expr, this));

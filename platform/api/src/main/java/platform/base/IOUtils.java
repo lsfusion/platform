@@ -28,6 +28,17 @@ public class IOUtils {
         return out.toByteArray();
     }
 
+    public static byte[] readBytesFromResource(String uri) throws IOException {
+        InputStream in = IOUtils.class.getResourceAsStream(uri);
+        try {
+            return readBytesFromStream(in);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+
     public static byte[] getFileBytes(File file) throws IOException {
         InputStream in = new FileInputStream(file);
         try {
@@ -87,5 +98,19 @@ public class IOUtils {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static File createTempDirectory(String prefix) throws IOException {
+        final File tempFile = File.createTempFile(prefix, Long.toString(System.nanoTime()));
+
+        if (!tempFile.delete()) {
+            throw new IOException("Could not delete temp file: " + tempFile.getAbsolutePath());
+        }
+
+        if (!tempFile.mkdir()) {
+            throw new IOException("Could not create temp directory: " + tempFile.getAbsolutePath());
+        }
+
+        return tempFile;
     }
 }

@@ -105,7 +105,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     public MeanClassWheres calculateGroupMeanClassWheres(boolean useNots) {
         MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
         for(Where where : wheres) {
-            if(result.size() > Settings.instance.getLimitClassWhereCount() || result.getComplexity(true) > Settings.instance.getLimitClassWhereComplexity()) {
+            if(result.size() > Settings.get().getLimitClassWhereCount() || result.getComplexity(true) > Settings.get().getLimitClassWhereComplexity()) {
                 if(useNots)
                     return groupMeanClassWheres(false);
                 else // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти

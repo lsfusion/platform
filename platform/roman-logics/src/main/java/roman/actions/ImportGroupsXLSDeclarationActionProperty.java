@@ -119,7 +119,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
 
                 IntegrationService integrationService = new IntegrationService(context.getSession(), new ImportTable(fields, data), Arrays.asList(keysArray), properties);
                 integrationService.synchronize(true, false);
-                context.getSession().apply(LM.getBL());
+                context.getSession().apply(context.getBL());
             }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

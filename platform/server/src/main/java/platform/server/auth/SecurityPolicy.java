@@ -4,7 +4,7 @@ public class SecurityPolicy {
     public final int ID;
     public Boolean configurator;
 
-    SecurityPolicy() {
+    public SecurityPolicy() {
         this(-1);
     }
 
@@ -20,8 +20,9 @@ public class SecurityPolicy {
         cls.override(policy.cls);
         property.override(policy.property);
         navigator.override(policy.navigator);
-        if(policy.configurator!= null)
+        if (policy.configurator != null) {
             configurator = policy.configurator;
+        }
     }
 
     public void setReplaceMode(boolean replaceMode) {

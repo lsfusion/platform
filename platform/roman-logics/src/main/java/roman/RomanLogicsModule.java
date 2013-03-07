@@ -24,10 +24,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.PanelNavigatorWindow;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
@@ -112,7 +109,6 @@ public class RomanLogicsModule extends LogicsModule {
     private LCP nameCompanyInvoice;
     private LCP languageInvoice;
     private LCP nameLanguageInvoice;
-
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -1794,7 +1790,7 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        Settings.instance.setDisableSumGroupNotZero(true);
+        Settings.get().setDisableSumGroupNotZero(true);
 
         idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
         actionGroup = addAbstractGroup("actionGroup", "Действия", publicGroup, false);
@@ -1814,7 +1810,7 @@ public class RomanLogicsModule extends LogicsModule {
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
         date.setEventChange(baseLM.currentDate, is(transaction), 1);
 
-        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.instance.getBarcodeLength()), barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", "Штрихкод", StringClass.get(Settings.get().getBarcodeLength()), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
 //        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", baseLM.name, barcodeToObject, 1);
@@ -2034,19 +2030,19 @@ public class RomanLogicsModule extends LogicsModule {
         dieselImportInvoice = addAProp(importInvoiceActionGroup, new DieselImportInvoiceActionProperty(this));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
         teddyImportInvoice = addAProp(importInvoiceActionGroup, new TeddyImportInvoiceActionProperty(this));
-        steilmannImportInvoice = addAProp(importInvoiceActionGroup, new SteilmannImportInvoiceActionProperty(BL));
+        steilmannImportInvoice = addAProp(importInvoiceActionGroup, new SteilmannImportInvoiceActionProperty(this));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
-        hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
-        gerryWeberImportInvoice = addAProp(importInvoiceActionGroup, new GerryWeberImportInvoiceActionProperty(BL));
+        hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(this));
+        gerryWeberImportInvoice = addAProp(importInvoiceActionGroup, new GerryWeberImportInvoiceActionProperty(this));
         mexxImportInvoice = addAProp(new MexxImportInvoiceActionProperty(this));
         mexxImportPricesInvoice = addAProp(new MexxImportPricesInvoiceActionProperty(this));
         mexxImportArticleInfoInvoice = addAProp(new MexxImportArticleInfoInvoiceActionProperty(this));
         mexxImportColorInvoice = addAProp(new MexxImportColorInvoiceActionProperty(this));
         mexxImportDelivery = addAProp(importInvoiceActionGroup, new MexxImportDeliveryActionProperty(this));
-        bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
-        sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
+        bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(this));
+        sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(this));
         womenSecretImportInvoice = addAProp(importInvoiceActionGroup, new WomenSecretImportInvoiceActionProperty(this));
-        topazImportInvoice = addAProp(importInvoiceActionGroup, new TopazImportInvoiceActionProperty(BL));
+        topazImportInvoice = addAProp(importInvoiceActionGroup, new TopazImportInvoiceActionProperty(this));
         aprioriImportInvoice = addAProp(importInvoiceActionGroup, new AprioriImportInvoiceActionProperty(this));
 
         mexxImportOrder = addAProp(importOrderActionGroup, new MexxImportOrderActionProperty(this));
@@ -4158,7 +4154,7 @@ public class RomanLogicsModule extends LogicsModule {
                         addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
                 ), 1, 2, barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
-        invoiceExportDbf = addProperty(null, new LAP(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", BL, importer, freight, typeInvoice)));
+        invoiceExportDbf = addProperty(null, new LAP(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", importer, freight, typeInvoice, this, baseLM)));
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
         scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
@@ -4172,7 +4168,7 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
     public LAP addDEAProp(String sID) {
-        return addProperty(null, new LAP(new DeclarationExportActionProperty(sID, "Экспорт декларанта", BL, importer, freight)));
+        return addProperty(null, new LAP(new DeclarationExportActionProperty(sID, "Экспорт декларанта", importer, freight, this, baseLM)));
     }
 
     @Override
@@ -5613,8 +5609,6 @@ public class RomanLogicsModule extends LogicsModule {
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(baseLM.objectValue, objBarcode).getID() + "");
-
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
             design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
 
@@ -5808,8 +5802,6 @@ public class RomanLogicsModule extends LogicsModule {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-
-            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(baseLM.objectValue, objBarcode).getID() + "");
 
             design.get(getPropertyDraw(date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";

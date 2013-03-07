@@ -474,7 +474,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(String sID, String caption, PartitionType partitionType, CalcProperty<T> property, ImSet<CalcPropertyInterfaceImplement<T>> partitions, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
             ImList<CalcPropertyInterfaceImplement<T>> propList = ListFact.<CalcPropertyInterfaceImplement<T>>singleton(property.getImplement());
-            return createOProp(sID, caption, partitionType, property.interfaces, propList, partitions, orders, Settings.instance.isDefaultOrdersNotNull(), includeLast);
+            return createOProp(sID, caption, partitionType, property.interfaces, propList, partitions, orders, Settings.get().isDefaultOrdersNotNull(), includeLast);
         }
 
         throw new UnsupportedOperationException();
@@ -548,7 +548,7 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, CalcProperty<T> restriction, boolean over) {
-        return createUGProp(genID(), "sys", restriction.interfaces, group, orders, Settings.instance.isDefaultOrdersNotNull(), restriction.getImplement(), over);
+        return createUGProp(genID(), "sys", restriction.interfaces, group, orders, Settings.get().isDefaultOrdersNotNull(), restriction.getImplement(), over);
     }
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(String sID, String caption, ImSet<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, CalcPropertyInterfaceImplement<T> restriction, boolean over) {
         ImSet<CalcPropertyInterfaceImplement<T>> partitions = group.mapping.values().toSet();

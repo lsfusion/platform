@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.base.BaseUtils;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
@@ -15,8 +14,6 @@ import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
-
-import java.util.Set;
 
 public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcProperty<C>> {
 
@@ -48,7 +45,7 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
     @Override
     public ImSet<OldProperty> getOldDepends() {
         ImSet<OldProperty> result = super.getOldDepends();
-        if(Settings.instance.isUseEventValuePrevHeuristic())
+        if(Settings.get().isUseEventValuePrevHeuristic())
             return result;
         return result.merge(writeFrom.mapOldDepends());
     }

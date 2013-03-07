@@ -3,7 +3,7 @@ package platform.client.form.dispatch;
 import com.google.common.base.Throwables;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.client.*;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientModalForm;
@@ -16,7 +16,6 @@ import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.KeyStrokes;
 import platform.interop.ModalityType;
 import platform.interop.action.*;
-import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.ServerResponse;
 
@@ -215,7 +214,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(ExportFileClientAction action) {
         try {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(OSUtils.loadCurrentDirectory());
+            fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
             boolean singleFile;
             if (action.files.size() > 1) {
                 singleFile = false;
@@ -230,7 +229,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 for (String file : action.files.keySet()) {
                     IOUtils.putFileBytes(new File(singleFile ? path : path + "\\" + file), action.files.get(file));
                 }
-                OSUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
+                SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

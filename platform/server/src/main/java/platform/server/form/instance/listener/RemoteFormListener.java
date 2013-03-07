@@ -1,7 +1,7 @@
 package platform.server.form.instance.listener;
 
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.form.instance.remote.RemoteForm;
+import platform.server.remote.RemoteForm;
 
 public interface RemoteFormListener {
     void formCreated(RemoteForm form);

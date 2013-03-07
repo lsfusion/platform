@@ -8,7 +8,6 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderSet;
 import platform.base.identity.IdentityObject;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
@@ -258,11 +257,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, getColumnGroupObjects().toJavaList());
-        pool.serializeObject(outStream, propertyCaption);
-        pool.serializeObject(outStream, propertyReadOnly);
-        pool.serializeObject(outStream, propertyFooter);
-        pool.serializeObject(outStream, propertyBackground);
-        pool.serializeObject(outStream, propertyForeground);
+
+        //не сериализуем эти property*, если они были созданы без привязки к BL, через DerivedProperty.*
+        //потому что иначе не сможем десериализовать для preview
+        serializeIfDeserializable(propertyCaption, pool, outStream, serializationType);
+        serializeIfDeserializable(propertyReadOnly, pool, outStream, serializationType);
+        serializeIfDeserializable(propertyFooter, pool, outStream, serializationType);
+        serializeIfDeserializable(propertyBackground, pool, outStream, serializationType);
+        serializeIfDeserializable(propertyForeground, pool, outStream, serializationType);
 
         outStream.writeBoolean(shouldBeLast);
 
@@ -283,6 +285,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 //                pool.writeString(outStream, e.getValue());
 //            }
 //        }
+    }
+
+    private void serializeIfDeserializable(CalcPropertyObjectEntity<?> propertyObject, ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        if (propertyObject != null && pool.context.BL.getProperty(propertyObject.property.getSID()) == null) {
+            propertyObject = null;
+        }
+        pool.serializeObject(outStream, propertyObject, serializationType);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

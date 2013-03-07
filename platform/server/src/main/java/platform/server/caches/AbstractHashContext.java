@@ -26,7 +26,7 @@ public abstract class AbstractHashContext<H extends HashObject> extends TwinImmu
             if(hash.isGlobal()) {
 //                if(hash == HashCodeValues.instance || (hash instanceof HashContext && ((HashContext)hash).keys== HashCodeKeys.instance && ((HashContext)hash).values==HashCodeValues.instance))
 
-                if(!Settings.instance.isCacheInnerHashes()) {
+                if(!Settings.get().isCacheInnerHashes()) {
                     // сделал isGlobal только HashCode*, так как getKeys, getValues и фильтрация достаточно много жрут
                     assert hash == HashCodeValues.instance || (hash instanceof HashContext && ((HashContext)hash).keys== HashCodeKeys.instance && ((HashContext)hash).values==HashCodeValues.instance);
                     if(hashes==null)

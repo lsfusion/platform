@@ -6,21 +6,21 @@
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="ALL"/>
-            <param name="LevelMax" value="INFO"/>
-        </filter>
+        <!--<filter class="org.apache.log4j.varia.LevelRangeFilter">-->
+            <!--<param name="LevelMin" value="ALL"/>-->
+            <!--<param name="LevelMax" value="INFO"/>-->
+        <!--</filter>-->
     </appender>
 
-    <appender name="stderr" class="org.apache.log4j.ConsoleAppender">
-        <param name="target" value="System.err"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
-        </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="WARN"/>
-        </filter>
-    </appender>
+    <!--<appender name="stderr" class="org.apache.log4j.ConsoleAppender">-->
+        <!--<param name="target" value="System.err"/>-->
+        <!--<layout class="org.apache.log4j.PatternLayout">-->
+            <!--<param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>-->
+        <!--</layout>-->
+        <!--<filter class="org.apache.log4j.varia.LevelRangeFilter">-->
+            <!--<param name="LevelMin" value="WARN"/>-->
+        <!--</filter>-->
+    <!--</appender>-->
 
     <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -185,7 +185,7 @@
         <appender-ref ref="serverlog"/>
     </category>
 
-    <category name="platform.server.form.instance.remote" additivity="false">
+    <category name="platform.server.remote" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="remotelog"/>
     </category>
@@ -208,7 +208,7 @@
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
-        <appender-ref ref="stderr"/>
+        <!--<appender-ref ref="stderr"/>-->
         <appender-ref ref="serverlog"/>
         <appender-ref ref="errorlog"/>
     </root>

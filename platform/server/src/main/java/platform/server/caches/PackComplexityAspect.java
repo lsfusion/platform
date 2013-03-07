@@ -25,7 +25,7 @@ public class PackComplexityAspect {
     @Around("execution(@platform.server.caches.PackComplex * *.*(..))")
     public Object callPackComplexMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         PackInterface result = (PackInterface) thisJoinPoint.proceed();
-        if(Settings.instance.getPackOnCacheComplexity() > 0 && result.getComplexity(false) > Settings.instance.getPackOnCacheComplexity())
+        if(Settings.get().getPackOnCacheComplexity() > 0 && result.getComplexity(false) > Settings.get().getPackOnCacheComplexity())
             return result.pack();
         return result;
     }

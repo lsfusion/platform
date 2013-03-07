@@ -23,13 +23,13 @@ import platform.interop.form.FormUserPreferences;
 import platform.interop.form.GroupObjectUserPreferences;
 import platform.interop.form.ServerResponse;
 import platform.interop.form.layout.ContainerType;
-import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
@@ -55,6 +55,7 @@ import platform.server.form.view.ComponentView;
 import platform.server.form.view.ContainerView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.LogicsInstance;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
@@ -84,6 +85,8 @@ import static platform.server.logics.ServerResourceBundle.getString;
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
 public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment {
+
+    public final LogicsInstance logicsInstance;
 
     public final T BL;
 
@@ -118,11 +121,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean interactive = true; // важно для assertion'а в endApply
 
     // для импорта конструктор, объекты пустые
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, DataObject>EMPTY(), false, true, false, false, false, null);
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection) throws SQLException {
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, DataObject>EMPTY(), false, true, false, false, false, null);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
         this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -130,7 +133,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session = session;
         this.entity = entity;
-        this.BL = BL;
+        this.logicsInstance = logicsInstance;
+        this.BL = (T) logicsInstance.getBusinessLogics();
         this.securityPolicy = securityPolicy;
 
         instanceFactory = new InstanceFactory(computer, connection);
@@ -637,14 +641,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException {
         if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null) {
-            Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
+            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
 
         if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
             PropertyDrawEntity propertyDraw = property.getEntity();
             if (!pushConfirm && propertyDraw.askConfirm) {
-                int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion",
+                int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
                         entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
                 if (result != JOptionPane.YES_OPTION) {
                     return;
@@ -656,7 +660,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (editAction != null) {
             editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
         } else {
-            Context.context.get().delayUserInteraction(EditNotPerformedClientAction.instance);
+            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
         }
     }
 
@@ -889,7 +893,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        Context.context.get().delayUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
+        ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("form.instance.changes.saved"), false));
         return true;
     }
 
@@ -948,7 +952,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, DataObject> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive) throws SQLException {
-        return new FormInstance<T>(form, BL,
+        return new FormInstance<T>(form, logicsInstance,
                 sessionScope.isNewSession() ? session.createSession() : session,
                 securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects, isModal, sessionScope.isManageSession(),
                 checkOnOK, showDrop, interactive, null);
@@ -998,7 +1002,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Set<PropertyReaderInstance> pendingHidden = SetFact.mAddRemoveSet();
 
     private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
-        if (Settings.instance.isDisableTabbedOptimization())
+        if (Settings.get().isDisableTabbedOptimization())
             return false;
 
         ComponentView container = entity.getDrawTabContainer(property.entity, grid);
@@ -1006,7 +1010,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private boolean isHidden(GroupObjectInstance group) {
-        if (Settings.instance.isDisableTabbedOptimization())
+        if (Settings.get().isDisableTabbedOptimization())
             return false;
 
         FormEntity.ComponentSet containers = entity.getDrawTabContainers(group.entity);
@@ -1378,7 +1382,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public DialogInstance<T> createObjectDialog(CustomClass objectClass) throws SQLException {
         ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
-        return new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer, instanceFactory.connection);
+        return new DialogInstance<T>(classForm.form, logicsInstance, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, null, instanceFactory.computer, instanceFactory.connection);
     }
 
     public DialogInstance<T> createObjectEditorDialog(CalcPropertyValueImplement propertyValues) throws SQLException {
@@ -1392,7 +1396,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         return currentObject == null
                 ? null
-                : new DialogInstance<T>(classForm.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer, instanceFactory.connection);
+                : new DialogInstance<T>(classForm.form, logicsInstance, session, securityPolicy, getFocusListener(), getClassListener(), classForm.object, currentObject, instanceFactory.computer, instanceFactory.connection);
     }
 
     public DialogInstance<T> createChangeEditorDialog(CalcPropertyValueImplement propertyValues, GroupObjectInstance groupObject, CalcProperty filterProperty) throws SQLException {
@@ -1402,7 +1406,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImSet<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, instanceFactory.connection, additionalFilters, pullProps.result);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, logicsInstance, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, propertyValues.read(this), instanceFactory.computer, instanceFactory.connection, additionalFilters, pullProps.result);
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -1419,7 +1423,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImSet<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
 
         ObjectEntity dialogObject = formEntity.object;
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, instanceFactory.connection, additionalFilters, SetFact.<PullChangeProperty>EMPTY());
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity.form, logicsInstance, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, dialogValue, instanceFactory.computer, instanceFactory.connection, additionalFilters, SetFact.<PullChangeProperty>EMPTY());
 
         if (filterProperty != null) {
             dialog.initFilterPropertyDraw = formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -1525,7 +1529,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formCancel() throws SQLException {
-        int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
+        int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
         if (result == JOptionPane.YES_OPTION) {
             cancel();
         }
@@ -1533,21 +1537,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formClose() throws SQLException {
         if (manageSession && session.hasStoredChanges()) {
-            int result = (Integer) Context.context.get().requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
+            int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;
             }
         }
 
         fireOnClose();
-        Context.context.get().delayUserInteraction(new HideFormClientAction());
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
         close();
     }
 
     public void formDrop() throws SQLException {
         fireOnDrop();
 
-        Context.context.get().delayUserInteraction(new HideFormClientAction());
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
         close();
     }
 
@@ -1564,7 +1568,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        Context.context.get().delayUserInteraction(new HideFormClientAction());
+        ThreadLocalContext.delayUserInteraction(new HideFormClientAction());
         close();
     }
 

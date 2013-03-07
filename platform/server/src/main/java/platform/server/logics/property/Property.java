@@ -1,14 +1,12 @@
 package platform.server.logics.property;
 
 import platform.base.ListPermutations;
-import platform.base.NotFunctionSet;
 import platform.base.Pair;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.LongMutable;
-import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
@@ -391,9 +389,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             propertyView.echoSymbols = echoSymbols;
 
         if(propertyView.getType() instanceof LogicalClass)
-            propertyView.editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
+            propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
         if(propertyView.getType() instanceof ActionClass)
-            propertyView.editOnSingleClick = Settings.instance.getEditActionClassOnSingleClick();
+            propertyView.editOnSingleClick = Settings.get().getEditActionClassOnSingleClick();
     }
 
     public boolean hasChild(Property prop) {

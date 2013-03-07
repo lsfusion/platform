@@ -41,7 +41,7 @@ public class SQLTemporaryPool {
                     session.truncate(matchTable); // удаляем старые данные
                     Integer actual = data.fill(matchTable); // заполняем
                     assert (actual!=null)==(count==null);
-                    if(Settings.instance.isAutoAnalyzeTempStats())
+                    if(Settings.get().isAutoAnalyzeTempStats())
                         session.analyzeSessionTable(matchTable);
                     else {
                         Object actualStatistics = getDBStatistics(actual);
@@ -64,7 +64,7 @@ public class SQLTemporaryPool {
             assert (actual!=null)==(count==null);
             session.analyzeSessionTable(table); // выполняем ее analyze, чтобы сказать постгре какие там будут записи
             if(count==null) { // обновляем реальной статистикой
-                if(!Settings.instance.isAutoAnalyzeTempStats())
+                if(!Settings.get().isAutoAnalyzeTempStats())
                     stats.put(table, getDBStatistics(actual));
                 resultActual.set(actual);
             }
@@ -79,7 +79,7 @@ public class SQLTemporaryPool {
 
     public void removeTable(String table) {
         synchronized (tables) {
-            if(!Settings.instance.isAutoAnalyzeTempStats())
+            if(!Settings.get().isAutoAnalyzeTempStats())
                 stats.remove(table);
             FieldStruct fieldStruct = structs.remove(table);
             Set<String> structTables = tables.get(fieldStruct);
@@ -100,7 +100,7 @@ public class SQLTemporaryPool {
             this.keys = keys;
             this.properties = properties;
 
-            if(Settings.instance.isAutoAnalyzeTempStats() || count==null)
+            if(Settings.get().isAutoAnalyzeTempStats() || count==null)
                 this.statistics = null;
             else
                 this.statistics = getDBStatistics(count);

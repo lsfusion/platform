@@ -37,7 +37,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     @Override
     protected boolean noIncrement() {
-        return super.noIncrement() || Settings.instance.isNoIncrementMaxGroupProperty();
+        return super.noIncrement() || Settings.get().isNoIncrementMaxGroupProperty();
     }
 
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {

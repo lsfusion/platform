@@ -11,13 +11,13 @@ import platform.base.IOUtils;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.interop.action.ExportFileClientAction;
-import platform.server.auth.PolicyManager;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.SecurityManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 
 import java.io.File;
@@ -26,20 +26,23 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class InvoiceExportDbfActionProperty extends UserActionProperty {
-    private RomanBusinessLogics BL;
+    private BaseLogicsModule baseLM;
+    private RomanLogicsModule RomanLM;
+
     private DBFExporter.CustomDBF dbfInvoice;
     private File tempDbfInvoice;
 
-    public InvoiceExportDbfActionProperty(String sID, String caption, RomanBusinessLogics BL, ValueClass importer, ValueClass freight, ValueClass invoiceType) {
+    public InvoiceExportDbfActionProperty(String sID, String caption, ValueClass importer, ValueClass freight, ValueClass invoiceType, RomanLogicsModule RomanLM, BaseLogicsModule baseLM) {
         super(sID, caption, new ValueClass[]{importer, freight, invoiceType});
-        this.BL = BL;
+        this.baseLM = baseLM;
+        this.RomanLM = RomanLM;
     }
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
-            exporter.extractData();
+            exporter.extractData(context);
             context.delayUserInterfaction(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
             tempDbfInvoice.delete();
         } catch (Exception e) {
@@ -94,8 +97,8 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
                     brand, gender, theme, season, categ, quant, price, sum, rrp, /*contractIn, dateConIn, */priceIn, sumIn, imp, contract, dateCon});
         }
 
-        public void extractData() throws SQLException, IOException, xBaseJException {
-            getPropertyDraws();
+        public void extractData(ExecutionContext<ClassPropertyInterface> context) throws SQLException, IOException, xBaseJException {
+            getPropertyDraws(context);
             for (FormRow row : data.rows) {
                 writeData(row);
             }
@@ -103,48 +106,48 @@ public class InvoiceExportDbfActionProperty extends UserActionProperty {
             session.close();
         }
 
-        public void getPropertyDraws() throws SQLException {
-            session = BL.createSession();
+        public void getPropertyDraws(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+            session = context.createSession();
             map = new HashMap<Field, PropertyDrawInstance>();
-            FormInstance formInstance = new FormInstance(BL.RomanLM.invoiceExportForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.LM.computer), null);
-            ObjectInstance objFreight = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objFreight);
-            ObjectInstance objImporter = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objImporter);
-            ObjectInstance objTypeInvoice = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objTypeInvoice);
-            ObjectInstance objFreightBox = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objFreightBox);
-            ObjectInstance objSku = formInstance.instanceFactory.getInstance(BL.RomanLM.invoiceExportForm.objSku);
+            FormInstance formInstance = new FormInstance(RomanLM.invoiceExportForm, context.getLogicsInstance(), session, SecurityManager.serverSecurityPolicy, null, null, context.getDbManager().getServerComputerObject(), null);
+            ObjectInstance objFreight = formInstance.instanceFactory.getInstance(RomanLM.invoiceExportForm.objFreight);
+            ObjectInstance objImporter = formInstance.instanceFactory.getInstance(RomanLM.invoiceExportForm.objImporter);
+            ObjectInstance objTypeInvoice = formInstance.instanceFactory.getInstance(RomanLM.invoiceExportForm.objTypeInvoice);
+            ObjectInstance objFreightBox = formInstance.instanceFactory.getInstance(RomanLM.invoiceExportForm.objFreightBox);
+            ObjectInstance objSku = formInstance.instanceFactory.getInstance(RomanLM.invoiceExportForm.objSku);
             objFreight.changeValue(session, freightObject);
             objImporter.changeValue(session, importerObject);
             objTypeInvoice.changeValue(session, invoiceTypeObject);
 
-            map.put(invN, formInstance.getPropertyDraw(BL.RomanLM.sidImporterFreightTypeInvoice));
-            map.put(date, formInstance.getPropertyDraw(BL.RomanLM.dateImporterFreightTypeInvoice));
-            map.put(boxN, formInstance.getPropertyDraw(BL.RomanLM.barcode, objFreightBox));
-            map.put(art, formInstance.getPropertyDraw(BL.RomanLM.sidArticleSku));
-            map.put(name, formInstance.getPropertyDraw(BL.RomanLM.originalNameArticleSku));
-            map.put(color, formInstance.getPropertyDraw(BL.RomanLM.sidColorSupplierItem));
-            map.put(size, formInstance.getPropertyDraw(BL.RomanLM.sidSizeSupplierItem));
-            map.put(commonSize, formInstance.getPropertyDraw(BL.RomanLM.nameCommonSizeSku));
-            map.put(comp, formInstance.getPropertyDraw(BL.RomanLM.mainCompositionFreightSku));
+            map.put(invN, formInstance.getPropertyDraw(RomanLM.sidImporterFreightTypeInvoice));
+            map.put(date, formInstance.getPropertyDraw(RomanLM.dateImporterFreightTypeInvoice));
+            map.put(boxN, formInstance.getPropertyDraw(RomanLM.barcode, objFreightBox));
+            map.put(art, formInstance.getPropertyDraw(RomanLM.sidArticleSku));
+            map.put(name, formInstance.getPropertyDraw(RomanLM.originalNameArticleSku));
+            map.put(color, formInstance.getPropertyDraw(RomanLM.sidColorSupplierItem));
+            map.put(size, formInstance.getPropertyDraw(RomanLM.sidSizeSupplierItem));
+            map.put(commonSize, formInstance.getPropertyDraw(RomanLM.nameCommonSizeSku));
+            map.put(comp, formInstance.getPropertyDraw(RomanLM.mainCompositionFreightSku));
 //            map.put(countOrig, formInstance.getPropertyDraw());
-            map.put(countOrig, formInstance.getPropertyDraw(BL.RomanLM.nameCountryBrandSupplierSku));
-            map.put(countProd, formInstance.getPropertyDraw(BL.RomanLM.nameCountryOfOriginFreightSku));
-            map.put(barcode, formInstance.getPropertyDraw(BL.RomanLM.barcode, objSku));
-            map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
-            map.put(gender, formInstance.getPropertyDraw(BL.RomanLM.sidGenderArticleSku));
-            map.put(theme, formInstance.getPropertyDraw(BL.RomanLM.nameThemeSupplierArticleSku));
-            map.put(season, formInstance.getPropertyDraw(BL.RomanLM.nameSeasonYearArticleSku));
-            map.put(categ, formInstance.getPropertyDraw(BL.RomanLM.nameCategoryArticleSku));
-            map.put(quant, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterStockSku));
-            map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));
-            map.put(sum, formInstance.getPropertyDraw(BL.RomanLM.sumInvoiceImporterStockSku));
-            map.put(rrp, formInstance.getPropertyDraw(BL.RomanLM.RRPInImporterFreightSku));
+            map.put(countOrig, formInstance.getPropertyDraw(RomanLM.nameCountryBrandSupplierSku));
+            map.put(countProd, formInstance.getPropertyDraw(RomanLM.nameCountryOfOriginFreightSku));
+            map.put(barcode, formInstance.getPropertyDraw(RomanLM.barcode, objSku));
+            map.put(brand, formInstance.getPropertyDraw(RomanLM.nameBrandSupplierArticleSku));
+            map.put(gender, formInstance.getPropertyDraw(RomanLM.sidGenderArticleSku));
+            map.put(theme, formInstance.getPropertyDraw(RomanLM.nameThemeSupplierArticleSku));
+            map.put(season, formInstance.getPropertyDraw(RomanLM.nameSeasonYearArticleSku));
+            map.put(categ, formInstance.getPropertyDraw(RomanLM.nameCategoryArticleSku));
+            map.put(quant, formInstance.getPropertyDraw(RomanLM.quantityImporterStockSku));
+            map.put(price, formInstance.getPropertyDraw(RomanLM.priceInvoiceImporterFreightSku));
+            map.put(sum, formInstance.getPropertyDraw(RomanLM.sumInvoiceImporterStockSku));
+            map.put(rrp, formInstance.getPropertyDraw(RomanLM.RRPInImporterFreightSku));
             //map.put(contractIn, formInstance.getPropertyDraw(BL.RomanLM.sidContractInProxyImporterStockSku));
             //map.put(dateConIn, formInstance.getPropertyDraw(BL.RomanLM.dateContractInProxyImporterStockSku));
-            map.put(priceIn, formInstance.getPropertyDraw(BL.RomanLM.priceInImporterFreightSku));
-            map.put(sumIn, formInstance.getPropertyDraw(BL.RomanLM.sumInImporterStockSku));
-            map.put(imp, formInstance.getPropertyDraw(BL.LM.name, objImporter.groupTo));
-            map.put(contract, formInstance.getPropertyDraw(BL.RomanLM.sidContractImporterFreight));
-            map.put(dateCon, formInstance.getPropertyDraw(BL.RomanLM.dateContractImporterFreight));
+            map.put(priceIn, formInstance.getPropertyDraw(RomanLM.priceInImporterFreightSku));
+            map.put(sumIn, formInstance.getPropertyDraw(RomanLM.sumInImporterStockSku));
+            map.put(imp, formInstance.getPropertyDraw(baseLM.name, objImporter.groupTo));
+            map.put(contract, formInstance.getPropertyDraw(RomanLM.sidContractImporterFreight));
+            map.put(dateCon, formInstance.getPropertyDraw(RomanLM.dateContractImporterFreight));
 
             data = formInstance.getFormData(map.values(), BaseUtils.toSet(objFreightBox.groupTo));
         }
