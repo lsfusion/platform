@@ -35,7 +35,7 @@ public final class LoginAction {
     final static int CANCELED = 6;
 
     public String serverHost;
-    private String serverPort;
+    public String serverPort;
     private String serverDB;
     private String user;
     private String password;

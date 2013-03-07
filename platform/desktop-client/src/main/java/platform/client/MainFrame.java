@@ -112,8 +112,9 @@ public abstract class MainFrame extends JFrame {
     }
 
     public void updateUser() throws IOException {
+        LoginAction loginAction = LoginAction.getInstance();
         DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle(Main.getMainTitle() + " - " + inputStream.readUTF());
+        setTitle(Main.getMainTitle() + " - " + inputStream.readUTF() + " (" + loginAction.serverHost + ":" + loginAction.serverPort + ")");
     }
 
     public abstract void runReport(String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
