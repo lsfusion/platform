@@ -300,7 +300,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     packAmount = null;
-                    Pattern rPack = Pattern.compile(".*\\/(\\d+)\\/?");
+                    Pattern rPack = Pattern.compile(".*(?:\\\\|\\/)(\\d+)(?:\\\\|\\/)?");
                     Matcher mPack = rPack.matcher(name);
                     if (mPack.matches()) {
                         Double value = Double.parseDouble(mPack.group(1));
