@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import platform.base.OSUtils;
+import platform.base.SystemUtils;
 import platform.base.ReflectionUtils;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -41,7 +41,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, InitializingBea
 
                     try {
                         RemoteLogicsInterface bl = blProvider.getLogics();
-                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(OSUtils.getLocalHostName()), ((WebAuthenticationDetails)auth.getDetails()).getRemoteAddress(), true);
+                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails)auth.getDetails()).getRemoteAddress(), true);
                         if (unsynced == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
                         }
