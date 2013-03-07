@@ -19,3 +19,7 @@ WHEN CHANGED(priceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(certificateTe
 //EXTEND FORM userInvoice
 //    PROPERTIES(d) descriptionNecessaryBatchUserInvoiceDetail
 //    ;
+
+EXTEND FORM dialogBatch
+    PROPERTIES (bt) READONLY certificateTextBatch
+;
