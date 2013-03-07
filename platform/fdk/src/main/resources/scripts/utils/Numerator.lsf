@@ -1,6 +1,6 @@
 MODULE Numerator;
 
-REQUIRE System, DefaultData;
+REQUIRE System, MasterData, DefaultData;
 
 // ------------------------------------------- Нумераторы ----------------------------------------------- //
 

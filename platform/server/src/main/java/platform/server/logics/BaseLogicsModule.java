@@ -813,9 +813,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // Навигаторы
     public NavigatorElement<T> root;
 
-    public NavigatorElement<T> masterData;
-    public NavigatorElement<T> regionalData;
-
     public NavigatorElement<T> administration;
     public NavigatorElement<T> account;
 
@@ -861,12 +858,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Навигатор
         root = addNavigatorElement("root", getString("logics.forms"), null);
         root.window = windows.root;
-
-        masterData = addNavigatorElement(root, "masterData", getString("logics.administration.masterData"));
-        masterData.window = windows.toolbar;
-        masterData.setImage("/images/catalog.png");
-
-        regionalData = addNavigatorElement(masterData, "regionalData", getString("logics.administration.regionalData"));
 
         administration = addNavigatorElement(root, "administration", getString("logics.administration"));
         administration.window = windows.toolbar;

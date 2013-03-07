@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE System, Security, Email, Hierarchy, Utils;
+REQUIRE System, MasterData, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;

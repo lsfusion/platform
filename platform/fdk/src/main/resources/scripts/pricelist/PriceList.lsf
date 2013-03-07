@@ -957,7 +957,7 @@ EXTEND DESIGN legalEntity{
 
 
 NAVIGATOR {
-    NEW priceListNavigator 'Цены' BEFORE masterData TO toolbar IMAGE '/images/label.png' {
+    NEW priceListNavigator 'Цены' BEFORE administration TO toolbar IMAGE '/images/label.png' {
         NEW priceListDocuments 'Документы' {
             ADD userPriceLists;
         }
@@ -1350,4 +1350,39 @@ END
 
 META defineDocumentDetailInvoicePriceVATOnChange (object)
     @defineDocumentDetailInvoicePriceVATOnChangeCustom(object###Detail);
+END
+
+// ----------------------------------------- Операции --------------------------------------- //
+
+META defineOperationPriceListType(prefix)
+
+    TABLE priceListType###prefix###operation(priceListType, prefix###operation);
+    isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
+
+    EXTEND FORM prefix###operation
+        OBJECTS pt = priceListType
+        PROPERTIES(pt, o) isPriceListType###prefix###operation
+        PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
+        FILTERGROUP filters
+            FILTER 'Показывать отмеченные' 'F9' isPriceListType###prefix###operation(pt, o)
+    ;
+
+    EXTEND DESIGN prefix###operation {
+        tabContainer {
+            ADD pt.box;
+        }
+    }
+
+END
+
+META defineDocumentOperationPriceListType(prefix, object)
+    CONSTRAINT prefix###operation###object(object) AND priceListType###object(object)
+               AND NOT isPriceListType###prefix###operation(priceListType###object(object), prefix###operation###object(object))
+        CHECKED BY priceListType###object
+        MESSAGE 'Вид цены для документа должен совпадать с отмеченными в операции';
+
+    CONSTRAINT prefix###operation###object##Detail(detail)
+               AND NOT isPriceListType###prefix###operation(priceListType###object##Detail(detail), prefix###operation###object##Detail(detail))
+        CHECKED BY priceListType###object##Detail
+        MESSAGE 'Вид цены для строки документа должен совпадать с отмеченными в операции';
 END

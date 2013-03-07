@@ -594,7 +594,7 @@ EXTEND DESIGN defaultData {
 }
 
 NAVIGATOR {
-    NEW machineryNavigator 'Оборудование' BEFORE masterData TO toolbar IMAGE '/images/cogwheel.png' {
+    NEW machineryNavigator 'Оборудование' BEFORE administration TO toolbar IMAGE '/images/cogwheel.png' {
         NEW machineryExport 'Загрузка в оборудование' {
             ADD machineryPriceTransactions;
         }

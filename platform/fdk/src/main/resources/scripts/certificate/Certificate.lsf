@@ -155,7 +155,7 @@ META deriveDocumentCertificate(prop, document, stockProp, caption, prefix)
 END
 
 NAVIGATOR {
-    NEW customsNavigator 'ВЭД' BEFORE masterData TO toolbar IMAGE '/images/cop.png' {
+    NEW customsNavigator 'ВЭД' BEFORE administration TO toolbar IMAGE '/images/cop.png' {
         NEW customsDocuments 'Документы';
         NEW customsMasterData 'Справочники';
     }

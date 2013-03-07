@@ -1,6 +1,6 @@
 MODULE Stock;
 
-REQUIRE System, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, Finance;
+REQUIRE System, MasterData, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, Finance;
 
 // ----------------------------------- Склады ------------------------------------------ //
 

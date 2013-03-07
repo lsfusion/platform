@@ -1,0 +1,9 @@
+MODULE MasterData;
+
+REQUIRE System;
+
+NAVIGATOR {
+    NEW masterData 'Справочники' BEFORE administration TO toolbar IMAGE '/images/catalog.png' {
+        NEW regionalData 'Региональные параметры';
+    }
+}

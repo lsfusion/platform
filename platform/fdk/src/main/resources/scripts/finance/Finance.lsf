@@ -3,7 +3,7 @@ MODULE Finance;
 REQUIRE System;
 
 NAVIGATOR {
-    NEW financeNavigator 'Финансы' BEFORE masterData TO toolbar IMAGE '/images/money.png' {
+    NEW financeNavigator 'Финансы' BEFORE administration TO toolbar IMAGE '/images/money.png' {
         NEW financeMasterData 'Справочники';
     }
 }

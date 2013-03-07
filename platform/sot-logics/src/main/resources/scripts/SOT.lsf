@@ -9,7 +9,8 @@ REQUIRE System,
         SalePurchaseInvoice,
         Shipment,
         Stock,
-        Warehouse;
+        Warehouse,
+        MasterData;
 
 CLASS sotUOM 'Единица измерений SOT' : externalizable;
 TABLE sotUOM(sotUOM);

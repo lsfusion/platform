@@ -1,6 +1,6 @@
 MODULE Country;
 
-REQUIRE System, Utils, DefaultData, I18n, Currency;
+REQUIRE System, MasterData, Utils, DefaultData, I18n, Currency;
 
 CLASS country 'Страна' : named, multiLanguageNamed;
 
