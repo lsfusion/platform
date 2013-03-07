@@ -436,7 +436,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         if (!syntaxErrors.isEmpty()) {
             if (initException != null) {
-                syntaxErrors = syntaxErrors + "\n" + initException.getMessage();
+                syntaxErrors = syntaxErrors + initException.getMessage();
             }
             throw new ScriptParsingException(syntaxErrors);
         } else if (initException != null) {
