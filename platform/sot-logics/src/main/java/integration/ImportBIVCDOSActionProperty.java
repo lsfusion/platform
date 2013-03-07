@@ -348,10 +348,11 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return itemsList;
     }
 
-    private boolean isCorrectUserInvoiceDetail(Double quantity, Date startDate, Date date) throws ParseException {
+    private boolean isCorrectUserInvoiceDetail(Double quantity, Date startDate, Date date, String groupID) throws ParseException {
         Boolean correctDate = startDate != null && (date != null && startDate.before(date));
         Boolean correctQuantity = quantity != null && quantity != 0;
-        return correctDate || correctQuantity;
+        Boolean correctGroupID = groupID == null || !groupID.startsWith("929");
+        return (correctDate || correctQuantity) || correctGroupID;
     }
 
     private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Date startDate, Integer numberOfItems,
@@ -428,7 +429,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if (isCorrectUserInvoiceDetail(quantity, startDate, date)) {
+                    if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID)) {
                         userInvoiceDetailsList.add(new UserInvoiceDetail(warehouse + "/" + dateField,
                                 "AA", null, true, warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
                                 quantity, "70020", warehouse, "S70020", price, chargePrice, null, null,/* numberCompliance,*/
@@ -491,7 +492,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
                 }
-                if ((smol != null && !warehouses.contains(smol)) && (isCorrectUserInvoiceDetail(quantity, startDate, date)))
+                if ((smol != null && !warehouses.contains(smol)) && (isCorrectUserInvoiceDetail(quantity, startDate, date, null)))
                     warehouses.add(smol);
             }
         }
@@ -891,7 +892,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
-                    if (isCorrectUserInvoiceDetail(quantity, startDate, date))
+                    if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID))
                         SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
                                 pnt13 + pnt48));
                 }
