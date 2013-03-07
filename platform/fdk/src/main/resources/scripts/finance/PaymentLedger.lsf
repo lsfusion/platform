@@ -8,6 +8,9 @@ CLASS ABSTRACT account 'Счет';
 TABLE account (account);
 nameAccount 'Имя' = ABSTRACT STRING[30] (account) PERSISTENT;
 
+currencyAccount = DATA currency (account);
+nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
+
 // ---------------- Регистр денег ------------- //
 
 CLASS ABSTRACT paymentLedger 'Движение денег';
@@ -27,6 +30,20 @@ nameLegalEntityToPaymentLedger 'Организация (на)' = name(legalEntit
 accountToPaymentLedger = ABSTRACT account (paymentLedger) PERSISTENT;
 nameAccountToPaymentLedger 'Счет (на)' (ledger) = nameAccount(accountToPaymentLedger(ledger));
 
-sumPaymentLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
+sumFromPaymentLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
+sumToPaymentLedger 'Сумма к оплате' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
 
 descriptionPaymentLedger 'Описание' = ABSTRACT STRING[200] (paymentLedger) PERSISTENT;
+
+FORM paymentLedger 'Движение денег'
+    OBJECTS pl = paymentLedger
+    PROPERTIES(pl) READONLY descriptionPaymentLedger, dateTimePaymentLedger, nameLegalEntityFromPaymentLedger, nameAccountFromPaymentLedger,
+                            nameLegalEntityToPaymentLedger, nameAccountToPaymentLedger, sumFromPaymentLedger,
+                            sumToPaymentLedger
+;
+
+NAVIGATOR {
+    financeNavigator{
+        ADD paymentLedger;
+    }
+}

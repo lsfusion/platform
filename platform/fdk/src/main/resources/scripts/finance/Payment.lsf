@@ -1,0 +1,137 @@
+MODULE Payment;
+
+REQUIRE Document, LegalEntity, Numerator, PaymentLedger;
+
+CLASS payment 'Платеж' : numeratedObject, paymentLedger;
+CLASS paymentPosted 'Проведенный платеж' : payment, postedObject;
+TABLE payment(payment);
+
+@defineDocumentHeaderPosted(payment);
+@defineNumeratedObjectDefault(payment, 'Нумератор для платежей', 'ПЛ');
+
+datePayment 'Дата' (payment) = DATA DATE (payment);
+datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS payment);
+timePayment 'Время' (payment) = DATA TIME (payment);
+timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS payment);
+dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
+
+payerPayment(payment) = DATA legalEntity (payment);
+namePayerPayment 'Сторона Б(Плательщик)' (payment) = name(payerPayment(payment));
+beneficiaryPayment(payment) = DATA legalEntity (payment);
+nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
+
+notePayment 'Примечание' (payment) = DATA STRING[200] (payment);
+
+currencyPayment 'Валюта платежа' (payment) = DATA currency (payment);
+nameCurrencyPayment 'Валюта платежа' (payment) = name(currencyPayment(payment));
+
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+
+descriptionPayment 'Название документа' =
+    [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
+    seriesNumberObject(payment), datePayment(payment), nameBeneficiaryPayment(payment)) PERSISTENT;
+
+dateTimePaymentLedger(paymentLedger) += dateTimePayment(paymentLedger);
+legalEntityFromPaymentLedger(paymentLedger) += payerPayment(paymentLedger);
+legalEntityToPaymentLedger(paymentLedger) += beneficiaryPayment(paymentLedger);
+sumFromPaymentLedger(paymentLedger) += sumPayment(paymentLedger);
+descriptionPaymentLedger(paymentLedger) += descriptionPayment(paymentLedger);
+
+//-------------------------------------------- Форма платежей -------------------------------------------------------//
+
+backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) AND datePayment(payment) > (date AS DATE);
+
+partyA = DATA SESSION legalEntity();
+namePartyA 'Сторона А(поставщик)' = name(partyA());
+partyB = DATA SESSION legalEntity();
+namePartyB 'Сторона Б(покупатель)' = name(partyB());
+
+FORM payment 'Платеж'
+
+    OBJECTS p = payment FIXED PANEL
+    PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment,
+                  notePayment
+    PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
+    PROPERTIES(p) nameCurrencyPayment, sumPayment
+    EVENTS
+        ON OK EXEC prePostPayment(p)
+
+    EDIT payment OBJECT p
+;
+
+DESIGN payment FROM DEFAULT{
+
+    main{
+
+        NEW headerContainer{
+            caption = 'Шапка документа';
+            childConstraints = TO THE RIGHTBOTTOM;
+            ADD PROPERTY(objectClassName);
+            ADD PROPERTY(namePayerPayment);
+            ADD PROPERTY(nameNumeratorObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(datePayment);
+            ADD PROPERTY(timePayment);
+        }
+
+        NEW paramContainer {
+            caption = 'Параметры документа';
+            ADD PROPERTY(nameBeneficiaryPayment);
+            ADD PROPERTY(notePayment);
+        }
+
+        NEW sumContainer{
+            caption = 'Суммы документа';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(sumPayment);
+            ADD PROPERTY(nameCurrencyPayment);
+        }
+        POSITION sumContainer TO THE RIGHT headerContainer;
+        POSITION sumContainer TO THE RIGHT paramContainer;
+    }
+
+    PROPERTY(formOk) {
+        caption = 'Провести';
+    }
+
+    ADD functions.box;
+}
+
+FORM payments 'Платежи'
+
+    OBJECTS d = DATE FIXED PANEL
+    PROPERTIES(d) date = OBJVALUE
+
+    PROPERTIES() namePartyA, namePartyB
+
+    OBJECTS p = payment
+    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, dateTimePayment,
+                                                                  namePayerPayment, nameBeneficiaryPayment,
+                                                                  nameCurrencyPayment, sumPayment, notePayment
+
+    PROPERTIES(p) ADDFORM, EDITFORM, delete
+
+    FILTERS payerPayment(p) == partyB() OR (p IS payment AND NOT partyB()),
+            beneficiaryPayment(p) == partyA() OR (p IS payment AND NOT partyA())
+
+;
+
+DESIGN payments FROM DEFAULT{
+
+    NEW headerContainer {
+        childConstraints = TO THE RIGHT;
+        caption = 'Шапка';
+        ADD PROPERTY(date);
+        ADD PROPERTY(namePartyA);
+        ADD PROPERTY(namePartyB);
+    }
+    ADD p.box;
+    ADD functions.box;
+}
+
+NAVIGATOR {
+    financeNavigator{
+        ADD payments;
+    }
+}

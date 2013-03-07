@@ -1,0 +1,204 @@
+MODULE ContractPayment;
+
+REQUIRE ContractLedger, Payment;
+
+EXTEND CLASS payment : contractLedger, contractALedger, outContractLedger;
+
+contractPayment 'Контракт' (payment) = DATA contract (payment) AUTOSET;
+numberContractPayment 'Номер контракта' (payment) = numberContract(contractPayment(payment));
+
+payerPayment(payment) <- partyBContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
+beneficiaryPayment(payment) <- partyAContract(contractPayment(payment)) WHEN ASSIGNED (contractPayment(payment));
+
+typeExchangeContractPayment (payment) = DATA typeExchange (payment);
+nameTypeExchangeContractPayment 'Тип обмена' (payment) = name(typeExchangeContractPayment(payment));
+rateExchangeContractPayment 'Курс' (payment) = DATA NUMERIC[15,8] (payment);
+rateExchangeContractPayment (payment) <- UNION OVERRIDE 1.0 IF payment IS payment, rateTypeExchangeCurrencyDate(typeExchangeContractPayment(payment), currencyPayment(payment), datePayment(payment))
+    WHEN CHANGED (currencyPayment(payment)) OR
+         CHANGED (typeExchangeContractPayment(payment)) OR
+         CHANGED (datePayment(payment));
+
+sumContractPayment 'Сумма платежа(конверт.)' (payment) = toNumeric16p2(sumPayment(payment) / rateExchangeContractPayment(payment));
+
+CONSTRAINT currencyTypeExchange(typeExchangeContractPayment(payment)) != currencyContract(contractPayment(payment))
+    CHECKED BY typeExchangeContractPayment MESSAGE 'Валюта типа обмена должны соответствовать валюте договора+';
+
+isNotSameCurrencyPayment (payment) = currencyContract(contractPayment(payment)) != currencyPayment(payment);
+
+@implementContractLedger( ,payment, contract);
+sumContractLedger(contractLedger) += -sumContractPayment(contractLedger);
+
+@implementContractLedger(a ,payment, contract);
+sumContractALedger(contractALedger) += -sumContractPayment(contractALedger);
+
+@implementOutContractLedgerInContractLedgerPrefix(out, payment, contract);
+sumOutContractLedger(outContractLedger) += sumContractPayment(outContractLedger);
+
+sumToPaymentLedger(paymentLedger) += sumContractPayment(paymentLedger);
+
+//----------------------------------------------- Цвета --------------------------------------------------------------//
+
+backgroundSumContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,238,165) AND dateContractLedger(contractLedger) <= (date AS DATE) OR
+                                                                RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
+backgroundContractLedgerDate 'Цвет' (contractLedger, date) = RGB(255,160,160) AND dateContractLedger(contractLedger) > (date AS DATE);
+backgroundSumContract 'Цвет' (contract) = RGB(255,238,165) AND contract IS contract;
+backgroundSumContractALedgerDate 'Цвет' (contractALedger, date) = RGB(232,184,146) AND dateContractALedger(contractALedger) <= (date AS DATE) OR
+                                                              RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
+backgroundContractALedgerDate 'Цвет' (contractALedger, date) = RGB(255,160,160) AND dateContractALedger(contractALedger) > (date AS DATE);
+backgroundSumContractA 'Цвет' (contract) = RGB(232,184,146) AND contract IS contract;
+backgroundBonusSumInContractLedger 'Цвет' (inContractLedger) = RGB(213,249,185) AND inContractLedger IS inContractLedger;
+backgroundBonusSumContract 'Цвет' (contract) = RGB(213,249,185) AND contract IS contract;
+backgroundPaymentRequestDate 'Цвет' (paymentRequest, date) = RGB(255,160,160) AND datePaymentRequest(paymentRequest) > (date AS DATE);
+backgroundOutContractLedgerDate 'Цвет' (outContractLedger, date) = RGB(255,160,160) AND dateOutContractLedger(outContractLedger) > (date AS DATE);
+backgroundInContractLedgerDate 'Цвет' (inContractLedger, date) = RGB(255,160,160) AND dateInContractLedger(inContractLedger) > (date AS DATE);
+
+//-------------------------------------------- Форма платежей -------------------------------------------------------//
+
+EXTEND FORM payment
+    OBJECTS i = inContractLedger
+    PROPERTIES(p) numberContractPayment,
+                  costedInContractLedgerOutContractLedger,
+                  writeOutContractLedgerFIFO TODRAW i FORCE PANEL TOOLBAR,
+                  writeOutContractLedgerLIFO TODRAW i FORCE PANEL TOOLBAR,
+                  nameTypeExchangeContractPayment SHOWIF isNotSameCurrencyPayment(p),
+                  rateExchangeContractPayment SHOWIF isNotSameCurrencyPayment(p),
+                  sumContractPayment SHOWIF isNotSameCurrencyPayment(p)
+
+    PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger
+    PROPERTIES(p, i) costOutContractLedgerInContractLedger
+
+    FILTERS contractPayment(p) == contractInContractLedger(i)
+;
+
+EXTEND DESIGN payment{
+    main{
+        paramContainer {
+            ADD PROPERTY(numberContractPayment);
+        }
+
+        sumContainer{
+            ADD PROPERTY(costedInContractLedgerOutContractLedger);
+            ADD PROPERTY(nameTypeExchangeContractPayment);
+            ADD PROPERTY(rateExchangeContractPayment);
+            ADD PROPERTY(sumContractPayment);
+        }
+        ADD i.box BEFORE functions.box;
+    }
+
+    POSITION PROPERTY(writeOutContractLedgerLIFO) TO THE RIGHT PROPERTY(writeOutContractLedgerFIFO);
+}
+
+EXTEND FORM payments
+    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY numberContractPayment AFTER dateTimePayment,
+                                                                  nameTypeExchangeContractPayment, rateExchangeContractPayment,
+                                                                  sumContractPayment
+;
+
+//------------------------------------- Платежи по договору --------------------------------------------------------//
+
+payContractDate 'Оплатить по договору' = ACTION (contract, date) NEWSESSION {
+
+    ADDOBJ payment;
+    FOR pm == addedObject() DO {
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET contractPayment(pm) <- contract AS contract;
+        SET currencyPayment(pm) <- currencyContract(contract);
+        SET sumPayment(pm) <- debtSumContractDate(contract, date);
+        SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- debtInContractLedgerDate(inContractLedger, date)
+            WHERE contractPayment(pm) == contractInContractLedger(inContractLedger);
+        FORM payment OBJECTS p = pm MODAL;
+        IF formResult() == formResult.ok THEN {
+            EXEC apply();
+        }
+    }
+
+}
+
+//------------------------------------------- Платеж c учетом бонусов договора --------------------------------------------//
+
+payPaymentConditionInContractLedgerDate 'Оплатить c учетом бонусов договора' = [ACTION (inContractLedger, date) NEWSESSION {
+
+    ADDOBJ payment;
+    FOR pm == addedObject() DO {
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET contractPayment(pm) <- contractInContractLedger(inContractLedger);
+        SET currencyPayment(pm) <- currencyContract(contractInContractLedger(inContractLedger));
+        SET sumPayment(pm) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
+        SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date);
+        FORM payment OBJECTS p = pm MODAL;
+        IF formResult() == formResult.ok THEN {
+            ADDOBJ creditMemoOut;
+            FOR cm == addedObject() DO {
+                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
+                SET contractCreditMemoOut(cm) <- contractInContractLedger(inContractLedger);
+                SET sumCreditMemoOut(cm) <- bonusSumInContractLedger(inContractLedger, date);
+                SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date);
+                FORM creditMemo OBJECTS c = cm MODAL;
+                IF formResult() == formResult.ok THEN {
+                    EXEC apply();
+                }
+            }
+        }
+    }
+}](inContractLedger, date) AND bonusSumInContractLedger(inContractLedger, date) > 0.0;
+
+payPaymentConditionContractDate 'Оплатить c учетом бонусов договора' = [ACTION (contract, date) NEWSESSION {
+
+    ADDOBJ payment;
+    FOR pm == addedObject() DO {
+        SET dateTimePayment(pm) <- toDateTime(date AS DATE);
+        SET contractPayment(pm) <- contract AS contract;
+        SET currencyPayment(pm) <- currencyContract(contract);
+        SET sumPayment(pm) <- bonusDebtSumContractDate(contract, date);
+        SET costOutContractLedgerInContractLedger(pm, inContractLedger) <- bonusDebtSumInContractLedgerDate(inContractLedger, date)
+            WHERE contractPayment(pm) == contractInContractLedger(inContractLedger);
+        FORM payment OBJECTS p = pm MODAL;
+        IF formResult() == formResult.ok THEN {
+            ADDOBJ creditMemoOut;
+            FOR cm == addedObject() DO {
+                SET dateTimeCreditMemoOut(cm) <- toDateTime(date AS DATE);
+                SET contractCreditMemoOut(cm) <- contract AS contract;
+                SET sumCreditMemoOut(cm) <- bonusSumContractDate(contract, date);
+                SET costOutContractLedgerInContractLedger(cm, inContractLedger) <- bonusSumInContractLedger(inContractLedger, date)
+                    WHERE contractCreditMemo(cm) == contractInContractLedger(inContractLedger);
+                FORM creditMemo OBJECTS c = cm MODAL;
+                IF formResult() == formResult.ok THEN {
+                    EXEC apply();
+                }
+            }
+        }
+    }
+
+}](contract, date) AND bonusSumContractDate(contract, date) > 0.0;
+
+EXTEND FORM contractLedger
+    PROPERTIES(c, d) FORCE PANEL TOOLBAR payContractDate, payPaymentConditionContractDate
+
+    PROPERTIES(ic, d) FORCE PANEL TOOLBAR payPaymentConditionInContractLedgerDate
+
+    OBJECTS pm = payment
+    PROPERTIES(pm) READONLY objectClassName BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            dateTimePayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            seriesNumberObject BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            namePayerPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            nameBeneficiaryPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            nameCurrencyPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            nameTypeExchangeContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d) SHOWIF isNotSameCurrencyPayment(pm),
+                            sumPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            rateExchangeContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d) SHOWIF isNotSameCurrencyPayment(pm),
+                            sumContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d) SHOWIF isNotSameCurrencyPayment(pm),
+                            costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            notePayment BACKGROUND backgroundOutContractLedgerDate(pm, d)
+    PROPERTIES(pm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
+    PROPERTIES(pm) ADDFORM, EDITFORM, delete
+    ORDER BY dateTimePayment
+
+    FILTERS contractPayment(pm) == c
+;
+
+EXTEND DESIGN contractLedger{
+    secondContainer {
+        ADD pm.box BEFORE pr.box;
+    }
+}
+
