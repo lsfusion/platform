@@ -1,7 +1,7 @@
 MODULE RomanSales;
 
 REQUIRE System,
-        MasterData,
+        RomanMasterData,
         RomanStock,
         SaleLedger
 ;

@@ -12,7 +12,7 @@ REQUIRE System,
         WholesalePrice,
         WriteOff,
         StockDocument,
-        MasterData,
+        RomanMasterData,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;

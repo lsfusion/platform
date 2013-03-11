@@ -1,7 +1,7 @@
 MODULE Particulars;
 
 REQUIRE System,
-        MasterData,
+        RomanMasterData,
         POS,
         RomanStock,
         PriceRound,

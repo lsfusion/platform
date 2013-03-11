@@ -8,7 +8,7 @@ REQUIRE System,
         RomanDocument,
         ConsignmentBy,
         Declaration,
-        MasterData,
+        RomanMasterData,
         RomanStock,
         RomanLogicsModule;
 

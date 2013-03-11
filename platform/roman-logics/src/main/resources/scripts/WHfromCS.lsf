@@ -13,7 +13,7 @@ REQUIRE System,
         StorePriceTransfer,
         InnerOrder,
         Barcode,
-        MasterData,
+        RomanMasterData,
         RetailPrice,
         RomanLogicsModule;
 

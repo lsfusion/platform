@@ -1,4 +1,4 @@
-MODULE MasterData;
+MODULE RomanMasterData;
 
 REQUIRE System,
         Stock,
@@ -18,6 +18,8 @@ REQUIRE System,
         RomanLogicsModule;
 
 PRIORITY Stock, LegalEntity, Store, RomanLogicsModule;
+
+NAMESPACE MasterData;
 
 //--------------------------------- Дисконтные группы -------------------------------------------//
 

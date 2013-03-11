@@ -1,7 +1,7 @@
 MODULE RetailPrice;
 
 REQUIRE System,
-        MasterData,
+        RomanMasterData,
         POS,
         RomanStock,
         PriceRound,

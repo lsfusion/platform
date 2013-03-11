@@ -2,7 +2,7 @@ MODULE WholesalePrice;
 
 REQUIRE System,
         Declaration,
-        MasterData,
+        RomanMasterData,
         RomanLogicsModule;
 
 PRIORITY RomanLogicsModule, RB;

@@ -36,8 +36,6 @@ legalEntityStock (stock) += companyDefectStock(stock);
 addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (defectStock);
 addressStock(stock) += addressDefectStock(stock);
 
-employeeDivisionGroupEmployeeDivision (employeeDivision) += groupDefectStockDefectStock(employeeDivision);
-
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM defectStock 'Склад брака'
     OBJECTS           d=defectStock FIXED PANEL

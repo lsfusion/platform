@@ -12,7 +12,7 @@ REQUIRE System,
         RomanStock,
         RetailPrice,
         Barcode,
-        MasterData,
+        RomanMasterData,
         RomanLogicsModule;
 
 PRIORITY Stock, RomanLogicsModule;
