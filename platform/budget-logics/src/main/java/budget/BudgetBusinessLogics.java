@@ -14,6 +14,7 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
         addModulesFromResource(
                 "scripts/utils/DefaultData.lsf",
+                "scripts/masterdata/MasterData.lsf",
                 "scripts/masterdata/Currency.lsf");
     }
 }

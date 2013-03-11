@@ -174,7 +174,7 @@ priceDutyUserInvoiceDetail 'Пошлина (ед.)' = DATA NUMERIC[14,2](userInv
 calcPriceDutyInvoiceDetail 'Пошлина (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcDutyInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
                                                                                       declarationUserInvoiceDetail(invoiceDetail));
 
-priceDutyUserInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceDutyInvoiceDetail(invoiceDetail));
+//priceDutyUserInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceDutyInvoiceDetail(invoiceDetail));
 
 dutyCostPriceInvoiceDetail(invoiceDetail) += priceDutyUserInvoiceDetail(invoiceDetail);
 
@@ -221,7 +221,7 @@ priceRegistrationUserInvoiceDetail 'Таможенный сбор (ед.)' = DAT
 calcPriceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcRegistrationInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
                                                                                                       declarationUserInvoiceDetail(invoiceDetail));
 
-priceRegistrationUserInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceRegistrationInvoiceDetail(invoiceDetail));
+//priceRegistrationUserInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceRegistrationInvoiceDetail(invoiceDetail));
 
 registrationCostPriceInvoiceDetail(invoiceDetail) += priceRegistrationUserInvoiceDetail(invoiceDetail);
 
