@@ -51,10 +51,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException;
 
-    void saveForm(String formSID, byte[] formState) throws RemoteException;
-
-    void saveVisualSetup(byte[] data) throws RemoteException;
-
     byte[] getRichDesignByteArray(String formSID) throws RemoteException;
 
     byte[] getFormEntityByteArray(String formSID) throws RemoteException;

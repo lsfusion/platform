@@ -44,27 +44,6 @@ class VisualSetupNavigatorPanel extends AbstractNavigatorPanel {
                 });
 
         tree.rootNode.addSubTreeAction(
-                new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.create.create.new.element")) {
-                    @Override
-                    public void actionPerformed(ClientTreeActionEvent e) {
-                        String caption = JOptionPane.showInputDialog(null, ClientResourceBundle.getString("descriptor.view.create.enter.element.name"), ClientResourceBundle.getString("descriptor.view.create.new.element"), JOptionPane.QUESTION_MESSAGE);
-
-                        if (caption != null) {
-                            ClientNavigatorElement newElement = navigatorDescriptorView.createNewNavigatorElement(caption);
-
-                            NavigatorTreeNode node = (NavigatorTreeNode) e.getNode();
-
-                            //раскрываем, чтобы загрузить узлы с сервера...
-                            tree.expandPath(tree.getPathToRoot(node));
-
-                            node.addNode(new NavigatorTreeNode(tree, newElement));
-
-                            tree.getModel().reload(node);
-                        }
-                    }
-                });
-
-        tree.rootNode.addSubTreeAction(
                 new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.cancel.changes")) {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
@@ -130,35 +109,6 @@ class VisualSetupNavigatorPanel extends AbstractNavigatorPanel {
     @Override
     public void openAction(ClientNavigatorAction action) {
         //todo: редактирование action'а
-    }
-
-    public void cancelNavigatorChanges() {
-        cancelNodeChanges(tree.rootNode);
-    }
-
-    private void cancelNodeChanges(NavigatorTreeNode node) {
-        if (node.nodeStructureChanged) {
-            TreePath path = tree.getPathToRoot(node);
-            boolean wasExpanded = tree.isExpanded(path);
-
-            node.removeAllChildren();
-            node.add(new ExpandingTreeNode());
-
-            tree.getModel().reload(node);
-
-            tree.collapsePath(path);
-            if (wasExpanded) {
-                tree.expandPath(path);
-            }
-            node.nodeStructureChanged = false;
-        } else {
-            for (int i = 0; i < node.getChildCount(); ++i) {
-                TreeNode child = node.getChildAt(i);
-                if (child instanceof NavigatorTreeNode) {
-                    cancelNodeChanges((NavigatorTreeNode) child);
-                }
-            }
-        }
     }
 
     public void nodeChanged(NavigatorTreeNode node) {

@@ -59,8 +59,6 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
 
-    private final String navigatorTreeFilePath = "conf/navigatorTree.data";
-
     private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
 
     private final Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
@@ -110,7 +108,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
                 initExternalScreens();
 
-                reloadNavigatorTree();
             } catch (ScriptParsingException e) {
                 throw e;
             } catch (Exception e) {
@@ -489,134 +486,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             property.prereadCaches();
     }
 
-    private void reloadNavigatorTree() throws IOException {
-        if (new File(navigatorTreeFilePath).exists()) {
-            FileInputStream inStream = new FileInputStream(navigatorTreeFilePath);
-            try {
-                mergeNavigatorTree(new DataInputStream(inStream));
-            } finally {
-                inStream.close();
-            }
-        }
-    }
-
-    public void mergeNavigatorTree(DataInputStream inStream) throws IOException {
-        //читаем новую структуру навигатора, в процессе подчитывая сохранённые элементы
-        Map<String, List<String>> treeStructure = new HashMap<String, List<String>>();
-        int mapSize = inStream.readInt();
-        for (int i = 0; i < mapSize; ++i) {
-            String parentSID = inStream.readUTF();
-            int childrenCnt = inStream.readInt();
-            List<String> childrenSIDs = new ArrayList<String>();
-            for (int j = 0; j < childrenCnt; ++j) {
-                String childSID = inStream.readUTF();
-                childrenSIDs.add(childSID);
-            }
-            treeStructure.put(parentSID, childrenSIDs);
-        }
-
-        //формируем полное дерево, сохраняя мэппинг элементов
-        Map<String, NavigatorElement<?>> elementsMap = new HashMap<String, NavigatorElement<?>>();
-        for (NavigatorElement<?> parent : LM.root.getChildren(true)) {
-            String parentSID = parent.getSID();
-            elementsMap.put(parentSID, parent);
-
-            if (!treeStructure.containsKey(parentSID)) {
-                List<String> children = new ArrayList<String>();
-                for (NavigatorElement<?> child : parent.getChildren(false)) {
-                    children.add(child.getSID());
-                }
-
-                treeStructure.put(parentSID, children);
-            }
-        }
-
-        //override элементов
-        for (Map.Entry<String, List<String>> entry : treeStructure.entrySet()) {
-            overrideElement(elementsMap, entry.getKey());
-            for (String childSID : entry.getValue()) {
-                overrideElement(elementsMap, childSID);
-            }
-        }
-
-        //перестраиваем
-        for (Map.Entry<String, List<String>> entry : treeStructure.entrySet()) {
-            String parentSID = entry.getKey();
-            NavigatorElement parent = elementsMap.get(parentSID);
-            if (parent != null) {
-                parent.clear();
-
-                for (String childSID : entry.getValue()) {
-                    NavigatorElement<?> element = elementsMap.get(childSID);
-
-                    if (element != null) {
-                        parent.add(element);
-                    }
-                }
-            }
-        }
-    }
-
-    private void overrideElement(Map<String, NavigatorElement<?>> elementsMap, String elementSID) {
-        NavigatorElement<T> element = getOverridenElement(elementSID);
-        if (element == null) {
-            element = getOverridenForm(elementSID);
-        }
-
-        if (element != null) {
-            elementsMap.put(elementSID, element);
-        }
-    }
-
     public String getFormSerializationPath(String formSID) {
         return "conf/forms/" + formSID;
-    }
-
-    private FormEntity<T> getOverridenForm(String formSID) {
-        try {
-            byte[] formState = IOUtils.getFileBytes(new File(getFormSerializationPath(formSID)));
-            return (FormEntity<T>) FormEntity.deserialize(this, formState);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public String getElementSerializationPath(String elementSID) {
-        return "conf/elements/" + elementSID;
-    }
-
-    private NavigatorElement<T> getOverridenElement(String elementSID) {
-        try {
-            byte[] elementState = IOUtils.getFileBytes(new File(getElementSerializationPath(elementSID)));
-            return (NavigatorElement<T>) NavigatorElement.deserialize(elementState);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public void saveNavigatorTree() throws IOException {
-        Collection<NavigatorElement<T>> children = LM.root.getChildren(true);
-        File treeFile = new File(navigatorTreeFilePath);
-        if (!treeFile.getParentFile().exists()) {
-            treeFile.getParentFile().mkdirs();
-        }
-
-        FileOutputStream fileOutStream = new FileOutputStream(treeFile);
-        try {
-            DataOutputStream outStream = new DataOutputStream(fileOutStream);
-            outStream.writeInt(children.size());
-            for (NavigatorElement child : children) {
-                outStream.writeUTF(child.getSID());
-
-                Collection<NavigatorElement<T>> thisChildren = child.getChildren(false);
-                outStream.writeInt(thisChildren.size());
-                for (NavigatorElement<T> thisChild : thisChildren) {
-                    outStream.writeUTF(thisChild.getSID());
-                }
-            }
-        } finally {
-            fileOutStream.close();
-        }
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException {

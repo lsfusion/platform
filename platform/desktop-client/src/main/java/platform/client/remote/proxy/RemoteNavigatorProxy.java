@@ -65,14 +65,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return proxy;
     }
 
-    public void saveForm(String formSID, byte[] formState) throws RemoteException {
-        target.saveForm(formSID, formState);
-    }
-
-    public void saveVisualSetup(byte[] data) throws RemoteException {
-        target.saveVisualSetup(data);
-    }
-
     public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
         return target.getRichDesignByteArray(formSID);
     }

@@ -33,10 +33,6 @@ public class NavigatorDescriptorView extends JPanel {
     private final Map<String, FormDescriptor> changedForms = new HashMap<String, FormDescriptor>();
 
     private final JButton previewBtn;
-    private final JButton saveBtn;
-    private final JButton cancelBtn;
-
-    private boolean hasChangedNodes = false;
 
     private final IncrementView captionUpdater = new IncrementView() {
         public void update(Object updateObject, String updateField) {
@@ -97,29 +93,11 @@ public class NavigatorDescriptorView extends JPanel {
             }
         });
 
-        saveBtn = new JButton(ClientResourceBundle.getString("descriptor.view.save.changes"));
-        saveBtn.setEnabled(false);
-        saveBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                commitChanges();
-            }
-        });
-
-        cancelBtn = new JButton(ClientResourceBundle.getString("descriptor.view.undo.changes"));
-        cancelBtn.setEnabled(false);
-        cancelBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cancelChanges();
-            }
-        });
-
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BoxLayout(commandPanel, BoxLayout.X_AXIS));
         commandPanel.add(Box.createRigidArea(new Dimension(5, 5)));
         commandPanel.add(previewBtn);
-        commandPanel.add(saveBtn);
         commandPanel.add(Box.createRigidArea(new Dimension(20, 5)));
-        commandPanel.add(cancelBtn);
         commandPanel.add(Box.createHorizontalGlue());
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(visualNavigator), formView);
@@ -137,115 +115,6 @@ public class NavigatorDescriptorView extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void cancelChanges() {
-        try {
-            visualNavigator.cancelNavigatorChanges();
-
-            while (newForms.size() > 0) {
-                FormDescriptor form = newForms.values().iterator().next();
-                removeElement(form.getSID());
-                newForms.remove(form.getSID());
-            }
-
-            formView.setUpdated(false);
-            changedForms.clear();
-
-            FormDescriptor currentForm = formView.getForm();
-            if (currentForm != null) {
-                openForm(currentForm.getSID());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.open.form"), e);
-        }
-
-        hasChangedNodes = false;
-
-        setupActionButtons();
-    }
-
-    private void commitChanges() {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-
-            //сохраняем элементы
-            dataStream.writeInt(newElements.size());
-            for (ClientNavigatorElement element : newElements.values()) {
-                int bytesWritten = outStream.size();
-                element.serialize(dataStream);
-                int elementSize = outStream.size() - bytesWritten;
-                dataStream.writeInt(elementSize);
-            }
-
-            //сохраняем формы
-            changedForms.putAll(newForms);
-            dataStream.writeInt(changedForms.size());
-            for (FormDescriptor form : changedForms.values()) {
-                int bytesWritten = outStream.size();
-                form.serialize(dataStream);
-                int formSize = outStream.size() - bytesWritten;
-                dataStream.writeInt(formSize);
-            }
-
-            //сохраняем новую структуру навигатора
-            Map<String, List<String>> changedElements = getChangedNavigatorElementsChildren();
-            dataStream.writeInt(changedElements.size());
-            for (Map.Entry<String, List<String>> entry : changedElements.entrySet()) {
-                dataStream.writeUTF(entry.getKey());
-                dataStream.writeInt(entry.getValue().size());
-                for (String childSID : entry.getValue()) {
-                    dataStream.writeUTF(childSID);
-                }
-            }
-
-            remoteNavigator.saveVisualSetup(outStream.toByteArray());
-
-            formView.setUpdated(false);
-            changedForms.clear();
-            newForms.clear();
-            newElements.clear();
-            FormDescriptor currentForm = formView.getForm();
-            if (currentForm != null) {
-                openForm(currentForm.getSID());
-            }
-
-            // нужно обязательно сбрасывать кэши, иначе при попытке открыть форму в навигаторе
-            // будет закэширована старая форма и пойдет Exception при применении изменений
-            RemoteFormProxy.dropCaches();
-        } catch (IOException e) {
-            throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.save.form"), e);
-        }
-
-        hasChangedNodes = false;
-
-        setupActionButtons();
-    }
-
-    private Map<String, List<String>> getChangedNavigatorElementsChildren() {
-        HashMap<String, List<String>> result = new HashMap<String, List<String>>();
-        Enumeration<ClientTreeNode> nodes = visualNavigator.getTree().rootNode.depthFirstEnumeration();
-        while (nodes.hasMoreElements()) {
-            ClientTreeNode node = nodes.nextElement();
-            if (node instanceof NavigatorTreeNode) {
-                NavigatorTreeNode navigatorNode = (NavigatorTreeNode) node;
-                if (navigatorNode.nodeStructureChanged) {
-                    navigatorNode.nodeStructureChanged = false;
-                    List<String> children = new ArrayList<String>();
-                    for (int i = 0; i < navigatorNode.getChildCount(); ++i) {
-                        ClientTreeNode childNode = (ClientTreeNode) navigatorNode.getChildAt(i);
-                        if (childNode instanceof NavigatorTreeNode) {
-                            NavigatorTreeNode childNavigatorNode = (NavigatorTreeNode) childNode;
-                            children.add(childNavigatorNode.navigatorElement.sID);
-                        }
-                    }
-                    result.put(navigatorNode.navigatorElement.sID, children);
-                }
-            }
-        }
-
-        return result;
     }
 
     public void openForm(String sID) throws IOException {
@@ -279,13 +148,7 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     private void setupActionButtons() {
-        boolean hasChanges = !changedForms.isEmpty() || !newForms.isEmpty() || !newElements.isEmpty() || hasChangedNodes;
-
         previewBtn.setEnabled(formView.getForm() != null);
-        //todo: включить кнопку, если когда-нибудь вообще этот механизм будет нужен, т.к. сейчас он фактически не работает...
-//        saveBtn.setEnabled(hasChanges);
-        cancelBtn.setEnabled(hasChanges);
-
         updateUI();
     }
 
@@ -305,14 +168,6 @@ public class NavigatorDescriptorView extends JPanel {
         }
 
         return newForm;
-    }
-
-    public ClientNavigatorElement createNewNavigatorElement(String caption) {
-        ClientNavigatorElement newElement = new ClientNavigatorElement(Main.generateNewID(), caption, caption, false);
-
-        newElements.put(newElement.getSID(), newElement);
-
-        return newElement;
     }
 
     public void cancelForm(String formSID) {
@@ -336,7 +191,6 @@ public class NavigatorDescriptorView extends JPanel {
     }
 
     public void nodeChanged(NavigatorTreeNode node) {
-        hasChangedNodes = true;
         setupActionButtons();
     }
 }

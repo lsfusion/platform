@@ -458,54 +458,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return createForm(newFormEntity, false, true);
     }
 
-    public void saveForm(String formSID, byte[] formState) throws RemoteException {
-        FormEntity<T> form = (FormEntity<T>) FormEntity.deserialize(businessLogics, formState);
-        setFormEntity(formSID, form);
-
-        try {
-            IOUtils.putFileBytes(new File(businessLogics.getFormSerializationPath(form.getSID())), formState);
-        } catch (IOException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.form.state.to.disk"), e);
-        }
-    }
-
-    public void saveVisualSetup(byte[] data) throws RemoteException {
-        ByteArrayInputStream dataStream = new ByteArrayInputStream(data);
-        DataInputStream inStream = new DataInputStream(dataStream);
-        try {
-            //читаем элементы
-            int cnt = inStream.readInt();
-            for (int i = 0; i < cnt; ++i) {
-                int previousBytesReaden = data.length - dataStream.available();
-                NavigatorElement element = NavigatorElement.deserialize(inStream);
-                int elementSize = inStream.readInt();
-                try {
-                    IOUtils.putFileBytes(new File(businessLogics.getElementSerializationPath(element.getSID())), data, previousBytesReaden, elementSize);
-                } catch (IOException e) {
-                    throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.element.state.to.disk"), e);
-                }
-            }
-
-            //читаем формы
-            cnt = inStream.readInt();
-            for (int i = 0; i < cnt; ++i) {
-                int previousBytesReaden = data.length - dataStream.available();
-                FormEntity form = FormEntity.deserialize(businessLogics, inStream);
-                int formSize = inStream.readInt();
-                try {
-                    IOUtils.putFileBytes(new File(businessLogics.getFormSerializationPath(form.getSID())), data, previousBytesReaden, formSize);
-                } catch (IOException e) {
-                    throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.form.state.to.disk"), e);
-                }
-            }
-
-            businessLogics.mergeNavigatorTree(inStream);
-            businessLogics.saveNavigatorTree();
-        } catch (IOException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.visual.tuning"), e);
-        }
-    }
-
     public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
