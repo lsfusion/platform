@@ -21,6 +21,7 @@ import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.context.ContextAwareDaemonThreadFactory;
+import platform.server.context.ThreadLocalContext;
 import platform.server.remote.ContextAwarePendingRemoteObject;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
@@ -199,6 +200,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public void unreferenced() {
+        ThreadLocalContext.set(context);
         killThreads();
     }
 
