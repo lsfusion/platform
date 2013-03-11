@@ -1,6 +1,5 @@
 package roman;
 
-import equ.srv.EquipmentModuleProvider;
 import platform.interop.event.IDaemonTask;
 import platform.server.daemons.ScannerDaemonTask;
 import platform.server.daemons.WeightDaemonTask;
@@ -14,7 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
-public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> implements EquipmentModuleProvider {
+public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Stock;
     public ScriptingLogicsModule LegalEntity;
     public ScriptingLogicsModule Company;
@@ -171,10 +170,5 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> imp
             daemons.add(task);
         }
         return daemons;
-    }
-
-    @Override
-    public ScriptingLogicsModule getEquipmentModule() {
-        return RomanRB;
     }
 }
