@@ -43,7 +43,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         try {
             Integer numberOfItems = (Integer) getLCP("importNumberItems").read(context);
             Object pathObject = getLCP("importLSTDirectory").read(context);
-            String path = pathObject==null ? "" : ((String) pathObject).trim();
+            String path = pathObject == null ? "" : ((String) pathObject).trim();
             if (!path.isEmpty()) {
 
                 ImportData importData = new ImportData();
@@ -113,7 +113,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
     private List<ItemGroup> importItemGroupsFromDBF(String path, Boolean parents) throws IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -155,7 +155,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
     private List<Ware> importWaresFromDBF(String path) throws IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -178,13 +178,13 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
     private List<Item> importItemsFromDBF(String itemsPath, String quantityPath, String warePath, Integer numberOfItems, Boolean importInactive) throws IOException, xBaseJException, ParseException {
 
-        if(!(new File(itemsPath).exists()))
+        if (!(new File(itemsPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + itemsPath + " не найден");
 
-        if(!(new File(quantityPath).exists()))
+        if (!(new File(quantityPath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + quantityPath + " не найден");
 
-        if(!(new File(warePath).exists()))
+        if (!(new File(warePath).exists()))
             throw new RuntimeException("Запрашиваемый файл " + warePath + " не найден");
 
         Set<String> barcodes = new HashSet<String>();
@@ -301,33 +301,40 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<UserInvoiceDetail> importUserInvoicesFromDBF(String path) throws
             IOException, xBaseJException, ParseException, ScriptingErrorLog.SemanticErrorException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
         int totalRecordCount = importFile.getRecordCount();
 
         List<UserInvoiceDetail> data = new ArrayList<UserInvoiceDetail>();
+        Map<String, String> userInvoiceSupplierMap = new HashMap<String, String>();
 
         for (int i = 0; i < totalRecordCount; i++) {
             importFile.read();
 
-            String post_dok[] = new String(importFile.getField("POST_DOK").getBytes(), "Cp1251").trim().split("-");
-            String number = post_dok[0];
-            String series = post_dok.length == 1 ? null : post_dok[1];
+            String post_dok = new String(importFile.getField("POST_DOK").getBytes(), "Cp1251").trim();
+            String[] seriesNumber = post_dok.split("-");
+            String number = seriesNumber[0];
+            String series = seriesNumber.length == 1 ? null : seriesNumber[1];
             String itemID = new String(importFile.getField("K_GRMAT").getBytes(), "Cp1251").trim();
             String userInvoiceDetailSID = "SD_" + number + series + itemID;
             String dateString = new String(importFile.getField("D_PRIH").getBytes(), "Cp1251").trim();
             Date dateShipment = "".equals(dateString) ? null : new java.sql.Date(DateUtils.parseDate(dateString, new String[]{"yyyyMMdd"}).getTime());
             Double quantityShipmentDetail = new Double(new String(importFile.getField("N_MAT").getBytes(), "Cp1251").trim());
             String supplierID = new String(importFile.getField("K_POST").getBytes(), "Cp1251").trim();
+            if (userInvoiceSupplierMap.containsKey(post_dok))
+                supplierID = userInvoiceSupplierMap.get(post_dok);
+            else
+                userInvoiceSupplierMap.put(post_dok, supplierID);
+
             String warehouseID = new String(importFile.getField("K_SKL").getBytes(), "Cp1251").trim();
             String supplierWarehouse = supplierID + "WH";
             Double priceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
 
-            if ((post_dok.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
+            if ((seriesNumber.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
                 data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
                         quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail, null));
@@ -339,7 +346,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<Assortment> importAssortmentFromDBF(String path) throws
             IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -366,7 +373,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<StockSupplier> importStockSuppliersFromDBF(ExecutionContext context, String path) throws
             IOException, xBaseJException, ScriptingErrorLog.SemanticErrorException, SQLException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -431,7 +438,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<LegalEntity> importLegalEntitiesFromDBF(String path, Boolean importInactive, Boolean isStore) throws
             IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -476,7 +483,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<Warehouse> importWarehousesFromDBF(String path, Boolean importInactive) throws
             IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -506,7 +513,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
     private List<DepartmentStore> importDepartmentStoresFromDBF(String path, Boolean importInactive, String
             pathStores) throws IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importStores = new DBF(pathStores);
@@ -540,7 +547,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
     private List<Bank> importBanksFromDBF(String path) throws IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -564,7 +571,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
     private List<RateWaste> importRateWastesFromDBF(String path) throws IOException, xBaseJException {
 
-        if(!(new File(path).exists()))
+        if (!(new File(path).exists()))
             throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
 
         DBF importFile = new DBF(path);
@@ -596,7 +603,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
         String ownershipName = "";
         String ownershipShortName = "";
         for (String[] ownership : ownershipsList) {
-            if (name.contains(ownership[0])) {
+            if (name.contains(ownership[0] + " ") || name.contains(" " + ownership[0])) {
                 ownershipName = ownership[1];
                 ownershipShortName = ownership[0];
                 name = name.replace(ownership[0], "");

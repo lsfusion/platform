@@ -74,7 +74,7 @@ NAVIGATOR {
 
 // ---------------------------------------------- Нумерованные объекты ----------------------------------------------- //
 
-GROUP numberedGroup 'Нумератор' : base;
+GROUP numberedGroup 'Нумератор' : recognize;
 
 CLASS ABSTRACT numberedObject 'Нумерованный объект';
 TABLE numberedObject (numberedObject);
