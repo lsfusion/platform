@@ -43,7 +43,7 @@
 
     <bean id="businessLogics" class="platform.server.logics.scripted.ScriptingBusinessLogics">
         <property name="scriptFilePaths" value="${logics.includedPaths}"/>
-        <property name="excludedScriptFilePaths" value="${logics.exludedPaths:}"/>
+        <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
 
         <property name="overridingModulesList" value="${logics.overridingModulesList:}"/>
     </bean>

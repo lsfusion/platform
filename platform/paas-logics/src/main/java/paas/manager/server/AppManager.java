@@ -262,7 +262,7 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         properties.setProperty("rmi.exportPort", String.valueOf(exportPort));
         properties.setProperty("logics.overridingModulesList", "");
         properties.setProperty("logics.includedPaths", "paasmodules");
-        properties.setProperty("logics.exludedPaths", "");
+        properties.setProperty("logics.excludedPaths", "");
         properties.setProperty("paas.manager.host", "localhost");
         properties.setProperty("paas.manager.port", String.valueOf(acceptPort));
         properties.setProperty("paas.configurationId", String.valueOf(configurationId));
