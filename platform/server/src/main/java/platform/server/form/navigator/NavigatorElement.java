@@ -112,6 +112,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         from.parent = null;
     }
 
+    public void addFirst(NavigatorElement child) {
+        add(0, child);
+    }
+
     public void add(NavigatorElement child) {
         add(children.size(), child);
     }

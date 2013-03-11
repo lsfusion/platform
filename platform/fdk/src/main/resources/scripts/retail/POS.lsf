@@ -739,7 +739,7 @@ EXTEND DESIGN operationCashRegister{
         ADD PROPERTY(openCurrentZReport) { font = 'Tahoma 24'; };
         ADD PROPERTY(numberCurrentZReport) { font = 'Tahoma 24'; };
     }
-    ADD z.box BEFORE functions.box;
+    ADD z.box IN topContainer BEFORE functions.box;
 }
 
 // Update data

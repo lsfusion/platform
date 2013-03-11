@@ -378,7 +378,7 @@ FORM changePasswordUser 'Сменить пароль'
 EXTEND DESIGN changePasswordUser {
     main{
         passwords.box {
-            ADD PROPERTY(userLogin(u)) BEFORE PROPERTY(valueOld) {
+            ADD PROPERTY(userLogin(u)) FIRST {
                font = 'Tahoma 36';
             };
             PROPERTY(valueOld){

@@ -809,16 +809,18 @@ HIDE WINDOW relevantClassForms;
 //настройка навигатора
 NAVIGATOR {
     // чтобы добавить существующий элемент в другой элемент используется команда следующего вида
-    // ADD <имя> ['<новый заголовок>'] [(IN | AFTER | BEFORE) <имя>] [TO <новое окно>];
+    // ADD <имя> ['<новый заголовок>'] [IN <имя родителя>] [((AFTER | BEFORE) <имя2>) | FIRST] [TO <новое окно>];
     // при этом по умолчанию он будет добавлен в элемент текущей области видимости
     // (при использовании прямо внутри NAVIGATOR - он будет добавлен в baseElement)
     //
     // для создания нового элемента используется команда:
-    // NEW <имя> '<заголовок>' [(IN | AFTER | BEFORE) <имя>] [TO <имя окна>] [ACTION <имя экшена>];
+    // NEW <имя> [ACTION <имя экшена>] '<заголовок>' [IN <имя родителя>] [((AFTER | BEFORE) <имя2>) | FIRST] [TO <имя окна>] [IMAGE <путь к иконке>];
 
-    NEW element1 'Element 1' AFTER securityPolicy;
+    security {
+        NEW element1 'Element 1' AFTER securityPolicy;
+        NEW element2 'Element 2' BEFORE securityPolicy;
+    }
 
-    NEW element2 'Element 2' BEFORE securityPolicy;
     ADD storeArticle IN element2;
 
     NEW outer 'Outer element' IN element1 {
@@ -830,7 +832,7 @@ NAVIGATOR {
     }
 
     //при создании элемента можно указать окно для него
-    NEW testNavigators '-Тестовые навигаторы-' AFTER securityPolicy TO root;
+    NEW testNavigators '-Тестовые навигаторы-' IN security AFTER securityPolicy TO root;
 
     // также можно просто настраивать существующий элемент без его перемещения
     testNavigators 'Тестовые навигаторы' {
@@ -843,7 +845,7 @@ NAVIGATOR {
         ADD testModalForm;
 
         //если задано имя действия, то создаться элемент для запуска этого действия
-        NEW testNavigatorAction ACTION testAction 'Показать "По документам" 3 раза';
+        NEW testNavigatorAction ACTION testAction 'Показать "По документам" 3 раза' FIRST;
     }
     // так можно отдельно настроить окно, в которое будет рисоваться элемент
     root TO root;
@@ -852,7 +854,7 @@ NAVIGATOR {
     account TO toolbar;
     objects TO objectsWindow;
 
-    ADD dictionaries 'Словари' AFTER daysOffForm;
+    ADD dictionaries 'Словари' IN regionalData AFTER daysOffForm;
     ADD storeArticle;
     ADD documentArticle;
     ADD TestDataPropForm;
@@ -901,7 +903,7 @@ NAVIGATOR {
 
 
 DESIGN storeArticle FROM DEFAULT {
-    // Чтобы добавить контейнер в другой контейнер используется команда '(ADD | NEW ) <имя> [(IN | BEFORE | AFTER) <имя2>]'.
+    // Чтобы добавить контейнер в другой контейнер используется команда '(ADD | NEW ) <имя> [IN <имя2>] [((AFTER | BEFORE) <имя3>) | FIRST]'.
     // При использовании NEW контейнер будет создан, если компонент с таким именем уже существовал, то будет ошибка.
     // При этом по умолчанию он будет добавлен в контейнер текущей области видимости
     // (при использовании прямо внутри DESIGN - он будет добавлен в main контейнер)
@@ -916,10 +918,10 @@ DESIGN storeArticle FROM DEFAULT {
         NEW child2 IN child11;
 
         // будет добавлен в child1, перед child11, т.к. это явно указано
-        NEW child3 BEFORE child11;
+        NEW child3 IN child1 BEFORE child11;
 
         // будет добавлен в child1, после child11, т.к. это явно указано
-        NEW child4 AFTER child11;
+        NEW child4 IN child1 AFTER child11;
 
         NEW child5;
 

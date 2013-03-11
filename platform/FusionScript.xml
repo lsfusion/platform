@@ -97,6 +97,7 @@
       <keyword name="FILTER" />
       <keyword name="FILTERGROUP" />
       <keyword name="FILTERS" />
+      <keyword name="FIRST" />
       <keyword name="FIXED" />
       <keyword name="FIXEDCHARWIDTH" />
       <keyword name="FOOTER" />

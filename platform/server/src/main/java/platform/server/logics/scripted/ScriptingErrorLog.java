@@ -128,12 +128,12 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "window", name);
     }
 
-    public void emitIllegalInsertBeforeAfterNavigatorElement(ScriptParser parser, String element) throws SemanticErrorException {
-        emitSimpleError(parser, "can't insert component after or before '" + element + "'");
-    }
-
     public void emitIllegalMoveNavigatorToSubnavigator(ScriptParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'", movingElement, movedToElement));
+    }
+
+    public void emitIllegalInsertBeforeAfterComponentElement(ScriptParser parser, String component, String parentComponent, String anchorComponent) throws SemanticErrorException {
+        emitSimpleError(parser, "can't insert component " + component + " after or before '" + anchorComponent + "' in " + parentComponent);
     }
 
     public void emitComponentIsNullError(ScriptParser parser, String mainMsg) throws SemanticErrorException {
@@ -142,10 +142,6 @@ public class ScriptingErrorLog {
 
     public void emitComponentMustBeAContainerError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "component must be a container");
-    }
-
-    public void emitInsertBeforeAfterMainContainerError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "can't insert before or after main container");
     }
 
     public void emitIllegalMoveComponentToSubcomponent(ScriptParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {

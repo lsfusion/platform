@@ -70,7 +70,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.*;
 import static platform.server.logics.PropertyUtils.*;
-import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
 
 /**
  * User: DAle
@@ -104,7 +103,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
 
     public enum ConstType { STATIC, INT, REAL, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
-    public enum InsertPosition {IN, BEFORE, AFTER}
+    public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
 
@@ -1696,10 +1695,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindowByCompoundName(name).visible = false;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName, String icon) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement createScriptedNavigatorElement(String name, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, String actionName, String icon) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
 
-        assert name != null && caption != null && anchorElement != null;
+        assert name != null && caption != null && parentElement != null;
 
         checkDuplicateNavigatorElement(name);
 
@@ -1714,14 +1713,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             newElement = addNavigatorElement(name, caption, icon);
         }
 
-
-        setupNavigatorElement(newElement, caption, pos, anchorElement, windowName);
+        setupNavigatorElement(newElement, caption, parentElement, pos, anchorElement, windowName);
 
         return newElement;
     }
 
-    public void setupNavigatorElement(NavigatorElement<?> element, String caption, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("setupNavigatorElement(" + element.getSID() + ", " + caption + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
+    public void setupNavigatorElement(NavigatorElement<?> element, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("setupNavigatorElement(" + element.getSID() + ", " + caption + ", " + parentElement + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
 
         assert element != null;
 
@@ -1733,36 +1731,32 @@ public class ScriptingLogicsModule extends LogicsModule {
             setNavigatorElementWindow(element, windowName);
         }
 
-        if (pos != null && anchorElement != null) {
-            moveElement(element, pos, anchorElement);
+        if (parentElement != null) {
+            moveElement(element, parentElement, pos, anchorElement);
         }
     }
 
-    private void moveElement(NavigatorElement element, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
-        assert anchorElement != null && pos != null;
-        NavigatorElement parent = null;
-        if (pos == IN) {
-            parent = anchorElement;
-        } else {
-            parent = anchorElement.getParent();
-            if (parent == null) {
-                errLog.emitIllegalInsertBeforeAfterNavigatorElement(parser, anchorElement.getSID());
-            }
+    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+        if (anchorElement != null && !parentElement.equals(anchorElement.getParent())) {
+            errLog.emitIllegalInsertBeforeAfterComponentElement(parser, element.getSID(), parentElement.getSID(), anchorElement.getSID());
         }
 
-        if (element.isAncestorOf(parent)) {
-            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getSID(), parent.getSID());
+        if (element.isAncestorOf(parentElement)) {
+            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getSID(), parentElement.getSID());
         }
 
         switch (pos) {
             case IN:
-                parent.add(element);
+                parentElement.add(element);
                 break;
             case BEFORE:
-                parent.addBefore(element, anchorElement);
+                parentElement.addBefore(element, anchorElement);
                 break;
             case AFTER:
-                parent.addAfter(element, anchorElement);
+                parentElement.addAfter(element, anchorElement);
+                break;
+            case FIRST:
+                parentElement.addFirst(element);
                 break;
         }
     }

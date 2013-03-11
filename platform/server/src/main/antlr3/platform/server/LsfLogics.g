@@ -2246,13 +2246,10 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-@init {
-	boolean hasPosition = false;
-}
 	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, $posSelector.parent, $posSelector.position, $posSelector.anchor, $wid.sid);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]
@@ -2265,19 +2262,25 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 	:	'NEW' id=ID ('ACTION' aid=compoundID)? caption=stringLiteral posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)? ('IMAGE' path=stringLiteral)?
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.position, $posSelector.anchor, $wid.sid, $aid.sid, $path.val);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.parent, $posSelector.position, $posSelector.anchor, $wid.sid, $aid.sid, $path.val);
 			}
 		}
 		navigatorElementStatementBody[newElement]
 	;
 	
-navigatorElementInsertPositionSelector[NavigatorElement parentElement] returns [InsertPosition position, NavigatorElement anchor]
+navigatorElementInsertPositionSelector[NavigatorElement parentElement] returns [NavigatorElement parent, InsertPosition position, NavigatorElement anchor]
 @init {
+	$parent = parentElement;
 	$position = InsertPosition.IN;
-	$anchor = parentElement;
+	$anchor = null;
 }
-	:	(	pos=insertPositionLiteral { $position = $pos.val; }
-			elem=navigatorElementSelector { $anchor = $elem.element; }
+	:	(	'IN' { $position = InsertPosition.IN; }
+			elem=navigatorElementSelector { $parent = $elem.element; }
+		)?
+		(
+			(pos=insertRelativePositionLiteral { $position = $pos.val; }
+			elem=navigatorElementSelector { $anchor = $elem.element; })
+		|	'FIRST' { $position = InsertPosition.FIRST; }
 		)?
 	;
 
@@ -2285,7 +2288,7 @@ setupNavigatorElementStatement
 	:	elem=navigatorElementSelector (caption=stringLiteral)? ('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, null, null, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, null, null, null, $wid.sid);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]
@@ -2381,15 +2384,12 @@ setupGroupObjectStatement
 
 newComponentStatement[ComponentView parentComponent]
 @init {
-	boolean hasPosition = false;
 	ComponentView newComp = null;
 }
-	:	'NEW' cid=multiCompoundID (insPosition=insertPositionLiteral posSelector=componentSelector { hasPosition = true; })?
+	:	'NEW' cid=multiCompoundID insPosition=componentInsertPositionSelector[parentComponent]
 		{
 			if (inPropParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.sid,
-																		hasPosition ? $insPosition.val : InsertPosition.IN,
-																		hasPosition ? $posSelector.component : $parentComponent);
+				newComp = $designStatement::design.createNewComponent($cid.sid, insPosition.parent, insPosition.position, insPosition.anchor);
 			}
 		}
 		componentStatementBody[newComp, newComp]
@@ -2397,19 +2397,31 @@ newComponentStatement[ComponentView parentComponent]
 	
 addComponentStatement[ComponentView parentComponent]
 @init {
-	boolean hasPosition = false;
 	ComponentView insComp = null;
 }
-	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; }
-		( insPosition=insertPositionLiteral posSelector=componentSelector { hasPosition = true; } )?
+	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPositionSelector[parentComponent]
 		{
 			if (inPropParseState()) {
-				$designStatement::design.moveComponent(insComp,
-														hasPosition ? $insPosition.val : InsertPosition.IN,
-														hasPosition ? $posSelector.component : $parentComponent);
+				$designStatement::design.moveComponent(insComp, insPosition.parent, insPosition.position, insPosition.anchor);
 			}
 		}
 		componentStatementBody[insComp, insComp]
+	;
+	
+componentInsertPositionSelector[ComponentView parentComponent] returns [ComponentView parent, InsertPosition position, ComponentView anchor]
+@init {
+	$parent = parentComponent;
+	$position = InsertPosition.IN;
+	$anchor = null;
+}
+	:	(	'IN' { $position = InsertPosition.IN; }
+			comp=componentSelector { $parent = $comp.component; }
+		)?
+		(
+			(pos=insertRelativePositionLiteral { $position = $pos.val; }
+			comp=componentSelector { $anchor = $comp.component; })
+		|	'FIRST' { $position = InsertPosition.FIRST; }
+		)?
 	;
 
 removeComponentStatement
@@ -2755,9 +2767,8 @@ simplexConstraintLiteral returns [DoNotIntersectSimplexConstraint val]
 	|	'TO' 'NOT' 'INTERSECT' { $val = DO_NOT_INTERSECT; }
 	;
 
-insertPositionLiteral returns [InsertPosition val]
-	:	'IN' { $val = InsertPosition.IN; }
-	|	'BEFORE' { $val = InsertPosition.BEFORE; }
+insertRelativePositionLiteral returns [InsertPosition val]
+	:	'BEFORE' { $val = InsertPosition.BEFORE; }
 	|	'AFTER' { $val = InsertPosition.AFTER; }
 	;
 

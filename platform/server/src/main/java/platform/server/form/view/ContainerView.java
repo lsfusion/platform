@@ -97,6 +97,10 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         }
     }
 
+    public void addFirst(ComponentView comp) {
+        add(0, comp);
+    }
+
     public boolean remove(ComponentView comp) {
         if (children.remove(comp)) {
             comp.setContainer(null);

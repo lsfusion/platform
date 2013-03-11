@@ -8,8 +8,6 @@ import platform.server.logics.scripted.proxy.ViewProxyUtil;
 
 import java.util.List;
 
-import static platform.server.logics.scripted.ScriptingLogicsModule.InsertPosition.IN;
-
 public class ScriptingFormView {
 
     private FormView view;
@@ -69,33 +67,31 @@ public class ScriptingFormView {
         view.addIntersection(comp2, comp1, cons);
     }
 
-    public ContainerView createNewComponent(String sid, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
-        assert anchorComponent != null && sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
+    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+        assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
         if (getComponentBySID(sid, false) != null) {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
         ContainerView container = view.createContainer(null, null, sid);
-        moveComponent(container, pos, anchorComponent);
+        if (parentComponent != null) {
+            moveComponent(container, parentComponent, pos, anchorComponent);
+        }
 
         return container;
     }
 
-    public void moveComponent(ComponentView component, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
-        assert component != null && anchorComponent != null;
+    public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
+        assert component != null;
 
-        ContainerView parent = null;
-        if (pos == IN) {
-            if (!(anchorComponent instanceof ContainerView)) {
-                errLog.emitComponentMustBeAContainerError(parser);
-            }
-            parent = (ContainerView) anchorComponent;
-        } else {
-            if (anchorComponent == view.mainContainer) {
-                errLog.emitInsertBeforeAfterMainContainerError(parser);
-            }
-            parent = anchorComponent.getContainer();
+        if (!(parentComponent instanceof ContainerView)) {
+            errLog.emitComponentMustBeAContainerError(parser);
+        }
+        ContainerView parent = (ContainerView) parentComponent;
+
+        if (anchorComponent != null && !parent.equals(anchorComponent.getContainer())) {
+            errLog.emitIllegalInsertBeforeAfterComponentElement(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
         }
 
         if (component instanceof ContainerView) {
@@ -114,6 +110,9 @@ public class ScriptingFormView {
                 break;
             case AFTER:
                 parent.addAfter(component, anchorComponent);
+                break;
+            case FIRST:
+                parent.addFirst(component);
                 break;
         }
     }
