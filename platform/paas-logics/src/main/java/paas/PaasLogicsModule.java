@@ -3,26 +3,36 @@ package paas;
 import paas.properties.RefreshStatusActionProperty;
 import paas.properties.StartConfigurationActionProperty;
 import paas.properties.StopConfigurationActionProperty;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.PropertyEditType;
 import platform.server.classes.*;
+import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.*;
+import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
+import javax.swing.*;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
+
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class PaasLogicsModule extends LogicsModule {
 
@@ -138,6 +148,83 @@ public class PaasLogicsModule extends LogicsModule {
         databaseConfiguration = addAGProp("databaseConfiguration", "Конфигурация", configurationDatabase);
 
         initNavigators();
+    }
+
+    protected LAP addSelectFromListAction(AbstractGroup group, String caption, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+        return addSelectFromListAction(group, caption, null, new FilterEntity[0], selectionProperty, selectionClass, baseClasses);
+    }
+
+    protected LAP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+        return addSelectFromListAction(group, caption, remapObject, remapFilters, selectionProperty, false, selectionClass, baseClasses);
+    }
+
+    protected LAP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+        SelectFromListFormEntity selectFromListForm = new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
+        return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
+    }
+
+    class SelectFromListFormEntity extends FormEntity implements FormActionProperty.SelfInstancePostProcessor {
+        ObjectEntity[] mainObjects;
+        private ObjectEntity selectionObject;
+        private ObjectEntity remapObject;
+        private final FilterEntity[] remapFilters;
+
+        SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+            super(null, null);
+
+            this.remapObject = remapObject;
+            this.remapFilters = remapFilters;
+
+            mainObjects = new ObjectEntity[baseClasses.length];
+            for (int i = 0; i < baseClasses.length; i++) {
+                ValueClass baseClass = baseClasses[i];
+                mainObjects[i] = addSingleGroupObject(baseClass, baseGroup);
+                mainObjects[i].groupTo.setSingleClassView(ClassViewType.PANEL);
+                PropertyDrawEntity objectValue = getPropertyDraw(baseLM.objectValue, mainObjects[i]);
+                if (objectValue != null) {
+                    objectValue.setEditType(PropertyEditType.READONLY);
+                }
+            }
+
+            selectionObject = addSingleGroupObject(selectionClass, baseGroup);
+            selectionObject.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            ObjectEntity[] selectionObjects = new ObjectEntity[mainObjects.length + 1];
+            if (isSelectionClassFirstParam) {
+                System.arraycopy(mainObjects, 0, selectionObjects, 1, mainObjects.length);
+                selectionObjects[0] = selectionObject;
+            } else {
+                System.arraycopy(mainObjects, 0, selectionObjects, 0, mainObjects.length);
+                selectionObjects[mainObjects.length] = selectionObject;
+            }
+
+            CalcPropertyObjectEntity selectionPropertyObject = addPropertyObject(selectionProperty, selectionObjects);
+            PropertyDrawEntity selectionPropertyDraw = addPropertyDraw(null, selectionPropertyObject);
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                            new NotFilterEntity(
+                                    new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
+                            getString("logics.object.not.selected.objects"),
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
+                    ), true);
+            filterGroup.addFilter(
+                    new RegularFilterEntity(genID(),
+                            new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
+                            getString("logics.object.selected.objects"),
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
+                    ));
+            addRegularFilterGroup(filterGroup);
+        }
+
+        public void postProcessSelfInstance(ImMap<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance) {
+            for (FilterEntity filterEntity : remapFilters) {
+                selfFormInstance.addFixedFilter(
+                        filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.instanceFactory)
+                );
+            }
+        }
     }
 
     public LAP addRefreshStatusProperty() {

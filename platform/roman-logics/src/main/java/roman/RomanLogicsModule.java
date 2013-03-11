@@ -39,11 +39,11 @@ import roman.actions.TranslateActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.List;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -4696,6 +4696,51 @@ public class RomanLogicsModule extends LogicsModule {
 
 //            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
             return design;
+        }
+    }
+
+    // params - по каким входам группировать
+    protected LAP addIAProp(LCP dataProperty, Integer... params) {
+        return addAProp(new IncrementActionProperty(genSID(), "sys", dataProperty,
+                addMGProp(dataProperty, params),
+                params));
+    }
+
+    public static class IncrementActionProperty extends UserActionProperty {
+
+        LCP dataProperty;
+        LCP maxProperty;
+        java.util.List<Integer> params;
+
+        IncrementActionProperty(String sID, String caption, LCP dataProperty, LCP maxProperty, Integer[] params) {
+            super(sID, caption, dataProperty.getInterfaceClasses());
+
+            this.dataProperty = dataProperty;
+            this.maxProperty = maxProperty;
+            this.params = Arrays.asList(params);
+        }
+
+        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+
+            // здесь опять учитываем, что порядок тот же
+            int i = 0;
+            DataObject[] dataPropertyInput = new DataObject[context.getKeyCount()];
+            java.util.List<DataObject> maxPropertyInput = new ArrayList<DataObject>();
+
+            for (ClassPropertyInterface classInterface : interfaces) {
+                dataPropertyInput[i] = context.getKeyValue(classInterface);
+                if (params.contains(i + 1)) {
+                    maxPropertyInput.add(dataPropertyInput[i]);
+                }
+                i++;
+            }
+
+            Integer maxValue = (Integer) maxProperty.read(context, maxPropertyInput.toArray(new DataObject[0]));
+            if (maxValue == null)
+                maxValue = 0;
+            maxValue += 1;
+
+            dataProperty.change(maxValue, context, dataPropertyInput);
         }
     }
 

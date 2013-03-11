@@ -925,45 +925,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
     }
 
-    public static class IncrementActionProperty extends UserActionProperty {
-
-        LCP dataProperty;
-        LCP maxProperty;
-        List<Integer> params;
-
-        IncrementActionProperty(String sID, String caption, LCP dataProperty, LCP maxProperty, Integer[] params) {
-            super(sID, caption, dataProperty.getInterfaceClasses());
-
-            this.dataProperty = dataProperty;
-            this.maxProperty = maxProperty;
-            this.params = Arrays.asList(params);
-        }
-
-        public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-
-            // здесь опять учитываем, что порядок тот же
-            int i = 0;
-            DataObject[] dataPropertyInput = new DataObject[context.getKeyCount()];
-            List<DataObject> maxPropertyInput = new ArrayList<DataObject>();
-
-            for (ClassPropertyInterface classInterface : interfaces) {
-                dataPropertyInput[i] = context.getKeyValue(classInterface);
-                if (params.contains(i + 1)) {
-                    maxPropertyInput.add(dataPropertyInput[i]);
-                }
-                i++;
-            }
-
-            Integer maxValue = (Integer) maxProperty.read(context, maxPropertyInput.toArray(new DataObject[0]));
-            if (maxValue == null)
-                maxValue = 0;
-            maxValue += 1;
-
-            dataProperty.change(maxValue, context, dataPropertyInput);
-        }
-    }
-
-
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
     /// Indices
@@ -985,71 +946,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     /// Forms
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
-
-
-    class SelectFromListFormEntity extends FormEntity implements FormActionProperty.SelfInstancePostProcessor {
-        ObjectEntity[] mainObjects;
-        private ObjectEntity selectionObject;
-        private ObjectEntity remapObject;
-        private final FilterEntity[] remapFilters;
-
-        SelectFromListFormEntity(ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
-            super(null, null);
-
-            this.remapObject = remapObject;
-            this.remapFilters = remapFilters;
-
-            mainObjects = new ObjectEntity[baseClasses.length];
-            for (int i = 0; i < baseClasses.length; i++) {
-                ValueClass baseClass = baseClasses[i];
-                mainObjects[i] = addSingleGroupObject(baseClass, baseGroup);
-                mainObjects[i].groupTo.setSingleClassView(ClassViewType.PANEL);
-                PropertyDrawEntity objectValue = getPropertyDraw(BaseLogicsModule.this.objectValue, mainObjects[i]);
-                if (objectValue != null) {
-                    objectValue.setEditType(PropertyEditType.READONLY);
-                }
-            }
-
-            selectionObject = addSingleGroupObject(selectionClass, baseGroup);
-            selectionObject.groupTo.setSingleClassView(ClassViewType.GRID);
-
-            ObjectEntity[] selectionObjects = new ObjectEntity[mainObjects.length + 1];
-            if (isSelectionClassFirstParam) {
-                System.arraycopy(mainObjects, 0, selectionObjects, 1, mainObjects.length);
-                selectionObjects[0] = selectionObject;
-            } else {
-                System.arraycopy(mainObjects, 0, selectionObjects, 0, mainObjects.length);
-                selectionObjects[mainObjects.length] = selectionObject;
-            }
-
-            CalcPropertyObjectEntity selectionPropertyObject = addPropertyObject(selectionProperty, selectionObjects);
-            PropertyDrawEntity selectionPropertyDraw = addPropertyDraw(null, selectionPropertyObject);
-
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new NotFilterEntity(
-                                    new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
-                            getString("logics.object.not.selected.objects"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
-                    ), true);
-            filterGroup.addFilter(
-                    new RegularFilterEntity(genID(),
-                            new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
-                            getString("logics.object.selected.objects"),
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
-                    ));
-            addRegularFilterGroup(filterGroup);
-        }
-
-        public void postProcessSelfInstance(ImMap<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance) {
-            for (FilterEntity filterEntity : remapFilters) {
-                selfFormInstance.addFixedFilter(
-                        filterEntity.getRemappedFilter(remapObject, selectionObject, executeForm.instanceFactory)
-                );
-            }
-        }
-    }
 
     private class ApplicationFormEntity extends FormEntity {
         public ApplicationFormEntity(NavigatorElement parent, String sID, String caption) {

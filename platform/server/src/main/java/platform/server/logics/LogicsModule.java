@@ -611,19 +611,6 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
-    protected LAP addSelectFromListAction(AbstractGroup group, String caption, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
-        return addSelectFromListAction(group, caption, null, new FilterEntity[0], selectionProperty, selectionClass, baseClasses);
-    }
-
-    protected LAP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
-        return addSelectFromListAction(group, caption, remapObject, remapFilters, selectionProperty, false, selectionClass, baseClasses);
-    }
-
-    protected LAP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LCP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
-        BaseLogicsModule.SelectFromListFormEntity selectFromListForm = baseLM.new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
-        return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
-    }
-
     protected LAP addChangeClassAProp() {
         return addAProp(baseClass.getChangeClassValueAction());
     }
@@ -2135,14 +2122,6 @@ public abstract class LogicsModule {
 
     protected LAP addOFAProp(AbstractGroup group, String caption, LCP lp) { // обернем сразу в and
         return addProperty(group, new LAP(new OpenActionProperty(genSID(), caption, lp)));
-    }
-
-
-    // params - по каким входам группировать
-    protected LAP addIAProp(LCP dataProperty, Integer... params) {
-        return addAProp(new BaseLogicsModule.IncrementActionProperty(genSID(), "sys", dataProperty,
-                addMGProp(dataProperty, params),
-                params));
     }
 
     protected LAP addAAProp(ConcreteCustomClass customClass, LCP... properties) {
