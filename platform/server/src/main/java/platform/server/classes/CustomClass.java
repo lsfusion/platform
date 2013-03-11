@@ -28,9 +28,7 @@ import platform.server.logics.property.actions.ChangeClassActionProperty;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -76,7 +74,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private boolean checkParentChildsCaches(CustomClass parent) {
-        assert parent.childs == null; 
+        assert parent.childs == null;
         for(CustomClass recParent : parent.parents)
             checkParentChildsCaches(recParent);
         return true;
@@ -282,7 +280,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     private List<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
     public void addRelevant(NavigatorElement element) {
-        relevantElements.add(element);        
+        relevantElements.add(element);
     }
 
     public List<NavigatorElement> getRelevantElements(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
@@ -301,16 +299,36 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private FormEntity baseClassForm = null;
+
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
-        if(baseClassForm==null) {
+        if (baseClassForm == null) {
             baseClassForm = getListForm(LM).form;
-            for(CustomClass child : children) {
+            List<FormEntity> childrenList = new ArrayList<FormEntity>();
+            for (CustomClass child : children) {
                 FormEntity childForm = child.getBaseClassForm(LM);
                 if (childForm.getParent() == null)
-                    baseClassForm.add(childForm);
+                    childrenList.add(childForm);
+            }
+
+            Collections.sort(childrenList, new FormEntityComparator());
+
+            for (FormEntity childForm : childrenList) {
+                baseClassForm.add(childForm);
             }
         }
         return baseClassForm;
+    }
+
+    static class FormEntityComparator implements Comparator<FormEntity> {
+        public int compare(FormEntity f1, FormEntity f2) {
+            if (f1.caption == null && f2.caption == null)
+                return 0;
+            if (f1.caption == null)
+                return -1;
+            if (f2.caption == null)
+                return 1;
+            return f1.caption.compareTo(f2.caption);
+        }
     }
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е
