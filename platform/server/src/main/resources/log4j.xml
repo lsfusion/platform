@@ -6,21 +6,7 @@
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
         </layout>
-        <!--<filter class="org.apache.log4j.varia.LevelRangeFilter">-->
-            <!--<param name="LevelMin" value="ALL"/>-->
-            <!--<param name="LevelMax" value="INFO"/>-->
-        <!--</filter>-->
     </appender>
-
-    <!--<appender name="stderr" class="org.apache.log4j.ConsoleAppender">-->
-        <!--<param name="target" value="System.err"/>-->
-        <!--<layout class="org.apache.log4j.PatternLayout">-->
-            <!--<param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>-->
-        <!--</layout>-->
-        <!--<filter class="org.apache.log4j.varia.LevelRangeFilter">-->
-            <!--<param name="LevelMin" value="WARN"/>-->
-        <!--</filter>-->
-    <!--</appender>-->
 
     <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -145,32 +131,35 @@
         </layout>
     </appender>
 
-    <appender name="messagelog" class="org.apache.log4j.rolling.RollingFileAppender">
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="12"/>
-            <param name="activeFileName" value="logs/message.log"/>
-            <param name="fileNamePattern" value="logs/message-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/>
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
-        </layout>
-    </appender>
-
     <category name="platform.server.logics">
         <priority value="INFO"/>
-    </category>
-
-    <category name="paas.manager">
-        <priority value="DEBUG"/>
     </category>
 
     <category name="platform.server.logics.scripted.ScriptingLogicsModule" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="scriptlog"/>
+    </category>
+
+    <category name="platform.server.remote" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="remotelog"/>
+    </category>
+
+    <category name="platform.server.remote.RemoteExceptionsAspect" additivity="false">
+        <priority value="ERROR"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="serverlog"/>
+        <appender-ref ref="errorlog"/>
+    </category>
+
+    <category name="platform.server.mail" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="maillog"/>
+    </category>
+
+    <category name="platform.server.base" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="hashlog"/>
     </category>
 
     <category name="platform.server.data.SQLSession" additivity="false">
@@ -185,30 +174,14 @@
         <appender-ref ref="serverlog"/>
     </category>
 
-    <category name="platform.server.remote" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="remotelog"/>
-    </category>
-
-    <category name="platform.server.mail" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="maillog"/>
-    </category>
-
-    <category name="platform.server.base" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="hashlog"/>
-    </category>
-
-    <category name="message" additivity="false">
-        <priority value="INFO"/>
-        <appender-ref ref="messagelog"/>
+    <!-- ?? ??????????, ?? ???? ??? ?????? ?????????... -->
+    <category name="paas.manager">
+        <priority value="DEBUG"/>
     </category>
 
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
-        <!--<appender-ref ref="stderr"/>-->
         <appender-ref ref="serverlog"/>
         <appender-ref ref="errorlog"/>
     </root>
