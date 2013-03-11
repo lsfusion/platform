@@ -17,8 +17,13 @@ dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment
 
 payerPayment(payment) = DATA legalEntity (payment);
 namePayerPayment 'Сторона Б(Плательщик)' (payment) = name(payerPayment(payment));
+accountFromPayment(payment) = DATA PaymentLedger.account (payment);
+nameAccountFromPayment 'Счет (с)' (payment) = nameAccount(accountFromPayment(payment));
+
 beneficiaryPayment(payment) = DATA legalEntity (payment);
 nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
+accountToPayment(payment) = DATA PaymentLedger.account (payment);
+nameAccountToPayment 'Счет (на)' (payment) = nameAccount(accountToPayment(payment));
 
 notePayment 'Примечание' (payment) = DATA STRING[200] (payment);
 
@@ -50,7 +55,7 @@ FORM payment 'Платеж'
 
     OBJECTS p = payment FIXED PANEL
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment,
-                  notePayment
+                  notePayment, nameAccountToPayment, nameAccountFromPayment
     PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
     PROPERTIES(p) nameCurrencyPayment, sumPayment
     EVENTS
@@ -67,7 +72,6 @@ DESIGN payment FROM DEFAULT{
             caption = 'Шапка документа';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(objectClassName);
-            ADD PROPERTY(namePayerPayment);
             ADD PROPERTY(nameNumeratorObject);
             ADD PROPERTY(numberObject);
             ADD PROPERTY(seriesObject);
@@ -77,7 +81,10 @@ DESIGN payment FROM DEFAULT{
 
         NEW paramContainer {
             caption = 'Параметры документа';
+            ADD PROPERTY(namePayerPayment);
+            ADD PROPERTY(nameAccountToPayment);
             ADD PROPERTY(nameBeneficiaryPayment);
+            ADD PROPERTY(nameAccountFromPayment);
             ADD PROPERTY(notePayment);
         }
 

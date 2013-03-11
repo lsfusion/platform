@@ -57,6 +57,7 @@ noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
 
 EXTEND CLASS account : PaymentLedger.account;
 nameAccount (account) += numberAccount(account);
+
 // ------------------------ Привязка банков к юрлицам ------------------------ //
 
 legalEntityAccount = DATA legalEntity (account);

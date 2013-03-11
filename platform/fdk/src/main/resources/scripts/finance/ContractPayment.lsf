@@ -73,7 +73,7 @@ EXTEND FORM payment
 EXTEND DESIGN payment{
     main{
         paramContainer {
-            ADD PROPERTY(numberContractPayment);
+            ADD PROPERTY(numberContractPayment) BEFORE PROPERTY(nameBeneficiaryPayment);
         }
 
         sumContainer{
@@ -90,8 +90,9 @@ EXTEND DESIGN payment{
 
 EXTEND FORM payments
     PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY numberContractPayment AFTER dateTimePayment,
-                                                                  nameTypeExchangeContractPayment, rateExchangeContractPayment,
-                                                                  sumContractPayment
+                                                                  nameTypeExchangeContractPayment BEFORE delete,
+                                                                  rateExchangeContractPayment BEFORE delete,
+                                                                  sumContractPayment BEFORE delete
 ;
 
 //------------------------------------- Платежи по договору --------------------------------------------------------//
