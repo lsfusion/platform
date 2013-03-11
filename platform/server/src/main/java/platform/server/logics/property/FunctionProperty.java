@@ -18,7 +18,7 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
             propImplement.mapFillDepends(depends);
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return propChanges.getUsedChanges(getDepends(), cascade);
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+        return propChanges.getUsedChanges(getDepends());
     }
 }

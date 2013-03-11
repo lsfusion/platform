@@ -26,7 +26,7 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
         return SetFact.add(toChange.getUsedDataChanges(propChanges), onChange.getUsedChanges(propChanges));
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
         return getUsedChanges(onChange,toChange, propChanges);
     }
 

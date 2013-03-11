@@ -183,19 +183,19 @@ public class MapCacheAspect {
 
     public static boolean checkCaches = false;
 
-    public <K extends PropertyInterface> ImSet<CalcProperty> getUsedChanges(CalcProperty<K> property, StructChanges implement, boolean cascade, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface> ImSet<CalcProperty> getUsedChanges(CalcProperty<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         if(!(property instanceof FunctionProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (ImSet<CalcProperty>) thisJoinPoint.proceed();
 
         // оптимизация самого верхнего уровня, проверка на isEmpty нужна для того чтобы до finalize'a (в CaseUnionProperty в частности) не вызвать случайно getRecDepends, там в fillDepends на это assert есть
-        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{!implement.isEmpty() ? implement.filter(property.getRecDepends()) : implement, cascade}, true, false);
+        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{!implement.isEmpty() ? implement.filter(property.getRecDepends()) : implement}, true, false);
     }
 
-    @Around("execution(* platform.server.logics.property.CalcProperty.getUsedChanges(platform.server.session.StructChanges,boolean)) " +
-            "&& target(property) && args(changes,cascade)")
-    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, StructChanges changes, boolean cascade) throws Throwable {
-        return getUsedChanges(property, changes, cascade, thisJoinPoint);
+    @Around("execution(* platform.server.logics.property.CalcProperty.getUsedChanges(platform.server.session.StructChanges)) " +
+            "&& target(property) && args(changes)")
+    public Object callGetUsedChanges(ProceedingJoinPoint thisJoinPoint, CalcProperty property, StructChanges changes) throws Throwable {
+        return getUsedChanges(property, changes, thisJoinPoint);
     }
 
     // все равно надо делать класс в котором будет :

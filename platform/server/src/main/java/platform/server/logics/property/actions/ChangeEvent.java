@@ -29,19 +29,6 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
         this.writeFrom = writeFrom;
     }
 
-    public boolean hasEventChanges(PropertyChanges propChanges) {
-        return hasEventChanges(propChanges.getStruct(), false);
-    }
-
-    public boolean hasEventChanges(StructChanges changes, boolean cascade) {
-        return changes.hasChanges(changes.getUsedChanges(getDepends(cascade), cascade)); // ради этого все и делается
-    }
-
-    public ImSet<CalcProperty> getUsedDataChanges(StructChanges changes, boolean cascade) {
-        assert hasEventChanges(changes, cascade);
-        return SetFact.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends(true), cascade));
-    }
-
     @Override
     public ImSet<OldProperty> getOldDepends() {
         ImSet<OldProperty> result = super.getOldDepends();
@@ -50,13 +37,11 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
         return result.merge(writeFrom.mapOldDepends());
     }
 
-    public ImSet<CalcProperty> getDepends(boolean includeValue) {
-        ImSet<CalcProperty> result = getDepends();
-        if(!includeValue)
-            return result;
-        MSet<CalcProperty> mWriteFrom = SetFact.mSet();
-        writeFrom.mapFillDepends(mWriteFrom);
-        return result.merge(mWriteFrom.immutable());
+    public ImSet<CalcProperty> getDepends() {
+        MSet<CalcProperty> mResult = SetFact.mSet();
+        where.mapFillDepends(mResult);
+        writeFrom.mapFillDepends(mResult);
+        return mResult.immutable();
     }
 
     public PropertyChange<C> getChange(PropertyChanges changes) {
@@ -75,4 +60,13 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
     public DataChanges getDataChanges(PropertyChanges changes) {
         return writeTo.getDataChanges(getChange(changes), changes);
     }
+
+    public ImSet<CalcProperty> getUsedDataChanges(StructChanges changes) {
+        ImSet<CalcProperty> usedChanges = where.property.getUsedChanges(changes);
+        if(!changes.hasChanges(usedChanges)) // для верхней оптимизации
+            return usedChanges;
+
+        return SetFact.add(writeTo.getUsedDataChanges(changes), changes.getUsedChanges(getDepends()));
+    }
+
 }

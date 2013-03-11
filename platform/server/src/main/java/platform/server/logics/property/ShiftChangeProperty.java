@@ -10,7 +10,6 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.IntegralClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -75,7 +74,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         depends.add((CalcProperty) getIsClassProperty().property);
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
         return propChanges.getUsedChanges(getDepends());
     }
 

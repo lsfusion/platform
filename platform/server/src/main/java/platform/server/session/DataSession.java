@@ -626,12 +626,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException {
-        if(!isInTransaction()) {
-            StructChanges structChanges = new StructChanges(changes);
+        if(!isInTransaction())
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends())
-                if(!sessionEventChangedOld.contains(old) && old.property.hasChanges(structChanges, true)) // если влияет на old из сессионного event'а и еще не читалось
+                if(!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось
                     sessionEventChangedOld.add(old, old.property.readChangeTable(sql, getModifier(), baseClass, getQueryEnv()));
-        }
     }
 
     private boolean inSessionEvent;

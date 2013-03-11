@@ -18,7 +18,7 @@ public abstract class IncrementUnionProperty extends UnionProperty {
     @Override
     protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert assertPropClasses(propClasses, propChanges, changedWhere);
-        if(!hasChanges(propChanges) || !isStored())
+        if(!(isStored() && hasChanges(propChanges)))
             return calculateNewExpr(joinImplement, propClasses, propChanges, changedWhere);
 
         assert !propClasses;

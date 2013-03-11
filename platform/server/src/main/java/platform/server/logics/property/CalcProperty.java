@@ -91,8 +91,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return property.getRecDepends().contains(check);
     }
 
-    public static boolean depends(CalcProperty<?> property, FunctionSet<CalcProperty> check) {
-        return property.getRecDepends().intersect(check);
+    public static boolean depends(CalcProperty<?> property, FunctionSet<? extends CalcProperty> check) {
+        return property.getRecDepends().intersect((FunctionSet<CalcProperty>)check);
     }
 
     public static boolean depends(Iterable<CalcProperty> properties, ImSet<CalcProperty> check) {
@@ -401,7 +401,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов, должен коррелировать с getDepends(Rec), который должен включать в себя все calculateUsedChanges
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
         return SetFact.EMPTY();
     }
 
@@ -437,24 +437,21 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return hasChanges(modifier.getPropertyChanges());
     }
     public boolean hasChanges(PropertyChanges propChanges) {
-        return hasChanges(propChanges, false);
+        return hasChanges(propChanges.getStruct());
     }
-    public boolean hasChanges(PropertyChanges propChanges, boolean cascade) {
-        return hasChanges(propChanges.getStruct(), cascade);
-    }
-    public boolean hasChanges(StructChanges propChanges, boolean cascade) {
-        return propChanges.hasChanges(getUsedChanges(propChanges, cascade));
+    public boolean hasChanges(StructChanges propChanges) {
+        return propChanges.hasChanges(getUsedChanges(propChanges));
     }
 
-    public ImSet<CalcProperty> getUsedChanges(StructChanges propChanges, boolean cascade) {
+    public ImSet<CalcProperty> getUsedChanges(StructChanges propChanges) {
         if(propChanges.isEmpty()) // чтобы рекурсию разбить
             return SetFact.EMPTY();
 
-        ImSet<CalcProperty> usedChanges;
-        ImSet<CalcProperty> modifyChanges = propChanges.getUsedChanges((CalcProperty) this, cascade);
-        if(propChanges.hasChanges(modifyChanges) || (propChanges.hasChanges(usedChanges  = calculateUsedChanges(propChanges, cascade)) && !modifyChanges.isEmpty()))
-            return modifyChanges;
-        return usedChanges;
+        ChangeType modifyChanges = propChanges.getUsedChange(this);
+        if(modifyChanges!=null)
+            return SetFact.add(SetFact.singleton((CalcProperty) this), modifyChanges.isFinal() ? SetFact.<CalcProperty>EMPTY() : getUsedChanges(propChanges.remove(this)));
+
+        return calculateUsedChanges(propChanges);
     }
 
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere);
@@ -462,22 +459,24 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public Expr aspectGetExpr(ImMap<T, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
         assert joinImplement.size() == interfaces.size();
 
-        WhereBuilder changedExprWhere = new WhereBuilder();
-        Expr changedExpr = null;
-
-        if(!propClasses) // чтобы не вызывать derived'ы
-            changedExpr = propChanges.getChangeExpr(this, joinImplement, changedExprWhere);
-
-        if (changedExpr == null && isStored()) {
-            if (!hasChanges(propChanges)) // если нету изменений
-                return mapTable.table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
-            if (useSimpleIncrement())
-                changedExpr = calculateExpr(joinImplement, propClasses, propChanges, changedExprWhere);
+        ModifyChange<T> modify = propChanges.getModify(this);
+        if(modify!=null) {
+            WhereBuilder changedExprWhere = new WhereBuilder();
+            Expr changedExpr = modify.change.getExpr(joinImplement, changedExprWhere);
+            if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
+            return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement, propClasses, modify.isFinal ? PropertyChanges.EMPTY : propChanges.remove(this), modify.isFinal ? null : changedWhere));
         }
 
-        if (changedExpr != null) {
-            if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
-            return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
+        // modify == null;
+        if(isStored()) {
+            if(!hasChanges(propChanges)) // propChanges.isEmpty() // если нету изменений
+                return mapTable.table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
+            if(useSimpleIncrement()) {
+                WhereBuilder changedExprWhere = new WhereBuilder();
+                Expr changedExpr = calculateExpr(joinImplement, propClasses, propChanges, changedExprWhere);
+                if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
+                return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
+            }
         }
 
         return calculateExpr(joinImplement, propClasses, propChanges, changedWhere);
@@ -600,9 +599,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @PackComplex
     @ThisMessage
     public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (!change.where.isFalse())
-            return calculateDataChanges(change, changedWhere, propChanges);
-        return DataChanges.EMPTY;
+        if (change.where.isFalse()) // оптимизация
+            return DataChanges.EMPTY;
+
+        return calculateDataChanges(change, changedWhere, propChanges);
     }
 
     protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
@@ -702,10 +702,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
     }
 
-    public ImSet<CalcProperty> getUsedEventChange(StructChanges propChanges, boolean cascade) {
-        return SetFact.EMPTY();
-    }
-
     protected boolean assertPropClasses(boolean propClasses, PropertyChanges changes, WhereBuilder changedWhere) {
         return !propClasses || (changes.isEmpty() && changedWhere==null);
     }
@@ -782,10 +778,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 result[i] = or(result[i], propClasses.get(mapInterfaces.get(i)));
         }
         return result;
-    }
-
-    public ImSet<CalcProperty> getUsedChanges(StructChanges propChanges) {
-        return getUsedChanges(propChanges, false);
     }
 
     public PropertyChanges getUsedChanges(PropertyChanges propChanges) {

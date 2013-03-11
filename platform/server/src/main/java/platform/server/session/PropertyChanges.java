@@ -99,26 +99,17 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
         return new PropertyChanges(this, add);
     }
 
+    public PropertyChanges remove(CalcProperty property) {
+        assert changes.containsKey(property);
+        return new PropertyChanges(changes.remove(property));
+    }
+
     public boolean isEmpty() {
         return changes.isEmpty();
     }
 
     public <P extends PropertyInterface> ModifyChange<P> getModify(CalcProperty<P> property) {
         return (ModifyChange<P>)changes.getObject(property);
-    }
-
-    public <P extends PropertyInterface> PropertyChange<P> getChange(CalcProperty<P> property) {
-        ModifyChange<P> propChange = getModify(property);
-        return PropertyChange.addNull(propChange == null ? null : propChange.change, !(property instanceof DataProperty) ||
-                (propChange != null && propChange.isFinal) ? null : (PropertyChange<P>) ((DataProperty)property).getEventChange(this));
-    }
-
-    public <P extends PropertyInterface> Expr getChangeExpr(CalcProperty<P> property, ImMap<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-        PropertyChange<P> propChange = getChange(property);
-        if(propChange!=null)
-            return propChange.getExpr(joinImplement, changedWhere);
-        else
-            return null;
     }
 
     private StructChanges struct;

@@ -19,12 +19,6 @@ public abstract class Event<C extends PropertyInterface, P extends Property<C>> 
         this.where = where;
     }
 
-    public ImSet<CalcProperty> getDepends() {
-        MSet<CalcProperty> mUsed = SetFact.mSet();
-        where.mapFillDepends(mUsed);
-        return mUsed.immutable();
-    }
-
     public ImSet<OldProperty> getOldDepends() {
         return where.mapOldDepends();
     }

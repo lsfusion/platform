@@ -2,7 +2,6 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -16,17 +15,17 @@ import platform.server.logics.property.CalcProperty;
 public class StructChanges extends TwinImmutableObject {
 
     public StructChanges(final PropertyChanges propChanges) {
-        changes = propChanges.getProperties().mapValues(new GetValue<Type, CalcProperty>() {
-            public Type getMapValue(CalcProperty value) {
+        changes = propChanges.getProperties().mapValues(new GetValue<ChangeType, CalcProperty>() {
+            public ChangeType getMapValue(CalcProperty value) {
                 ModifyChange modify = propChanges.getModify(value);
-                Type type;
+                ChangeType type;
                 if (modify.isFinal) {
                     if (modify.isEmpty())
-                        type = Type.NOUPDATE;
+                        type = ChangeType.NOUPDATE;
                     else
-                        type = Type.FINAL;
+                        type = ChangeType.FINAL;
                 } else {
-                    type = Type.NOTFINAL;
+                    type = ChangeType.NOTFINAL;
                     assert !modify.isEmpty();
                 }
                 return type;
@@ -34,17 +33,9 @@ public class StructChanges extends TwinImmutableObject {
         });
     }
 
-    private enum Type {
-        FINAL, NOUPDATE, NOTFINAL;
-
-        public boolean isFinal() {
-            return this==FINAL || this==NOUPDATE;
-        }
-    }
-
-    private final static AddValue<CalcProperty, Type> addValue = new SimpleAddValue<CalcProperty, Type>() {
-        public Type addValue(CalcProperty key, Type prevValue, Type newValue) {
-            if(prevValue.equals(Type.FINAL) || prevValue.equals(Type.NOUPDATE) || newValue.equals(Type.NOTFINAL))
+    private final static AddValue<CalcProperty, ChangeType> addValue = new SimpleAddValue<CalcProperty, ChangeType>() {
+        public ChangeType addValue(CalcProperty key, ChangeType prevValue, ChangeType newValue) {
+            if(prevValue.equals(ChangeType.FINAL) || prevValue.equals(ChangeType.NOUPDATE) || newValue.equals(ChangeType.NOTFINAL))
                 return prevValue;
             return newValue;
         }
@@ -54,7 +45,7 @@ public class StructChanges extends TwinImmutableObject {
         }
     };
 
-    private final ImMap<CalcProperty, Type> changes;
+    private final ImMap<CalcProperty, ChangeType> changes;
     
     private StructChanges(StructChanges changes1, StructChanges changes2) {
         changes = changes1.changes.merge(changes2.changes, addValue);
@@ -69,12 +60,9 @@ public class StructChanges extends TwinImmutableObject {
         return new StructChanges(this, add);
     }
 
-    public StructChanges(ImSet<? extends CalcProperty> props) {
-        changes = MapFact.toMap(props, Type.NOTFINAL);
-    }
-
-    public StructChanges(CalcProperty property) {
-        changes = MapFact.singleton(property, Type.NOTFINAL);
+    public StructChanges remove(CalcProperty property) {
+        assert changes.containsKey(property);
+        return new StructChanges(changes.remove(property));
     }
 
     public boolean isEmpty() {
@@ -86,12 +74,12 @@ public class StructChanges extends TwinImmutableObject {
 
     public boolean hasChanges(ImSet<CalcProperty> props) {
         for(int i=0,size=props.size();i<size;i++)
-            if(changes.get(props.get(i))!=Type.NOUPDATE)
+            if(changes.get(props.get(i))!= ChangeType.NOUPDATE)
                 return true;
         return false;
     }
 
-    private StructChanges(ImMap<CalcProperty, Type> changes) {
+    private StructChanges(ImMap<CalcProperty, ChangeType> changes) {
         this.changes = changes;
     }
 
@@ -99,20 +87,14 @@ public class StructChanges extends TwinImmutableObject {
         return new StructChanges(changes.filter(props));
     }
 
-    public ImSet<CalcProperty> getUsedChanges(CalcProperty property, boolean cascade) {
-        Type propChange = changes.get(property);
-        return SetFact.add(propChange == null ? SetFact.<CalcProperty>EMPTY() : SetFact.<CalcProperty>singleton(property),
-                propChange != null && propChange.isFinal() ? SetFact.<CalcProperty>EMPTY() : property.getUsedEventChange(this, cascade));
+    public ChangeType getUsedChange(CalcProperty property) {
+        return changes.get(property);
     }
 
     public ImSet<CalcProperty> getUsedChanges(ImCol<CalcProperty> col) {
-        return getUsedChanges(col, false);
-    }
-
-    public ImSet<CalcProperty> getUsedChanges(ImCol<CalcProperty> col, boolean cascade) {
         MSet<CalcProperty> mResult = SetFact.mSet();
         for(CalcProperty<?> property : col)
-            mResult.addAll(property.getUsedChanges(this, cascade));
+            mResult.addAll(property.getUsedChanges(this));
         return mResult.immutable();
     }
 

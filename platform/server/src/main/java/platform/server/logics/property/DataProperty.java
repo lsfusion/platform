@@ -9,7 +9,6 @@ import platform.base.col.interfaces.mutable.MCol;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
@@ -37,10 +36,6 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public ChangeEvent<?> event = null;
-
-    protected ImSet<CalcProperty> getEventDepends() {
-        return event !=null ? event.getDepends(true) : SetFact.<CalcProperty>EMPTY();
-    }
 
     protected boolean useSimpleIncrement() {
         return false;
@@ -76,12 +71,27 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return new DataChanges(this, change);
     }
 
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges, boolean cascade) {
-        return SetFact.EMPTY();
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+        ImSet<CalcProperty> result = value.getProperty().getUsedChanges(propChanges);
+        for(ClassPropertyInterface remove : interfaces)
+            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
+        if(event !=null)
+            result = result.merge(event.getUsedDataChanges(propChanges));
+        return result;
     }
 
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        throw new RuntimeException("should not be"); // так как stored должен
+        Expr prevExpr = getExpr(joinImplement);
+
+        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges);
+        if(change!=null) {
+            WhereBuilder changedExprWhere = new WhereBuilder();
+            Expr changedExpr = change.getExpr(joinImplement, changedExprWhere);
+            if(changedWhere!=null) changedWhere.add(changedExprWhere.toWhere());
+            return changedExpr.ifElse(changedExprWhere.toWhere(), prevExpr);
+        }
+
+        return prevExpr;
     }
 
     public PropertyChange<ClassPropertyInterface> getEventChange(PropertyChanges changes) {
@@ -104,27 +114,19 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
             result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, classProperty.getRemoveWhere(prevExpr, changes)));
         }
 
-        if(event !=null && event.hasEventChanges(changes)) {
+        if(event !=null) {
             PropertyChange<ClassPropertyInterface> propertyChange = event.getDataChanges(changes).get(this);
-            result = PropertyChange.addNull(result, propertyChange != null ? propertyChange : getNoChange()); // noChange для прикола с stored в aspectgetexpr (там hasChanges стоит, а с null'ом его не будет)
+            if(propertyChange!=null)
+                result = PropertyChange.addNull(result, propertyChange);
         }
 
         return result;
     }
 
     @Override
-    public ImSet<CalcProperty> getUsedEventChange(StructChanges propChanges, boolean cascade) {
-        ImSet<CalcProperty> result = super.getUsedEventChange(propChanges, cascade).merge(value.getProperty().getUsedChanges(propChanges, cascade));
-        for(ClassPropertyInterface remove : interfaces)
-            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges, cascade));
-        if(event !=null && event.hasEventChanges(propChanges, cascade))
-            result = result.merge(event.getUsedDataChanges(propChanges, cascade));
-        return result;
-    }
-
-    @Override
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
-        if(events) depends.addAll(getEventDepends());
+        if(events && event != null)
+            depends.addAll(event.getDepends());
     }
 
     @Override
