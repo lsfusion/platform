@@ -29,7 +29,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 "scripts/masterdata/Country.lsf",
                 "scripts/utils/DefaultData.lsf",
                 "scripts/masterdata/Currency.lsf",
-                "scripts/utils/Backup.lsf");
+                "scripts/utils/Backup.lsf",
+                "scripts/utils/Utils.lsf");
     }
 
     @Override

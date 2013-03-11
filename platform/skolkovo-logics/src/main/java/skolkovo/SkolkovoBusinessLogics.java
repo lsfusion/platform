@@ -22,7 +22,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 "scripts/masterdata/Currency.lsf",
                 "scripts/masterdata/Country.lsf",
                 "scripts/utils/DefaultData.lsf",
-                "scripts/utils/Historizable.lsf");
+                "scripts/utils/Historizable.lsf",
+                "scripts/utils/Utils.lsf");
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException {

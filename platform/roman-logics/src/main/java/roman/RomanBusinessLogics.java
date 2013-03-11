@@ -30,6 +30,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ScriptingLogicsModule Supplier;
     public ScriptingLogicsModule Country;
     public ScriptingLogicsModule I18n;
+    public ScriptingLogicsModule Utils;
 
     public RomanBusinessLogics() throws IOException {
         super();
@@ -53,6 +54,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Supplier = addModuleFromResource("scripts/Supplier.lsf");
         Country = addModuleFromResource("scripts/masterdata/Country.lsf");
         I18n = addModuleFromResource("scripts/utils/I18n.lsf");
+        Utils = addModuleFromResource("scripts/utils/Utils.lsf");
 
         addModulesFromResource(
             "scripts/utils/Hierarchy.lsf",

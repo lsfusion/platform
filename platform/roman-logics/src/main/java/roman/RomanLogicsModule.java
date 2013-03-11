@@ -4164,7 +4164,7 @@ public class RomanLogicsModule extends LogicsModule {
     }
     
     public LAP addGroupGen(String caption, ConcreteCustomClass customClass, LCP setProp, LCP countProp) {
-        return addJoinAProp(caption, addForAProp(false, 2, 2, 3, BL.utilsLM.getLCPByName("count"), 1, 2, addAAProp(barcode, customClass, barcodePrefix, setProp), 3), countProp, 1, 1);
+        return addJoinAProp(caption, addForAProp(false, 2, 2, 3, BL.Utils.getLCPByName("count"), 1, 2, addAAProp(barcode, customClass, barcodePrefix, setProp), 3), countProp, 1, 1);
     }
 
     public LAP addDEAProp(String sID) {

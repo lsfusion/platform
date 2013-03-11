@@ -72,7 +72,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public SystemEventsLogicsModule systemEventsLM;
     public EmailLogicsModule emailLM;
     public SchedulerLogicsModule schedulerLM;
-    public UtilsLogicsModule utilsLM;
 
     protected LogicsInstance logicsInstance;
 
@@ -181,7 +180,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         systemEventsLM = addModule(new SystemEventsLogicsModule(this, LM));
         emailLM = addModule(new EmailLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
-        utilsLM = addModule(new UtilsLogicsModule(this, LM));
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
