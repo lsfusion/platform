@@ -20,7 +20,6 @@ invoicesDeclaration 'Накладные' (declaration) =
     GROUP CONCAT shortDescriptionInvoice(invoice) IF inDeclarationInvoice (declaration, invoice), ','
               BY declaration ORDER invoice PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
 
-isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
 backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS invoice;
 
 // свойства товаров
@@ -34,11 +33,13 @@ nameCountryUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countryUs
 
 UOMUserInvoiceDetail(userInvoiceDetail) = UOMSku(skuUserInvoiceDetail(userInvoiceDetail));
 
-customsGroupInvoiceDetail = DATA customsGroup(invoiceDetail);
+customsGroupInvoiceDetail = ABSTRACT customsGroup(invoiceDetail);
+customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
+customsGroupInvoiceDetail(detail) += customsGroupUserInvoiceDetail(detail);
+
 codeCustomsGroupInvoiceDetail 'ТН ВЭД' (invoiceDetail) = codeCustomsGroup(customsGroupInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10;
 
 sumNetWeightInvoiceDetail 'Вес нетто' (invoiceDetail) = netWeightSku(skuUserInvoiceDetail(invoiceDetail)) * quantityUserInvoiceDetail(invoiceDetail);
-
 sumGrossWeightInvoiceDetail 'Вес брутто' (invoiceDetail) = grossWeightSku(skuUserInvoiceDetail(invoiceDetail)) * quantityUserInvoiceDetail(invoiceDetail);
 
 FORM declarationInvoices 'Присоединение накладных'
@@ -95,16 +96,18 @@ EXTEND DESIGN declaration {
     ADD functions.box;
 }
 
+isCustomUserInvoice 'Таможенные платежи' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
+
 EXTEND FORM userInvoice
-    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice
-    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomInvoice(i),
-                  customCostPriceInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomInvoice(i)
+    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
+    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
+                  customCostPriceInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice
-    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
-                  customCostPriceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i)
+    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
+    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i),
+                  customCostPriceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i)
 ;
 
 //------------------------------------------ позиции декларации -------------------------------------------------------//
@@ -313,7 +316,9 @@ calcDutyInvoiceDetail 'Пошлины' (invoiceDetail) = PARTITION UNGROUP sumDu
                                                                 BY declarationDetailInvoiceDetail(invoiceDetail)
                                                              ORDER invoiceDetail PERSISTENT;
 
+priceDutyInvoiceDetail 'Пошлина (ед.)' = ABSTRACT NUMERIC[14,2](invoiceDetail);
 priceDutyUserInvoiceDetail 'Пошлина (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+priceDutyInvoiceDetail(detail) += priceDutyUserInvoiceDetail(detail);
 
 calcPriceDutyInvoiceDetail 'Пошлина (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcDutyInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
                                                                                       declarationUserInvoiceDetail(invoiceDetail));
@@ -331,32 +336,34 @@ calcRegistrationInvoiceDetail 'Таможенный сбор' (invoiceDetail) = 
                                                                                  BY declarationInvoiceDetail(invoiceDetail)
                                                                               ORDER invoiceDetail PERSISTENT;
 
+priceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' = ABSTRACT NUMERIC[14,2](invoiceDetail);
 priceRegistrationUserInvoiceDetail 'Таможенный сбор (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+priceRegistrationInvoiceDetail(detail) += priceRegistrationUserInvoiceDetail(detail);
 
 calcPriceRegistrationInvoiceDetail 'Таможенный сбор (ед.)' (invoiceDetail) = roundCurrencyDeclaration(calcRegistrationInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail),
                                                                                                       declarationUserInvoiceDetail(invoiceDetail));
 
 //priceRegistrationUserInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail) WHEN CHANGED (calcPriceRegistrationInvoiceDetail(invoiceDetail));
 
-customCostPriceInvoiceDetail(invoiceDetail) += priceRegistrationUserInvoiceDetail(invoiceDetail) (+) priceDutyUserInvoiceDetail(invoiceDetail);
+customCostPriceUserInvoiceDetail(invoiceDetail) += priceRegistrationUserInvoiceDetail(invoiceDetail) (+) priceDutyUserInvoiceDetail(invoiceDetail);
 
 sumRegistrationCostDeclaration 'Таможенный сбор (факт)' (declaration) = GROUP SUM priceRegistrationUserInvoiceDetail(invoiceDetail) * quantityUserInvoiceDetail(invoiceDetail) BY declarationUserInvoiceDetail(invoiceDetail);
 
-setPriceInvoiceDetailes 'Рассчитать себестоимость' = ACTION (declaration) {
+setPriceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACTION (declaration) {
    FOR declarationInvoiceDetail(invoiceDetail) == declaration DO {
-      SET priceDutyUserInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail);
-      SET priceRegistrationUserInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail);
+      SET priceDutyInvoiceDetail(invoiceDetail) <- calcPriceDutyInvoiceDetail(invoiceDetail);
+      SET priceRegistrationInvoiceDetail(invoiceDetail) <- calcPriceRegistrationInvoiceDetail(invoiceDetail);
    };
 } TOOLBAR;
 
 //EXTEND FORM userInvoice
-//    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomInvoice(i),
-//                  priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomInvoice(i)
+//    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
+//                  priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
 //;
 
 EXTEND FORM declaration
     PROPERTIES(d) sumRegistrationCostDeclaration, sumDutyCostDeclaration, setPriceInvoiceDetailes TODRAW id
-    PROPERTIES(id) priceDutyUserInvoiceDetail, priceRegistrationUserInvoiceDetail
+    PROPERTIES(id) priceDutyInvoiceDetail, priceRegistrationInvoiceDetail
 ;
 
 EXTEND DESIGN declaration {
