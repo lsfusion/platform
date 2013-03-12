@@ -77,7 +77,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
                         addDrawProperty(group, property, fc.panelProperties.contains(property));
 
                         //пока не поддерживаем группы в колонках в дереве, поэтому делаем
-                        if (panelProperties.contains(property)) {
+                        if (panel.containsProperty(property)) {
                             panel.updateColumnKeys(property, Collections.singletonList(ClientGroupObjectValue.EMPTY));
                         }
                     }
@@ -114,18 +114,15 @@ public class TreeGroupController extends AbstractGroupObjectController {
 
     public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
         if (toPanel) {
-            panelProperties.add(property);
             panel.addProperty(property);
             view.removeProperty(group, property);
         } else {
-            panelProperties.remove(property);
             view.addDrawProperty(group, property, toPanel);
             panel.removeProperty(property);
         }
     }
 
     public void removeProperty(ClientGroupObject group, ClientPropertyDraw property) {
-        panelProperties.remove(property);
         view.removeProperty(group, property);
         panel.removeProperty(property);
     }
@@ -185,7 +182,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updatePropertyCaptions(property, captions);
         }
     }
@@ -201,14 +198,14 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean update) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updatePropertyValues(property, values, update);
         } else
             view.updateDrawPropertyValues(property, values, update);
     }
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updateCellBackgroundValue(property, cellBackgroundValues);
         } else {
             tree.updateCellBackgroundValues(property, cellBackgroundValues);
@@ -216,7 +213,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
     }
 
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updateCellForegroundValue(property, cellForegroundValues);
         } else {
             tree.updateCellForegroundValues(property, cellForegroundValues);

@@ -27,6 +27,7 @@
       <keyword name="APPLY" />
       <keyword name="AS" />
       <keyword name="ASC" />
+      <keyword name="ASONCHANGE" />
       <keyword name="ASSIGNED" />
       <keyword name="ATTACH" />
       <keyword name="AUTOAPPLY" />

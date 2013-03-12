@@ -20,7 +20,7 @@ nameCountryBank 'Страна' (bank) = name(countryBank(bank)) IN bank MINCHARW
 
 FORM bank 'Банк'
     OBJECTS b=bank FIXED PANEL
-    PROPERTIES(b)  name, addressBank, dialogAddressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
+    PROPERTIES(b)  name, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
     EDIT bank OBJECT b
 ;
 

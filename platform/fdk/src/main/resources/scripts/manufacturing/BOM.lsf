@@ -97,7 +97,7 @@ FORM technology 'Технология'
 
     OBJECTS m = material
     PROPERTIES(m) nameMaterial, shortNameUOMMaterial
-    PROPERTIES overWastageTechnologyMaterialDate(t,m,dt), overDialogWastageTechnologyMaterialDate(t,m)
+    PROPERTIES overWastageTechnologyMaterialDate(t,m,dt)
 
     FILTERS isParentSkuGroupMaterial(sg, m)
     ORDER BY nameMaterial

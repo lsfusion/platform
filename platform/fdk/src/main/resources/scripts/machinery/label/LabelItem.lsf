@@ -21,8 +21,8 @@ countLabelBarcodeDepartmentStoreDate (barcode, departmentStore, date) += valOver
 
 
 EXTEND FORM item
-    PROPERTIES overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt), overDialogLabelItemDepartmentStoreDate(i, d),
-               overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt), overDialogMultiplierItemDepartmentStoreDate(i, d)
+    PROPERTIES overNameLabelItemDepartmentStoreDate(i, d, dt) BACKGROUND dataLabelItemDepartmentStoreDate(i, d, dt)
+               overMultiplierItemDepartmentStoreDate(i, d, dt) BACKGROUND dataMultiplierItemDepartmentStoreDate(i, d, dt)
 ;
 
 overCopyItem(s, d) += ACTION (s, d) {

@@ -1,5 +1,6 @@
 package platform.server.logics.scripted;
 
+import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.PropertyEditType;
 import platform.server.form.entity.ActionPropertyObjectEntity;
@@ -7,8 +8,9 @@ import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -26,8 +28,8 @@ public class FormPropertyOptions {
     private CalcPropertyObjectEntity footer;
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
-    private List<String> eventTypes;
-    private List<ActionPropertyObjectEntity> events;
+    private OrderedMap<String, String> contextMenuBindings;
+    private Map<String, ActionPropertyObjectEntity> editActions;
     private String eventId;
     private PropertyDrawEntity neighbourPropertyDraw;
     private String neighbourPropertyText;
@@ -137,30 +139,44 @@ public class FormPropertyOptions {
         this.drawToToolbar = drawToToolbar;
     }
 
-    public List<String> getEventTypes() {
-        return eventTypes;
-    }
-
-    public void setEventTypes(List<String> eventTypes) {
-        this.eventTypes = eventTypes;
-    }
-
-    public void addEvent(String type, ActionPropertyObjectEntity event) {
-        if (eventTypes == null) {
-            eventTypes = new ArrayList<String>();
-            events = new ArrayList<ActionPropertyObjectEntity>();
+    public void addEditAction(String actionSID, ActionPropertyObjectEntity action) {
+        if (action != null) {
+            if (editActions == null) {
+                editActions = new HashMap<String, ActionPropertyObjectEntity>();
+            }
+            editActions.put(actionSID, action);
         }
-        eventTypes.add(type);
-        events.add(event);
     }
 
-    public List<ActionPropertyObjectEntity> getEvents() {
-        return events;
+    public void addContextMenuBinding(String actionSID, String caption) {
+        if (contextMenuBindings == null) {
+            contextMenuBindings = new OrderedMap<String, String>();
+        }
+        contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEvents(List<ActionPropertyObjectEntity> events) {
-        this.events = events;
-   }
+    public void addContextMenuEditAction(String caption, ActionPropertyObjectEntity action) {
+        if (action != null) {
+            addEditAction(action.property.getSID(), action);
+            addContextMenuBinding(action.property.getSID(), caption);
+        }
+    }
+
+    public OrderedMap<String, String> getContextMenuBindings() {
+        return contextMenuBindings;
+    }
+
+    public void setContextMenuBindings(OrderedMap<String, String> contextMenuBindings) {
+        this.contextMenuBindings = contextMenuBindings;
+    }
+
+    public Map<String, ActionPropertyObjectEntity> getEditActions() {
+        return editActions;
+    }
+
+    public void setEditActions(Map<String, ActionPropertyObjectEntity> editActions) {
+        this.editActions = editActions;
+    }
 
     public PropertyDrawEntity getNeighbourPropertyDraw() {
         return neighbourPropertyDraw;
@@ -207,8 +223,8 @@ public class FormPropertyOptions {
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setForceViewType(nvl(overrides.getForceViewType(), forceViewType));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
-        merged.setEvents(nvl(overrides.getEvents(), events));
-        merged.setEventTypes(nvl(overrides.getEventTypes(), eventTypes));
+        merged.setEditActions(nvl(overrides.getEditActions(), editActions));
+        merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));

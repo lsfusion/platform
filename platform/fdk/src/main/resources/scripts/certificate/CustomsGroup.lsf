@@ -54,10 +54,10 @@ FORM customsGroup 'Позиция ТН ВЭД'
     OBJECTS cg = customsGroup FIXED PANEL
     PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup,
-                   registrationCustomsGroup ON CHANGE EXEC dialogRegistrationCustomsGroup(cg),
-                   valueCurrentRateSupplierVATCustomsGroup ON CHANGE EXEC dialogSupplierVATCustomsGroup(cg),
-                   percentDutyCustomsGroup ON CHANGE EXEC dialogPercentDutyCustomsGroup(cg),
-                   weightDutyCustomsGroup ON CHANGE EXEC dialogWeightDutyCustomsGroup(cg)
+                   registrationCustomsGroup,
+                   valueCurrentRateSupplierVATCustomsGroup,
+                   percentDutyCustomsGroup,
+                   weightDutyCustomsGroup
 
     EDIT customsGroup OBJECT cg
 ;

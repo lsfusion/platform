@@ -27,7 +27,6 @@ import platform.server.data.expr.query.PartitionType;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
-import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.navigator.NavigatorAction;
 import platform.server.form.navigator.NavigatorElement;
@@ -35,7 +34,6 @@ import platform.server.form.window.AbstractWindow;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.*;
 import platform.server.logics.property.actions.flow.*;
@@ -1177,6 +1175,10 @@ public abstract class LogicsModule {
      * Это нужно для того, чтобы можно было создать фильтр по ключам этого groupObject'а
      * <p>
      */
+    protected LAP addGCAProp(GroupObjectEntity groupObject, LAP mainProperty) {
+        return addGCAProp(null, genSID(), "sys", groupObject, mainProperty);
+
+    }
     protected LAP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LAP mainProperty) {
         int mainInts[] = consecutiveInts(mainProperty.listInterfaces.size());
 
@@ -2279,7 +2281,7 @@ public abstract class LogicsModule {
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
         property.setShowEditKey(false);
-        property.setPanelLocation(new ToolbarPanelLocation());
+        property.setDrawToToolbar(true);
         property.setForceViewType(ClassViewType.PANEL);
 
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
@@ -2311,10 +2313,9 @@ public abstract class LogicsModule {
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         property.setShowEditKey(false);
-        property.setPanelLocation(new ToolbarPanelLocation());
+        property.setDrawToToolbar(true);
         property.setForceViewType(ClassViewType.PANEL);
     }
-
 
     protected LCP addHideCaptionProp(LCP hideProperty) {
         return addHideCaptionProp(privateGroup, "hideCaption", hideProperty);
@@ -2506,11 +2507,11 @@ public abstract class LogicsModule {
         // todo: непонятно что пока с полными каноническими именами и порядками параметров делать
     }
 
-    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(ActionProperty<P> aspect, ActionPropertyMapImplement<T, P> action, boolean before) {
+    public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(ActionProperty<P> action, ActionPropertyMapImplement<T, P> aspect, boolean before) {
         if(before)
-            aspect.addBeforeAspect(action);
+            action.addBeforeAspect(aspect);
         else
-            aspect.addAfterAspect(action);
+            action.addAfterAspect(aspect);
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, LCP<L> second, Integer... mapping) {

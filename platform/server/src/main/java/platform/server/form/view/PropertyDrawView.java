@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.base.OrderedMap;
 import platform.base.Pair;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
@@ -254,21 +255,23 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, entity.propertyObject.getCreationScript());
         pool.writeString(outStream, entity.propertyObject.getCreationPath());
 
-        pool.writeString(outStream, entity.mouseBinding);
+        pool.writeString(outStream, entity.getMouseBinding());
 
-        outStream.writeInt(entity.keyBindings == null ? 0 : entity.keyBindings.size());
-        if (entity.keyBindings != null) {
-            for (Map.Entry<KeyStroke, String> e : entity.keyBindings.entrySet()) {
+        Map<KeyStroke, String> keyBindings = entity.getKeyBindings();
+        outStream.writeInt(keyBindings == null ? 0 : keyBindings.size());
+        if (keyBindings != null) {
+            for (Map.Entry<KeyStroke, String> e : keyBindings.entrySet()) {
                 pool.writeObject(outStream, e.getKey());
                 pool.writeString(outStream, e.getValue());
             }
         }
 
-        outStream.writeInt(entity.contextMenuBindings == null ? 0 : entity.contextMenuBindings.size());
-        if (entity.contextMenuBindings != null) {
-            for (Map.Entry<String, String> e : entity.contextMenuBindings.entrySet()) {
-                pool.writeString(outStream, e.getKey());
-                pool.writeString(outStream, e.getValue());
+        OrderedMap<String,String> contextMenuBindings = entity.getContextMenuBindings();
+        outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
+        if (contextMenuBindings != null) {
+            for (int i = 0; i < contextMenuBindings.size(); ++i) {
+                pool.writeString(outStream, contextMenuBindings.getKey(i));
+                pool.writeString(outStream, contextMenuBindings.getValue(i));
             }
         }
     }

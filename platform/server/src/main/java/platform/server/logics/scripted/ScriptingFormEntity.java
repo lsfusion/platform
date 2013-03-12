@@ -1,9 +1,9 @@
 package platform.server.logics.scripted;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.ClassViewType;
 import platform.interop.FormEventType;
 import platform.interop.ModalityType;
@@ -25,6 +25,7 @@ import platform.server.logics.property.derived.DerivedProperty;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -306,10 +307,17 @@ public class ScriptingFormEntity {
             property.setDrawToToolbar(true);
         }
 
-        List<String> eventTypes = options.getEventTypes();
-        if (eventTypes != null) {
-            for (int i = 0; i < eventTypes.size(); i++) {
-                property.setEditAction(eventTypes.get(i), options.getEvents().get(i));
+        Map<String, ActionPropertyObjectEntity> editActions = options.getEditActions();
+        if (editActions != null) {
+            for (Map.Entry<String, ActionPropertyObjectEntity> e : editActions.entrySet()) {
+                property.setEditAction(e.getKey(), e.getValue());
+            }
+        }
+
+        OrderedMap<String, String> contextMenuBindings = options.getContextMenuBindings();
+        if (contextMenuBindings != null) {
+            for (int i = 0; i < contextMenuBindings.size(); ++i) {
+                property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i));
             }
         }
 

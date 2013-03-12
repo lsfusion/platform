@@ -5,6 +5,7 @@ import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
@@ -43,10 +44,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     
     public GroupObjectEntity toDraw;
 
-    public String mouseBinding;
-    public Map<KeyStroke, String> keyBindings;
-    public OrderedMap<String, String> contextMenuBindings;
-    public Map<String, ActionPropertyObjectEntity<?>> editActions;
+    private String mouseBinding;
+    private Map<KeyStroke, String> keyBindings;
+    private OrderedMap<String, String> contextMenuBindings;
+    private Map<String, ActionPropertyObjectEntity<?>> editActions;
 
     private boolean drawToToolbar = false;
 
@@ -60,25 +61,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
     public Object columnGroupObjects = SetFact.mOrderExclSet();
     private boolean finalizedColumnGroupObjects;
-    @LongMutable
-    public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
-        if(!finalizedColumnGroupObjects) {
-            finalizedColumnGroupObjects = true;
-            columnGroupObjects = ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).immutableOrder();
-        }
-
-        return (ImOrderSet<GroupObjectEntity>)columnGroupObjects;
-    }
-    public void setColumnGroupObjects(ImOrderSet<GroupObjectEntity> columnGroupObjects) {
-        assert !finalizedColumnGroupObjects;
-        finalizedColumnGroupObjects = true;
-        this.columnGroupObjects = columnGroupObjects;
-    }
-    public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
-        assert !finalizedColumnGroupObjects;
-        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
-    }
-
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public CalcPropertyObjectEntity<?> propertyCaption;
@@ -172,6 +154,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.toDraw = toDraw;
     }
 
+    public void setMouseAction(String actionSID) {
+        mouseBinding = actionSID;
+    }
+
     public void setKeyAction(KeyStroke ks, String actionSID) {
         if (keyBindings == null) {
             keyBindings = new HashMap<KeyStroke, String>();
@@ -179,8 +165,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         keyBindings.put(ks, actionSID);
     }
 
-    public void setMouseAction(String actionSID) {
-        mouseBinding = actionSID;
+    public void setContextMenuAction(String actionSID, String caption) {
+        if (contextMenuBindings == null) {
+            contextMenuBindings = new OrderedMap<String, String>();
+        }
+        contextMenuBindings.put(actionSID, caption);
     }
 
     public void setEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
@@ -190,27 +179,62 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         editActions.put(actionSID, editAction);
     }
 
-    public void setContextMenuAction(String caption, String actionSID) {
-        if (contextMenuBindings == null) {
-            contextMenuBindings = new OrderedMap<String, String>();
+
+    public OrderedMap<String, String> getContextMenuBindings() {
+        ImOrderMap<String, String> propertyContextMenuBindings = propertyObject.property.getContextMenuBindings();
+        if (propertyContextMenuBindings.isEmpty()) {
+            return contextMenuBindings;
         }
-        contextMenuBindings.remove(actionSID);
-        contextMenuBindings.put(actionSID, caption);
+
+        OrderedMap<String, String> result = new OrderedMap<String, String>();
+        for (int i = 0; i < propertyContextMenuBindings.size(); ++i) {
+            result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
+        }
+
+        if (contextMenuBindings == null) {
+            return result;
+        }
+
+        result.putAll(contextMenuBindings);
+        return result;
     }
 
-    public void setKeyEditAction(KeyStroke keyStroke, String actionSID, ActionPropertyObjectEntity<?> editAction) {
-        setKeyAction(keyStroke, actionSID);
-        setEditAction(actionSID, editAction);
+    public Map<KeyStroke, String> getKeyBindings() {
+        ImMap<KeyStroke, String> propertyKeyBindings = propertyObject.property.getKeyBindings();
+        if (propertyKeyBindings.isEmpty()) {
+            return keyBindings;
+        }
+
+        if (keyBindings == null) {
+            return propertyKeyBindings.toJavaMap();
+        }
+        Map<KeyStroke, String> result = propertyKeyBindings.toJavaMap();
+        result.putAll(keyBindings);
+        return result;
     }
 
-    public void setMouseEditAction(String actionSID, ActionPropertyObjectEntity<?> editAction) {
-        setMouseAction(actionSID);
-        setEditAction(actionSID, editAction);
+    public String getMouseBinding() {
+        return mouseBinding != null ? mouseBinding : propertyObject.property.getMouseBinding();
     }
 
-    public void setContextMenuEditAction(String caption, String actionSID, ActionPropertyObjectEntity<?> editAction) {
-        setContextMenuAction(caption, actionSID);
-        setEditAction(actionSID, editAction);
+    @LongMutable
+    public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
+        if(!finalizedColumnGroupObjects) {
+            finalizedColumnGroupObjects = true;
+            columnGroupObjects = ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).immutableOrder();
+        }
+
+        return (ImOrderSet<GroupObjectEntity>)columnGroupObjects;
+    }
+    public void setColumnGroupObjects(ImOrderSet<GroupObjectEntity> columnGroupObjects) {
+        assert !finalizedColumnGroupObjects;
+        finalizedColumnGroupObjects = true;
+        this.columnGroupObjects = columnGroupObjects;
+    }
+
+    public void addColumnGroupObject(GroupObjectEntity columnGroupObject) {
+        assert !finalizedColumnGroupObjects;
+        ((MOrderExclSet<GroupObjectEntity>)columnGroupObjects).exclAdd(columnGroupObject);
     }
 
     public void setPropertyCaption(CalcPropertyObjectEntity propertyCaption) {

@@ -10,7 +10,6 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
-import platform.server.logics.panellocation.PanelLocation;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -163,8 +162,8 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.echoSymbols = echoSymbols;
     }
 
-    public void setPanelLocation(PanelLocation panelLocation) {
-        property.panelLocation = panelLocation;
+    public void setDrawToToolbar(boolean drawToToolbar) {
+        property.drawToToolbar = drawToToolbar;
     }
 
     public void setShouldBeLast(boolean shouldBeLast) {

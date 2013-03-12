@@ -1,10 +1,10 @@
 package platform.server.logics.linear;
 
-import platform.base.BaseUtils;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.interop.form.ServerResponse;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -67,5 +67,27 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
 
     public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {
         return new ActionPropertyMapImplement<T, U>(property, getRevMap(mapping));
+    }
+
+    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
+        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : property.getSID());
+    }
+
+    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, String contextMenuCaption) {
+        addAsEditActionFor(property.getSID(), mainProperty);
+        mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
+    }
+
+    public <P extends PropertyInterface> void setAsOnChangeFor(LP<P, Property<P>> mainProperty) {
+        addAsEditActionFor(ServerResponse.CHANGE, mainProperty);
+    }
+
+    private <P extends PropertyInterface> void addAsEditActionFor(String actionSID, LP<P, Property<P>> mainProperty) {
+        assert listInterfaces.size() <= mainProperty.listInterfaces.size();
+
+        //мэпим входы по порядку, у этого экшна входов может быть меньше
+        ActionPropertyMapImplement<T, P> actionImplement = new ActionPropertyMapImplement<T, P>(property, getRevMap(mainProperty.listInterfaces));
+
+        mainProperty.property.setEditAction(actionSID, actionImplement);
     }
 }

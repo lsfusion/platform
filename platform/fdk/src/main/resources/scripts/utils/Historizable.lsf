@@ -47,7 +47,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT property DEFAULT;
+    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT property ASONCHANGE property;
 END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
@@ -82,7 +82,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT typeIdentity###property DEFAULT;
+    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT typeIdentity###property ASONCHANGE typeIdentity###property;
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
@@ -117,7 +117,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT property DEFAULT;
+    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT property ASONCHANGE property;
     overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT over###property##Date;
 END
 // ----------------------------------- Свойство объект1-объект2-дата ------------------------------------------ //
@@ -160,7 +160,7 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT typeName###property DEFAULT;
+    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT typeName###property ASONCHANGE typeName###property;
     overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT over###typeName###property##Date;
 END
 
@@ -214,7 +214,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT property DEFAULT;
+    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT property ASONCHANGE property;
     overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###property##Date;
 END
 // -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
@@ -254,7 +254,7 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
         PROPERTY(object3Identity(c)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT typeIdentity###property DEFAULT;
+    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT typeIdentity###property ASONCHANGE typeIdentity###property;
     over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###typeIdentity###property##Date;
 END
 

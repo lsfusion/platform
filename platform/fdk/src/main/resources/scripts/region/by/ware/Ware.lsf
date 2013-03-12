@@ -56,15 +56,15 @@ EXTEND FORM dialogRangeWare
 
 FORM ware 'Посуда'
     OBJECTS w=ware FIXED PANEL
-    PROPERTIES(w) name, canonicalNameWareGroupWare, warePrice, dialogWarePrice
-    PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare, dialogRangeWare
+    PROPERTIES(w) name, canonicalNameWareGroupWare, warePrice
+    PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare
 
     EDIT ware OBJECT w
 ;
 
 FORM wares 'Посуда'
     OBJECTS w=ware
-    PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, dialogWarePrice, numberRangeRangeWare, valueCurrentRateRangeWare
+    PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, numberRangeRangeWare, valueCurrentRateRangeWare
     PROPERTIES(w)          ADDFORM, EDITFORM, delete
 
     DIALOG ware OBJECT w

@@ -227,11 +227,12 @@ public class SampleLogicsModule extends LogicsModule {
             addPropertyDraw(objDoc, objArt, baseGroup);
 
             PropertyDrawEntity descriptionDraw = getPropertyDraw(articleDescription, objArt);
-            descriptionDraw.setMouseAction("annoyingChange");
-            descriptionDraw.setKeyEditAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange", addPropertyObject(annoyingChangeArticleDescriptionAction, objArt));
+            descriptionDraw.setEditAction("annoyingChange", addPropertyObject(annoyingChangeArticleDescriptionAction, objArt));
 
-            descriptionDraw.setContextMenuAction("Annoying change", "annoyingChange");
-            descriptionDraw.setContextMenuAction("Change annoyingly", "annoyingChange");
+            descriptionDraw.setMouseAction("annoyingChange");
+            descriptionDraw.setKeyAction(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "annoyingChange");
+            descriptionDraw.setContextMenuAction("annoyingChange", "Annoying change");
+            descriptionDraw.setContextMenuAction("annoyingChange", "Change annoyingly");
 
             addFixedFilter(new NotNullFilterEntity(getCalcPropertyObject(quantity)));
             addFixedFilter(new NotNullFilterEntity(getCalcPropertyObject(balanceQuantity)));

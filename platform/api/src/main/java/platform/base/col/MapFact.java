@@ -3,7 +3,9 @@ package platform.base.col;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
-import platform.base.col.implementations.*;
+import platform.base.col.implementations.ArIndexedMap;
+import platform.base.col.implementations.ArMap;
+import platform.base.col.implementations.HMap;
 import platform.base.col.implementations.order.ArOrderMap;
 import platform.base.col.implementations.order.HOrderMap;
 import platform.base.col.implementations.simple.EmptyOrderMap;
@@ -16,9 +18,6 @@ import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
-import platform.base.col.lru.ArLRUIndexedMap;
-import platform.base.col.lru.LRUCache;
-import platform.base.col.lru.MCacheMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -350,7 +349,11 @@ public class MapFact {
     // ordered
 
     public static <K, V> MOrderMap<K, V> mOrderMap() {
-        return new HOrderMap<K, V>(MapFact.<K,V>keep());
+        return mOrderMap(MapFact.<K, V>keep());
+    }
+
+    public static <K, V> MOrderMap<K, V> mOrderMap(AddValue<K, V> addValue) {
+        return new HOrderMap<K, V>(addValue);
     }
 
     public static <K, V> MOrderMap<K, V> mOrderMap(ImOrderMap<K, V> map) {

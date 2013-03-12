@@ -620,7 +620,7 @@ public class ClientFormController implements AsyncListener {
                 handler.updateEditValue(value);
                 GroupObjectController controller = controllers.get(property.groupObject);
 
-                ClientGroupObjectValue propertyKey = controller != null && !controller.panelProperties.contains(property)
+                ClientGroupObjectValue propertyKey = controller != null && !controller.hasPanelProperty(property)
                                                      ? new ClientGroupObjectValue(controller.getCurrentObject(), columnKey)
                                                      : columnKey;
 

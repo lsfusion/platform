@@ -84,18 +84,15 @@ EXTEND FORM boxInvoiceForm
                                    quantityUnclassifiedGenderSupplierSupplier SHOWIF quantityUnclassifiedGenderSupplierSupplier(supplier)
 
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceName
-    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationNameSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageName SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceName(sku)
+    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageName(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationInvoiceMainComposition
-    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationMainCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageMainComposition SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceMainComposition(sku)
+    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageMainComposition(sku, invoice) SHOWIF languageInvoice(invoice)
 
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku, translationAdditionalCompositionSku, translationInvoiceAdditionalComposition
-    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageAdditionalComposition SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceAdditionalComposition(sku)
+    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageAdditionalComposition(sku, invoice) SHOWIF languageInvoice(invoice)
 
     OBJECTS a = article
     PROPERTIES (a) READONLY sidArticle
@@ -197,18 +194,15 @@ EXTEND FORM simpleInvoiceForm
                                    quantityUnclassifiedGenderSupplierSupplier SHOWIF quantityUnclassifiedGenderSupplierSupplier(supplier)
 
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku, translationNameSku, translationInvoiceNameSimple
-    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationNameSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageNameSimple SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceNameSimple(sku)
+    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageNameSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationInvoiceMainCompositionSimple
-    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationMainCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageMainCompositionSimple SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceMainCompositionSimple(sku)
+    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageMainCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku, translationAdditionalCompositionSku, translationInvoiceAdditionalCompositionSimple
-    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) SHOWIF languageInvoice(invoice),
-                              translationAdditionalCompositionSkuInvoice SHOWIF languageInvoice(invoice), translationInvoiceLanguageAdditionalCompositionSimple SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceAdditionalCompositionSimple(sku)
+    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageAdditionalCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
     OBJECTS a = article
     PROPERTIES (a) READONLY sidArticle

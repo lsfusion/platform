@@ -43,9 +43,6 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.panellocation.PanelLocation;
-import platform.server.logics.panellocation.ShortcutPanelLocation;
-import platform.server.logics.panellocation.ToolbarPanelLocation;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -556,16 +553,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         addNamedParams(property.property.getSID(), namedParams);
     }
 
-    public void setPanelLocation(LP property, boolean toolbar, String onlyPropertySID, boolean defaultProperty) throws ScriptingErrorLog.SemanticErrorException {
-        PanelLocation panelLocation;
-        if (toolbar) {
-            panelLocation = new ToolbarPanelLocation();
-        } else {
-            panelLocation = new ShortcutPanelLocation(defaultProperty);
-            if (onlyPropertySID != null)
-                ((ShortcutPanelLocation) panelLocation).setOnlyProperty(findLPByCompoundName(onlyPropertySID));
-        }
-        property.setPanelLocation(panelLocation);
+    public void addToContextMenuFor(LP contextMenuProperty, String contextMenuCaption, String onlyPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+        assert onlyPropertySID != null;
+
+        checkActionProperty(contextMenuProperty);
+
+        LP<?, ?> mainProperty = findLPByCompoundName(onlyPropertySID);
+        LAP actionContextMenuProperty = (LAP) contextMenuProperty;
+        actionContextMenuProperty.addToContextMenuFor(mainProperty, contextMenuCaption);
+    }
+
+    public void setAsOnChangeFor(LP contextMenuProperty, String onlyPropertySID) throws ScriptingErrorLog.SemanticErrorException {
+        assert onlyPropertySID != null;
+
+        checkActionProperty(contextMenuProperty);
+
+        LP<?, ?> mainProperty = findLPByCompoundName(onlyPropertySID);
+        LAP actionContextMenuProperty = (LAP) contextMenuProperty;
+        actionContextMenuProperty.setAsOnChangeFor(mainProperty);
+    }
+
+    public void setDrawToToolbar(LP property) {
+        property.setDrawToToolbar(true);
     }
 
     public void setFixedCharWidth(LP property, Integer fixedCharWidth) {

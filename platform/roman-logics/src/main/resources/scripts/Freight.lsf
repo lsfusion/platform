@@ -207,23 +207,19 @@ EXTEND FORM freightChangeForm
     PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku SHOWIF languageFreight(freight),
                               nameCountryLanguageFreightSku  AFTER nameCountrySku SHOWIF languageFreight(freight)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku, translationMainCompositionSku, translationAllMainComposition
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationAllMainComposition(sku)
     PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku,
                               nameSubCategorySkuFreight BEFORE nameCountrySku,
-                              mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight),
-                              translationMainCompositionSkuFreight SHOWIF languageFreight(freight), translationAllMainCompositionLanguage SHOWIF languageFreight(freight)
+                              mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) ON SHORTCUT 'Перевести все' EXEC translationAllMainCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku, translationAdditionalCompositionSku, translationAllAdditionalComposition
-    PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) SHOWIF languageFreight(freight),
-                              translationAdditionalCompositionSkuFreight SHOWIF languageFreight(freight), translationAllAdditionalCompositionLanguage SHOWIF languageFreight(freight)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationAllAdditionalComposition(sku)
+    PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) ON SHORTCUT 'Перевести все' EXEC translationAllAdditionalCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, mainCompositionFreightSku, translationMainCompositionFreightSku, translationAllFreightMainComposition,
-                                     mainCompositionLanguageFreightSku SHOWIF languageFreight(freight),
-                                     translationMainCompositionLanguageFreightSku SHOWIF languageFreight(freight), translationAllLanguageMainComposition SHOWIF languageFreight(freight),
+    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, mainCompositionFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllFreightMainComposition(freight, skuFreight),
+                                     mainCompositionLanguageFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllLanguageMainComposition(freight, skuFreight) SHOWIF languageFreight(freight),
 
-                                     additionalCompositionOriginFreightSku, additionalCompositionFreightSku, translationAdditionalCompositionFreightSku, translationAllFreightAdditionalComposition,
-                                     additionalCompositionLanguageFreightSku SHOWIF languageFreight(freight),
-                                     translationAdditionalCompositionLanguageFreightSku SHOWIF languageFreight(freight), translationAllLanguageAdditionalComposition SHOWIF languageFreight(freight),
+                                     additionalCompositionOriginFreightSku, additionalCompositionFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllFreightAdditionalComposition(freight, skuFreight),
+                                     additionalCompositionLanguageFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllLanguageAdditionalComposition(freight, skuFreight) SHOWIF languageFreight(freight),
 
                                      nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;

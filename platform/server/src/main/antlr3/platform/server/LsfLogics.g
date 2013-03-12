@@ -538,11 +538,12 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
-		|	event = formPropertyEvent { $options.addEvent($event.type, $event.action); }
+		|	'ON' 'CHANGE' prop=formActionProperty { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
+		|	'ON' 'CHANGE_WYS' prop=formActionProperty { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
+		|	'ON' 'SHORTCUT' c=stringLiteral prop=formActionProperty { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
-
 
 formPropertyDraw returns [PropertyDrawEntity property]
 	:	id=ID 				{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
@@ -700,12 +701,6 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType t
 		faprop=formActionProperty { $action = $faprop.action; }
 	;
 
-formPropertyEvent returns [String type, ActionPropertyObjectEntity action]
-	:	'ON'
-		('CHANGE' { $type = ServerResponse.CHANGE; } | 'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; })
-		prop=formActionProperty { $action = $prop.action; }
-	; 
-	
 formActionProperty returns [ActionPropertyObjectEntity action]
 @init {
 	List<String> context = new ArrayList<String>();
@@ -1331,7 +1326,9 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
 		|	'PERSISTENT' { isPersistent = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
-		|	panelLocationSetting [property]
+		|	shortcutSetting [property, caption != null ? caption : propertyName]
+		|	onChangeSetting [property]
+		|	toolbarSetting [property]
 		|	fixedCharWidthSetting [property]
 		|	minCharWidthSetting [property]
 		|	maxCharWidthSetting [property]
@@ -1352,21 +1349,38 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 	;
 
 
-panelLocationSetting [LP property]
+shortcutSetting [LP property, String caption]
 @init {
-	boolean toolbar = false;
 	String sid = null;
-	boolean defaultProperty = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.setPanelLocation($property, toolbar, sid, defaultProperty);
+		self.addToContextMenuFor($property, caption, sid);
 	}
 }
-	:	'TOOLBAR' { toolbar = true; }
-	|	'SHORTCUT' { toolbar = false; } name = compoundID { sid = $name.sid; } ('DEFAULT' { defaultProperty = true; })?
+	:	'SHORTCUT' name = compoundID { sid = $name.sid; }
 	;
 
+onChangeSetting [LP property]
+@init {
+	String sid = null;
+}
+@after {
+	if (inPropParseState()) {
+		self.setAsOnChangeFor($property, sid);
+	}
+}
+	:	'ASONCHANGE' name = compoundID { sid = $name.sid; }
+	;
+
+toolbarSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setDrawToToolbar(property);
+	}
+}
+	:	'TOOLBAR'
+	;
 
 fixedCharWidthSetting [LP property]
 @after {

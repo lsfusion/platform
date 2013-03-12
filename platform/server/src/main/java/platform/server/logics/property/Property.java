@@ -9,6 +9,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.LongMutable;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.MOrderMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -36,8 +37,6 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LP;
-import platform.server.logics.panellocation.PanelLocation;
-import platform.server.logics.panellocation.ShortcutPanelLocation;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerIdentitySerializable;
@@ -50,19 +49,19 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
-    private String sID;
-    private String name;
-    // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
-
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
         public PropertyInterface getMapValue(int i) {
             return new PropertyInterface(i);
         }};
 
+    public int ID = 0;
+    private String sID;
+    private String name;
 
+    // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public String caption;
     public String toolTip;
 
@@ -105,7 +104,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public String regexpMessage;
     public Boolean echoSymbols;
 
-    public PanelLocation panelLocation;
+    public boolean drawToToolbar;
 
     public Boolean shouldBeLast;
 
@@ -116,11 +115,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String eventID;
 
+    private String mouseBinding;
+    private Object keyBindings;
+    private Object contextMenuBindings;
+    private Object editActions;
+
     public String toString() {
         return caption + " (" + sID + ")";
     }
-
-    public int ID = 0;
 
     public String getCode() {
         return getSID();
@@ -280,15 +282,46 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean cached = false;
 
-    private Object editActions = MapFact.mMap(MapFact.override());
+    public void setMouseAction(String actionSID) {
+        mouseBinding = actionSID;
+    }
 
-    @LongMutable
-    private ImMap<String, ActionPropertyMapImplement<?, T>> getEditActions() {
-        return (ImMap<String, ActionPropertyMapImplement<?, T>>)editActions;
+    public void setKeyAction(KeyStroke ks, String actionSID) {
+        if (keyBindings == null) {
+            keyBindings = MapFact.mMap(MapFact.override());
+        }
+        ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
+    }
+
+    public void setContextMenuAction(String actionSID, String caption) {
+        if (contextMenuBindings == null) {
+            contextMenuBindings = MapFact.mOrderMap(MapFact.override());
+        }
+        ((MOrderMap<String, String>)contextMenuBindings).add(actionSID, caption);
     }
 
     public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
+        if (editActions == null) {
+            editActions = MapFact.mMap(MapFact.override());
+        }
         ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
+    }
+
+    public String getMouseBinding() {
+        return mouseBinding;
+    }
+
+    public ImMap<KeyStroke, String> getKeyBindings() {
+        return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
+    }
+
+    public ImOrderMap<String, String> getContextMenuBindings() {
+        return (ImOrderMap<String, String>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+    }
+
+    @LongMutable
+    private ImMap<String, ActionPropertyMapImplement<?, T>> getEditActions() {
+        return (ImMap<String, ActionPropertyMapImplement<?, T>>)(editActions == null ? MapFact.EMPTY() : editActions);
     }
 
     public ActionPropertyMapImplement<?, T> getEditAction(String editActionSID) {
@@ -326,8 +359,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
         if (loggable && logFormProperty != null) {
             ActionPropertyObjectEntity logFormPropertyObject =
-                    form.addPropertyObject(logFormProperty, getOrderInterfaces().mapOrderMap(entity.propertyObject.mapping).valuesList().toArray(new PropertyObjectInterfaceEntity[interfaces.size()]));
-            entity.setContextMenuEditAction(logFormProperty.property.caption, logFormProperty.property.getSID(), logFormPropertyObject);
+                    form.addPropertyObject(logFormProperty,
+                                           getOrderInterfaces().mapOrderMap(
+                                                   entity.propertyObject.mapping
+                                           ).valuesList().toArray(new PropertyObjectInterfaceEntity[interfaces.size()])
+                    );
+            String actionSID = logFormProperty.property.getSID();
+            entity.setContextMenuAction(actionSID, logFormProperty.property.caption);
+            entity.setEditAction(actionSID, logFormPropertyObject);
         }
 
         if (shouldBeLast != null)
@@ -340,34 +379,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             entity.askConfirmMessage = askConfirmMessage;
         if (eventID != null)
             entity.eventID = eventID;
-        if (panelLocation != null && panelLocation.isToolbarLocation()) {
+        if (drawToToolbar) {
             entity.setDrawToToolbar(true);
-        }
-
-        //перемещаем свойство в контекстном меню в тот же groupObject, что и свойство, к которому оно привязано
-        if (panelLocation != null && panelLocation.isShortcutLocation()) {
-            //todo: пока просто скрываем это свойство ... в будущем надо сделать, чтобы его вообще не нужно было добавлять в форму...
-            entity.forceViewType = ClassViewType.HIDE;
-
-            ShortcutPanelLocation shortcutLocation = (ShortcutPanelLocation) panelLocation;
-
-            Property onlyProperty = shortcutLocation.getOnlyProperty();
-
-            if (onlyProperty != null) {
-                for (PropertyDrawEntity drawEntity : form.getProperties(onlyProperty)) {
-                    if (drawEntity.toDraw != null) {
-                        entity.toDraw = drawEntity.toDraw;
-                    }
-
-                    //добавляем в контекстное меню...
-                    if (shortcutLocation.isDefault()) {
-                        drawEntity.setContextMenuAction(caption, ServerResponse.CHANGE);
-                        drawEntity.setEditAction(ServerResponse.CHANGE, (ActionPropertyObjectEntity<T>) entity.propertyObject);
-                    } else {
-                        drawEntity.setContextMenuEditAction(caption, getSID(), (ActionPropertyObjectEntity<T>) entity.propertyObject);
-                    }
-                }
-            }
         }
     }
 
@@ -471,7 +484,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void finalizeAroundInit() {
         links = null;
-        editActions = ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).immutable();
+        editActions = editActions == null ? MapFact.EMPTY() : ((MMap)editActions).immutable();
+        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
+        contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }
 
     @IdentityInstanceLazy

@@ -7,9 +7,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientToolbar;
 
 import java.awt.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public abstract class AbstractGroupObjectController implements GroupObjectLogicsSupplier {
     protected final ClientFormController form;
@@ -18,15 +16,14 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
     protected final LogicsSupplier logicsSupplier;
 
     protected PanelController panel;
-    protected ToolbarView toolbarView;
-
-    protected Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
+    protected final ToolbarView toolbarView;
 
     public AbstractGroupObjectController(ClientFormController form, LogicsSupplier logicsSupplier, ClientFormLayout formLayout, ClientToolbar toolbar) {
         this.form = form;
         this.logicsSupplier = logicsSupplier;
         this.formLayout = formLayout;
 
+        panel = null;
         toolbarView = new ToolbarView();
         if (toolbar != null && toolbar.visible) {
             formLayout.add(toolbar, toolbarView);
@@ -44,5 +41,9 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
 
     public void addToToolbar(Component component) {
         toolbarView.addComponent(component);
+    }
+
+    public boolean hasPanelProperty(ClientPropertyDraw property) {
+        return panel.containsProperty(property);
     }
 }

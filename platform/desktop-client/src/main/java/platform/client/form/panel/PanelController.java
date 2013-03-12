@@ -75,6 +75,10 @@ public class PanelController {
         values.remove(property);
     }
 
+    public boolean containsProperty(ClientPropertyDraw property) {
+        return properties.containsKey(property);
+    }
+
     protected void addGroupObjectActions(JComponent comp) {
         //do nothing by default
     }

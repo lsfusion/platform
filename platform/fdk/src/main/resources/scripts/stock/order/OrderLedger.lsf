@@ -226,10 +226,10 @@ META extendFormDocumentOrderLedgerStock(object, form, concrete)
     reserveBPurchaseSkuStock###object 'Резерв (закупка)' (sku, stock, object) = reserveBPurchaseSkuStockDateTime(sku, stock, shipmentDateTime###object(object));
     reserveBSaleSkuStock###object 'Резерв (продажа)' (sku, stock, object) = reserveBSaleSkuStockDateTime(sku, stock, shipmentDateTime###object(object));
 
-    reviewReserveSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT currentReserveSaleSkuStock DEFAULT;
-    reviewReservePurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT currentReservePurchaseSkuStock DEFAULT;
-    reviewReserveBSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT reserveBSaleSkuStock###object DEFAULT;
-    reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL SHORTCUT reserveBPurchaseSkuStock###object DEFAULT;
+    reviewReserveSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
+    reviewReservePurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
+    reviewReserveBSaleSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
+    reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
 
     EXTEND FORM form
         PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete)
@@ -262,10 +262,10 @@ META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
     reserveBSaleSku###object 'Резерв (продажа)' (sku, object) = reserveBSaleSkuStockDateTime(sku, stockProp###object(object), dateTime###object(object));
     currentReserveSaleSku###object 'Резерв продажа (всего)' (sku, object) = currentReserveSaleSkuStock(sku, stockProp###object(object));
 
-    reviewReserveSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT currentReserveSaleSku###object DEFAULT;
-    reviewReservePurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT currentReservePurchaseSku###object DEFAULT;
-    reviewReserveBSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT reserveBSaleSku###object DEFAULT;
-    reviewReserveBPurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL SHORTCUT reserveBPurchaseSku###object DEFAULT;
+    reviewReserveSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
+    reviewReservePurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
+    reviewReserveBSaleSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
+    reviewReserveBPurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
 
     EXTEND FORM form
         PROPERTIES READONLY BEFORE currentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)

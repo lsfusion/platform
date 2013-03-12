@@ -217,14 +217,12 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         panel.addProperty(property);
-        panelProperties.add(property);
     }
 
     public void addGridProperty(ClientPropertyDraw property) {
         grid.addProperty(property);
 
         panel.removeProperty(property);
-        panelProperties.remove(property);
     }
 
     public void addDrawProperty(ClientPropertyDraw property, boolean toPanel) {
@@ -241,7 +239,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         panel.removeProperty(property);
-        panelProperties.remove(property);
     }
 
     public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
@@ -271,7 +268,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateDrawColumnKeys(ClientPropertyDraw property, List<ClientGroupObjectValue> groupColumnKeys) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updateColumnKeys(property, groupColumnKeys);
         } else {
             grid.updateColumnKeys(property, groupColumnKeys);
@@ -279,7 +276,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updatePropertyCaptions(property, captions);
         } else {
             grid.updatePropertyCaptions(property, captions);
@@ -287,7 +284,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updateCellBackgroundValue(property, cellBackgroundValues);
         } else {
             grid.updateCellBackgroundValues(property, cellBackgroundValues);
@@ -295,7 +292,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateCellForegroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellForegroundValues) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updateCellForegroundValue(property, cellForegroundValues);
         } else {
             grid.updateCellForegroundValues(property, cellForegroundValues);
@@ -303,7 +300,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values, boolean updateKeys) {
-        if (panelProperties.contains(property)) {
+        if (panel.containsProperty(property)) {
             panel.updatePropertyValues(property, values, updateKeys);
         } else {
             grid.updatePropertyValues(property, values, updateKeys);
