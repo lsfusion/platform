@@ -4,6 +4,7 @@ import platform.base.SystemUtils;
 import platform.client.remote.proxy.RemoteBusinessLogicProxy;
 import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.LoginException;
 import platform.interop.exceptions.RemoteInternalException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -33,6 +34,7 @@ public final class LoginAction {
     final static int PENDING_RESTART_WARNING = 4;
     final static int ERROR = 5;
     final static int CANCELED = 6;
+    final static int LOGIN_ERROR = 7;
 
     public String serverHost;
     public String serverPort;
@@ -80,7 +82,7 @@ public final class LoginAction {
                     loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
                     break;
                 case SERVER_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
+                    loginDialog.setWarningMsg(getString("errors.internal.server.error"));
                     break;
                 case PENDING_RESTART_WARNING:
                     loginDialog.setWarningMsg(getString("errors.server.reboots"));
@@ -90,6 +92,9 @@ public final class LoginAction {
                     break;
                 case CANCELED:
                     loginDialog.setWarningMsg(getString("errors.error.cancel"));
+                    break;
+                case LOGIN_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
                     break;
             }
             loginDialog.setAutoLogin(false);
@@ -139,6 +144,9 @@ public final class LoginAction {
         } catch (RemoteInternalException e) {
             e.printStackTrace();
             return SERVER_ERROR;
+        } catch (LoginException e) {
+            e.printStackTrace();
+            return LOGIN_ERROR;
         } catch (Throwable e) {
             e.printStackTrace();
             return ERROR;
