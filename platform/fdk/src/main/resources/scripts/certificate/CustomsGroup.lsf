@@ -63,13 +63,12 @@ FORM customsGroup 'Позиция ТН ВЭД'
 ;
 
 addCustomsGroup 'Добавить' = ACTION (customsGroup) NEWSESSION {
-    ADDOBJ customsGroup;
-    FOR cg == addedObject() DO {
+    FOR ADDOBJ cg = customsGroup DO {
         SET parentCustomsGroup(cg) <- customsGroup AS customsGroup;
-        FORM customsGroup OBJECTS cg=addedObject() MODAL;
+        FORM customsGroup OBJECTS cg=cg MODAL;
         IF formResult() == formResult.ok THEN
             EXEC apply();
-    };
+    }
 } TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 FORM customsGroups 'Позиции ТН ВЭД'

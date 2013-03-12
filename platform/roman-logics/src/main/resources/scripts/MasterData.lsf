@@ -317,6 +317,8 @@ nameWarehouseGroupCustomStore 'Группа складов' (customStore) = name
 
 stockGroupStock (stock) += warehouseGroupCustomStore(stock);
 
+legalEntityStock(stock) += legalEntityCustomStore(stock);
+
 allowImportExportXLSLegalEntityUA 'Разрешить импорт/экспорт из/в Excel(Украина)' = DATA BOOLEAN (legalEntity) IN lawGroup;
 allowImportExportXMLLegalEntityBY 'Разрешить импорт/экспорт из/в XML(Беларусь)' = DATA BOOLEAN (legalEntity) IN lawGroup;
 
@@ -324,7 +326,7 @@ FORM customStore 'Склад временного хранения'
 
     OBJECTS c=customStore FIXED PANEL
 
-    PROPERTIES(c) name, nameWarehouseGroupCustomStore//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(c) name, nameLegalEntityStock, nameWarehouseGroupCustomStore //fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
                   //addressLegalEntity, dialogAddressLegalEntity,
                   //postAddressLegalEntity, dialogPostAddressLegalEntity,
@@ -342,14 +344,14 @@ DESIGN customStore FROM DEFAULT {
         c.box {
             childConstraints = TO THE BOTTOM;
 
-            NEW row1 {
-                childConstraints = TO THE RIGHT;
+//            NEW row1 {
+//                childConstraints = TO THE RIGHT;
 //                ADD c.lawGroup{
 //                    childConstraints = TO THE BOTTOM;
 //                }
-            }
-            NEW row2{
-                childConstraints = TO THE RIGHT;
+//            }
+//            NEW row2{
+//                childConstraints = TO THE RIGHT;
 //                ADD c.contactGroup {
 //                    childConstraints = TO THE BOTTOM;
 //                }
@@ -359,7 +361,7 @@ DESIGN customStore FROM DEFAULT {
 //                ADD c.docGroup {
 //                    childConstraints = TO THE BOTTOM;
 //                }
-            }
+//            }
         }
 
         ADD functions.box;
@@ -370,7 +372,7 @@ FORM customStores 'Склады временного хранения'
 
     OBJECTS c=customStore
 
-    PROPERTIES(c) READONLY name//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(c) READONLY name, nameLegalEntityStock, nameWarehouseGroupCustomStore//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
                   //addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
                   //emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
