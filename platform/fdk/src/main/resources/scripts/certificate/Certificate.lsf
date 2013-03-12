@@ -23,7 +23,7 @@ META defineDocumentCertificate(document, object)
     EXTEND FORM user###document
         OBJECTS dc = user###document##Detail
         PROPERTIES (dc) indexUser###document##Detail, idBarcodeSkuUser###document##Detail, nameSkuUser###document##Detail,
-                        descriptionBatchUser###document##Detail ON CHANGE EXEC changeBatchUser###document##Detail(d)
+                        descriptionBatchUser###document##Detail ON CHANGE EXEC changeBatchUser###document##Detail(dc)
         FILTERS user###document##User###document##Detail(dc) == object
     ;
 

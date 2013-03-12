@@ -42,7 +42,6 @@ limitAccessEmployee 'Ограничить доступ' = DATA BOOLEAN (employee
 TABLE employeeDivisionEmployee (employeeDivision, employee);
 inEmployeeDivisionEmployee 'Сотрудник подразделения' = DATA BOOLEAN (employeeDivision, employee);
 
-accessEmployee 'Доступ разрешен' = DATA BOOLEAN (employee);
 dataAccessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
 
 TABLE employeeDivisionGroupEmployee(employeeDivisionGroup, employee);
@@ -56,14 +55,14 @@ nearestInEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) =
 
 
 accessEmployeeEmployeeDivisionGroup 'Доступ разрешен' (employee, employeeDivisionGroup) =
-    UNION OVERRIDE accessEmployee(employee) AND employeeDivisionGroup IS employeeDivisionGroup,
+    UNION OVERRIDE employee IS employee AND employeeDivisionGroup IS employeeDivisionGroup AND NOT limitAccessEmployee(employee),
                    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup),
-                   dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee);
+                   dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee) PERSISTENT;
 
 accessEmployeeEmployeeDivision 'Доступ разрешен' (employee, employeeDivision) =
-    (UNION OVERRIDE accessEmployee(employee) AND employeeDivision IS employeeDivision,
+    UNION OVERRIDE employee IS employee AND employeeDivision IS employeeDivision AND NOT limitAccessEmployee(employee),
                    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)),
-                   dataAccessEmployeeDivisionEmployee(employeeDivision, employee));
+                   dataAccessEmployeeDivisionEmployee(employeeDivision, employee) PERSISTENT;
 
 countAccessEmployeeEmployeeDivisionGroup 'Кол-во доступных подразделений' (employee, employeeDivisionGroup) =
     GROUP SUM 1 IF accessEmployeeEmployeeDivision(employee, employeeDivision)
@@ -78,7 +77,6 @@ FORM employee 'Сотрудник'
     TREE treeEmployeeDivision a=STRING[3], dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup
     PROPERTIES READONLY  OBJVALUE(a), dgTreeName = name(dg)
     FILTERS stringEqualsAll(a)
-    PROPERTIES(e)     accessEmployee TODRAW a FORCE GRID
     PROPERTIES(e, dg) accessEmployeeEmployeeDivisionGroup
 
     OBJECTS           d=employeeDivision
