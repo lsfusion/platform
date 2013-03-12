@@ -1,0 +1,66 @@
+MODULE  MenuProductionOrder;
+
+REQUIRE Menu,
+        ProductionOrder,
+        BOMNutrition;
+
+// -- Заполнение на основе производственных заказов ---- //
+
+FORM menuOrders 'Производственные заказы'
+
+    OBJECTS o = order
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
+                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    FILTERS isPostedOrder(o)
+
+    OBJECTS pd=productDetail
+    PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
+                   productsPriceProductDetail, productsSumProductDetail
+    FILTERS orderProductDetail(pd)==o
+;
+
+DESIGN menuOrders FROM DEFAULT {
+    main {
+        preferredSize = (1024, 768);
+        NEW documentContainer BEFORE functions.box {
+
+            childConstraints = TO THE BOTTOM;
+            ADD o.box;
+            ADD pd.box {
+                title = 'Изделия';
+            }
+        }
+    }
+}
+
+fillOrderUserMenu 'Заполнить на основе производственного заказа' =  ACTION (userMenu) {
+    FORM menuOrders MODAL;
+    IF formResult() == formResult.ok THEN {
+        LOCAL productionOrder = order();
+        SET productionOrder() <- chosenObject('o');
+        SET noteUserMenu(userMenu) <- [FORMULA STRING[100]  ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) '](
+                                             'Основание:', descriptionOrder(productionOrder()));
+        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = userMenuDetail DO {
+            SET userMenuUserMenuDetail(d) <- userMenu;
+            SET priceUserMenuDetail(d) <- productsPriceProductDetail(productDetail);
+            SET skuUserMenuDetail(d) <- skuProductDetail(productDetail);
+            SET productYieldUserMenuDetail(d) <- productYieldProduct(productProductDetail(productDetail));
+            SET compositionUserMenuDetail(d) <- compositionProduct(productProductDetail(productDetail));
+        }
+    }
+}
+
+EXTEND FORM userMenu
+    PROPERTIES(m) fillOrderUserMenu
+;
+EXTEND DESIGN userMenu {
+    headerRow1 {
+        NEW row2 BEFORE row1 {
+            title = 'Производственный заказ';
+            childConstraints = TO THE RIGHTBOTTOM;
+
+            ADD PROPERTY(fillOrderUserMenu);
+        }
+    }
+}

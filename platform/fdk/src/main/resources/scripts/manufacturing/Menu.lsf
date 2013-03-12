@@ -1,0 +1,293 @@
+MODULE  Menu;
+
+REQUIRE Stock,
+        Numerator,
+        Barcode,
+        Document,
+        PriceList,
+        Manufacturing,
+        Utils;
+        
+//------------------------------Меню--------------------------------//        
+
+CLASS ABSTRACT menu 'Меню' : named;
+CLASS ABSTRACT menuDetail 'Строка меню' : named;
+
+CLASS userMenu 'Меню (польз.)' : menu, historizable, numeratedObject;
+CLASS userMenuDetail 'Строка меню (польз.)' : menuDetail;
+CLASS userMenuPosted 'Проведенное меню (польз.)' : userMenu, postedObject;
+
+@defineDocumentInterface(menu);
+@defineDocumentInterfaceNumber(menu);
+@defineNumeratedObjectDefaultPrefix(userMenu, 'Нумератор для меню', 'МЮ', );
+
+@defineDocumentInterfaceDataStock(menu, stock, 'Склад', );
+
+@defineDocumentInterfacePosted(menu);
+
+@defineDocumentClosed (menu);
+
+@defineDocumentInterfaceDescription(menu, 'Меню');
+
+@defineDocumentInterfaceCurrency(menu);
+@deriveDocumentCurrency(userMenu, stock);
+
+@defineDocumentInterfaceDetailSku(menu, sku);
+
+@defineDocumentInterfaceDetailPrice(menu); // объявляем цену
+
+@defineDocumentInterfacePriceListType(menu); // объявляем вид цены
+priceListTypeUserMenuDetail(detail) <- priceListTypeUserMenu(userMenuUserMenuDetail(detail)) WHEN CHANGED(priceListTypeUserMenu(userMenuUserMenuDetail(detail)));
+@deriveDocumentDetailPricePriceListTypeCustom (userMenuDetail, stock); // записываем цену
+
+compositionMenuDetail 'Состав' = ABSTRACT STRING[255] (menuDetail) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+compositionUserMenuDetail 'Состав' = DATA STRING[255] (userMenuDetail) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+compositionMenuDetail(detail)+= compositionUserMenuDetail(detail);
+compositionUserMenuDetail(detail) <-  compositionSku(skuUserMenuDetail(detail)) WHEN CHANGED(skuUserMenuDetail(detail));
+
+groupTypeMenu = ABSTRACT groupType (menu);
+nameGroupTypeMenu 'Тип классификатора' (menu) = name(groupTypeMenu(menu));
+
+groupTypeUserMenu = DATA groupType (userMenu);
+nameGroupTypeUserMenu 'Тип классификатора' (userMenu) = name(groupTypeUserMenu(userMenu));
+groupTypeMenu(menu) += groupTypeUserMenu(menu);
+
+productYieldMenuDetail 'Выход' = ABSTRACT STRING[100] (menuDetail) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+productYieldUserMenuDetail 'Выход' = DATA STRING[100] (userMenuDetail) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+productYieldMenuDetail(detail)+= productYieldUserMenuDetail(detail);
+
+// --------------------------- Формы Меню ---------------------------------
+editMenu 'Редактировать' = ABSTRACT ACTION (menu) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+countUserMenuGroup 'Количество позиций в группе' (userMenu,group)= GROUP SUM 1
+    BY userMenuUserMenuDetail(detail), groupGroupTypeSku(groupTypeUserMenu(userMenuUserMenuDetail(detail)), skuUserMenuDetail(detail));
+countMenuGroup 'Количество позиций в группе' (menu,group)= GROUP SUM 1
+    BY menuMenuDetail(detail), groupGroupTypeSku(groupTypeMenu(menuMenuDetail(detail)), skuMenuDetail(detail));
+
+hasParentUserMenuGroup 'Количество позиций в группе' (userMenu, group)=  GROUP SUM countUserMenuGroup(userMenu,child)
+    IF isParentGroupGroup(child, group) BY userMenu, group;
+hasParentMenuGroup 'Количество позиций в группе' (menu, group)=  GROUP SUM countMenuGroup(menu,child)
+    IF isParentGroupGroup(child, group) BY menu, group;
+
+isUserMenuDetailGroup (detail, group)= groupGroupTypeSku(groupTypeUserMenu(userMenuUserMenuDetail(detail)), skuUserMenuDetail(detail))==group;
+isMenuDetailGroup (detail, group)= groupGroupTypeSku(groupTypeMenu(menuMenuDetail(detail)), skuMenuDetail(detail))==group;
+
+positionNumberMenuDetailGroup 'Порядок' = ABSTRACT INTEGER (menuDetail, group);
+positionNumberUserMenuDetailGroup 'Порядок' = DATA INTEGER (userMenuDetail, group);
+positionNumberMenuDetailGroup(detail, group) += positionNumberUserMenuDetailGroup(detail, group);
+
+positionNumberMenuGroup 'Порядок' = ABSTRACT INTEGER (menu, group);
+positionNumberUserMenuGroup 'Порядок' = DATA INTEGER (userMenu, group);
+positionNumberMenuGroup(menu, group) += positionNumberUserMenuGroup(menu, group);
+//--
+hasParentUserChildGroup 'Количество позиций в группе' (child, group)=  GROUP SUM countUserMenuGroup(userMenu,child)
+    IF isParentGroupGroup(child, group) BY child, group;
+hasParentChildGroup 'Количество позиций в группе' (child, group)=  GROUP SUM countMenuGroup(menu,child)
+    IF isParentGroupGroup(child, group) BY child, group;
+
+hasParentUserDetailGroup (detail,group)= hasParentUserChildGroup(groupGroupTypeSku(groupTypeUserMenu(userMenuUserMenuDetail(detail)), skuUserMenuDetail(detail)), group);
+hasParentDetailGroup (detail,group)= hasParentChildGroup(groupGroupTypeSku(groupTypeMenu(menuMenuDetail(detail)), skuMenuDetail(detail)), group);
+
+//---------------------------Формы----------------------------//
+
+FORM userMenu 'Меню'
+    OBJECTS m = userMenu FIXED PANEL
+    PROPERTIES (m) objectClassName, nameStockUserMenu, nameNumeratorObject, numberObject, seriesObject, dateUserMenu, timeUserMenu,
+                   nameCurrencyUserMenu, namePriceListTypeUserMenu, noteUserMenu, countUserMenuDetailUserMenu,
+                   nameGroupTypeUserMenu
+
+    OBJECTS d = userMenuDetail
+    PROPERTIES (d) indexUserMenuDetail, idBarcodeSkuUserMenuDetail, nameSkuUserMenuDetail, shortNameUOMSkuUserMenuDetail, namePriceListTypeUserMenuDetail,
+                   priceUserMenuDetail, compositionUserMenuDetail, productYieldUserMenuDetail, ADDOBJ, delete
+
+    PROPERTIES(m) TODRAW d deleteUserMenuDetailUserMenu
+
+    FILTERS userMenuUserMenuDetail(d) == m
+
+
+    TREE treeGroup g=group PARENT parentGroup
+    PROPERTIES READONLY name(g)
+    PROPERTIES(m,g) hasParentUserMenuGroup, positionNumberUserMenuGroup
+    FILTERS groupTypeGroup(g) == groupTypeUserMenu(m),
+            hasParentUserMenuGroup(m,g)
+    ORDER BY positionNumberUserMenuGroup(m,g)
+
+    OBJECTS dd = userMenuDetail
+    PROPERTIES (dd) idBarcodeSkuUserMenuDetail, nameSkuUserMenuDetail, priceUserMenuDetail, compositionUserMenuDetail,
+                    productYieldUserMenuDetail
+
+    PROPERTIES (dd,g) positionNumberUserMenuDetailGroup
+    FILTERS  isUserMenuDetailGroup(dd,g),
+             userMenuUserMenuDetail(dd) == m
+    ORDER BY positionNumberUserMenuDetailGroup(dd,g)
+
+
+    EVENTS
+        ON OK EXEC prePostUserMenu(m)
+
+    HINTTABLE LIST dateTimeUserMenuDetail, skuUserMenuDetail,stockUserMenuDetail,
+                   priceListTypeUserMenuDetail, currencyUserMenuDetail, priceUserMenuDetail
+
+    EDIT userMenu OBJECT m
+;
+
+DESIGN userMenu FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+        NEW specification.box BEFORE functions.box{
+            type = TABBED;
+            ADD d.box {
+                title = 'Спецификация';
+                d.panel {
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+            NEW treeContainer{
+                title = 'Группировка';
+                type = SPLITH;
+                childConstraints = TO THE RIGHT;
+                ADD treeGroup.tree.box { fillHorizontal = 1.0; }
+                ADD dd.box {fillHorizontal = 2.0; }
+            }
+        }
+
+        NEW header.box BEFORE specification.box {
+            childConstraints = TO THE RIGHT;
+
+            NEW headerRow1 {
+                childConstraints = TO THE BOTTOM;
+
+                ADD m.documentHeaderGroup {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(objectClassName) { preferredCharWidth = 10; }
+                    ADD PROPERTY(nameNumeratorObject);
+                    ADD PROPERTY(numberObject);
+                    ADD PROPERTY(seriesObject);
+                    ADD PROPERTY(dateUserMenu);
+                    ADD PROPERTY(timeUserMenu);
+                    ADD PROPERTY(nameStockUserMenu);
+                }
+                NEW row1 {
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    NEW row11 {
+                        title = 'Классификатор';
+                        ADD PROPERTY(nameGroupTypeUserMenu);
+                    }
+                    ADD m.documentPrmGroup {
+                        childConstraints = TO THE RIGHTBOTTOM;
+                    }
+                }
+            }
+            ADD m.documentSumGroup {
+                childConstraints = TO THE BOTTOM;
+            }
+        }
+
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+    }
+}
+
+@defineDocumentInSkuStock(userMenu, sku, stock);
+@extendFormDocumentInSkuStock(userMenu, userMenu, m, treeContainer);
+
+addUserMenu 'Добавить' = ACTION ADDFORM userMenu;
+editUserMenu 'Редактировать' (userMenu) = ACTION EDITFORM userMenu;
+editMenu(menu) += editUserMenu(menu);
+
+copyMenu 'Копировать' = ACTION (userMenu) NEWSESSION {
+    FOR ADDOBJ m = userMenu DO {
+        SET stockUserMenu(m) <- stockUserMenu(userMenu);
+        SET currencyUserMenu(m) <- currencyUserMenu(userMenu);
+        SET priceListTypeUserMenu(m) <- priceListTypeUserMenu(userMenu);
+        SET noteUserMenu(m) <- noteUserMenu(userMenu);
+        SET groupTypeUserMenu(m) <- groupTypeUserMenu(userMenu);
+        FOR positionNumberUserMenuGroup(userMenu,group) DO {
+            SET positionNumberUserMenuGroup(m,group) <- positionNumberUserMenuGroup(userMenu,group);
+        }
+        FOR userMenuUserMenuDetail(userMenuDetail) == userMenu DO {
+            FOR ADDOBJ d=userMenuDetail DO {
+                SET userMenuUserMenuDetail(d) <- m;
+                SET skuUserMenuDetail(d) <- skuUserMenuDetail(userMenuDetail);
+                SET dataStockUserMenuDetail(d) <- dataStockUserMenuDetail(userMenuDetail);
+                SET compositionUserMenuDetail(d) <- compositionUserMenuDetail(userMenuDetail);
+                SET productYieldUserMenuDetail(d) <- productYieldUserMenuDetail(userMenuDetail);
+                FOR positionNumberUserMenuDetailGroup(userMenuDetail,group) DO {
+                    SET positionNumberUserMenuDetailGroup(d,group) <- positionNumberUserMenuDetailGroup(userMenuDetail,group);
+                }
+            }
+
+        }
+
+
+        FORM userMenu OBJECTS m = m MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+
+
+
+FORM menus 'Меню'
+    OBJECTS m = menu
+    PROPERTIES (m) READONLY isPostedMenu FORCE GRID, objectClassName, numberMenu, seriesMenu, dateMenu, timeMenu,
+                            nameStockMenu, nameCurrencyMenu, namePriceListTypeMenu, noteMenu, countMenuDetailMenu
+
+    PROPERTIES (m) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserMenu TODRAW m
+    PROPERTIES (m) editMenu, copyMenu
+    PROPERTIES     delete(m) FORCE PANEL TOOLBAR  SHOWIF isUserMenu(m)
+    OBJECTS d=menuDetail
+    PROPERTIES (d) READONLY indexMenuDetail, idBarcodeSkuMenuDetail, nameSkuMenuDetail, shortNameUOMSkuMenuDetail
+    PROPERTIES (d) READONLY namePriceListTypeMenuDetail, priceMenuDetail, compositionMenuDetail, productYieldMenuDetail
+
+    FILTERS menuMenuDetail(d) == m
+
+    DIALOG menu OBJECT m
+;
+@extendFormFilterAccess(menu, m, menus, stock);
+
+DESIGN menus FROM DEFAULT {
+    PROPERTY (delete(m)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
+        childConstraints = TO THE BOTTOM;
+
+        ADD m.box;
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD m.historyGroup;
+                ADD m.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печать';
+                childConstraints = TO THE BOTTOM;
+                fillVertical = 1.0;
+                fillHorizontal = 1.0;
+
+            }
+        }
+    }
+}
+
+NAVIGATOR {
+    manufacturingDocuments 'Документы' {
+        ADD menus;
+    };
+}
+
+
+

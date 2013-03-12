@@ -6,8 +6,6 @@ NAMESPACE Item;
 
 GROUP itemNutritionGroup 'Энергетическая ценность' : public;
 
-nutritionalValueItem 'Энергетическая и пищевая ценность' = DATA STRING[400] (item) IN itemNutritionGroup MINCHARWIDTH 50;
-
 energyItem 'Энергетическая ценность на 100г, ккал' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
 
 fatsItem 'Жиры на 100г, г' = DATA NUMERIC[8,2] (item) IN itemNutritionGroup;
@@ -17,7 +15,6 @@ proteinsItem 'Белки на 100г, г' = DATA NUMERIC[8,2] (item) IN itemNutri
 containsGMOItem 'Содержит ГМО' = DATA BOOLEAN (item) IN itemNutritionGroup;
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET nutritionalValueItem(d) <- nutritionalValueItem(s);
     SET energyItem(d) <- energyItem(s);
     SET fatsItem(d) <- fatsItem(s);
     SET carbohydratesItem(d) <- carbohydratesItem(s);
@@ -25,5 +22,5 @@ overCopyItem(s, d) += ACTION (s, d) {
     SET containsGMOItem(d) <- containsGMOItem(s);
 }
 
-EXTEND FORM item PROPERTIES(i) nutritionalValueItem, energyItem, fatsItem, carbohydratesItem, proteinsItem, containsGMOItem;
+EXTEND FORM item PROPERTIES(i) energyItem, fatsItem, carbohydratesItem, proteinsItem, containsGMOItem;
 EXTEND DESIGN item { itemPrimaryColumn2 { ADD i.itemNutritionGroup; } }

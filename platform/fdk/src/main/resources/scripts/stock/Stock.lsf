@@ -238,6 +238,7 @@ isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku),
 netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
 volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
+compositionSku 'Состав' = ABSTRACT STRING[255] (sku) PERSISTENT;
 
 skuTypeSku = ABSTRACT skuType (sku) PERSISTENT;
 
@@ -1738,7 +1739,7 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
                 EXEC overChangeQuantityValueSku###object##Detail(detail###Sku###object(sku, object));
             } ELSE {
                 FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND skuProp###detail(detail) == sku DO {    //AND NOT quantity###detail(detail)
-                    EXEC delete(detail###Sku###object(sku, object));
+                    EXEC delete(detail);
                 }
             }
         } ELSE {
@@ -1831,7 +1832,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
                 SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp###contactStock(sku, object, stockProp, contactStock);
             } ELSE {
                 FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp AND skuProp###detail(detail) == sku AND contactStock###detail(detail) == contactStock DO { //AND NOT quantity###detail(detail)
-                    EXEC delete(detail###Sku###object###stockProp###contactStock(sku, object, stockProp, contactStock));
+                    EXEC delete(detail);
                 }
             }
         } ELSE {
@@ -1924,6 +1925,82 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
             }
         }
         PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
+    }
+END
+
+//----------- Подбор товара в документ: галочка (один склад)---------------//
+META defineDocumentInSkuStockCustom(object, detail, skuProp, stockProp)
+
+    hasParent###object###skuGroup(object, sku, group) = isParentGroupGroup(groupGroupTypeSku(groupType###object(object), sku), group);
+
+    currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
+    detail###sku###object(sku, object) = GROUP SUM 1 BY skuProp###detail(detail), object###detail(detail);
+
+    inSku###object 'Отм.' (sku, object) = TRUE IF detail###sku###object(sku, object);
+
+    changeInSku###object = ACTION (sku, object) {
+        REQUEST BOOLEAN INPUT;
+        IF TRUE AND NOT requestedLogical() THEN {
+            IF detail###sku###object(sku, object) THEN {
+                FOR sku == skuProp###detail(detail) AND object == object###detail(detail) DO {
+                    EXEC delete(detail);
+                }
+            }
+        } ELSE {
+            IF requestedLogical() THEN {
+                FOR ADDOBJ d = detail DO {
+                   SET object###detail(d) <- object;
+                   SET skuProp###detail(d) <- sku;
+                }
+            }
+        }
+    }
+
+END
+META defineDocumentInSkuStock(object, skuProp, stockProp)
+    @defineDocumentInSkuStockCustom(object, object##Detail, skuProp, stockProp);
+END
+
+META extendFormDocumentInSkuStock(object, form, concrete, contBox)
+
+    EXTEND FORM form
+
+        TREE treeGroup gg=group PARENT parentGroup
+        PROPERTIES READONLY name(gg)
+        FILTERS groupTypeGroup(gg) == groupType###object(concrete)
+
+        OBJECTS s=sku
+        PROPERTIES             inSku###object(s,concrete) ON CHANGE EXEC changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
+        PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
+        PROPERTIES(s, concrete)currentBalanceSku###object READONLY
+
+        FILTERS                hasParent###object###skuGroup(concrete, s, gg) OR s IS sku AND concrete IS object AND NOT gg
+
+        FILTERS nameSku(s)
+        ORDER BY inputName
+
+        FILTERGROUP filterBalance
+            FILTER 'С остатком' 'F11' currentBalanceSku###object(s, concrete)
+
+    ;
+
+    EXTEND DESIGN form {
+        specification.box {
+            type = TABBED;
+            NEW itemBox BEFORE contBox{
+                childConstraints = TO THE RIGHT;
+                title = 'Подбор';
+                type = SPLITH;
+
+                ADD treeGroup.tree.box;
+                NEW wor {
+                    childConstraints = TO THE BOTTOM;
+                    ADD s.box {
+                        s.grid { fillHorizontal = 2; }
+                    }
+                }
+            }
+        }
     }
 END
 

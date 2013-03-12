@@ -44,6 +44,7 @@ fastProduct 'Жиры (ед.)' = DATA NUMERIC[8,2] (product);
 carbohydratesProduct 'Углеводы (ед.)' = DATA NUMERIC[8,2] (product);
 proteinsProduct 'Белки (ед.)' = DATA NUMERIC[8,2] (product);
 energyProduct 'Энерг.ценность (ед.)' = DATA NUMERIC[8,2] (product);
+productYieldProduct 'Выход' = DATA STRING[100] (product) MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
 fastProduct(product) <- fatsBOM(BOMProduct(product)) / (quantityProduct(product)*10*netWeightItem(skuProduct(product)))
         WHEN CHANGED (fatsBOM(BOMProduct(product))) OR
@@ -66,12 +67,19 @@ compositionProduct 'Состав' = DATA STRING[255] (product) MINCHARWIDTH 30 P
 componentsProduct 'Компоненты' (product)= componentsBOM(BOMProduct(product));
 compositionProduct(product) <- componentsProduct(product) WHEN CHANGED(componentsProduct(product));
 
+changeCompositionProduct 'Записать в товар' = ACTION (product) {
+    FOR skuProduct(product) == item AND item AS item DO {
+        SET compositionItem(item) <- compositionProduct(product);
+    }
+} SHORTCUT compositionProduct;
+
+
 // Расширяем формы
 EXTEND FORM BOM
     PROPERTIES(b) showNutritionBOM
     PROPERTIES(b) SHOWIF showNutritionBOM(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
     PROPERTIES(b) SHOWIF showNutritionBOM(b) recipesBOM
-    PROPERTIES(p) SHOWIF showNutritionBOM(b) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct
+    PROPERTIES(p) SHOWIF showNutritionBOM(b) BEFORE delete(p) fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct, changeCompositionProduct, productYieldProduct
     PROPERTIES(c) SHOWIF showNutritionBOM(b) BEFORE delete(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
 ;
 
@@ -84,4 +92,10 @@ EXTEND DESIGN BOM {
         ADD PROPERTY(recipesBOM);
     }
 }
+EXTEND FORM BOMs
+    PROPERTIES(b) showNutritionBOM
+    PROPERTIES(b) SHOWIF showNutritionBOM(b) READONLY fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM, recipesBOM
+    PROPERTIES(p) SHOWIF showNutritionBOM(b) READONLY fastProduct, carbohydratesProduct, proteinsProduct, energyProduct, compositionProduct, productYieldProduct
+    PROPERTIES(c) SHOWIF showNutritionBOM(b) READONLY fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
+;
 

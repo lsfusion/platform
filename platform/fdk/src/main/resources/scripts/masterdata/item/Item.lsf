@@ -524,6 +524,11 @@ TABLE manufacturer(manufacturer);
 @defineObjectItemAttribute(manufacturer, name, 'Производитель', itemBaseGroup);
 @defineObjectItemAttributeBatch (manufacturer, name, 'Производитель');
 
+//  Состав
+@defineStringItemAttribute(composition, STRING[255], 'Состав', itemBaseGroup);
+@defineItemAttributeBatch (composition, 'Состав');
+compositionSku (sku) += compositionItem(sku);
+
 // Тара
 skuTypeItem = DATA skuType (item);
 skuTypeSku (sku) += skuTypeItem(sku);
