@@ -172,8 +172,8 @@ executerDeclaration 'Исполнитель' = DATA customUser (declaration);
 nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration)) MINCHARWIDTH 20;
 executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration);
 
-allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(customStoreDeclaration(declaration));
-allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(customStoreDeclaration(declaration));
+allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(legalEntityStock(customStoreDeclaration(declaration)));
+allowImportExportXMLDeclarationBY(declaration) = allowImportExportXMLLegalEntityBY(legalEntityStock(customStoreDeclaration(declaration)));
 
 exportDeclaration 'Выгрузить декларацию (РБ)' = ACTION CUSTOM 'roman.actions.ExportDeclarationActionProperty' IN docGroup;
 

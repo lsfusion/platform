@@ -324,14 +324,14 @@ FORM customStore 'Склад временного хранения'
 
     OBJECTS c=customStore FIXED PANEL
 
-    PROPERTIES(c) name, nameWarehouseGroupCustomStore, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
-                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
-                  addressLegalEntity, dialogAddressLegalEntity,
-                  postAddressLegalEntity, dialogPostAddressLegalEntity,
-                  managerLegalEntity, dialogManagerLegalEntity,
-                  accountantLegalEntity, dialogAccountantLegalEntity,
-                  phoneLegalEntity, dialogPhoneLegalEntity,
-                  emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
+    PROPERTIES(c) name, nameWarehouseGroupCustomStore//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                  //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
+                  //addressLegalEntity, dialogAddressLegalEntity,
+                  //postAddressLegalEntity, dialogPostAddressLegalEntity,
+                  //managerLegalEntity, dialogManagerLegalEntity,
+                  //accountantLegalEntity, dialogAccountantLegalEntity,
+                  //phoneLegalEntity, dialogPhoneLegalEntity,
+                  //emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
 
     EDIT customStore OBJECT c
 ;
@@ -344,21 +344,21 @@ DESIGN customStore FROM DEFAULT {
 
             NEW row1 {
                 childConstraints = TO THE RIGHT;
-                ADD c.lawGroup{
-                    childConstraints = TO THE BOTTOM;
-                }
+//                ADD c.lawGroup{
+//                    childConstraints = TO THE BOTTOM;
+//                }
             }
             NEW row2{
                 childConstraints = TO THE RIGHT;
-                ADD c.contactGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-                ADD c.managementGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
-                ADD c.docGroup {
-                    childConstraints = TO THE BOTTOM;
-                }
+//                ADD c.contactGroup {
+//                    childConstraints = TO THE BOTTOM;
+//                }
+//                ADD c.managementGroup {
+//                    childConstraints = TO THE BOTTOM;
+//                }
+//                ADD c.docGroup {
+//                    childConstraints = TO THE BOTTOM;
+//                }
             }
         }
 
@@ -370,10 +370,10 @@ FORM customStores 'Склады временного хранения'
 
     OBJECTS c=customStore
 
-    PROPERTIES(c) READONLY name, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
-                  UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
-                  addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
-                  emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
+    PROPERTIES(c) READONLY name//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
+                  //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
+                  //addressLegalEntity, postAddressLegalEntity, managerLegalEntity, accountantLegalEntity, phoneLegalEntity,
+                  //emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
@@ -474,7 +474,7 @@ EXTEND FORM stores
 
 EXTEND DESIGN stores {
     REMOVE PROPERTY(addFormStore_store);
-    s.filters { ADD PROPERTY(addRomanStore) BEFORE PROPERTY(editFormStore_store); }
+    //s.filters { ADD PROPERTY(addRomanStore) BEFORE PROPERTY(editFormStore_store); }
 }
 
 FORM destinations 'Магазины'

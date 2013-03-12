@@ -384,7 +384,7 @@ useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDe
 @defineConsignmentHeader(CStoWH);
 @implementConsignmentHeader(CStoWH);
 
-supplierConsignment (consignment) += customStoreCStoWH(consignment);
+supplierConsignment (consignment) += legalEntityStock(customStoreCStoWH(consignment));
 supplierStockConsignment (consignment) += customStoreCStoWH(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
 customerStockConsignment (consignment) += destinationStockCStoWH(consignment);

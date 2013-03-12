@@ -312,6 +312,9 @@ public class RomanLogicsModule extends LogicsModule {
 
     public ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
+
+    public LCP legalEntityCustomStore;
+
     public LCP relationStoreSupplier;
     private LCP typeExchangeSTX;
     private LCP nameTypeExchangeSTX;
@@ -1646,7 +1649,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
 
-        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock"), (CustomClass) BL.LegalEntity.getClassByName("legalEntity"));
+        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock")); //, (CustomClass) BL.LegalEntity.getClassByName("legalEntity")
 
         customsZone = addConcreteClass("customsZone", "Таможенная зона", baseClass.named);
 
@@ -1850,6 +1853,8 @@ public class RomanLogicsModule extends LogicsModule {
         yearSeasonYear = addDProp("yearSeasonYear", "Год", StringClass.get(4), seasonYear);
 
         nameSeasonYear = addJProp("nameSeasonYear", "Наименование", baseLM.istring2SP, nameSeasonSeasonYear, 1, yearSeasonYear, 1);
+
+        legalEntityCustomStore = addDProp(idGroup, "legalEntityCustomStore", "Юрлицо", BL.LegalEntity.getClassByName("legalEntity"), customStore);
 
         // rate
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", getTypeExchangeClass());

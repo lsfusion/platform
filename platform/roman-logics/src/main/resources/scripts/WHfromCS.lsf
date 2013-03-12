@@ -888,7 +888,7 @@ registerCommitteeListRegister (inputListRegister) += registerCommitteeTransferPr
 
 dateListRegister (inputListRegister) += dateTransferPriceActWHfromCSI (inputListRegister);
 departmentStoreListRegister (inputListRegister) += departmentStoreTransferPriceActWHfromCSI (inputListRegister);
-senderListRegister (inputListRegister) += customStoreCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister));
+senderListRegister (inputListRegister) += legalEntityStock(customStoreCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister)));
 isCustomStoreListRegister(inputListRegister) += senderListRegister(inputListRegister) IS customStore;
 shipperListRegister (inputListRegister) += nameCustomStoreCStoWH(CStoWHTransferPriceActWHfromCSI(inputListRegister));
 

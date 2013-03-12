@@ -56,6 +56,10 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной' : documentDetail;
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
 @defineDocumentAbstractDetailNote (invoice);
+
+shortDescriptionInvoice (invoice) = [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
+                                               seriesNumberObject(invoice), dateInvoice(invoice));
+
 extraDescriptionInvoiceDetail 'Доп. наименование' (invoiceDetail) = ABSTRACT STRING[255] (invoiceDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
