@@ -4,7 +4,7 @@ REQUIRE Menu;
 
 //-----------------Печатные формы (выводятся на печать только два уровня групп)-----------------//
 
-FORM menuPrint 'Меню (печать)' PRINT
+FORM menuPrint 'Меню' PRINT
     OBJECTS m = menu FIXED PANEL
     PROPERTIES (m) objectClassName, nameStockMenu, nameNumeratorObject, numberObject, seriesObject, dateMenu, timeMenu,
                    nameCurrencyMenu, namePriceListTypeMenu, noteMenu, countMenuDetailMenu,
@@ -45,11 +45,6 @@ EXTEND DESIGN menus {
     }
 }
 
-NAVIGATOR {
-    manufacturingDocuments 'Документы' {
-        ADD menuPrint;
-    };
-}
 
 
 
