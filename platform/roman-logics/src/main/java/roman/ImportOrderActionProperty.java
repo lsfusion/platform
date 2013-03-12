@@ -99,7 +99,7 @@ public abstract class ImportOrderActionProperty extends BaseImportActionProperty
         properties.add(new ImportProperty(unitNetWeightField, RomanLM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, RomanLM.originalNameArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = null;
+        ImportKey<?> itemKey;
         if (hasBarCode()) {
             itemKey = new ImportKey(RomanLM.item, RomanLM.barcodeToObject.getMapping(barCodeField));
             properties.add(new ImportProperty(barCodeField, RomanLM.barcode.getMapping(itemKey)));
