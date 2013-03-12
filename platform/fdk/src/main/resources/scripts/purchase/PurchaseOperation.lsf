@@ -14,11 +14,14 @@ createShipmentPurchaseOperation 'Создавать поставку' = DATA BOO
 createPurchaseWriteOffPurchaseOperation 'Создавать акт списания' = DATA BOOLEAN (purchaseOperation) IN createGroup;
 createCreditNotePurchaseOperation 'Создавать акт расхождения' = DATA BOOLEAN (purchaseOperation) IN createGroup;
 createPricingPurchaseOperation 'Создавать акт расценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+priceListTypePurchaseOperation = DATA priceListType (purchaseOperation);
+namePriceListTypePurchaseOperation 'Вид цен акт расценки' (purchaseOperation) = name(priceListTypePurchaseOperation(purchaseOperation));
 createRepricingPurchaseOperation 'Создавать акт дооценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
 
 EXTEND FORM purchaseOperation
     PROPERTIES(o) createShipmentPurchaseOperation, createPurchaseWriteOffPurchaseOperation,
-                  createCreditNotePurchaseOperation, createPricingPurchaseOperation, createRepricingPurchaseOperation
+                  createCreditNotePurchaseOperation, createPricingPurchaseOperation, namePriceListTypePurchaseOperation,
+                  createRepricingPurchaseOperation
 ;
 
 EXTEND DESIGN purchaseOperation{
@@ -29,6 +32,7 @@ EXTEND DESIGN purchaseOperation{
             ADD PROPERTY(createPurchaseWriteOffPurchaseOperation);
             ADD PROPERTY(createCreditNotePurchaseOperation);
             ADD PROPERTY(createPricingPurchaseOperation);
+            ADD PROPERTY(namePriceListTypePurchaseOperation);
             ADD PROPERTY(createRepricingPurchaseOperation);
         }
     }

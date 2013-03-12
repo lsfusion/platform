@@ -18,7 +18,9 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 
 createPricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
     WHEN CHANGED(purchaseOperationUserInvoice(invoice));
-createRepricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
+retailPriceListTypeUserInvoice (invoice) <- priceListTypePurchaseOperation(purchaseOperationUserInvoice(invoice))
+    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+createRepricingUserInvoice (invoice) <- createRepricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
     WHEN CHANGED(purchaseOperationUserInvoice(invoice));
 
 EXTEND FORM userInvoice
@@ -33,9 +35,6 @@ EXTEND DESIGN userInvoice {
     }
 }
 EXTEND FORM invoices PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) READONLY nameRetailPriceListTypeInvoiceDetail BEFORE retailMarkupInvoiceDetail;
-
-retailPriceListTypeUserInvoice(userInvoice) <- priceListTypeDepartmentStore(customerStockUserInvoice(userInvoice))
-    WHEN CHANGED(customerStockUserInvoice(userInvoice));
 
 retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
                                                 WHEN CHANGED(retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));

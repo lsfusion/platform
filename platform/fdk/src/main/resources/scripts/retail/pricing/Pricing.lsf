@@ -29,11 +29,6 @@ CONSTRAINT pricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeE
 
 EXTEND FORM departmentStore PROPERTIES namePricingCommitteeDepartmentStore(d);
 
-// ----------------------------------- Вид цен по умолчанию для отдела ------------------------------------------ //
-priceListTypeDepartmentStore  = DATA priceListType (departmentStore);
-namePriceListTypeDepartmentStore 'Вид цен для акта расценки' (departmentStore) = name(priceListTypeDepartmentStore(departmentStore)) IN bookkeepingGroup;
-
-EXTEND FORM departmentStore PROPERTIES namePriceListTypeDepartmentStore(d);
 // ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //
 
 FORM pricingCommittee 'Комиссия для акта расценки'
