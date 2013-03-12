@@ -102,3 +102,5 @@ Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityI
 
 createPurchasePricingUserInvoice (invoice) <- createPurchasePricingSaleOperation(saleOperationUserInvoice(invoice))
     WHEN CHANGED(saleOperationUserInvoice(invoice));
+purchaseRetailPriceListTypeUserInvoice (invoice) <- priceListTypeSaleOperation(saleOperationUserInvoice(invoice))
+    WHEN CHANGED(saleOperationUserInvoice(invoice));

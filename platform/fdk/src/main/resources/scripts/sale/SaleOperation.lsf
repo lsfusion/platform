@@ -15,10 +15,12 @@ createPricingSaleOperation 'Создавать акт расценки' = DATA B
 createCreditNoteSaleOperation 'Создавать акт расхождения' = DATA BOOLEAN (saleOperation) IN createGroup;
 createPurchaseInvoiceSaleOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
 createPurchasePricingSaleOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
+priceListTypeSaleOperation = DATA priceListType (saleOperation);
+namePriceListTypeSaleOperation 'Вид цен акт расценки(закупка)' (saleOperation) = name(priceListTypeSaleOperation(saleOperation));
 
 EXTEND FORM saleOperation
     PROPERTIES(o) createShipmentSaleOperation, createPricingSaleOperation, createCreditNoteSaleOperation,
-                  createPurchaseInvoiceSaleOperation, createPurchasePricingSaleOperation
+                  createPurchaseInvoiceSaleOperation, createPurchasePricingSaleOperation, namePriceListTypeSaleOperation
 ;
 
 EXTEND DESIGN saleOperation{
@@ -30,6 +32,7 @@ EXTEND DESIGN saleOperation{
             ADD PROPERTY(createPricingSaleOperation);
             ADD PROPERTY(createPurchaseInvoiceSaleOperation);
             ADD PROPERTY(createPurchasePricingSaleOperation);
+            ADD PROPERTY(namePriceListTypeSaleOperation);
         }
     }
 }
