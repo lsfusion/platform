@@ -7,13 +7,6 @@ public class GContainer extends GComponent {
     public String title;
     public String description;
     public GContainerType type;
-    public Boolean vertical;
-    public boolean resizable;
-
-    public enum GwtContainer {
-        VLAYOUT,
-
-    }
 
     @Override
     public String toString() {
@@ -21,13 +14,8 @@ public class GContainer extends GComponent {
                 "[" + sID + "]" +
                 "[" + type + "]{" +
                 "title='" + title + '\'' +
-                ", vertical=" + vertical +
                 ", hAlign=" + hAlign +
                 '}';
-    }
-
-    public static String[] getTypeNamesList() {
-        return new String[]{"CONTAINER", "TABBED PANE", "SPLIT PANE VERTICAL", "SPLIT PANE HORIZONTAL"};
     }
 
     public void calculateFills() {
@@ -61,10 +49,10 @@ public class GContainer extends GComponent {
         double fill = 0;
         boolean chooseMax = true;
         if (!vertical) {
-            if (type.isSplit() && type == GContainerType.HORIZONTAL_SPLIT_PANEL || (type.isContainer() && (toFlow() || !drawVertical()))) {
+            if (toFlow() || !drawVertical()) {
                 chooseMax = false;
             }
-        } else if (type.isSplit() && type == GContainerType.VERTICAL_SPLIT_PANEL || (type.isContainer() && !toFlow() && drawVertical())) {
+        } else if (!toFlow() && drawVertical()) {
             chooseMax = false;
         }
 
@@ -133,24 +121,32 @@ public class GContainer extends GComponent {
         return !getAllTreeGrids().isEmpty();
     }
 
+    public boolean isNotOriented() {
+        return type == GContainerType.CONTAINERVH || type == GContainerType.TABBED_PANEL;
+    }
+
+    public boolean isVertical() {
+        return type == GContainerType.VERTICAL_SPLIT_PANEL || type == GContainerType.CONTAINERV;
+    }
+
     public boolean drawVertical() {
-        return vertical == null || vertical;
+        return isNotOriented() || isVertical();
     }
 
     public boolean toFlow() {
-        return (vertical == null && fillVertical <= 0 && containerFlows());
+        return isNotOriented() && fillVertical <= 0 && containerFlows();
     }
 
     private boolean containerFlows() {
         if (container != null) {
-            if (container.vertical != null) {
-                if (container.vertical) {
+            if (container.isNotOriented()) {
+                return container.containerFlows();
+            } else {
+                if (container.isVertical()) {
                     return (container.fillVertical > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
                 } else {
                     return (container.fillHorizontal > 0 && !container.isGroupObjectWithBannedGrid()) || container.containerFlows();
                 }
-            } else {
-                return container.containerFlows();
             }
         }
         return false;

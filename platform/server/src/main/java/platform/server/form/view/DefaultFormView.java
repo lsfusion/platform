@@ -202,7 +202,7 @@ public class DefaultFormView extends FormView {
             List<ContainerView> containers = new ArrayList<ContainerView>();
             for (int i = 0; i < groupObject.size() - 1; i++) {
                 ContainerView container = createContainer();
-                container.type = ContainerType.SPLIT_PANE_HORIZONTAL;
+                container.setType(ContainerType.SPLIT_PANE_HORIZONTAL);
                 container.add(groupObject.get(i).classChooser);
                 containers.add(container);
             }

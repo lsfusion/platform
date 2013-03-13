@@ -2135,7 +2135,7 @@ public class VEDLogicsModule extends LogicsModule {
                 }
 
                 pageContainer.add(printCont);
-                pageContainer.type = ContainerType.TABBED_PANE;
+                pageContainer.setType(ContainerType.TABBED_PANE);
             }
 
             PropertyDrawView objectValueView = design.get(getPropertyDraw(baseLM.objectValue, objDoc));

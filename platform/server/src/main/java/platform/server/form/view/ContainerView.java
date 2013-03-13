@@ -3,6 +3,7 @@ package platform.server.form.view;
 import platform.interop.form.layout.AbstractContainer;
 import platform.interop.form.layout.ContainerType;
 import platform.interop.form.layout.SimplexConstraints;
+import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -16,7 +17,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public String title;
     public String description;
 
-    public byte type = ContainerType.CONTAINER;
+    private byte type = ContainerType.CONTAINER;
 
     public void setTitle(String title) {
         this.title = title;
@@ -26,8 +27,19 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.description = description;
     }
 
+    public byte getType() {
+        return type;
+    }
+
     public void setType(byte type) {
         this.type = type;
+        if (type == ContainerType.CONTAINERH) {
+            constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+        } else if (type == ContainerType.CONTAINERV) {
+            constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+        } else if (type == ContainerType.CONTAINERVH) {
+            constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+        }
     }
 
     public ContainerView() {

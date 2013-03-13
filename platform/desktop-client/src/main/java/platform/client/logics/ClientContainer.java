@@ -6,11 +6,8 @@ import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
-import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.form.layout.AbstractContainer;
-import platform.interop.form.layout.ContainerType;
-import platform.interop.form.layout.SimplexConstraints;
+import platform.interop.form.layout.*;
 
 import javax.swing.*;
 import java.io.DataInputStream;
@@ -19,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static platform.interop.form.layout.ContainerType.SPLIT_PANE_VERTICAL;
+import static platform.interop.form.layout.ContainerType.*;
 
 public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
 
@@ -203,6 +200,19 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public List<ClientComponent> getChildren() {
         return children;
+    }
+
+    @Override
+    public DoNotIntersectSimplexConstraint getChildConstraints() {
+        if (type == CONTAINERV) {
+            return SingleSimplexConstraint.TOTHE_BOTTOM;
+        } else if (type == CONTAINERH) {
+            return SingleSimplexConstraint.TOTHE_RIGHT;
+        }else if (type == CONTAINERVH) {
+            return SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+        } else {
+            return super.getChildConstraints();
+        }
     }
 
     public String getCodeClass() {

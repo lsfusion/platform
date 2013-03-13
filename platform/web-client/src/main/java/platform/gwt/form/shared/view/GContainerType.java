@@ -1,7 +1,9 @@
 package platform.gwt.form.shared.view;
 
 public enum GContainerType {
-    CONTAINER,
+    CONTAINERH,
+    CONTAINERV,
+    CONTAINERVH,
     VERTICAL_SPLIT_PANEL,
     HORIZONTAL_SPLIT_PANEL,
     TABBED_PANEL;

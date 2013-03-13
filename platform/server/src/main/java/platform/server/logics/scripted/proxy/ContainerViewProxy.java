@@ -21,6 +21,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     }
 
     public void setType(byte type) {
-        target.type = type;
+        target.setType(type);
     }
 }

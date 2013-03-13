@@ -94,7 +94,7 @@ public abstract class GFilterController {
         switch (state) {
             case REMOVED:
                 toolbarButtonIconPath = ADD_FILTER;
-                toolbarButton.getElement().getStyle().setProperty("background", "url(\"images/hborder.png\") repeat-x 0px -2077px");
+                toolbarButton.getElement().getStyle().setProperty("background", "");
                 break;
             case COLLAPSED:
                 toolbarButtonIconPath = EXPAND;

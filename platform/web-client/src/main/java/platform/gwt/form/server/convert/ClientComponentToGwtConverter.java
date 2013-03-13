@@ -100,8 +100,14 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         byte containerType = clientContainer.getType();
         switch (containerType) {
-            case CONTAINER:
-                container.type = GContainerType.CONTAINER;
+            case CONTAINERH:
+                container.type = GContainerType.CONTAINERH;
+                break;
+            case CONTAINERV:
+                container.type = GContainerType.CONTAINERV;
+                break;
+            case CONTAINERVH:
+                container.type = GContainerType.CONTAINERVH;
                 break;
             case SPLIT_PANE_VERTICAL:
                 container.type = GContainerType.VERTICAL_SPLIT_PANEL;
@@ -112,16 +118,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
             case TABBED_PANE:
                 container.type = GContainerType.TABBED_PANEL;
                 break;
+            case CONTAINER:
+                SimplexConstraints<ClientComponent> constraints = clientContainer.getConstraints();
+                if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT)) {
+                    container.type = GContainerType.CONTAINERH;
+                } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_BOTTOM)) {
+                    container.type = GContainerType.CONTAINERV;
+                } else {
+                    container.type = GContainerType.CONTAINERVH;
+                }
+                break;
         }
 
-        SimplexConstraints<ClientComponent> constraints = clientContainer.getConstraints();
-        if (clientContainer.isSplitPane()) {
-            container.vertical = clientContainer.getType() == SPLIT_PANE_VERTICAL;
-        } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_RIGHT)) {
-            container.vertical = false;
-        } else if (constraints.childConstraints.equals(SingleSimplexConstraint.TOTHE_BOTTOM)) {
-            container.vertical = true;
-        }
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);
             container.children.add(childComponent);

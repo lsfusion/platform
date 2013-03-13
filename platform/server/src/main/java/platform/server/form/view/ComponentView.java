@@ -67,7 +67,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         ContainerView parent = getContainer();
         if(parent == null)
             return null;
-        if(parent.type == ContainerType.TABBED_PANE)
+        if(parent.getType() == ContainerType.TABBED_PANE)
             return this;
         return parent.getTabContainer();
     }

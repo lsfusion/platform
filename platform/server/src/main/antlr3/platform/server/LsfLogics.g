@@ -2787,7 +2787,9 @@ insertRelativePositionLiteral returns [InsertPosition val]
 	;
 
 containerTypeLiteral returns [byte val]
-	:	'CONTAINER' { $val = ContainerType.CONTAINER; }	
+	:	'CONTAINERV' { $val = ContainerType.CONTAINERV; }	
+	|	'CONTAINERH' { $val = ContainerType.CONTAINERH; }	
+	|	'CONTAINERVH' { $val = ContainerType.CONTAINERVH; }	
 	|	'TABBED' { $val = ContainerType.TABBED_PANE; }
 	|	'SPLITH' { $val = ContainerType.SPLIT_PANE_HORIZONTAL; }
 	|	'SPLITV' { $val = ContainerType.SPLIT_PANE_VERTICAL; }

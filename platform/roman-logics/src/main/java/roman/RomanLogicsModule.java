@@ -4843,7 +4843,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objOrder.groupTo));
             detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             detContainer.add(design.getGroupObjectContainer(objInvoice.groupTo));
-            detContainer.type = ContainerType.TABBED_PANE;
+            detContainer.setType(ContainerType.TABBED_PANE);
 
             return design;
         }
@@ -5195,7 +5195,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(detContainer, design.getGroupObjectContainer(objInvoice.groupTo));
             //detContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             //detContainer.add(design.getGroupObjectContainer(objOrder.groupTo));
-            detContainer.type = ContainerType.TABBED_PANE;
+            detContainer.setType(ContainerType.TABBED_PANE);
 
             return design;
         }
@@ -5691,7 +5691,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objShipmentDetail.groupTo));
             specContainer.add(design.getGroupObjectContainer(objShipmentDetail.groupTo));
             specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             design.get(nameRoute).setMinimumCharWidth(4);
             design.get(nameRoute).panelLabelAbove = true;
@@ -6370,7 +6370,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
                     design.getGroupObjectContainer(objCategory.groupTo),
@@ -6596,7 +6596,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.get(treePalletBoxArticleSku));
             specContainer.add(design.getTreeContainer(treePalletBoxArticleSku));
             specContainer.add(design.getTreeContainer(treeInvoiceArticleSku));
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             return design;
         }
@@ -6695,7 +6695,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objSku.groupTo));
             specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             specContainer.add(boxContainer);
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             return design;
         }
@@ -6903,7 +6903,7 @@ public class RomanLogicsModule extends LogicsModule {
             specContainer.add(categoryContainer);
             specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             //design.get(filterGroupCategory).drawToToolbar = false;
             //design.get(filterGroupCustomCategory10).drawToToolbar = false;
@@ -7759,7 +7759,7 @@ public class RomanLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objSeason.groupTo));
             specContainer.add(design.getGroupObjectContainer(objCountry.groupTo));
             specContainer.add(design.getGroupObjectContainer(objGenderSupplier.groupTo));
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
             design.get(objSupplier.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objBrand.groupTo).grid.constraints.fillHorizontal = 2;
@@ -7992,7 +7992,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(priceContainer, design.getGroupObjectContainer(objSku.groupTo));
             priceContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
             priceContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-            priceContainer.type = ContainerType.TABBED_PANE;
+            priceContainer.setType(ContainerType.TABBED_PANE);
 
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 3;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
@@ -8432,7 +8432,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objFreight.groupTo));
             specContainer.add(printContainer);
             specContainer.add(containContainer);
-            specContainer.type = ContainerType.TABBED_PANE;
+            specContainer.setType(ContainerType.TABBED_PANE);
 
 
             design.get(objBrand.groupTo).grid.constraints.fillVertical = 1.5;

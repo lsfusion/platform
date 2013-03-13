@@ -57,7 +57,9 @@
       <keyword name="CONCAT" />
       <keyword name="CONFIRM" />
       <keyword name="CONSTRAINT" />
-      <keyword name="CONTAINER" />
+      <keyword name="CONTAINERH" />
+      <keyword name="CONTAINERV" />
+      <keyword name="CONTAINERVH" />
       <keyword name="CUSTOM" />
       <keyword name="CUSTOMFILE" />
       <keyword name="CYCLES" />

@@ -463,6 +463,13 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 : SimplexConstraints.DEFAULT_CONSTRAINT;
     }
 
+    private DoNotIntersectSimplexConstraint getChildConstraints(Component comp) {
+        ClientComponent component = constraints.get(comp);
+        return component != null
+                ? component.getChildConstraints()
+                : SimplexConstraints.DEFAULT_CONSTRAINT.getChildConstraints();
+    }
+
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
         // здесь будут хранится Component в том же порядке, что и в ClientContainer children
@@ -496,6 +503,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (compCount < 2) return;
 
         SimplexConstraints parentConstraints = getConstraint(parent);
+        DoNotIntersectSimplexConstraint parentChildConstraints = getChildConstraints(parent);
 
         int maxVar = parentConstraints.maxVariables;
 
@@ -511,7 +519,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         for (Component comp : contComponents) {
 
             if (curCol == 0 && maxCol > 1 && compCount - curCount > 1)
-                curDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
+                curDir = new SimplexSolverDirections(solver, parentChildConstraints.forbDir);
 
             vars.put(comp, curDir);
 
@@ -522,7 +530,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
             }
         }
 
-        SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
+        SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, parentChildConstraints.forbDir);
 
         // замыкаем пересечения, чтобы посчитать заведомо верные условия
         Map<Component, Map<Component, DoNotIntersectSimplexConstraint>> intersects = new HashMap<Component, Map<Component, DoNotIntersectSimplexConstraint>>();
@@ -580,7 +588,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                         // для компонент из одной "группы" используем одни и те же переменные, из разных - globalDir
                         if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
 
-                        parentConstraints.childConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
+                        parentChildConstraints.fillConstraint(solver, info1, info2, getConstraint(comp1), getConstraint(comp2), (maxVar == 0 ? null : dir));
                     }
 
                 }

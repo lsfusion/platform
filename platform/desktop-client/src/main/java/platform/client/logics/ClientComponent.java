@@ -238,4 +238,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
         return sID.substring(0, i + 1) + name;
     }
+
+    public DoNotIntersectSimplexConstraint getChildConstraints() {
+        return constraints.getChildConstraints();
+    }
 }

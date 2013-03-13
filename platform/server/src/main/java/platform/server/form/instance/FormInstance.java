@@ -1024,7 +1024,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private boolean isHidden(ComponentView component) {
         ContainerView parent = component.getContainer();
-        assert parent.type == ContainerType.TABBED_PANE;
+        assert parent.getType() == ContainerType.TABBED_PANE;
 
         ComponentView visible = visibleTabs.get(parent);
         if (visible == null && parent.children.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
@@ -1039,7 +1039,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
 
     public void setTabVisible(ContainerView view, ComponentView page) {
-        assert view.type == ContainerType.TABBED_PANE;
+        assert view.getType() == ContainerType.TABBED_PANE;
         visibleTabs.put(view, page);
     }
 
