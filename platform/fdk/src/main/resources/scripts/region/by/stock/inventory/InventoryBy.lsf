@@ -35,7 +35,7 @@ FORM printListInventoryBy 'Опись' PRINT
     ORDER BY indexListInventoryBatch
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, namePositionEmployee
+    PROPERTIES(e) READONLY   nameContact, namePositionEmployee
     FILTERS        inListInventoryEmployee(li, e)
 ;
 

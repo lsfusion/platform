@@ -19,7 +19,7 @@ nameTruckModelTruckTrip 'Марка' (trip) = name(truckModelTruckTrip(trip));
 trailerTruckTrip 'Прицеп' (trip) = trailerTruck(truckTrip(trip));
 
 driverTrip = DATA driver(trip);
-nameDriverTrip 'Водитель' (trip) = commonName(driverTrip(trip));
+nameDriverTrip 'Водитель' (trip) = nameContact(driverTrip(trip));
 sidDriverTrip 'Табельный номер' (trip) = sidDriver(driverTrip(trip));
 typeDriverTrip 'Класс' (trip) = typeDriver(driverTrip(trip));
 

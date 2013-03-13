@@ -119,9 +119,9 @@ public class PaasLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
         projectDescription = addDProp(baseGroup, "projectDescription", "Описание", StringClass.get(300), project);
-        projectOwner = addDProp("projectOwner", "Владелец", baseLM.customUser, project);
+        projectOwner = addDProp("projectOwner", "Владелец", baseLM.getBL().authenticationLM.customUser, project);
         projectOwnerName = addJProp(baseGroup, "projectOwnerName", "Владелец", baseLM.name, projectOwner, 1);
-        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", baseLM.userLogin, projectOwner, 1);
+        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", baseLM.getBL().authenticationLM.customUserLogin, projectOwner, 1);
 
         moduleInProject = addDProp(baseGroup, "moduleInProject", "Модуль в проекте", LogicalClass.instance, project, module);
         moduleSource = addDProp(baseGroup, "moduleSource", "Исходный код модуля", TextClass.instance, module);

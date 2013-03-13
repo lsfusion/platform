@@ -275,7 +275,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             throw new RuntimeException("Пользователь не найден");
         }
 
-        Integer userId = (Integer) baseLM.loginToUser.read(createSession(), new DataObject(userLogin));
+        Integer userId = (Integer) baseLM.getBL().authenticationLM.customUserLogin.read(createSession(), new DataObject(userLogin));
         if (userId == null) {
             throw new RuntimeException("Пользователь " + userLogin + " не найден");
         }

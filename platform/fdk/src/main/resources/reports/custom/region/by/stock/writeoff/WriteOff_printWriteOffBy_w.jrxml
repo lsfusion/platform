@@ -35,7 +35,7 @@
 	<field name="addressLegalEntityWriteOff" class="java.lang.String"/>
 	<field name="UNPLegalEntityStockWriteOff" class="java.lang.String"/>
 	<field name="nameWriteOffCommitteeWriteOff" class="java.lang.String"/>
-	<field name="commonNameEmployeeCommitteeWriteOff" class="java.lang.String"/>
+	<field name="nameEmployeeCommitteeWriteOff" class="java.lang.String"/>
 	<field name="writeOffCommitteeWriteOff" class="java.lang.Integer"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{w})]]></groupExpression>
@@ -707,7 +707,7 @@
 				<textElement verticalAlignment="Bottom">
 					<font size="10" isBold="false" isItalic="true" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{commonNameEmployeeCommitteeWriteOff}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameEmployeeCommitteeWriteOff}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="0" y="244" width="537" height="12" isRemoveLineWhenBlank="true">

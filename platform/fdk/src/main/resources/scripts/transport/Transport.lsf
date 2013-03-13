@@ -62,14 +62,14 @@ typeDriver 'Класс' = DATA STRING[10](driver);
 
 FORM driver 'Водитель'
     OBJECTS d=driver FIXED PANEL
-    PROPERTIES (d) name, userFirstName, userLastName, commonName, sidDriver, typeDriver
+    PROPERTIES (d) name, firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
 
     EDIT driver OBJECT d
 ;
 
 FORM drivers 'Водители'
     OBJECTS d=driver
-    PROPERTIES(d) READONLY name, userFirstName, userLastName, commonName, sidDriver, typeDriver
+    PROPERTIES(d) READONLY name, firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
     PROPERTIES(d) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     DIALOG driver OBJECT d

@@ -1,8 +1,9 @@
-package platform.server.logics.security;
+package platform.server.logics.authentication;
 
 import platform.interop.action.UserChangedClientAction;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.ValueClass;
+import platform.server.logics.AuthenticationLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.SecurityLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -17,7 +18,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
-    public ReloginUserActionProperty(SecurityLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public ReloginUserActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, "reloginUser", new ValueClass[]{LM.findClassByCompoundName("customUser")});
     }
 

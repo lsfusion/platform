@@ -191,12 +191,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                  }
 
                                  public DataObject getCurrentUser() {
-                                     return new DataObject(systemUserObject, LM.systemUser);
+                                     return new DataObject(systemUserObject, LM.getBL().authenticationLM.systemUser);
                                  }
                              },
                              new ComputerController() {
                                  public DataObject getCurrentComputer() {
-                                     return new DataObject(systemComputer, LM.computer);
+                                     return new DataObject(systemComputer, LM.getBL().authenticationLM.computer);
                                  }
 
                                  public boolean isFullClient() {
@@ -784,7 +784,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public DataObject getServerComputerObject() {
-        return new DataObject(getComputer(SystemUtils.getLocalHostName()), businessLogics.LM.computer);
+        return new DataObject(getComputer(SystemUtils.getLocalHostName()), LM.getBL().authenticationLM.computer);
     }
 
     public Integer getComputer(String strHostName) {
@@ -793,7 +793,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.singleton("key"));
             q.and(
-                    LM.hostname.getExpr(
+                    LM.getBL().authenticationLM.hostname.getExpr(
                             session.getModifier(), q.getMapExprs().get("key")
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
@@ -802,8 +802,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
             if (keys.size() == 0) {
-                DataObject addObject = session.addObject(LM.computer);
-                LM.hostname.change(strHostName, session, addObject);
+                DataObject addObject = session.addObject(LM.getBL().authenticationLM.computer);
+                LM.getBL().authenticationLM.hostname.change(strHostName, session, addObject);
 
                 result = (Integer) addObject.object;
                 session.apply(businessLogics);
@@ -1234,21 +1234,21 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             DataSession session = createSession();
 
             QueryBuilder<String, Object> query = new QueryBuilder<String, Object>(SetFact.singleton("key"));
-            query.and(query.getMapExprs().singleValue().isClass(LM.systemUser));
+            query.and(query.getMapExprs().singleValue().isClass(LM.getBL().authenticationLM.systemUser));
             ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
             if (rows.size() == 0) { // если нету добавим
-                systemUserObject = (Integer) session.addObject(LM.systemUser).object;
+                systemUserObject = (Integer) session.addObject(LM.getBL().authenticationLM.systemUser).object;
                 session.apply(businessLogics);
             } else
                 systemUserObject = (Integer) rows.single().get("key");
 
             query = new QueryBuilder<String, Object>(SetFact.singleton("key"));
-            query.and(LM.hostname.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
+            query.and(LM.getBL().authenticationLM.hostname.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
             rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
             if (rows.size() == 0) { // если нету добавим
-                DataObject computerObject = session.addObject(LM.computer);
+                DataObject computerObject = session.addObject(LM.getBL().authenticationLM.computer);
                 systemComputer = (Integer) computerObject.object;
-                LM.hostname.change("systemhost", session, computerObject);
+                LM.getBL().authenticationLM.hostname.change("systemhost", session, computerObject);
                 session.apply(businessLogics);
             } else
                 systemComputer = (Integer) rows.single().get("key");

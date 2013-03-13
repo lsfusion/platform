@@ -24,8 +24,8 @@
 	<field name="c" class="java.lang.Integer"/>
 	<field name="dateConsignment" class="java.util.Date"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
 	<field name="forwarderConsignment" class="java.lang.String"/>
 	<field name="warrantConsignment" class="java.lang.String"/>
 	<field name="warrantHolderConsignment" class="java.lang.String"/>
@@ -542,7 +542,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{commonNameIssuanceAllowedConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameIssuanceAllowedConsignment}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="21">
@@ -583,7 +583,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{commonNameIssuanceExecutedConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameIssuanceExecutedConsignment}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="105" y="13" width="450" height="1"/>

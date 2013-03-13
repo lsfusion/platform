@@ -146,19 +146,19 @@ moveCustomGroup 'Перенести отмеченные группы' = ACTION 
 
 FORM customGroupType 'Тип дополнительного классификатора SKU'
     OBJECTS t = customGroupType
-    PROPERTIES(t) commonName
+    PROPERTIES(t) name
     EDIT customGroupType OBJECT t
 ;
 
 FORM dialogCustomGroupType 'Тип дополнительного классификатора SKU'
     OBJECTS t = customGroupType
-    PROPERTIES(t) READONLY commonName
+    PROPERTIES(t) READONLY name
     DIALOG customGroupType OBJECT t
 ;
 
 FORM customGroupTypes 'Типы дополнительного классификатора SKU'
     OBJECTS t = customGroupType
-    PROPERTIES(t) READONLY commonName
+    PROPERTIES(t) READONLY name
     PROPERTIES(t) ADDFORM, EDITFORM, delete
     EDIT customGroupType OBJECT t
 ;

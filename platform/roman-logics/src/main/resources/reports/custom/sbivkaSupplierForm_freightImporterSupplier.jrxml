@@ -32,10 +32,10 @@
 	<field name="supplier" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="nameCurrencyFreight" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="addressSubject" class="java.lang.String"/>
 	<field name="contractImporter" class="java.lang.String"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
 	<field name="quantityImporterFreightSupplier" class="java.lang.Double"/>
 	<field name="netWeightImporterFreightSupplier" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreightSupplier" class="java.lang.Double"/>
@@ -48,13 +48,13 @@
 	<field name="grossWeightImporterFreightSupplierCustomCategory6" class="java.lang.Double"/>
 	<field name="sumImporterFreightSupplierCustomCategory6" class="java.lang.Double"/>
 	<field name="category" class="java.lang.Integer"/>
-	<field name="commonName3" class="java.lang.String"/>
+	<field name="name3" class="java.lang.String"/>
 	<field name="quantityDirectImporterFreightSupplierCustomCategory6Category" class="java.lang.Double"/>
 	<field name="netWeightImporterFreightSupplierCustomCategory6Category" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreightSupplierCustomCategory6Category" class="java.lang.Double"/>
 	<field name="sumImporterFreightSupplierCustomCategory6Category" class="java.lang.Double"/>
 	<variable name="categoryNames" class="java.lang.String" resetType="Group" resetGroup="textGroup5">
-		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{commonName3}]]></variableExpression>
+		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{name3}]]></variableExpression>
 		<initialValueExpression><![CDATA[""]]></initialValueExpression>
 	</variable>
 	<group name="textGroup5">
@@ -114,12 +114,12 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" x="254" y="18" width="160" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" x="70" y="18" width="184" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName2}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" x="254" y="36" width="160" height="18"/>

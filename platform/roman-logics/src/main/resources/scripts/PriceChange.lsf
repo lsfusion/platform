@@ -137,9 +137,9 @@ sumContainerIncStockDocumentLedger (ledger) += diffRetailSumContainerPriceChange
 isPriceChangeCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND priceChangeCommitteePriceChangeDocument(priceChangeDocument);
 
 namePriceChangeCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
-commonNameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = namePositionEmployeeCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
+nameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = namePositionEmployeeCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 inPriceChangeDocumentEmployee (priceChangeDocument, employee) = inCommitteeEmployee(priceChangeCommitteePriceChangeDocument(priceChangeDocument), employee);
-commonNameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = nameChairmanCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
+nameChairmanPriceChangeDocument 'Председатель комиссии' (priceChangeDocument) = nameChairmanCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 namePositionChairmanPriceChangeDocument 'Должность' (priceChangeDocument) = namePositionChairmanCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 
                             //----------печатная форма--------//
@@ -147,7 +147,7 @@ FORM priceChangePrint 'Акт переоценки' PRINT
     OBJECTS pc=priceChangeDocument  FIXED PANEL
     PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, namePriceChangeCommitteePriceChangeDocument,
-                             commonNameChairmanPriceChangeDocument, namePositionChairmanPriceChangeDocument, commonNameEmployeeCommitteePriceChangeDocument,
+                             nameChairmanPriceChangeDocument, namePositionChairmanPriceChangeDocument, nameEmployeeCommitteePriceChangeDocument,
                              quantityPriceChangeDocumentDetailPriceChangeDocument, numberDisposalPriceChangeDocument, isPriceChangeCommitteePriceChangeDocument,
                              curSupplierISumPriceChangeDocumentDetailPriceChangeDocument, curMarkupSumPriceChangeDocumentDetailPriceChangeDocument, curRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                              curWareSumPriceChangeDocumentDetailPriceChangeDocument, curWareVATSumPriceChangeDocumentDetailPriceChangeDocument, curRetailSumPriceChangeDocumentDetailPriceChangeDocument,
@@ -173,7 +173,7 @@ FORM priceChangePrint 'Акт переоценки' PRINT
                              nameWarePriceChangeDocumentDetail
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, namePositionEmployee
+    PROPERTIES(e) READONLY   nameContact, namePositionEmployee
 
     FILTERS                  priceChangeDocumentPriceChangeDocumentDetail(pcd) == pc,
                              inPriceChangeDocumentEmployee(pc, e)
@@ -249,7 +249,7 @@ FORM priceChangeCommittee 'Комиссия переоценки'
 
 
     OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee

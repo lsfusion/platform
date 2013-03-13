@@ -26,11 +26,11 @@
 	<field name="typeInvoice" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="objectClassName" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="sidImporterFreightTypeInvoice" class="java.lang.String"/>
 	<field name="dateImporterFreightTypeInvoice" class="java.util.Date"/>
 	<field name="dateShipmentImporterFreightTypeInvoice" class="java.util.Date"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
 	<field name="sku" class="java.lang.Integer"/>
 	<field name="sidArticleSku" class="java.lang.String"/>
 	<field name="originalNameArticleSku" class="java.lang.String"/>

@@ -36,7 +36,7 @@ hostnameComputerConnection 'Имя компьютера'(connection) = hostname(
 remoteAddressConnection 'IP пользователя' = DATA STRING[40] (connection);
 
 userConnection 'Пользователь' = DATA customUser (connection);
-userLoginConnection 'Логин пользователя' (connection) = userLogin(userConnection(connection));
+userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
 
 connectionStatusConnection 'Статус подключения' =  DATA connectionStatus (connection);
 nameConnectionStatusConnection 'Статус подключения' (connection) = name(connectionStatusConnection(connection));
@@ -45,8 +45,9 @@ connectTimeConnection 'Время подключения' = DATA DATETIME (conne
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (connection);
 disconnectTimeConnection (connection) <- currentDateTime() WHEN ASSIGNED(connectionStatusConnection(connection) == connectionStatus.disconnectedConnection);
 
-userSession 'Пользователь сессии' = DATA user (session);
-nameUserSession (session) = commonName(userSession(session));
+//заменили user на customUser
+userSession 'Пользователь сессии' = DATA customUser (session);
+nameUserSession (session) = nameContact(userSession(session));
 userSession (session) <- currentUser() WHEN ASSIGNED(session IS session);
 
 dateSession 'Дата сессии' = DATA DATETIME (session);

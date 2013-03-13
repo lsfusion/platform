@@ -25,7 +25,7 @@
 	<field name="sumAddvOrder" class="java.lang.Double"/>
 	<field name="sumRetailOrder" class="java.lang.Double"/>
 	<field name="obj12" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="objectValueProperty_object" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="nameUnitOfMeasureArticle" class="java.lang.String"/>
@@ -310,7 +310,7 @@
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="2" y="0" width="21" height="18"/>

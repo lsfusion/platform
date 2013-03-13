@@ -169,7 +169,7 @@ beginTimeDeclaration 'Начало обработки' = DATA DATETIME (declarat
 endTimeDeclaration 'Конец обработки' = DATA DATETIME (declaration) IN datetimeGroup;
 
 executerDeclaration 'Исполнитель' = DATA customUser (declaration);
-nameExecuterDeclaration 'Исполнитель' (declaration) = commonName(executerDeclaration(declaration)) MINCHARWIDTH 20;
+nameExecuterDeclaration 'Исполнитель' (declaration) = nameContact(executerDeclaration(declaration)) MINCHARWIDTH 20;
 executerDeclaration(declaration) <- currentUser() WHEN ASSIGNED(declaration IS declaration);
 
 allowImportExportXLSDeclarationUA(declaration) = allowImportExportXLSLegalEntityUA(legalEntityStock(customStoreDeclaration(declaration)));
@@ -1022,7 +1022,7 @@ quantityDeclarationBrandSupplier (declaration, brandSupplier) = GROUP SUM quanti
     BY declarationDeclarationDetail(declarationDetail), brandDeclarationDetail(declarationDetail);
 
 canonicalBrandDeclaration 'Бренды' (declaration) = toString255(
-    [GROUP CONCAT commonName(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
+    [GROUP CONCAT name(brandSupplier) IF quantityDeclarationBrandSupplier(declaration, brandSupplier), ' , '
            BY declaration
            ORDER brandSupplier](declaration))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;

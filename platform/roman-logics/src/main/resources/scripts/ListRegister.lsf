@@ -297,7 +297,7 @@ GROUP committeeGroup 'Комиссия' : public;
 META defineDocumentHeaderListRegister(object)
     registerCommittee###object (object) = DATA registerCommittee(object);
 
-    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = commonName(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRegisterCommittee###object 'Комиссия для реестра цен' (object) = name(registerCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     registerCommittee###object (object) <- registerCommitteeDepartmentStore(departmentStore###object(object))
         WHEN ASSIGNED(object IS object);
 

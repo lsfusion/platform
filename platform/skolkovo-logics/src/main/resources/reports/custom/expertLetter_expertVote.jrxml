@@ -14,7 +14,7 @@
 	<parameter name="document_params" class="java.util.Map"/>
 	<field name="expert" class="java.lang.Integer"/>
 	<field name="vote" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="nameForeignClaimerVote" class="java.lang.String"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>

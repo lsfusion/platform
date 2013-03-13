@@ -44,13 +44,13 @@
 	<field name="addressSupplierStockConsignment" class="java.lang.String"/>
 	<field name="addressCustomerStockConsignment" class="java.lang.String"/>
 	<field name="readdressingConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
 	<field name="forwarderConsignment" class="java.lang.String"/>
 	<field name="warrantConsignment" class="java.lang.String"/>
 	<field name="warrantHolderConsignment" class="java.lang.String"/>
 	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="commonNameLoadingExecuterConsignment" class="java.lang.String"/>
+	<field name="nameLoadingExecuterConsignment" class="java.lang.String"/>
 	<field name="nameWayOfLoadingConsignment" class="java.lang.String"/>
 	<field name="codeLoadingConsignment" class="java.lang.String"/>
 	<field name="arrivalTimeConsignment" class="java.util.Date"/>

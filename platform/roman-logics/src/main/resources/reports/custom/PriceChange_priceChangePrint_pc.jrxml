@@ -38,9 +38,9 @@
 	<field name="nameDepartmentStorePriceChangeDocument" class="java.lang.String"/>
 	<field name="datePriceChangeDocument" class="java.util.Date"/>
 	<field name="namePriceChangeCommitteePriceChangeDocument" class="java.lang.String"/>
-	<field name="commonNameChairmanPriceChangeDocument" class="java.lang.String"/>
+	<field name="nameChairmanPriceChangeDocument" class="java.lang.String"/>
 	<field name="namePositionChairmanPriceChangeDocument" class="java.lang.String"/>
-	<field name="commonNameEmployeeCommitteePriceChangeDocument" class="java.lang.String"/>
+	<field name="nameEmployeeCommitteePriceChangeDocument" class="java.lang.String"/>
 	<field name="quantityPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
 	<field name="numberDisposalPriceChangeDocument" class="java.lang.String"/>
 	<field name="curSupplierISumPriceChangeDocumentDetailPriceChangeDocument" class="java.lang.Double"/>
@@ -73,7 +73,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[$F{commonNameEmployeeCommitteePriceChangeDocument}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameEmployeeCommitteePriceChangeDocument}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="10" y="0" width="175" height="13"/>
@@ -598,7 +598,7 @@
 					<textElement textAlignment="Center">
 						<font isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{commonNameChairmanPriceChangeDocument}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameChairmanPriceChangeDocument}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="159" y="87" width="119" height="8"/>
@@ -773,7 +773,7 @@ $F{numberPriceChangeDocument}]]></textFieldExpression>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{commonNameChairmanPriceChangeDocument}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameChairmanPriceChangeDocument}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

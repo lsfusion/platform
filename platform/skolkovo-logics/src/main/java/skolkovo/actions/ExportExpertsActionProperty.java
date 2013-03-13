@@ -44,11 +44,11 @@ public class ExportExpertsActionProperty extends UserActionProperty {
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
 
         query.addProperty("inActive", LM.disableExpert.getExpr(context.getModifier(), key));
-        query.addProperty("firstName", LM.baseLM.userFirstName.getExpr(context.getModifier(), key));
-        query.addProperty("lastName", LM.baseLM.userLastName.getExpr(context.getModifier(), key));
+        query.addProperty("firstName", LM.baseLM.getBL().contactLM.firstNameContact.getExpr(context.getModifier(), key));
+        query.addProperty("lastName", LM.baseLM.getBL().contactLM.lastNameContact.getExpr(context.getModifier(), key));
         query.addProperty("documentName", LM.documentNameExpert.getExpr(context.getModifier(), key));
-        query.addProperty("userLogin", LM.baseLM.userLogin.getExpr(context.getModifier(), key));
-        query.addProperty("email", LM.baseLM.getBL().emailLM.emailContact.getExpr(context.getModifier(), key));
+        query.addProperty("loginCustomUser", LM.baseLM.getBL().authenticationLM.loginCustomUser.getExpr(context.getModifier(), key));
+        query.addProperty("email", LM.baseLM.getBL().contactLM.emailContact.getExpr(context.getModifier(), key));
         query.addProperty("nameLanguageExpert", LM.nameLanguageExpert.getExpr(context.getModifier(), key));
         query.addProperty("dateAgreement", LM.dateAgreementExpert.getExpr(context.getModifier(), key));
         query.addProperty("nameCountry", LM.nameCountryExpert.getExpr(context.getModifier(), key));

@@ -16,9 +16,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public ConcreteCustomClass notification;
 
-    public LCP emailContact;
-    public LCP contactEmail;
-
     public LCP encryptedConnectionType;
     public LCP nameEncryptedConnectionType;
     public LCP smtpHost;
@@ -29,7 +26,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP fromAddress;
     public LCP disableEmail;
 
-    public LAP generateLoginPassword;
     public LAP emailUserPassUser;
 
     public LCP isEventNotification;
@@ -58,11 +54,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         super.initProperties();
 
         // ------- Управление почтой ------ //
-        emailContact = getLCPByName("emailContact");
-        emailContact.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        emailContact.setRegexpMessage("<html>Неверный формат e-mail</html>");
-
-        contactEmail = getLCPByName("contactEmail");
 
         // Настройки почтового сервера
         nameEncryptedConnectionType = getLCPByName("nameEncryptedConnectionType");
@@ -75,9 +66,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         emailBlindCarbonCopy = getLCPByName("emailBlindCarbonCopy");
 
         disableEmail = getLCPByName("disableEmail");
-
-        // Пользователи
-        generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(emailContact, baseLM.userLogin, baseLM.userPassword, baseLM.customUser));
 
         emailUserPassUser = getLAPByName("emailUserPassUser");
 

@@ -529,7 +529,7 @@ FORM actStudyOfCulinaryCommittee 'Комиссия для акта контро�
 
 
     OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -572,7 +572,7 @@ FORM actStudyOfCulinaryCommittees 'Комиссии для акта контро
 // ----------------- Акт контрольной проработки-------------------- //
 
 actStudyOfCulinaryCommitteeBOM (BOM) = DATA actStudyOfCulinaryCommittee(BOM);
-nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = commonName(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+nameActStudyOfCulinaryCommitteeBOM 'Комиссия для акта контрольной проработки продукции' (BOM) = name(actStudyOfCulinaryCommitteeBOM (BOM)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 nameEmployeeCommitteeBOM 'Члены комиссии' (BOM)= nameEmployeeCommittee(actStudyOfCulinaryCommitteeBOM(BOM));
 
 inCommitteeBOMEmployee (BOM, employee) = inCommitteeEmployee(actStudyOfCulinaryCommitteeBOM (BOM), employee);
@@ -588,7 +588,7 @@ EXTEND FORM BOM
     PROPERTIES(b) nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY commonName, namePositionEmployee
+    PROPERTIES(e) READONLY nameContact, namePositionEmployee
     FILTERS       inCommitteeBOMEmployee(b,e)
 ;
 EXTEND DESIGN BOM {

@@ -1,6 +1,6 @@
 MODULE Document;
 
-REQUIRE System, Numerator;
+REQUIRE System, Numerator, Authentication;
 
 // Логика проведения документов
 
@@ -13,7 +13,7 @@ timeClosed 'Время закрытия' = DATA DATETIME (postedObject) IN poste
 userClosed 'Проведен пользователем' = DATA customUser (postedObject);
 computerClosed 'Проведен на компьютере' = DATA computer (postedObject);
 
-nameUserClosed 'Проведен пользователем' (postedObject) = commonName(userClosed(postedObject)) IN postedGroup;
+nameUserClosed 'Проведен пользователем' (postedObject) = nameContact(userClosed(postedObject)) IN postedGroup;
 hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
 
 timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS postedObject);

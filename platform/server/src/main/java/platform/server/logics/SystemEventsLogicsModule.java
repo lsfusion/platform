@@ -123,7 +123,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         if (client) {
             exceptionObject = session.addObject(clientException);
             clientClientException.change(clientName, session, exceptionObject);
-            String userLogin = (String) baseLM.userLogin.read(session, user);
+            String userLogin = (String) baseLM.getBL().authenticationLM.loginCustomUser.read(session, user);
             loginClientException.change(userLogin, session, exceptionObject);
         } else {
             exceptionObject = session.addObject(serverException);

@@ -18,7 +18,7 @@
 	<field name="sumNoNDSOrder" class="java.lang.Double"/>
 	<field name="permissionOrder" class="java.lang.String"/>
 	<field name="purposeOrder" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="articleQuantity" class="java.lang.Double"/>
 	<field name="unnLegalEntityLegalIncOrder" class="java.lang.String"/>

@@ -61,7 +61,7 @@ trailerConsignment 'Прицеп' (consignment) = UNION OVERRIDE trailerTruck(tr
 
 driverConsignment = ABSTRACT driver(consignment);
 dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (consignment);
-nameDriverConsignment 'Водитель' (consignment) = UNION OVERRIDE commonName(driverConsignment(consignment)),
+nameDriverConsignment 'Водитель' (consignment) = UNION OVERRIDE nameContact(driverConsignment(consignment)),
                                                                 dataNameDriverConsignment(consignment) IN carConsignmentGroup;
 
 dataWaybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
@@ -96,10 +96,10 @@ GROUP issuanceConsignmentGroup 'Отпуск' : base;
 shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
 
 issuanceAllowedConsignment (consignment) = ABSTRACT employee (consignment);
-commonNameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = commonName(issuanceAllowedConsignment(consignment)) IN issuanceConsignmentGroup;
+nameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = nameContact(issuanceAllowedConsignment(consignment)) IN issuanceConsignmentGroup;
 
 issuanceExecutedConsignment (consignment) = ABSTRACT employee(consignment);
-commonNameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = commonName(issuanceExecutedConsignment(consignment)) IN issuanceConsignmentGroup;
+nameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = nameContact(issuanceExecutedConsignment(consignment)) IN issuanceConsignmentGroup;
 
 forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
 
@@ -113,7 +113,7 @@ goodsAcceptedConsignment 'Принял грузополучатель' (consignm
 GROUP loadingConsignmentGroup 'ПРР' : base;
 
 loadingExecuterConsignment (consignment) = ABSTRACT employee(consignment);
-commonNameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = commonName(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;
+nameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = nameContact(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;
 
 wayOfLoadingConsignment (consignment) = ABSTRACT wayOfLoading(consignment);
 nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
@@ -216,7 +216,7 @@ META defineConsignmentFormSimple(form, caption)
     FORM form caption PRINT
         OBJECTS c=consignment FIXED PANEL
 
-        PROPERTIES (c) dateConsignment, shipmentBaseConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+        PROPERTIES (c) dateConsignment, shipmentBaseConsignment, nameIssuanceAllowedConsignment, nameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        quantityConsignmentDetailConsignment, sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment, UNPCustomerConsignment,
                        UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
@@ -247,9 +247,9 @@ META defineConsignmentForm(form, caption)
         PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
                        fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, overWaybillConsignment,
                        namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
-                       readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                       readdressingConsignment, nameIssuanceAllowedConsignment, nameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                       commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                       nameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                        quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                        sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
@@ -283,9 +283,9 @@ FORM consignment 'Атрибуты накладной'
     PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
                    fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, overWaybillConsignment,
                    namePayerConsignment, shipmentBaseConsignment, addressSupplierStockConsignment, addressCustomerStockConsignment,
-                   readdressingConsignment, commonNameIssuanceAllowedConsignment, commonNameIssuanceExecutedConsignment,
+                   readdressingConsignment, nameIssuanceAllowedConsignment, nameIssuanceExecutedConsignment,
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
-                   commonNameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
+                   nameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
                    quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,

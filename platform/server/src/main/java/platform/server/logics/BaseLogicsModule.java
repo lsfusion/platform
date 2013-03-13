@@ -73,12 +73,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // classes
     public BaseClass baseClass;
 
-    public AbstractCustomClass contact;
-    public AbstractCustomClass user;
-    public ConcreteCustomClass systemUser;
-    public ConcreteCustomClass customUser;
-    public ConcreteCustomClass computer;
-
     public StaticCustomClass month;
     public StaticCustomClass DOW;
 
@@ -159,22 +153,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LCP currentEpoch;
     protected LCP currentDateTime;
     protected LCP currentTime;
-    public LCP currentUser;
-    public LCP currentComputer, hostnameCurrentComputer;
-
-    public LCP userLogin;
-    public LCP userPassword;
-    public LCP sha256PasswordCustomUser;
-    public LCP userFirstName;
-    public LCP userLastName;
-    public LCP userPhone;
-    public LCP userPostAddress;
-    public LCP userBirthday;
-
-    public LCP currentUserName;
-    public LCP<?> loginToUser;
-
-    public LCP hostname;
 
     public LAP delete;
     public LAP deleteApply;
@@ -189,7 +167,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP objectClass;
     public LCP objectClassName;
     public LCP classSID;
-    public LCP dataName;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
@@ -208,11 +185,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
-    
-    public LCP calculatedHash;
-
-    public LCP forbidChangePasswordCustomUser;
-    public LCP forbidEditProfileCustomUser;
 
     T BL;
 
@@ -251,13 +223,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
 
-        contact = addAbstractClass("contact", getString("logics.user.contact"), baseClass);
-        user = addAbstractClass("user", getString("logics.user"), baseClass);
-        systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
-
-        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), BL.LM.user, BL.LM.contact/*, BL.LM.barcodeObject*/);
-        computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
-
         month = addStaticClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
                 new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")});
@@ -292,10 +257,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addTable("base_" + i, baseClasses);
         }
 
-        addTable("computer", computer);
-        addTable("userTable", user);
-        addTable("contact", contact);
-        addTable("loginSID", StringClass.get(30), StringClass.get(30));
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
         addTable("sidClass", baseClass.sidClass);
@@ -456,63 +417,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
-        // Компьютер
-        // todo : переименовать в соответствии с naming policy
-        hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
-        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
-        hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostname, currentComputer);
-
-        // Контакты
-        // todo : переименовать в соответствии с namingPolicy
-        userFirstName = addDProp(publicGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), contact);
-        userFirstName.setMinimumCharWidth(10);
-
-        userLastName = addDProp(publicGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), contact);
-        userLastName.setMinimumCharWidth(10);
-
-        userPhone = addDProp(publicGroup, "userPhone", getString("logics.user.phone"), StringClass.get(30), contact);
-        userPhone.setMinimumCharWidth(10);
-
-        userPostAddress = addDProp(publicGroup, "userPostAddress", getString("logics.user.postAddress"), StringClass.get(100), contact);
-        userPostAddress.setMinimumCharWidth(20);
-
-        userBirthday = addDProp(publicGroup, "userBirthday", getString("logics.user.birthday"),  DateClass.instance, contact);
-
-        // todo : тут надо что-то придумать более логичное
-        dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
-        ((CalcProperty)dataName.property).aggProp = true;
-        name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
-                addJProp(istring2SP, userFirstName, 1, userLastName, 1));
+        name = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
         ((CalcProperty)name.property).aggProp = true;
 
         // todo : тут надо рефакторить как имена свойст, так и классов
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
-
-        // записываем в имя имя класса + номер объекта
-        dataName.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
-                addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
-                is(baseClass.named), 1);
-
-        // ----- Пользователи
-        // todo : переименовать в соответствии с namingPolicy
-        // Авторизация
-        userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
-        loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
-
-        userPassword = addDProp(publicGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
-        userPassword.setEchoSymbols(true);
-        sha256PasswordCustomUser = addDProp(publicGroup, "sha256PasswordCustomUser", getString("logics.user.password.hash"), StringClass.get(100), customUser);
-        sha256PasswordCustomUser.setEchoSymbols(true);
-        calculatedHash = addDProp(null, "calculatedHash", "Значение hash", StringClass.get(100), false);
-
-        forbidChangePasswordCustomUser = addDProp(publicGroup, "forbidChangePasswordCustomUser", getString("logics.user.forbid.change.password"), LogicalClass.instance, customUser);
-        forbidEditProfileCustomUser = addDProp(publicGroup, "forbidEditProfileCustomUser", getString("logics.user.forbid.change.profile"), LogicalClass.instance, customUser);
-
-        // Текущий пользователь
-        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
-        currentUserName = addJProp("currentUserName", getString("logics.user.current.user.name"), name, currentUser);
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
@@ -525,7 +436,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initIndexes() {
-        addIndex(dataName);
+        addIndex(name);
     }
 
     public static int generateStaticNewID() {
@@ -814,12 +725,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> root;
 
     public NavigatorElement<T> administration;
-    public NavigatorElement<T> account;
 
     public NavigatorElement<T> objects;
 
     public NavigatorElement<T> application;
-    public NavigatorElement<T> security;
     public NavigatorElement<T> systemEvents;
     public NavigatorElement<T> configuration;
 
@@ -863,16 +772,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         administration.window = windows.toolbar;
         administration.setImage("/images/tools.png");
 
-        account = addNavigatorElement(root, "account", getString("logics.account"));
-        account.window = windows.toolbar;
-        account.setImage("/images/lock.png");
-
         application = addNavigatorElement(administration, "application", getString("logics.administration.application"));
         addFormEntity(new OptionsFormEntity(application, "options"));
         addFormEntity(new IntegrationDataFormEntity(application, "integrationData"));
         addFormEntity(new MigrationDataFormEntity(application, "migrationData"));
-
-        security = addNavigatorElement(administration, "security", getString("logics.administration.access"));
 
         configuration = addNavigatorElement(administration, "configuration", getString("logics.administration.config"));
 

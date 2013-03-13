@@ -407,7 +407,7 @@ EXTEND DESIGN company {
 //----------------------------Concat для фрахта и декларации--------------------------//
 
 canonicalBrandFreight 'Бренды' (freight) = toString255(
-    [GROUP CONCAT commonName(brandSupplier) IF quantityFreightBrandSupplier(freight, brandSupplier), ' , '
+    [GROUP CONCAT name(brandSupplier) IF quantityFreightBrandSupplier(freight, brandSupplier), ' , '
            BY freight
            ORDER brandSupplier](freight))
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;

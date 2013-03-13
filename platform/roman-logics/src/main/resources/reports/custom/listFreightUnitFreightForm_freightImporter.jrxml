@@ -30,11 +30,11 @@
 	<field name="freight" class="java.lang.Integer"/>
 	<field name="importer" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="dateImporterFreight" class="java.util.Date"/>
 	<field name="sidImporterFreight" class="java.lang.String"/>
 	<field name="brand" class="java.lang.Integer"/>
-	<field name="commonName1" class="java.lang.String"/>
+	<field name="name1" class="java.lang.String"/>
 	<field name="freightUnit" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="quantityFreightUnitBrandSupplier" class="java.lang.Double"/>
@@ -46,7 +46,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="198" height="18"/>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName1}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{name1}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -66,7 +66,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="299" y="0" width="187" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="198" y="0" width="101" height="18"/>

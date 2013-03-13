@@ -26,7 +26,7 @@
 	<field name="property210" class="java.lang.String"/>
 	<field name="obj11" class="java.lang.Integer"/>
 	<field name="objectValueProperty_object2" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="objectClassName2" class="java.lang.String"/>
 	<field name="property94" class="java.lang.String"/>
@@ -49,7 +49,7 @@
 				<textElement textAlignment="Center">
 					<font size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="FixRelativeToBottom" x="5" y="71" width="69" height="11"/>

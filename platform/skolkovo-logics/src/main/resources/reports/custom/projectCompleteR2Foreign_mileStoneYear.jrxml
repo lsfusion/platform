@@ -26,7 +26,7 @@
 	<field name="mileStone" class="java.lang.Integer"/>
 	<field name="nativeMileStone" class="java.lang.String"/>
 	<field name="typeMileStone" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="nativeTypeMileStone" class="java.lang.String"/>
 	<field name="foreignTypeMileStone" class="java.lang.String"/>
 	<field name="nativeYearMileStone" class="java.lang.Integer"/>

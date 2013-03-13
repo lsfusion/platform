@@ -5,7 +5,7 @@ REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax;
 CLASS customsZone 'Таможенная зона' : named;
 TABLE customsZone(customsZone);
 
-customsZoneName (commonName) = GROUP UNIQUE customsZone BY name(customsZone) WHERE customsZone IS customsZone;
+customsZoneName (name) = GROUP UNIQUE customsZone BY name(customsZone) WHERE customsZone IS customsZone;
 
 currencyCustomsZone = DATA currency(customsZone);
 nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;

@@ -32,7 +32,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         securityManager.defaultPolicy.navigator.deny(LM.administration, LM.objects, SkolkovoLM.languageDocumentTypeForm, SkolkovoLM.globalForm);
 
-        securityManager.defaultPolicy.property.view.deny(LM.userPassword);
+        securityManager.defaultPolicy.property.view.deny(LM.baseLM.getBL().authenticationLM.passwordCustomUser);
 
         securityManager.defaultPolicy.property.change.deny(SkolkovoLM.dateStartVote, SkolkovoLM.dateEndVote, SkolkovoLM.inExpertVote, SkolkovoLM.oldExpertVote, SkolkovoLM.voteResultExpertVote, SkolkovoLM.doneExpertVote);
 

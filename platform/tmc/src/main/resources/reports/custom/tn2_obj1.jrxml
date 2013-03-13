@@ -22,7 +22,7 @@
 	<field name="sumNoNDSOrder" class="java.lang.Double"/>
 	<field name="permissionOrder" class="java.lang.String"/>
 	<field name="purposeOrder" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="articleQuantity" class="java.lang.Double"/>
 	<field name="unnLegalEntityLegalIncOrder" class="java.lang.String"/>
@@ -305,7 +305,7 @@
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="446" y="0" width="71" height="18"/>

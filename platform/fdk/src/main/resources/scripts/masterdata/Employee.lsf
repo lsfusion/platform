@@ -1,6 +1,6 @@
 MODULE Employee;
 
-REQUIRE System, MasterData, Security, Email, Hierarchy, Utils;
+REQUIRE System, Authentication, MasterData, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
 CLASS position 'Должность' : named;
@@ -35,7 +35,7 @@ TABLE employee(employee);
 namePositionEmployee 'Должность сотрудника' (employee) = name(positionEmployee(employee)) IN base MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)']
-                                                         (namePositionEmployee(employee), commonName(employee));
+                                                         (namePositionEmployee(employee), nameContact(employee));
 
 limitAccessEmployee 'Ограничить доступ' = DATA BOOLEAN (employee);
 
@@ -71,8 +71,8 @@ countAccessEmployeeEmployeeDivisionGroup 'Кол-во доступных под�
 
 FORM employee 'Сотрудник'
     OBJECTS e=employee FIXED PANEL
-    PROPERTIES(e)      userFirstName, userLastName, namePositionEmployee,
-                       userLogin, userPassword, emailContact, nameMainRoleUser, limitAccessEmployee
+    PROPERTIES(e)      firstNameContact, lastNameContact, namePositionEmployee,
+                       loginCustomUser, passwordCustomUser, emailContact, nameMainRoleUser, limitAccessEmployee
 
     TREE treeEmployeeDivision a=STRING[3], dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup
     PROPERTIES READONLY  OBJVALUE(a), dgTreeName = name(dg)
@@ -100,15 +100,15 @@ DESIGN employee FROM DEFAULT {
             NEW twoCase {
                 title = 'Личные данные';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(userFirstName(e));
-                ADD PROPERTY(userLastName(e));
+                ADD PROPERTY(firstNameContact(e));
+                ADD PROPERTY(lastNameContact(e));
                 ADD PROPERTY(namePositionEmployee(e));
             };
             NEW threeCase {
                 title = 'Данные пользователя';
                 childConstraints = TO THE BOTTOM;
-                ADD PROPERTY(userLogin(e));
-                ADD PROPERTY(userPassword(e));
+                ADD PROPERTY(loginCustomUser(e));
+                ADD PROPERTY(passwordCustomUser(e));
                 ADD PROPERTY(emailContact(e));
                 ADD PROPERTY(nameMainRoleUser(e));
             };
@@ -126,7 +126,7 @@ DESIGN employee FROM DEFAULT {
 
 FORM employees 'Сотрудники'
     OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e) ADDFORM, EDITFORM, delete
 
     OBJECTS d=employeeDivision
@@ -155,7 +155,7 @@ DESIGN employees FROM DEFAULT {
 
 FORM employeeDialog 'Сотрудники'
     OBJECTS e=employee
-    PROPERTIES(e) READONLY userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
 
     DIALOG employee OBJECT e
 ;
@@ -170,7 +170,7 @@ NAVIGATOR {
 
 META defineCommitteeEmployee (committee, prefix, caption)
     prefix##Committee = DATA employee (committee);
-    name###prefix##Committee caption (committee) = commonName(prefix##Committee(committee)) IN recognize;
+    name###prefix##Committee caption (committee) = nameContact(prefix##Committee(committee)) IN recognize;
     namePosition###prefix##Committee caption (committee) = namePositionEmployee(prefix##Committee(committee));
     CONSTRAINT prefix##Committee(committee) AND NOT countDivisionEmployeeCommittee(prefix##Committee(committee), committee)
         CHECKED BY prefix##Committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
@@ -178,7 +178,7 @@ END
 
 META defineCommitteeEmployeePrefix (committee, prefix, caption)
     prefix###committee = DATA employee (committee);
-    name###prefix###committee caption (committee) = commonName(prefix###committee(committee)) IN recognize;
+    name###prefix###committee caption (committee) = nameContact(prefix###committee(committee)) IN recognize;
     namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
     CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
         CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
@@ -208,7 +208,7 @@ namePositionEmployeeCommittee 'Члены комиссии' (committee) =
      MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
 nameEmployeeCommittee 'Члены комиссии' (committee) =
-     GROUP CONCAT commonName(employee) IF inCommitteeEmployee(committee, employee), ', '
+     GROUP CONCAT nameContact(employee) IF inCommitteeEmployee(committee, employee), ', '
      BY committee
      ORDER employee
      MINCHARWIDTH 50 PREFCHARWIDTH 50;

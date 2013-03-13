@@ -81,7 +81,7 @@ sidCashRegisterModelReceipt 'Код модели' (receipt) = sidModel(cashRegis
 numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognize;
 
 userReceipt = DATA customUser(receipt);
-nameUserReceipt 'Кассир' (receipt) = commonName(userReceipt(receipt));
+nameUserReceipt 'Кассир' (receipt) = nameContact(userReceipt(receipt));
 userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS receipt);
 
 @defineDocumentHeaderTime(receipt);

@@ -629,7 +629,7 @@ remindPasswordEmail 'Выслать пароль на этот email' (u, to) = 
 
 FORM testEmailForm 'Тестирование EMAIL'
 OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=customUser
-PROPERTIES OBJVALUE(s), userLogin(u), userPassword(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
+PROPERTIES OBJVALUE(s), loginCustomUser(u), passwordCustomUser(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
 ;
 
 stime 'Время' (store) = DATA TIME (store) IN base;

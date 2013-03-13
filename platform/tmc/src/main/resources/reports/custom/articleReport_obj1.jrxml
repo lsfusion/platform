@@ -25,13 +25,13 @@
 	<field name="objectValueProperty_DateClass" class="java.util.Date"/>
 	<field name="objectValueProperty_DateClass2" class="java.util.Date"/>
 	<field name="obj6" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<title>
 		<band height="80">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="350" height="18" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="200" y="55" width="20" height="18" backcolor="#FFFFFF"/>

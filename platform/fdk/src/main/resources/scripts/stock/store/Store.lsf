@@ -134,7 +134,7 @@ FORM departmentStore 'Отдел магазина'
                   explicitBatchLedgerStock
 
     OBJECTS e = employee
-    PROPERTIES(e) READONLY userFirstName, userLastName
+    PROPERTIES(e) READONLY firstNameContact, lastNameContact
     PROPERTIES(e) ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS inEmployeeDivisionEmployee(d, e)
 

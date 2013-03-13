@@ -21,13 +21,13 @@
 	<field name="addressSupplierStockConsignment" class="java.lang.String"/>
 	<field name="addressCustomerStockConsignment" class="java.lang.String"/>
 	<field name="readdressingConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
 	<field name="forwarderConsignment" class="java.lang.String"/>
 	<field name="warrantConsignment" class="java.lang.String"/>
 	<field name="warrantHolderConsignment" class="java.lang.String"/>
 	<field name="goodsAcceptedConsignment" class="java.lang.String"/>
-	<field name="commonNameLoadingExecuterConsignment" class="java.lang.String"/>
+	<field name="nameLoadingExecuterConsignment" class="java.lang.String"/>
 	<field name="nameWayOfLoadingConsignment" class="java.lang.String"/>
 	<field name="codeLoadingConsignment" class="java.lang.String"/>
 	<field name="arrivalTimeConsignment" class="java.util.Date"/>
@@ -77,7 +77,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{commonNameIssuanceAllowedConsignment}==null?"":$F{commonNameIssuanceAllowedConsignment})]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameIssuanceAllowedConsignment}==null?"":$F{nameIssuanceAllowedConsignment})]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="1" y="216" width="554" height="1"/>
@@ -143,7 +143,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{commonNameIssuanceExecutedConsignment}!=null?$F{commonNameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{nameIssuanceExecutedConsignment}!=null?$F{nameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="181" width="130" height="12"/>
@@ -1103,7 +1103,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonNameLoadingExecuterConsignment}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameLoadingExecuterConsignment}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle0" x="272" y="387" width="45" height="12"/>

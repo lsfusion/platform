@@ -40,7 +40,7 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
 
 
     OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -87,7 +87,7 @@ FORM writeOffCommittees 'Комиссии для списания товаров
 META defineDocumentHeaderWriteOffCommittee(object, stockProp)
 
     writeOffCommittee###object (object) = DATA writeOffCommittee(object);
-    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = commonName(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     writeOffCommittee###object (object) <- writeOffCommitteeStock(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
 
@@ -95,14 +95,14 @@ META defineDocumentHeaderWriteOffCommittee(object, stockProp)
         CHECKED BY writeOffCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
-    commonNameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
 END
 META defineDocumentHeaderAbstractWriteOffCommittee(object)
     writeOffCommittee###object (object) = ABSTRACT writeOffCommittee(object);
-    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = commonName(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
-    commonNameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
 END
 
 META defineDocumentInterfaceHeaderWriteOffCommittee (object, stockProp)

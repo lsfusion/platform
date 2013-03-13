@@ -217,7 +217,7 @@ FORM actStudyOfCulinaryBOM 'Акт контрольной проработки' 
     FILTERS       BOMComponent(c) == BOMProduct(p)
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY commonName, namePositionEmployee
+    PROPERTIES(e) READONLY nameContact, namePositionEmployee
     FILTERS       inCommitteeBOMEmployee(b,e)
 
 ;

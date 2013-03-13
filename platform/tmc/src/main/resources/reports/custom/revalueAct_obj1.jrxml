@@ -21,7 +21,7 @@
 	<field name="sumNewPrevRetailOrder" class="java.lang.Double"/>
 	<field name="sumPriceChangeOrder" class="java.lang.Double"/>
 	<field name="obj7" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="objectValueProperty_object" class="java.lang.Integer"/>
 	<field name="barcode" class="java.lang.String"/>
 	<field name="revalChangeBalance" class="java.lang.Double"/>
@@ -197,7 +197,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="174" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="174" y="0" width="85" height="18"/>

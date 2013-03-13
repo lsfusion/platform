@@ -43,19 +43,19 @@
 	<field name="grossWeightImporterFreightCustomCategory6" class="java.lang.Double"/>
 	<field name="sumImporterFreightCustomCategory6" class="java.lang.Double"/>
 	<field name="category" class="java.lang.Integer"/>
-	<field name="commonName1" class="java.lang.String"/>
+	<field name="name1" class="java.lang.String"/>
 	<field name="quantityProxyImporterFreightCustomCategory6Category" class="java.lang.Double"/>
 	<field name="addressExporterFreight" class="java.lang.String"/>
 	<field name="nameExporterFreight" class="java.lang.String"/>
 	<field name="addressSubject" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="netWeightImporterFreightCustomCategory6Category" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreightCustomCategory6Category" class="java.lang.Double"/>
 	<field name="sumImporterFreightCustomCategory6Category" class="java.lang.Double"/>
 	<field name="nameUnitOfMeasureCategory" class="java.lang.String"/>
 	<field name="sidImporterFreight" class="java.lang.String"/>
 	<variable name="categoryNames" class="java.lang.String" resetType="Group" resetGroup="designGroup4">
-		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{commonName1}]]></variableExpression>
+		<variableExpression><![CDATA[$V{categoryNames}+($V{categoryNames}.length() == 0 ? "" : " / ")+$F{name1}]]></variableExpression>
 		<initialValueExpression><![CDATA[""]]></initialValueExpression>
 	</variable>
 	<variable name="unitOfMeasureNames" class="java.lang.String" resetType="Group" resetGroup="designGroup4">
@@ -139,7 +139,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" x="335" y="18" width="192" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" x="335" y="36" width="192" height="18"/>

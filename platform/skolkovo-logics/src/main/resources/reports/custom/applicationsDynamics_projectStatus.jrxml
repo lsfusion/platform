@@ -17,7 +17,7 @@
 	</style>
 	<field name="sumApplicationsStatusApplicationCluster(caption)" class="java.lang.String"/>
 	<field name="projectStatus" class="java.lang.Integer"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
 	<field name="oficialNameProjectStatus" class="java.lang.String"/>
 	<field name="sumApplicationsStatusApplicationCluster" class="java.lang.Integer"/>
 	<field name="nonClusterApplicationsStatusApplication" class="java.lang.Integer"/>

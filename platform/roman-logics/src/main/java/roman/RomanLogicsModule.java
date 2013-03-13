@@ -3198,7 +3198,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", NumericClass.get(14, 2), shipmentDetail);
 
-        userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", baseLM.currentUser, true, is(shipmentDetail), 1);
+        userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", baseLM.getBL().authenticationLM.currentUser, true, is(shipmentDetail), 1);
         nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", baseLM.name, userShipmentDetail, 1);
 
         timeShipmentDetail = addTCProp(Time.DATETIME, "timeShipmentDetail", true, "Время ввода", quantityShipmentDetail);
@@ -3816,9 +3816,9 @@ public class RomanLogicsModule extends LogicsModule {
         quantityFreight = addSGProp(baseGroup, "quantityFreight", true, "Кол-во единиц", quantityImporterFreight, 2);
 
         // Текущие палеты/коробки для приема
-        currentPalletRouteUser = addDProp("currentPalletRouteUser", "Тек. паллета (ИД)", pallet, route, baseLM.user);
+        currentPalletRouteUser = addDProp("currentPalletRouteUser", "Тек. паллета (ИД)", pallet, route, baseLM.getBL().authenticationLM.user);
 
-        currentPalletRoute = addJProp(true, "currentPalletRoute", "Тек. паллета (ИД)", currentPalletRouteUser, 1, baseLM.currentUser);
+        currentPalletRoute = addJProp(true, "currentPalletRoute", "Тек. паллета (ИД)", currentPalletRouteUser, 1, baseLM.getBL().authenticationLM.currentUser);
         barcodeCurrentPalletRoute = addJProp("barcodeCurrentPalletRoute", "Тек. паллета (штрих-код)", barcode, currentPalletRoute, 1);
 
         sumNetWeightFreightSku = addJProp(baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", multiplyNumeric2, quantityFreightSku, 1, 2, netWeightSku, 2);
@@ -4091,9 +4091,9 @@ public class RomanLogicsModule extends LogicsModule {
         sumInOutCurrentYear = addSGProp(baseGroup, "sumInOutCurrentYear", "Итого выход", addJProp(baseLM.and1, sumInOutFreight, 1, addJProp(baseLM.equals2, addJProp(baseLM.yearInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, date, 1), 1), 1));
         balanceSumCurrentYear = addDUProp(baseGroup, "balanceSumCurrentYear", "Сальдо", sumInOutCurrentYear, sumInCurrentYear);
 
-        currentFreightBoxRouteUser = addDProp("currentFreightBoxRouteUser", "Тек. короб (ИД)", freightBox, route, baseLM.user);
+        currentFreightBoxRouteUser = addDProp("currentFreightBoxRouteUser", "Тек. короб (ИД)", freightBox, route, baseLM.getBL().authenticationLM.user);
 
-        currentFreightBoxRoute = addJProp(true, "currentFreightBoxRoute", "Тек. короб (ИД)", currentFreightBoxRouteUser, 1, baseLM.currentUser);
+        currentFreightBoxRoute = addJProp(true, "currentFreightBoxRoute", "Тек. короб (ИД)", currentFreightBoxRouteUser, 1, baseLM.getBL().authenticationLM.currentUser);
         barcodeCurrentFreightBoxRoute = addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", barcode, currentFreightBoxRoute, 1);
 
         destinationCurrentFreightBoxRoute = addJProp(true, "destinationCurrentFreightBoxRoute", "Пункт назначения тек. короба (ИД)", destinationFreightBox, currentFreightBoxRoute, 1);
@@ -4162,10 +4162,10 @@ public class RomanLogicsModule extends LogicsModule {
                 ), 1, 2, barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
         invoiceExportDbf = addProperty(null, new LAP(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", importer, freight, typeInvoice, this, baseLM)));
-        scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
-        scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
-        scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
-        scannerSingleRead = addDProp(baseGroup, "scannerSingleRead", "Одно событие на весь штрих-код", LogicalClass.instance, baseLM.computer);
+        scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.getBL().authenticationLM.computer);
+        scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.getBL().authenticationLM.computer);
+        scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.getBL().authenticationLM.computer);
+        scannerSingleRead = addDProp(baseGroup, "scannerSingleRead", "Одно событие на весь штрих-код", LogicalClass.instance, baseLM.getBL().authenticationLM.computer);
 
         initNavigators();
     }
@@ -5510,7 +5510,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity filterGroup4 = new RegularFilterGroupEntity(genID());
             filterGroup4.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(userShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(baseLM.currentUser)),
+                    new CompareFilterEntity(addPropertyObject(userShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(baseLM.getBL().authenticationLM.currentUser)),
                     "Пользователя",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(filterGroup4);

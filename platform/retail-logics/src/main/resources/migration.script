@@ -76,3 +76,25 @@ V0.6 {
     PROPERTY propertyDrawSID -> sidPropertyDraw
     PROPERTY email -> emailContact
 }
+
+V0.6.2 {
+    CLASS contact -> Contact_contact
+    CLASS customUser -> Authentication_customUser
+
+    TABLE contact -> Contact_contact
+    TABLE computer -> Authentication_computer
+    TABLE userTable -> Authentication_user
+    TABLE customUser -> Authentication_customUser
+    TABLE loginSID -> Authentication_loginSID
+
+    PROPERTY userFirstName -> Contact_firstNameContact
+    PROPERTY userLastName -> Contact_lastNameContact
+    PROPERTY userPhone -> Contact_phoneContact
+    PROPERTY userPostAddress -> Contact_postAddressContact
+    PROPERTY userBirthday -> Contact_birthdayContact
+    PROPERTY userLogin -> Authentication_loginCustomUser
+    PROPERTY userPassword -> Authentication_passwordCustomUser
+    PROPERTY forbidChangePasswordCustomUser -> Authentication_forbidChangePasswordCustomUser
+    PROPERTY forbidEditProfileCustomUser -> Authentication_forbidEditProfileCustomUser
+    PROPERTY Email_emailContact -> Contact_emailContact
+}

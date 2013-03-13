@@ -144,21 +144,21 @@ subtotalContainerIncStockDocumentStockDateInterval 'Итого с остатко
 
 MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (stock);
 nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
-    commonName (MRPStock(stock)) IN responsibilityGroup;
+    nameContact (MRPStock(stock)) IN responsibilityGroup;
 namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
     namePositionEmployee(MRPStock(stock));
 CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
     CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
 
 accountantStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (stock);
-nameAccountantStock 'Бухгалтер, принимающий товарный отчет' (stock) = commonName(accountantStock(stock)) IN responsibilityGroup;
+nameAccountantStock 'Бухгалтер, принимающий товарный отчет' (stock) = nameContact(accountantStock(stock)) IN responsibilityGroup;
 namePositionAccountantStock 'Бухгалтер, принимающий товарный отчет (должность)' =
     namePositionEmployee(accountantStock(stock));
 CONSTRAINT accountantStock(stock) AND NOT inEmployeeDivisionEmployee(stock, accountantStock(stock))
     CHECKED BY accountantStock MESSAGE 'Бухгалтер не сотрудник отдела';
 
 auditorStock 'Кто проверяет товарный отчет (ИД)' = DATA employee (stock);
-nameAuditorStock 'Кто проверяет товарный отчет' (stock) = commonName(auditorStock(stock)) IN responsibilityGroup;
+nameAuditorStock 'Кто проверяет товарный отчет' (stock) = nameContact(auditorStock(stock)) IN responsibilityGroup;
 namePositionAuditorStock 'Кто проверяет товарный отчет (должность)' =
     namePositionEmployee(auditorStock(stock));
 CONSTRAINT auditorStock(stock) AND NOT inEmployeeDivisionEmployee(stock, auditorStock(stock))

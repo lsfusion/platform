@@ -33,7 +33,7 @@ FORM repricingCommittee 'Комиссия переоценки'
     ORDER BY depName
 
     OBJECTS e=employee
-    PROPERTIES(e)      READONLY name, userFirstName, userLastName, namePositionEmployee
+    PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
     PROPERTIES(c, e)   inCommitteeEmployee
@@ -89,7 +89,7 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
     numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
 
     repricingCommittee###object (object) = DATA repricingCommittee(object);
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
 
@@ -97,8 +97,8 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
         CHECKED BY repricingCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
-    commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
-    commonNameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
+    nameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
+    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
     namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
 
 
@@ -106,11 +106,11 @@ END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
     numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) PERSISTENT IN documentPrmGroup;
     repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) PERSISTENT;
-    nameRepricingCommittee###object 'Комиссия переоценки' (object) = commonName(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
-    commonNameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
-    commonNameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
+    nameEmployeeCommittee###object 'Сотрудники комиссии' (object) = namePositionEmployeeCommittee(repricingCommittee###object (object));
+    nameChairman###object 'Председатель комиссии' (object) = nameChairmanCommittee(repricingCommittee###object (object));
     namePositionChairman###object 'Должность' (object) = namePositionChairmanCommittee(repricingCommittee###object (object));
 END
 
@@ -330,7 +330,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
                noteRepricing, numberDisposalRepricing, repricingCommitteeRepricing, nameRepricingCommitteeRepricing,
-               commonNameChairmanRepricing, namePositionChairmanRepricing, commonNameEmployeeCommitteeRepricing
+               nameChairmanRepricing, namePositionChairmanRepricing, nameEmployeeCommitteeRepricing
 
 
     OBJECTS d = repricingDetail
@@ -347,7 +347,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
                diffRetailSumRepricingDetail
 
     OBJECTS e=employee
-    PROPERTIES(e) READONLY   commonName, namePositionEmployee
+    PROPERTIES(e) READONLY   nameContact, namePositionEmployee
 
     FILTERS    repricingRepricingDetail(d) == p,
                inCommitteeRepricingEmployee(p, e)

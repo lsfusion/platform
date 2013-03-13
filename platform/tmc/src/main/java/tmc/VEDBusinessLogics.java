@@ -50,7 +50,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         try {
             DataSession session = getDbManager().createSession();
 
-            Integer result = (Integer) VEDLM.cashRegComPort.read(session, new DataObject(compId, LM.computer));
+            Integer result = (Integer) VEDLM.cashRegComPort.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
 
             session.close();
 
@@ -64,7 +64,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         try {
             DataSession session = getDbManager().createSession();
 
-            Integer result = (Integer) VEDLM.panelScreenComPort.read(session, new DataObject(compId, LM.computer));
+            Integer result = (Integer) VEDLM.panelScreenComPort.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
 
             session.close();
 

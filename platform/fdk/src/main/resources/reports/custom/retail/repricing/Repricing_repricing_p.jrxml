@@ -57,8 +57,8 @@
 	<field name="numberDisposalRepricing" class="java.lang.String"/>
 	<field name="nameRepricingCommitteeRepricing" class="java.lang.String"/>
 	<field name="namePositionChairmanRepricing" class="java.lang.String"/>
-	<field name="commonNameChairmanRepricing" class="java.lang.String"/>
-	<field name="commonNameEmployeeCommitteeRepricing" class="java.lang.String"/>
+	<field name="nameChairmanRepricing" class="java.lang.String"/>
+	<field name="nameEmployeeCommitteeRepricing" class="java.lang.String"/>
 	<field name="repricingCommitteeRepricing" class="java.lang.Integer"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{p})]]></groupExpression>
@@ -81,7 +81,7 @@
 						<pen lineWidth="0.0" lineStyle="Solid"/>
 					</box>
 					<textElement/>
-					<textFieldExpression><![CDATA[$F{commonNameEmployeeCommitteeRepricing}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameEmployeeCommitteeRepricing}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="13">
@@ -388,7 +388,7 @@
 					<textElement textAlignment="Center">
 						<font isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{commonNameChairmanRepricing}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameChairmanRepricing}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="159" y="87" width="119" height="8"/>
@@ -581,7 +581,7 @@ $F{numberRepricing}]]></textFieldExpression>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</box>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{commonNameChairmanRepricing}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameChairmanRepricing}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

@@ -60,7 +60,7 @@ FORM warehouse 'Склад'
     ORDER BY          name
 
     OBJECTS           e = employee
-    PROPERTIES(e)     READONLY userFirstName, userLastName
+    PROPERTIES(e)     READONLY firstNameContact, lastNameContact
     PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS           inEmployeeDivisionEmployee(w, e)
 

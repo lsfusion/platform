@@ -14,18 +14,18 @@ META setTripPropTrip(prop)
 END
 
 issuanceAllowedTrip = DATA employee(trip);
-commonNameIssuanceAllowedTrip 'Отпуск разрешил' (trip) = commonName(issuanceAllowedTrip(trip));
+nameIssuanceAllowedTrip 'Отпуск разрешил' (trip) = nameContact(issuanceAllowedTrip(trip));
 @setTripPropTrip(issuanceAllowed);
 
 issuanceExecutedTrip = DATA employee(trip);
-commonNameIssuanceExecutedTrip 'Отпуск произвел' (trip) = commonName(issuanceExecutedTrip(trip));
+nameIssuanceExecutedTrip 'Отпуск произвел' (trip) = nameContact(issuanceExecutedTrip(trip));
 @setTripPropTrip(issuanceExecuted);
 
 forwarderTrip 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы'= DATA STRING[40](trip);
 @setTripPropTrip(forwarder);
 
 loadingExecuterTrip = DATA employee(trip);
-commonNameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = commonName(loadingExecuterTrip(trip));
+nameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = nameContact(loadingExecuterTrip(trip));
 @setTripPropTrip(loadingExecuter);
 
 wayOfLoadingTrip = DATA wayOfLoading(trip);
@@ -57,7 +57,7 @@ printVerticalConsignmentTrip 'Печать ТТН-1 (верт.)' (trip) = ACTION
 } TOOLBAR;
 
 EXTEND FORM trip
-    PROPERTIES (t) commonNameIssuanceAllowedTrip, commonNameIssuanceExecutedTrip, forwarderTrip, commonNameLoadingExecuterTrip, nameWayOfLoadingTrip, codeLoadingTrip, documentNameCurrencyTrip
+    PROPERTIES (t) nameIssuanceAllowedTrip, nameIssuanceExecutedTrip, forwarderTrip, nameLoadingExecuterTrip, nameWayOfLoadingTrip, codeLoadingTrip, documentNameCurrencyTrip
     PROPERTIES createConsignmentTrip(t) TODRAW i
     PROPERTIES printHorizontalConsignmentTrip(t) TODRAW i
     PROPERTIES printVerticalConsignmentTrip(t) TODRAW i
@@ -72,13 +72,13 @@ EXTEND DESIGN trip {
             childConstraints = TO THE BOTTOM;
             NEW issuanceContainer {
                 caption = 'Отпуск';
-                ADD PROPERTY(commonNameIssuanceAllowedTrip);
-                ADD PROPERTY(commonNameIssuanceExecutedTrip);
+                ADD PROPERTY(nameIssuanceAllowedTrip);
+                ADD PROPERTY(nameIssuanceExecutedTrip);
                 ADD PROPERTY(forwarderTrip);
             }
             NEW loadingContainer {
                 caption = 'ППР';
-                ADD PROPERTY(commonNameLoadingExecuterTrip);
+                ADD PROPERTY(nameLoadingExecuterTrip);
                 ADD PROPERTY(nameWayOfLoadingTrip);
                 ADD PROPERTY(codeLoadingTrip);
             }

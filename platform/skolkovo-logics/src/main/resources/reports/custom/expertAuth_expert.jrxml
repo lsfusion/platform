@@ -10,9 +10,9 @@
 		</box>
 	</style>
 	<field name="expert" class="java.lang.Integer"/>
-	<field name="userLogin" class="java.lang.String"/>
-	<field name="userPassword" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="loginCustomUser" class="java.lang.String"/>
+	<field name="passwordCustomUser" class="java.lang.String"/>
+	<field name="nameContact" class="java.lang.String"/>
 	<field name="isForeignExpert" class="java.lang.Boolean"/>
 	<detail>
 		<band height="598">
@@ -21,7 +21,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый ":"Dear ")+$F{commonName}+","]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый ":"Dear ")+$F{nameContact}+","]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="19" y="56" width="545" height="86"/>

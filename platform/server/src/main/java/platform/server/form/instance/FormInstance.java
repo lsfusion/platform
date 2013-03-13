@@ -267,7 +267,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
 
-            Integer userId = (Integer) BL.LM.currentUser.read(session);
+            Integer userId = (Integer) BL.authenticationLM.currentUser.read(session);
             DataObject currentUser = session.getDataObject(userId, ObjectType.instance);
 
             Expr customUserExpr = currentUser.getExpr();
@@ -330,7 +330,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void saveUserPreferences(FormUserPreferences preferences, Boolean forAllUsers) {
         try {
             DataSession dataSession = session.createSession();
-            DataObject userObject = dataSession.getDataObject(BL.LM.currentUser.read(dataSession), ObjectType.instance);
+            DataObject userObject = dataSession.getDataObject(BL.authenticationLM.currentUser.read(dataSession), ObjectType.instance);
             for (GroupObjectUserPreferences groupObjectPreferences : preferences.getGroupObjectUserPreferencesList()) {
                 for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectPreferences.getColumnUserPreferences().entrySet()) {
                     Integer id = (Integer) BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.read(dataSession, new DataObject(entity.getSID(), StringClass.get(50)), new DataObject(entry.getKey(), StringClass.get(50)));

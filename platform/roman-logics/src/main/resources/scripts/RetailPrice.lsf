@@ -698,7 +698,7 @@ quantityPriceSetDocumentBrandSupplierSku (priceSetDocument, brandSupplier) = GRO
     BY priceSetDocument, brandSupplierArticleSku(sku);
 
 canonicalBrandPriceSetDocument 'Бренды' (priceSetDocument) = toString255(
-    [GROUP CONCAT commonName(brandSupplier) IF (quantityPriceSetDocumentBrandSupplierArticle(priceSetDocument, brandSupplier) OR quantityPriceSetDocumentBrandSupplierSku(priceSetDocument, brandSupplier)), ' , '
+    [GROUP CONCAT name(brandSupplier) IF (quantityPriceSetDocumentBrandSupplierArticle(priceSetDocument, brandSupplier) OR quantityPriceSetDocumentBrandSupplierSku(priceSetDocument, brandSupplier)), ' , '
            BY priceSetDocument
            ORDER brandSupplier](priceSetDocument)) MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 

@@ -41,8 +41,8 @@
 	</style>
 	<field name="c" class="java.lang.Integer"/>
 	<field name="shipmentBaseConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceAllowedConsignment" class="java.lang.String"/>
-	<field name="commonNameIssuanceExecutedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceAllowedConsignment" class="java.lang.String"/>
+	<field name="nameIssuanceExecutedConsignment" class="java.lang.String"/>
 	<field name="forwarderConsignment" class="java.lang.String"/>
 	<field name="warrantConsignment" class="java.lang.String"/>
 	<field name="warrantHolderConsignment" class="java.lang.String"/>
@@ -593,7 +593,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{commonNameIssuanceAllowedConsignment}!=null?$F{commonNameIssuanceAllowedConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nameIssuanceAllowedConsignment}!=null?$F{nameIssuanceAllowedConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement positionType="Float" x="109" y="14" width="701" height="7"/>
@@ -640,7 +640,7 @@
 					<textElement>
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{commonNameIssuanceExecutedConsignment}!=null?$F{commonNameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nameIssuanceExecutedConsignment}!=null?$F{nameIssuanceExecutedConsignment}:"")]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="130" y="13" width="680" height="1"/>

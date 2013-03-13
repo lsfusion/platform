@@ -1,6 +1,6 @@
 MODULE Historizable;
 
-REQUIRE System;
+REQUIRE System, Authentication;
 
 CLASS historizable 'Объект с историей создания' ;
 TABLE historizable (historizable);
@@ -11,7 +11,7 @@ timeCreatedHistorizable 'Время создания'= DATA DATETIME (historizab
 timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS historizable);
 
 userCreatedHistorizable = DATA customUser (historizable);
-nameUserCreatedHistorizable 'Пользователь' (historizable) = commonName (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
+nameUserCreatedHistorizable 'Пользователь' (historizable) = nameContact (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
 userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS historizable);
 
 computerCreatedHistorizable = DATA computer (historizable);

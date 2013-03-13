@@ -63,7 +63,7 @@
 	<field name="weightOrder" class="java.lang.Double"/>
 	<field name="transOrder" class="java.lang.Double"/>
 	<field name="obj48" class="java.lang.Integer"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="nameUnitOfMeasureArticle" class="java.lang.String"/>
 	<field name="articleQuantity" class="java.lang.Double"/>
 	<field name="priceOrderArticle" class="java.lang.Double"/>
@@ -322,7 +322,7 @@
 				<textElement textAlignment="Left">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="491" y="0" width="64" height="18"/>

@@ -12,7 +12,7 @@
 	<field name="expert" class="java.lang.Integer"/>
 	<field name="userLogin" class="java.lang.String"/>
 	<field name="userPassword" class="java.lang.String"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="isForeignExpert" class="java.lang.Boolean"/>
 	<field name="webHost" class="java.lang.String"/>
 	<field name="localeExpert" class="java.lang.String"/>

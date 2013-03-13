@@ -18,16 +18,16 @@ CLASS client 'Покупатель (Ф.Л.)' : contact;
 
 FORM client 'Покупатель (Ф.Л.)'
     OBJECTS c=client FIXED PANEL
-    PROPERTIES(c)      userFirstName, userLastName, userPostAddress, userPhone,
-                       emailContact, userBirthday
+    PROPERTIES(c)      firstNameContact, lastNameContact, postAddressContact, phoneContact,
+                       emailContact, birthdayContact
 
     EDIT client OBJECT c
 ;
 
 FORM clients 'Покупатели (Ф.Л.)'
     OBJECTS c=client
-    PROPERTIES(c)      READONLY userFirstName, userLastName, userPostAddress, userPhone,
-                       emailContact, userBirthday
+    PROPERTIES(c)      READONLY firstNameContact, lastNameContact, postAddressContact, phoneContact,
+                       emailContact, birthdayContact
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 ;
 
@@ -43,7 +43,7 @@ discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNum
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS discountCard;
 
 clientDiscountCard (discountCard) = DATA client(discountCard);
-nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = commonName(clientDiscountCard(discountCard)) IN recognize;
+nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = nameContact(clientDiscountCard(discountCard)) IN recognize;
 
 GROUP discountCardDateGroup 'Срок действия' : base;
 dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;

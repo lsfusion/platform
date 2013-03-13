@@ -117,8 +117,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         this.securityPolicy = currentUser.getSecurityPolicy();
 
-        this.user = new DataObject(currentUser.ID, businessLogics.LM.customUser);
-        this.computer = new DataObject(computer, businessLogics.LM.computer);
+        this.user = new DataObject(currentUser.ID, businessLogics.authenticationLM.customUser);
+        this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
 
         this.remoteAddress = remoteAddress;
         this.sql = dbManager.createSQL();
@@ -131,7 +131,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void changeCurrentUser(DataObject user) throws SQLException {
         this.user = user;
         this.securityPolicy = getUserSecurityPolicy();
-        updateEnvironmentProperty((CalcProperty) businessLogics.LM.currentUser.property, user);
+        updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
     }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
@@ -150,7 +150,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public String getUserLogin() {
         try {
             DataSession session = createSession();
-            String userLogin = (String) businessLogics.LM.userLogin.read(session, user);
+            String userLogin = (String) businessLogics.authenticationLM.loginCustomUser.read(session, user);
             session.close();
             return userLogin;
         } catch (Exception e) {
@@ -185,7 +185,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try {
             DataSession session = createSession();
             QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
-            query.addProperty("name", businessLogics.LM.currentUserName.getExpr());
+            query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
             String userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
             session.close();
 

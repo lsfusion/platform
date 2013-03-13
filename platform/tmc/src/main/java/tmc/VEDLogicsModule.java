@@ -451,7 +451,7 @@ public class VEDLogicsModule extends LogicsModule {
         shop = addConcreteClass("shop", "Магазин", store);
         warehouse = addConcreteClass("warehouse", "Распред. центр", store);
         barcodeObject = addAbstractClass("barcodeObject", "Штрихкод", baseClass);
-        baseLM.customUser.addParentClass(barcodeObject);
+        baseLM.getBL().authenticationLM.customUser.addParentClass(barcodeObject);
         article = addConcreteClass("article", "Товар", baseClass.named, barcodeObject);
         articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
         specification = addConcreteClass("specification", "Спецификация", baseClass.named);
@@ -731,11 +731,11 @@ public class VEDLogicsModule extends LogicsModule {
         importDocs = addAProp(new ImportDocsActionProperty());
         downToZero = addAProp(new DownToZeroActionProperty());
 
-        computerShop = addDProp("computerShop", "Магазин рабочего места", shop, baseLM.computer);
-        currentShop = addJProp("Текущий магазин", computerShop, baseLM.currentComputer);
+        computerShop = addDProp("computerShop", "Магазин рабочего места", shop, baseLM.getBL().authenticationLM.computer);
+        currentShop = addJProp("Текущий магазин", computerShop, baseLM.getBL().authenticationLM.currentComputer);
 
-        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, baseLM.computer);
-        cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, baseLM.computer);
+        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, baseLM.getBL().authenticationLM.computer);
+        cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, baseLM.getBL().authenticationLM.computer);
         addJProp(baseGroup, "Магазин рабочего места", baseLM.name, computerShop, 1);
 
         LCP legalEntitySubject = addCUProp("legalEntitySubject", "Юр. лицо (ИД)", addDProp("legalEntityStore", "Юр. лицо (ИД)", storeLegalEntity, store), object(legalEntity));
@@ -1331,14 +1331,14 @@ public class VEDLogicsModule extends LogicsModule {
         couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", baseLM.diff2, couponToIssueQuantity, 1, 2, baseLM.vzero);
         addConstraint(couponToIssueConstraint, false);
 
-        orderUser = addDCProp("orderUser", "Исп-ль заказа", baseLM.currentUser, true, is(order), 1);
+        orderUser = addDCProp("orderUser", "Исп-ль заказа", baseLM.getBL().authenticationLM.currentUser, true, is(order), 1);
         orderUserName = addJProp("Исп-ль заказа", baseLM.name, orderUser, 1);
         // вспомогательные свойства
         orderContragentBarcode = addJProp("Штрих-код (кому)", barcode, subjectIncOrder, 1);
         orderUserBarcode = addJProp("Кассир", barcode, orderUser, 1);
 
-        orderComputer = addDCProp("orderComputer", "Компьютер заказа", baseLM.currentComputer, true, is(order), 1);
-        orderComputerName = addJProp("Компьютер заказа", baseLM.hostname, orderComputer, 1);
+        orderComputer = addDCProp("orderComputer", "Компьютер заказа", baseLM.getBL().authenticationLM.currentComputer, true, is(order), 1);
+        orderComputerName = addJProp("Компьютер заказа", baseLM.getBL().authenticationLM.hostname, orderComputer, 1);
 
 //        setNotNull(barcode, customerCheckRetail);
         setNotNull(addJProp("Штрих-код товара", baseLM.and1, barcode, 1, is(customerCheckRetail), 1));

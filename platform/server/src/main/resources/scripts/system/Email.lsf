@@ -9,7 +9,7 @@ CLASS STATIC encryptedConnectionTypeStatus 'Тип шифрованного по
 };
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA encryptedConnectionTypeStatus();
-nameEncryptedConnectionType 'Тип шифрованного подключения' = commonName(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
+nameEncryptedConnectionType 'Тип шифрованного подключения' = name(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
 
 CLASS notification 'Уведомление';
 TABLE notification (notification);
@@ -24,9 +24,6 @@ textNotification 'Текст письма' = DATA TEXT (notification);
 subjectNotification 'Тема письма'= DATA STRING[100] (notification);
 inNotificationProperty 'Вкл.' = DATA BOOLEAN (notification, property);
 
-emailContact 'E-mail'= DATA STRING[50] (contact);
-contactEmail (email) = GROUP UNIQUE contact BY emailContact(contact) WHERE contact IS contact;
-
 smtpHost 'SMTP хост' = DATA STRING[50]() IN email;
 smtpPort 'SMTP порт' = DATA STRING[10]() IN email;
 
@@ -39,7 +36,7 @@ disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN 
 FORM remindUserPass 'Напоминание пароля'
 
     OBJECTS u=customUser FIXED PANEL
-    PROPERTIES(u) READONLY userLogin, userPassword, name
+    PROPERTIES(u) READONLY loginCustomUser, passwordCustomUser, name
 ;
 
 emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL

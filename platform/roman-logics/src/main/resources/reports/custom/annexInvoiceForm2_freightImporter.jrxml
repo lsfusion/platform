@@ -34,7 +34,7 @@
 	<field name="sidArticle" class="java.lang.String"/>
 	<field name="nameOriginCategoryArticle" class="java.lang.String"/>
 	<field name="nameBrandSupplierArticle" class="java.lang.String"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
 	<field name="sidCustomCategory10" class="java.lang.String"/>
 	<field name="quantityImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="netWeightImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
@@ -42,7 +42,7 @@
 	<field name="priceImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="sumImporterFreightArticleCompositionCountryCategory" class="java.lang.Double"/>
 	<field name="sumImporterFreight" class="java.lang.Double"/>
-	<field name="commonName" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
 	<field name="compositionFreightArticleCompositionCountryCategory" class="java.lang.String"/>
 	<field name="nameCategoryArticle" class="java.lang.String"/>
 	<field name="quantityImporterFreight" class="java.lang.Double"/>
@@ -155,7 +155,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="0" y="48" width="170" height="18"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle1" positionType="Float" x="255" y="102" width="169" height="18"/>
@@ -239,7 +239,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="547" y="0" width="91" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName2}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{name2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="81" y="0" width="89" height="18"/>

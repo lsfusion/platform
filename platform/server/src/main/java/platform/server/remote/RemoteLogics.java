@@ -280,7 +280,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     protected Integer getUserByEmail(DataSession session, String email) throws SQLException {
-        return (Integer) businessLogics.emailLM.contactEmail.read(session, new DataObject(email));
+        return (Integer) businessLogics.contactLM.contactEmail.read(session, new DataObject(email));
     }
 
     @Override
@@ -296,7 +296,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     throw new RuntimeException(getString("mail.user.not.found") + ": " + email);
                 }
 
-                businessLogics.emailLM.emailUserPassUser.execute(session, new DataObject(userId, baseLM.customUser));
+                businessLogics.emailLM.emailUserPassUser.execute(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
             } finally {
                 session.close();
             }

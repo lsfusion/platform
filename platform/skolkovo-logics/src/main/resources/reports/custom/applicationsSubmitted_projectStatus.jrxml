@@ -17,7 +17,7 @@
 	</style>
 	<field name="applicationsSubmitStatusApplicationClusterDateDate(caption)" class="java.lang.String"/>
 	<field name="projectStatus" class="java.lang.Integer"/>
-	<field name="commonName2" class="java.lang.String"/>
+	<field name="name2" class="java.lang.String"/>
 	<field name="oficialNameProjectStatus" class="java.lang.String"/>
 	<field name="applicationsSubmitStatusApplicationClusterDateDate" class="java.lang.Integer"/>
 	<field name="nonClusterApplicationsStatusAplicationSubmitDateDate" class="java.lang.Integer"/>

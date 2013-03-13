@@ -160,22 +160,22 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
             DataSession session = createSession();
-            Object userId = LM.loginToUser.read(session, new DataObject(username, StringClass.get(30)));
+            Object userId = businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
             if (userId != null)
                 return getString("logics.error.user.duplicate");
 
-            Object emailId = businessLogics.emailLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
+            Object emailId = businessLogics.contactLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
             if (emailId != null) {
                 return getString("logics.error.emailContact.duplicate");
             }
 
-            DataObject userObject = session.addObject(LM.customUser);
-            LM.userLogin.change(username, session, userObject);
-            businessLogics.emailLM.emailContact.change(email, session, userObject);
-            LM.userPassword.change(password, session, userObject);
-            LM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
-            LM.userFirstName.change(firstName, session, userObject);
-            LM.userLastName.change(lastName, session, userObject);
+            DataObject userObject = session.addObject(businessLogics.authenticationLM.customUser);
+            businessLogics.authenticationLM.loginCustomUser.change(username, session, userObject);
+            businessLogics.contactLM.emailContact.change(email, session, userObject);
+            businessLogics.authenticationLM.passwordCustomUser.change(password, session, userObject);
+            businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
+            businessLogics.contactLM.firstNameContact.change(firstName, session, userObject);
+            businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
             session.apply(businessLogics);
         } catch (SQLException e) {
             return getString("logics.error.registration");
@@ -188,10 +188,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         User user = readUser(login, session);
         if (user == null) {
-            DataObject addObject = session.addObject(LM.customUser);
-            LM.userLogin.change(login, session, addObject);
-            LM.userPassword.change(defaultPassword, session, addObject);
-            LM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
+            DataObject addObject = session.addObject(businessLogics.authenticationLM.customUser);
+            businessLogics.authenticationLM.customUserLogin.change(login, session, addObject);
+            businessLogics.authenticationLM.passwordCustomUser.change(defaultPassword, session, addObject);
+            businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(businessLogics);
             user = new User(userID);
@@ -203,7 +203,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public User readUser(String login, DataSession session) throws SQLException {
-        Integer userId = (Integer) LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+        Integer userId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
         }
@@ -240,7 +240,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
             q.addProperty("pOrder", orderExpr);
             q.and(orderExpr.getWhere());
-            q.and(q.getMapExprs().get("userId").compare(new DataObject(userId, LM.customUser), Compare.EQUALS));
+            q.and(q.getMapExprs().get("userId").compare(new DataObject(userId, businessLogics.authenticationLM.customUser), Compare.EQUALS));
 
             ImOrderMap<Object, Boolean> orderBy = MapFact.<Object, Boolean>singletonOrder("pOrder", false);
             ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
@@ -327,7 +327,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         try {
             DataSession session = createSession();
 
-            DataObject userObject = new DataObject(user.ID, LM.customUser);
+            DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
 
             Object forbidAll = securityLM.forbidAllFormsUser.read(session, userObject);
             Object allowAll = securityLM.permitAllFormsUser.read(session, userObject);
@@ -356,7 +356,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "formId"));
             Expr formExpr = reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             qf.and(formExpr.getWhere());
-            qf.and(qf.getMapExprs().get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+            qf.and(qf.getMapExprs().get("userId").compare(new DataObject(user.ID, businessLogics.authenticationLM.customUser), Compare.EQUALS));
 
             qf.addProperty("sid", formExpr);
             qf.addProperty("permit", securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId")));
@@ -374,7 +374,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "propertyId"));
             Expr propExpr = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId"));
             qp.and(propExpr.getWhere());
-            qp.and(qp.getMapExprs().get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+            qp.and(qp.getMapExprs().get("userId").compare(new DataObject(user.ID, businessLogics.authenticationLM.customUser), Compare.EQUALS));
             qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")).getWhere());
 
             qp.addProperty("sid", propExpr);
@@ -455,14 +455,14 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 //if (user == null) {
                 //    throw new LoginException();
                 //}
-                Integer userId = (Integer) LM.loginToUser.read(session, new DataObject(username, StringClass.get(30)));
+                Integer userId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
                 if (userId == null) {
                     throw new LoginException();
                 }
 
-                String password = (String) LM.sha256PasswordCustomUser.read(session, new DataObject(userId, LM.customUser));
+                String password = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
                 if (password == null) {
-                    String plainPassword = ((String) LM.userPassword.read(session, new DataObject(userId, LM.customUser))).trim();
+                    String plainPassword = ((String) businessLogics.authenticationLM.passwordCustomUser.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser))).trim();
                     password = BaseUtils.calculateBase64Hash("SHA-256", plainPassword, UserInfo.salt);
                 }
                 if (password != null)
@@ -487,7 +487,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(securityLM.inMainRoleCustomUser.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
-                q.and(LM.userLogin.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
+                q.and(businessLogics.authenticationLM.loginCustomUser.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
 
                 q.addProperty("roleName", securityLM.sidUserRole.getExpr(session.getModifier(), roleExpr));
 

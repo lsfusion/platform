@@ -762,8 +762,8 @@ public class ImportActionProperty {
         try {
             if (employeesList != null) {
                 ImportField employeeIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
-                ImportField employeeFirstNameField = new ImportField(LM.findLCPByCompoundName("userFirstName"));
-                ImportField employeeLastNameField = new ImportField(LM.findLCPByCompoundName("userLastName"));
+                ImportField employeeFirstNameField = new ImportField(LM.findLCPByCompoundName("firstNameContact"));
+                ImportField employeeLastNameField = new ImportField(LM.findLCPByCompoundName("lastNameContact"));
                 ImportField positionIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField positionNameField = new ImportField(LM.findLCPByCompoundName("name"));
 
@@ -776,8 +776,8 @@ public class ImportActionProperty {
                 List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
                 props.add(new ImportProperty(employeeIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(employeeKey)));
-                props.add(new ImportProperty(employeeFirstNameField, LM.findLCPByCompoundName("userFirstName").getMapping(employeeKey)));
-                props.add(new ImportProperty(employeeLastNameField, LM.findLCPByCompoundName("userLastName").getMapping(employeeKey)));
+                props.add(new ImportProperty(employeeFirstNameField, LM.findLCPByCompoundName("firstNameContact").getMapping(employeeKey)));
+                props.add(new ImportProperty(employeeLastNameField, LM.findLCPByCompoundName("lastNameContact").getMapping(employeeKey)));
                 props.add(new ImportProperty(positionIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(positionKey)));
                 props.add(new ImportProperty(positionNameField, LM.findLCPByCompoundName("name").getMapping(positionKey)));
                 props.add(new ImportProperty(positionIDField, LM.findLCPByCompoundName("positionEmployee").getMapping(employeeKey),

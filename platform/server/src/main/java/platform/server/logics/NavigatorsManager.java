@@ -123,13 +123,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
             boolean isUniversalPasswordUsed = "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
             if (!isUniversalPasswordUsed) {
-                String hashPassword = (String) baseLM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, baseLM.customUser));
+                String hashPassword = (String) baseLM.getBL().authenticationLM.sha256PasswordCustomUser.read(session, new DataObject(user.ID, baseLM.getBL().authenticationLM.customUser));
                 if (hashPassword != null) {
                     if (!hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
                         throw new LoginException();
                     }
                 } else {
-                    String correctPassword = (String) baseLM.userPassword.read(session, new DataObject(user.ID, baseLM.customUser));
+                    String correctPassword = (String) baseLM.getBL().authenticationLM.passwordCustomUser.read(session, new DataObject(user.ID, baseLM.getBL().authenticationLM.customUser));
                     if (!nullEquals(nullTrim(correctPassword), nullTrim(password))) {
                         throw new LoginException();
                     }

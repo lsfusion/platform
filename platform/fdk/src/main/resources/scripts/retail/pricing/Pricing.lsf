@@ -104,7 +104,7 @@ GROUP pricingCommitteeGroup 'Комиссия' : public;
 META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
     prefix###pricingCommittee###object (object) = DATA pricingCommittee(object);
 
-    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     prefix###pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
         WHEN CHANGED(stockClass###object(object));
 
@@ -121,7 +121,7 @@ END
 META defineDocumentHeaderAbstractPricingCommittee(object, stockClass, prefix)
     prefix###pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT;
 
-    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = commonName(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     name###prefix###FormedMan###object 'Цены сформировал' (object) = nameFormedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;
     name###prefix###CheckedMan###object 'Реестр проверил' (object) = nameCheckedManPricingCommittee(prefix###pricingCommittee###object(object)) IN pricingCommitteeGroup;

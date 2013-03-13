@@ -38,8 +38,8 @@ public class FiscalVMKUpdateDataActionProperty extends ScriptingActionProperty {
 
             QueryBuilder<Object, Object> operatorQuery = new QueryBuilder<Object, Object>(operatorKeys);
             operatorQuery.addProperty("operatorNumberGroupCashRegisterCustomUser", getLCP("operatorNumberGroupCashRegisterCustomUser").getExpr(context.getModifier(), groupCashRegisterExpr, customUserExpr));
-            operatorQuery.addProperty("userFirstName", getLCP("userFirstName").getExpr(context.getModifier(), customUserExpr));
-            operatorQuery.addProperty("userLastName", getLCP("userLastName").getExpr(context.getModifier(), customUserExpr));
+            operatorQuery.addProperty("firstNameContact", getLCP("firstNameContact").getExpr(context.getModifier(), customUserExpr));
+            operatorQuery.addProperty("lastNameContact", getLCP("lastNameContact").getExpr(context.getModifier(), customUserExpr));
 
             operatorQuery.and(getLCP("operatorNumberGroupCashRegisterCustomUser").getExpr(context.getModifier(), operatorQuery.getMapExprs().get("groupCashRegister"), operatorQuery.getMapExprs().get("customUser")).getWhere());
 

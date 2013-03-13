@@ -250,7 +250,7 @@ END
 META defineDocumentCourierAndDateTo(object)
 
     courier###object = DATA customUser (object);
-    nameCourier###object 'Курьер' (object) = commonName(courier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    nameCourier###object 'Курьер' (object) = nameContact(courier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
     dateTo###object##Detail 'Дата исполнения' = DATA DATE (object##Detail);
 END

@@ -1,6 +1,6 @@
 MODULE Reflection;
 
-REQUIRE System;
+REQUIRE System, Authentication;
 
 CLASS abstractGroup 'Родит. группа';
 TABLE abstractGroup (abstractGroup);
@@ -63,9 +63,9 @@ showPropertyDraw 'Показ свойства' = DATA propertyDrawShowStatus (pr
 showPropertyDrawCustomUser 'Показ свойства для пользователя' = DATA propertyDrawShowStatus (propertyDraw, customUser);
 showOverridePropertyDrawCustomUser 'Показ свойства' (propertyDraw, customUser) = (showPropertyDraw (propertyDraw) AND customUser IS customUser ) OR showPropertyDrawCustomUser (propertyDraw, customUser);
 
-nameShowPropertyDraw 'Показ свойства' (propertyDraw) = commonName (showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
-nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = commonName (showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
-nameShowOverridePropertyDrawCustomUser (propertyDraw, customUser) = commonName (showOverridePropertyDrawCustomUser (propertyDraw, customUser));
+nameShowPropertyDraw 'Показ свойства' (propertyDraw) = name (showPropertyDraw (propertyDraw)) PREFCHARWIDTH 50;
+nameShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = name (showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 50;
+nameShowOverridePropertyDrawCustomUser (propertyDraw, customUser) = name (showOverridePropertyDrawCustomUser (propertyDraw, customUser));
 
 columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (propertyDraw, customUser);
 columnWidthPropertyDraw 'Ширина' = DATA INTEGER (propertyDraw);
@@ -196,7 +196,7 @@ FORM forms 'Формы'
     PROPERTIES(tf) READONLY sidNavigatorElement, captionNavigatorElement
 
     OBJECTS u=customUser FIXED PANEL
-    PROPERTIES(u) READONLY userFirstName, userLastName, userLogin
+    PROPERTIES(u) READONLY firstNameContact, lastNameContact, loginCustomUser
 
     OBJECTS g=groupObject
     PROPERTIES(g) READONLY sidGroupObject, hasUserPreferencesGroupObject

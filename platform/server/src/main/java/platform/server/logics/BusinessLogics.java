@@ -68,6 +68,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public BaseLogicsModule<T> LM;
     public ServiceLogicsModule serviceLM;
     public ReflectionLogicsModule reflectionLM;
+    public ContactLogicsModule contactLM;
+    public AuthenticationLogicsModule authenticationLM;
     public SecurityLogicsModule securityLM;
     public SystemEventsLogicsModule systemEventsLM;
     public EmailLogicsModule emailLM;
@@ -176,6 +178,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         LM = addModule(new BaseLogicsModule(this));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
+        contactLM = addModule(new ContactLogicsModule(this, LM));
+        authenticationLM = addModule(new AuthenticationLogicsModule(this, LM));
         securityLM = addModule(new SecurityLogicsModule(this, LM));
         systemEventsLM = addModule(new SystemEventsLogicsModule(this, LM));
         emailLM = addModule(new EmailLogicsModule(this, LM));
