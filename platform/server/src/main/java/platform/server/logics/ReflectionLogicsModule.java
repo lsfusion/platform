@@ -89,7 +89,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP sidTable;
     public LCP tableSID;
     public LCP rowsTable;
-    public LCP sparseColumnsTable;
     public LCP tableTableKey;
     public LCP sidTableKey;
     public LCP tableKeySID;
@@ -102,7 +101,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP quantityTableColumn;
     public LCP notNullQuantityTableColumn;
-    public LCP percentNotNullTableColumn;
     public LAP recalculateAggregationTableColumn;
 
     public LCP<?> sidTableDropColumn;
@@ -233,7 +231,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableSID = getLCPByName("tableSID");
 
         rowsTable = getLCPByName("rowsTable");
-        sparseColumnsTable = getLCPByName("sparseColumnsTable");
 
         // Ключи таблиц
         tableTableKey = getLCPByName("tableTableKey");
@@ -254,7 +251,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         quantityTableColumn = getLCPByName("quantityTableColumn");
         notNullQuantityTableColumn = getLCPByName("notNullQuantityTableColumn");
-        percentNotNullTableColumn = getLCPByName("percentNotNullTableColumn");
 
         recalculateAggregationTableColumn = getLAPByName("recalculateAggregationTableColumn");
 

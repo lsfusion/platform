@@ -93,7 +93,6 @@ TABLE tables (table);
 sidTable 'Имя таблицы' = DATA STRING[100] (table);
 tableSID 'Имя таблицы' (sid) = GROUP UNIQUE table BY sidTable (table) WHERE table IS table;
 rowsTable 'Количество записей' = DATA INTEGER (table);
-sparseColumnsTable 'Количество разреженных колонок' = DATA INTEGER (table);
 tableTableKey 'Таблица' = DATA table (tableKey);
 
 CLASS tableKey 'Ключ';
@@ -115,7 +114,9 @@ propertyTableColumn 'Свойство' (tableColumn) = propertySID(sidTableColum
 namePropertyTableColumn 'Заголовок свойства' (tableColumn) = captionProperty (propertyTableColumn(tableColumn));
 quantityTableColumn 'Количество разновидностей' = DATA INTEGER (tableColumn);
 notNullQuantityTableColumn 'Количество не null значений' = DATA INTEGER (tableColumn);
-percentNotNullTableColumn 'Не null, %'= DATA NUMERIC[6,2] (tableColumn);
+toNumeric15p2 = FORMULA NUMERIC[15,2] 'CAST($1 AS numeric(15,2))';
+percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0 THEN 100.00 ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
+sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn)<50;
 
 recalculateAggregationTableColumn 'Пересчитать аггрегации' = ACTION CUSTOM 'platform.server.logics.reflection.RecalculateTableColumnActionProperty';
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'platform.server.logics.reflection.DropColumnActionProperty';

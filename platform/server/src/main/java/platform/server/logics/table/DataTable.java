@@ -95,19 +95,11 @@ public abstract class DataTable extends GlobalTable {
             for (PropertyField property : properties)
                 notNullQuery.addProperty(property, GroupExpr.create(MapFact.<Object, Expr>EMPTY(), one, join.getExpr(property).getWhere(), GroupType.SUM, MapFact.<Object, Expr>EMPTY()));
             ImMap<Object, Object> notNulls = notNullQuery.execute(session).singleValue();
-            int sparseColumns = 0;
             for (PropertyField property : properties) {
                 DataObject propertyObject = session.getDataObject(reflectionLM.tableColumnSID.read(session, new DataObject(property.name)), reflectionLM.tableColumn.getType());
                 int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
-                int total = (Integer) BaseUtils.nvl(result.get(0), 0);
-                double perCent = total != 0 ? 100 * (double) notNull / total : 100;
                 reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
-                reflectionLM.percentNotNullTableColumn.change(perCent, session, propertyObject);
-                if (perCent < 50) {
-                    sparseColumns++;
-                }
             }
-            reflectionLM.sparseColumnsTable.change(sparseColumns, session, tableObject);
         }
     }
 
