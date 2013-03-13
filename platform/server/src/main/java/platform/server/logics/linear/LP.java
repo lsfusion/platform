@@ -130,14 +130,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.setFixedCharWidth(charWidth);
     }
 
-    public void setLoggable(boolean loggable) {
-        property.loggable = loggable;
-    }
-
-    public void setLogFormProperty(LAP logFormPropertyProp) {
-        property.setLogFormProperty(logFormPropertyProp);
-    }
-
     public void setImage(String name) {
         property.setImage(name);
     }

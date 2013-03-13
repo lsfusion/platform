@@ -160,10 +160,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         Boolean scannerSingleRead;
         try {
             DataSession session = getDbManager().createSession();
-            scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
-            scalesSpeed = (Integer) RomanLM.scalesSpeed.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
-            scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
-            scannerSingleRead = (Boolean) RomanLM.scannerSingleRead.read(session, new DataObject(compId, LM.getBL().authenticationLM.computer));
+            scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, authenticationLM.computer));
+            scalesSpeed = (Integer) RomanLM.scalesSpeed.read(session, new DataObject(compId, authenticationLM.computer));
+            scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, authenticationLM.computer));
+            scannerSingleRead = (Boolean) RomanLM.scannerSingleRead.read(session, new DataObject(compId, authenticationLM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);

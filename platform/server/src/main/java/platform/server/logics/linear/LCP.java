@@ -1,10 +1,10 @@
 package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.col.ListFact;
-import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.base.col.interfaces.immutable.ImList;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -13,10 +13,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.form.entity.LogFormEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.*;
 import platform.server.logics.property.*;
 import platform.server.session.DataSession;
 import platform.server.session.ExecutionEnvironment;
@@ -24,7 +21,6 @@ import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
-import java.util.List;
 
 import static platform.server.logics.PropertyUtils.mapCalcImplement;
 import static platform.server.logics.PropertyUtils.readCalcImplements;
@@ -37,10 +33,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
 
     public LCP(CalcProperty<T> property, ImOrderSet<T> listInterfaces) {
         super(property, listInterfaces);
-    }
-
-    public void makeUserLoggable(BaseLogicsModule LM) {
-        makeUserLoggable(LM, false);
     }
 
     public Object read(FormInstance form, DataObject... objects) throws SQLException {
@@ -97,27 +89,27 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.change(keys, env, value);
     }
 
-    public void makeUserLoggable(BaseLogicsModule LM, boolean lazyInit) {
+    public void makeLoggable(SystemEventsLogicsModule systemEventsLM) {
+        makeLoggable(systemEventsLM, false);
+    }
+
+    public void makeLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+        property.loggable = true;
+        setupLoggable(systemEventsLM, lazyInit);
+    }
+
+    public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM) {
+        setupLoggable(systemEventsLM, false);
+    }
+
+    private void setupLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
         if (property.getLogProperty() == null) {
-            property.setLogProperty(LM.addLProp(this));
+            property.setLogProperty(systemEventsLM.addLProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), (LCP)LM.getLP(property.getSID()), property.getLogProperty(), LM, lazyInit);
-            property.setLogFormProperty(LM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
+            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), (LCP) systemEventsLM.baseLM.getLP(property.getSID()), property.getLogProperty(), systemEventsLM, lazyInit);
+            property.setLogFormProperty(systemEventsLM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
         }
-    }
-
-    public void makeLoggable(BaseLogicsModule LM) {
-        makeLoggable(LM, false);
-    }
-
-    public void makeLoggable(BaseLogicsModule LM, boolean lazyInit) {
-        property.loggable = true;
-        makeUserLoggable(LM, lazyInit);
-    }
-
-    public void setLogProperty(LCP logProperty) {
-        property.setLogProperty(logProperty);
     }
 
     public <D extends PropertyInterface> void setEventChangePrev(LCP<D> valueProperty, Object... params) {

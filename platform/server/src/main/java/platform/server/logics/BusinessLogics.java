@@ -46,7 +46,10 @@ import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.session.DataSession;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -471,11 +474,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
         for (Property property : getOrderProperties()) {
-            if (property.loggable && property.logFormProperty.property instanceof FormActionProperty &&
-                    ((FormActionProperty) property.logFormProperty.property).form instanceof LogFormEntity) {
-                LogFormEntity logForm = (LogFormEntity) ((FormActionProperty) property.logFormProperty.property).form;
-                if (logForm.lazyInit)
-                    logForm.initProperties();
+            if (property.loggable && property.logFormProperty.property instanceof FormActionProperty) {
+                FormActionProperty formActionProperty = (FormActionProperty) property.logFormProperty.property;
+                if (formActionProperty.form instanceof LogFormEntity) {
+                    LogFormEntity logForm = (LogFormEntity) formActionProperty.form;
+                    if (logForm.lazyInit) {
+                        logForm.initProperties();
+                    }
+                }
+
+                //добавляем в контекстное меню пункт для показа формы
+                String actionSID = formActionProperty.getSID();
+                property.setContextMenuAction(actionSID, formActionProperty.caption);
+                property.setEditAction(actionSID, formActionProperty.getImplement(property.getOrderInterfaces()));
             }
         }
     }

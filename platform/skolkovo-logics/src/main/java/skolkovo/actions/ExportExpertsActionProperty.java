@@ -2,26 +2,23 @@ package skolkovo.actions;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.CustomActionProperty;
 import platform.server.logics.property.actions.UserActionProperty;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class ExportExpertsActionProperty extends UserActionProperty {
 
@@ -38,17 +35,19 @@ public class ExportExpertsActionProperty extends UserActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
+        BusinessLogics BL = context.getBL();
+
         LCP<?> isExpert = LM.is(LM.expert);
         ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isExpert.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
 
         query.addProperty("inActive", LM.disableExpert.getExpr(context.getModifier(), key));
-        query.addProperty("firstName", LM.baseLM.getBL().contactLM.firstNameContact.getExpr(context.getModifier(), key));
-        query.addProperty("lastName", LM.baseLM.getBL().contactLM.lastNameContact.getExpr(context.getModifier(), key));
+        query.addProperty("firstName", BL.contactLM.firstNameContact.getExpr(context.getModifier(), key));
+        query.addProperty("lastName", BL.contactLM.lastNameContact.getExpr(context.getModifier(), key));
         query.addProperty("documentName", LM.documentNameExpert.getExpr(context.getModifier(), key));
-        query.addProperty("loginCustomUser", LM.baseLM.getBL().authenticationLM.loginCustomUser.getExpr(context.getModifier(), key));
-        query.addProperty("email", LM.baseLM.getBL().contactLM.emailContact.getExpr(context.getModifier(), key));
+        query.addProperty("loginCustomUser", BL.authenticationLM.loginCustomUser.getExpr(context.getModifier(), key));
+        query.addProperty("email", BL.contactLM.emailContact.getExpr(context.getModifier(), key));
         query.addProperty("nameLanguageExpert", LM.nameLanguageExpert.getExpr(context.getModifier(), key));
         query.addProperty("dateAgreement", LM.dateAgreementExpert.getExpr(context.getModifier(), key));
         query.addProperty("nameCountry", LM.nameCountryExpert.getExpr(context.getModifier(), key));

@@ -18,7 +18,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
-import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.AuthenticationLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
@@ -35,6 +35,8 @@ import java.util.Arrays;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class PaasLogicsModule extends LogicsModule {
+
+    private final AuthenticationLogicsModule authenticationLM;
 
     public ConcreteCustomClass paasUser;
     public ConcreteCustomClass project;
@@ -69,9 +71,10 @@ public class PaasLogicsModule extends LogicsModule {
 
     public LAP refreshStatus;
 
-    public PaasLogicsModule(BaseLogicsModule<PaasBusinessLogics> baseLM) {
+    public PaasLogicsModule(PaasBusinessLogics paas) {
         super("PaasLogicsModule");
-        setBaseLogicsModule(baseLM);
+        setBaseLogicsModule(paas.LM);
+        this.authenticationLM = paas.authenticationLM;
     }
 
     @Override
@@ -119,9 +122,9 @@ public class PaasLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
         projectDescription = addDProp(baseGroup, "projectDescription", "Описание", StringClass.get(300), project);
-        projectOwner = addDProp("projectOwner", "Владелец", baseLM.getBL().authenticationLM.customUser, project);
+        projectOwner = addDProp("projectOwner", "Владелец", authenticationLM.customUser, project);
         projectOwnerName = addJProp(baseGroup, "projectOwnerName", "Владелец", baseLM.name, projectOwner, 1);
-        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", baseLM.getBL().authenticationLM.customUserLogin, projectOwner, 1);
+        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", authenticationLM.customUserLogin, projectOwner, 1);
 
         moduleInProject = addDProp(baseGroup, "moduleInProject", "Модуль в проекте", LogicalClass.instance, project, module);
         moduleSource = addDProp(baseGroup, "moduleSource", "Исходный код модуля", TextClass.instance, module);

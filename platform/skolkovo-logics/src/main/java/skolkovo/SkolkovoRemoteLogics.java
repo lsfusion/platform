@@ -221,7 +221,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         try {
             DataSession session = createSession();
             try {
-                Integer expertId = (Integer) baseLM.getBL().authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
+                Integer expertId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
                 if (expertId == null) {
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
@@ -245,7 +245,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(SkolkovoLM.inNewExpertVote.getExpr(session.getModifier(), expertExpr, voteExpr).getWhere());
-                q.and(baseLM.getBL().authenticationLM.loginCustomUser.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
+                q.and(businessLogics.authenticationLM.loginCustomUser.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
                 q.addProperty("projectId", projExpr);
                 q.addProperty("projectName", (isForeign ? SkolkovoLM.nameForeignProject : SkolkovoLM.nameNativeProject).getExpr(session.getModifier(), projExpr));
@@ -348,7 +348,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                 q = new QueryBuilder<String, String>(keys);
                 q.and(SkolkovoLM.clusterInExpertForesight.getExpr(session.getModifier(), expertExpr, foresightExpr).getWhere());
-                q.and(baseLM.getBL().authenticationLM.loginCustomUser.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
+                q.and(businessLogics.authenticationLM.loginCustomUser.getExpr(session.getModifier(), expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
                 q.addProperty("id", foresightExpr);
                 q.addProperty("sID", SkolkovoLM.sidForesight.getExpr(session.getModifier(), foresightExpr));
@@ -390,7 +390,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         List<String> extraRoles = new ArrayList<String>();
         try {
             DataSession session = createSession();
-            if (baseLM.is(SkolkovoLM.expert).read(session, session.getDataObject(baseLM.getBL().authenticationLM.customUserLogin.read(session, new DataObject(username)), baseLM.getBL().authenticationLM.customUser.getType())) != null) {
+            if (baseLM.is(SkolkovoLM.expert).read(session, session.getDataObject(businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username)), businessLogics.authenticationLM.customUser.getType())) != null) {
                 extraRoles.add("expert");
             }
             session.close();
@@ -406,7 +406,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         try {
             DataSession session = createSession();
             try {
-                Integer expertId = (Integer) baseLM.getBL().authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
+                Integer expertId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
                 if (expertId == null) {
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
@@ -448,7 +448,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         try {
             DataSession session = createSession();
             try {
-                Integer expertId = (Integer) baseLM.getBL().authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
+                Integer expertId = (Integer) businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(expertLogin));
                 if (expertId == null) {
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }

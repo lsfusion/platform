@@ -45,7 +45,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
     protected void createModules() throws IOException {
         super.createModules();
 
-        paasLM = addModule(new PaasLogicsModule(LM));
+        paasLM = addModule(new PaasLogicsModule(this));
     }
 
     private void cleanDatabases() {

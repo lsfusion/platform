@@ -11,22 +11,16 @@ import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
-import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
-import platform.interop.PropertyEditType;
 import platform.interop.form.layout.ContainerType;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.query.PartitionType;
-import platform.server.form.entity.CalcPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.filter.*;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
@@ -39,8 +33,6 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.FormActionProperty;
-import platform.server.logics.property.actions.UserActionProperty;
 import platform.server.logics.property.actions.flow.ApplyActionProperty;
 import platform.server.logics.property.actions.flow.BreakActionProperty;
 import platform.server.logics.property.actions.flow.CancelActionProperty;
@@ -54,8 +46,6 @@ import platform.server.logics.table.TableFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
@@ -186,12 +176,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
 
-    T BL;
+    // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
+    // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
+    private final T BL;
 
-    public T getBL(){
-        return BL;
-    }
-    
     public BaseLogicsModule(T BL) {
         super("System", "System");
         setBaseLogicsModule(this);
@@ -356,11 +344,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // Обработка дат
 
         numberDOW = addJProp(baseGroup, "numberDOW", true, getString("logics.week.day.number"), subtractInteger,
-                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
+                addOProp("numberDOWP1", getString("logics.week.day.number.plus.one"), PartitionType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), is(DOW), 1), true, false, 0, 1), 1,
                 addCProp(IntegerClass.instance, 1));
         DOWNumber = addAGProp("DOWNumber", getString("logics.week.day.id"), numberDOW);
 
-        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
+        numberMonth = addOProp(baseGroup, "numberMonth", true, getString("logics.month.number"), addJProp(and1, addCProp(IntegerClass.instance, 1), is(month), 1), PartitionType.SUM, true, true, 0, 1);
         monthNumber = addAGProp("monthNumber", getString("logics.month.id"), numberMonth);
 
         // Преобразование типов
@@ -825,7 +813,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     @IdentityStrongLazy // для ID
     public LCP object(ValueClass valueClass) {
-        return addJProp(valueClass.toString(), baseLM.and1, 1, is(valueClass), 1);
+        return addJProp(valueClass.toString(), and1, 1, is(valueClass), 1);
     }
 
     //////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,8 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
+    private final AuthenticationLogicsModule authenticationLM;
+
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
     public ConcreteCustomClass serverException;
@@ -61,6 +63,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/scripts/system/SystemEvents.lsf"), baseLM, BL);
         setBaseLogicsModule(baseLM);
+        this.authenticationLM = BL.authenticationLM;
     }
 
     @Override
@@ -114,7 +117,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         quantityRemovedClassesSession = getLCPByName("quantityRemovedClassesSession");
         quantityChangedClassesSession = getLCPByName("quantityChangedClassesSession");
         changesSession = getLCPByName("changesSession");
-        baseLM.objectClassName.makeLoggable(baseLM, true);
+        baseLM.objectClassName.makeLoggable(this, true);
     }
 
     public void logException(BusinessLogics bl, String message, String errorType, String erTrace, DataObject user, String clientName, boolean client) throws SQLException {
@@ -123,7 +126,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         if (client) {
             exceptionObject = session.addObject(clientException);
             clientClientException.change(clientName, session, exceptionObject);
-            String userLogin = (String) baseLM.getBL().authenticationLM.loginCustomUser.read(session, user);
+            String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
             loginClientException.change(userLogin, session, exceptionObject);
         } else {
             exceptionObject = session.addObject(serverException);

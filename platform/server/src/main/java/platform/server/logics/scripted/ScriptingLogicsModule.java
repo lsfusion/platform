@@ -625,7 +625,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void makeLoggable(LP property, Boolean isLoggable) {
         if (isLoggable != null && isLoggable && property != null)
-            ((LCP)property).makeLoggable(baseLM);
+            ((LCP)property).makeLoggable(BL.systemEventsLM);
     }
 
     public void setEchoSymbols(LP property) {
@@ -1588,7 +1588,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for (String name : propNames) {
             LCP lp = (LCP) findLPByCompoundName(name);
-            lp.makeLoggable(baseLM);
+            lp.makeLoggable(BL.systemEventsLM);
         }
     }
 

@@ -29,10 +29,8 @@ import platform.server.data.query.MapKeysInterface;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.linear.LAP;
@@ -147,7 +145,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void setLogFormProperty(LAP logFormProperty) {
         this.logFormProperty = logFormProperty;
     }
-
 
     public Type getType() {
         return getValueClass().getType();
@@ -357,18 +354,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // по умолчанию заполняет свойства
     // assert что entity этого свойства
     public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
-        if (loggable && logFormProperty != null) {
-            ActionPropertyObjectEntity logFormPropertyObject =
-                    form.addPropertyObject(logFormProperty,
-                                           getOrderInterfaces().mapOrderMap(
-                                                   entity.propertyObject.mapping
-                                           ).valuesList().toArray(new PropertyObjectInterfaceEntity[interfaces.size()])
-                    );
-            String actionSID = logFormProperty.property.getSID();
-            entity.setContextMenuAction(actionSID, logFormProperty.property.caption);
-            entity.setEditAction(actionSID, logFormPropertyObject);
-        }
-
         if (shouldBeLast != null)
             entity.shouldBeLast = shouldBeLast;
         if (forceViewType != null)

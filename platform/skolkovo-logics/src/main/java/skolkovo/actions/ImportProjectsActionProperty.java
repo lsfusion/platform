@@ -19,8 +19,8 @@ import platform.server.context.ThreadLocalContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
 import platform.server.integration.*;
+import platform.server.logics.ContactLogicsModule;
 import platform.server.logics.DataObject;
-import platform.server.logics.EmailLogicsModule;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -46,19 +46,19 @@ public class ImportProjectsActionProperty extends UserActionProperty {
     private static Logger logger = Logger.getLogger("import");
 
     private final SkolkovoLogicsModule LM;
-    private final EmailLogicsModule emailLM;
+    private final ContactLogicsModule contactLM;
 
     private final boolean onlyMessage;
     private final boolean onlyReplace;
     private final boolean fillSids;
 
-    public ImportProjectsActionProperty(String caption, boolean onlyMessage, boolean onlyReplace, boolean fillSids, SkolkovoLogicsModule LM, EmailLogicsModule emailLM) {
+    public ImportProjectsActionProperty(String caption, boolean onlyMessage, boolean onlyReplace, boolean fillSids, SkolkovoLogicsModule LM, ContactLogicsModule contactLM) {
         super(LM.genSID(), caption, new ValueClass[]{});
         this.onlyMessage = onlyMessage;
         this.onlyReplace = onlyReplace;
         this.fillSids = fillSids;
         this.LM = LM;
-        this.emailLM = emailLM;
+        this.contactLM = contactLM;
     }
 
     protected ImportField dateProjectField, dateStatusProjectField,
@@ -361,8 +361,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, LM.baseLM.getBL().contactLM.contactEmail.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, LM.baseLM.getBL().contactLM.emailContact.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, contactLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, contactLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -701,8 +701,8 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, LM.baseLM.getBL().contactLM.contactEmail.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, LM.baseLM.getBL().contactLM.emailContact.getMapping(claimerKey)));
+        claimerKey = new ImportKey(LM.claimer, contactLM.contactEmail.getMapping(emailClaimerField));
+        properties.add(new ImportProperty(emailClaimerField, contactLM.emailContact.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));

@@ -3,7 +3,6 @@ package platform.server.logics;
 import org.antlr.runtime.RecognitionException;
 import platform.server.classes.AbstractCustomClass;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.InsensitiveStringClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CurrentComputerFormulaProperty;
@@ -80,7 +79,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         calculatedHash = getLCPByName("calculatedHash");
 
-        generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(baseLM.getBL().contactLM.emailContact, loginCustomUser, passwordCustomUser, customUser));
+        generateLoginPassword = addAProp(new GenerateLoginPasswordActionProperty(BL.contactLM.emailContact, loginCustomUser, passwordCustomUser, customUser));
 
 
     }

@@ -797,16 +797,16 @@ public abstract class LogicsModule {
         return addAProp(group, new RequestUserDataActionProperty(name, caption, dataClass, baseLM.getRequestCanceledProperty(), baseLM.getRequestedValueProperty()));
     }
 
-    protected LAP addEAProp(ValueClass... params) {
-        return addEAProp((String) null, params);
+    protected LAP addEAProp(EmailLogicsModule emailLM, ValueClass... params) {
+        return addEAProp(emailLM, (String) null, params);
     }
 
-    protected LAP addEAProp(LCP fromAddress, ValueClass... params) {
-        return addEAProp(null, fromAddress, baseLM.BL.emailLM.emailBlindCarbonCopy, params);
+    protected LAP addEAProp(EmailLogicsModule emailLM, LCP fromAddress, ValueClass... params) {
+        return addEAProp(null, fromAddress, emailLM.emailBlindCarbonCopy, params);
     }
 
-    protected LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, baseLM.BL.emailLM.fromAddress, baseLM.BL.emailLM.emailBlindCarbonCopy, params);
+    protected LAP addEAProp(EmailLogicsModule emailLM, String subject, ValueClass... params) {
+        return addEAProp(subject, emailLM.fromAddress, emailLM.emailBlindCarbonCopy, params);
     }
 
     protected LAP addEAProp(LCP fromAddress, LCP emailBlindCarbonCopy, ValueClass... params) {
@@ -1923,9 +1923,9 @@ public abstract class LogicsModule {
         return addUProp(group, name, persistent, caption, Union.SUM, null, new int[]{-1}, getUParams(new LP[]{prop}));
     }
 
-    public LCP addLProp(LCP lp, ValueClass... classes) {
+    public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp, ValueClass... classes) {
         return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
-                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, baseLM.getBL().systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
+                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
     }
 
     // XOR
@@ -2591,39 +2591,9 @@ public abstract class LogicsModule {
         return property.getRevMap(mapList);
     }
 
-    protected void makeUserLoggable(LCP... lps) {
+    protected void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LCP... lps) {
         for (LCP lp : lps)
-            lp.makeUserLoggable(baseLM);
-    }
-
-    protected void makeUserLoggable(AbstractGroup group) {
-        makeUserLoggable(group, false);
-    }
-
-    protected void makeUserLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
-        for (Property property : group.getProperties()) {
-            if (property instanceof CalcProperty && (!dataPropertiesOnly || property instanceof DataProperty)) {
-                ((LCP)baseLM.getLP(property.getSID())).makeUserLoggable(baseLM);
-            }
-        }
-    }
-
-
-    protected void makeLoggable(LCP... lps) {
-        for (LCP lp : lps)
-            lp.makeLoggable(baseLM);
-    }
-
-    protected void makeLoggable(AbstractGroup group) {
-        makeLoggable(group, false);
-    }
-
-    protected void makeLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
-        for (Property property : group.getProperties()) {
-            if (property instanceof CalcProperty && (!dataPropertiesOnly || property instanceof DataProperty)) {
-                ((LCP)baseLM.getLP(property.getSID())).makeLoggable(baseLM);
-            }
-        }
+            lp.makeUserLoggable(systemEventsLM);
     }
 
     // получает свойство is
