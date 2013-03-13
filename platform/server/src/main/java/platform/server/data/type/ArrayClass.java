@@ -51,7 +51,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
                 return array;
         ArrayClass<T> array = new ArrayClass<T>(type);
         arrays.add(array);
-//        DataClass.storeClass(array.getSID(), array);
+//        DataClass.storeClass(array.getObjectSID(), array);
         return array;
     }
     

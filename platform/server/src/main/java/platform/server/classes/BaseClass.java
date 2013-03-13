@@ -45,16 +45,14 @@ public class BaseClass extends AbstractCustomClass {
 
     public final UnknownClass unknown;
     public final AbstractCustomClass named;
-    public final AbstractCustomClass sidClass;
 
-    public StaticCustomClass objectClass;
+    public ConcreteCustomClass objectClass;
 
     public BaseClass(String sID, String caption) {
         super(sID, caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
         named = new AbstractCustomClass("named", ServerResourceBundle.getString("classes.named.object"), this);
-        sidClass = new AbstractCustomClass("sidClass", ServerResourceBundle.getString("classes.static.object"), named);
     }
 
     @Override
@@ -94,20 +92,19 @@ public class BaseClass extends AbstractCustomClass {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
             }
-        objectClass = new StaticCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClass, sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]));
+        objectClass = new ConcreteCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]), named);
     }
 
     public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges) throws SQLException {
         Set<CustomClass> allClasses = getChilds().toJavaSet();
         allClasses.remove(objectClass);
 
-        Map<String, StaticCustomClass> usedSIds = new HashMap<String, StaticCustomClass>();
+        Map<String, ConcreteCustomClass> usedSIds = new HashMap<String, ConcreteCustomClass>();
         Set<Integer> usedIds = new HashSet<Integer>();
 
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         ID = 0;
         named.ID = 1;
-        sidClass.ID = 2;
 
         objectClass.ID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
         Integer classID = getClassID(objectClass.ID, session.sql);
@@ -127,13 +124,13 @@ public class BaseClass extends AbstractCustomClass {
         // пробежим по всем классам и заполним их ID
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass) {
-                customClass.ID = objectClass.getID(customClass.getSID());
+                customClass.ID = objectClass.getObjectID(customClass.getSID());
                 free = Math.max(free, customClass.ID);
             }
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
-            if (customClass instanceof StaticCustomClass)
-                modifiedNames.putAll(((StaticCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs));
+            if (customClass instanceof ConcreteCustomClass)
+                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs));
 
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -167,9 +164,9 @@ public class BaseClass extends AbstractCustomClass {
         ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
         for(int i=0,size=classStats.size();i<size;i++) {
             CustomClass customClass = findClassID((int) (Integer) classStats.getKey(i).get(0));
-            if(customClass instanceof CustomObjectClass) {
+            if(customClass instanceof ConcreteCustomClass) {
                 Integer count = BaseUtils.nvl((Integer) classStats.getValue(i).get(0), 0);
-                ((CustomObjectClass)customClass).stat = count==0?1:count;
+                ((ConcreteCustomClass)customClass).stat = count==0?1:count;
             }
         }
     }

@@ -145,10 +145,10 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass boxShipment;
     private ConcreteCustomClass simpleShipment;
     private ConcreteCustomClass freight;
-    private StaticCustomClass route;
-    private StaticCustomClass season;
-    private StaticCustomClass typeContainer;
-    private StaticCustomClass typeTransit;
+    private ConcreteCustomClass route;
+    private ConcreteCustomClass season;
+    private ConcreteCustomClass typeContainer;
+    private ConcreteCustomClass typeTransit;
     private AbstractCustomClass seller;
     //private AbstractCustomClass buyer;
     private AbstractCustomClass supplier;
@@ -1670,7 +1670,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         countrySupplier = addConcreteClass("countrySupplier", "Страна поставщика", baseClass.named);
 
-        season = addStaticClass("season", "Сезон", new String[]{"winter", "summer"}, new String[]{"Зима", "Лето"});
+        season = addConcreteClass("season", "Сезон", new String[]{"winter", "summer"}, new String[]{"Зима", "Лето"}, baseClass.named);
 
         seasonYear = addConcreteClass("seasonYear", "Сезон", baseClass);
 
@@ -1680,9 +1680,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         subCategorySupplier = addConcreteClass("subCategorySupplier", "Подгруппа", baseClass.named);
 
-        route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
+        route = addConcreteClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"}, baseClass.named);
 
-        typeTransit = addStaticClass("typeTransit", "Тип транзита", new String[]{"ex", "t1"}, new String[]{"EX", "T1"});
+        typeTransit = addConcreteClass("typeTransit", "Тип транзита", new String[]{"ex", "t1"}, new String[]{"EX", "T1"}, baseClass.named);
 
         stamp = addConcreteClass("stamp", "Контрольная марка", baseClass);
 
@@ -1690,7 +1690,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeLabel = addConcreteClass("typeLabel", "Тип этикетки", baseClass.named);
 
-        typeContainer = addStaticClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"});        
+        typeContainer = addConcreteClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"}, baseClass.named);
     }
 
     @Override

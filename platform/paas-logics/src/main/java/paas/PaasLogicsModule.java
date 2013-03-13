@@ -43,7 +43,7 @@ public class PaasLogicsModule extends LogicsModule {
     public ConcreteCustomClass module;
     public ConcreteCustomClass configuration;
     public ConcreteCustomClass database;
-    public StaticCustomClass status;
+    public ConcreteCustomClass status;
 
     public LCP loginToUser;
 
@@ -105,9 +105,10 @@ public class PaasLogicsModule extends LogicsModule {
 
         database = addConcreteClass("database", "База данных", baseClass.named);
 
-        status = addStaticClass("status", "Статус конфигурации",
-                                       new String[]{"stopped", "started",  "busyPort"},
-                                       new String[]{"Остановлен", "Работает", "Порт занят"});
+        status = addConcreteClass("status", "Статус конфигурации",
+                                new String[]{"stopped", "started", "busyPort"},
+                                new String[]{"Остановлен", "Работает", "Порт занят"},
+                                baseClass.named);
     }
 
     @Override

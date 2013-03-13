@@ -57,7 +57,7 @@ pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceBasePrice
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 // --------------------------- Системные виды цен ------------------------- //
-CLASS STATIC systemPriceListType 'Системный вид цены' : basePriceListType;
+CLASS systemPriceListType 'Системный вид цены' : basePriceListType;
 
 priceSystemPriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, sku, stock, DATETIME) EXCLUSIVE;
 priceSystemPriceListTypeBatchStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,3] (systemPriceListType, batch, stock, DATETIME) EXCLUSIVE;
@@ -173,7 +173,7 @@ ledgerPriceListTypePriceListType(type) += type AS ledgerPriceListType;
 
 // --------------------------- Системные виды цен, на основе Ledger'ов ------------------ //
 
-CLASS STATIC systemLedgerPriceListType 'Системный вид цены (регистр)' {
+CLASS systemLedgerPriceListType 'Системный вид цены (регистр)' {
     accountPriceListType 'Учетная'
 }: ledgerPriceListType;
 

@@ -8,12 +8,12 @@ NAMESPACE Sale;
 
 CLASS statisticGroup 'Статистическая группа' : named, externalizable;
 
-CLASS STATIC groupStatic 'Ед. изм.' {
+CLASS groupStatic 'Ед. изм.' {
     statisticLiter 'Литр',
     statisticThing 'Штука',
     statisticPounds 'Килограмм',
     statisticSum 'Валюта'
-};
+} : named;
 
 @defineHierarchy(statisticGroup);
 

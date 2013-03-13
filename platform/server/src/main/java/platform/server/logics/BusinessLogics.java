@@ -417,7 +417,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             Set idSet = new HashSet<String>();
             for (Property property : getOrderProperties()) {
-                //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
+                //            assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
             }
 
             for (LogicsModule module : orderedModules) {

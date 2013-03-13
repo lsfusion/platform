@@ -3,10 +3,10 @@ MODULE Label;
 REQUIRE System, Store, Stock, Barcode;
 
 // Ориентация страницы
-CLASS STATIC printOrientation 'Ориентация' {
+CLASS printOrientation 'Ориентация' {
     portrait 'Книжная',
     landscape 'Альбомная'
-}
+} : named;
 
 // типы ценников
 CLASS labelType 'Тип ценника' : named;

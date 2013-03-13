@@ -63,10 +63,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     // classes
     public BaseClass baseClass;
 
-    public StaticCustomClass month;
-    public StaticCustomClass DOW;
+    public ConcreteCustomClass month;
+    public ConcreteCustomClass DOW;
 
-    public StaticCustomClass formResult;
+    public ConcreteCustomClass formResult;
 
     // groups
     public AbstractGroup rootGroup;
@@ -211,15 +211,18 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
 
-        month = addStaticClass("month", getString("logics.month"),
+        month = addConcreteClass("month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
-                new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")});
-        DOW = addStaticClass("DOW", getString("logics.week.day"),
-                  new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
-                  new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")});
-        formResult = addStaticClass("formResult", "Результат вызова формы",
+                new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")},
+                baseClass.named);
+        DOW = addConcreteClass("DOW", getString("logics.week.day"),
+                new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
+                new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")},
+                baseClass.named);
+        formResult = addConcreteClass("formResult", "Результат вызова формы",
                 new String[]{"drop", "ok", "close"},
-                new String[]{"Сбросить", "Принять", "Закрыть"});
+                new String[]{"Сбросить", "Принять", "Закрыть"},
+                baseClass.named);
 
         // todo : раскидать по модулям
     }
@@ -247,8 +250,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         addTable("objectObjectDate", baseClass, baseClass, DateClass.instance);
         addTable("named", baseClass.named);
-        addTable("sidClass", baseClass.sidClass);
-
         addTable("month", month);
         addTable("dow", DOW);
     }
@@ -409,7 +410,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ((CalcProperty)name.property).aggProp = true;
 
         // todo : тут надо рефакторить как имена свойст, так и классов
-        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
+        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass);
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
 

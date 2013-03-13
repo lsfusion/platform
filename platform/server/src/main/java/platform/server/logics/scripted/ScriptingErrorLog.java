@@ -195,24 +195,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("built-in class '%s' cannot be inherited", className));
     }
 
-    public void emitStaticClassAsParentError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, format("static class '%s' cannot be inherited", className));
-    }
-
     public void emitBuiltInClassFormSetupError(ScriptParser parser, String className) throws SemanticErrorException {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
-    public void emitAbstractStaticClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "static сlass cannot be abstract");
+    public void emitAbstractClassInstancesDefError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "abstract class cannot be instantiated");
     }
 
-    public void emitNonStaticHasInstancesError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, format("сlass '%s' must be static to have instances", className));
-    }
-
-    public void emitStaticHasNoInstancesError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, format("static сlass '%s' should have instances", className));
+    public void emitAbstractClassInstancesUseError(ScriptParser parser, String className, String objectName) throws SemanticErrorException {
+        emitSimpleError(parser, format("static object '%s' not found (class '%s' is abstract)", objectName, className));
     }
 
     public void emitParamCountError(ScriptParser parser, LP property, int paramCount) throws SemanticErrorException {

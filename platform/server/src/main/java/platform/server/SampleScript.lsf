@@ -10,13 +10,13 @@ CLASS document 'Документ' : transaction;
 CLASS incomeDocument 'Приход' : document;
 CLASS outcomeDocument 'Расход' : document;
 
-CLASS STATIC storeSize 'Размер склада'
+CLASS storeSize 'Размер склада'
 {
     huge 'огромный',
     big 'большой',
     medium 'средний',
     small 'маленький'
-};
+} : named;
 
 store = DATA store (document) IN base;
 quantity = DATA DOUBLE (document, article) IN base;

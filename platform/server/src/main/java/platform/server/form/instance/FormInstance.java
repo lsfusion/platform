@@ -337,7 +337,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     DataObject propertyDrawObject = dataSession.getDataObject(id, ObjectType.instance);
                     Integer idShow = null;
                     if (entry.getValue().isNeedToHide() != null) {
-                        idShow = entry.getValue().isNeedToHide() ? BL.reflectionLM.propertyDrawShowStatus.getID("Hide") : BL.reflectionLM.propertyDrawShowStatus.getID("Show");
+                        idShow = entry.getValue().isNeedToHide() ? BL.reflectionLM.propertyDrawShowStatus.getObjectID("Hide") : BL.reflectionLM.propertyDrawShowStatus.getObjectID("Show");
                     }
                     BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
                     if (forAllUsers)

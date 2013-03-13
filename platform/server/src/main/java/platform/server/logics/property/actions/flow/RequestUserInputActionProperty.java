@@ -1,7 +1,7 @@
 package platform.server.logics.property.actions.flow;
 
 import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.type.Type;
 import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
@@ -24,13 +24,13 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
-    private final StaticCustomClass formResultClass;
+    private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
 
     public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
-                                                                        AnyValuePropertyHolder chosenValueProperty, StaticCustomClass formResultClass, LCP formResultProperty) {
+                                                                        AnyValuePropertyHolder chosenValueProperty, ConcreteCustomClass formResultClass, LCP formResultProperty) {
         super(sID, caption, innerInterfaces, action);
 
         this.requestValueType = requestValueType;
@@ -54,8 +54,8 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
             proceed(context);
 
             if (chosenKey != null) {
-                int closeFormResultID = formResultClass.getID(FormCloseType.CLOSE.asString());
-                int dropFormResultID = formResultClass.getID(FormCloseType.DROP.asString());
+                int closeFormResultID = formResultClass.getObjectID(FormCloseType.CLOSE.asString());
+                int dropFormResultID = formResultClass.getObjectID(FormCloseType.DROP.asString());
 
                 Object value = formResultProperty.read(context);
 

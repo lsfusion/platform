@@ -66,10 +66,10 @@ balanceBArticleDate 'Остаток на начало дня' (article, date) = 
 balanceAArticleDate 'Остаток на конец дня' (article, date) = GROUP SUM balanceASkuStockDate(sku, stock, date) BY articleSku(sku), date;
 
 // создаем разные типы партий (бухгалтерские, управленческие)
-//CLASS STATIC batchType {
+//CLASS batchType {
 //    batchTypeA 'Бухгалтерская',
 //    batchTypeB 'Управленческая'
-//}
+//} : named;
 
 //orderABatchType (type) = IF type == batchType.batchTypeA THEN 0 IF type == batchType.batchTypeA ELSE 1 IF type IS batchType PERSISTENT;
 //orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS batchType PERSISTENT;

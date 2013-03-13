@@ -4,11 +4,11 @@ REQUIRE System, Utils, Historizable, Hierarchy, Country, Finance;
 
 // ---------------------------------- Налог --------------------------------------- //
 
-CLASS STATIC tax 'Налоги'
+CLASS tax 'Налоги'
 {
     taxVAT 'НДС',
     taxNP 'Налог с продаж'
-};
+} : named;
 
 nameTax 'Наименование налога' = DATA STRING[200] (tax) IN base;
 
@@ -34,11 +34,11 @@ addNewRange 'Добавить шкалу' = ACTION (tax, country) {
     SET taxRange(r) <- tax AS tax WHERE r == addedObject();
 } TOOLBAR IMAGE 'add.png';
 
-CLASS STATIC rangeType 'Для каких подразделений действует шкала'
+CLASS rangeType 'Для каких подразделений действует шкала'
 {
     common 'Общий',
     units 'Для подразделений'
-};
+} : named;
 rangeTypeRange = DATA rangeType (range) NOT NULL;
 nameRangeTypeRange 'Тип шкалы' = name(rangeTypeRange(range)) IN base;
 

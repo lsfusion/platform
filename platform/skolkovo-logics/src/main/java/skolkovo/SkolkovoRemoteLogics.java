@@ -121,7 +121,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                 Integer vResult = (Integer) SkolkovoLM.voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
                 if (vResult != null) {
-                    voteInfo.voteResult = SkolkovoLM.voteResult.getSID(vResult);
+                    voteInfo.voteResult = SkolkovoLM.voteResult.getObjectSID(vResult);
                 }
 
                 voteInfo.voteDone = voteInfo.voteResult != null
@@ -178,7 +178,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
                 }
 
                 SkolkovoLM.dateExpertVote.change(DateConverter.getCurrentDate(), session, vo.expertObj, vo.voteObj);
-                SkolkovoLM.voteResultExpertVote.change(SkolkovoLM.voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.voteResultExpertVote.change(SkolkovoLM.voteResult.getObjectID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
                 SkolkovoLM.ipExpertVote.change(voteInfo.expertIP, session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {
                     SkolkovoLM.inClusterExpertVote.change(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
@@ -318,7 +318,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                     Integer vResult = (Integer) propValues.get("vResult");
                     if (vResult != null) {
-                        voteInfo.voteResult = SkolkovoLM.voteResult.getSID(vResult);
+                        voteInfo.voteResult = SkolkovoLM.voteResult.getObjectSID(vResult);
                     }
 
                     voteInfo.voteDone = voteInfo.voteResult != null

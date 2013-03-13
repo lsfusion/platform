@@ -3,7 +3,6 @@ package platform.server.logics;
 import org.antlr.runtime.RecognitionException;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.LogicalClass;
-import platform.server.classes.StaticCustomClass;
 import platform.server.classes.StringClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
@@ -18,7 +17,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass navigatorAction;
     public ConcreteCustomClass form;
     public ConcreteCustomClass propertyDraw;
-    public StaticCustomClass propertyDrawShowStatus;
+    public ConcreteCustomClass propertyDrawShowStatus;
     public ConcreteCustomClass table;
     public ConcreteCustomClass tableKey;
     public ConcreteCustomClass tableColumn;
@@ -133,7 +132,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         navigatorAction = (ConcreteCustomClass) getClassByName("navigatorAction");
         form = (ConcreteCustomClass) getClassByName("form");
         propertyDraw = (ConcreteCustomClass) getClassByName("propertyDraw");
-        propertyDrawShowStatus = (StaticCustomClass) getClassByName("propertyDrawShowStatus");
+        propertyDrawShowStatus = (ConcreteCustomClass) getClassByName("propertyDrawShowStatus");
         table = (ConcreteCustomClass) getClassByName("table");
         tableKey = (ConcreteCustomClass) getClassByName("tableKey");
         tableColumn = (ConcreteCustomClass) getClassByName("tableColumn");

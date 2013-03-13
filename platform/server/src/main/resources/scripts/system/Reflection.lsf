@@ -42,11 +42,11 @@ captionProperty 'Заголовок' = DATA STRING[250] (property);
 propertySID 'Свойство' (sid) = GROUP UNIQUE property BY SIDProperty(property) WHERE property IS property;
 
 CLASS propertyDraw 'Свойство на форме';
-CLASS STATIC propertyDrawShowStatus 'Показ свойства'
+CLASS propertyDrawShowStatus 'Показ свойства'
 {
     Show 'Показать',
     Hide 'Спрятать'
-}
+} : named;
 TABLE formPropertyDraw (form, propertyDraw);
 TABLE propertyDraw (propertyDraw);
 TABLE propertyDrawCustomUser (propertyDraw, customUser);

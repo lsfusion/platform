@@ -9,12 +9,12 @@ CLASS Conference 'Conference' : named;
 
 CLASS City : named;
 
-CLASS STATIC GameResult 'S/O'
+CLASS GameResult 'S/O'
 {
     win '',
     winOT 'OT',
     winSO 'SO'
-};
+} : named;
 
 city 'City' (team) = DATA City (Team);
 cityName(team) = name(city(team)) IN base;

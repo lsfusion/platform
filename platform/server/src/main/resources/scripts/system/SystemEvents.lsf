@@ -23,10 +23,10 @@ timeLaunch 'Время запуска'= DATA DATETIME (launch);
 revisionLaunch 'Версия'= DATA STRING[10] (launch);
 
 CLASS connection 'Подключение';
-CLASS STATIC connectionStatus 'Статус подключения' {
+CLASS connectionStatus 'Статус подключения' {
     connectedConnection 'Подключён',
     disconnectedConnection 'Отключён'
-};
+} : named;
 TABLE connection (connection);
 TABLE connectionNavigatorElement (connection, navigatorElement);
 

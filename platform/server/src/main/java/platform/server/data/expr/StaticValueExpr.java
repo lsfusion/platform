@@ -4,7 +4,7 @@ import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.classes.StaticClass;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.query.CompileSource;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -28,7 +28,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
         this(value, customClass, false);
     }
 
-    public StaticValueExpr(Object value, StaticCustomClass customClass, boolean sID) {
+    public StaticValueExpr(Object value, ConcreteCustomClass customClass, boolean sID) {
         this(value, (StaticClass)customClass, sID);
     }
 
@@ -52,7 +52,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
         if(compile instanceof ToString)
             return object + " - " + objectClass + " sID";
         if(sID)
-            return ((StaticCustomClass)objectClass).getString(object,compile.syntax);
+            return ((ConcreteCustomClass)objectClass).getString(object,compile.syntax);
         else {
             Type type = objectClass.getType();
             String result = type.getString(object, compile.syntax);
@@ -65,7 +65,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
     @Override
     public ObjectValue getObjectValue() {
         if(sID)
-            return ((StaticCustomClass)objectClass).getDataObject((String) object);
+            return ((ConcreteCustomClass)objectClass).getDataObject((String) object);
         else
             return new DataObject(object, objectClass);
     }

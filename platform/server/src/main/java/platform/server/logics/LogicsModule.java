@@ -311,7 +311,6 @@ public abstract class LogicsModule {
         BaseClass baseClass = new BaseClass(sID, caption);
         storeCustomClass(baseClass);
         storeCustomClass(baseClass.named);
-        storeCustomClass(baseClass.sidClass);
         return baseClass;
     }
 
@@ -328,7 +327,19 @@ public abstract class LogicsModule {
     }
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, CustomClass... parents) {
-        ConcreteCustomClass customClass = new CustomObjectClass(transformNameToSID(name), caption, parents);
+        assert parents.length > 0;
+        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, parents);
+        storeCustomClass(customClass);
+        return customClass;
+    }
+
+    protected ConcreteCustomClass addConcreteClass(String name, String caption, String[] sids, String[] names, CustomClass... parents) {
+        return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
+    }
+
+    protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
+        assert parents.length > 0;
+        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
         storeCustomClass(customClass);
         return customClass;
     }
@@ -336,13 +347,6 @@ public abstract class LogicsModule {
     protected AbstractCustomClass addAbstractClass(String name, String caption, CustomClass... parents) {
         AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, parents);
         storeCustomClass(customClass);
-        return customClass;
-    }
-
-    protected StaticCustomClass addStaticClass(String name, String caption, String[] sids, String[] names, CustomClass... parents) {
-        StaticCustomClass customClass = new StaticCustomClass(transformNameToSID(name), caption, baseLM.baseClass.sidClass, sids, names, parents);
-        storeCustomClass(customClass);
-        customClass.dialogReadOnly = true;
         return customClass;
     }
 

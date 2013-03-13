@@ -77,10 +77,10 @@ CLASS doubleNamed 'Объект с кратким наименованием' : 
 shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) MINCHARWIDTH 4 PREFCHARWIDTH 4 MAXCHARWIDTH 5 IN base;
 
 // --------------------------------------------- Yes/No --------------------------------- //
-CLASS STATIC yesNo 'Логическое' {
+CLASS yesNo 'Логическое' {
     yes 'ДА',
     no 'НЕТ'
-};
+} : named;
 
 classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS yesNo;
 

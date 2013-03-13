@@ -298,10 +298,10 @@ sumSaleLedger (ledger) += sumReceiptSaleDetail(ledger);
 CLASS payment 'Оплата по чеку';
 TABLE payment (payment);
 
-CLASS STATIC paymentMeans 'Форма оплаты'{
+CLASS paymentMeans 'Форма оплаты'{
     paymentMeansCash 'Наличные',
     paymentMeansCard 'Карточка'
-};
+} : named;
 CLASS paymentType 'Тип платежа' : named;
 TABLE paymentType (paymentType);
 

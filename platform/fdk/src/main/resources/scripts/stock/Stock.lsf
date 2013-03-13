@@ -91,7 +91,7 @@ CLASS ABSTRACT group 'Классификатор SKU' : named;
 @defineHierarchyAbstract(group);
 
 CLASS ABSTRACT groupType 'Тип классификатора SKU' : named;
-CLASS STATIC systemGroupType 'Системный тип классификатор SKU' : groupType;
+CLASS systemGroupType 'Системный тип классификатор SKU' : groupType;
 
 groupTypeGroup = ABSTRACT groupType (group) PERSISTENT;
 nameGroupTypeGroup 'Тип классификатора SKU' (group) = name(groupTypeGroup(group));
@@ -199,11 +199,11 @@ nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) =
 
 // ----------------------------------- Sku Type ------------------------------------------ //
 
-CLASS STATIC skuType {
+CLASS skuType {
     skuTypeItem 'Товар',
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'
-}
+} : named;
 
 isStockSkuType 'Складируемые' (type) = type IS skuType AND NOT type == skuType.skuTypeCharge PERSISTENT;
 

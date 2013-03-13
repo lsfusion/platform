@@ -80,11 +80,11 @@ FORM inventoryCommittees 'Комиссии для инвентаризации'
 
 // ------------------------------- Инвентаризация --------------------------------------------- //
 
-CLASS STATIC typeOfAddition 'Тип инвентаризации' {
+CLASS typeOfAddition 'Тип инвентаризации' {
     register 'Товары из описей',
     remains 'Товары по остаткам',
     many    'Множество товаров'
-};
+} : named;
 
 CLASS inventory 'Инвентаризация' : historizable, numeratedDocument;
 CLASS inventoryPosted 'Проведенная инвентаризация' : inventory, postedObject;

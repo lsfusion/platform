@@ -232,16 +232,15 @@ classStatement
 @init {
 	List<String> classParents = new ArrayList<String>();
 	boolean isAbstract = false;
-	boolean isStatic = false;
 	List<String> instanceNames = new ArrayList<String>();
 	List<String> instanceCaptions = new ArrayList<String>();
 }
 @after {
 	if (inClassParseState()) {
-		self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, isStatic, $classData.names, $classData.captions, $classData.parents);
+		self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents);
 	}
 }
-	:	'CLASS' ('ABSTRACT' {isAbstract = true;} | 'STATIC' {isStatic = true;})?
+	:	'CLASS' ('ABSTRACT' {isAbstract = true;})?
 		nameCaption=simpleNameWithCaption
 		classData=classInstancesAndParents
 	;	  

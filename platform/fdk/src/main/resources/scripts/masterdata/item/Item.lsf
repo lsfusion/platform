@@ -420,7 +420,7 @@ END
 // -------------------------------------- Типы атрибутов ------------------------------- //
 
 // Строка
-CLASS STATIC stringItemAttribute 'Строковый атрибут' : itemAttribute;
+CLASS stringItemAttribute 'Строковый атрибут' : itemAttribute;
 
 valueStringItemAttribute = ABSTRACT STRING[100] (item, stringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
@@ -430,7 +430,7 @@ META defineStringItemAttribute(attribute, type, caption, group)
 END
 
 // Целое число
-CLASS STATIC integerItemAttribute 'Целочисленный атрибут' : itemAttribute;
+CLASS integerItemAttribute 'Целочисленный атрибут' : itemAttribute;
 
 valueIntegerItemAttribute = ABSTRACT INTEGER (item, integerItemAttribute) EXCLUSIVE PERSISTENT;
 stringIntegerItemAttribute(item, attribute) = toString255(valueIntegerItemAttribute(item, attribute));
@@ -441,7 +441,7 @@ META defineIntegerItemAttribute(attribute, caption, group)
 END
 
 // Дробное число
-CLASS STATIC doubleItemAttribute 'Дробный атрибут' : itemAttribute;
+CLASS doubleItemAttribute 'Дробный атрибут' : itemAttribute;
 
 valueDoubleItemAttribute = ABSTRACT DOUBLE (item, doubleItemAttribute) EXCLUSIVE PERSISTENT;
 stringDoubleItemAttribute(item, attribute) = toString255(valueDoubleItemAttribute(item, attribute));
@@ -452,7 +452,7 @@ META defineDoubleItemAttribute(attribute, type, caption, group)
 END
 
 // Объектный атрибут
-CLASS STATIC objectItemAttribute 'Объектный атрибут' : itemAttribute;
+CLASS objectItemAttribute 'Объектный атрибут' : itemAttribute;
 
 valueObjectItemAttribute = ABSTRACT named (item, objectItemAttribute) EXCLUSIVE PERSISTENT;
 nameObjectItemAttribute(item, attribute) = name(valueObjectItemAttribute(item, attribute));
@@ -469,7 +469,7 @@ META defineObjectItemAttribute(attribute, identity, caption, group)
 END
 
 // Краткое наименование атрибута
-CLASS STATIC objectShortItemAttribute 'Объектный краткий атрибут' : itemAttribute;
+CLASS objectShortItemAttribute 'Объектный краткий атрибут' : itemAttribute;
 
 valueObjectShortItemAttribute = ABSTRACT doubleNamed (item, objectShortItemAttribute) EXCLUSIVE PERSISTENT;
 shortNameObjectItemAttribute(item, attribute) = shortName(valueObjectShortItemAttribute(item, attribute));

@@ -6,7 +6,7 @@ import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
@@ -57,8 +57,8 @@ public class FiscalVMKPrintReceiptActionProperty extends ScriptingActionProperty
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> paymentResult = paymentQuery.execute(context.getSession().sql);
             for (ImMap<Object, Object> paymentValues : paymentResult.valueIt()) {
-                DataObject paymentMeansCashObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCash");
-                DataObject paymentMeansCardObject = ((StaticCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCard");
+                DataObject paymentMeansCashObject = ((ConcreteCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCash");
+                DataObject paymentMeansCardObject = ((ConcreteCustomClass) LM.findClassByCompoundName("paymentMeans")).getDataObject("paymentMeansCard");
                 if (paymentMeansCashObject.getValue().equals(paymentValues.get("paymentMeansPayment"))) {
                     sumCash = (Double) paymentValues.get("sumPayment");
                 } else if (paymentMeansCardObject.getValue().equals(paymentValues.get("paymentMeansPayment"))) {

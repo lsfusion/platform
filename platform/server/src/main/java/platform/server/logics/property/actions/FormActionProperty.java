@@ -7,7 +7,7 @@ import platform.interop.ModalityType;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.ReportClientAction;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
@@ -17,13 +17,13 @@ import platform.server.form.instance.FormCloseType;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.FormSessionScope;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.AnyValuePropertyHolder;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
+import platform.server.remote.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public class FormActionProperty extends SystemActionProperty {
     private final ModalityType modalityType;
     private final boolean showDrop;
 
-    private final StaticCustomClass formResultClass;
+    private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
 
     private final AnyValuePropertyHolder chosenValueProperty;
@@ -59,7 +59,7 @@ public class FormActionProperty extends SystemActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, StaticCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, ConcreteCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.formResultClass = formResultClass;
@@ -119,7 +119,7 @@ public class FormActionProperty extends SystemActionProperty {
                 FormCloseType formResult = newFormInstance.getFormResult();
 
                 if (formResultProperty != null) {
-                    formResultProperty.change(formResultClass.getID(formResult.asString()), context);
+                    formResultProperty.change(formResultClass.getObjectID(formResult.asString()), context);
                 }
 
                 if (chosenValueProperty != null) {

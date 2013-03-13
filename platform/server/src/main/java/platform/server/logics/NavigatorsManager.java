@@ -178,7 +178,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 DataObject newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
                 businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
-                businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getID("connectedConnection"), session, newConnection);
+                businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
                 businessLogics.systemEventsLM.connectTimeConnection.change(baseLM.currentDateTime.read(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
                 session.apply(businessLogics);
@@ -207,7 +207,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
         if (navigator != null && navigator.getConnection() != null) {
-            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, navigator.getConnection());
         }
     }
 

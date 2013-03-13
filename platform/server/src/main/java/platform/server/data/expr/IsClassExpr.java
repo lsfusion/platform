@@ -10,7 +10,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Table;
 import platform.server.data.expr.query.PropStat;
@@ -52,7 +52,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return getStaticClass().getTypeStat();
     }
 
-    public StaticCustomClass getStaticClass() {
+    public ConcreteCustomClass getStaticClass() {
         return baseClass.objectClass;
     }
 

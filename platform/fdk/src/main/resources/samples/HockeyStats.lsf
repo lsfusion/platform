@@ -29,11 +29,11 @@ gameLooser(game) = IF hostGoals(game) > guestGoals(game)
                     THEN guestTeam(game)
                     ELSE hostTeam(game);
 
-CLASS STATIC GameResult 'Р/И' {
+CLASS GameResult 'Р/И' {
     win 'П',
     winOT 'ПО',
     winSO 'ПБ'
-}
+} : named;
 
 userResultGame(game) = DATA GameResult (Game);
 gameResult(game) = UNION OVERRIDE GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1), userResultGame(game);

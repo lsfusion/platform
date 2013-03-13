@@ -18,10 +18,15 @@ GROUP simpleGroup;
 GROUP sampleGroup : System.base; // явная квалификация имен
 
 /////////// CLASS STATEMENT ////////////
-
-// Non-static class
 // Syntax:
-// CLASS [ABSTRACT] name ['caption'] [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN]];
+// CLASS [ABSTRACT] name ['caption']
+// [{
+//      instanceName1 ['instanceCaption1'],
+//      ...
+//      instanceNameN ['instanceCaptionN']
+// }]
+// [: baseClass1 [, baseClass2, ..., baseClassN]];
+
 CLASS ABSTRACT namedClass : named;
 CLASS emptyClass;
 CLASS article 'Товар' : namedClass;
@@ -32,19 +37,9 @@ CLASS outcomeDocument 'Расход' : document, emptyClass;
 
 date(doc) = DATA DATE (document);
 
-// Static class
-// Syntax:
-// CLASS STATIC name ['caption']
-// [{
-//      instanceName1 ['instanceCaption1'],
-//      ...
-//      instanceNameN ['instanceCaptionN']
-// }]
-// [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
+CLASS emptyInst;
 
-CLASS STATIC emptyInst;
-
-CLASS STATIC storeSize 'Размер склада' {}
+CLASS storeSize 'Размер склада' {} : named;
 
 EXTEND CLASS storeSize
 {
@@ -60,7 +55,7 @@ EXTEND CLASS storeSize
 //      ...
 //      instanceNameN ['instanceCaptionN']
 // }]
-// [: nonStaticBaseClass1 [, nonStaticBaseClass2, ..., nonStaticBaseClassN];]
+// [: baseClass1 [, baseClass2, ..., baseClassN];]
 EXTEND CLASS incomeDocument : emptyClass;
 
 EXTEND CLASS Features.storeSize
@@ -242,7 +237,7 @@ testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuant
 // *  /
 // - (unary)
 //
-// Instances: 5, 5L, 6.35, TRUE, 'some string', staticClass.object, 2011_10_25, 2011_10_25_18:00, 18:00, NULL, #ff0000, RGB(255, 0, 0)
+// Instances: 5, 5L, 6.35, TRUE, 'some string', class.object, 2011_10_25, 2011_10_25_18:00, 18:00, NULL, #ff0000, RGB(255, 0, 0)
 balanceQuantity(store, article) = incomeQuantity(store, article) - outcomeQuantity(store, article) PERSISTENT;
 
 foo(store, article) = 5 * incomeQuantity($1, $2) - outcomeQuantity($1, $2);
@@ -253,10 +248,10 @@ foobar(store, article) = [x*x + y](foo(store, article), bar(store, article));   
 baz(store, article) = bar(store, article) > bar2(store, article) IN base;
 baz2 = foo(s, a) >= 15 == foo2(s, a) >= 15;
 
-storeIsHuge(store) = storeSize(store) == storeSize.huge;                        // static class instance
-storeIsBig(store) = storeSize(store) == storeSize.big;                        // static class instance
-storeIsMedium(store) = storeSize(store) == storeSize.medium;                        // static class instance
-storeIsSmall(store) = storeSize(store) == storeSize.small;                        // static class instance
+storeIsHuge(store) = storeSize(store) == storeSize.huge;                        // static object
+storeIsBig(store) = storeSize(store) == storeSize.big;
+storeIsMedium(store) = storeSize(store) == storeSize.medium;
+storeIsSmall(store) = storeSize(store) == storeSize.small;
 storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 
 documentBalance(document, article) = balanceQuantity(store(document), article);

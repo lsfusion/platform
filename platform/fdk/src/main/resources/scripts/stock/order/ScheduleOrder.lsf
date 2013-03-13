@@ -7,11 +7,11 @@ REQUIRE System,
         Numerator,
         Document;
 
-CLASS STATIC genType 'Тип генерации' {
+CLASS genType 'Тип генерации' {
     genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
-};
+} : named;
 
 CLASS ABSTRACT scheduleOrder 'График';
 TABLE scheduleOrder(scheduleOrder);

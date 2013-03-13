@@ -4,7 +4,6 @@ import org.antlr.runtime.RecognitionException;
 import platform.base.DateConverter;
 import platform.server.classes.AbstractCustomClass;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.StaticCustomClass;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.PropertyInterface;
@@ -27,7 +26,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass serverException;
     public ConcreteCustomClass launch;
     public ConcreteCustomClass connection;
-    public StaticCustomClass connectionStatus;
+    public ConcreteCustomClass connectionStatus;
     public ConcreteCustomClass session;
 
     public LCP computerConnection;
@@ -74,7 +73,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         serverException = (ConcreteCustomClass) getClassByName("serverException");
         launch = (ConcreteCustomClass) getClassByName("launch");
         connection = (ConcreteCustomClass) getClassByName("connection");
-        connectionStatus = (StaticCustomClass) getClassByName("connectionStatus");
+        connectionStatus = (ConcreteCustomClass) getClassByName("connectionStatus");
         session = (ConcreteCustomClass) getClassByName("session");
     }
 

@@ -156,7 +156,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
                 session = getDbManager().createSession();
             }
 
-            paasLM.configurationStatus.change(paasLM.status.getID(statusStr), session, confId);
+            paasLM.configurationStatus.change(paasLM.status.getObjectID(statusStr), session, confId);
 
             if (apply) {
                 session.apply(this);

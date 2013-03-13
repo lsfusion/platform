@@ -99,12 +99,12 @@ DESIGN coefficientRetails FROM DEFAULT {
 
 // ------------------------------------------------ Прайсы -------------------------------- //
 
-CLASS STATIC methodPrice 'Метод расчёта'
+CLASS methodPrice 'Метод расчёта'
 {
     coefficient 'С надбавкой',
     RRP 'Рекомендуемая',
     previous 'Предыдущая'
-};
+} : named;
 
 
 CLASS ABSTRACT priceSetDocument 'Документ изменения цен' : numeratedObject;

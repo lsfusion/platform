@@ -249,10 +249,10 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 //--
 
-CLASS STATIC changePriceType 'Тип изменения цены' {
+CLASS changePriceType 'Тип изменения цены' {
     markupChange 'Процент торговой надбавки',
     discountChange 'Процент к розничной цене'
-}
+} : named;
 
 changePriceTypeUserRepricing = DATA changePriceType (userRepricing);
 nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = name(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;

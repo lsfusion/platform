@@ -191,23 +191,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass voteR1;
     ConcreteCustomClass voteR2;
 
-    public StaticCustomClass projectType;
-    public StaticCustomClass projectAction;
-    StaticCustomClass language;
-    StaticCustomClass documentType;
-    public StaticCustomClass ownerType;
-    public StaticCustomClass typeMileStone;
+    public ConcreteCustomClass projectType;
+    public ConcreteCustomClass projectAction;
+    ConcreteCustomClass language;
+    ConcreteCustomClass documentType;
+    public ConcreteCustomClass ownerType;
+    public ConcreteCustomClass typeMileStone;
 
-    StaticCustomClass voteResult;
-    StaticCustomClass projectStatus;
-    StaticCustomClass typeProjectStatus;
+    ConcreteCustomClass voteResult;
+    ConcreteCustomClass projectStatus;
+    ConcreteCustomClass typeProjectStatus;
 
-    StaticCustomClass formalControlResult;
-    StaticCustomClass foresightCheckResult;
+    ConcreteCustomClass formalControlResult;
+    ConcreteCustomClass foresightCheckResult;
     ConcreteCustomClass formalControl;
-    StaticCustomClass legalCheckResult;
-    StaticCustomClass originalDocsCheckResult;
-    public StaticCustomClass projectSchedule;
+    ConcreteCustomClass legalCheckResult;
+    ConcreteCustomClass originalDocsCheckResult;
+    public ConcreteCustomClass projectSchedule;
     ConcreteCustomClass legalCheck;
     ConcreteCustomClass originalDocsCheck;
 
@@ -263,7 +263,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     AbstractGroup expertResultGroup;
     AbstractGroup importGroup;
-    public StaticCustomClass projectMission;
+    public ConcreteCustomClass projectMission;
 
     @Override
     public void initModuleDependencies() {
@@ -280,26 +280,31 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("multiLanguageNamed");
 
-        projectType = addStaticClass("projectType", "Тип проекта",
+        projectType = addConcreteClass("projectType", "Тип проекта",
                 new String[]{"comparable", "surpasses", "russianbenchmark", "certainadvantages", "significantlyoutperforms", "nobenchmarks"},
                 new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
                         "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
-                        "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
+                        "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"},
+                baseClass.named);
 
-        projectAction = addStaticClass("projectAction", "Тип заявки",
+        projectAction = addConcreteClass("projectAction", "Тип заявки",
                 new String[]{"preliminary", "status"},
-                new String[]{"На предварительную экспертизу", "На статус участника"});
+                new String[]{"На предварительную экспертизу", "На статус участника"},
+                baseClass.named);
 
-        projectMission = addStaticClass("projectMission", "Цель проекта",
-                       new String[]{"development", "investigation"},
-                       new String[]{"Коммерциализация продукта", "Осуществление исследований"});
-        typeMileStone = addStaticClass("typeMileStone", "Раздел дорожной карты",
-                       new String[]{"research and development", "product Creation and Production", "plan on hiring", "licensing", "promotion", "selling"},
-                       new String[]{"Разработка", "Создание продукта", "План по найму", "Лицензирование", "Продвижение", "Продажи"});
+        projectMission = addConcreteClass("projectMission", "Цель проекта",
+                new String[]{"development", "investigation"},
+                new String[]{"Коммерциализация продукта", "Осуществление исследований"},
+                baseClass.named);
+        typeMileStone = addConcreteClass("typeMileStone", "Раздел дорожной карты",
+                new String[]{"research and development", "product Creation and Production", "plan on hiring", "licensing", "promotion", "selling"},
+                new String[]{"Разработка", "Создание продукта", "План по найму", "Лицензирование", "Продвижение", "Продажи"},
+                baseClass.named);
 
-        ownerType = addStaticClass("ownerType", "Тип правообладателя",
+        ownerType = addConcreteClass("ownerType", "Тип правообладателя",
                 new String[]{"employee", "participant", "thirdparty"},
-                new String[]{"Работником организации", "Участником организации", "Третьим лицом"});
+                new String[]{"Работником организации", "Участником организации", "Третьим лицом"},
+                baseClass.named);
 
         patent = addConcreteClass("patent", "Патент", baseClass);
         academic = addConcreteClass("academic", "Научные кадры", baseClass);
@@ -339,51 +344,60 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteR1 = addConcreteClass("voteR1", "Заседание (регл. 1)", vote);
         voteR2 = addConcreteClass("voteR2", "Заседание (регл. 2)", vote);
 
-        language = addStaticClass("language", "Язык",
+        language = addConcreteClass("language", "Язык",
                 new String[]{"russian", "english"},
-                new String[]{"Русский", "Английский"});
+                new String[]{"Русский", "Английский"},
+                baseClass.named);
 
-        voteResult = addStaticClass("voteResult", "Результат заседания",
+        voteResult = addConcreteClass("voteResult", "Результат заседания",
                 new String[]{"refused", "connected", "voted"},
-                new String[]{"Отказался", "Аффилирован", "Проголосовал"});
+                new String[]{"Отказался", "Аффилирован", "Проголосовал"},
+                baseClass.named);
 
-        projectStatus = addStaticClass("projectStatus", "Статус проекта",
+        projectStatus = addConcreteClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needExtraVote", "inProgress", "accepted", "rejected",
-                     "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCStatusResult", "negativeLCPreliminaryResult","positiveLCResult",
-                     "registered", "repeated", "withdrawn", "overdueFC", "overdueLC", "positiveFSResult",
-                     "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat",
-                     "haveStatus", "notEnoughOriginalDocs", "overdueOriginalDocs", "appliedOriginalDocs", "sentForSignature", "signed", "sentToFinDep",
-                     "submittedToRegister", "preparedCertificate", "certified", "companyHasLostStatus"},
+                        "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCStatusResult", "negativeLCPreliminaryResult", "positiveLCResult",
+                        "registered", "repeated", "withdrawn", "overdueFC", "overdueLC", "positiveFSResult",
+                        "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat",
+                        "haveStatus", "notEnoughOriginalDocs", "overdueOriginalDocs", "appliedOriginalDocs", "sentForSignature", "signed", "sentToFinDep",
+                        "submittedToRegister", "preparedCertificate", "certified", "companyHasLostStatus"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Требуется заседание (повторное)", "Идет заседание", "Оценен положительно", "Оценен отрицательно",
-                     "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку (на статус)", "Не прошла юридическую проверку (на предв.экспертизу)", "Прошла юридическую проверку",
-                     "Зарегистрирована", "Подана повторно", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)", "Прошла проверку на соответствие форсайту",
-                     "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)",
-                     "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
-                     "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника", "Компания утратила статус участника"});
+                        "Неполный перечень документов (на экспертизу)", "Неполный перечень документов (на статус)", "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку (на статус)", "Не прошла юридическую проверку (на предв.экспертизу)", "Прошла юридическую проверку",
+                        "Зарегистрирована", "Подана повторно", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)", "Прошла проверку на соответствие форсайту",
+                        "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)",
+                        "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
+                        "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника", "Компания утратила статус участника"},
+                baseClass.named);
 
-        typeProjectStatus = addStaticClass("typeProjectStatus", "Тип статуса проекта",
+        typeProjectStatus = addConcreteClass("typeProjectStatus", "Тип статуса проекта",
                 new String[]{"inConsideration", "requestMaterials", "positiveResult", "negativeResult"},
-                new String[]{"На рассмотрении в Фонде", "Запрос материалов у Заявителя", "Положительный результат", "Отрицательный результат"});
+                new String[]{"На рассмотрении в Фонде", "Запрос материалов у Заявителя", "Положительный результат", "Отрицательный результат"},
+                baseClass.named);
 
-        documentType = addStaticClass("documentType", "Тип документа",
+        documentType = addConcreteClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap", "passport", "statement"},
-                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта", "Документ, удостоверяющий личность участников Команды проекта", "Заявление участника Команды проекта"});
+                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта", "Документ, удостоверяющий личность участников Команды проекта", "Заявление участника Команды проекта"},
+                baseClass.named);
 
-        formalControlResult = addStaticClass("formalControlResult", "Решение формальной экспертизы",
+        formalControlResult = addConcreteClass("formalControlResult", "Решение формальной экспертизы",
                 new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "repeatedFC", "positiveFormalResult"},
-                new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Подана повторно", "Прошла формальную экспертизу"});
+                new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Подана повторно", "Прошла формальную экспертизу"},
+                baseClass.named);
 
-        foresightCheckResult = addStaticClass("foresightCheckResult", "Решение проверки на форсайты",
+        foresightCheckResult = addConcreteClass("foresightCheckResult", "Решение проверки на форсайты",
                 new String[]{"negativeForesightCheckResult", "positiveForesightCheckResult"},
-                new String[]{"Не прошла проверку на форсайты", "Прошла проверку на форсайты"});
+                new String[]{"Не прошла проверку на форсайты", "Прошла проверку на форсайты"},
+                baseClass.named);
 
-        legalCheckResult = addStaticClass("legalCheckResult", "Решение юридической проверки",
+        legalCheckResult = addConcreteClass("legalCheckResult", "Решение юридической проверки",
                 new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
-                new String[]{"Не прошла юридическую проверку", "Прошла юридическую проверку"});
+                new String[]{"Не прошла юридическую проверку", "Прошла юридическую проверку"},
+                baseClass.named);
 
-        originalDocsCheckResult = addStaticClass("originalDocsCheckResult", "Проверка оригиналов документов",
+        originalDocsCheckResult = addConcreteClass("originalDocsCheckResult", "Проверка оригиналов документов",
                 new String[]{"notCompleteOriginalDocsPacket", "completeOriginalDocsPacket"},
-                new String[]{"Подан неполный пакет документов", "Подан полный пакет документов"});
+                new String[]{"Подан неполный пакет документов", "Подан полный пакет документов"},
+                baseClass.named);
 
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
@@ -396,14 +410,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
         applicationStatus = addConcreteClass("applicationStatus", "Заявка на статус участника", application);
 
-        projectSchedule = addStaticClass("projectSchedule", "Регламент проекта",
+        projectSchedule = addConcreteClass("projectSchedule", "Регламент проекта",
                 new String[]{"R1", "R2"},
-                new String[]{"R1", "R2"});
+                new String[]{"R1", "R2"},
+                baseClass.named);
 
         expertConference = addConcreteClass("expertConference", "Конференция экспертов", transaction, baseClass.named);
-        expertConferenceResult = addStaticClass("expertConferenceResult", "Участие в конференции",
+        expertConferenceResult = addConcreteClass("expertConferenceResult", "Участие в конференции",
                 new String[]{"confirmedConference", "rejectedConference"},
-                new String[]{"Подтвердил участие", "Отказался от участия"});
+                new String[]{"Подтвердил участие", "Отказался от участия"},
+                baseClass.named);
     }
 
     @Override
@@ -7753,8 +7769,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 Object file = fileNativeApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
                 projectDocument.change(projectObject.getValue(), context, documentObject);
-                typeDocument.change(documentType.getID("application"), context, documentObject);
-                languageDocument.change(language.getID("russian"), context, documentObject);
+                typeDocument.change(documentType.getObjectID("application"), context, documentObject);
+                languageDocument.change(language.getObjectID("russian"), context, documentObject);
                 if (file != null)
                     fileDocument.change(file, context, documentObject);
                 else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
@@ -7763,8 +7779,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 file = fileForeignApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
                 projectDocument.change(projectObject.getValue(), context, documentObject);
-                typeDocument.change(documentType.getID("application"), context, documentObject);
-                languageDocument.change(language.getID("english"), context, documentObject);
+                typeDocument.change(documentType.getObjectID("application"), context, documentObject);
+                languageDocument.change(language.getObjectID("english"), context, documentObject);
                 if (file != null)
                     fileDocument.change(file, context, documentObject);
                 else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
@@ -7775,8 +7791,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     documentObject = context.addObject(document);
                     fileDocument.change(file, context, documentObject);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("resume"), context, documentObject);
-                    languageDocument.change(language.getID("russian"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("resume"), context, documentObject);
+                    languageDocument.change(language.getObjectID("russian"), context, documentObject);
                 }
 
                 file = fileForeignSummaryProject.read(context, projectObject);
@@ -7784,8 +7800,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     documentObject = context.addObject(document);
                     fileDocument.change(file, context, documentObject);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("resume"), context, documentObject);
-                    languageDocument.change(language.getID("english"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("resume"), context, documentObject);
+                    languageDocument.change(language.getObjectID("english"), context, documentObject);
                 }
 
                 QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.singleton("nonRussianSpecialist"));
@@ -7808,8 +7824,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     if (file != null) {
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
-                        typeDocument.change(documentType.getID("forres"), context, documentObject);
-                        languageDocument.change(language.getID("english"), context, documentObject);
+                        typeDocument.change(documentType.getObjectID("forres"), context, documentObject);
+                        languageDocument.change(language.getObjectID("english"), context, documentObject);
                         if (size > 1)
                             postfixDocument.change(String.valueOf(countForeign), context, documentObject);
                         fileDocument.change(file, context, documentObject);
@@ -7820,8 +7836,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     if (file != null) {
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
-                        typeDocument.change(documentType.getID("forres"), context, documentObject);
-                        languageDocument.change(language.getID("russian"), context, documentObject);
+                        typeDocument.change(documentType.getObjectID("forres"), context, documentObject);
+                        languageDocument.change(language.getObjectID("russian"), context, documentObject);
                         if (size > 1)
                             postfixDocument.change(String.valueOf(countNative), context, documentObject);
                         fileDocument.change(file, context, documentObject);
@@ -7833,8 +7849,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("techdesc"), context, documentObject);
-                    languageDocument.change(language.getID("russian"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("techdesc"), context, documentObject);
+                    languageDocument.change(language.getObjectID("russian"), context, documentObject);
                     fileDocument.change(file, context, documentObject);
                 }
 
@@ -7842,8 +7858,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("techdesc"), context, documentObject);
-                    languageDocument.change(language.getID("english"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("techdesc"), context, documentObject);
+                    languageDocument.change(language.getObjectID("english"), context, documentObject);
                     fileDocument.change(file, context, documentObject);
                 }
 
@@ -7851,8 +7867,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("roadmap"), context, documentObject);
-                    languageDocument.change(language.getID("russian"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("roadmap"), context, documentObject);
+                    languageDocument.change(language.getObjectID("russian"), context, documentObject);
                     fileDocument.change(file, context, documentObject);
                 }
 
@@ -7860,8 +7876,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("roadmap"), context, documentObject);
-                    languageDocument.change(language.getID("english"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("roadmap"), context, documentObject);
+                    languageDocument.change(language.getObjectID("english"), context, documentObject);
                     fileDocument.change(file, context, documentObject);
                 }
 
@@ -7869,8 +7885,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.change(projectObject.getValue(), context, documentObject);
-                    typeDocument.change(documentType.getID("ipres"), context, documentObject);
-                    languageDocument.change(language.getID("english"), context, documentObject);
+                    typeDocument.change(documentType.getObjectID("ipres"), context, documentObject);
+                    languageDocument.change(language.getObjectID("english"), context, documentObject);
                     fileDocument.change(file, context, documentObject);
                 }
                     } else {
@@ -7879,8 +7895,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         if (file != null) {
                             documentObject = context.addObject(document);
                             projectDocument.change(projectObject.getValue(), context, documentObject);
-                            typeDocument.change(documentType.getID("roadmap"), context, documentObject);
-                            languageDocument.change(language.getID("russian"), context, documentObject);
+                            typeDocument.change(documentType.getObjectID("roadmap"), context, documentObject);
+                            languageDocument.change(language.getObjectID("russian"), context, documentObject);
                             fileDocument.change(file, context, documentObject);
                         }
 
@@ -7888,16 +7904,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         if (file != null) {
                             documentObject = context.addObject(document);
                             projectDocument.change(projectObject.getValue(), context, documentObject);
-                            typeDocument.change(documentType.getID("roadmap"), context, documentObject);
-                            languageDocument.change(language.getID("english"), context, documentObject);
+                            typeDocument.change(documentType.getObjectID("roadmap"), context, documentObject);
+                            languageDocument.change(language.getObjectID("english"), context, documentObject);
                             fileDocument.change(file, context, documentObject);
                         }
 
                         file = fileNativeApplicationFormProject.read(context, projectObject);
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
-                        typeDocument.change(documentType.getID("application"), context, documentObject);
-                        languageDocument.change(language.getID("russian"), context, documentObject);
+                        typeDocument.change(documentType.getObjectID("application"), context, documentObject);
+                        languageDocument.change(language.getObjectID("russian"), context, documentObject);
                         if (file != null)
                             fileDocument.change(file, context, documentObject);
                         else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
@@ -7906,8 +7922,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         file = fileForeignApplicationFormProject.read(context, projectObject);
                         documentObject = context.addObject(document);
                         projectDocument.change(projectObject.getValue(), context, documentObject);
-                        typeDocument.change(documentType.getID("application"), context, documentObject);
-                        languageDocument.change(language.getID("english"), context, documentObject);
+                        typeDocument.change(documentType.getObjectID("application"), context, documentObject);
+                        languageDocument.change(language.getObjectID("english"), context, documentObject);
                         if (file != null)
                             fileDocument.change(file, context, documentObject);
                         else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
@@ -7931,8 +7947,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             if (file != null) {
                                 documentObject = context.addObject(document);
                                 projectDocument.execute(projectObject.getValue(), context, documentObject);
-                                typeDocument.execute(documentType.getID("passport"), context, documentObject);
-                                languageDocument.execute(language.getID("russian"), context, documentObject);
+                                typeDocument.execute(documentType.getObjectID("passport"), context, documentObject);
+                                languageDocument.execute(language.getObjectID("russian"), context, documentObject);
                                 if (size > 1)
                                     postfixDocument.execute(String.valueOf(countPassport), context, documentObject);
                                 fileDocument.execute(file, context, documentObject);
@@ -7943,8 +7959,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             if (file != null) {
                                 documentObject = context.addObject(document);
                                 projectDocument.execute(projectObject.getValue(), context, documentObject);
-                                typeDocument.execute(documentType.getID("statement"), context, documentObject);
-                                languageDocument.execute(language.getID("russian"), context, documentObject);
+                                typeDocument.execute(documentType.getObjectID("statement"), context, documentObject);
+                                languageDocument.execute(language.getObjectID("russian"), context, documentObject);
                                 if (size > 1)
                                     postfixDocument.execute(String.valueOf(countStatement), context, documentObject);
                                 fileDocument.execute(file, context, documentObject);

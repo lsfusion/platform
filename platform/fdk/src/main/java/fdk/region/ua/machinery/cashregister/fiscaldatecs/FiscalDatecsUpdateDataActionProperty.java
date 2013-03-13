@@ -6,7 +6,7 @@ import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.StaticCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
@@ -60,7 +60,7 @@ public class FiscalDatecsUpdateDataActionProperty extends ScriptingActionPropert
 
             List<UpdateDataTaxRate> taxRateList = new ArrayList<UpdateDataTaxRate>();
             ObjectValue countryObject = LM.findLCPByCompoundName("countryCurrentCashRegister").readClasses(session);
-            DataObject taxVATObject = ((StaticCustomClass) LM.findClassByCompoundName("tax")).getDataObject("taxVAT");
+            DataObject taxVATObject = ((ConcreteCustomClass) LM.findClassByCompoundName("tax")).getDataObject("taxVAT");
             KeyExpr rangeExpr = new KeyExpr("range");
             KeyExpr taxExpr = new KeyExpr("tax");
             ImRevMap<Object, KeyExpr> rangeKeys = MapFact.toRevMap((Object) "range", rangeExpr, "tax", taxExpr);

@@ -445,7 +445,7 @@ public class EquipmentServer extends LifecycleAdapter implements EquipmentServer
             for (int i=0,size=legalEntityResult.size();i<size;i++) {
                 String id = String.valueOf(legalEntityResult.getKey(i).getValue(0));
                 String name = (String) legalEntityResult.getValue(i).get("name");
-                DataObject terminalHandbookTypeObject = ((StaticCustomClass) equLM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeLegalEntity");
+                DataObject terminalHandbookTypeObject = ((ConcreteCustomClass) equLM.findClassByCompoundName("terminalHandbookType")).getDataObject("terminalHandbookTypeLegalEntity");
                 String type = (String) equLM.findLCPByCompoundName("idTerminalHandbookType").read(session, terminalHandbookTypeObject);
                 legalEntityInfoList.add(new LegalEntityInfo(id, name, type));
             }

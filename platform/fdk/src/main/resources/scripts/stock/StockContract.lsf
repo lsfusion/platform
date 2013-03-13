@@ -14,16 +14,16 @@ editContractSku 'Редактировать' = ABSTRACT ACTION (contractSku) IMA
 
 GROUP paymentGroup 'Взаиморасчеты' : public;
 
-CLASS STATIC contractSkuType 'Тип договора на поставку' {
+CLASS contractSkuType 'Тип договора на поставку' {
     sale 'Договор купли-продажи',
     commission 'Договор комиссии'
-}
+} : named;
 
-CLASS STATIC contractSkuForm 'Порядок оплаты договора на поставку' {
+CLASS contractSkuForm 'Порядок оплаты договора на поставку' {
     prepayment 'С отсрочкой платежа',
     implement 'По факту реализации',
     requirement 'Платежное требование'
-}
+} : named;
 
 CLASS userContractSku 'Договор на поставку (польз.)' : contractSku;
 
