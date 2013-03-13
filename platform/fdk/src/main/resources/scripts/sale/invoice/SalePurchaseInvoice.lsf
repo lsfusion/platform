@@ -139,8 +139,10 @@ createPurchaseInvoiceInvoice(invoice) += createPurchaseInvoiceUserInvoice(invoic
 createPurchaseInvoiceInvoiceDetail 'Создать накладную (закупка)' (invoiceDetail) = createPurchaseInvoiceInvoice(invoiceInvoiceDetail(invoiceDetail))PERSISTENT;
 createPurchaseInvoiceUserInvoiceDetail 'Создать накладную (закупка)' (userInvoiceDetail) = createPurchaseInvoiceUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
 backgroundPurchaseInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS invoice;
+
+isCompanyCustomerUserInvoice (userInvoice) =  isCompanyLegalEntity(customerUserInvoice(userInvoice));
 EXTEND FORM userInvoice
-    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) createPurchaseInvoiceUserInvoice
+    PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) SHOWIF isCompanyCustomerUserInvoice(i) createPurchaseInvoiceUserInvoice
 ;
 EXTEND DESIGN userInvoice {
     headerRow15{
