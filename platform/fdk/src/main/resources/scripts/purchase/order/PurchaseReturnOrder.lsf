@@ -1,10 +1,10 @@
 MODULE PurchaseReturnOrder;
 
-REQUIRE Order, PurchaseShipment, PurchaseOperation;
+REQUIRE Order, PurchaseShipment, PurchaseOperation, PurchasePack;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (закупка-возврат)', customer, customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
+@defineOrder(' (закупка-возврат)', customer, customerStock, Purchase, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(customerStock, supplierStock);
 
@@ -40,11 +40,11 @@ customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
-@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
+@defineDocumentPackSkuStock(userOrder, sku, customerStock, Purchase);
+@extendFormDocumentPackSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack, Purchase);
 
 overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
-    IF  purchasePackBarcodeSku(skuUserOrderDetail(detail)) THEN {
+    IF  packBarcodeSku(skuUserOrderDetail(detail)) THEN {
 
         SET quantityPackUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
     }

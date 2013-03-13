@@ -1618,6 +1618,9 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     priceSkuStock###object 'Цена' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
     ledgerPriceSkuStock###object 'Цена (базовая)' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stock, dateTime###object(object));
 
+    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128) IF quantitySku###object###stockProp(sku, object, stock) AND NOT
+        (quantitySku###object###stockProp(sku, object, stock) <= currentBalanceSkuStock(sku, stock));
+
     overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
     changeQuantityValueSku###object###Stock = ACTION (sku, object, stock) {
 
@@ -1680,7 +1683,8 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         FILTERS           nameSku(s), name(st)
         ORDER BY          nameSku, stockName
 
-        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st), currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
+        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st),
+                          currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
     ;
 
     EXTEND DESIGN form {
@@ -1729,6 +1733,8 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
     detail###Sku###object (sku, object) = detail###Sku###object###stockProp(sku, object, stockProp###object(object));
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
+    backgroundQuantitySku###object 'Цвет' (sku, object) = RGB(255,128,128) IF quantity###detail###skuProp###object(sku, object) AND NOT
+        (quantity###detail###skuProp###object(sku, object) <= currentBalanceSku###object(sku, object));
 
     overChangeQuantityValueSku###object##Detail = ABSTRACT ACTION (detail);
 
@@ -1777,7 +1783,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         OBJECTS s=sku
         PROPERTIES             READONLY    inputName = nameSku(s)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
+        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
 
         FILTERS                isParentSkuGroupSku(sk, s)
 
@@ -1820,8 +1826,8 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
     quantitySku###object###stockProp 'Итого' (sku, object, stockProp) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128)
-        IF quantitySku###object###stockProp(sku, object, stock) > (currentBalanceSkuStock(sku, stock) AND object IS object);
+    backgroundQuantitySku###object###Stock 'Цвет' (sku, object, stock) = RGB(255,128,128) IF quantitySku###object###stockProp(sku, object, stock) AND NOT
+        (quantitySku###object###stockProp(sku, object, stock) <= currentBalanceSkuStock(sku, stock));
 
     priceSkuStock###object###contactStock 'Цена' (sku, stockProp, object, contactStock) = pricePriceListTypeSkuStockDateTime(priceListType###object###stock###sku(object, contactStock, sku), sku, stockProp, dateTime###object(object));
 
@@ -2006,7 +2012,7 @@ END
 
 //-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
 
-META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)  //  defineDocumentSupplierSkuStock
+META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)
     contact###entity###object = DATA SESSION legalEntity (object);
     name###contact###entity###object contactCaption (object) = name(contact###entity###object(object));
     relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS sku AND NOT contact###entity###object(object));

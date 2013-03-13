@@ -5,7 +5,7 @@ REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup;
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
 
 @defineInvoiceBatch(customerStock);
 
@@ -79,11 +79,11 @@ customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(current
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackageSku(userInvoice, sku, customerStock);
-@extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showPurchasePack);
+@defineDocumentPackSku(userInvoice, sku, customerStock, Purchase);
+@extendFormDocumentPackSkuCustom(userInvoice, userInvoice, i, showPurchasePack, Purchase);
 
 overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
-    IF  purchasePackBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
         SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
     }
 }

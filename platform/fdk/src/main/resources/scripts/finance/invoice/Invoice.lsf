@@ -66,7 +66,7 @@ editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
+META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     CLASS ABSTRACT invoice 'Накладная'###sign : Invoice.invoice;
     CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign : Invoice.invoiceDetail;
@@ -190,7 +190,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
-    @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, prop, toShowProp);
+    @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, NS, toShowProp);
     @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail);
     @deriveDocumentQuantityDetailOnAmountPack(userInvoiceDetail);
     @deriveDocumentQuantityDetailOnChangeQuantityPack (userInvoiceDetail);
@@ -580,7 +580,7 @@ META defineInvoiceStockDestination(fromStock, toStock)
 END
 
 //-- Расширение формы подбора упаковкой (один склад)
-META defineDocumentPackageSkuCustom(object, detail, skuProp, stockProp)
+META defineDocumentPackSkuCustom(object, detail, skuProp, stockProp, NS)
     quantityPackSku###object 'Кол-во упаковок в документе' (sku, object) = GROUP SUM quantityPack###detail(detail)
         BY skuProp###detail(detail), object###detail(detail);
 
@@ -604,20 +604,34 @@ META defineDocumentPackageSkuCustom(object, detail, skuProp, stockProp)
             }
         }
     }
+    changeAmountPackSku###object = ACTION (sku, object) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object(sku, object) THEN {
+            IF requestedNumeric() THEN {
+                SET amountPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object(sku, object) AND quantityPack###detail(detail);
+            } ELSE {
+                SET amountPack###detail(detail) <- NULL WHERE detail == detail###Sku###object(sku, object);
+            }
+
+        }
+        EXEC NS.changeValuePackSku(sku);
+    }
+
 END
-META defineDocumentPackageSku(object, skuProp, stockProp)
-    @defineDocumentPackageSkuCustom(object, object##Detail, skuProp, stockProp);
+META defineDocumentPackSku(object, skuProp, stockProp, NS)
+    @defineDocumentPackSkuCustom(object, object##Detail, skuProp, stockProp, NS);
 END
 
 
-META extendFormDocumentPackageSkuCustom(object, form, concrete, toShowProp)
+META extendFormDocumentPackSkuCustom(object, form, concrete, toShowProp, NS)
 
     EXTEND FORM form
-        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantity###object##Detail###sku###object(s, concrete) idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY, amountPackSku(s) READONLY,
-        quantityPackSku###object(s, concrete) ON CHANGE EXEC changeQuantityPackSku###object(s, concrete)
+        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantity###object##Detail###sku###object(s, concrete) NS.idBarcodePackSku(s) READONLY,
+                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE EXEC changeAmountPackSku###object(s, concrete),
+                   quantityPackSku###object(s, concrete) ON CHANGE EXEC changeQuantityPackSku###object(s, concrete)
     ;
 END
-
 
 // вторая валюта
 META defineHomeCurrencyInvoice(invoice)

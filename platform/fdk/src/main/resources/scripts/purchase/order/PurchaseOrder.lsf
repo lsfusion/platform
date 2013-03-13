@@ -1,27 +1,10 @@
 MODULE PurchaseOrder;
 
-REQUIRE Order, PurchaseOperation;
+REQUIRE Order, PurchaseOperation, PurchasePack;
 
 NAMESPACE Purchase;
 
-// todo : переделать
-// Упаковка
-purchasePackBarcodeSku 'Штрих-код для закупки' = DATA barcode (sku);
-CONSTRAINT skuBarcode(purchasePackBarcodeSku(item)) != item CHECKED BY purchasePackBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
-purchasePackBarcode 'Штрих-код для закупки' (barcode)=  purchasePackBarcodeSku(skuBarcode(barcode)) == barcode;
-changePurchasePackBarcodeSku = ACTION (barcode, sku) {
-    REQUEST BOOLEAN INPUT;
-    IF requestedLogical() THEN {
-        SET purchasePackBarcodeSku(sku) <- barcode;
-    } ELSE
-        SET purchasePackBarcodeSku(sku) <- NULL;
-}
-
-EXTEND FORM barcodeDialog
-    PROPERTIES (b) READONLY purchasePackBarcode
-;
-
-@defineOrder(' (закупка)', customer, customerStock, purchasePack, showPurchasePack, 'Отображать упаковку');
+@defineOrder(' (закупка)', customer, customerStock, Purchase, showPurchasePack, 'Отображать упаковку');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 
@@ -57,11 +40,11 @@ customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackageSkuStock(userOrder, sku, customerStock, purchasePack);
-@extendFormDocumentPackageSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack);
+@defineDocumentPackSkuStock(userOrder, sku, customerStock, Purchase);
+@extendFormDocumentPackSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack, Purchase);
 
 overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
-    IF  purchasePackBarcodeSku(skuUserOrderDetail(detail)) THEN {
+    IF  packBarcodeSku(skuUserOrderDetail(detail)) THEN {
         SET quantityPackUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
     }
 }

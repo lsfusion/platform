@@ -6,7 +6,7 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineShipment(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
 @defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(supplierStock, customerStock);

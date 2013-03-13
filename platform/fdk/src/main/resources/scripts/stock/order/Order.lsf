@@ -71,7 +71,7 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp)
+META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
     CLASS ABSTRACT order 'Заказ'###sign : Order.order;
     CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
@@ -191,7 +191,7 @@ META defineOrder(sign, legalEntityProp, stockProp, prop, toShowProp, captionProp
     @defineDocumentInterfaceCreate (order, toShowProp, captionProp);
     @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (orderDetail, , ' упаковок');
-    @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, prop, toShowProp);
+    @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, NS, toShowProp);
     @deriveDocumentQuantityPackageDetailOnChangeQuantity(userOrderDetail);
     @deriveDocumentQuantityDetailOnAmountPack(userOrderDetail);
     @deriveDocumentQuantityDetailOnChangeQuantityPack (userOrderDetail);
@@ -459,13 +459,9 @@ META deriveDocumentQuantityDetailOnAmountPack (detail);
 END
 
 //-- Расширение формы подбора упаковкой (несколько складов)
-META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, prop)
+META defineDocumentPackSkuStockCustom(object, detail, skuProp, stockProp, NS)
     quantityPackSku###object###stockProp 'Кол-во упаковок в документе' (sku, object, stock) = GROUP SUM quantityPack###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
-
-    idBarcodePackSku 'Штрих-код упаковки' (sku)= idBarcode(prop###barcodeSku(sku));
-    shortNameUOMPackSku 'Ед. изм. упаковки' (sku)= shortNameUOMBarcode(prop###barcodeSku(sku));
-    amountPackSku 'Кол-во в упаковке'(sku) =amountBarcode(prop###barcodeSku(sku));
 
     changeQuantityPackSku###object###Stock = ACTION (sku, object, stock) {
         REQUEST NUMERIC[14,3] INPUT;
@@ -491,17 +487,33 @@ META defineDocumentPackageSkuStockCustom(object, detail, skuProp, stockProp, pro
             }
         }
     }
+
+    changeAmountPackSku###object###Stock = ACTION (sku, object, stock) {
+        REQUEST NUMERIC[14,3] INPUT;
+        IF detail###Sku###object###stockProp(sku, object, stock) THEN {
+            IF requestedNumeric() THEN {
+                SET amountPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object###stockProp(sku, object, stock) AND quantityPack###detail(detail);
+            } ELSE {
+                SET amountPack###detail(detail) <- NULL WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
+            }
+
+        }
+        EXEC NS.changeValuePackSku(sku);
+    }
+
 END
-META defineDocumentPackageSkuStock(object, skuProp, stockProp, prop)
-    @defineDocumentPackageSkuStockCustom(object, object##Detail, skuProp, stockProp, prop);
+META defineDocumentPackSkuStock(object, skuProp, stockProp, NS)
+    @defineDocumentPackSkuStockCustom(object, object##Detail, skuProp, stockProp, NS);
 END
 
 
-META extendFormDocumentPackageSkuStockCustom(object, form, concrete, stockProp, toShowProp)
+META extendFormDocumentPackSkuStockCustom(object, form, concrete, stockProp, toShowProp, NS)
 
     EXTEND FORM form
-        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) idBarcodePackSku(s) READONLY, shortNameUOMPackSku(s) READONLY, amountPackSku(s) READONLY,
-        quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantityPackSku###object###Stock(s, concrete, st)
+        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) NS.idBarcodePackSku(s) READONLY,
+                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE EXEC changeAmountPackSku###object###Stock(s, concrete, st),
+                   quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantityPackSku###object###Stock(s, concrete, st)
     ;
 END
 

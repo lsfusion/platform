@@ -49,7 +49,7 @@ END
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
+META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 
     CLASS ABSTRACT shipment 'Поставка'###sign : Shipment.shipment;
     CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : Shipment.shipmentDetail;
@@ -122,11 +122,11 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, prop)
 
     @defineDocumentInterfaceBarcodeSkuPrefix (shipment, sku, , );
     @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (shipmentDetail, , ' упаковок');
-    @deriveDocumentDetailQuantityBarcodeCustom (userShipmentDetail, sku, prop, toShowProp);
+    @deriveDocumentDetailQuantityBarcodeCustom (userShipmentDetail, sku, NS, toShowProp);
     @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail);
     @deriveDocumentQuantityDetailOnAmountPack(userShipmentDetail);
     @deriveDocumentQuantityDetailOnChangeQuantityPack (userShipmentDetail);
-//    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail, prop);
+//    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userShipmentDetail, NS);
 
     Shipment.quantityPackShipmentDetail(detail) += quantityPackShipmentDetail(detail);
 

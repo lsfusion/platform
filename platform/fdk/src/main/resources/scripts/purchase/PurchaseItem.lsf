@@ -1,7 +1,15 @@
 MODULE PurchaseItem;
 
-REQUIRE Item, PurchaseOrder;
+REQUIRE Item, PurchasePack;
+
+NAMESPACE Purchase;
 
 EXTEND FORM item
-    PROPERTIES(b) purchasePackBarcode ON CHANGE EXEC changePurchasePackBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(i) purchaseAmount = amountPackSku ON CHANGE EXEC changePackSku(i)
+    PROPERTIES(b) packBarcode ON CHANGE EXEC changePackBarcodeSku(b,i) BEFORE delete(b)
 ;
+EXTEND DESIGN item {
+    itemHeaderColumn1 {
+        ADD PROPERTY(purchaseAmount) {caption = 'Множитель (закупка)';}
+    }
+}

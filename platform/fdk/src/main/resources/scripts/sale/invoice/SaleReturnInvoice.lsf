@@ -5,7 +5,7 @@ REQUIRE OrderInvoice, SaleReturnOrder, SaleInvoice, SaleOperation;
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
+@defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', Sale);
 @defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
 @defineInvoiceBatch(supplierStock);
 
@@ -45,11 +45,11 @@ customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(current
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackageSku(userInvoice, sku, supplierStock);
-@extendFormDocumentPackageSkuCustom(userInvoice, userInvoice, i, showSalePack);
+@defineDocumentPackSku(userInvoice, sku, supplierStock, Sale);
+@extendFormDocumentPackSkuCustom(userInvoice, userInvoice, i, showSalePack, Sale);
 
 overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
-    IF  salePackBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
         SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
     }
 }

@@ -1,9 +1,15 @@
 MODULE SaleItem;
 
-REQUIRE Item, SaleOrder;
+REQUIRE Item, SalePack;
 
-NAMESPACE Item;
+NAMESPACE Sale;
 
 EXTEND FORM item
-    PROPERTIES(b) salePackBarcode ON CHANGE EXEC changeSalePackBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(i) saleAmount = amountPackSku ON CHANGE EXEC changePackSku(i)
+    PROPERTIES(b) packBarcode ON CHANGE EXEC changePackBarcodeSku(b,i) BEFORE delete(b)
 ;
+EXTEND DESIGN item {
+    itemHeaderColumn1 {
+        ADD PROPERTY(saleAmount) {caption = 'Множитель (продажа)';}
+    }
+}
