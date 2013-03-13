@@ -416,7 +416,11 @@ public class MapFact {
 
     // mutable'ы на заполнение, то есть кэши, локальные обработки
     public static <K, V> MAddMap<K, V> mAddOverrideMap() {
-        return new HMap<K, V>(MapFact.<K, V>override());
+        return mAddMap(MapFact.<K, V>override());
+    }
+
+    public static <K, V> MAddMap<K, V> mAddMap(AddValue<K, V> addValue) {
+        return new HMap<K, V>(addValue);
     }
 
     public static <K, V> MAddExclMap<K, V> mAddExclMap() {

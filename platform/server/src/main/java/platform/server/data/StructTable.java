@@ -4,7 +4,7 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.ByteArrayClass;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
 
@@ -29,7 +29,7 @@ public class StructTable extends GlobalTable {
         return getStatKeys(this, 1);
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

@@ -33,6 +33,7 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 	import platform.server.mail.EmailActionProperty.FormStorageType;
 	import platform.server.mail.AttachmentFormat;
+	import platform.server.logics.property.actions.flow.Inline;
 	import javax.mail.Message;
 	
 	import java.util.*;
@@ -1903,11 +1904,12 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 	boolean descending = false;
 	List<String> newContext = new ArrayList<String>(context);
 	List<LPWithParams> orders = new ArrayList<LPWithParams>();
+	Inline inline = null;
 	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, inline);
 	}	
 }
 	:	(	'FOR' 
@@ -1919,6 +1921,7 @@ forActionPropertyDefinitionBody[List<String> context] returns [LPWithParams prop
 			ordExprs=nonEmptyPropertyExpressionList[newContext, false] { orders = $ordExprs.props; }
 		)?)?
 		(addObj=forAddObjClause[newContext])?
+		('INLINE' { inline = Inline.FORCE; } | 'NOINLINE' { inline = Inline.NO; } )?
 		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;

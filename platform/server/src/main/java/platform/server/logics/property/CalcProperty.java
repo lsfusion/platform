@@ -23,7 +23,7 @@ import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.IQuery;
@@ -248,7 +248,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return getStatKeys(this, 100);
         }
 
-        public ImMap<PropertyField, Stat> getStatProps() {
+        public ImMap<PropertyField,PropStat> getStatProps() {
             return getStatProps(this, 100);
         }
     }

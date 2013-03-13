@@ -434,6 +434,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return object;
     }
 
+    private static Pair<Integer, Integer>[] toZeroBased(Pair<Integer, Integer>[] shifts) {
+        Pair<Integer, Integer>[] result = new Pair[shifts.length];
+        for(int i=0;i<shifts.length;i++)
+            result[i] = new Pair<Integer, Integer>(shifts[i].first - 1, shifts[i].second);
+        return result;
+    }
+
     public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException {
         final Query<T, String> query = set.getAddQuery(baseClass); // query, который генерит номера записей (one-based)
 
@@ -449,10 +456,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return table;
 
         // берем количество рядов - резервируем ID'ки
-        int startFrom = IDTable.instance.reserveIDs(table.getCount(), idSession, IDTable.OBJECT);
+        Pair<Integer, Integer>[] startFrom = IDTable.instance.generateIDs(table.getCount(), idSession, IDTable.OBJECT);
 
         // update'им на эту разницу ключи, чтобы сгенерить объекты
-        table.updateAdded(sql, baseClass, startFrom-1); // так как не zero-based отнимаем 1
+        table.updateAdded(sql, baseClass, toZeroBased(startFrom)); // так как не zero-based отнимаем 1
 
         // вообще избыточно, если compile'ить отдельно в for() + changeClass, который сам сгруппирует, но тогда currentClass будет unknown в свойстве что вообщем то не возможно
         KeyExpr keyExpr = new KeyExpr("keyExpr");

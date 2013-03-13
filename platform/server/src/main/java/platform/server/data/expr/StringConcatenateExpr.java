@@ -11,6 +11,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.classes.StringClass;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
@@ -101,7 +102,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
             }}, " || '" + separator + "' || ") + ")";
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
     public InnerBaseJoin<?> getBaseJoin() {

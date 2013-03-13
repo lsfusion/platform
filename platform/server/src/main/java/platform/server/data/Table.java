@@ -17,6 +17,7 @@ import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.DistinctKeys;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.QueryJoin;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.MCaseList;
@@ -60,7 +61,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public ImSet<PropertyField> properties;
 
     public abstract StatKeys<KeyField> getStatKeys();
-    public abstract ImMap<PropertyField, Stat> getStatProps();
+    public abstract ImMap<PropertyField, PropStat> getStatProps();
 
     private static Stat getFieldStat(Field field, Stat defStat) {
         if(field.type instanceof DataClass)
@@ -81,14 +82,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return new StatKeys<KeyField>(distinctKeys.getMax().min(stat), distinctKeys);
     }
 
-    protected static ImMap<PropertyField, Stat> getStatProps(Table table, final Stat stat) { // для мн-го наследования
-        return table.properties.mapValues(new GetValue<Stat, PropertyField>() {
-            public Stat getMapValue(PropertyField prop) {
-                return getFieldStat(prop, stat);
+    protected static ImMap<PropertyField, PropStat> getStatProps(Table table, final Stat stat) { // для мн-го наследования
+        return table.properties.mapValues(new GetValue<PropStat, PropertyField>() {
+            public PropStat getMapValue(PropertyField prop) {
+                return new PropStat(getFieldStat(prop, stat));
             }});
     }
     
-    protected static ImMap<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
+    protected static ImMap<PropertyField, PropStat> getStatProps(Table table, int count) { // для мн-го наследования
         return getStatProps(table, new Stat(count));
     }
 
@@ -520,7 +521,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this;
             }
 
-            public Stat getStatValue(KeyStat keyStat) {
+            public PropStat getStatValue(KeyStat keyStat) {
                 return getStatProps().get(property);
             }
 

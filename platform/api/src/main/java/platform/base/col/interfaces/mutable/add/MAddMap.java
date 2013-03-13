@@ -1,6 +1,7 @@
 package platform.base.col.interfaces.mutable.add;
 
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.mutable.AddValue;
 
 public interface MAddMap<K, V> {
     
@@ -11,5 +12,4 @@ public interface MAddMap<K, V> {
     int size();
     K getKey(int i);
     V getValue(int i);
-    
 }

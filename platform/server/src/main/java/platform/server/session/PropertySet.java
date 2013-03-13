@@ -12,6 +12,7 @@ import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.AggrExpr;
 import platform.server.data.expr.query.PartitionExpr;
 import platform.server.data.expr.query.PartitionType;
@@ -50,7 +51,7 @@ public class PropertySet<T extends PropertyInterface> {
 
     public Query<T, String> getAddQuery(BaseClass baseClass) {
         Expr exprNum = PartitionExpr.create(PartitionType.SUM,
-                ListFact.singleton(ObjectType.idClass.getStaticExpr(1).and(getFullWhere())),
+                ListFact.singleton(new ValueExpr(1, ObjectType.idClass).and(getFullWhere())),
                 AggrExpr.fixOrders(orders, mapKeys), ordersNotNull, SetFact.<Expr>EMPTY(), mapKeys.valuesSet().toMap());
 
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(mapKeys, exprNum.getWhere());

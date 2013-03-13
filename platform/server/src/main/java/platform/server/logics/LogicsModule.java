@@ -713,10 +713,10 @@ public abstract class LogicsModule {
     }
 
     protected LAP addForAProp(boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, Object... params) {
-        return addForAProp(null, genSID(), "sys", ascending, ordersNotNull, recursive, hasElse, resInterfaces, null, true, params);
+        return addForAProp(null, genSID(), "sys", ascending, ordersNotNull, recursive, hasElse, resInterfaces, null, true, null, params);
     }
 
-    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, Object... params) {
+    protected LAP addForAProp(AbstractGroup group, String name, String caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean hasCondition, Inline inline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
@@ -738,7 +738,7 @@ public abstract class LogicsModule {
                 (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(implCnt - 1);
         
         return addProperty(group, new LAP<PropertyInterface>(
-                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive))
+                new ForActionProperty<PropertyInterface>(name, caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, false, recursive, inline))
         );
     }
 
@@ -2484,7 +2484,7 @@ public abstract class LogicsModule {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        ActionProperty<? extends PropertyInterface> action = DerivedProperty.createForAction(actionProperty.interfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty.getImplement(), null, false).property;
+        ActionProperty<? extends PropertyInterface> action = DerivedProperty.createForAction(actionProperty.interfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty.getImplement(), null, false, null).property;
         action.setStrongUsed(whereImplement.property); // добавить сильную связь
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);

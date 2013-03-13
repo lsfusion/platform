@@ -1,6 +1,6 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
@@ -112,8 +112,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         table = table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps, MapValuesTranslator.noTranslate), baseClass, type, env, this);
     }
     // оптимизационная штука
-    public void updateAdded(SQLSession session, BaseClass baseClass, V property, int count) throws SQLException {
-        table = table.updateAdded(session, baseClass, getField(property), count);
+    public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts) throws SQLException {
+        table = table.updateAdded(session, baseClass, getField(property), shifts);
     }
 
     private PropertyField getField(V property) {

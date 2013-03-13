@@ -376,9 +376,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             String from;
             Iterator<JoinSelect> ij = joins.iterator();
             JoinSelect first = ij.next();
-            boolean inner = false;
             if(first.isInner()) {
-                inner = true;
                 from = first.getSource(env) + " " + first.alias;
                 if(!(first.join.length()==0))
                     whereSelect.add(first.join);
@@ -389,10 +387,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             while(ij.hasNext()) {
                 JoinSelect join = ij.next();
-                if(inner)
-                    inner = join.isInner();
-                else // предполагается что сначала идут inner'ы а потом не inner'ы
-                    assert !join.isInner();
                 from = from + (join.isInner() ?"":" LEFT")+" JOIN " + join.getSource(env) + " " + join.alias  + " ON " + (join.join.length()==0?Where.TRUE_STRING:join.join);
             }
 

@@ -9,9 +9,7 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.base.col.interfaces.mutable.MCol;
-import platform.base.col.interfaces.mutable.MExclMap;
-import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddExclMap;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -21,10 +19,7 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
-import platform.server.data.expr.query.DistinctKeys;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.QueryJoin;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.*;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.translator.MapTranslate;
@@ -127,6 +122,16 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return getStatKeys(groups, null, keyStat);        
     }
 
+    private final static SimpleAddValue<BaseJoin, Stat> minStat = new SimpleAddValue<BaseJoin, Stat>() {
+        public Stat addValue(BaseJoin key, Stat prevValue, Stat newValue) {
+            return prevValue.min(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+
     // assert что rows >= result
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat) {
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
@@ -170,8 +175,22 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
         for(BaseJoin join : joins)
             joinStats.add(join, join.getStatKeys(keyStat).rows);
-        for(BaseExpr expr : exprs)
-            exprStats.add(expr, expr.getStatValue(keyStat));
+
+        // читаем статистику по значениям
+        MAddMap<BaseJoin, Stat> exprNotNullStats = MapFact.mAddMap(minStat);
+        for(BaseExpr expr : exprs) {
+            PropStat exprStat = expr.getStatValue(keyStat);
+            exprStats.add(expr, exprStat.distinct);
+            if(exprStat.notNull!=null)
+                exprNotNullStats.add(expr.getBaseJoin(), exprStat.notNull);
+        }
+        // уменьшаем статистику join'а до минимального notNull значения
+        for(int i=0,size=exprNotNullStats.size();i<size;i++) {
+            BaseJoin notNullJoin = exprNotNullStats.getKey(i);
+            Stat stat = exprNotNullStats.getValue(i);
+            assert stat.lessEquals(joinStats.get(notNullJoin));
+            joinStats.add(notNullJoin, stat);
+        }
 
         MAddExclMap<BaseExpr, Set<Edge>> balancedEdges = MapFact.mAddExclMap();
         MAddExclMap<BaseExpr, Stat> balancedStats = MapFact.mAddExclMap();
@@ -294,117 +313,6 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         DistinctKeys<K> distinct = new DistinctKeys<K>(groups.mapValues(new GetValue<Stat, K>() {
             public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
                 return getPropStat(value, joinStats, exprStats).min(finalStat);
-            }}));
-        StatKeys<K> result = new StatKeys<K>(distinct.getMax().min(finalStat), distinct);
-//        StatKeys<K> prevResult = prevgetStatKeys(groups, rows, keyStat);
-//        if(!result.equals(prevResult))
-//            result = result;
-        return result; // возвращаем min(суммы groups, расчитанного результата)
-    }
-
-    // assert что rows >= result
-    public <K extends BaseExpr> StatKeys<K> prevgetStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat) {
-        final MAddMap<BaseJoin, Stat> statJoins = MapFact.mAddOverrideMap();
-        final MAddMap<BaseExpr, Stat> propStats = MapFact.mAddOverrideMap();
-
-        Set<Edge> edges = SetFact.mAddRemoveSet();
-
-        // собираем все ребра и вершины
-        Set<BaseJoin> joins = SetFact.mAddRemoveSet();
-        Set<BaseExpr> exprs = SetFact.mAddRemoveSet();
-        Queue<BaseJoin> queue = new LinkedList<BaseJoin>();
-        for(WhereJoin valueJoin : wheres) {
-            queue.add(valueJoin);
-            joins.add(valueJoin);
-        }
-        for(BaseExpr group : groups) {
-            exprs.add(group);
-            InnerBaseJoin<?> valueJoin = group.getBaseJoin();
-            if(!joins.contains(valueJoin)) {
-                queue.add(valueJoin);
-                joins.add(valueJoin);
-            }
-        }
-        while(!queue.isEmpty()) {
-            BaseJoin<Object> join = queue.poll();
-            ImMap<?, BaseExpr> joinExprs = join.getJoins();
-            for(int i=0,size=joinExprs.size();i<size;i++) {
-                Object joinKey = joinExprs.getKey(i);
-                BaseExpr joinExpr = joinExprs.getValue(i);
-
-                edges.add(new Edge(join, join.getStatKeys(keyStat).distinct.get(joinKey), joinExpr));
-
-                exprs.add(joinExpr);
-                InnerBaseJoin<?> valueJoin = joinExpr.getBaseJoin();
-                if(!joins.contains(valueJoin)) {
-                    queue.add(valueJoin);
-                    joins.add(valueJoin);
-                }
-            }
-        }
-
-        for(BaseJoin join : joins)
-            statJoins.add(join, join.getStatKeys(keyStat).rows);
-        for(BaseExpr expr : exprs)
-            propStats.add(expr, expr.getStatValue(keyStat));
-
-        // ищем несбалансированное ребро с минимальной статистикой
-        Stat balanced = Stat.ONE;
-        while(edges.size() > 0) {
-            MAddExclMap<Edge, Pair<Stat, Stat>> minEdges = MapFact.mAddExclMap();
-            Stat stat = Stat.MAX;
-            for(Edge edge : edges) {
-                Stat keys = edge.getKeyStat(statJoins);
-                Stat values = edge.getPropStat(statJoins, propStats);
-                Stat min = keys.min(values);
-                if(min.less(stat)) { // если нашли новый минимум про старый забываем
-                    minEdges = MapFact.mAddExclMap();
-                    stat = min;
-                }
-                if(min.equals(stat))
-                    minEdges.exclAdd(edge, new Pair<Stat, Stat>(keys, values));
-            }
-            Edge<?> unbalancedEdge = null; Pair<Stat, Stat> unbalancedStat = null;
-            for(int i=0,size=minEdges.size();i<size;i++) {  // выкидываем все сбалансированные с такой статистикой
-                Pair<Stat, Stat> minStat = minEdges.getValue(i);
-                if(minStat.first.equals(minStat.second)) {
-                    balanced = balanced.mult(minStat.first);
-                    edges.remove(minEdges.getKey(i));
-                } else {
-                    unbalancedEdge = minEdges.getKey(i);
-                    unbalancedStat = minStat;
-                }
-            }
-            if(unbalancedEdge!=null) {
-                Stat balancedStat;
-                if(unbalancedStat.first.less(unbalancedStat.second)) { // балансируем значение
-                    Stat decrease = unbalancedStat.second.div(unbalancedStat.first);
-                    BaseExpr baseExpr = unbalancedEdge.expr;
-                    propStats.add(baseExpr, unbalancedStat.first); // это и есть разница
-                    BaseJoin valueJoin = baseExpr.getBaseJoin();
-                    statJoins.add(valueJoin, statJoins.get(valueJoin).div(decrease));
-                    balancedStat = unbalancedStat.first;
-                } else { // балансируем ключ, больше он использовать
-                    Stat decrease = unbalancedStat.first.div(unbalancedStat.second);
-                    statJoins.add(unbalancedEdge.join, statJoins.get(unbalancedEdge.join).div(decrease));
-                    balancedStat = unbalancedStat.second;
-                }
-                balanced = balanced.mult(balancedStat);
-                edges.remove(unbalancedEdge);
-            }
-        }
-
-        // бежим по всем сбалансированным ребрам суммируем, бежим по всем нодам суммируем, возвращаем разность
-        Stat rowStat = Stat.ONE;
-        for(int i=0,size=statJoins.size();i<size;i++)
-            rowStat = rowStat.mult(statJoins.getValue(i));
-        final Stat finalStat = rowStat.div(balanced);
-        if(rows!=null)
-            rows.set(finalStat);
-
-        DistinctKeys<K> distinct = new DistinctKeys<K>(groups.mapValues(new GetValue<Stat, K>() {
-            public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
-                return getPropStat(value, statJoins, propStats).min(finalStat);
             }}));
         return new StatKeys<K>(distinct.getMax().min(finalStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
     }

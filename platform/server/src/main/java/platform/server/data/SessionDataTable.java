@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.TwinImmutableObject;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
@@ -120,11 +121,11 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) throws SQLException {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer,Integer>[] shifts) throws SQLException {
         if(propertyValues.containsKey(property))
-            return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, count));
+            return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, shifts));
         else {
-            table.updateAdded(session, baseClass, property, count);
+            table.updateAdded(session, baseClass, property, shifts);
             return this;
         }
     }

@@ -1,6 +1,7 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -16,10 +17,7 @@ import platform.server.data.SerializedTable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.DistinctKeys;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.GroupType;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.*;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
@@ -36,7 +34,7 @@ public abstract class DataTable extends GlobalTable {
     }
 
     private StatKeys<KeyField> statKeys = null;
-    private ImMap<PropertyField, Stat> statProps = null;
+    private ImMap<PropertyField, PropStat> statProps = null;
 
     public StatKeys<KeyField> getStatKeys() {
         if(statKeys!=null)
@@ -45,7 +43,7 @@ public abstract class DataTable extends GlobalTable {
             return SerializedTable.getStatKeys(this);
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         if(statProps!=null)
             return statProps;
         else
@@ -113,7 +111,7 @@ public abstract class DataTable extends GlobalTable {
         }
     }
 
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Integer> propStats, boolean statDefault) throws SQLException {
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean statDefault) throws SQLException {
         Stat rowStat;
         if (!tableStats.containsKey(name))
             rowStat = Stat.DEFAULT;
@@ -130,16 +128,31 @@ public abstract class DataTable extends GlobalTable {
         }
         statKeys = new StatKeys<KeyField>(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
-        ImValueMap<PropertyField, Stat> mvUpdateStatProps = properties.mapItValues();
+        ImValueMap<PropertyField, PropStat> mvUpdateStatProps = properties.mapItValues();
         for(int i=0,size=properties.size();i<size;i++) {
             PropertyField prop = properties.get(i);
-            if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
-                mvUpdateStatProps.mapValue(i, ((DataClass)prop.type).getTypeStat().min(rowStat));
-            else {
-                if (!propStats.containsKey(prop.name))
-                    mvUpdateStatProps.mapValue(i, Stat.DEFAULT);
+            Stat distinctStat;
+            Stat notNullStat;
+            if(propStats.containsKey(prop.name)) {
+                Pair<Integer, Integer> propStat = propStats.get(prop.name);
+                distinctStat = new Stat(BaseUtils.nvl(propStat.first, 0));
+                notNullStat = new Stat(BaseUtils.nvl(propStat.second, 0));
+            } else {
+                distinctStat = null;
+                notNullStat = null;
+            }
+
+            if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()) {
+                if (distinctStat==null) {
+                    Stat typeStat = ((DataClass) prop.type).getTypeStat().min(rowStat);
+                    mvUpdateStatProps.mapValue(i, new PropStat(typeStat));
+                } else
+                    mvUpdateStatProps.mapValue(i, new PropStat(notNullStat, notNullStat));
+            } else {
+                if (distinctStat==null)
+                    mvUpdateStatProps.mapValue(i, PropStat.DEFAULT);
                 else
-                    mvUpdateStatProps.mapValue(i, new Stat(BaseUtils.nvl((Integer) propStats.get(prop.name), 0)));
+                    mvUpdateStatProps.mapValue(i, new PropStat(distinctStat, notNullStat));
             }
         }
         statProps = mvUpdateStatProps.immutableValue();

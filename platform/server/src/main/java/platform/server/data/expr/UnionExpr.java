@@ -9,6 +9,7 @@ import platform.server.caches.OuterContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.KeyStat;
@@ -57,7 +58,7 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
 

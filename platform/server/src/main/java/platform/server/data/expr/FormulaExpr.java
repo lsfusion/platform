@@ -11,6 +11,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
@@ -155,11 +156,11 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     // для мн-вого наследования
-    public static Stat getStatValue(BaseExpr expr, KeyStat keyStat) {
-        return expr.getTypeStat(keyStat);
+    public static PropStat getStatValue(BaseExpr expr, KeyStat keyStat) {
+        return new PropStat(expr.getTypeStat(keyStat));
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat) {
         return getStatValue(this, keyStat);
     }
     public InnerBaseJoin<?> getBaseJoin() {

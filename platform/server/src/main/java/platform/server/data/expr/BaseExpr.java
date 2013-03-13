@@ -13,6 +13,7 @@ import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCase;
 import platform.server.data.expr.where.cases.ExprCaseList;
@@ -169,7 +170,7 @@ public abstract class BaseExpr extends Expr {
         return 1;
     }
 
-    public abstract Stat getStatValue(KeyStat keyStat);
+    public abstract PropStat getStatValue(KeyStat keyStat);
     public abstract InnerBaseJoin<?> getBaseJoin();
 
     public ImSet<OuterContext> calculateOuterDepends() {

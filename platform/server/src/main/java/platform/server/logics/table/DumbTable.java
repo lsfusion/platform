@@ -6,7 +6,7 @@ import platform.server.classes.SystemClass;
 import platform.server.data.GlobalTable;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
 
@@ -28,7 +28,7 @@ public class DumbTable extends GlobalTable {
         throw new RuntimeException("not supported");
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

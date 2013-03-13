@@ -38,8 +38,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private final I addObject;
     private final CustomClass addClass;
     private final boolean forceDialog;
+
+    private final Inline inline;
    
-    public ForActionProperty(String sID, String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean forceDialog, boolean recursive) {
+    public ForActionProperty(String sID, String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> ifProp, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, I> action, ActionPropertyMapImplement<?, I> elseAction, I addObject, CustomClass addClass, boolean forceDialog, boolean recursive, Inline inline) {
        super(sID, caption, innerInterfaces, mapInterfaces);
 
         assert !recursive || (addObject == null && elseAction == null);
@@ -55,6 +57,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         this.addObject = addObject;
         this.addClass = addClass;
         this.forceDialog = forceDialog;
+
+        this.inline = inline;
 
         finalizeInit();
         assert innerInterfaces.containsAll(action.mapping.valuesSet().merge(ifProp != null ? ifProp.mapping.valuesSet() : SetFact.<I>EMPTY()));
@@ -154,7 +158,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     if (changeClassProperty.valueClass instanceof CustomClass && changeClassProperty.where == null) // удаление не интересует
                         return DerivedProperty.createForAction(innerInterfaces, context, ifProp, orders, ordersNotNull,
                                 DerivedProperty.createListAction(innerInterfaces, list.subList(1, list.size())), elseAction, addObject,
-                                (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive);
+                                (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive, inline);
                 }
             }
 
@@ -162,7 +166,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
                     DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
-                            addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false)));
+                            addObject, result, Compare.EQUALS), orders, ordersNotNull, action, elseAction, null, null, false, inline)));
         } else { // проталкиваем for'ы
             if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
                 return null;
@@ -198,10 +202,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     ImSet<CalcProperty> usedProps = listUsedProps[i];
 
                     CalcProperty where = itemAction.getPushWhere(context, ordersNotNull);
-                    if (!CalcProperty.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
+                    if (inline==Inline.FORCE || (inline!=Inline.NO && !CalcProperty.depends(siblingUsedProps, changeProps) && // не меняют сиблингов
                             !CalcProperty.depends(usedProps, siblingChangeProps) && // сиблинги не меняют
                             !CalcProperty.depends(where!=null?Collections.singleton(where):usedProps, changeProps) && // не рекурсивно зависимо
-                            siblingChangeProps.disjoint(changeProps)) { // несколько раз не меняется
+                            siblingChangeProps.disjoint(changeProps))) { // несколько раз не меняется
                         mCanBePushed.add(itemAction);
                         mPushChangedProps.addAll(changeProps);
                     } else
@@ -237,7 +241,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             // добавляем оставшиеся, с for'ом компилируя внутренние элементы
             if (rest.size() > 0)
                 mResult.add(DerivedProperty.createForAction(innerInterfaces, context, pushProp, orders,
-                        ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false));
+                        ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false, Inline.NO));
 
             return DerivedProperty.createListAction(context, mResult.immutableList());
         }
@@ -258,7 +262,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         return pushFor(innerInterfaces, ifProp, mapInterfaces, mapping, context, push, orders, ordersNotNull, new PushFor<I, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<I, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders.mergeOrder(mapImplements(ForActionProperty.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, forceDialog, false);
+                return createForAction(context, where, orders.mergeOrder(mapImplements(ForActionProperty.this.orders, mapInnerInterfaces)), ordersNotNull, action.map(mapInnerInterfaces), null, addObject != null ? mapInnerInterfaces.get(addObject): null, addClass, forceDialog, false, inline);
             }
         });
     }

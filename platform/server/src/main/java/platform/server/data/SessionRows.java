@@ -189,16 +189,24 @@ public class SessionRows extends SessionData<SessionRows> {
     }
 
     // assert что содержит
-    public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, int count) {
+    public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, Pair<Integer, Integer>[] shifts) {
         DataObject prevValue = (DataObject)map.get(property);
-        return map.replaceValue(property, new DataObject(ObjectType.idClass.read(prevValue.object) + count, prevValue.objectClass));
+        Integer read = ObjectType.idClass.read(prevValue.object);
+        assert shifts.length > 0;
+        int calcshift = 0; int aggsh = 0;
+        for(Pair<Integer, Integer> shift : shifts) { // по аналогии с updateAdded в таблицах
+            if(read > aggsh)
+                calcshift = shift.first;
+            aggsh += shift.second;
+        }
+        return map.replaceValue(property, new DataObject(read + calcshift, prevValue.objectClass));
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final int count) {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Integer, Integer>[] shifts) {
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                return updateAdded(value, property, count);
+                return updateAdded(value, property, shifts);
             }});
         return new SessionRows(keys, properties, updatedRows);
     }

@@ -10,6 +10,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.CompileSource;
@@ -114,7 +115,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax);
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
+    public PropStat getStatValue(KeyStat keyStat) {
         return FormulaExpr.getStatValue(this, keyStat);
     }
 

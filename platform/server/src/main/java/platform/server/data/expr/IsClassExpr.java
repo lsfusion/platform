@@ -13,6 +13,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Table;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.InnerJoin;
@@ -83,8 +84,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
-        return new Stat(getStaticClass().getCount());
+    public PropStat getStatValue(KeyStat keyStat) {
+        return new PropStat(new Stat(getStaticClass().getCount()));
     }
     public InnerJoin<?, ?> getInnerJoin() {
         return getJoinExpr().getInnerJoin();

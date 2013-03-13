@@ -11,6 +11,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.SystemProperties;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
@@ -95,8 +96,8 @@ public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> 
         return false;
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
-        return Stat.ALOT; // временный фикс, так как при других формулах
+    public PropStat getStatValue(KeyStat keyStat) {
+        return PropStat.ALOT; // временный фикс, так как при других формулах
 //        return FormulaExpr.getStatValue(this, keyStat);
     }
 

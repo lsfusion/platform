@@ -12,11 +12,6 @@ import platform.server.data.Table;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 public class RecursiveTable extends Table {
 
     private final StatKeys<KeyField> statKeys;
@@ -39,7 +34,7 @@ public class RecursiveTable extends Table {
     }
 
 
-    public ImMap<PropertyField, Stat> getStatProps() { // assert что пустой если Logical рекурсия
+    public ImMap<PropertyField, PropStat> getStatProps() { // assert что пустой если Logical рекурсия
         return getStatProps(this, Stat.MAX);
     }
 }

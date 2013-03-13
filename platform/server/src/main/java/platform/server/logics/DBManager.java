@@ -7,6 +7,7 @@ import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.SystemUtils;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -1187,17 +1188,22 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             updateStats(false);
     }
 
-    private ImMap<String, Integer> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp) throws SQLException {
+    private <T> ImMap<String, T> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException {
         QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
         Expr sidToObject = sIDProp.getExpr(session.getModifier(), query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());
         query.addProperty("property", statsProp.getExpr(session.getModifier(), sidToObject));
+        if(notNullProp!=null)
+            query.addProperty("notNull", notNullProp.getExpr(session.getModifier(), sidToObject));
         return query.execute(session).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
                                                                 public String getMapValue(ImMap<String, Object> key) {
                                                                     return ((String) key.singleValue()).trim();
-                                                                }}, new GetValue<Integer, ImMap<String, Object>>() {
-                                                                public Integer getMapValue(ImMap<String, Object> value) {
-                                                                    return (Integer)value.singleValue();
+                                                                }}, new GetValue<T, ImMap<String, Object>>() {
+                                                                public T getMapValue(ImMap<String, Object> value) {
+                                                                    if(notNullProp!=null) {
+                                                                        return (T)new Pair<Integer, Integer>((Integer)value.get("property"), (Integer)value.get("notNull"));
+                                                                    } else
+                                                                        return (T)value.singleValue();
                                                                 }});
     }
 
@@ -1206,15 +1212,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
-        ImMap<String, Integer> propStats;
+        ImMap<String, Pair<Integer, Integer>> propStats;
         if(statDefault) {
             tableStats = MapFact.EMPTY();
             keyStats = MapFact.EMPTY();
             propStats = MapFact.EMPTY();
         } else {
-            tableStats = readStatsFromDB(session, reflectionLM.tableSID, reflectionLM.rowsTable);
-            keyStats = readStatsFromDB(session, reflectionLM.tableKeySID, reflectionLM.quantityTableKey);
-            propStats = readStatsFromDB(session, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn);
+            tableStats = readStatsFromDB(session, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+            keyStats = readStatsFromDB(session, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
+            propStats = readStatsFromDB(session, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {

@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.base.col.interfaces.mutable.MMap;
 import platform.server.classes.ConcreteClass;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.stat.InnerBaseJoin;
@@ -32,8 +33,8 @@ public abstract class StaticExpr<C extends ConcreteClass> extends StaticClassExp
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
-        return Stat.ONE;
+    public PropStat getStatValue(KeyStat keyStat) {
+        return PropStat.ONE;
     }
     public InnerBaseJoin<?> getBaseJoin() {
         return ValueJoin.instance;

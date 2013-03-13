@@ -44,6 +44,7 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.flow.Inline;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
@@ -1084,7 +1085,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedForAProp(List<String> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, Inline inline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
         boolean ordersNotNull = (condition != null ? doesExtendContext(Collections.singletonList(condition), orders) : !orders.isEmpty());
@@ -1119,7 +1120,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         allCreationParams.addAll(creationParams);
 
         LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
-                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, getParamsPlainList(allCreationParams).toArray());
+                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, inline, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 

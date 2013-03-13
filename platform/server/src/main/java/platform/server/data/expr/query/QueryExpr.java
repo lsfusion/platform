@@ -39,8 +39,8 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     public Stat getTypeStat(KeyStat keyStat) {
         return getInner().getTypeStat();
     }
-    public Stat getStatValue(platform.server.data.query.stat.KeyStat keyStat) {
-        return getInner().getStatValue();
+    public PropStat getStatValue(KeyStat keyStat) {
+        return new PropStat(getInner().getStatValue());
     }
     @Override
     public ImSet<Value> getValues() {

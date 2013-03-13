@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -54,8 +55,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         table = table.fixKeyClasses(classes.remap(mapKeys.reverse()));
     }
 
-    public void updateAdded(SQLSession sql, BaseClass baseClass, int count) throws SQLException {
-        updateAdded(sql, baseClass, "value", count);
+    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts) throws SQLException {
+        updateAdded(sql, baseClass, "value", shifts);
     }
 
     public void updateCurrentClasses(DataSession session) throws SQLException {

@@ -2,6 +2,7 @@ package platform.server.data;
 
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.server.classes.BaseClass;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
 
@@ -19,7 +20,7 @@ public class SerializedTable extends Table {
     public static StatKeys<KeyField> getStatKeys(Table table) {
         return getStatKeys(table, prevStats);
     }
-    public static ImMap<PropertyField, Stat> getStatProps(Table table) {
+    public static ImMap<PropertyField, PropStat> getStatProps(Table table) {
         return getStatProps(table, prevStats);
     }
 
@@ -27,7 +28,7 @@ public class SerializedTable extends Table {
         return getStatKeys(this);
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         return getStatProps(this);
     }
 }

@@ -20,8 +20,10 @@ import platform.server.classes.DataClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.IQuery;
@@ -55,7 +57,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return null;
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         return getStatProps(this, count);
     }
 
@@ -152,9 +154,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         protected final ImMap<PropertyField, ClassWhere<Field>> propertyClasses;
 
         protected final StatKeys<KeyField> statKeys;
-        protected final ImMap<PropertyField, Stat> statProps;
+        protected final ImMap<PropertyField, PropStat> statProps;
 
-        private Struct(ImOrderSet<KeyField> keys, ImCol<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, ImMap<PropertyField, Stat> statProps) {
+        private Struct(ImOrderSet<KeyField> keys, ImCol<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, ImMap<PropertyField, PropStat> statProps) {
             this.keys = keys;
             this.properties = properties;
             this.classes = classes;
@@ -326,10 +328,32 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, owner);
     }
-    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, int count) throws SQLException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts) throws SQLException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
         platform.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
-        query.addProperty(field, FormulaExpr.create2("prm1+prm2", baseClass.unknown, join.getExpr(field), ObjectType.idClass.getStaticExpr(count)));
+
+        String formula = ""; String aggsh = "";
+        MExclMap<String, Expr> mParams = MapFact.mExclMap(1 + 2 * shifts.length);
+        mParams.exclAdd("prm1", join.getExpr(field));
+        for(int i=0;i<shifts.length;i++) {
+            String idsh = "prm" + (2*i+2);
+            String countsh = "prm" + (2*i+3);
+
+            if(i==0) {
+                formula = idsh;
+                aggsh = countsh;
+            } else {
+                formula = "WHEN prm1 > (" + aggsh + ") THEN " + idsh + " - (" + aggsh + ") " + (i==1?"ELSE ":"") + formula;
+                aggsh += "+" + countsh;
+            }
+            mParams.exclAdd(idsh, new ValueExpr(shifts[i].first, ObjectType.idClass));
+            if(i!=shifts.length-1) // последний параметр не нужен
+                mParams.exclAdd(countsh, new ValueExpr(shifts[i].second, ObjectType.idClass));
+        }
+        if(shifts.length > 1)
+            formula = "CASE " + formula + " END";
+
+        query.addProperty(field, FormulaExpr.create("prm1+" + formula, baseClass.unknown, mParams.immutable()));
         query.and(join.getWhere());
         session.updateRecords(new ModifyQuery(this, query.getQuery()));
     }

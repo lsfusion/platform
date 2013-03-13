@@ -4,11 +4,8 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.DerivedProperty;
 
@@ -121,7 +118,7 @@ public class IfActionProperty extends KeepContextActionProperty {
 
         return ForActionProperty.pushFor(interfaces, ifProp, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false);
+                return createForAction(context, where, orders, ordersNotNull, trueAction.map(mapInnerInterfaces), null, false, null);
             }
         });
     }

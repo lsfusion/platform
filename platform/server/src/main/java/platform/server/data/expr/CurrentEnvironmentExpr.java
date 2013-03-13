@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.JoinData;
@@ -74,8 +75,8 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         return new NotNull();
     }
 
-    public Stat getStatValue(KeyStat keyStat) {
-        return Stat.ONE;
+    public PropStat getStatValue(KeyStat keyStat) {
+        return PropStat.ONE;
     }
     public InnerBaseJoin<?> getBaseJoin() {
         return ValueJoin.instance;

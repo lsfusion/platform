@@ -1,5 +1,6 @@
 package platform.server.logics.table;
 
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -8,7 +9,7 @@ import platform.server.caches.IdentityInstanceLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.query.PropStat;
 import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.query.stat.StatKeys;
@@ -74,7 +75,33 @@ public class IDTable extends GlobalTable {
         return result;
     }
 
-    // возвращает первый, и резервирует себе еще count id'ков
+    public Pair<Integer, Integer>[] generateIDs(int count, SQLSession dataSession, int idType) throws SQLException {
+        synchronized (this) {
+            Pair<Integer, Integer> fromPoolIDs;
+            int fromPool = maxReservedID - freeID + 1;
+            if(fromPool >= count) {
+                fromPoolIDs = new Pair<Integer, Integer>(freeID, count);
+                freeID += count;
+                return new Pair[]{fromPoolIDs};
+            } else
+                fromPoolIDs = new Pair<Integer, Integer>(freeID, fromPool);
+
+            int rest = count - fromPool;
+            assert rest > 0;
+
+            int newReserved = rest + Settings.get().getReserveIDStep();
+            int newID = reserveIDs(newReserved, dataSession, idType);
+            Pair<Integer, Integer> genPoolIDs = new Pair<Integer, Integer>(newID, rest);
+
+            maxReservedID = newID + newReserved - 1;
+            freeID = newID + rest;
+            if(fromPool > 0)
+                return new Pair[] {fromPoolIDs, genPoolIDs};
+            return new Pair[] {genPoolIDs};
+        }
+    }
+
+        // возвращает первый, и резервирует себе еще count id'ков
     public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
         int freeID;
         synchronized (this) {
@@ -95,7 +122,7 @@ public class IDTable extends GlobalTable {
         return getStatKeys(this, getCounters().size());
     }
 
-    public ImMap<PropertyField, Stat> getStatProps() {
+    public ImMap<PropertyField,PropStat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

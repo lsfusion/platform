@@ -2739,13 +2739,10 @@ META defineAddDetailDialogSkuCustom (object, detail, caption, skuProp, form)
     addDetailDialogSku###detail###object 'Подбор товаров'###caption = ACTION (object) {
         FORM form MODAL;
         IF formResult() == formResult.ok THEN {
-            FOR form###quantity(sku) DO {
-                ADDOBJ detail;
-                FOR w == addedObject() DO {
-                    SET object###detail(w) <- object AS object;
-                    SET skuProp###detail(w) <- sku AS sku;
-                    SET quantity###detail(w) <- form###quantity(sku);
-                }
+            FOR form###quantity(sku) ADDOBJ w = detail INLINE DO {
+                SET object###detail(w) <- object AS object;
+                SET skuProp###detail(w) <- sku AS sku;
+                SET quantity###detail(w) <- form###quantity(sku);
             }
         }
         SET form###quantity(sku) <- NULL;

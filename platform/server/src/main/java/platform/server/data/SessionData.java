@@ -212,7 +212,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             }}));
         return rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);
     }
-    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, int count) throws SQLException;
+    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts) throws SQLException;
 
     // "обновляет" ключи в таблице
     public SessionData rewrite(SQLSession session, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> writeRows, Object owner) throws SQLException {
