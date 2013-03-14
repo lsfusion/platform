@@ -811,7 +811,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
         ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
-        LAP<ClassPropertyInterface> eaPropLP = addEAProp(null, "", "", eaClasses, null, null);
+        LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, "", "", eaClasses, null, null);
         EmailActionProperty eaProp = (EmailActionProperty) eaPropLP.property;
 
         ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);

@@ -3785,9 +3785,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondTransferred = addDProp(baseGroup, "emailFondTransferred", "E-mail для решения о переводе", StringClass.get(100));          // внести записи ddudina@corp.i-gorod.com;
         emailFondStartVote = addDProp(baseGroup, "emailFondStartVote", "E-mail для уведомления о начале заседания", StringClass.get(100));  // внести записи kzosin@corp.i-gorod.com; esinyatkina@corp.i-gorod.com;
 
-        emailLetterExpertVoteEA = addEAProp(emailLM, expert, vote);
-        addEARecipients(emailLetterExpertVoteEA, contactLM.emailContact, 1);
-        addEARecipients(emailLetterExpertVoteEA, MimeMessage.RecipientType.BCC, emailExperts);
+        emailLetterExpertVoteEA = emailLM.addEAProp(expert, vote);
+        emailLM.addEARecipients(emailLetterExpertVoteEA, contactLM.emailContact, 1);
+        emailLM.addEARecipientsType(emailLetterExpertVoteEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailLetterExpertVote = addJoinAProp(baseGroup, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
@@ -3799,10 +3799,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
-        emailClaimerVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
+        emailClaimerVoteEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
 
         claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", contactLM.emailContact, claimerVote, 1);
-        addEARecipients(emailClaimerVoteEA, claimerEmailVote, 1);
+        emailLM.addEARecipients(emailClaimerVoteEA, claimerEmailVote, 1);
 
         emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
         emailClaimerVote = addJoinAProp(actionGroup, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
@@ -3810,15 +3810,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerVote.setEventSetAction(this, openedVote, 1);
 
-        emailFondVoteEA = addEAProp(emailLM, emailIO, vote);
-        addEARecipients(emailFondVoteEA, emailFondStartVote);
+        emailFondVoteEA = emailLM.addEAProp(vote);
+        emailLM.addEARecipients(emailFondVoteEA, emailFondStartVote);
         emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
         emailFondVote = addJoinAProp(actionGroup, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
         emailFondVote.property.askConfirm = true;
         emailFondVote.setEventSetAction(this, openedVote, 1);
 
-        emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
-        addEARecipients(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
+        emailNoticeRejectedVoteEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
+        emailLM.addEARecipients(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
         setCurrentDateDecisionNoticedVote = addSetPropertyAProp(actionGroup, "setCurrentDateDecisionNoticedVote", "Установить текущую дату уведомления",
                 dateDecisionNoticedVote, 1, baseLM.currentDate);
@@ -3832,8 +3832,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNoticeRejectedVote.setImage("email.png");
         emailNoticeRejectedVote.property.askConfirm = true;
 
-        emailNoticeAcceptedStatusVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
-        addEARecipients(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
+        emailNoticeAcceptedStatusVoteEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
+        emailLM.addEARecipients(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
 
         emailNoticeAcceptedStatusVote = addIfAProp(actionGroup, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", closedAcceptedStatusVote, 1,
                 addListAProp(
@@ -3844,8 +3844,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNoticeAcceptedStatusVote.setImage("email.png");
         emailNoticeAcceptedStatusVote.property.askConfirm = true;
 
-        emailNoticeAcceptedPreliminaryVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
-        addEARecipients(emailNoticeAcceptedPreliminaryVoteEA, claimerEmailVote, 1);
+        emailNoticeAcceptedPreliminaryVoteEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
+        emailLM.addEARecipients(emailNoticeAcceptedPreliminaryVoteEA, claimerEmailVote, 1);
 
 //        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1,);
 
@@ -3859,8 +3859,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNoticeAcceptedPreliminaryVote.setImage("email.png");
         emailNoticeAcceptedPreliminaryVote.property.askConfirm = true;
 
-        emailStartVoteEA = addEAProp(emailLM, vote);
-        addEARecipients(emailStartVoteEA, emailDocuments);
+        emailStartVoteEA = emailLM.addEAProp(vote);
+        emailLM.addEARecipients(emailStartVoteEA, emailDocuments);
 
         add2Strings = addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2);
         emailClaimerNameVote = addJProp(add2Strings, 2, nameNativeClaimerVote, 1);
@@ -3870,16 +3870,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailStartVote.property.askConfirm = true;
 //        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
-        emailProtocolVoteEA = addEAProp(emailLM, vote);
-        addEARecipients(emailProtocolVoteEA, emailDocuments);
+        emailProtocolVoteEA = emailLM.addEAProp(vote);
+        emailLM.addEARecipients(emailProtocolVoteEA, emailDocuments);
 
         emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Протокол заседания - "));
         emailProtocolVote = addJoinAProp(baseGroup, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
         emailProtocolVote.property.askConfirm = true;
 //        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
-        emailClosedVoteEA = addEAProp(emailLM, vote);
-        addEARecipients(emailClosedVoteEA, emailDocuments);
+        emailClosedVoteEA = emailLM.addEAProp(vote);
+        emailLM.addEARecipients(emailClosedVoteEA, emailDocuments);
 
         emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
         emailClosedVote = addJoinAProp(baseGroup, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
@@ -3887,32 +3887,32 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote.property.askConfirm = true;
         emailClosedVote.setEventSetAction(this, closedVote, 1);
 
-        emailForesightCheckProjectEA = addEAProp(emailLM, "Решение проверки о соответствии форсайту", project);
-        addEARecipients(emailForesightCheckProjectEA, emailIO);
-        addEARecipients(emailForesightCheckProjectEA, MimeMessage.RecipientType.CC, emailForesightLC);
+        emailForesightCheckProjectEA = emailLM.addEAProp("Решение проверки о соответствии форсайту", project);
+        emailLM.addEARecipients(emailForesightCheckProjectEA, emailIO);
+        emailLM.addEARecipientsType(emailForesightCheckProjectEA, MimeMessage.RecipientType.CC, emailForesightLC);
         emailForesightCheckProjectEA.setEventSetAction(this, resultForesightCheckProject, 1);
 
-        emailNotificationProjectEA = addEAProp(emailLM, emailIO, project);
-        addEARecipients(emailNotificationProjectEA, emailFinalClusterProject, 1);
-        addEARecipients(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO);
+        emailNotificationProjectEA = emailLM.addEAProp(emailIO, project);
+        emailLM.addEARecipients(emailNotificationProjectEA, emailFinalClusterProject, 1);
+        emailLM.addEARecipientsType(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
         emailNotificationProject = addJoinAProp(baseGroup, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");
         emailNotificationProject.property.askConfirm = true;
         emailNotificationProject.setEventSetAction(this, needForesightCheckProject, 1);
 
-        emailForesightClaimerProjectEA = addEAProp(emailLM, emailIO, project);
-        addEARecipients(emailForesightClaimerProjectEA, emailClaimerProject, 1);
-        addEARecipients(emailForesightClaimerProjectEA, MimeMessage.RecipientType.CC, emailIO);
+        emailForesightClaimerProjectEA = emailLM.addEAProp(emailIO, project);
+        emailLM.addEARecipients(emailForesightClaimerProjectEA, emailClaimerProject, 1);
+        emailLM.addEARecipientsType(emailForesightClaimerProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailForesightClaimerHeaderProject = addJProp("emailForesightClaimerHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
         emailForesightClaimerProject = addJoinAProp(baseGroup, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
         emailForesightClaimerProject.setImage("email.png");
         emailForesightClaimerProject.property.askConfirm = true;
 //        emailForesightClaimerProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), negativeResultForesightCheckProject, 1);
 
-        emailBureauTrProjectEA = addEAProp(emailLM, emailIO, project);
-        addEARecipients(emailBureauTrProjectEA, emailBureauTranslation);
-        addEARecipients(emailBureauTrProjectEA, MimeMessage.RecipientType.CC, emailIO);
+        emailBureauTrProjectEA = emailLM.addEAProp(emailIO, project);
+        emailLM.addEARecipients(emailBureauTrProjectEA, emailBureauTranslation);
+        emailLM.addEARecipientsType(emailBureauTrProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailBureauTrProject = addJoinAProp(baseGroup, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
         emailBureauTrProject.setImage("email.png");
         emailBureauTrProject.property.askConfirm = true;
@@ -3921,9 +3921,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         resultNeedVoteProject = addDProp("resultNeedVoteProject", "Отослано уведомление", LogicalClass.instance, project);
         dateResultNeedVoteProject = addDProp("dateResultNeedVoteProject", "Дата отсылки уведомления", DateClass.instance, project);
         setCurrentDateResultNeedVoteProject = addSetPropertyAProp(actionGroup, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления", dateResultNeedVoteProject, 1, baseLM.currentDate);
-        emailNeedVoteProjectEA = addEAProp(emailLM, emailIO, project);
-        addEARecipients(emailNeedVoteProjectEA, emailPresident);
-        addEARecipients(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
+        emailNeedVoteProjectEA = emailLM.addEAProp(emailIO, project);
+        emailLM.addEARecipients(emailNeedVoteProjectEA, emailPresident);
+        emailLM.addEARecipientsType(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
 //        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
         emailNeedVoteProject = addIfAProp(actionGroup, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", needVoteProject, 1,
                         addListAProp(
@@ -3936,16 +3936,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNeedVoteProject.setEventSetAction(this, needVoteProject, 1);
         dateOverdueResultNeedVoteProject = addJProp("dateOverdueResultNeedVoteProject", "Дата до которой д.б. созвано заседание", BL.getModule("Country").getLCPByName("jumpWorkdays"), defaultCountry, dateResultNeedVoteProject, 1, addCProp(IntegerClass.instance, 1));
 
-        emailTransferredProjectEA = addEAProp(emailLM, emailIO, project);
-        addEARecipients(emailTransferredProjectEA, emailIO);
-        addEARecipients(emailTransferredProjectEA, MimeMessage.RecipientType.CC, emailFondTransferred);
+        emailTransferredProjectEA = emailLM.addEAProp(emailIO, project);
+        emailLM.addEARecipients(emailTransferredProjectEA, emailIO);
+        emailLM.addEARecipientsType(emailTransferredProjectEA, MimeMessage.RecipientType.CC, emailFondTransferred);
         emailTransferredHeaderProject = addJProp("emailTransferredHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
         emailTransferredProject = addJoinAProp(baseGroup, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
         emailTransferredProject.setImage("email.png");
         emailTransferredProject.property.askConfirm = true;
         emailTransferredProject.setEventSetAction(this, transferredProject, 1);
 
-        emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
+        emailClaimerFormalControlEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
         claimerFormalControl = addJProp(idGroup, "claimerFormalControl", "Заявитель (ИД)", claimerProject, projectFormalControl, 1);
         claimerEmailFormalControl = addJProp("claimerEmailFormalControl", "E-mail (заявителя)", contactLM.emailContact, claimerFormalControl, 1);
@@ -3963,7 +3963,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         setCurrentDateResultNoticedFormalControl = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
                 dateResultNoticedFormalControl, 1, baseLM.currentDate);
 
-        addEARecipients(emailClaimerFormalControlEA, claimerEmailFormalControl, 1);
+        emailLM.addEARecipients(emailClaimerFormalControlEA, claimerEmailFormalControl, 1);
 
         emailClaimerHeaderFormalControl = addJProp("emailClaimerHeaderFormalControl", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
   //      emailClaimerFormalControl = addJProp(actionGroup, true, "emailClaimerFormalControl", "Письмо о формальной экспертизе", emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1);
@@ -3978,9 +3978,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerFormalControl.setImage("email.png");
         emailClaimerFormalControl.property.askConfirm = true;
 
-        emailFondFormalControlEA = addEAProp(emailLM, emailIO, formalControl);
-        addEARecipients(emailFondFormalControlEA, emailIO);
-        addEARecipients(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
+        emailFondFormalControlEA = emailLM.addEAProp(emailIO, formalControl);
+        emailLM.addEARecipients(emailFondFormalControlEA, emailIO);
+        emailLM.addEARecipientsType(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
         emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
 
         emailFondFormalControl = addJoinAProp(actionGroup, "emailFondFormalControl", "Письмо о формальной экспертизе", emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
@@ -3990,7 +3990,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeProjectFormalControl = addJProp(baseGroup, "nameNativeProjectFormalControl", "Проект", nameNativeProject, projectFormalControl, 1);
 
         // для отсылки по юридической проверке
-        emailClaimerLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
+        emailClaimerLegalCheckEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
 
         claimerLegalCheck = addJProp(idGroup, "claimerLegalCheck", "Заявитель (ИД)", claimerProject, projectLegalCheck, 1);
         claimerEmailLegalCheck = addJProp("claimerEmailLegalCheck", "E-mail (заявителя)", contactLM.emailContact, claimerLegalCheck, 1);
@@ -4005,8 +4005,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         setCurrentDateResultNoticedLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateResultNoticedLegalCheck", "Установить текущую дату уведомления",
                 dateResultNoticedLegalCheck, 1, baseLM.currentDate);
 
-        addEARecipients(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
-        addEARecipients(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
+        emailLM.addEARecipients(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
+        emailLM.addEARecipientsType(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 //        addEARecipients(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
         emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2SP, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
@@ -4020,12 +4020,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerLegalCheck.setImage("email.png");
         emailClaimerLegalCheck.property.askConfirm = true;
 
-        emailClaimerChangeLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
+        emailClaimerChangeLegalCheckEA = emailLM.addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
         setCurrentDateChangeLegalCheck = addSetPropertyAProp(actionGroup, "setCurrentDateChangeLegalCheck", "Установить текущую дату уведомления",
                 dateChangeLegalCheck, 1, baseLM.currentDate);
 
-        addEARecipients(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
-        addEARecipients(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
+        emailLM.addEARecipients(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
+        emailLM.addEARecipientsType(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 
         emailClaimerChangeLegalCheck = addIfAProp(changeLegalCheckGroup, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", changeLegalCheck, 1,
                 addListAProp(
@@ -4042,27 +4042,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
 
-        emailAuthExpertEA = addEAProp(emailLM, expert);
-        addEARecipients(emailAuthExpertEA, contactLM.emailContact, 1);
-        addEARecipients(emailAuthExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
+        emailAuthExpertEA = emailLM.addEAProp(expert);
+        emailLM.addEARecipients(emailAuthExpertEA, contactLM.emailContact, 1);
+        emailLM.addEARecipientsType(emailAuthExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthExpert = addJoinAProp(baseGroup, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthExpert.setImage("email.png");
         emailAuthExpert.property.askConfirm = true;
 
-        emailAuthProfileExpertEA = addEAProp(emailLM, expert);
-        addEARecipients(emailAuthProfileExpertEA, contactLM.emailContact, 1);
-        addEARecipients(emailAuthProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
+        emailAuthProfileExpertEA = emailLM.addEAProp(expert);
+        emailLM.addEARecipients(emailAuthProfileExpertEA, contactLM.emailContact, 1);
+        emailLM.addEARecipientsType(emailAuthProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthProfileExpert = addJoinAProp(baseGroup, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
                 emailAuthProfileExpertEA, 1, addJProp(authProfileExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthProfileExpert.setImage("email.png");
         emailAuthProfileExpert.property.askConfirm = true;
 
-        emailReminderProfileExpertEA = addEAProp(emailLM, expert);
-        addEARecipients(emailReminderProfileExpertEA, contactLM.emailContact, 1);
-        addEARecipients(emailReminderProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
+        emailReminderProfileExpertEA = emailLM.addEAProp(expert);
+        emailLM.addEARecipients(emailReminderProfileExpertEA, contactLM.emailContact, 1);
+        emailLM.addEARecipientsType(emailReminderProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailReminderProfileExpert = addJoinAProp(baseGroup, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
                 emailReminderProfileExpertEA, 1, addJProp(reminderProfileExpertSubjectLanguage, languageExpert, 1), 1);
@@ -4074,8 +4074,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
         emailClaimerRejectedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о несоответствии - "));
 
-        emailAcceptedProjectEA = addEAProp(emailLM, project);
-        addEARecipients(emailAcceptedProjectEA, emailDocuments);
+        emailAcceptedProjectEA = emailLM.addEAProp(project);
+        emailLM.addEARecipients(emailAcceptedProjectEA, emailDocuments);
         emailClaimerAcceptedHeaderProject = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
         emailAcceptedProject = addJoinAProp(baseGroup, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
         emailAcceptedProject.setImage("email.png");
@@ -4124,8 +4124,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), getCurrencyClass());
         pluralCurrencyExpert = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
 
-        emailLetterExpertMonthYearEA = addEAProp(emailLM, "Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
-        addEARecipients(emailLetterExpertMonthYearEA, emailForCertificates);
+        emailLetterExpertMonthYearEA = emailLM.addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
+        emailLM.addEARecipients(emailLetterExpertMonthYearEA, emailForCertificates);
 
         emailLetterCertificatesExpertMonthYear = addJoinAProp("emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, monthInPreviousDate, yearInPreviousDate);
         emailLetterCertificatesExpertMonthYear.setImage("email.png");
@@ -4508,8 +4508,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         nameNativeShortAggregateClusterExpert = addOGProp(baseGroup, "nameNativeShortAggregateClusterExpert", false, "Кластеры", GroupType.STRING_AGG, 1, true, addJProp(baseLM.and1, nameNativeShort, 1, inClusterExpert, 1, 2), addCProp(StringClass.get(5), ";"), numberCluster, 1, 2);
 
-        emailConferenceExpertEA = addEAProp(emailLM, expertConference, expert);
-        addEARecipients(emailConferenceExpertEA, contactLM.emailContact, 2);
+        emailConferenceExpertEA = emailLM.addEAProp(expertConference, expert);
+        emailLM.addEARecipients(emailConferenceExpertEA, contactLM.emailContact, 2);
 
         emailConferenceExpert = addIfAProp(baseGroup, "emailConferenceExpert", "Участие в конф. (e-mail)", addJProp(baseLM.andNot1, inConferenceExpert, 1, 2, resultConferenceExpert, 1, 2), 1, 2, addJoinAProp(emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2);
         emailConferenceExpert.setImage("email.png");
@@ -5026,7 +5026,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultHintsIncrementTable(this);
 
             if (sID.equals("projectFullR2Native") || sID.equals("projectFullR2Foreign"))
-                addAttachEAFormNameFullyMapped(emailBureauTrProjectEA, this, AttachmentFormat.PDF,
+                emailLM.addAttachEAFormNameFullyMapped(emailBureauTrProjectEA, this, AttachmentFormat.PDF,
                                                sID.equals("projectFullR2Native") ? nameNativeClaimerProject : nameForeignClaimerProject,
                                                objProject, 1);
         }
@@ -5238,7 +5238,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultForesightCheckProject, objProject)));
             setEditType(PropertyEditType.READONLY);
 
-            addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
+            emailLM.addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
         }
     }
 
@@ -5255,7 +5255,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setEditType(PropertyEditType.READONLY);
 
-            addInlineEAForm(emailNotificationProjectEA, this, objProject, 1);
+            emailLM.addInlineEAForm(emailNotificationProjectEA, this, objProject, 1);
         }
     }
 
@@ -5271,7 +5271,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
             setEditType(PropertyEditType.READONLY);
 
-            addInlineEAForm(emailForesightClaimerProjectEA, this, objProject, 1);
+            emailLM.addInlineEAForm(emailForesightClaimerProjectEA, this, objProject, 1);
         }
     }
 
@@ -5290,7 +5290,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveResultForesightCheckProject, objProject)));   // или             positiveLegalResultProject
             setEditType(PropertyEditType.READONLY);
 
-            addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
+            emailLM.addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
         }
     }
 
@@ -5307,7 +5307,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setEditType(PropertyEditType.READONLY);
 
-            addInlineEAForm(emailNeedVoteProjectEA, this, objProject, 1);
+            emailLM.addInlineEAForm(emailNeedVoteProjectEA, this, objProject, 1);
 
             addDefaultHintsIncrementTable(this);
         }
@@ -5327,7 +5327,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(transferredProject, objProject)));
                 setEditType(PropertyEditType.READONLY);
 
-                addInlineEAForm(emailTransferredProjectEA, this, objProject, 1);
+                emailLM.addInlineEAForm(emailTransferredProjectEA, this, objProject, 1);
             }
         }
 
@@ -6626,7 +6626,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inDocumentExpert, objDocument, objExpert)),
                     new NotNullFilterEntity(addPropertyObject(inDefaultDocumentExpert, objDocument, objExpert))));
 
-            addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
+            emailLM.addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
 
             setEditType(PropertyEditType.READONLY);
         }
@@ -6646,7 +6646,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(1, "expert", expert, authenticationLM.loginCustomUser, authenticationLM.passwordCustomUser, baseLM.name, documentNameExpert, sidExpert, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
+            emailLM.addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
 
             setEditType(PropertyEditType.READONLY);
         }
@@ -6663,7 +6663,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(webHost, objExpert.groupTo);
 
-            addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
+            emailLM.addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
 
             setEditType(PropertyEditType.READONLY);
         }
@@ -6680,7 +6680,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(webHost, objExpert.groupTo);
 
-            addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
+            emailLM.addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
 
             setEditType(PropertyEditType.READONLY);
         }
@@ -6742,7 +6742,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inConferenceExpert, objConference, objExpert)));
 
-            addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
+            emailLM.addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
 
             setEditType(PropertyEditType.READONLY);
         }
@@ -6773,10 +6773,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote, isR1ProjectVote, isStatusVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
 
-            addAttachEAForm(emailStartVoteEA, this, AttachmentFormat.PDF, objVote, 1);
-            addAttachEAForm(emailStartVoteEA, this, AttachmentFormat.DOCX, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailStartHeaderVote, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailStartHeaderVote, objVote, 1);
+            emailLM.addAttachEAForm(emailStartVoteEA, this, AttachmentFormat.PDF, objVote, 1);
+            emailLM.addAttachEAForm(emailStartVoteEA, this, AttachmentFormat.DOCX, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailStartHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailStartHeaderVote, objVote, 1);
 
             addDefaultHintsIncrementTable(this);
 
@@ -6827,10 +6827,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
 
-            addAttachEAForm(emailProtocolVoteEA, this, AttachmentFormat.PDF, objVote, 1);
-            addAttachEAForm(emailProtocolVoteEA, this, AttachmentFormat.DOCX, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailProtocolHeaderVote, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailProtocolHeaderVote, objVote, 1);
+            emailLM.addAttachEAForm(emailProtocolVoteEA, this, AttachmentFormat.PDF, objVote, 1);
+            emailLM.addAttachEAForm(emailProtocolVoteEA, this, AttachmentFormat.DOCX, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailProtocolHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailProtocolHeaderVote, objVote, 1);
 
             addDefaultHintsIncrementTable(this);
 
@@ -6997,7 +6997,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
+            emailLM.addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
         }
     }
      private class VoteFondFormEntity extends FormEntity<SkolkovoBusinessLogics> {
@@ -7010,7 +7010,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote = addSingleGroupObject(1, "vote", vote, "Заседание", openedVote, nameNativeProjectVote, nameNativeClaimerVote, claimerEmailVote, nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote);
             objVote.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addInlineEAForm(emailFondVoteEA, this, objVote, 1);
+            emailLM.addInlineEAForm(emailFondVoteEA, this, objVote, 1);
         }
     }
 
@@ -7028,7 +7028,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(executiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(mobileExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
-            addInlineEAForm(emailClaimerFormalControlEA, this, objFormalControl, 1);
+            emailLM.addInlineEAForm(emailClaimerFormalControlEA, this, objFormalControl, 1);
         }
     }
 
@@ -7049,9 +7049,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultFormalControl, objFormalControl)));
 //            setEditType(PropertyEditType.READONLY);
-            addInlineEAForm(emailFondFormalControlEA, this, objFormalControl, 1);
-            addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Native, projectCompleteR2Native.objProject, projectFormalControl, 1);
-            addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Foreign, projectCompleteR2Foreign.objProject, projectFormalControl, 1);
+            emailLM.addInlineEAForm(emailFondFormalControlEA, this, objFormalControl, 1);
+            emailLM.addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Native, projectCompleteR2Native.objProject, projectFormalControl, 1);
+            emailLM.addInlineEAForm(emailFondFormalControlEA, projectCompleteR2Foreign, projectCompleteR2Foreign.objProject, projectFormalControl, 1);
         }
     }
 
@@ -7069,7 +7069,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
-            addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
+            emailLM.addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
 
             addDefaultHintsIncrementTable(this);
         }
@@ -7089,7 +7089,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
-            addInlineEAForm(emailClaimerChangeLegalCheckEA, this, objLegalCheck, 1);
+            emailLM.addInlineEAForm(emailClaimerChangeLegalCheckEA, this, objLegalCheck, 1);
 
             addDefaultHintsIncrementTable(this);
         }
@@ -7185,7 +7185,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(enoughDocumentsCorExpertVote, objExpert, objVote))));
 
-            addInlineEAForm(emailNoticeRejectedVoteEA, this, objVote, 1);
+            emailLM.addInlineEAForm(emailNoticeRejectedVoteEA, this, objVote, 1);
         }
 
         @Override
@@ -7207,7 +7207,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedAcceptedStatusVote, objVote)));
 
-            addInlineEAForm(emailNoticeAcceptedStatusVoteEA, this, objVote, 1);
+            emailLM.addInlineEAForm(emailNoticeAcceptedStatusVoteEA, this, objVote, 1);
         }
     }
 
@@ -7224,7 +7224,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedAcceptedPreliminaryVote, objVote)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(fileDecisionVote, objVote)));
 
-            addInlineEAForm(emailNoticeAcceptedPreliminaryVoteEA, this, objVote, 1);
+            emailLM.addInlineEAForm(emailNoticeAcceptedPreliminaryVoteEA, this, objVote, 1);
         }
     }
 
@@ -7280,8 +7280,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultOrder(nameNativeClusterExpert, true);
             addDefaultOrder(documentNameExpert, true);
 
-            addAttachEAForm(emailLetterExpertMonthYearEA, this, AttachmentFormat.PDF, objMonth, 1, objYear, 2);
-            addAttachEAForm(emailLetterExpertMonthYearEA, this, AttachmentFormat.DOCX, objMonth, 1, objYear, 2);
+            emailLM.addAttachEAForm(emailLetterExpertMonthYearEA, this, AttachmentFormat.PDF, objMonth, 1, objYear, 2);
+            emailLM.addAttachEAForm(emailLetterExpertMonthYearEA, this, AttachmentFormat.DOCX, objMonth, 1, objYear, 2);
             //     setPageSize(0);
             addPropertyDraw(readInformation).toDraw = objYear.groupTo;
             setEditType(readInformation, PropertyEditType.READONLY);
@@ -7303,8 +7303,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addDefaultHintsIncrementTable(this);
 
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailClaimerAcceptedHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailClaimerAcceptedHeaderVote, objVote, 1);
         }
     }
 
@@ -7323,8 +7323,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addDefaultHintsIncrementTable(this);
 
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
-            addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailClaimerRejectedHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailClosedVoteEA, this, AttachmentFormat.DOCX, emailClaimerRejectedHeaderVote, objVote, 1);
         }
     }
 
@@ -7340,8 +7340,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
 
-            addAttachEAFormNameFullyMapped(emailAcceptedProjectEA, this, AttachmentFormat.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
-            addAttachEAFormNameFullyMapped(emailAcceptedProjectEA, this, AttachmentFormat.DOCX, emailClaimerAcceptedHeaderProject, objProject, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailAcceptedProjectEA, this, AttachmentFormat.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
+            emailLM.addAttachEAFormNameFullyMapped(emailAcceptedProjectEA, this, AttachmentFormat.DOCX, emailClaimerAcceptedHeaderProject, objProject, 1);
         }
     }
 
