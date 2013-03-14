@@ -189,3 +189,22 @@ META defineAggregationCapt(sign3, prim1Object, capt1, prim2Object, capt2, prim3O
 
 END
 
+// --------------------------- Групповая корректировка на форме --------------------------------- //
+
+isEditable 'Включить корректировку на форме' = DATA SESSION BOOLEAN();
+
+isReadonly = TRUE AND NOT isEditable();
+
+META extendFormEditable (form)
+    EXTEND FORM form
+        PROPERTIES() isEditable
+    ;
+    EXTEND DESIGN form {
+        functions.box {
+            ADD PROPERTY(isEditable()) BEFORE rightControls;
+        }
+    }
+END
+
+
+

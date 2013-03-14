@@ -226,9 +226,9 @@ FORM legalEntities 'Организации'
     PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS l=legalEntity
-    PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
-                           addressLegalEntity, phoneLegalEntity,
-                           isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
+    PROPERTIES(l) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity
+    PROPERTIES(l) READONLYIF isReadonly() nameLegalEntityGroupLegalEntity
+    PROPERTIES(l) READONLY addressLegalEntity, phoneLegalEntity, isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
     FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS legalEntity AND lg IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))
@@ -252,6 +252,8 @@ DESIGN legalEntities FROM DEFAULT{
     }
     ADD functions.box;
 }
+
+@extendFormEditable(legalEntities);
 
 NAVIGATOR {
     masterData {
