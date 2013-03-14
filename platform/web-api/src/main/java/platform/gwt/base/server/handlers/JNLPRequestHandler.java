@@ -11,7 +11,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -35,7 +34,7 @@ public class JNLPRequestHandler implements HttpRequestHandler {
             properties.put("client.port", BaseUtils.nvl(servletContext.getInitParameter("serverPort"), "7652"));
 
             String content = stringResolver.replacePlaceholders(
-                    IOUtils.readStreamToString(new FileInputStream(servletContext.getRealPath("client.jnlp"))), properties
+                    IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties
             );
 
             response.setContentType("application/x-java-jnlp-file");
