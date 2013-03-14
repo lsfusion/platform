@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="http://localhost:8080/lsfusion/" href="client.jnlp">
+<jnlp spec="1.5+" codebase="${codebase.url}" href="client.jnlp">
     <information>
         <title>lsFusion Client</title>
         <vendor>Nomosoft Ltd.</vendor>
@@ -16,8 +16,8 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
-        <property name="platform.client.hostname" value="localhost"/>
-        <property name="platform.client.hostport" value="7652"/>
+        <property name="platform.client.hostname" value="${client.host}"/>
+        <property name="platform.client.hostport" value="${client.port}"/>
         <property name="platform.client.db" value="default"/>
         <jar href="lsfusion-client-1.0-SNAPSHOT.jar"/>
     </resources>

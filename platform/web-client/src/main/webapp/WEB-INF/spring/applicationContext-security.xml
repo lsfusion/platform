@@ -84,4 +84,6 @@
     <b:bean id="fileUploadHandler" class="platform.gwt.base.server.handlers.UploadFileHandler" />
 
     <b:bean id="fileDownloadHandler" class="platform.gwt.base.server.handlers.DownloadFileHandler" />
+
+    <b:bean id="jnlpHandler" class="platform.gwt.base.server.handlers.JNLPRequestHandler" />
 </b:beans>

@@ -39,6 +39,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>jnlpHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>jnlpHandler</servlet-name>
+        <url-pattern>/client.jnlp</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>readFileHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
