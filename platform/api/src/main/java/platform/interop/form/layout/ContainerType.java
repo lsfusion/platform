@@ -13,6 +13,6 @@ public class ContainerType {
     public final static byte CONTAINER = 6;
 
     public static List<String> getTypeNamesList() {
-        return Arrays.asList("CONTAINERH", "CONTAINERV", "CONTAINERVH", "TABBED PANE", "SPLIT PANE VERTICAL", "SPLIT PANE HORIZONTAL");
+        return Arrays.asList("CONTAINERH", "CONTAINERV", "CONTAINERVH", "TABBED PANE", "SPLIT PANE VERTICAL", "SPLIT PANE HORIZONTAL", "CONTAINER");
     }
 }
