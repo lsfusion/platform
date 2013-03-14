@@ -406,13 +406,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
         currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
 
-        name = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
-        ((CalcProperty)name.property).aggProp = true;
+        name = addDProp(recognizeGroup, "name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
 
         // todo : тут надо рефакторить как имена свойст, так и классов
         classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass);
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
+
+        ((CalcProperty)name.property).aggProp = true;
+        name.setEventChange(addJProp(string2SP, addJProp(name.getOld(), objectClass, 1), 1,
+                addSFProp("CAST((prm1) as char(50))", StringClass.get(50), 1), 1), 1,
+                is(baseClass.named), 1);
 
         // Настройка форм
         defaultBackgroundColor = addDProp("defaultBackgroundColor", getString("logics.default.background.color"), ColorClass.instance);
