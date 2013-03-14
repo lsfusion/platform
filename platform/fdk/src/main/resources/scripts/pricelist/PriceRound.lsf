@@ -159,45 +159,71 @@ DESIGN dialogPriceIntervals FROM DEFAULT {
 
 // --------------------------------------------------- Стандартные значения ------------------------------------ //
 
-loadDefaultPriceInterval  = ACTION (value, shortName) {
+loadDefaultPriceInterval  = ACTION (value, shortName, name) {
     LOCAL currency = currency();
     SET currency() <- currencyShortName(shortName);
     FOR ADDOBJ p = roundCondition DO {
         SET currencyRoundCondition(p) <- currency();
         SET priceRoundRoundCondition(p)  <- value;
         SET defaultRoundConditionCurrency(c) <- p WHERE c == currency();
+        SET name(p) <- name;
     }
 }
 
 loadDefaultPriceIntervals 'Загрузить стандартные округления цен'  = ACTION () {
-    EXEC loadDefaultPriceInterval(2, 'AUD');
-    EXEC loadDefaultPriceInterval(2, 'BGN');
-    EXEC loadDefaultPriceInterval(2, 'UAH');
-    EXEC loadDefaultPriceInterval(2, 'DKK');
-    EXEC loadDefaultPriceInterval(2, 'USD');
-    EXEC loadDefaultPriceInterval(2, 'EUR');
-    EXEC loadDefaultPriceInterval(2, 'PLN');
-    EXEC loadDefaultPriceInterval(2, 'ISK');
-    EXEC loadDefaultPriceInterval(2, 'CAD');
-    EXEC loadDefaultPriceInterval(2, 'CNY');
-    EXEC loadDefaultPriceInterval(2, 'KWD');
-    EXEC loadDefaultPriceInterval(2, 'LVL');
-    EXEC loadDefaultPriceInterval(2, 'LTL');
-    EXEC loadDefaultPriceInterval(2, 'MDL');
-    EXEC loadDefaultPriceInterval(2, 'NOK');
-    EXEC loadDefaultPriceInterval(2, 'RUB');
-    EXEC loadDefaultPriceInterval(2, 'XDR');
-    EXEC loadDefaultPriceInterval(2, 'SGD');
-    EXEC loadDefaultPriceInterval(2, 'KGS');
-    EXEC loadDefaultPriceInterval(2, 'KZT');
-    EXEC loadDefaultPriceInterval(2, 'TRY');
-    EXEC loadDefaultPriceInterval(2, 'GBP');
-    EXEC loadDefaultPriceInterval(2, 'CZK');
-    EXEC loadDefaultPriceInterval(2, 'SEK');
-    EXEC loadDefaultPriceInterval(2, 'CHF');
-    EXEC loadDefaultPriceInterval(2, 'JPY');
-    EXEC loadDefaultPriceInterval(2, 'IRR');
-    EXEC loadDefaultPriceInterval(2, 'BLR');
+    EXEC loadDefaultPriceInterval(2, 'BLR', 'До копеек');
+    EXEC loadDefaultPriceInterval(0, 'BLR', 'До рублей');
+
+    LOCAL currency = currency();
+    SET currency() <- currencyShortName('BLR');
+    FOR ADDOBJ p = roundCondition DO {
+        SET currencyRoundCondition(p) <- currency();
+        SET minPriceRoundCondition(p) <- 25;
+        SET priceRoundRoundCondition(p) <- -1;
+        SET defaultRoundConditionCurrency(c) <- p WHERE c == currency();
+        SET name(p) <- 'До 50 рублей';
+        denominatorPriceRoundCondition(p) <- 50;
+        FOR ADDOBJ i1 = priceInterval DO {
+            roundConditionPriceInterval(i1) <- p;
+            modifierPriceInterval(i1) <- 0;
+            fromPriceInterval(i1) <- 0;
+            toPriceInterval(i1) <- 25;
+        }
+        FOR ADDOBJ i2 = priceInterval DO {
+            roundConditionPriceInterval(i1) <- p;
+            modifierPriceInterval(i2) <- 50;
+            fromPriceInterval(i2) <- 26;
+            toPriceInterval(i2) <- 50;
+        }
+    }
+
+    EXEC loadDefaultPriceInterval(2, 'RUB', 'До копеек');
+    EXEC loadDefaultPriceInterval(2, 'AUD', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'BGN', 'До стотинок');
+    EXEC loadDefaultPriceInterval(2, 'UAH', 'До копеек');
+    EXEC loadDefaultPriceInterval(2, 'DKK', 'До эре');
+    EXEC loadDefaultPriceInterval(2, 'USD', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'EUR', 'До евроцентов');
+    EXEC loadDefaultPriceInterval(2, 'PLN', 'До грошей');
+    EXEC loadDefaultPriceInterval(2, 'ISK', 'До эйре');
+    EXEC loadDefaultPriceInterval(2, 'CAD', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'CNY', 'До фэней');
+    EXEC loadDefaultPriceInterval(3, 'KWD', 'До филсов');
+    EXEC loadDefaultPriceInterval(2, 'LVL', 'До сантимов');
+    EXEC loadDefaultPriceInterval(2, 'LTL', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'MDL', 'До баней');
+    EXEC loadDefaultPriceInterval(2, 'NOK', 'До эре');
+    EXEC loadDefaultPriceInterval(2, 'XDR', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'SGD', 'До центов');
+    EXEC loadDefaultPriceInterval(2, 'KGS', 'До тыйынов');
+    EXEC loadDefaultPriceInterval(2, 'KZT', 'До тиынов');
+    EXEC loadDefaultPriceInterval(2, 'TRY', 'До курушей');
+    EXEC loadDefaultPriceInterval(2, 'GBP', 'До пенсов');
+    EXEC loadDefaultPriceInterval(2, 'CZK', 'До геллеров');
+    EXEC loadDefaultPriceInterval(2, 'SEK', 'До эре');
+    EXEC loadDefaultPriceInterval(2, 'CHF', 'До рапенов');
+    EXEC loadDefaultPriceInterval(2, 'JPY', 'До сэнов');
+    EXEC loadDefaultPriceInterval(2, 'IRR', 'До динаров');
 } IN loadDefaultGroup;
 
 
