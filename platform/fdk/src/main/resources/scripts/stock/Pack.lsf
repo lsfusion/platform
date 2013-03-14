@@ -7,6 +7,8 @@ REQUIRE System,
 
 PRIORITY Utils, Stock;
 
+GROUP itemPackGroup 'Упаковка товара' : public;
+
 META definePackSku (caption, NS)
     packBarcodeSku 'Штрих-код для '##caption = DATA barcode (sku);
     packBarcode 'Штрих-код для '##caption (barcode)=  packBarcodeSku(skuBarcode(barcode)) == barcode;
@@ -27,7 +29,7 @@ META definePackSku (caption, NS)
     
     idBarcodePackSku 'Штрих-код упаковки' (sku)= idBarcode(packBarcodeSku(sku));
     shortNameUOMPackSku 'Ед. изм. упаковки' (sku)= shortNameUOMBarcode(packBarcodeSku(sku));
-    amountPackSku 'Кол-во в упаковке'(sku) =amountBarcode(packBarcodeSku(sku));
+    amountPackSku 'Кол-во в упаковке'(sku) =amountBarcode(packBarcodeSku(sku)) IN itemPackGroup;
     
     changeValuePackSku = ACTION (sku) {
         IF requestedNumeric() THEN {

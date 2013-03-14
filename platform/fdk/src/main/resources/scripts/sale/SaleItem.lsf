@@ -9,7 +9,7 @@ EXTEND FORM item
     PROPERTIES(b) packBarcode ON CHANGE EXEC changePackBarcodeSku(b,i) BEFORE delete(b)
 ;
 EXTEND DESIGN item {
-    itemHeaderColumn1 {
-        ADD PROPERTY(saleAmount) {caption = 'Множитель (продажа)';}
-    }
+//    itemHeaderColumn1 {
+        PROPERTY(saleAmount) {caption = 'Количество в упаковке (продажа)';}
+//    }
 }

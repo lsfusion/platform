@@ -354,7 +354,7 @@ END
 META defineItemAttribute(attribute, formProperty, caption, group, itemType, attributeClass)
     @defineItemAttribute(attribute, caption, group);
 
-    EXTEND FORM itemGroup PROPERTIES(g) userShow###attribute##ItemGroup, setNullShow###attribute##ItemGroup;
+    EXTEND FORM itemGroup PROPERTIES(g) userShow###attribute##ItemGroup;
     EXTEND FORM itemGroups PROPERTIES(g) READONLY show###attribute##ItemGroup BACKGROUND backgroundShow###attribute##ItemGroup(g);
     EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
     EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);

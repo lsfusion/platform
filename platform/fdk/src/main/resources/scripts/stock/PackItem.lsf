@@ -1,0 +1,10 @@
+MODULE PackItem;
+
+REQUIRE Pack,
+        Item;
+
+EXTEND DESIGN item {
+    itemPrimaryColumn2 {
+        ADD i.itemPackGroup;
+    }
+}
