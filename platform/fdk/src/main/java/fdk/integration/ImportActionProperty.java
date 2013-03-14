@@ -325,9 +325,9 @@ public class ImportActionProperty {
         props.add(new ImportProperty(barcodePackField, LM.findLCPByCompoundName("idBarcode").getMapping(barcodePackKey)));
         props.add(new ImportProperty(dateField, LM.findLCPByCompoundName("dataDateBarcode").getMapping(barcodePackKey)));
         props.add(new ImportProperty(amountBarcodePackField, LM.findLCPByCompoundName("amountBarcode").getMapping(barcodePackKey)));
-        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("purchasePackBarcodeSku").getMapping(itemKey),
+        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("Purchase.packBarcodeSku").getMapping(itemKey),
                 LM.object(LM.findClassByCompoundName("barcode")).getMapping(barcodePackKey)));
-        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("salePackBarcodeSku").getMapping(itemKey),
+        props.add(new ImportProperty(barcodePackIDField, LM.findLCPByCompoundName("Sale.packBarcodeSku").getMapping(itemKey),
                 LM.object(LM.findClassByCompoundName("barcode")).getMapping(barcodePackKey)));
         props.add(new ImportProperty(itemIDField, LM.findLCPByCompoundName("skuBarcode").getMapping(barcodePackKey),
                 LM.object(LM.findClassByCompoundName("item")).getMapping(itemKey)));

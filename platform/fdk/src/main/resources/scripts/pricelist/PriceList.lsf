@@ -95,7 +95,7 @@ CLASS ABSTRACT ledgerPriceListType 'Регистровый вид цены' : ba
 
 batchLedgerPriceListType 'Использовать для партий свои цены' = ABSTRACT BOOLEAN (priceListType) EXCLUSIVE PERSISTENT;
 
-CLASS ABSTRACT priceListLedger;
+CLASS ABSTRACT priceListLedger 'Изменение цены';
 TABLE priceListLedger(priceListLedger);
 
 fromDateTimePriceListLedger = ABSTRACT DATETIME (priceListLedger) PERSISTENT INDEXED;

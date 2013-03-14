@@ -251,7 +251,7 @@ changePassword = ACTION () {
 
 NAVIGATOR {
     administration {
-        NEW security 'Управление доступом'{
+        NEW security 'Управление доступом' AFTER application {
             ADD customUsers;
         }
     }
