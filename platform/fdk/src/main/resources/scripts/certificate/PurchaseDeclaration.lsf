@@ -91,12 +91,13 @@ EXTEND DESIGN declaration {
         ADD id.box {
             fillVertical = 2;
         }
-
     }
     ADD functions.box;
 }
 
+isCustomInvoice 'Таможенные платежи' = ABSTRACT BOOLEAN(invoice);
 isCustomUserInvoice 'Таможенные платежи' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
+isCustomInvoice(invoice) += isCustomUserInvoice(invoice);
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
@@ -105,7 +106,7 @@ EXTEND FORM userInvoice
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
+    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice FORCE GRID
     PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i),
                   customCostPriceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i)
 ;

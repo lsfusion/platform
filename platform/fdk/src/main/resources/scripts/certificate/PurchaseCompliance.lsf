@@ -5,8 +5,156 @@ REQUIRE Compliance, PurchaseCertificate;
 NAMESPACE Purchase;
 
 @defineDocumentCertificateObject(compliance, invoice, i, 'Сертификат соответствия');
-
 @defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
+
 complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
 complianceBatch (batch) += complianceShipmentDetail(shipmentDetailShipmentBatch(batch));
+
+//---------------------------------- накладные для сертификата --------------------------------------------------------//
+inComplianceInvoice 'Вкл.' (compliance, invoice) = complianceUserInvoice(invoice)==compliance;
+
+inComplianceInvoiceDetail 'Вкл.' (compliance, invoiceDetail) = dataComplianceUserInvoiceDetail(invoiceDetail)==compliance;
+
+invoicesCompliance 'Накладные' (compliance) =
+    GROUP CONCAT shortDescriptionInvoice(invoice) IF inComplianceInvoice (compliance, invoice), ','
+              BY compliance ORDER invoice PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
+
+nameComplianceSku 'Наименование (декл.)' = ABSTRACT STRING[200](sku);
+nameComplianceSku(sku) += nameSku(sku);
+
+nameComplianceUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameComplianceSku(skuUserInvoiceDetail(userInvoiceDetail));
+
+
+FORM complianceInvoices 'Присоединение накладных'
+    OBJECTS c=compliance FIXED PANEL
+    PROPERTIES(c) seriesNumberObject, nameLegalEntityCompliance, dateTimeCompliance
+
+    OBJECTS i=userInvoice
+    PROPERTIES (c, i) inComplianceInvoice
+    PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
+    FILTERS inComplianceInvoice(c, i) OR c AS compliance AND NOT complianceUserInvoice(i)
+
+    OBJECTS id=userInvoiceDetail
+    PROPERTIES(c, id) inComplianceInvoiceDetail
+    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
+                   quantityUserInvoiceDetail, priceUserInvoiceDetail
+    FILTERS invoiceInvoiceDetail(id)==i
+
+    FILTERGROUP filtersImporter
+        FILTER 'Только импортёра сертификата' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT
+;
+
+showFormComplianceInvoices 'Присоединить накладные' = ACTION (compliance) {
+    FORM complianceInvoices OBJECTS c=compliance MODAL;
+    EXEC apply();
+} TOOLBAR;
+
+EXTEND FORM compliance
+    PROPERTIES(c) invoicesCompliance
+
+    OBJECTS id=userInvoiceDetail
+    PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail,
+                   quantityUserInvoiceDetail, priceUserInvoiceDetail
+    PROPERTIES(id) READONLY homePriceInvoiceDetail, sumHomeInvoiceDetail
+
+    PROPERTIES (c) showFormComplianceInvoices TODRAW id FORCE PANEL TOOLBAR
+    FILTERS complianceUserInvoiceDetail(id) == c
+;
+
+EXTEND DESIGN compliance {
+    main {
+        headContainer {
+            ADD PROPERTY(invoicesCompliance);
+        }
+
+        ADD id.box {
+            fillVertical = 2;
+        }
+    }
+    ADD functions.box;
+}
+
+//------------------------------------------ позиции сертификата -------------------------------------------------------//
+TABLE complianceComplianceName(compliance, STRING[200]);
+
+quantityGroupCompliance 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
+                                          BY complianceUserInvoiceDetail(userInvoiceDetail),
+                                             nameComplianceUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
+
+CLASS complianceDetail 'Позиция сертификата';
+TABLE complianceDetail(complianceDetail);
+
+complianceComplianceDetail = DATA compliance(complianceDetail);
+
+nameComplianceComplianceDetail 'Наименование' = DATA STRING[200](complianceDetail);
+
+skuComplianceDetail = DATA sku(complianceDetail);
+nameSkuComplianceDetail 'Товар на экспертизу' (complianceDetail) = nameSku(skuComplianceDetail(complianceDetail));
+
+quantityCertificatedComplianceDetail 'Кол-во на экспертизу'  = DATA NUMERIC[14,3](complianceDetail);
+
+//@defineDocumentPosted(declaration);
+
+//numberDefaultDeclarationDetail 'Номер' (declarationDetail) =
+//        PARTITION SUM 1 IF declarationDetail IS declarationDetail BY declarationDeclarationDetail(declarationDetail)
+//        ORDER declarationDetail;
+//
+//userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = DATA INTEGER (declarationDetail);
+//numberDeclarationDetail 'Номер' (declarationDetail) = UNION OVERRIDE numberDefaultDeclarationDetail(declarationDetail), userNumberDeclarationDetail(declarationDetail);
+//
+//declarationDetailUserNumberNameCustoms (number, name) = GROUP UNIQUE declarationDetail BY
+//        userNumberDeclarationDetail(declarationDetail), nameCustomsDeclarationDetail(declarationDetail)
+//        WHERE declarationDetail IS declarationDetail;
+
+complianceDetailInvoiceDetail(invoiceDetail) = DATA complianceDetail(invoiceDetail);
+inInvoiceDetailComplianceDetail 'Вкл.' (invoiceDetail, complianceDetail) = complianceDetailInvoiceDetail(invoiceDetail)==complianceDetail;
+
+CONSTRAINT nameComplianceComplianceDetail(complianceDetail) != nameComplianceSku(skuComplianceDetail(complianceDetail)) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар';
+
+quantityComplianceDetail 'Кол-во' (complianceDetail) = GROUP SUM quantityUserInvoiceDetail(invoiceDetail) BY complianceDetailInvoiceDetail(invoiceDetail) PERSISTENT;
+
+inComplianceDetailInvoice = GROUP SUM 1 BY complianceDetailInvoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
+
+invoicesComplianceDetail 'Накладные' (complianceDetail) =
+    GROUP CONCAT seriesNumberObject(invoice) IF inComplianceDetailInvoice(complianceDetail, invoice) , ','
+              BY complianceDetail ORDER invoice PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40 MAXCHARWIDTH 60;
+
+toCreateComplianceDetails 'Создать позиции' = ACTION (compliance) {
+    FOR quantityGroupCompliance(compliance, complianceName)>0 ADDOBJ cd=complianceDetail DO {
+        SET complianceComplianceDetail(cd) <- compliance;
+        SET nameComplianceComplianceDetail(cd) <- complianceName;
+
+        SET complianceDetailInvoiceDetail(invoiceDetail) <- cd WHERE complianceUserInvoiceDetail(invoiceDetail) == compliance AND
+            nameComplianceUserInvoiceDetail(invoiceDetail) == complianceName ;
+    };
+} TOOLBAR;
+
+EXTEND FORM compliance
+    //PROPERTIES(d) sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+
+    OBJECTS cd=complianceDetail
+    PROPERTIES(id, cd) inInvoiceDetailComplianceDetail
+    PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail
+    PROPERTIES(cd) nameSkuComplianceDetail, quantityCertificatedComplianceDetail, delete
+
+    PROPERTIES (c) toCreateComplianceDetails TODRAW cd FORCE PANEL TOOLBAR
+    FILTERS complianceComplianceDetail(cd) == c
+;
+
+EXTEND DESIGN compliance {
+    main {
+        ADD cd.box {
+            fillVertical = 2;
+        }
+    }
+    ADD functions.box;
+}
+
+EXTEND FORM compliances
+    //PROPERTIES(c) FORCE GRID isPostedDeclaration BEFORE objectClassName(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+
+    OBJECTS cd=complianceDetail
+    PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail, nameSkuComplianceDetail, quantityCertificatedComplianceDetail
+    FILTERS complianceComplianceDetail(cd)==c
+;

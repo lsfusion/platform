@@ -22,33 +22,42 @@ descriptionCompliance 'Сертификат соответствия' (complianc
 
 @defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 
+legalEntityCompliance = DATA legalEntity(compliance);
+nameLegalEntityCompliance 'Импортёр' (compliance) = name(legalEntityCompliance(compliance));
+
 FORM compliance 'Сертификат соответствия'
     OBJECTS c = compliance FIXED PANEL
-    PROPERTIES(c) seriesObject, numberObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance
+    PROPERTIES(c) objectClassName, seriesObject, numberObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance, nameLegalEntityCompliance
     EDIT compliance OBJECT c
 ;
 
 DESIGN compliance FROM DEFAULT{
     main{
-        ADD PROPERTY(seriesObject);
-        ADD PROPERTY(numberObject);
-        ADD PROPERTY(dateCompliance);
-        ADD PROPERTY(timeCompliance);
-        ADD PROPERTY(toDateCompliance);
-        ADD PROPERTY(toTimeCompliance);
+        NEW headContainer {
+            childConstraints = TO THE RIGHTBOTTOM;
+            caption = 'Шапка документа';
+            ADD PROPERTY(objectClassName);
+            ADD PROPERTY(seriesObject);
+            ADD PROPERTY(numberObject);
+            ADD PROPERTY(dateCompliance);
+            ADD PROPERTY(timeCompliance);
+            ADD PROPERTY(toDateCompliance);
+            ADD PROPERTY(toTimeCompliance);
+            ADD PROPERTY(nameLegalEntityCompliance);
+        }
     }
     ADD functions.box;
 }
 
 FORM compliances 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, textCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance//, textCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, textCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance//, textCompliance
 
     DIALOG compliance OBJECT c
 ;
