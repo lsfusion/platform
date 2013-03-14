@@ -1301,6 +1301,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         defaultOrders.put(property, ascending);
     }
 
+    public void addDefaultOrderView(PropertyDrawEntity property, boolean ascending) {
+
+        if(richDesign!=null)
+            richDesign.addDefaultOrder(property, ascending);
+    }
+
     public void setPageSize(int pageSize) {
         for (GroupObjectEntity group : groups) {
             group.pageSize = pageSize;

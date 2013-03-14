@@ -234,7 +234,7 @@ FORM properties 'Свойства'
     PROPERTIES(tps) READONLY captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, dumb1, dumb1, dumb1, dumb1
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
-    ORDER BY numberProperty(ps)
+    ORDER BY numberProperty
     ORDER BY numberAbstractGroup(tps)
 
     FILTERS

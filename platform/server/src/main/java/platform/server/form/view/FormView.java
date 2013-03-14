@@ -119,6 +119,10 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         initButtons();
     }
 
+    public void addDefaultOrder(PropertyDrawEntity property, boolean ascending) {
+        defaultOrders.put(get(property), ascending);
+    }
+
     private void addPropertyDrawView(PropertyDrawView property) {
         mproperties.put(property.entity, property);
     }
