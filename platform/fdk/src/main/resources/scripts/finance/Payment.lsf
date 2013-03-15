@@ -1,6 +1,6 @@
 MODULE Payment;
 
-REQUIRE Document, LegalEntity, Numerator, PaymentLedger;
+REQUIRE Bank, Document, LegalEntity, Numerator, PaymentLedger;
 
 CLASS payment 'Платеж' : numeratedObject, paymentLedger;
 CLASS paymentPosted 'Проведенный платеж' : payment, postedObject;
@@ -16,21 +16,29 @@ timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS payment);
 dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
 
 payerPayment(payment) = DATA legalEntity (payment);
-namePayerPayment 'Сторона Б(Плательщик)' (payment) = name(payerPayment(payment));
+namePayerPayment 'Организация (покупатель)' (payment) = name(payerPayment(payment));
 accountFromPayment(payment) = DATA PaymentLedger.account (payment);
-nameAccountFromPayment 'Счет (с)' (payment) = nameAccount(accountFromPayment(payment));
+accountFromPayment(payment) <- accountLegalEntity(payerPayment(payment))
+    WHEN CHANGED(payerPayment(payment));
+nameAccountFromPayment 'Счет' (payment) = PaymentLedger.nameAccount(accountFromPayment(payment));
+currencyAccountFromPayment (payment) = PaymentLedger.currencyAccount(accountFromPayment(payment));
+nameCurrencyAccountFromPayment 'Валюта счета' (payment) = PaymentLedger.nameCurrencyAccount(accountFromPayment(payment));
+sumFromPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (payment) PREFCHARWIDTH 16;
 
 beneficiaryPayment(payment) = DATA legalEntity (payment);
-nameBeneficiaryPayment 'Сторона А(Бенефициар)' (payment) = name(beneficiaryPayment(payment));
+nameBeneficiaryPayment 'Организация (поставщик)' (payment) = name(beneficiaryPayment(payment));
 accountToPayment(payment) = DATA PaymentLedger.account (payment);
-nameAccountToPayment 'Счет (на)' (payment) = nameAccount(accountToPayment(payment));
+accountToPayment(payment) <- accountLegalEntity(beneficiaryPayment(payment))
+    WHEN CHANGED(beneficiaryPayment(payment));
+nameAccountToPayment 'Счет' (payment) = PaymentLedger.nameAccount(accountToPayment(payment));
+currencyAccountToPayment(payment) = PaymentLedger.currencyAccount(accountToPayment(payment));
+nameCurrencyAccountToPayment 'Валюта счета' (payment) = PaymentLedger.nameCurrencyAccount(accountToPayment(payment));
+sumToPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (payment) PREFCHARWIDTH 16;
+
+rateFromPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumToPayment(payment),sumFromPayment(payment)) PREFCHARWIDTH 15;
+rateToPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumFromPayment(payment),sumToPayment(payment)) PREFCHARWIDTH 15;
 
 notePayment 'Примечание' (payment) = DATA STRING[200] (payment);
-
-currencyPayment 'Валюта платежа' (payment) = DATA currency (payment);
-nameCurrencyPayment 'Валюта платежа' (payment) = name(currencyPayment(payment));
-
-sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
 
 descriptionPayment 'Название документа' =
     [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -39,25 +47,44 @@ descriptionPayment 'Название документа' =
 dateTimePaymentLedger(paymentLedger) += dateTimePayment(paymentLedger);
 legalEntityFromPaymentLedger(paymentLedger) += payerPayment(paymentLedger);
 legalEntityToPaymentLedger(paymentLedger) += beneficiaryPayment(paymentLedger);
-sumFromPaymentLedger(paymentLedger) += sumPayment(paymentLedger);
+sumFromPaymentLedger(paymentLedger) += sumFromPayment(paymentLedger);
+sumToPaymentLedger(paymentLedger) += sumToPayment(paymentLedger);
 descriptionPaymentLedger(paymentLedger) += descriptionPayment(paymentLedger);
+
+CONSTRAINT PaymentLedger.legalEntityAccount(accountFromPayment(payment)) != payerPayment(payment)
+    CHECKED BY accountFromPayment MESSAGE 'Организация счета(с) должна совпадать с организацией(покупатель)';
+
+CONSTRAINT PaymentLedger.legalEntityAccount(accountToPayment(payment)) != beneficiaryPayment(payment)
+    CHECKED BY accountToPayment MESSAGE 'Организация счета(на) должна совпадать с организацией(поставщик)';
+
+//------------------------------------------- Actions --------------------------------------------------------------//
+
+setSumFromPayment = ACTION (payment){
+    REQUEST NUMERIC[15,8] INPUT;
+    SET sumToPayment(payment) <- sumFromPayment(payment)*requestedNumeric();
+}
+setSumToPayment = ACTION (payment){
+    REQUEST NUMERIC[15,8] INPUT;
+    SET sumFromPayment(payment) <- sumToPayment(payment)*requestedNumeric();
+}
 
 //-------------------------------------------- Форма платежей -------------------------------------------------------//
 
 backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) AND datePayment(payment) > (date AS DATE);
 
 partyA = DATA SESSION legalEntity();
-namePartyA 'Сторона А(поставщик)' = name(partyA());
+namePartyA 'Организация (поставщик)' = name(partyA());
 partyB = DATA SESSION legalEntity();
-namePartyB 'Сторона Б(покупатель)' = name(partyB());
+namePartyB 'Организация (покупатель)' = name(partyB());
 
 FORM payment 'Платеж'
 
     OBJECTS p = payment FIXED PANEL
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment,
-                  notePayment, nameAccountToPayment, nameAccountFromPayment
-    PROPERTIES(p) READONLY namePayerPayment, nameBeneficiaryPayment
-    PROPERTIES(p) nameCurrencyPayment, sumPayment
+                  notePayment, namePayerPayment, nameBeneficiaryPayment, nameAccountToPayment, nameAccountFromPayment,
+                  nameCurrencyAccountFromPayment, nameCurrencyAccountToPayment, sumFromPayment, sumToPayment,
+                  rateFromPayment ON CHANGE EXEC setSumFromPayment(p),
+                  rateToPayment ON CHANGE EXEC setSumToPayment(p)
     EVENTS
         ON OK EXEC prePostPayment(p)
 
@@ -67,7 +94,7 @@ FORM payment 'Платеж'
 DESIGN payment FROM DEFAULT{
 
     main{
-
+        childConstraints = TO THE BOTTOM;
         NEW headerContainer{
             caption = 'Шапка документа';
             childConstraints = TO THE RIGHTBOTTOM;
@@ -78,24 +105,31 @@ DESIGN payment FROM DEFAULT{
             ADD PROPERTY(datePayment);
             ADD PROPERTY(timePayment);
         }
-
+        NEW columnContainer{
+            childConstraints = TO THE RIGHT;
+            NEW firstColumn{
+                childConstraints = TO THE BOTTOM;
+                caption = 'Сторона (с)';
+                ADD PROPERTY(namePayerPayment);
+                ADD PROPERTY(nameAccountFromPayment);
+                ADD PROPERTY(nameCurrencyAccountFromPayment);
+                ADD PROPERTY(sumFromPayment);
+                ADD PROPERTY(rateFromPayment);
+            }
+            NEW secondColumn{
+                childConstraints = TO THE BOTTOM;
+                caption = 'Сторона (на)';
+                ADD PROPERTY(nameBeneficiaryPayment);
+                ADD PROPERTY(nameAccountToPayment);
+                ADD PROPERTY(nameCurrencyAccountToPayment);
+                ADD PROPERTY(sumToPayment);
+                ADD PROPERTY(rateToPayment);
+            }
+        }
         NEW paramContainer {
             caption = 'Параметры документа';
-            ADD PROPERTY(namePayerPayment);
-            ADD PROPERTY(nameAccountToPayment);
-            ADD PROPERTY(nameBeneficiaryPayment);
-            ADD PROPERTY(nameAccountFromPayment);
             ADD PROPERTY(notePayment);
         }
-
-        NEW sumContainer{
-            caption = 'Суммы документа';
-            childConstraints = TO THE BOTTOM;
-            ADD PROPERTY(sumPayment);
-            ADD PROPERTY(nameCurrencyPayment);
-        }
-        POSITION sumContainer TO THE RIGHT headerContainer;
-        POSITION sumContainer TO THE RIGHT paramContainer;
     }
 
     PROPERTY(formOk) {
@@ -114,8 +148,7 @@ FORM payments 'Платежи'
 
     OBJECTS p = payment
     PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, dateTimePayment,
-                                                                  namePayerPayment, nameBeneficiaryPayment,
-                                                                  nameCurrencyPayment, sumPayment, notePayment
+                                                                  namePayerPayment, nameBeneficiaryPayment, notePayment
 
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 

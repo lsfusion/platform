@@ -21,10 +21,10 @@ activeContract 'Действуюший' (contract, date) =
 GROUP partyGroup 'Контрагенты' : recognize;
 
 partyAContract = ABSTRACT legalEntity (contract) PERSISTENT INDEXED;
-namePartyAContract 'Сторона А' (contract) = name(partyAContract(contract)) IN partyGroup;
+namePartyAContract 'Организация (поставщик)' (contract) = name(partyAContract(contract)) IN partyGroup;
 
 partyBContract = ABSTRACT legalEntity (contract) PERSISTENT INDEXED;
-namePartyBContract 'Сторона Б' (contract) = name(partyBContract(contract)) IN partyGroup;
+namePartyBContract 'Организация (покупатель)' (contract) = name(partyBContract(contract)) IN partyGroup;
 
 countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
     GROUP SUM 1 IF partyAContract(contract) == partyA AND partyBContract(contract) == partyB BY partyA, partyB;

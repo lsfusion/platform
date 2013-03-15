@@ -1,0 +1,35 @@
+MODULE Cash;
+
+REQUIRE PaymentLedger;
+
+// ----------------------------------- Кассовый счет ------------------------------------------ //
+
+CLASS account 'Касса';
+TABLE account (account);
+
+currencyAccount = DATA currency (account);
+nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
+
+numberAccount 'Номер кассового счета'  = DATA STRING[13] (account) FIXEDCHARWIDTH 13;
+
+legalEntityAccount = DATA legalEntity (account);
+defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
+
+EXTEND CLASS account : PaymentLedger.account;
+nameAccount (account) += numberAccount(account);
+PaymentLedger.currencyAccount(account) += currencyAccount(account);
+PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
+
+EXTEND FORM legalEntity
+    OBJECTS ca=account
+    PROPERTIES(ca)  numberAccount, nameCurrencyAccount, ADDOBJ, delete
+    FILTERS legalEntityAccount(ca) == l
+;
+
+EXTEND DESIGN legalEntity {
+    accountContainer {
+        ADD ca.box{
+            caption = 'Кассы';
+        }
+    }
+}

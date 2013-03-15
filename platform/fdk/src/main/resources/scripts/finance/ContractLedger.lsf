@@ -218,10 +218,10 @@ notePaymentRequest 'Примечание' (paymentRequest) = DATA STRING[200] (p
 
 payerPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
 payerPaymentRequest(paymentRequest) <- partyBContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
-namePayerPaymentRequest 'Сторона Б' (paymentRequest) = name(payerPaymentRequest(paymentRequest));
+namePayerPaymentRequest 'Организация (покупатель)' (paymentRequest) = name(payerPaymentRequest(paymentRequest));
 lenderPaymentRequest(paymentRequest) = DATA legalEntity (paymentRequest);
 lenderPaymentRequest(paymentRequest) <- partyAContract(contractPaymentRequest(paymentRequest)) WHEN ASSIGNED (contractPaymentRequest(paymentRequest));
-nameLenderPaymentRequest 'Сторона А' (paymentRequest) = name(lenderPaymentRequest(paymentRequest));
+nameLenderPaymentRequest 'Организация (поставщик)' (paymentRequest) = name(lenderPaymentRequest(paymentRequest));
 
 sumPaymentRequest 'Сумма' (paymentRequest) = DATA NUMERIC[16,2] (paymentRequest);
 
@@ -315,11 +315,11 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     partyBCreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix);
     partyBCreditMemo###prefix(creditMemo###prefix) <- partyBContract(contractCreditMemo###prefix(creditMemo###prefix))
         WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
-    namePartyBCreditMemo###prefix 'Сторона Б' (creditMemo###prefix) = name(partyBCreditMemo###prefix(creditMemo###prefix));
+    namePartyBCreditMemo###prefix 'Организация (покупатель)' (creditMemo###prefix) = name(partyBCreditMemo###prefix(creditMemo###prefix));
     partyACreditMemo###prefix(creditMemo###prefix) = DATA legalEntity (creditMemo###prefix);
     partyACreditMemo###prefix(creditMemo###prefix) <- partyAContract(contractCreditMemo###prefix(creditMemo###prefix))
         WHEN ASSIGNED (contractCreditMemo###prefix(creditMemo###prefix));
-    namePartyACreditMemo###prefix 'Сторона А' (creditMemo###prefix) = name(partyACreditMemo###prefix(creditMemo###prefix));
+    namePartyACreditMemo###prefix 'Организация (поставщик)' (creditMemo###prefix) = name(partyACreditMemo###prefix(creditMemo###prefix));
 
     sumCreditMemo###prefix 'Сумма' (creditMemo###prefix) = DATA NUMERIC[16,2] (creditMemo###prefix);
 
@@ -348,9 +348,9 @@ dateTimeCreditMemo 'Дата/время' (creditMemo) = dateTimeToDateTime(dateC
 @defineCreditMemoUnion(contract, 'Контракт');
 numberContractCreditMemo 'Номер контракта' (creditMemo) = numberContract(contractCreditMemo(creditMemo));
 @defineCreditMemoUnion(partyB, );
-namePartyBCreditMemo 'Сторона Б' (creditMemo) = name(partyBCreditMemo(creditMemo));
+namePartyBCreditMemo 'Организация (покупатель)' (creditMemo) = name(partyBCreditMemo(creditMemo));
 @defineCreditMemoUnion(partyA, );
-namePartyACreditMemo 'Сторона А' (creditMemo) = name(partyACreditMemo(creditMemo));
+namePartyACreditMemo 'Организация (поставщик)' (creditMemo) = name(partyACreditMemo(creditMemo));
 @defineCreditMemoUnion(sum, 'Сумма');
 @defineCreditMemoUnion(description, 'Название документа');
 @defineCreditMemoUnion(note, 'Примечание');
@@ -474,9 +474,9 @@ backgroundInContractLedgerDate 'Цвет' (inContractLedger, date) = RGB(255,160
 //-------------------------------------------- Разнесение по документам -----------------------------------------------//
 
 partyA = DATA SESSION legalEntity();
-namePartyA 'Сторона А(поставщик)' = name(partyA());
+namePartyA 'Организация (поставщик)' = name(partyA());
 partyB = DATA SESSION legalEntity();
-namePartyB 'Сторона Б(покупатель)' = name(partyB());
+namePartyB 'Организация (покупатель)' = name(partyB());
 
 isCostedOutContractLedger 'Расписан' (outContractLedger) = sumOutContractLedger(outContractLedger) (-) costedInContractLedgerOutContractLedger(outContractLedger);
 

@@ -45,6 +45,9 @@ bankAccount = DATA bank (account);
 
 GROUP accountGroup 'Банковская информация' : base;
 
+currencyAccount = DATA currency (account);
+nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account)) IN accountGroup;
+
 numberAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
 accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS account;
 
@@ -56,12 +59,14 @@ CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN 
 noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
 
 EXTEND CLASS account : PaymentLedger.account;
-nameAccount (account) += numberAccount(account);
+nameAccount(account) += numberAccount(account);
+PaymentLedger.currencyAccount(account) += currencyAccount(account);
 
 // ------------------------ Привязка банков к юрлицам ------------------------ //
 
 legalEntityAccount = DATA legalEntity (account);
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
+PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 
 userAccountLegalEntity = DATA account (legalEntity);
 CONSTRAINT legalEntityAccount(userAccountLegalEntity(legalEntity)) != legalEntity CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
@@ -75,14 +80,18 @@ EXTEND FORM legalEntity
     PROPERTIES(l)  numberAccountLegalEntity
 
     OBJECTS a=account
-    PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
+    PROPERTIES(a)  numberAccount, nameCurrencyAccount, nameBankAccount, addressBankAccount, departmentBankAccount,
+                   CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == l
     PROPERTIES equalsLegalEntityAccount(l, a)
 ;
 
 EXTEND DESIGN legalEntity {
-    extendContainer {
-        ADD a.box;
+    accountContainer {
+        ADD a.box{
+            caption = 'Расчетные счета';
+            fillHorizontal = 2.0;
+        }
     }
 }
 

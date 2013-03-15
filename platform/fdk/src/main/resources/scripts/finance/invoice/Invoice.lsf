@@ -119,8 +119,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     Invoice.currencyInvoice(invoice) += currencyInvoice(invoice);
 
     @defineDocumentInterfaceContract(invoice, contractSku, supplier, customer,
-                                     'Сторона A договора накладной не соответствует стороне А накладной',
-                                     'Сторона B договора накладной не соответствует стороне В накладной');
+                                     'Организация (поставщик) договора накладной не соответствует организация (поставщик) накладной',
+                                     'Организация (покупатель) договора накладной не соответствует организация (покупатель) накладной');
 
     @defineDocumentInterfaceHeaderAgreement(invoice);
     @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
