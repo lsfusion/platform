@@ -8,8 +8,10 @@ CLASS ABSTRACT account 'Счет';
 TABLE account (account);
 nameAccount 'Имя' = ABSTRACT STRING[30] (account) PERSISTENT;
 
-currencyAccount = DATA currency (account);
+currencyAccount = ABSTRACT currency (account);
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
+
+legalEntityAccount = ABSTRACT legalEntity (account);
 
 // ---------------- Регистр денег ------------- //
 
@@ -19,19 +21,19 @@ TABLE paymentLedger(paymentLedger);
 dateTimePaymentLedger 'Дата/время' = ABSTRACT DATETIME (paymentLedger) PERSISTENT;
 
 legalEntityFromPaymentLedger = ABSTRACT legalEntity (paymentLedger) PERSISTENT;
-nameLegalEntityFromPaymentLedger 'Организация (с)' = name(legalEntityFromPaymentLedger(ledger));
+nameLegalEntityFromPaymentLedger 'Организация-плательщик' = name(legalEntityFromPaymentLedger(ledger));
 
 accountFromPaymentLedger = ABSTRACT account (paymentLedger) PERSISTENT;
 nameAccountFromPaymentLedger 'Счет (с)' (ledger) = nameAccount(accountFromPaymentLedger(ledger));
 
 legalEntityToPaymentLedger = ABSTRACT legalEntity (paymentLedger) PERSISTENT;
-nameLegalEntityToPaymentLedger 'Организация (на)' = name(legalEntityToPaymentLedger(ledger));
+nameLegalEntityToPaymentLedger 'Организация-получатель' = name(legalEntityToPaymentLedger(ledger));
 
 accountToPaymentLedger = ABSTRACT account (paymentLedger) PERSISTENT;
 nameAccountToPaymentLedger 'Счет (на)' (ledger) = nameAccount(accountToPaymentLedger(ledger));
 
-sumFromPaymentLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
-sumToPaymentLedger 'Сумма к оплате' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
+sumFromPaymentLedger 'Сумма (с)' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
+sumToPaymentLedger 'Сумма (на)' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
 
 descriptionPaymentLedger 'Описание' = ABSTRACT STRING[200] (paymentLedger) PERSISTENT;
 
@@ -45,5 +47,15 @@ FORM paymentLedger 'Движение денег'
 NAVIGATOR {
     financeNavigator{
         ADD paymentLedger;
+    }
+}
+
+EXTEND DESIGN legalEntity {
+    extendContainer {
+        NEW accountContainer{
+            caption = 'Счета';
+            childConstraints = TO THE RIGHT;
+            type = SPLITH;
+        }
     }
 }
