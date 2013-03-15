@@ -140,14 +140,14 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue));
     }
 
-    public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
-        return new CalcPropertyObjectInstance<P>(property, mapping.join(mapObjects));
-    }
-    
     public ClassWhere<Object> mapClassValueWhere() {
         return property.getClassValueWhere().remap(MapFact.<Object, Object>addRevExcl(mapping, "value", "value"));
     }
 
+    public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
+        return new CalcPropertyObjectInstance<P>(property, mapping.join(mapObjects));
+    }
+    
     public <I extends PropertyInterface> boolean mapIntersect(CalcPropertyMapImplement<I, T> implement) {
         return property.intersectFull(implement.property, implement.mapping.rightCrossValuesRev(mapping));
     }

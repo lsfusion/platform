@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.base.SFunctionSet;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -257,11 +256,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return classValueWhere != null;
     }
 
-    public ClassWhere<Object> getClassValueWhere() {
+    public ClassWhere<Object> getClassValueWhere(boolean full) {
         if(isAbstract())
             return classValueWhere;
 
-        return super.getClassValueWhere();
+        return super.getClassValueWhere(full);
     }
 
     @Override

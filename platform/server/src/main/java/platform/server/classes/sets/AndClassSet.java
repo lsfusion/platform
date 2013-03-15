@@ -11,7 +11,6 @@ public interface AndClassSet {
 
     AndClassSet and(AndClassSet node);
 
-    // если не or'ся возвращаем null
     AndClassSet or(AndClassSet node);
 
     boolean isEmpty();

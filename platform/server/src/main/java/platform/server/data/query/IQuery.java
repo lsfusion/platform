@@ -49,7 +49,11 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
 
-    public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
+    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
+        return getClassWhere(classProps, false); // assert что full
+    }
+
+    public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full);
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
         return join(joinImplement, MapValuesTranslator.noTranslate);

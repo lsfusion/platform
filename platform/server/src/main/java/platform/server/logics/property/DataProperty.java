@@ -31,7 +31,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere() {
+    public ClassWhere<Object> getClassValueWhere(boolean full) {
         return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 

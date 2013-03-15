@@ -8,6 +8,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -171,13 +172,29 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         super(classes, map);
     }
 
+    private <K> ImMap<K, AndClassSet> getFull(ImMap<K, ? extends BaseExpr> map) {
+        MMap<K,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.<K>addOr());
+        for(And<VariableClassExpr> where : wheres)
+            for(int i=0,size=map.size();i<size;i++) {
+                AndClassSet classSet = map.getValue(i).getAndClassSet(where);
+                if(classSet!=null)
+                    mResult.add(map.getKey(i), classSet);
+            }
+        return mResult.immutable();
+    }
     // получает классы для BaseExpr'ов
-    public <K> ClassWhere<K> get(ImMap<K, ? extends BaseExpr> map) {
+    public <K> ClassWhere<K> get(ImMap<K, ? extends BaseExpr> map, boolean full) {
+        ImMap<K, AndClassSet> fullMap = null;
+        if(full)
+            fullMap = getFull(map);
+
         ClassWhere<K> transWhere = ClassWhere.FALSE();
         for(And<VariableClassExpr> andWhere : wheres) {
             ImFilterValueMap<K, AndClassSet> andTrans = map.mapFilterValues();
             for(int i=0,size=map.size();i<size;i++) {
                 AndClassSet classSet = map.getValue(i).getAndClassSet(andWhere);
+                if(full && classSet==null)
+                    classSet = fullMap.get(map.getKey(i));
                 if(classSet!=null)
                     andTrans.mapValue(i, classSet);
             }

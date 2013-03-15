@@ -7,7 +7,10 @@ import platform.base.col.WrapMap;
 import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.AddValue;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.ValueClass;
@@ -69,6 +72,19 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     };
     public static <K> AddValue<K, AndClassSet> addAnd() {
+        return (AddValue<K, AndClassSet>) addAnd;
+    }
+
+    private final static AddValue<Object, AndClassSet> addOr = new SimpleAddValue<Object, AndClassSet>() {
+        public AndClassSet addValue(Object key, AndClassSet prevValue, AndClassSet newValue) {
+            return prevValue.or(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <K> AddValue<K, AndClassSet> addOr() {
         return (AddValue<K, AndClassSet>) addAnd;
     }
 
@@ -489,40 +505,23 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         super(where);
     }
 
-    // с проверкой на null, по аналогии с Action'ом, см. CalcProperty.getCommonClasses
-    private static OrClassSet or(OrClassSet or1, OrClassSet or2) {
-        if(or1==null)
-            return or2;
-        if(or2==null)
-            return or1;
-        return or1.or(or2);
+    public <T extends K> ImMap<T, AndClassSet> getCommonClasses(ImSet<T> keys) {
+        MMap<T,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.<T>addOr());
+        for(And<K> where : wheres)
+            mResult.addAll(where.filterKeys(keys));
+        return mResult.immutable();
     }
+
     public <T extends K> ImMap<T, ValueClass> getCommonParent(ImSet<T> keys) {
-        return keys.mapValues(new GetValue<ValueClass, T>() {
-            public ValueClass getMapValue(T key) {
-                OrClassSet orSet = null;
-                for (And<K> where : wheres) {
-                    AndClassSet and = where.get(key);
-                    orSet = or(orSet, and == null ? null : and.getOr());
-                }
-                return orSet == null ? null : orSet.getCommonClass();
-            }}).filterFnValues(new SFunctionSet<ValueClass>() {
-            public boolean contains(ValueClass element) {
-                return element != null;
+        return getCommonClasses(keys).mapValues(new GetValue<ValueClass, AndClassSet>() {
+            public ValueClass getMapValue(AndClassSet value) {
+                return value.getOr().getCommonClass();
             }
         });
     }
 
     public OrObjectClassSet getOrSet(K key) {
-        OrObjectClassSet orSet = OrObjectClassSet.FALSE;
-        for(AbstractClassWhere.And<K> and : wheres) {
-            AndClassSet andClass = and.get(key);
-            if(andClass!=null)
-                orSet = orSet.or(andClass.getOr());
-            else
-                return null;
-        }
-        return orSet;
+        return (OrObjectClassSet) getCommonClasses(SetFact.singleton(key)).get(key).getOr();
     }
 
     private static <K> ImMap<K,AndClassSet> initUpClassSets(ImMap<K, ValueClass> map) {

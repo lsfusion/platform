@@ -73,8 +73,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere() {
-        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(false)));
+    public ClassWhere<Object> getClassValueWhere(boolean full) {
+        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere())); // assert что full
     }
 
     public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {

@@ -215,17 +215,17 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @IdentityLazy
     @Pack
-    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps) {
-        return (ClassWhere<B>) getClassWhere(where, mapKeys, properties.filterIncl(classProps));
+    public <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps, boolean full) {
+        return (ClassWhere<B>) getClassWhere(where, mapKeys, properties.filterIncl(classProps), full);
     }
 
-    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImRevMap<K, KeyExpr> mapKeys, ImMap<V, Expr> mapProps) {
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImRevMap<K, KeyExpr> mapKeys, ImMap<V, Expr> mapProps, final boolean full) {
         return new ExclPullWheres<ClassWhere<B>, V, Where>() {
             protected ClassWhere<B> initEmpty() {
                 return ClassWhere.FALSE();
             }
             protected ClassWhere<B> proceedBase(Where data, ImMap<V, BaseExpr> map) {
-                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map);
+                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map, full);
             }
             protected ClassWhere<B> add(ClassWhere<B> op1, ClassWhere<B> op2) {
                 return op1.or(op2);
@@ -233,9 +233,9 @@ public class Query<K,V> extends IQuery<K,V> {
         }.proceed(where, mapProps);
     }
 
-    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, ImRevMap<K, KeyExpr> mapKeys, ImMap<V, BaseExpr> mapProps) {
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, ImRevMap<K, KeyExpr> mapKeys, ImMap<V, BaseExpr> mapProps, boolean full) {
         return where.and(Expr.getWhere(mapProps.values())).
-                getClassWhere().get(MapFact.<B, BaseExpr>addExcl(mapProps, mapKeys));
+                getClassWhere().get(MapFact.<B, BaseExpr>addExcl(mapProps, mapKeys), full);
     }
 
 

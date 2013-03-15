@@ -43,8 +43,7 @@ public class ConcatenateClassSet implements ConcreteClass  {
 
         AndClassSet[] orClasses = new AndClassSet[classes.length];
         for(int i=0;i<classes.length;i++)
-            if((orClasses[i] = classes[i].or(or.classes[i]))==null)
-                return null;
+            orClasses[i] = classes[i].or(or.classes[i]);
 
         return new ConcatenateClassSet(orClasses);
     }

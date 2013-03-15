@@ -521,16 +521,20 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     @IdentityLazy
     public ClassWhere<T> getClassWhere(boolean full) {
-        ClassWhere<T> result = getClassValueWhere().filterKeys(interfaces); // не полностью, собсно для этого и есть full
+        ClassWhere<T> result = getClassValueWhere(full).filterKeys(interfaces); // не полностью, собсно для этого и есть full
         if(full) // тут по идее assert что result => icommon, но так как и сделано для того случая когда не хватает ключей
             result = result.and(new ClassWhere<T>(getInterfaceCommonClasses(null), true));
         return result;
     }
 
-    protected abstract ClassWhere<Object> getClassValueWhere();
+    protected ClassWhere<Object> getClassValueWhere() {
+        return getClassValueWhere(false);
+    }
+
+    protected abstract ClassWhere<Object> getClassValueWhere(boolean full);
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
-        return getClassValueWhere().remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField));
+        return getClassValueWhere().remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
     public Object read(ExecutionContext context) throws SQLException {
@@ -761,7 +765,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return mvResult.immutableValue();
     }
     public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) { // эвристично определяет классы, для входных значений
-        return getInterfaceClasses();
+        return getClassValueWhere(true).getCommonParent(interfaces);
     }
 
     // костыль для email
