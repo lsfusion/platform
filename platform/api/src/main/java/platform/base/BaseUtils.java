@@ -2,6 +2,7 @@ package platform.base;
 
 import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.HMap;
@@ -27,6 +28,8 @@ import java.util.List;
 import static platform.base.ApiResourceBundle.getString;
 
 public class BaseUtils {
+    public static final Logger systemLogger = Logger.getLogger("SystemLogger");
+
     public static final String lineSeparator = System.getProperty("line.separator");
 
     public static boolean nullEquals(Object obj1, Object obj2) {

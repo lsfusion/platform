@@ -174,9 +174,14 @@
         <appender-ref ref="serverlog"/>
     </category>
 
-    <!-- ?? ??????????, ?? ???? ??? ?????? ?????????... -->
     <category name="paas.manager">
         <priority value="DEBUG"/>
+    </category>
+
+    <category name="GlobalLogger" additivity="false">
+        <priority value="ALL"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="serverlog"/>
     </category>
 
     <root>
