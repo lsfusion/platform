@@ -30,9 +30,4 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

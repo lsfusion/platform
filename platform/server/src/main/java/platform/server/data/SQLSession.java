@@ -451,12 +451,15 @@ public class SQLSession extends MutableObject {
     }
 
     private boolean explainAnalyzeMode = false;
+    public void toggleExplainAnalyzeMode() {
+        explainAnalyzeMode = !explainAnalyzeMode;
+    }
     private boolean explainNoAnalyze = false;
     private void executeExplain(PreparedStatement statement) throws SQLException {
         ResultSet result = statement.executeQuery();
         try {
             while(result.next()) {
-                System.out.println(result.getObject("QUERY PLAN"));
+                logger.info(result.getObject("QUERY PLAN"));
             }
         } finally {
             result.close();
@@ -479,7 +482,7 @@ public class SQLSession extends MutableObject {
                 PreparedStatement explainStatement = statement;
                 if(explainNoAnalyze)
                     explainStatement = getStatement("EXPLAIN " + command, paramObjects, connection, syntax);
-                System.out.println(explainStatement.toString());
+                logger.info(explainStatement.toString());
                 executeExplain(explainStatement);
                 result = 100;
             }
@@ -529,7 +532,7 @@ public class SQLSession extends MutableObject {
         env.before(this, connection, select);
 
         if(explainAnalyzeMode) {
-            System.out.println(select);
+            logger.info(select);
             executeExplain(getStatement("EXPLAIN ("+(explainNoAnalyze?"":"ANALYZE, BUFFERS, ")+"VERBOSE, COSTS) " + select, paramObjects, connection, syntax));
         }
 
