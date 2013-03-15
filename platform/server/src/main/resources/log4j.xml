@@ -178,7 +178,7 @@
         <priority value="DEBUG"/>
     </category>
 
-    <category name="GlobalLogger" additivity="false">
+    <category name="SystemLogger" additivity="false">
         <priority value="ALL"/>
         <appender-ref ref="stdout"/>
         <appender-ref ref="serverlog"/>

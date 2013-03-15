@@ -1,6 +1,7 @@
 package platform.server.context;
 
 import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.LogMessageClientAction;
@@ -90,7 +91,7 @@ public class LogicsInstanceContext extends AbstractContext {
             return true;
         } else if (action instanceof MessageClientAction) {
             MessageClientAction msgAction = (MessageClientAction) action;
-            logger.error("Server message: " + msgAction.message);
+            BaseUtils.systemLogger.info("Server message: " + msgAction.message);
             return true;
         }
         return false;
