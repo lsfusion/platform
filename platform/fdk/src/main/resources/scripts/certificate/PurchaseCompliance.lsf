@@ -20,6 +20,8 @@ invoicesCompliance 'Накладные' (compliance) =
     GROUP CONCAT shortDescriptionInvoice(invoice) IF inComplianceInvoice (compliance, invoice), ','
               BY compliance ORDER invoice PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
 
+backgroundCertificatedInvoice 'Цвет' (invoice) = RGB(224, 224, 255) IF invoice IS invoice;
+
 nameComplianceSku 'Наименование (декл.)' = ABSTRACT STRING[200](sku);
 nameComplianceSku(sku) += nameSku(sku);
 
@@ -72,6 +74,10 @@ EXTEND DESIGN compliance {
     }
     ADD functions.box;
 }
+
+isCertificateInvoice 'Сертификация' = ABSTRACT BOOLEAN(invoice);
+isCertificateUserInvoice 'Сертификация' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
+isCertificateInvoice(invoice) += isCertificateUserInvoice(invoice);
 
 //------------------------------------------ позиции сертификата -------------------------------------------------------//
 TABLE complianceComplianceName(compliance, STRING[200]);
@@ -175,8 +181,11 @@ EXTEND FORM compliances
 ;
 
 //--------------------------------------------- себестоимость --------------------------------------------------------//
+//priceComplianceDetailUserInvoiceDetail 'Экспертиза (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
 
-priceComplianceDetailUserInvoiceDetail 'Экспертиза (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+priceComplianceInvoiceDetail 'Сертификация (ед.)' = ABSTRACT NUMERIC[14,2](invoiceDetail);
+priceComplianceUserInvoiceDetail 'Сертификация (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+priceComplianceInvoiceDetail(detail) += priceComplianceUserInvoiceDetail(detail);
 
 coeffInvoiceDetailComplianceDetail(invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumHomeComplianceDetail(complianceDetailInvoiceDetail(invoiceDetail));
 
@@ -186,8 +195,6 @@ calcSumComplianceDetailInvoiceDetail 'Стоимость экспертизы' (
                                                                                           ORDER invoiceDetail PERSISTENT;
 
 calcPriceComplianceDetailInvoiceDetail(invoiceDetail) = calcSumComplianceDetailInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail);
-
-priceComplianceUserInvoiceDetail 'Услуги (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
 
 coeffInvoiceDetailCompliance(invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumCompliance(complianceInvoiceDetail(invoiceDetail));
 
@@ -200,7 +207,6 @@ calcPriceComplianceInvoiceDetail(invoiceDetail) = calcSumComplianceInvoiceDetail
 
 certificateCostPriceUserInvoiceDetail(invoiceDetail) += priceComplianceUserInvoiceDetail(invoiceDetail);
 
-
 setPriceComplianceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACTION (compliance) {
    FOR complianceInvoiceDetail(invoiceDetail) == compliance DO {
       SET priceComplianceUserInvoiceDetail(invoiceDetail) <- calcPriceComplianceInvoiceDetail(invoiceDetail) (+) calcPriceComplianceDetailInvoiceDetail(invoiceDetail);
@@ -212,15 +218,12 @@ EXTEND FORM compliance
     PROPERTIES(c) setPriceComplianceInvoiceDetailes TODRAW id
 ;
 
-//EXTEND FORM userInvoice
-//    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
-//    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-//                  priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-//                  priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
-//;
-//
-//EXTEND FORM invoices
-//    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice FORCE GRID
-//    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i),
-//                  customCostPriceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i)
-//;
+EXTEND FORM userInvoice
+    PROPERTIES(i) BACKGROUND backgroundCertificatedInvoice(i) isCertificateUserInvoice
+    PROPERTIES(d) BACKGROUND backgroundCertificatedInvoice(i) priceComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCertificateUserInvoice(i)
+;
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY BACKGROUND backgroundCertificatedInvoice(i) isCertificateInvoice FORCE GRID
+    PROPERTIES(d) READONLY BACKGROUND backgroundCertificatedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCertificateInvoice(i)
+;
