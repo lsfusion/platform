@@ -16,6 +16,8 @@ numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compl
 
 textCompliance 'Текст сертификата' = DATA TEXT (compliance);
 
+sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](compliance);
+
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberObject(compliance), dateCompliance(compliance), toDateCompliance(compliance));
@@ -27,7 +29,7 @@ nameLegalEntityCompliance 'Импортёр' (compliance) = name(legalEntityComp
 
 FORM compliance 'Сертификат соответствия'
     OBJECTS c = compliance FIXED PANEL
-    PROPERTIES(c) objectClassName, seriesObject, numberObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance, nameLegalEntityCompliance
+    PROPERTIES(c) objectClassName, seriesObject, numberObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance, nameLegalEntityCompliance, sumCompliance
     EDIT compliance OBJECT c
 ;
 
@@ -44,6 +46,7 @@ DESIGN compliance FROM DEFAULT{
             ADD PROPERTY(toDateCompliance);
             ADD PROPERTY(toTimeCompliance);
             ADD PROPERTY(nameLegalEntityCompliance);
+            ADD PROPERTY(sumCompliance);
         }
     }
     ADD functions.box;
@@ -51,13 +54,13 @@ DESIGN compliance FROM DEFAULT{
 
 FORM compliances 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance//, textCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance, sumCompliance //, textCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance//, textCompliance
+    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance, sumCompliance//, textCompliance
 
     DIALOG compliance OBJECT c
 ;

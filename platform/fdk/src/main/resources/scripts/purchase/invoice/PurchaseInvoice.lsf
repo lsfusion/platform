@@ -37,9 +37,13 @@ extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
 extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
 extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
 
-customCostPriceInvoiceDetail 'Цена за таможню' = ABSTRACT NUMERIC[14,2](invoiceDetail) PERSISTENT;
-customCostPriceUserInvoiceDetail 'Цена за таможню' = ABSTRACT NUMERIC[14,2](userInvoiceDetail) PERSISTENT;
+customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2](invoiceDetail) PERSISTENT;
+customCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2](userInvoiceDetail) PERSISTENT;
 customCostPriceInvoiceDetail(detail) += customCostPriceUserInvoiceDetail(detail);
+
+certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](invoiceDetail) PERSISTENT;
+certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](userInvoiceDetail) PERSISTENT;
+certificateCostPriceInvoiceDetail(detail) += certificateCostPriceUserInvoiceDetail(detail);
 
 priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
                                      homePriceInvoiceDetail(detail)
@@ -50,10 +54,10 @@ priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDe
                                     ELSE priceUserInvoiceDetail(detail);
 
 costPriceInvoiceDetail(detail) = priceInvoiceDetailOver(detail) (+) extraCostPriceInvoiceDetail(detail) (+)
-                                 customCostPriceInvoiceDetail(detail) ;
+                                 customCostPriceInvoiceDetail(detail) (+) certificateCostPriceInvoiceDetail(detail);
 
 costPriceUserInvoiceDetail(detail) = priceUserInvoiceDetailOver(detail) (+) extraCostPriceUserInvoiceDetail(detail) (+)
-                                     customCostPriceUserInvoiceDetail(detail);
+                                     customCostPriceUserInvoiceDetail(detail) (+) certificateCostPriceUserInvoiceDetail(detail);
 
 // -------------------------------------- Формирование задолженности ---------------------------------------------------
 

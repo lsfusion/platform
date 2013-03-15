@@ -635,19 +635,23 @@ END
 
 // вторая валюта
 META defineHomeCurrencyInvoice(invoice)
-    isHomeCurrency 'Доп. валюта' = DATA BOOLEAN(invoice) IN documentPrmGroup;
+    isHomeCurrency 'Конвертация' = DATA BOOLEAN(invoice) IN documentPrmGroup;
 
     homeCurrencyInvoice = ABSTRACT currency(invoice);
-    homeCurrencyUserInvoice = DATA currency(invoice);
+    homeCurrencyUserInvoice = DATA currency(user###invoice);
     homeCurrencyInvoice(invoice) += homeCurrencyUserInvoice(invoice);
-    nameHomeCurrencyUserInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyUserInvoice(invoice));
+    nameHomeCurrencyInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyInvoice(invoice));
 
     typeExchangeInvoice = ABSTRACT typeExchange(invoice);
-    typeExchangeUserInvoice = DATA typeExchange(invoice);
+    typeExchangeUserInvoice = DATA typeExchange(user###invoice);
     typeExchangeInvoice(invoice) += typeExchangeUserInvoice(invoice);
-    nameTypeExchangeUserInvoice 'Тип обмена' (invoice) = name(typeExchangeUserInvoice(invoice));
+    nameTypeExchangeInvoice 'Тип обмена' (invoice) = name(typeExchangeInvoice(invoice));
 
-    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateInvoice(invoice));
+    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(invoice);
+    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(user###invoice);
+    dateRateExchangeInvoice(invoice) += dateRateExchangeUserInvoice(invoice);
+
+    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateRateExchangeInvoice(invoice));
 
     roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, homeCurrencyInvoice(invoice));
     ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
@@ -665,7 +669,7 @@ META defineHomeCurrencyInvoice(invoice)
 
     EXTEND FORM userInvoice
         PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice
-        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
+        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
         PROPERTIES(d) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrency(i)
         PROPERTIES(d) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
     ;
@@ -675,8 +679,9 @@ META defineHomeCurrencyInvoice(invoice)
             NEW headerRow100 {
                 title = 'Конвертация';
                 childConstraints = TO THE RIGHT;
-                ADD PROPERTY(nameHomeCurrencyUserInvoice);
-                ADD PROPERTY(nameTypeExchangeUserInvoice);
+                ADD PROPERTY(nameHomeCurrencyInvoice);
+                ADD PROPERTY(nameTypeExchangeInvoice);
+                ADD PROPERTY(dateRateExchangeInvoice);
                 ADD PROPERTY(rateExchangeInvoice);
             }
         }
@@ -684,7 +689,7 @@ META defineHomeCurrencyInvoice(invoice)
 
     EXTEND FORM invoices
         PROPERTIES(i) isHomeCurrency
-        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyUserInvoice, nameTypeExchangeUserInvoice, rateExchangeInvoice
+        PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
         PROPERTIES(d) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrency(i)
         PROPERTIES(d) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
     ;

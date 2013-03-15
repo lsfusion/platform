@@ -22,7 +22,7 @@ numberCustomsGroup 'Номер строки' = DATA INTEGER(customsGroup) IN bas
 
 @defineHierarchy(customsGroup);
 
-customsZoneCustomsGroup = DATA customsZone(customsGroup);
+customsZoneCustomsGroup = DATA customsZone(customsGroup) AUTOSET;
 nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup)) IN base;
 
 TABLE customsGroupData(customsGroup, DATE);
@@ -55,7 +55,7 @@ FORM customsGroup 'Позиция ТН ВЭД'
     PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup,
                    registrationCustomsGroup,
-                   valueCurrentRateSupplierVATCustomsGroup,
+                   valueCurrentRateSupplierVATCustomsGroup ON CHANGE EXEC dialogSupplierVATCustomsGroup(cg),
                    percentDutyCustomsGroup,
                    weightDutyCustomsGroup
 

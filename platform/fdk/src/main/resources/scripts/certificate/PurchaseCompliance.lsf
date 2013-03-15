@@ -25,8 +25,7 @@ nameComplianceSku(sku) += nameSku(sku);
 
 nameComplianceUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameComplianceSku(skuUserInvoiceDetail(userInvoiceDetail));
 
-
-FORM complianceInvoices 'Присоединение накладных'
+FORM complianceInvoices 'Накладные сертификации'
     OBJECTS c=compliance FIXED PANEL
     PROPERTIES(c) seriesNumberObject, nameLegalEntityCompliance, dateTimeCompliance
 
@@ -45,7 +44,7 @@ FORM complianceInvoices 'Присоединение накладных'
         FILTER 'Только импортёра сертификата' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT
 ;
 
-showFormComplianceInvoices 'Присоединить накладные' = ACTION (compliance) {
+showFormComplianceInvoices 'Накладные сертификации' = ACTION (compliance) {
     FORM complianceInvoices OBJECTS c=compliance MODAL;
     EXEC apply();
 } TOOLBAR;
@@ -55,8 +54,7 @@ EXTEND FORM compliance
 
     OBJECTS id=userInvoiceDetail
     PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail,
-                   quantityUserInvoiceDetail, priceUserInvoiceDetail
-    PROPERTIES(id) READONLY homePriceInvoiceDetail, sumHomeInvoiceDetail
+                   quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeInvoiceDetail
 
     PROPERTIES (c) showFormComplianceInvoices TODRAW id FORCE PANEL TOOLBAR
     FILTERS complianceUserInvoiceDetail(id) == c
@@ -89,10 +87,27 @@ complianceComplianceDetail = DATA compliance(complianceDetail);
 
 nameComplianceComplianceDetail 'Наименование' = DATA STRING[200](complianceDetail);
 
+complianceDetailInvoiceDetail(invoiceDetail) = DATA complianceDetail(invoiceDetail);
+inInvoiceDetailComplianceDetail 'Вкл.' (invoiceDetail, complianceDetail) = complianceDetailInvoiceDetail(invoiceDetail)==complianceDetail;
+
 skuComplianceDetail = DATA sku(complianceDetail);
 nameSkuComplianceDetail 'Товар на экспертизу' (complianceDetail) = nameSku(skuComplianceDetail(complianceDetail));
 
-quantityCertificatedComplianceDetail 'Кол-во на экспертизу'  = DATA NUMERIC[14,3](complianceDetail);
+sumHomeComplianceDetail 'Стоимость' (complianceDetail) = GROUP SUM sumHomeInvoiceDetail(invoiceDetail) BY complianceDetailInvoiceDetail(invoiceDetail);
+
+priceCertificatedComplianceDetail 'Цена для экспертизы' (complianceDetail) = GROUP MIN homePriceInvoiceDetail(userInvoiceDetail) BY complianceDetailInvoiceDetail(userInvoiceDetail);
+
+quantityCertificatedComplianceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](complianceDetail);
+
+sumCertificatedComplianceDetail 'Стоимость экспертизы (расч.)' (complianceDetail) = quantityCertificatedComplianceDetail(complianceDetail) * priceCertificatedComplianceDetail(complianceDetail);
+
+sumDataCertificatedComplianceDetail 'Стоимость для экспертизы' (complianceDetail) = DATA NUMERIC[14,2](complianceDetail);
+
+setSumComplianceDetail 'Рассчитать стоимость' = ACTION (compliance) {
+   FOR complianceComplianceDetail(complianceDetail) == compliance DO {
+      SET sumDataCertificatedComplianceDetail (complianceDetail) <- sumCertificatedComplianceDetail(complianceDetail);
+   };
+};
 
 //@defineDocumentPosted(declaration);
 
@@ -106,9 +121,6 @@ quantityCertificatedComplianceDetail 'Кол-во на экспертизу'  = 
 //declarationDetailUserNumberNameCustoms (number, name) = GROUP UNIQUE declarationDetail BY
 //        userNumberDeclarationDetail(declarationDetail), nameCustomsDeclarationDetail(declarationDetail)
 //        WHERE declarationDetail IS declarationDetail;
-
-complianceDetailInvoiceDetail(invoiceDetail) = DATA complianceDetail(invoiceDetail);
-inInvoiceDetailComplianceDetail 'Вкл.' (invoiceDetail, complianceDetail) = complianceDetailInvoiceDetail(invoiceDetail)==complianceDetail;
 
 CONSTRAINT nameComplianceComplianceDetail(complianceDetail) != nameComplianceSku(skuComplianceDetail(complianceDetail)) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар';
 
@@ -128,17 +140,20 @@ toCreateComplianceDetails 'Создать позиции' = ACTION (compliance) 
         SET complianceDetailInvoiceDetail(invoiceDetail) <- cd WHERE complianceUserInvoiceDetail(invoiceDetail) == compliance AND
             nameComplianceUserInvoiceDetail(invoiceDetail) == complianceName ;
     };
+
+    EXEC setSumComplianceDetail(compliance);
+
 } TOOLBAR;
 
 EXTEND FORM compliance
-    //PROPERTIES(d) sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS cd=complianceDetail
     PROPERTIES(id, cd) inInvoiceDetailComplianceDetail
     PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail
-    PROPERTIES(cd) nameSkuComplianceDetail, quantityCertificatedComplianceDetail, delete
+    PROPERTIES(cd) nameSkuComplianceDetail, quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail, delete
 
     PROPERTIES (c) toCreateComplianceDetails TODRAW cd FORCE PANEL TOOLBAR
+    PROPERTIES (c) setSumComplianceDetail TODRAW cd FORCE PANEL TOOLBAR
     FILTERS complianceComplianceDetail(cd) == c
 ;
 
@@ -152,9 +167,60 @@ EXTEND DESIGN compliance {
 }
 
 EXTEND FORM compliances
-    //PROPERTIES(c) FORCE GRID isPostedDeclaration BEFORE objectClassName(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS cd=complianceDetail
-    PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail, nameSkuComplianceDetail, quantityCertificatedComplianceDetail
+    PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail, nameSkuComplianceDetail,
+                   quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail
     FILTERS complianceComplianceDetail(cd)==c
 ;
+
+//--------------------------------------------- себестоимость --------------------------------------------------------//
+
+priceComplianceDetailUserInvoiceDetail 'Экспертиза (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+
+coeffInvoiceDetailComplianceDetail(invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumHomeComplianceDetail(complianceDetailInvoiceDetail(invoiceDetail));
+
+calcSumComplianceDetailInvoiceDetail 'Стоимость экспертизы' (invoiceDetail) = PARTITION UNGROUP sumDataCertificatedComplianceDetail
+                                                                              PROPORTION STRICT ROUND(0) coeffInvoiceDetailComplianceDetail(invoiceDetail)
+                                                                                             BY complianceDetailInvoiceDetail(invoiceDetail)
+                                                                                          ORDER invoiceDetail PERSISTENT;
+
+calcPriceComplianceDetailInvoiceDetail(invoiceDetail) = calcSumComplianceDetailInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail);
+
+priceComplianceUserInvoiceDetail 'Услуги (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+
+coeffInvoiceDetailCompliance(invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumCompliance(complianceInvoiceDetail(invoiceDetail));
+
+calcSumComplianceInvoiceDetail 'Стоимость услуг' (invoiceDetail) = PARTITION UNGROUP sumCompliance
+                                                                   PROPORTION STRICT ROUND(0) coeffInvoiceDetailCompliance(invoiceDetail)
+                                                                                  BY complianceInvoiceDetail(invoiceDetail)
+                                                                               ORDER invoiceDetail PERSISTENT;
+
+calcPriceComplianceInvoiceDetail(invoiceDetail) = calcSumComplianceInvoiceDetail(invoiceDetail)/quantityUserInvoiceDetail(invoiceDetail);
+
+certificateCostPriceUserInvoiceDetail(invoiceDetail) += priceComplianceUserInvoiceDetail(invoiceDetail);
+
+
+setPriceComplianceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACTION (compliance) {
+   FOR complianceInvoiceDetail(invoiceDetail) == compliance DO {
+      SET priceComplianceUserInvoiceDetail(invoiceDetail) <- calcPriceComplianceInvoiceDetail(invoiceDetail) (+) calcPriceComplianceDetailInvoiceDetail(invoiceDetail);
+   };
+} TOOLBAR;
+
+EXTEND FORM compliance
+    PROPERTIES(id) priceComplianceUserInvoiceDetail
+    PROPERTIES(c) setPriceComplianceInvoiceDetailes TODRAW id
+;
+
+//EXTEND FORM userInvoice
+//    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
+//    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
+//                  priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
+//                  priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
+//;
+//
+//EXTEND FORM invoices
+//    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice FORCE GRID
+//    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i),
+//                  customCostPriceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomUserInvoice(i)
+//;
