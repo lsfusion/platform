@@ -1,0 +1,282 @@
+MODULE GLAccountType;
+
+REQUIRE System,
+        Utils,
+        Document,
+        Stock,
+        Currency,
+        Barcode;
+
+PRIORITY Utils, Stock;
+
+//------------------------- План счетов -------------------------------//
+
+CLASS GLAccountType 'План счетов': named;
+currencyGLAccountType = DATA currency (GLAccountType);
+nameCurrencyGLAccountType 'Валюта' (GLAccountType)= name(currencyGLAccountType(GLAccountType));
+idGLAccountType 'Номер плана счетов' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+
+FORM GLAccountType 'План счетов'
+    OBJECTS g = GLAccountType FIXED PANEL
+    PROPERTIES(g) name, idGLAccountType, nameCurrencyGLAccountType
+    EDIT GLAccountType OBJECT g
+;
+
+FORM dialogGLAccountType 'План счетов'
+    OBJECTS g = GLAccountType
+    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
+    DIALOG GLAccountType OBJECT g
+;
+
+FORM GLAccountTypes 'Планы счетов'
+    OBJECTS g = GLAccountType
+    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+;
+
+//-------------------------- Счета -------------------------//
+
+CLASS GLAccount 'Счет' : named;
+
+GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
+nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
+nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
+
+idGLAccount 'Номер счета' = DATA STRING[20] (GLAccount) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+
+@defineHierarchy(GLAccount);
+canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
+                           [GROUP CONCAT idGLAccount(parent), ' / ' BY child ORDER DESC levelGLAccountGLAccount(child, parent)](GLAccount))
+                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
+
+CONSTRAINT GLAccountTypeGLAccount(parentGLAccount(GLAccount)) != GLAccountTypeGLAccount(GLAccount)
+           CHECKED BY parentGLAccount MESSAGE 'План счетов родительской объекта должна совпадать с планом счетов объекта';
+
+GLAccountIdTypeIdGLAccount (string1, string2) = GROUP UNIQUE GLAccount
+    BY idGLAccountType(GLAccountTypeGLAccount(GLAccount)), idGLAccount(GLAccount) WHERE GLAccount IS GLAccount;
+
+FORM GLAccount 'Счет'
+    OBJECTS g=GLAccount FIXED PANEL
+    PROPERTIES(g) nameGLAccountTypeGLAccount, name, nameParentGLAccount, idGLAccount
+    EDIT GLAccount OBJECT g
+;
+
+FORM GLAccounts 'Счета'
+    OBJECTS t = GLAccountType FIXED PANEL
+    PROPERTIES(t) SELECTOR name
+
+    TREE treeGroups g=GLAccount PARENT parentGLAccount
+    PROPERTIES(g) READONLY name, idGLAccount, canonicalNameGLAccount, canonicalIdGLAccount
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    FILTERS GLAccountTypeGLAccount(g) == t
+    ORDER BY canonicalIdGLAccount
+
+    DIALOG GLAccount OBJECT g
+;
+
+//-------------------------- Проводки -------------------------//
+
+CLASS ABSTRACT generalLedger 'Проводка': named;
+CLASS userGeneralLedger 'Проводка (польз.)': generalLedger, historizable;
+CLASS userGeneralLedgerPosted 'Проведенная проводка (польз.)': userGeneralLedger, postedObject;
+
+@defineDocumentInterfaceHeaderPosted (generalLedger);
+@defineDocumentInterfaceHeaderDatePrefix(generalLedger, , );
+WHEN ASSIGNED(userGeneralLedger AS userGeneralLedger) DO {
+    IF userGeneralLedger IS userGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
+} SESSION;
+
+debitGeneralLedger = ABSTRACT GLAccount (generalLedger);
+idDebitGeneralLedger 'Дебет' (generalLedger) = idGLAccount(debitGeneralLedger(generalLedger));
+debitUserGeneralLedger = DATA GLAccount (userGeneralLedger);
+idDebitUserGeneralLedger 'Дебет' (userGeneralLedger) = idGLAccount(debitUserGeneralLedger(userGeneralLedger));
+debitGeneralLedger (generalLedger) += debitUserGeneralLedger (generalLedger);
+
+
+creditGeneralLedger = ABSTRACT GLAccount (generalLedger);
+idCreditGeneralLedger 'Кредит' (generalLedger) = idGLAccount(creditGeneralLedger(generalLedger));
+creditUserGeneralLedger = DATA GLAccount (userGeneralLedger);
+idCreditUserGeneralLedger 'Кредит' (userGeneralLedger) = idGLAccount(creditUserGeneralLedger(userGeneralLedger));
+creditGeneralLedger (generalLedger) += creditUserGeneralLedger (generalLedger);
+
+CONSTRAINT GLAccountTypeGLAccount(debitUserGeneralLedger(userGeneralLedger)) != GLAccountTypeGLAccount(creditUserGeneralLedger(userGeneralLedger))
+    CHECKED BY  debitUserGeneralLedger, creditUserGeneralLedger
+    MESSAGE 'У дебета и кредита разные планы счетов';
+
+sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (generalLedger);
+sumUserGeneralLedger 'Сумма' = DATA NUMERIC[16,2] (userGeneralLedger);
+sumGeneralLedger (generalLedger) += sumUserGeneralLedger (generalLedger);
+
+descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (generalLedger);
+descriptionUserGeneralLedger 'Описание' = DATA STRING[200] (userGeneralLedger);
+descriptionGeneralLedger (generalLedger) += descriptionUserGeneralLedger (generalLedger);
+
+skipGeneralLedger 'Не изменять значение' (generalLedger) = ABSTRACT BOOLEAN (generalLedger) PERSISTENT;
+skipUserGeneralLedger 'Не изменять значение' (userGeneralLedger) = DATA BOOLEAN (userGeneralLedger);
+skipGeneralLedger (generalLedger) += skipUserGeneralLedger (generalLedger);
+
+editGeneralLedger 'Редактировать' = ABSTRACT ACTION (generalLedger) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+// ----------------------------- Сальдо ---------------------------//
+
+META  defineGLAccountSum (caption, concrete, prefix)
+    // без учета текущей даты
+    prefix###sumB###concrete###GLAccountDate 'Сумма на начало дня '###caption (GLAccount, date) = (sum###concrete###GLAccount(GLAccount) AND date AS DATE)
+                                                                      (-) [GROUP SUM sum###concrete###GLAccountDate(GLAccount, dateIn) AND dateIn >= (date AS DATE)
+                                                                                 BY GLAccount, date](GLAccount, date);
+    // с учетом текущей даты
+    prefix###sumA###concrete###GLAccountDate 'Сумма на конец дня '###caption (GLAccount, date) = (sum###concrete###GLAccount(GLAccount) AND date AS DATE)
+                                                                     (-) [GROUP SUM sum###concrete###GLAccountDate(GLAccount, dateIn) AND dateIn > (date AS DATE)
+                                                                                BY GLAccount, date](GLAccount, date);
+END
+META defineGLAccountBalance (caption, prefix)
+    prefix###balanceAGLAccountDate 'Сальдо на начало дня '###caption (GLAccount, date) =  prefix###sumADebitGLAccountDate(GLAccount, date) (-) prefix###sumACreditGLAccountDate(GLAccount, date);
+    prefix###balanceBGLAccountDate 'Сальдо на конец дня '###caption (GLAccount, date) =  prefix###sumBDebitGLAccountDate(GLAccount, date) (-) prefix###sumBCreditGLAccountDate(GLAccount, date);
+END
+
+sumCreditGLAccount 'Сумма (кредит)' (GLAccount)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger);
+sumDebitGLAccount 'Сумма (дебит)' (GLAccount)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger);
+balanceGLAccount 'Сальдо' (GLAccount)= sumDebitGLAccount(GLAccount) (-) sumCreditGLAccount(GLAccount);
+
+sumCreditGLAccountDate 'Сумма (кредит)' (GLAccount, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)BY creditGeneralLedger(ledger), dateGeneralLedger(ledger);
+sumDebitGLAccountDate 'Сумма (дебит)' (GLAccount, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), dateGeneralLedger(ledger);
+balanceGLAccountDate 'Сальдо' (GLAccount, date)= sumDebitGLAccountDate(GLAccount, date) (-) sumCreditGLAccountDate(GLAccount, date);
+
+sumCreditGLAccountDateFromTo 'Сумма (кредит)' (GLAccount, dateFrom, dateTo) = GROUP SUM
+        sumCreditGLAccountDate(GLAccount, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, dateFrom, dateTo;
+sumDebitGLAccountDateFromTo 'Сумма (дебит)' (GLAccount, dateFrom, dateTo) = GROUP SUM
+        sumDebitGLAccountDate(GLAccount, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, dateFrom, dateTo;
+balanceGLAccountDateFromTo 'Сальдо' (GLAccount, dateFrom, dateTo)= sumDebitGLAccountDateFromTo(GLAccount, dateFrom, dateTo) (-) sumCreditGLAccountDateFromTo(GLAccount, dateFrom, dateTo);
+
+@defineGLAccountSum ('(кредит)', credit, );
+@defineGLAccountSum ('(дебит)', debit, );
+@defineGLAccountBalance ( , );
+
+//- Рекурсивно
+recSumCreditGLAccount 'Сумма (кредит)' (GLAccount)=  GROUP SUM sumCreditGLAccount(child)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount;
+recSumDebitGLAccount 'Сумма (дебит)' (GLAccount)=  GROUP SUM sumDebitGLAccount(child)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount;
+recBalanceGLAccount 'Сальдо' (GLAccount)=  GROUP SUM balanceGLAccount(child)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount;
+
+recSumCreditGLAccountDate 'Сумма (кредит)' (GLAccount, date)=  GROUP SUM sumCreditGLAccountDate(child, date)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, date;
+recSumDebitGLAccountDate 'Сумма (дебит)' (GLAccount, date)=  GROUP SUM sumDebitGLAccountDate(child, date)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, date;
+recBalanceGLAccountDate 'Сальдо' (GLAccount, date)=  GROUP SUM balanceGLAccountDate(child, date)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, date;
+
+recSumCreditGLAccountDateFromTo 'Сумма (кредит)' (GLAccount, dateFrom, dateTo)=  GROUP SUM sumCreditGLAccountDateFromTo(child, dateFrom, dateTo)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, dateFrom, dateTo;
+recSumDebitGLAccountDateFromTo 'Сумма (дебит)' (GLAccount, dateFrom, dateTo)=  GROUP SUM sumDebitGLAccountDateFromTo(child, dateFrom, dateTo)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, dateFrom, dateTo;
+recBalanceGLAccountDateFromTo 'Сальдо' (GLAccount, dateFrom, dateTo)=  GROUP SUM balanceGLAccountDateFromTo(child, dateFrom, dateTo)
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, dateFrom, dateTo;
+
+    
+@defineGLAccountSum ('(кредит)', credit, rec);
+@defineGLAccountSum ('(дебит)', debit, rec);
+@defineGLAccountBalance ( , rec);
+
+EXTEND FORM GLAccounts
+    PROPERTIES(g) recSumDebitGLAccount, recSumCreditGLAccount, recBalanceGLAccount
+;
+
+
+FORM userGeneralLedger 'Проводка'
+    OBJECTS g=userGeneralLedger FIXED PANEL
+    PROPERTIES(g) descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger, sumUserGeneralLedger
+
+    EVENTS
+        ON OK EXEC prePostUserGeneralLedger(g)
+
+    EDIT userGeneralLedger OBJECT g
+;
+
+DESIGN userGeneralLedger FROM DEFAULT{
+
+    main {
+        preferredSize = (1024, 768);
+
+        ADD g.box BEFORE functions.box {
+            childConstraints = TO THE BOTTOM;
+
+            ADD g.documentHeaderGroup {
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(descriptionUserGeneralLedger);
+                ADD PROPERTY(dateUserGeneralLedger);
+            }
+            NEW headerRow11 {
+                title = 'Корреспонденция';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(idDebitUserGeneralLedger);
+                ADD PROPERTY(idCreditUserGeneralLedger);
+                ADD PROPERTY(sumUserGeneralLedger);
+
+            }
+        }
+        PROPERTY(formOk) {
+            caption = 'Провести';
+        }
+    }
+}
+addUserGeneralLedger 'Добавить' = ACTION ADDFORM userGeneralLedger;
+editUserGeneralLedger 'Редактировать' (userGeneralLedger) = ACTION EDITFORM userGeneralLedger;
+editGeneralLedger(generalLedger) += editUserGeneralLedger(generalLedger);
+isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS userGeneralLedger;
+
+FORM generalLedgers 'Проводки'
+    OBJECTS g = generalLedger
+    PROPERTIES(g) READONLY isPostedGeneralLedger FORCE GRID, descriptionGeneralLedger, dateGeneralLedger, idDebitGeneralLedger, idCreditGeneralLedger, sumGeneralLedger
+
+
+    PROPERTIES (g) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+
+    PROPERTIES ()  addUserGeneralLedger TODRAW g
+    PROPERTIES (g) editGeneralLedger//, copyOrder
+    PROPERTIES     delete(g) FORCE PANEL TOOLBAR  SHOWIF isUserGeneralLedger(g)
+
+    DIALOG generalLedger OBJECT g
+;
+DESIGN generalLedgers FROM DEFAULT {
+    PROPERTY (delete(g)) {
+        askConfirm = TRUE;
+    }
+
+    NEW documentHistory BEFORE functions.box {
+        title = 'История';
+
+        ADD g.historyGroup;
+        ADD g.postedGroup;
+    }
+    ADD g.box BEFORE documentHistory;
+}
+
+META defineGeneralLedgerAggregation (object, prop, property, dateProp, description, debit, credit, accountType)
+
+    CLASS prop###generalLedger : generalLedger;
+
+    TABLE prop###generalLedger (prop###generalLedger);
+    @defineAggregation(object, prop###generalLedger, property);
+
+    isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
+    descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
+    dateGeneralLedger(generalLedger) += dateProp###object(object###prop###generalLedger(generalLedger));
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS prop###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS prop###generalLedger;
+    sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
+
+END
+
+NAVIGATOR {
+    financeNavigator {
+        NEW accountType 'Бухгалтерский учет' {
+            ADD GLAccountTypes;
+            ADD GLAccounts;
+            ADD generalLedgers;
+        }
+    }
+}

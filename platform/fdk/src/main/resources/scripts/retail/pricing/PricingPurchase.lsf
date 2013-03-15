@@ -1,6 +1,6 @@
 MODULE PricingPurchase;
 
-REQUIRE Pricing, PurchaseInvoice, Repricing, PurchaseShipment, PurchaseOperation;
+REQUIRE Pricing, PurchaseInvoice, Repricing, PurchaseShipment, PurchaseOperation, GLAccountType;
 
 NAMESPACE Purchase;
 

@@ -27,7 +27,7 @@ unitMeasureStatisticGroup 'Ед. изм. ИД' (statisticGroup) = DATA groupStat
 nameUOMStatisticGroup 'Ед. изм.' (statisticGroup) = name(unitMeasureStatisticGroup(statisticGroup)) MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
 
 sidStatisticGroup 'Код группы' (statisticGroup) = DATA STRING[12] (statisticGroup)  MINCHARWIDTH 12 MAXCHARWIDTH 12 PREFCHARWIDTH 12;
-canonicalNumberStatisticGroup 'Каноническое код' (statisticGroup) = toString255(
+canonicalNumberStatisticGroup 'Канонический код' (statisticGroup) = toString255(
                            [GROUP CONCAT sidStatisticGroup(parent), ' / ' BY child ORDER DESC levelStatisticGroupStatisticGroup(child, parent)](statisticGroup))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 

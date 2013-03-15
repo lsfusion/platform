@@ -660,6 +660,7 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     retailPricePricingDetail(pricingDetail) += retailPrice###concrete###pricingDetail(pricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailSum, 'Сумма розничная');
     retailSumPricingDetail(pricingDetail) += retailSum###concrete###pricingDetail(pricingDetail);
+//    @defineDocumentHeaderSumPrefix (concrete###pricing, retail, );
 
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailMarkup, 'Надбавка');
     retailMarkupPricingDetail(pricingDetail) += retailMarkup###concrete###pricingDetail(pricingDetail);

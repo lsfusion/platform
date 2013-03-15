@@ -145,7 +145,7 @@ moveCustomGroup 'Перенести отмеченные группы' = ACTION 
 }
 
 FORM customGroupType 'Тип дополнительного классификатора SKU'
-    OBJECTS t = customGroupType
+    OBJECTS t = customGroupType FIXED PANEL
     PROPERTIES(t) name
     EDIT customGroupType OBJECT t
 ;
@@ -160,7 +160,6 @@ FORM customGroupTypes 'Типы дополнительного классифи�
     OBJECTS t = customGroupType
     PROPERTIES(t) READONLY name
     PROPERTIES(t) ADDFORM, EDITFORM, delete
-    EDIT customGroupType OBJECT t
 ;
 
 FORM customGroup 'Дополнительная группа'
