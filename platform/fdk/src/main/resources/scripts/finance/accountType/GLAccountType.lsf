@@ -14,7 +14,7 @@ PRIORITY Utils, Stock;
 CLASS GLAccountType 'План счетов': named;
 currencyGLAccountType = DATA currency (GLAccountType);
 nameCurrencyGLAccountType 'Валюта' (GLAccountType)= name(currencyGLAccountType(GLAccountType));
-idGLAccountType 'Номер плана счетов' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
 FORM GLAccountType 'План счетов'
     OBJECTS g = GLAccountType FIXED PANEL
@@ -42,7 +42,7 @@ GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
 nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
 nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
 
-idGLAccount 'Номер счета' = DATA STRING[20] (GLAccount) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
 @defineHierarchy(GLAccount);
 canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
@@ -293,7 +293,7 @@ END
 
 CLASS dimension 'Субконто': named;
 
-idDimension 'Номер субконто' = DATA STRING[20] (dimension) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+idDimension 'Идентификатор' = DATA STRING[20] (dimension) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
 orderGLAccountDimension 'Порядковый номер' = DATA INTEGER (GLAccount,dimension);
 
@@ -302,7 +302,12 @@ dimensionsGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(na
                                                 ORDER orderGLAccountDimension (GLAccount,dimension) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
 debitGeneralLedgerDimension 'Субконто (дебит)' = ABSTRACT object (generalLedger,dimension);
+debitUserGeneralLedgerDimension 'Субконто (дебит)' = DATA object (userGeneralLedger,dimension);
+debitGeneralLedgerDimension(generalLedger,dimension) += debitUserGeneralLedgerDimension(generalLedger,dimension);
+
 creditGeneralLedgerDimension 'Субконто (кредит)' = ABSTRACT object (generalLedger,dimension);
+creditUserGeneralLedgerDimension 'Субконто (кредит)' = DATA object (userGeneralLedger,dimension);
+creditGeneralLedgerDimension(generalLedger,dimension) += creditUserGeneralLedgerDimension(generalLedger,dimension);
 
 dimensionIdDimension (string1) = GROUP UNIQUE dimension BY idDimension(dimension) WHERE dimension IS dimension;
 
@@ -339,13 +344,13 @@ EXTEND FORM userGeneralLedger
 
     OBJECTS d = dimension
     PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimension(g,d)
-    PROPERTIES debitGeneralLedgerDimension(g,d)
+    PROPERTIES debitUserGeneralLedgerDimension(g,d)
     FILTERS orderDebitGeneralLedgerDimension(g,d)
     ORDER BY orderDebitGeneralLedgerDimension
 
     OBJECTS c = dimension
     PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimension(g,c)
-    PROPERTIES creditGeneralLedgerDimension(g,c)
+    PROPERTIES creditUserGeneralLedgerDimension(g,c)
     FILTERS orderCreditGeneralLedgerDimension(g,c)
     ORDER BY orderCreditGeneralLedgerDimension
 
