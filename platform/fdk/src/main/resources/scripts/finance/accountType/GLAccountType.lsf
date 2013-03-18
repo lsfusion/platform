@@ -188,7 +188,8 @@ EXTEND FORM GLAccounts
 
 FORM userGeneralLedger 'Проводка'
     OBJECTS g=userGeneralLedger FIXED PANEL
-    PROPERTIES(g) descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger, sumUserGeneralLedger
+    PROPERTIES(g) descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger,
+                  sumUserGeneralLedger
 
     EVENTS
         ON OK EXEC prePostUserGeneralLedger(g)
@@ -230,10 +231,12 @@ isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS userGeneralLedger;
 
 FORM generalLedgers 'Проводки'
     OBJECTS g = generalLedger
-    PROPERTIES(g) READONLY isPostedGeneralLedger FORCE GRID, descriptionGeneralLedger, dateGeneralLedger, idDebitGeneralLedger, idCreditGeneralLedger, sumGeneralLedger
+    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, descriptionGeneralLedger, dateGeneralLedger, idDebitGeneralLedger,
+                   idCreditGeneralLedger, sumGeneralLedger
 
 
-    PROPERTIES (g) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
+    PROPERTIES (g) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable,
+                   nameUserClosed, timeClosed, hostnameComputerClosed
 
     PROPERTIES ()  addUserGeneralLedger TODRAW g
     PROPERTIES (g) editGeneralLedger//, copyOrder
@@ -269,6 +272,21 @@ META defineGeneralLedgerAggregation (object, prop, property, dateProp, descripti
     creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS prop###generalLedger;
     sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
 
+END
+
+META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, property, dateProp, description, debit, credit, accountType)   //  prim1Object - документ
+
+    CLASS prop###generalLedger : generalLedger;
+
+    TABLE prop###generalLedger (prop###generalLedger);
+    @defineAggregation (prim1Object, prim2Object, prop###generalLedger, property);
+
+    isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
+    descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
+    dateGeneralLedger(generalLedger) += dateProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS prop###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS prop###generalLedger;
+    sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
 END
 
 NAVIGATOR {
