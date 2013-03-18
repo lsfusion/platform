@@ -57,9 +57,26 @@ public abstract class GFilterController {
                 collapsePressed();
             }
         };
-        filterDialog = new DialogBox(false, false, filterDialogHeader);
-        filterDialog.setWidget(filterView);
+//        filterDialog = new DialogBox(false, false, filterDialogHeader);
+//        filterDialog.setWidget(filterView);
+    }
 
+    public DialogBox getFilterDialog() {
+        // DialogBox в конструкторе запрашивает getClientWidth, что вызывает relayout
+        // поэтому не конструируем его, пока не понадобится, чтобы не тормозить начальный показ формы
+        if (filterDialog == null) {
+            filterDialog = new DialogBox(false, false, filterDialogHeader);
+            filterDialog.setWidget(filterView);
+
+        }
+        return filterDialog;
+    }
+
+    private void setDialogVisible(boolean visible) {
+        // игнорируем setVisible(false), пока диалог не создан
+        if (visible || filterDialog != null) {
+            getFilterDialog().setVisible(visible);
+        }
     }
 
     public Button getToolbarButton() {
@@ -82,10 +99,10 @@ public abstract class GFilterController {
     }
 
     private void changeState(State newState) {
-        filterDialog.setVisible(newState == State.EXPANDED);
+        setDialogVisible(newState == State.EXPANDED);
         if (newState == State.EXPANDED && state == State.REMOVED) {
             filterDialogHeader.setText("Фильтр [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]");
-            filterDialog.center();
+            getFilterDialog().center();
         }
 
         state = newState;
@@ -181,7 +198,7 @@ public abstract class GFilterController {
     }
 
     public void setVisible(boolean visible) {
-        filterDialog.setVisible(visible && state != State.COLLAPSED && state != State.REMOVED);
+        setDialogVisible(visible && state != State.COLLAPSED && state != State.REMOVED);
         if (!visible) {
             if (state != State.HIDDEN) {
                 hiddenState = state;

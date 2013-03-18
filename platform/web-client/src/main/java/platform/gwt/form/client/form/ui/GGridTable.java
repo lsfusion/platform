@@ -27,6 +27,7 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.util.Collections.singleton;
+import static platform.gwt.base.shared.GwtSharedUtils.nullEquals;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
@@ -164,7 +165,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             }
 
             rowsUpdated = false;
-            dataUpdated = true;
         }
     }
 
@@ -243,7 +243,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             gridController.setForceHidden(columnProperties.isEmpty());
 
             columnsUpdated = false;
-            dataUpdated = true;
         }
     }
 
@@ -429,8 +428,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     @Override
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
-        super.updatePropertyCaptions(propertyDraw, values);
-        columnsUpdated = true;
+        Map<GGroupObjectValue, Object> oldValues = propertyCaptions.get(propertyDraw);
+        if (!nullEquals(oldValues, values)) {
+            super.updatePropertyCaptions(propertyDraw, values);
+            columnsUpdated = true;
+        }
     }
 
     @Override

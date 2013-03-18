@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import platform.gwt.form.shared.view.GForm;
@@ -127,8 +128,6 @@ final class FormDockable {
     }
 
     private class TabWidget extends HorizontalPanel {
-        public static final String CROSS_SYMBOL_HTML = "&#215;";
-
         private Label label;
         private Button closeButton;
 
@@ -136,7 +135,8 @@ final class FormDockable {
             label = new Label(title);
             label.addStyleName("customFontPresenter");
 
-            closeButton = new Button(CROSS_SYMBOL_HTML);
+            closeButton = new Button();
+            closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
 
             add(label);

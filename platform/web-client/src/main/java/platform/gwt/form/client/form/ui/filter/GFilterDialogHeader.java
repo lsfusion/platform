@@ -6,14 +6,15 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
+import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.form.shared.view.panel.ImageButton;
 
 public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private static final String COLLAPSE = "collapse.png";
 
     private ImageButton collapseButton;
-    private HTML captionWidget;
+    private Label captionWidget;
     private HandlerManager handlerManager;
 
     public GFilterDialogHeader(String caption) {
@@ -22,8 +23,9 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
         setStyleName("Caption");
         addStyleName("filterDialogHeader");
 
-        captionWidget = new HTML(caption);
-        captionWidget.addStyleName("flowPanelChildLeftAlign");
+        captionWidget = new Label();
+        captionWidget.setStyleName("flowPanelChildLeftAlign");
+        setText(caption);
 
         collapseButton = new ImageButton(null, COLLAPSE);
         collapseButton.addStyleName("toolbarButton");
@@ -94,6 +96,6 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
 
     @Override
     public void setText(String text) {
-        captionWidget.setHTML(text);
+        captionWidget.setText(EscapeUtils.unicodeEscape(text));
     }
 }

@@ -5,6 +5,7 @@ import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 
 public class EscapeUtils {
     public static final String UNICODE_NBSP = "\u00A0";
+    public static final String UNICODE_CROSS = "\u00D7";
     public static final String UNICODE_AMP = "\u0026";
     public static final String UNICODE_LT = "\u003C";
     public static final String UNICODE_GT = "\u003E";
