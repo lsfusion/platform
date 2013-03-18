@@ -289,12 +289,111 @@ META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, property, d
     sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
 END
 
+//------------------------- Субконто -------------------------------//
+
+CLASS dimension 'Субконто': named;
+
+idDimension 'Номер субконто' = DATA STRING[20] (dimension) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+
+orderGLAccountDimension 'Порядковый номер' = DATA INTEGER (GLAccount,dimension);
+
+dimensionsGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimension)) IF orderGLAccountDimension (GLAccount,dimension) , ', '
+                                                BY GLAccount
+                                                ORDER orderGLAccountDimension (GLAccount,dimension) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+debitGeneralLedgerDimension 'Субконто (дебит)' = ABSTRACT object (generalLedger,dimension);
+creditGeneralLedgerDimension 'Субконто (кредит)' = ABSTRACT object (generalLedger,dimension);
+
+dimensionIdDimension (string1) = GROUP UNIQUE dimension BY idDimension(dimension) WHERE dimension IS dimension;
+
+FORM dimension 'Субконто'
+    OBJECTS d = dimension FIXED PANEL
+    PROPERTIES(d) name, idDimension
+    EDIT dimension OBJECT d
+;
+
+FORM dimensions 'Субконто'
+    OBJECTS d = dimension
+    PROPERTIES(d) READONLY name, idDimension
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    DIALOG dimension OBJECT d
+;
+
+EXTEND FORM GLAccount
+
+    OBJECTS d = dimension
+    PROPERTIES(d) READONLY name, idDimension
+    PROPERTIES orderGLAccountDimension(g,d)
+;
+EXTEND DESIGN GLAccount {
+    ADD d.box BEFORE functions.box;
+}
+EXTEND FORM GLAccounts
+    PROPERTIES(g) READONLY dimensionsGLAccount
+;
+
+orderDebitGeneralLedgerDimension 'Порядковый номер' (ledger, dimension)=  orderGLAccountDimension(debitGeneralLedger(ledger), dimension);
+orderCreditGeneralLedgerDimension 'Порядковый номер' (ledger, dimension)=  orderGLAccountDimension(creditGeneralLedger(ledger), dimension);
+
+EXTEND FORM userGeneralLedger
+
+    OBJECTS d = dimension
+    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimension(g,d)
+    PROPERTIES debitGeneralLedgerDimension(g,d)
+    FILTERS orderDebitGeneralLedgerDimension(g,d)
+    ORDER BY orderDebitGeneralLedgerDimension
+
+    OBJECTS c = dimension
+    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimension(g,c)
+    PROPERTIES creditGeneralLedgerDimension(g,c)
+    FILTERS orderCreditGeneralLedgerDimension(g,c)
+    ORDER BY orderCreditGeneralLedgerDimension
+
+;
+EXTEND DESIGN userGeneralLedger {
+
+
+    NEW row BEFORE functions.box{
+        childConstraints = TO THE RIGHT;
+        title = 'Субконто';
+
+        ADD d.box {title = 'Дебит';}
+        ADD c.box {title = 'Кредит';}
+    }
+}
+
+EXTEND FORM generalLedgers
+
+    OBJECTS d = dimension
+    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimension(g,d), debitGeneralLedgerDimension(g,d)
+    FILTERS orderDebitGeneralLedgerDimension(g,d)
+    ORDER BY orderDebitGeneralLedgerDimension
+
+    OBJECTS c = dimension
+    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimension(g,c), creditGeneralLedgerDimension(g,c)
+    FILTERS orderCreditGeneralLedgerDimension(g,c)
+    ORDER BY orderCreditGeneralLedgerDimension
+;
+EXTEND DESIGN generalLedgers {
+
+
+    NEW row BEFORE documentHistory{
+        childConstraints = TO THE RIGHT;
+        title = 'Субконто';
+
+        ADD d.box {title = 'Дебит';}
+        ADD c.box {title = 'Кредит';}
+    }
+}
+
+
 NAVIGATOR {
     financeNavigator {
         NEW accountType 'Бухгалтерский учет' {
             ADD GLAccountTypes;
             ADD GLAccounts;
             ADD generalLedgers;
+            ADD dimensions;
         }
     }
 }
