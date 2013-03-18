@@ -603,8 +603,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                             String[] fullName = name.replaceFirst(filter, "").trim().split(" ");
                             String firstName = "";
                             for (int i = 1; i < fullName.length; i++)
-                                firstName += fullName[i];
-                            employeesList.add(new Employee(legalEntityID, firstName, fullName[0], filter));
+                                firstName += fullName[i] + " ";
+                            employeesList.add(new Employee(legalEntityID, firstName.trim(), fullName[0], filter));
                             break;
                         }
                     }
