@@ -92,10 +92,10 @@ public class BaseClass extends AbstractCustomClass {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
             }
-        objectClass = new ConcreteCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]), named);
+        objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, named);
     }
 
-    public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges) throws SQLException {
+    public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
         Set<CustomClass> allClasses = getChilds().toJavaSet();
         allClasses.remove(objectClass);
 
@@ -130,7 +130,7 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof ConcreteCustomClass)
-                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs));
+                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, name, classSID, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
 
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {

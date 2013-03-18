@@ -28,17 +28,21 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         super(sID, caption, parents);
     }
 
-    public ConcreteCustomClass(String sID, String caption, List<String> sIDs, List<String> names, CustomClass... parents) {
+    public ConcreteCustomClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
         super(sID, caption, parents);
-        assert sIDs.size() == names.size();
+        assert names.size() == captions.size();
 
-        for (int i = 0; i < sIDs.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(sIDs.get(i), names.get(i), null));
+        for (int i = 0; i < names.size(); i++) {
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null));
         }
     }
 
-    public ConcreteCustomClass(String sID, String caption, String[] sIDs, String[] names, CustomClass... parents) {
-        this(sID, caption, BaseUtils.toList(sIDs), BaseUtils.toList(names), parents);
+    public static ConcreteCustomClass createObjectClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
+        ConcreteCustomClass objectClass = new ConcreteCustomClass(sID, caption, names, captions, parents);
+        for (int i = 0; i < objectClass.staticObjectsInfo.size(); i++) {
+            objectClass.staticObjectsInfo.get(i).sid = objectClass.staticObjectsInfo.get(i).name;
+        }
+        return objectClass;
     }
 
     public boolean inSet(AndClassSet set) {
@@ -116,65 +120,67 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public static class ObjectInfo {
-        public ObjectInfo(String sid, String name, Integer id) {
+        public ObjectInfo(String sid, String name, String caption, Integer id) {
             this.sid = sid;
             this.name = name;
+            this.caption = caption;
             this.id = id;
         }
 
         public String sid;
         public String name;
+        public String caption;
         public Integer id;
     }
 
     private List<ObjectInfo> staticObjectsInfo = new ArrayList<ObjectInfo>();
 
-    public boolean hasStaticObject(String sID) {
+    public boolean hasStaticObject(String name) {
         for (ObjectInfo info : staticObjectsInfo) {
-            if (info.sid.equals(sID)) {
+            if (info.name.equals(name)) {
                 return true;
             }
         }
         return false;
     }
 
-    public int getObjectID(String sID) {
+    public int getObjectID(String name) {
         for (ObjectInfo info : staticObjectsInfo) {
-            if (info.sid.equals(sID)) {
+            if (info.name.equals(name)) {
                 return info.id;
             }
         }
-        throw new RuntimeException("sid not found");
+        throw new RuntimeException("name not found");
     }
 
-    public String getObjectSID(int id) {
+    public String getObjectName(int id) {
         for(ObjectInfo info : staticObjectsInfo) {
             if (info.id == id) {
-                return info.sid;
+                return info.name;
             }
         }
         throw new RuntimeException("id not found");
     }
 
-    public void addStaticObjects(List<String> sIDs, List<String> names) {
-        assert sIDs.size() == names.size();
-        for (int i = 0; i < sIDs.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(sIDs.get(i), names.get(i), null));
+    public void addStaticObjects(List<String> names, List<String> captions) {
+        assert names.size() == captions.size();
+        for (int i = 0; i < names.size(); i++) {
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null));
         }
     }
 
-    public List<String> getStaticObjectsSIDs() {
+    public List<String> getStaticObjectsNames() {
         List<String> sids = new ArrayList<String>();
         for (ObjectInfo info : staticObjectsInfo) {
-            sids.add(info.sid);
+            sids.add(info.name);
         }
         return sids;
     }
 
-    public List<String> getStaticObjectsNames() {
+    public List<String> getStaticObjectsCaptions() {
         List<String> names = new ArrayList<String>();
         for (ObjectInfo info : staticObjectsInfo) {
-            names.add(info.name);
+            names.add(info.caption);
         }
         return names;
     }
@@ -203,7 +209,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
         for (ObjectInfo info : staticObjectsInfo) {
-            String newSID = info.sid;
+            String newSID = info.sid; // todo [dale]:
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)
                 throw new RuntimeException(ServerResourceBundle.getString("classes.objects.have.the.same.id", newSID, caption, usedClass.caption));
@@ -217,13 +223,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             }
 
             if (oldClasses.containsKey(oldSID)) {
-                if (info.name != null && !info.name.equals(oldClasses.get(oldSID).second)) {
-                    modifiedNames.put(oldClasses.get(oldSID).first, info.name);
+                if (info.caption != null && !info.caption.equals(oldClasses.get(oldSID).second)) {
+                    modifiedNames.put(oldClasses.get(oldSID).first, info.caption);
                 }
                 info.id = oldClasses.get(oldSID).first;
             } else {
                 DataObject classObject = session.addObject(this);
-                name.change(info.name, session, classObject);
+                name.change(info.caption, session, classObject);
                 classSID.change(newSID, session, classObject);
                 info.id = (Integer) classObject.object;
             }
@@ -233,13 +239,17 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return modifiedNames;
     }
 
+    private String createStaticObjectSID(String objectName) {
+        return getSID() + "." + objectName;
+    }
+
     @Override
     public Expr getStaticExpr(Object value) {
         return new StaticValueExpr(value, this, true);
     }
 
-    public DataObject getDataObject(String sID) {
-        return new DataObject(getObjectID(sID), this);
+    public DataObject getDataObject(String name) {
+        return new DataObject(getObjectID(name), this);
     }
 
     @Override

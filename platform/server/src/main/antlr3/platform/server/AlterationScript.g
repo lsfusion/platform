@@ -33,6 +33,7 @@ statement
 	:	propertyRename
     |	classRename
     |	tableRename
+    |	objectRename
 	;
     
 propertyRename
@@ -47,9 +48,17 @@ tableRename
 	:	'TABLE' r=sidRename { self.addTableSIDChange($script::version, $r.from, $r.to); }
 	;
 	
+objectRename
+	:	'OBJECT' r=objectSidRename { self.addObjectSIDChange($script::version, $r.from, $r.to); }	
+	;
+	
 sidRename returns [String from, String to]
 	:	old=ID '->' newID=ID	{ $from = $old.text; $to = $newID.text; }
 	;	
+
+objectSidRename returns [String from, String to]
+	:	old=ID '->' newID=ID	{ $from = $old.text; $to = $newID.text; }
+	;
 
 changeVersion returns [String version] 
 	:	v=VERSION { $version = $v.text.substring(1); }
@@ -62,10 +71,10 @@ changeVersion returns [String version]
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
 fragment FIRST_ID_LETTER	: ('a'..'z'|'A'..'Z');
-fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
+fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'.'|'0'..'9');
 fragment DIGIT		:	'0'..'9';
 
+VERSION			:	'V' DIGIT+ ('.' DIGIT+)*;
 ID          	:	FIRST_ID_LETTER NEXT_ID_LETTER*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
-VERSION			:	'V' DIGIT+ ('.' DIGIT+)*; 			    

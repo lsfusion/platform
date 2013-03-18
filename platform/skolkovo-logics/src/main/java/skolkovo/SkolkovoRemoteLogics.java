@@ -121,7 +121,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                 Integer vResult = (Integer) SkolkovoLM.voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
                 if (vResult != null) {
-                    voteInfo.voteResult = SkolkovoLM.voteResult.getObjectSID(vResult);
+                    voteInfo.voteResult = SkolkovoLM.voteResult.getObjectName(vResult);
                 }
 
                 voteInfo.voteDone = voteInfo.voteResult != null
@@ -318,7 +318,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 
                     Integer vResult = (Integer) propValues.get("vResult");
                     if (vResult != null) {
-                        voteInfo.voteResult = SkolkovoLM.voteResult.getObjectSID(vResult);
+                        voteInfo.voteResult = SkolkovoLM.voteResult.getObjectName(vResult);
                     }
 
                     voteInfo.voteDone = voteInfo.voteResult != null

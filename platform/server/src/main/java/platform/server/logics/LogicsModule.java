@@ -42,16 +42,15 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.EvalActionProperty;
 import platform.server.logics.scripted.MetaCodeFragment;
 import platform.server.logics.table.ImplementTable;
-import platform.server.mail.AttachmentFormat;
 
-import javax.mail.Message;
-import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.copyOfRange;
-import static platform.base.BaseUtils.*;
+import static platform.base.BaseUtils.add;
+import static platform.base.BaseUtils.consecutiveInts;
 import static platform.server.logics.PropertyUtils.*;
 import static platform.server.logics.property.derived.DerivedProperty.*;
 
@@ -336,9 +335,22 @@ public abstract class LogicsModule {
         return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
     }
 
+    protected void printStaticObjectsChanges(String path, String name, List<String> sids) {
+        try {
+            PrintWriter w = new PrintWriter(new FileWriter(path, true));
+            for (String sid : sids) {
+                w.print("OBJECT " + sid + " -> " + transformNameToSID(name) + "." + sid + "\n");
+            }
+            w.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
         ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
+//        printStaticObjectsChanges("D:/skolkovo_class_migrate.txt", name, sids);
         storeCustomClass(customClass);
         return customClass;
     }

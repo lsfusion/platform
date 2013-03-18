@@ -71,6 +71,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private TreeMap<DBVersion, List<SIDChange>> propertySIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
 
     private DataAdapter adapter;
 
@@ -969,7 +970,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true);
         }
 
-        fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges));
+        fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
 
         updateClassStat(sql);
 
@@ -992,10 +993,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         initSystemUser();
     }
 
-    private void fillIDs(Map<String, String> sIDChanges) throws SQLException {
+    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException {
         DataSession session = createSession();
 
-        LM.baseClass.fillIDs(session, LM.name, LM.classSID, sIDChanges);
+        LM.baseClass.fillIDs(session, LM.name, LM.classSID, sIDChanges, objectSIDChanges);
 
         session.apply(businessLogics);
 
@@ -1086,6 +1087,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         if (!classSIDChanges.isEmpty() && curVersion.compare(classSIDChanges.lastKey()) < 0) {
             curVersion = classSIDChanges.lastKey();
         }
+        if (!objectSIDChanges.isEmpty() && curVersion.compare(objectSIDChanges.lastKey()) < 0) {
+            curVersion = objectSIDChanges.lastKey();
+        }
         if (!tableSIDChanges.isEmpty() && curVersion.compare(tableSIDChanges.lastKey()) < 0) {
             curVersion = tableSIDChanges.lastKey();
         }
@@ -1110,6 +1114,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void addTableSIDChange(String version, String oldSID, String newSID) {
         addSIDChange(tableSIDChanges, version, oldSID, newSID);
+    }
+
+    public void addObjectSIDChange(String version, String oldSID, String newSID) {
+        addSIDChange(objectSIDChanges, version, oldSID, newSID);
     }
 
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {

@@ -242,7 +242,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                     dto.name = (String) propValues.get("name");
                     dto.port = (Integer) propValues.get("port");
                     Integer statusId = (Integer) propValues.get("status");
-                    dto.status = statusId == null ? null : paasLM.status.getObjectSID(statusId);
+                    dto.status = statusId == null ? null : paasLM.status.getObjectName(statusId);
                     dto.description = "";
 
                     configurations[i] = dto;
@@ -580,7 +580,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                     return null;
                 }
 
-                return paasLM.status.getObjectSID(statusId);
+                return paasLM.status.getObjectName(statusId);
             } finally {
                 session.close();
             }

@@ -25,8 +25,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         super.createModules();
         VEDLM = addModule(new VEDLogicsModule(LM, this));
         addModulesFromResource(
+                "scripts/utils/I18n.lsf",
                 "scripts/VEDScript.lsf",
                 "scripts/masterdata/Country.lsf",
+                "scripts/masterdata/MasterData.lsf",
                 "scripts/utils/DefaultData.lsf",
                 "scripts/masterdata/Currency.lsf",
                 "scripts/utils/Backup.lsf",

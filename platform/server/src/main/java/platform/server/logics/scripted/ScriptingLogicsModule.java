@@ -276,8 +276,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> captions = instCaptions;
         if (!isAbstract) {
             ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions);
-            names = ((ConcreteCustomClass) cls).getStaticObjectsSIDs();
-            captions = ((ConcreteCustomClass) cls).getStaticObjectsNames();
+//            printStaticObjectsChanges("D:/skolkovo_class_migrate.txt", className, instNames);
+            names = ((ConcreteCustomClass) cls).getStaticObjectsNames();
+            captions = ((ConcreteCustomClass) cls).getStaticObjectsCaptions();
         }
 
         checkStaticClassConstraints(isAbstract, names, captions);
