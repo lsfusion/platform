@@ -15,7 +15,7 @@ nameUserCreatedHistorizable 'Пользователь' (historizable) = nameCont
 userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS historizable);
 
 computerCreatedHistorizable = DATA computer (historizable);
-hostnameComputerCreatedHistorizable 'Компьютер' (historizable) = hostname (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
+hostnameComputerCreatedHistorizable 'Компьютер' (historizable) = hostnameComputer (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
 computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object IS historizable);
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)

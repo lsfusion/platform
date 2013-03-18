@@ -1338,7 +1338,7 @@ public class VEDLogicsModule extends LogicsModule {
         orderUserBarcode = addJProp("Кассир", barcode, orderUser, 1);
 
         orderComputer = addDCProp("orderComputer", "Компьютер заказа", VEDBL.authenticationLM.currentComputer, true, is(order), 1);
-        orderComputerName = addJProp("Компьютер заказа", VEDBL.authenticationLM.hostname, orderComputer, 1);
+        orderComputerName = addJProp("Компьютер заказа", VEDBL.authenticationLM.hostnameComputer, orderComputer, 1);
 
 //        setNotNull(barcode, customerCheckRetail);
         setNotNull(addJProp("Штрих-код товара", baseLM.and1, barcode, 1, is(customerCheckRetail), 1));

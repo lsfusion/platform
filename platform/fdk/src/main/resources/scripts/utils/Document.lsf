@@ -14,7 +14,7 @@ userClosed 'Проведен пользователем' = DATA customUser (post
 computerClosed 'Проведен на компьютере' = DATA computer (postedObject);
 
 nameUserClosed 'Проведен пользователем' (postedObject) = nameContact(userClosed(postedObject)) IN postedGroup;
-hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostname(computerClosed(postedObject)) IN postedGroup;
+hostnameComputerClosed 'Проведен на компьютере' (postedObject) = hostnameComputer(computerClosed(postedObject)) IN postedGroup;
 
 timeClosed(postedObject) <- currentDateTime() WHEN ASSIGNED(postedObject IS postedObject);
 userClosed(postedObject) <- currentUser() WHEN ASSIGNED(postedObject IS postedObject);

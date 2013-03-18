@@ -32,7 +32,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP currentUser;
     public LCP currentUserName;
 
-    public LCP hostname;
+    public LCP hostnameComputer;
     public LCP currentComputer;
     public LCP hostnameCurrentComputer;
 
@@ -64,9 +64,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         super.initProperties();
 
         // Компьютер
-        hostname = getLCPByName("hostname");
+        hostnameComputer = getLCPByName("hostnameComputer");
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
-        hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostname, currentComputer);
+        hostnameCurrentComputer = addJProp("hostnameCurrentComputer", getString("logics.current.computer.hostname"), hostnameComputer, currentComputer);
 
         loginCustomUser = getLCPByName("loginCustomUser");
         customUserLogin = getLCPByName("customUserLogin");

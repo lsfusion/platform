@@ -18,7 +18,7 @@ CLASS launch 'Запуск';
 TABLE launch (launch);
 
 computerLaunch 'Компьютер' = DATA computer (launch);
-hostnameLaunch 'Имя компьютера' (launch) = hostname(computerLaunch(launch));
+hostnameLaunch 'Имя компьютера' (launch) = hostnameComputer(computerLaunch(launch));
 timeLaunch 'Время запуска'= DATA DATETIME (launch);
 revisionLaunch 'Версия'= DATA STRING[10] (launch);
 
@@ -31,7 +31,7 @@ TABLE connection (connection);
 TABLE connectionNavigatorElement (connection, navigatorElement);
 
 computerConnection 'Компьютер' = DATA computer (connection);
-hostnameComputerConnection 'Имя компьютера'(connection) = hostname(computerConnection(connection));
+hostnameComputerConnection 'Имя компьютера'(connection) = hostnameComputer(computerConnection(connection));
 
 remoteAddressConnection 'IP пользователя' = DATA STRING[40] (connection);
 

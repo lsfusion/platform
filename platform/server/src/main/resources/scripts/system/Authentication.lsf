@@ -5,7 +5,7 @@ REQUIRE System, Contact;
 CLASS computer 'Рабочее место';
 TABLE computer (computer);
 
-hostnameComputer 'Имя хоста' = DATA ISTRING[100] (computer);
+hostnameComputer 'Имя хоста' = DATA ISTRING[100] (computer) IN recognize;
 
 CLASS ABSTRACT user 'Пользователь';
 TABLE user (user);

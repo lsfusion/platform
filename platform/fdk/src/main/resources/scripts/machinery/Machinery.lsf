@@ -50,7 +50,7 @@ FORM equipmentServers 'Серверы оборудования'
     FILTERS equipmentServerEquipmentServerLog (l) == es
 ;
 
-DESIGN equipmentServer FROM DEFAULT {
+DESIGN equipmentServers FROM DEFAULT {
     main {
         NEW topContainer {
             type = SPLITV;

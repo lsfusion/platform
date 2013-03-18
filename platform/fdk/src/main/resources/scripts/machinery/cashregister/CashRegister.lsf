@@ -61,7 +61,7 @@ legalEntityCashRegister (cashRegister) = UNION OVERRIDE legalEntityDepartmentSto
 nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = name(legalEntityCashRegister(cashRegister));
 
 computerCashRegister = DATA computer (cashRegister);
-hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostname(computerCashRegister(cashRegister)) IN base;
+hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostnameComputer(computerCashRegister(cashRegister)) IN base;
 
 cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS cashRegister PERSISTENT;
 

@@ -793,7 +793,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.singleton("key"));
             q.and(
-                    businessLogics.authenticationLM.hostname.getExpr(
+                    businessLogics.authenticationLM.hostnameComputer.getExpr(
                             session.getModifier(), q.getMapExprs().get("key")
                     ).compare(new DataObject(strHostName), Compare.EQUALS)
             );
@@ -803,7 +803,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
             if (keys.size() == 0) {
                 DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
-                businessLogics.authenticationLM.hostname.change(strHostName, session, addObject);
+                businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
                 result = (Integer) addObject.object;
                 session.apply(businessLogics);
@@ -1243,12 +1243,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 systemUserObject = (Integer) rows.single().get("key");
 
             query = new QueryBuilder<String, Object>(SetFact.singleton("key"));
-            query.and(businessLogics.authenticationLM.hostname.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
+            query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
             rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
             if (rows.size() == 0) { // если нету добавим
                 DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
                 systemComputer = (Integer) computerObject.object;
-                businessLogics.authenticationLM.hostname.change("systemhost", session, computerObject);
+                businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
                 session.apply(businessLogics);
             } else
                 systemComputer = (Integer) rows.single().get("key");
