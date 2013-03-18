@@ -33,22 +33,16 @@ TABLE language(language);
 
 localeLanguage 'Locale' = DATA STRING[5] (language);
 
-dictionaryCompositionLanguage = DATA dictionary(language);
-nameDictionaryCompositionLanguage 'Словарь для составов' = name(dictionaryCompositionLanguage(language)) IN base;
-
-dictionaryNameLanguage = DATA dictionary(language);
-nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN base;
-
 FORM language 'Язык'
     OBJECTS l = language FIXED PANEL
-    PROPERTIES(l) name, localeLanguage, nameDictionaryCompositionLanguage, nameDictionaryNameLanguage
+    PROPERTIES(l) name, localeLanguage
 
     EDIT language OBJECT l
 ;
 
 FORM languages 'Языки'
     OBJECTS l = language
-    PROPERTIES(l) READONLY name, localeLanguage, nameDictionaryCompositionLanguage, nameDictionaryNameLanguage
+    PROPERTIES(l) READONLY name, localeLanguage
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 
     DIALOG language OBJECT l

@@ -99,7 +99,7 @@ FORM customer 'Покупатель'
 
     OBJECTS a=Bank.account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
-    FILTERS legalEntityAccount(a) == cu
+    FILTERS Bank.legalEntityAccount(a) == cu
 
     OBJECTS co=legalEntity
     PROPERTIES(co) READONLY name

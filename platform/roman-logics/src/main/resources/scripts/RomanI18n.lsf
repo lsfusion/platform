@@ -1,0 +1,22 @@
+MODULE RomanI18n;
+
+REQUIRE System, I18n;
+
+NAMESPACE I18n;
+
+dictionaryCompositionLanguage = DATA dictionary(language);
+nameDictionaryCompositionLanguage 'Словарь для составов' = name(dictionaryCompositionLanguage(language)) IN base;
+
+dictionaryNameLanguage = DATA dictionary(language);
+nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN base;
+
+EXTEND FORM language
+    PROPERTIES(l) nameDictionaryCompositionLanguage, nameDictionaryNameLanguage
+;
+
+EXTEND FORM languages
+    PROPERTIES(l) nameDictionaryCompositionLanguage, nameDictionaryNameLanguage
+;
+
+
+
