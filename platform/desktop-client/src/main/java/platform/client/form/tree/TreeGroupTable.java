@@ -103,6 +103,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             protected ClientPropertyDraw getColumnKey(int column) {
                 return model.getColumnProperty(column);
             }
+
+            @Override
+            protected ClientPropertyDraw getColumnProperty(int column) {
+                return model.getColumnProperty(column);
+            }
         };
 
         tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {

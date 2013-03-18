@@ -117,6 +117,12 @@ public class GridTable extends ClientPropertyTable {
             protected Pair<ClientPropertyDraw, ClientGroupObjectValue> getColumnKey(int column) {
                 return new Pair<ClientPropertyDraw, ClientGroupObjectValue>(model.getColumnProperty(column), model.getColumnKey(column));
             }
+
+            @Override
+            protected ClientPropertyDraw getColumnProperty(int column) {
+                return model.getColumnProperty(column);
+            }
+
         };
 
         tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
