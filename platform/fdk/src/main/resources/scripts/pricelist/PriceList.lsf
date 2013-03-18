@@ -167,7 +167,7 @@ priceBasePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceL
 includeVATBasePriceListType(type) += includeVATLedgerPriceListType(type);
 
 // ------ оптимизация для ассортиментов
-ledgerPriceListTypePriceListType = ABSTRACT ledgerPriceListType (priceListType);
+ledgerPriceListTypePriceListType = ABSTRACT ledgerPriceListType (priceListType) PERSISTENT;
 
 ledgerPriceListTypePriceListType(type) += type AS ledgerPriceListType;
 

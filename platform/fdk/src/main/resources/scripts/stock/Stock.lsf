@@ -1719,6 +1719,7 @@ META defineDocumentSkuPriceListType(object, stockProp)
     priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
     priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
+    ledgerPriceSku###object 'Цена (базовая)' (sku, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stockProp###object(object), dateTime###object(object));
 END
 META defineDocumentSkuSystemLedgerPriceListType(object, priceListTypeProp, stockProp)
     @defineDocumentSku(object, sku, stockProp);

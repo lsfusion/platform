@@ -4,7 +4,7 @@ REQUIRE Stock, Item, LegalEntity, Receipt, Shipment, StockItem;
 
 NAVIGATOR {
     root {
-        NEW masterData 'Справочники' BEFORE administration TO toolbar {
+        NEW masterData 'Справочники' FIRST TO toolbar {
             ADD items;
             ADD stocks;
             ADD legalEntities;

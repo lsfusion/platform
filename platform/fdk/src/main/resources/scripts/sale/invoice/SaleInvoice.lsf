@@ -139,7 +139,7 @@ EXTEND FORM userInvoice
 
     FILTERGROUP filter2
         FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, s)
-        FILTER'В ассортименте' 'F7' priceSkuUserInvoice(s, i)
+        FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(s, i)
 
 ;
 

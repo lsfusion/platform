@@ -87,6 +87,6 @@ EXTEND FORM MainForm
 
 NAVIGATOR {
     root {
-        ADD MainForm BEFORE administration;
+        ADD MainForm FIRST;
     }
 }

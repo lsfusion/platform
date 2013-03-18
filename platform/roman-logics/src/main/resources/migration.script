@@ -125,4 +125,6 @@ V0.7.2 {
     PROPERTY forbidChangePasswordCustomUser -> Authentication_forbidChangePasswordCustomUser
     PROPERTY forbidEditProfileCustomUser -> Authentication_forbidEditProfileCustomUser
     PROPERTY Email_emailContact -> Contact_emailContact
+
+    PROPERTY hostname -> Authentication_hostnameComputer
 }

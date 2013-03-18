@@ -6,11 +6,11 @@ NAMESPACE Purchase;
 
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
 
-EXTEND CLASS systemLedgerPriceListType { manufacturingPriceStockPriceListType 'Цена изготовителя (последняя по складу)' }
+EXTEND CLASS systemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType. manufacturingPriceStockPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(ledger) WHEN CLASS(manufacturingPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.manufacturingPriceStockPriceListType;
 
-EXTEND CLASS systemLedgerPriceListType { manufacturingPricePriceListType 'Цена изготовителя (последняя по ценовой группе)' }
+EXTEND CLASS systemLedgerPriceListType { manufacturingPricePriceListType 'Изготовителя (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == systemLedgerPriceListType.manufacturingPricePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(manufacturingPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.manufacturingPricePriceListType;
 

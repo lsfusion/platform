@@ -53,7 +53,10 @@ overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
 //------------------------------ Расширение формы -----------------------------//
 
 // Фильтры
-inAssortmentSkuStockUserOrder (sku, stock, userOrder)= companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserOrderSku(userOrder, sku), sku, stock, dateTimeUserOrder(userOrder)) == supplierUserOrder(userOrder);
+inAssortmentSkuStockUserOrder (sku, stock, userOrder) =
+    companyLedgerPriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListTypeUserOrderSku(userOrder, sku)),
+                                               sku, stock, dateTimeUserOrder(userOrder)) == supplierUserOrder(userOrder);
+
 inUserOrderSku (userOrder, sku)= inSupplierSku(supplierUserOrder(userOrder), sku);
 EXTEND FORM userOrder
 

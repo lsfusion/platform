@@ -32,15 +32,15 @@ equipmentServerEquipmentServerLog 'Сервер оборудования (ID)' =
 
 //---------------------------- Формы для серверов оборудования ----------------------------//
 
-FORM equipmentServer 'Серверы оборудования'
+FORM equipmentServers 'Серверы оборудования'
     OBJECTS es = equipmentServer
-    PROPERTIES(es)  READONLY sidEquipmentServer
-    PROPERTIES(es)  delayEquipmentServer, ADDFORM, EDITFORM, delete
+    PROPERTIES(es)  READONLY name, sidEquipmentServer, delayEquipmentServer
+    PROPERTIES(es)  ADDFORM, EDITFORM, delete
 
     OBJECTS e = equipmentServerError
     PROPERTIES(e) READONLY dataEquipmentServerError, dateEquipmentServerError
     PROPERTIES(e) delete
-    PROPERTIES(e) FORCE PANEL erTraceEquipmentServerError
+    PROPERTIES(e) READONLY FORCE PANEL erTraceEquipmentServerError
 
     OBJECTS l = equipmentServerLog
     PROPERTIES(l) READONLY dataEquipmentServerLog, dateEquipmentServerLog
@@ -599,7 +599,7 @@ NAVIGATOR {
             ADD machineryPriceTransactions;
         }
         NEW machineryMasterData 'Справочники' {
-            ADD equipmentServer;
+            ADD equipmentServers;
         }
     }
 }
