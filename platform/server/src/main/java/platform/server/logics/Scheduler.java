@@ -115,7 +115,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         if (time < 1000) {
                             time = 1000;
                         }
-                    } catch (Exception ignore) {
+                    } catch (Exception ignore) { // todo : сделать нормальную обработку ошибок
+                        try {
+                            Thread.sleep(10 * 60 * 1000);
+                        } catch (InterruptedException e) {
+                        }
                     }
                 }
             }
