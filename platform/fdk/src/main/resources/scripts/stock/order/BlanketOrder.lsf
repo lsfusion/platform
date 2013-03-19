@@ -368,6 +368,8 @@ META defineOrderBlanketOrder(sign)
     VATOrderDetail(detail) += VATBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     valueVATOrderDetail(detail) += valueVATBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 
+    invoicePriceOrderDetail(detail) += invoicePriceBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
+
     invoiceSumOrderDetail(detail) += invoiceSumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
     VATSumOrderDetail(detail) += VATSumBlanketOrderDetail(blanketOrderDetailBlanketOrderOrderDetail(detail));
 

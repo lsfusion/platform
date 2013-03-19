@@ -169,6 +169,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
                     SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
                     SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
+                    SET priceListTypeInvoiceDetail (d) <- priceListTypeOrderDetail(orderDetail);
                     SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
                     SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
                     SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
