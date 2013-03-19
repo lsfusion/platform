@@ -44,7 +44,7 @@ EXTEND FORM item PROPERTIES(i) BEFORE nameUOMItem(i) nameSotUOMItem SHOWIF showU
 EXTEND FORM items PROPERTIES(i) dateTimeLastMovedSku, sotSIDItem, sidExternalizable;
 
 EXTEND FORM warehouses
-    PROPERTIES (w) READONLY mag2Stock BEFORE delete(w), sidExternalizable BEFORE delete(w)
+    PROPERTIES (w) READONLY mag2Stock BEFORE delete(w)//, sidExternalizable BEFORE delete(w)
 ;
 
 EXTEND FORM batches
@@ -54,6 +54,10 @@ EXTEND FORM batches
 FORM sotUOMs 'Единицы измерений SOT'
     OBJECTS su=sotUOM
     PROPERTIES(su) sidExternalizable, nameSotUOM, netWeightSotUOM, nameUOMSotUOM, ADDOBJ, delete
+;
+
+EXTEND FORM itemGroups
+    PROPERTIES (g) READONLY sidExternalizable BEFORE delete(g)
 ;
 
 NAVIGATOR {

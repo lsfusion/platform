@@ -15,6 +15,9 @@ numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN
 saleOperationBlanketOrder = DATA saleOperation (blanketOrder);
 nameSaleOperationBlanketOrder 'Операция' = name(saleOperationBlanketOrder(blanketOrder));
 
+//todo: нужно сделать более общий механизм
+saleOperationOrder(order) += saleOperationBlanketOrder(blanketOrderBlanketOrderOrder(order));
+
 saleOperationBlanketOrderDetail 'Операция' (blanketOrderDetail) = saleOperationBlanketOrder(blanketOrderBlanketOrderDetail(blanketOrderDetail));
 
 CONSTRAINT saleOperationBlanketOrderDetail(blanketOrderDetail) AND priceListTypeBlanketOrderDetail(blanketOrderDetail)

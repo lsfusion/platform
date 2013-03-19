@@ -98,7 +98,7 @@ emailCustomerOrder 'Выслать подтвержденный заказ по�
            emailOrder OBJECTS o=order
 ;
 
-WHEN isPostedOrder(order) DO EXEC emailCustomerOrder(order);
+WHEN isPostedOrder(order) AND emailLegalEntity(customerOrder(order)) DO EXEC emailCustomerOrder(order);
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

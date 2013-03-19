@@ -92,6 +92,15 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
             SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
             SET batchUserInvoiceDetail(d) <- batch;
             SET quantityUserInvoiceDetail (d) <- toInvoiceBatchOrderDetail(batch, orderDetail);
+       // todo: решить какие цены задавать: из заказа или из партии
+            SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
+            SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
+            SET quantityPackUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
+            SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
+            SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
+            SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
+            SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
+            SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
         }
 }
 

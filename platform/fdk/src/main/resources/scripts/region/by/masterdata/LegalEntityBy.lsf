@@ -30,7 +30,7 @@ EXTEND DESIGN legalEntity{
 
 EXTEND FORM legalEntities
 
-    PROPERTIES(l) UNPLegalEntity
+    PROPERTIES(l) READONLY UNPLegalEntity BEFORE shortNameOwnershipLegalEntity(l)
 ;
 
 
