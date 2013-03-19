@@ -16,12 +16,12 @@ overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detai
 
 @defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
 
-createPricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
-retailPriceListTypeUserInvoice (invoice) <- priceListTypePurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
-createRepricingUserInvoice (invoice) <- createRepricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+retailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+createRepricingUserInvoice (invoice) <- createRepricingOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoice

@@ -7,22 +7,22 @@ TABLE operation(operation);
 
 // -------------------------------------- Макросы по созданию операций ---------------------------------- //
 
-META defineOperation(prefix, postfix)
+META defineOperation(postfix)
 
-    CLASS prefix###operation 'Операция' : operation;
-    TABLE prefix###operation(prefix###operation);
+    CLASS operation 'Операция' : Operation.operation;
+    TABLE operation(operation);
 
-    TABLE legalEntity###prefix###operation(legalEntity, prefix###operation);
-    TABLE legalEntityGroup###prefix###operation(legalEntityGroup, prefix###operation);
+    TABLE legalEntity###operation(legalEntity, operation);
+    TABLE legalEntityGroup###operation(legalEntityGroup, operation);
 
-    FORM prefix###operation 'Операция'##postfix
-        OBJECTS o = prefix###operation FIXED PANEL
+    FORM operation 'Операция'##postfix
+        OBJECTS o = operation FIXED PANEL
         PROPERTIES(o) name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
 
-        EDIT prefix###operation OBJECT o
+        EDIT operation OBJECT o
     ;
 
-    DESIGN prefix###operation FROM DEFAULT{
+    DESIGN operation FROM DEFAULT{
         NEW topContainer{
             type = SPLITV;
             NEW headContainer{
@@ -41,36 +41,36 @@ META defineOperation(prefix, postfix)
         ADD functions.box;
     }
 
-    FORM prefix###operations 'Операции' TITLE 'Операции'##postfix
-        OBJECTS o = prefix###operation
+    FORM operations 'Операции' TITLE 'Операции'##postfix
+        OBJECTS o = operation
         PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, delete
 
-        DIALOG prefix###operation OBJECT o
+        DIALOG operation OBJECT o
     ;
 
 END
 
 // -------------------------------------- Макросы по объявлению операций в документах ---------------------------------- //
 
-META defineDocumentOperation(prefix, object, char)
+META defineDocumentOperation(object, char)
 
-    prefix###operation###object = ABSTRACT prefix###operation (object) PERSISTENT;
-    name###prefix###operation###object 'Операция' = name(prefix###operation###object(object));
-    prefix###operationUser###object = DATA prefix###operation (user###object);
-    name###prefix###operationUser###object 'Операция' = name(prefix###operationUser###object(user###object));
-    prefix###operation###object(object) += prefix###operationUser###object(object);
+    operation###object = ABSTRACT operation (object) PERSISTENT;
+    name###operation###object 'Операция' = name(operation###object(object));
+    operationUser###object = DATA operation (user###object);
+    name###operationUser###object 'Операция' = name(operationUser###object(user###object));
+    operation###object(object) += operationUser###object(object);
 
-    prefix###operation###object##Detail 'Операция' (object##Detail) = prefix###operation###object(object###object##Detail(object##Detail));
-    prefix###operationUser###object##Detail 'Операция' (user###object##Detail) = prefix###operationUser###object(user###object##User###object##Detail(user###object##Detail));
+    operation###object##Detail 'Операция' (object##Detail) = operation###object(object###object##Detail(object##Detail));
+    operationUser###object##Detail 'Операция' (user###object##Detail) = operationUser###object(user###object##User###object##Detail(user###object##Detail));
 
     EXTEND FORM user###object
-        PROPERTIES(char) name###prefix###operationUser###object
+        PROPERTIES(char) name###operationUser###object
     ;
 
     EXTEND DESIGN user###object{
         char.documentPrmGroup{
-            ADD PROPERTY(name###prefix###operationUser###object) BEFORE PROPERTY(nameCurrencyUser###object);
+            ADD PROPERTY(name###operationUser###object) BEFORE PROPERTY(nameCurrencyUser###object);
         }
     }
 
@@ -78,44 +78,44 @@ END
 
 // -------------------------------------- Организации ---------------------------------- //
 
-META defineOperationLegalEntity(prefix, prop, object, filter, tabcaption)
+META defineOperationLegalEntity(prop, object, filter, tabcaption)
 
     // Отметка для групп
-    is###prop###group###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, prefix###operation);
+    is###prop###group###operation 'Отм.' = DATA BOOLEAN (legalEntityGroup, operation);
 
-    levelParent###prop###prefix###operation###legalEntityGroup (operation, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prop##Group###prefix###operation(parent, operation)
+    levelParent###prop###operation###legalEntityGroup (operation, legalEntityGroup) = GROUP MIN level###legalEntityGroup###legalEntityGroup(legalEntityGroup, parent) IF is###prop##Group###operation(parent, operation)
                                                                    BY operation, legalEntityGroup PERSISTENT;
-    nearestParent###prop##Group###legalEntityGroup (operation, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prop###prefix###operation###legalEntityGroup(operation, legalEntityGroup));
-    nearest###is###prop##Group###prefix###operation (legalEntityGroup, operation) =
-        is###prop##Group###prefix###operation(nearestParent###prop##Group###legalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
+    nearestParent###prop##Group###legalEntityGroup (operation, legalEntityGroup) = legalEntityGroup###legalEntityGroup###level(legalEntityGroup, levelParent###prop###operation###legalEntityGroup(operation, legalEntityGroup));
+    nearest###is###prop##Group###operation (legalEntityGroup, operation) =
+        is###prop##Group###operation(nearestParent###prop##Group###legalEntityGroup(operation, legalEntityGroup), operation) PERSISTENT;
 
-    is###prop##Group###prefix###operation##Over 'Отм' (legalEntityGroup, operation) =
-        UNION OVERRIDE nearest###is###prop##Group###prefix###operation(legalEntityGroup, operation),
-                       is###prop##Group###prefix###operation(legalEntityGroup, operation);
+    is###prop##Group###operation##Over 'Отм' (legalEntityGroup, operation) =
+        UNION OVERRIDE nearest###is###prop##Group###operation(legalEntityGroup, operation),
+                       is###prop##Group###operation(legalEntityGroup, operation);
 
     // Отметка для организаций
-    is###prop###prefix###operation 'Отм.' = DATA BOOLEAN (legalEntity, prefix###operation);
-    is###prop###prefix###operation##Over 'Отм' (legalEntity, operation) =
-        (UNION OVERRIDE nearest###is###prop##Group###prefix###operation(legalEntityGroup###legalEntity(legalEntity), operation),
-                        is###prop###prefix###operation(legalEntity, operation));
+    is###prop###operation 'Отм.' = DATA BOOLEAN (legalEntity, operation);
+    is###prop###operation##Over 'Отм' (legalEntity, operation) =
+        (UNION OVERRIDE nearest###is###prop##Group###operation(legalEntityGroup###legalEntity(legalEntity), operation),
+                        is###prop###operation(legalEntity, operation));
 
-    EXTEND FORM prefix###operation
+    EXTEND FORM operation
         TREE prop###groupTree object##g = legalEntityGroup PARENT parentLegalEntityGroup
         PROPERTIES READONLY sgTreeName = name(object##g)
-        PROPERTIES is###prop###Group###prefix###operation##Over(object##g, o)
+        PROPERTIES is###prop###Group###operation##Over(object##g, o)
 
         OBJECTS object = legalEntity
-        PROPERTIES(object, o) is###prop###prefix###operation##Over
+        PROPERTIES(object, o) is###prop###operation##Over
         PROPERTIES(object) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
         FILTERS (inLegalEntityGroupLegalEntity(object##g, object) OR (object IS legalEntity AND object##g IS legalEntityGroup AND NOT legalEntityGroupLegalEntity(object))),
                 filter(object)
         FILTERGROUP filters2
-                FILTER 'Показывать отмеченные' 'F10' is###prop###prefix###operation(object, o)
+                FILTER 'Показывать отмеченные' 'F10' is###prop###operation(object, o)
     ;
 
-    EXTEND DESIGN prefix###operation {
+    EXTEND DESIGN operation {
         tabContainer {
             NEW prop###Container{
                 childConstraints = TO THE RIGHT;
@@ -129,9 +129,9 @@ META defineOperationLegalEntity(prefix, prop, object, filter, tabcaption)
 
 END
 
-META defineDocumentOperationLegalEntity(prefix, object, prop, caption)
-    CONSTRAINT prefix###operation###object(object)
-               AND NOT is###prop###prefix###operation##Over(prop###object(object), prefix###operation###object(object))
+META defineDocumentOperationLegalEntity(object, prop, caption)
+    CONSTRAINT operation###object(object)
+               AND NOT is###prop###operation##Over(prop###object(object), operation###object(object))
         CHECKED BY prop###object
         MESSAGE caption##' должен совпадать с отмеченными в операции';
 END

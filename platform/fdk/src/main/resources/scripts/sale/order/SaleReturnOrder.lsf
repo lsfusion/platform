@@ -2,6 +2,8 @@ MODULE SaleReturnOrder;
 
 REQUIRE Order, SaleShipment, SaleOperation, SalePack;
 
+PRIORITY Sale, Operation;
+
 NAMESPACE SaleReturn;
 
 @defineOrder(' (продажа-возврат)', supplier, supplierStock, Sale, showSalePack, 'Отображать упаковку');
@@ -14,10 +16,10 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(sale, order, o);
-@defineDocumentOperationPriceListType(sale, userOrder);
-@defineDocumentOperationLegalEntity(sale, userOrder, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(sale, userOrder, customer, 'Покупатель');
+@defineDocumentOperation(order, o);
+@defineDocumentOperationPriceListType(userOrder);
+@defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

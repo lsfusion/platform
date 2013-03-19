@@ -4,41 +4,41 @@ REQUIRE Operation, PriceList, Sale;
 
 NAMESPACE Sale;
 
-@defineOperation(sale, '(продажа)');
+@defineOperation('(продажа)');
 
-@defineOperationPriceListType(sale);
-@defineOperationLegalEntity(sale, supplier, s, isCompanyLegalEntity, 'Поставщики');
-@defineOperationLegalEntity(sale, customer, c, isBuyerLegalEntity, 'Покупатели');
+@defineOperationPriceListType();
+@defineOperationLegalEntity(supplier, s, isCompanyLegalEntity, 'Поставщики');
+@defineOperationLegalEntity(customer, c, isBuyerLegalEntity, 'Покупатели');
 
-createShipmentSaleOperation 'Создавать поставку' = DATA BOOLEAN (saleOperation) IN createGroup;
-createPricingSaleOperation 'Создавать акт расценки' = DATA BOOLEAN (saleOperation) IN createGroup;
-createCreditNoteSaleOperation 'Создавать акт расхождения' = DATA BOOLEAN (saleOperation) IN createGroup;
-createPurchaseInvoiceSaleOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
-createPurchasePricingSaleOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (saleOperation) IN createGroup;
-priceListTypeSaleOperation = DATA priceListType (saleOperation);
-namePriceListTypeSaleOperation 'Вид цен акт расценки(закупка)' (saleOperation) = name(priceListTypeSaleOperation(saleOperation));
+createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (operation) IN createGroup;
+createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (operation) IN createGroup;
+createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (operation) IN createGroup;
+createPurchaseInvoiceOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (operation) IN createGroup;
+createPurchasePricingOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (operation) IN createGroup;
+purchaseRetailPriceListTypeOperation = DATA priceListType (operation);
+namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = name(purchaseRetailPriceListTypeOperation(operation));
 
-EXTEND FORM saleOperation
-    PROPERTIES(o) createShipmentSaleOperation, createPricingSaleOperation, createCreditNoteSaleOperation,
-                  createPurchaseInvoiceSaleOperation, createPurchasePricingSaleOperation, namePriceListTypeSaleOperation
+EXTEND FORM operation
+    PROPERTIES(o) createShipmentOperation, createPricingOperation, createCreditNoteOperation,
+                  createPurchaseInvoiceOperation, createPurchasePricingOperation, namePurchaseRetailPriceListTypeOperation
 ;
 
-EXTEND DESIGN saleOperation{
+EXTEND DESIGN operation{
     tabContainer{
         NEW aggrContainer{
             caption = 'Создание объектов';
-            ADD PROPERTY(createShipmentSaleOperation);
-            ADD PROPERTY(createCreditNoteSaleOperation);
-            ADD PROPERTY(createPricingSaleOperation);
-            ADD PROPERTY(createPurchaseInvoiceSaleOperation);
-            ADD PROPERTY(createPurchasePricingSaleOperation);
-            ADD PROPERTY(namePriceListTypeSaleOperation);
+            ADD PROPERTY(createShipmentOperation);
+            ADD PROPERTY(createCreditNoteOperation);
+            ADD PROPERTY(createPricingOperation);
+            ADD PROPERTY(createPurchaseInvoiceOperation);
+            ADD PROPERTY(createPurchasePricingOperation);
+            ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
         }
     }
 }
 
 NAVIGATOR {
     saleMasterData {
-        ADD saleOperations;
+        ADD operations;
     }
 }

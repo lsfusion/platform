@@ -2,12 +2,14 @@ MODULE PurchaseReturnInvoice;
 
 REQUIRE OrderInvoice,PurchaseReturnOrder, PurchaseOperation;
 
+PRIORITY Purchase, Operation;
+
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 @defineInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
-@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack, purchaseOperation);
+@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
@@ -19,10 +21,10 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(purchase, invoice, i);
-@defineDocumentOperationPriceListType(purchase, userInvoice);
-@defineDocumentOperationLegalEntity(purchase, userInvoice, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(purchase, userInvoice, customer, 'Покупатель');
+@defineDocumentOperation(invoice, i);
+@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор поставщиков -----------------------------//
 

@@ -2,6 +2,8 @@ MODULE PurchaseReturnOrder;
 
 REQUIRE Order, PurchaseShipment, PurchaseOperation, PurchasePack;
 
+PRIORITY Purchase, Operation;
+
 NAMESPACE PurchaseReturn;
 
 @defineOrder(' (закупка-возврат)', customer, customerStock, Purchase, showPurchasePack, 'Отображать упаковку');
@@ -12,10 +14,10 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(purchase, order, o);
-@defineDocumentOperationPriceListType(purchase, userOrder);
-@defineDocumentOperationLegalEntity(purchase, userOrder, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(purchase, userOrder, customer, 'Покупатель');
+@defineDocumentOperation(order, o);
+@defineDocumentOperationPriceListType(userOrder);
+@defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

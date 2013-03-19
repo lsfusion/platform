@@ -100,7 +100,7 @@ Purchase.pricingQuantityInvoiceDetail(invoiceDetail) += purchasePricingQuantityI
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createPurchasePricingUserInvoice (invoice) <- createPurchasePricingSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));
-purchaseRetailPriceListTypeUserInvoice (invoice) <- priceListTypeSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));
+createPurchasePricingUserInvoice (invoice) <- createPurchasePricingOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+purchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

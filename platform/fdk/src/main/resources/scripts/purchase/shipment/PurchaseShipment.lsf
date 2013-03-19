@@ -13,12 +13,12 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(purchase, shipment, s);
-@defineDocumentOperationLegalEntity(purchase, userShipment, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(purchase, userShipment, customer, 'Покупатель');
+@defineDocumentOperation(shipment, s);
+@defineDocumentOperationLegalEntity(userShipment, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userShipment, customer, 'Покупатель');
 
-createShipmentUserInvoice(invoice) <- createShipmentPurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
     
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

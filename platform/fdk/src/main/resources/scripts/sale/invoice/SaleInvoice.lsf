@@ -16,14 +16,14 @@ NAMESPACE Sale;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(sale, invoice, i);
-@defineDocumentOperationPriceListType(sale, userInvoice);
-@defineDocumentOperationLegalEntity(sale, userInvoice, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(sale, userInvoice, customer, 'Покупатель');
+@defineDocumentOperation(invoice, i);
+@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 
 // ---------------------------------------------- Создание инвойса по заказу ---------------------------------- //
 
-@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
+@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
 
 // --------------------- НДС расчетный ----------------------- //
 

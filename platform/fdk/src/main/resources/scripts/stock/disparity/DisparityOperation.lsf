@@ -2,42 +2,42 @@ MODULE DisparityOperation;
 
 REQUIRE Operation, Disparity;
 
-@defineOperation(disparity, '(изменение сортности)');
+@defineOperation('(изменение сортности)');
 
-createRepricingDisparityOperation 'Создать акт переоценки' = DATA BOOLEAN (disparityOperation) IN createGroup;
+createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (operation) IN createGroup;
 
-EXTEND FORM disparityOperation
-    PROPERTIES(o) createRepricingDisparityOperation
+EXTEND FORM operation
+    PROPERTIES(o) createRepricingOperation
 ;
 
-EXTEND DESIGN disparityOperation {
+EXTEND DESIGN operation {
     tabContainer{
         NEW aggrContainer{
             caption = 'Создание объектов';
-            ADD PROPERTY(createRepricingDisparityOperation);
+            ADD PROPERTY(createRepricingOperation);
         }
     }
 }
 
 NAVIGATOR {
     disparityNavigator {
-        ADD disparityOperations;
+        ADD operations;
     }
 }
 
 //------------------------------------------ Опеределение операции для disparity ------------------------------------//
 
-disparityOperationDisparity = DATA disparityOperation (disparity) PERSISTENT;
-nameDisparityOperationDisparity 'Операция' = name(disparityOperationDisparity(disparity));
+operationDisparity = DATA operation (disparity) PERSISTENT;
+nameOperationDisparity 'Операция' = name(operationDisparity(disparity));
 
-disparityOperationDisparityDetail 'Операция' (disparityDetail) = disparityOperationDisparity(disparityDisparityDetail(disparityDetail));
+operationDisparityDetail 'Операция' (disparityDetail) = operationDisparity(disparityDisparityDetail(disparityDetail));
 
 EXTEND FORM disparity
-    PROPERTIES(dis) nameDisparityOperationDisparity
+    PROPERTIES(dis) nameOperationDisparity
 ;
 
 EXTEND DESIGN disparity{
     dis.documentPrmGroup{
-        ADD PROPERTY(nameDisparityOperationDisparity) BEFORE PROPERTY(noteDisparity);
+        ADD PROPERTY(nameOperationDisparity) BEFORE PROPERTY(noteDisparity);
     }
 }

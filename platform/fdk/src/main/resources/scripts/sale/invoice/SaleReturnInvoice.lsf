@@ -2,11 +2,13 @@ MODULE SaleReturnInvoice;
 
 REQUIRE OrderInvoice, SaleReturnOrder, SaleInvoice, SaleOperation;
 
+PRIORITY Sale, Operation;
+
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 @defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', Sale);
-@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack, saleOperation);
+@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
@@ -17,10 +19,10 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(sale, invoice, i);
-@defineDocumentOperationPriceListType(sale, userInvoice);
-@defineDocumentOperationLegalEntity(sale, userInvoice, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(sale, userInvoice, customer, 'Покупатель');
+@defineDocumentOperation(invoice, i);
+@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

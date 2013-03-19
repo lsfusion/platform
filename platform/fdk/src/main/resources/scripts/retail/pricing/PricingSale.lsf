@@ -14,8 +14,8 @@ NAMESPACE Sale;
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createPricingUserInvoice (invoice) <- createPricingSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));
+createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 //overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
 //    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));

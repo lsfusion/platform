@@ -15,7 +15,7 @@ quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceD
 
 //--  Связь с заказом
 
-META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operation)
+META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
     Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
@@ -75,11 +75,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
 
     CONSTRAINT legalEntityStock(customerStockInvoiceOrder())!= customerInvoiceOrder() CHECKED BY customerStockInvoiceOrder MESSAGE 'Выбран склад не текущего покупателя';
 
-    operation###InvoiceOrder = DATA SESSION operation ();
-    name###operation###InvoiceOrder 'Операция' = name(operation###InvoiceOrder());
+    operationInvoiceOrder = DATA SESSION operation ();
+    nameOperationInvoiceOrder 'Операция' = name(operationInvoiceOrder());
 
     FORM invoiceOrders 'Заказы'###sign
-        PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, name###operation###InvoiceOrder
+        PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, nameOperationInvoiceOrder
 
         OBJECTS o = order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
@@ -89,7 +89,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
                 (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS order AND NOT supplierInvoiceOrder()),
                 customerOrder(o) == customerInvoiceOrder() OR (o IS order AND NOT customerInvoiceOrder()),
                 customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder()),
-                operation###Order(o) == operation###InvoiceOrder() OR (o IS order AND NOT operation###InvoiceOrder())
+                operationOrder(o) == operationInvoiceOrder() OR (o IS order AND NOT operationInvoiceOrder())
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
@@ -136,7 +136,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
                 ADD PROPERTY(nameSupplierStockInvoiceOrder());
                 ADD PROPERTY(nameCustomerInvoiceOrder());
                 ADD PROPERTY(nameCustomerStockInvoiceOrder());
-                ADD PROPERTY(name###operation###InvoiceOrder());
+                ADD PROPERTY(nameOperationInvoiceOrder());
 
             }
             PROPERTY(toInvoiceOrderDetail) { background = #FFFFCC; }
@@ -187,7 +187,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
         SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
         SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
 
-        SET operation###UserInvoice(userInvoice) <- operation###Order(order);
+        SET operationUserInvoice(userInvoice) <- operationOrder(order);
 
         SET noteUserInvoice(userInvoice) <- noteOrder(order);
 
@@ -244,7 +244,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop, operatio
         supplierStockInvoiceOrder() <- supplierStockUserInvoice(userInvoice);
         customerInvoiceOrder() <- customerUserInvoice(userInvoice);
         customerStockInvoiceOrder() <- customerStockUserInvoice(userInvoice);
-        operation###InvoiceOrder() <- operation###UserInvoice(userInvoice);
+        operationInvoiceOrder() <- operationUserInvoice(userInvoice);
 
         FORM invoiceOrders MODAL;
         IF formResult() == formResult.ok THEN {

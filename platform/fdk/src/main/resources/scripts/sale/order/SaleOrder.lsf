@@ -16,10 +16,10 @@ toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantity
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(sale, order, o);
-@defineDocumentOperationPriceListType(sale, userOrder);
-@defineDocumentOperationLegalEntity(sale, userOrder, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(sale, userOrder, customer, 'Покупатель');
+@defineDocumentOperation(order, o);
+@defineDocumentOperationPriceListType(userOrder);
+@defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 
 // --------------------- НДС расчетный ----------------------- //
 

@@ -4,42 +4,42 @@ REQUIRE Operation, PriceList, Purchase;
 
 NAMESPACE Purchase;
 
-@defineOperation(purchase, '(закупка)');
+@defineOperation('(закупка)');
 
-@defineOperationPriceListType(purchase);
-@defineOperationLegalEntity(purchase, supplier, s, isSellerLegalEntity, 'Поставщики');
-@defineOperationLegalEntity(purchase, customer, c, isCompanyLegalEntity, 'Покупатели');
+@defineOperationPriceListType();
+@defineOperationLegalEntity(supplier, s, isSellerLegalEntity, 'Поставщики');
+@defineOperationLegalEntity(customer, c, isCompanyLegalEntity, 'Покупатели');
 
-createShipmentPurchaseOperation 'Создавать поставку' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-createPurchaseWriteOffPurchaseOperation 'Создавать акт списания' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-createCreditNotePurchaseOperation 'Создавать акт расхождения' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-createPricingPurchaseOperation 'Создавать акт расценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
-priceListTypePurchaseOperation = DATA priceListType (purchaseOperation);
-namePriceListTypePurchaseOperation 'Вид цен акт расценки' (purchaseOperation) = name(priceListTypePurchaseOperation(purchaseOperation));
-createRepricingPurchaseOperation 'Создавать акт дооценки' = DATA BOOLEAN (purchaseOperation) IN createGroup;
+createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (operation) IN createGroup;
+createPurchaseWriteOffOperation 'Создавать акт списания' = DATA BOOLEAN (operation) IN createGroup;
+createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (operation) IN createGroup;
+createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (operation) IN createGroup;
+pricingPriceListTypeOperation = DATA priceListType (operation);
+namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
+createRepricingOperation 'Создавать акт дооценки' = DATA BOOLEAN (operation) IN createGroup;
 
-EXTEND FORM purchaseOperation
-    PROPERTIES(o) createShipmentPurchaseOperation, createPurchaseWriteOffPurchaseOperation,
-                  createCreditNotePurchaseOperation, createPricingPurchaseOperation, namePriceListTypePurchaseOperation,
-                  createRepricingPurchaseOperation
+EXTEND FORM operation
+    PROPERTIES(o) createShipmentOperation, createPurchaseWriteOffOperation,
+                  createCreditNoteOperation, createPricingOperation, namePricingPriceListTypeOperation,
+                  createRepricingOperation
 ;
 
-EXTEND DESIGN purchaseOperation{
+EXTEND DESIGN operation{
     tabContainer{
         NEW aggrContainer{
             caption = 'Создание объектов';
-            ADD PROPERTY(createShipmentPurchaseOperation);
-            ADD PROPERTY(createPurchaseWriteOffPurchaseOperation);
-            ADD PROPERTY(createCreditNotePurchaseOperation);
-            ADD PROPERTY(createPricingPurchaseOperation);
-            ADD PROPERTY(namePriceListTypePurchaseOperation);
-            ADD PROPERTY(createRepricingPurchaseOperation);
+            ADD PROPERTY(createShipmentOperation);
+            ADD PROPERTY(createPurchaseWriteOffOperation);
+            ADD PROPERTY(createCreditNoteOperation);
+            ADD PROPERTY(createPricingOperation);
+            ADD PROPERTY(namePricingPriceListTypeOperation);
+            ADD PROPERTY(createRepricingOperation);
         }
     }
 }
 
 NAVIGATOR {
     purchaseMasterData {
-        ADD purchaseOperations;
+        ADD operations;
     }
 }

@@ -2,6 +2,8 @@ MODULE SaleReturnShipment;
 
 REQUIRE Shipment, SaleReturnInvoice;
 
+PRIORITY Sale, Operation;
+
 NAMESPACE SaleReturn;
 
 
@@ -14,12 +16,12 @@ NAMESPACE SaleReturn;
 
 //------------------------------------------------- Операции ------------------------------------------------------//
 
-@defineDocumentOperation(sale, shipment, s);
-@defineDocumentOperationLegalEntity(sale, userShipment, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(sale, userShipment, customer, 'Покупатель');
+@defineDocumentOperation(shipment, s);
+@defineDocumentOperationLegalEntity(userShipment, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userShipment, customer, 'Покупатель');
 
-createShipmentUserInvoice(invoice) <- createShipmentSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));
+createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

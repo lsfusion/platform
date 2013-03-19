@@ -9,8 +9,8 @@ REQUIRE Disparity,
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createRepricingDisparity (disparity) <- createRepricingDisparityOperation(disparityOperationDisparity(disparity))
-    WHEN CHANGED(disparityOperationDisparity(disparity));
+createRepricingDisparity (disparity) <- createRepricingOperation(operationDisparity(disparity))
+    WHEN CHANGED(operationDisparity(disparity));
 
 // До
 @defineDocumentTimeBeforePrefix (disparity, , ' до');

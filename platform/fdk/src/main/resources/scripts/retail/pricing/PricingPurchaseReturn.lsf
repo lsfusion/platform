@@ -23,5 +23,5 @@ skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
 isReturnPricing(pricing) +=  pricing IS invoicePricing;
 //--
 
-createPricingUserInvoice (invoice) <- createPricingPurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
+createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

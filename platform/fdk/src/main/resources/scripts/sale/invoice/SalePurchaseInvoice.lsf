@@ -268,8 +268,8 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createPurchaseInvoiceUserInvoice (invoice) <- createPurchaseInvoiceSaleOperation(saleOperationUserInvoice(invoice))
-    WHEN CHANGED(saleOperationUserInvoice(invoice));
+createPurchaseInvoiceUserInvoice (invoice) <- createPurchaseInvoiceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 
 

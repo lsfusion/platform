@@ -1354,20 +1354,20 @@ END
 
 // ----------------------------------------- Операции --------------------------------------- //
 
-META defineOperationPriceListType(prefix)
+META defineOperationPriceListType(dumb)
 
-    TABLE priceListType###prefix###operation(priceListType, prefix###operation);
-    isPriceListType###prefix###operation 'Отм.' = DATA BOOLEAN (priceListType, prefix###operation);
+    TABLE priceListType###operation(priceListType, operation);
+    isPriceListType###operation 'Отм.' = DATA BOOLEAN (priceListType, operation);
 
-    EXTEND FORM prefix###operation
+    EXTEND FORM operation
         OBJECTS pt = priceListType
-        PROPERTIES(pt, o) isPriceListType###prefix###operation
+        PROPERTIES(pt, o) isPriceListType###operation
         PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
         FILTERGROUP filters
-            FILTER 'Показывать отмеченные' 'F9' isPriceListType###prefix###operation(pt, o)
+            FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
     ;
 
-    EXTEND DESIGN prefix###operation {
+    EXTEND DESIGN operation {
         tabContainer {
             ADD pt.box;
         }
@@ -1375,14 +1375,14 @@ META defineOperationPriceListType(prefix)
 
 END
 
-META defineDocumentOperationPriceListType(prefix, object)
-    CONSTRAINT prefix###operation###object(object) AND priceListType###object(object)
-               AND NOT isPriceListType###prefix###operation(priceListType###object(object), prefix###operation###object(object))
+META defineDocumentOperationPriceListType(object)
+    CONSTRAINT operation###object(object) AND priceListType###object(object)
+               AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
         CHECKED BY priceListType###object
         MESSAGE 'Вид цены для документа должен совпадать с отмеченными в операции';
 
-    CONSTRAINT prefix###operation###object##Detail(detail)
-               AND NOT isPriceListType###prefix###operation(priceListType###object##Detail(detail), prefix###operation###object##Detail(detail))
+    CONSTRAINT operation###object##Detail(detail)
+               AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
         CHECKED BY priceListType###object##Detail
         MESSAGE 'Вид цены для строки документа должен совпадать с отмеченными в операции';
 END

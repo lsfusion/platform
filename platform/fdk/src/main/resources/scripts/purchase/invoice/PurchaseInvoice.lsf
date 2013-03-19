@@ -17,12 +17,12 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-@defineDocumentOperation(purchase, invoice, i);
-@defineDocumentOperationPriceListType(purchase, userInvoice);
-@defineDocumentOperationLegalEntity(purchase, userInvoice, supplier, 'Поставщик');
-@defineDocumentOperationLegalEntity(purchase, userInvoice, customer, 'Покупатель');
+@defineDocumentOperation(invoice, i);
+@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
+@defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 
-@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack, purchaseOperation);
+@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
 
 //isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
 

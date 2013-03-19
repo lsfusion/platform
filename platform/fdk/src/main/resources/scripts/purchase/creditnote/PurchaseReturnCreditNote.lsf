@@ -1,16 +1,12 @@
 MODULE PurchaseReturnCreditNote;
 
-REQUIRE CreditNote, PurchaseReturnShipment
-;
+REQUIRE CreditNote, PurchaseReturnShipment;
 
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Акт ---------------------------------------------------//
 
 @defineCreditNote(' (закупка-возврат)', customerStock);
-
-createCreditNoteUserInvoice (invoice) <- createCreditNotePurchaseOperation(purchaseOperationUserInvoice(invoice))
-    WHEN CHANGED(purchaseOperationUserInvoice(invoice));
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
