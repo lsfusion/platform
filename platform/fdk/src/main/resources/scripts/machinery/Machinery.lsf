@@ -573,6 +573,9 @@ EXTEND FORM defaultData
     OBJECTS         es=equipmentServer FIXED PANEL
     PROPERTIES(es)  SELECTOR name
 
+    OBJECTS         pt=priceListType FIXED PANEL
+    PROPERTIES(pt)  SELECTOR name
+
     OBJECTS         s=stock FIXED PANEL
     PROPERTIES(s)   SELECTOR name
 ;
@@ -585,6 +588,9 @@ EXTEND DESIGN defaultData {
 
             ADD PROPERTY(name(es)) {
                 caption = 'Сервер оборудования';
+            }
+            ADD PROPERTY(name(pt)) {
+                caption = 'Вид цен';
             }
             ADD PROPERTY(name(s)) {
                 caption = 'Склад';

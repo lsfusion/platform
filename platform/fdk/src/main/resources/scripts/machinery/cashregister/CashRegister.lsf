@@ -167,11 +167,12 @@ loadDefaultCashRegisterModels 'Загрузить стандартные мод�
 @implementLoadDefaultData(loadDefaultCashRegisterModels);
 
 // --------------------------------------- Генерация групп касс -------------------------------- //
-loadDefaultGroupCashRegister 'Сгенерировать группу касс' = ACTION(equipmentServer, stock, model, num) {
+loadDefaultGroupCashRegister 'Сгенерировать группу касс' = ACTION(equipmentServer, priceListType, stock, model, num) {
     ADDOBJ groupCashRegister;
     FOR g == addedObject() DO {
         SET departmentStoreGroupCashRegister(g) <- stock AS stock;
         SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET priceListTypeGroupMachinery(g) <- priceListType AS priceListType;
         SET nameGroupMachinery(g) <- 'Группа касс по умолчанию' AS STRING[110];
 
         LOCAL numCashRegister = INTEGER();
@@ -183,6 +184,7 @@ loadDefaultGroupCashRegister 'Сгенерировать группу касс' 
                 SET numCashRegister() <- numCashRegister() + 1;
                 SET nppMachinery(c) <- numCashRegister();
                 SET cashRegisterModelCashRegister(c) <- model AS cashRegisterModel;
+                SET descriptionMachinery(c) <- string5CM('Касса', toString255(numCashRegister()), '(', name(stock), ')');
             }
         }
     }
@@ -194,7 +196,7 @@ EXTEND FORM defaultData
 
     OBJECTS         cCashReg=INTEGER FIXED PANEL
     PROPERTIES(cCashReg)   intValueCashRegister = OBJVALUE
-    PROPERTIES (es, s, crm, cCashReg) loadDefaultGroupCashRegister
+    PROPERTIES (es, pt, s, crm, cCashReg) loadDefaultGroupCashRegister
 ;
 
 EXTEND DESIGN defaultData {
@@ -207,7 +209,6 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW cashRegister {
             title = 'Кассы';
-            ADD PROPERTY(loadDefaultCashRegisterModels);
             ADD PROPERTY(name(crm));
             ADD PROPERTY(intValueCashRegister);
             ADD PROPERTY(loadDefaultGroupCashRegister);

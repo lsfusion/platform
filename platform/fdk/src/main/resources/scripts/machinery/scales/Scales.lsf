@@ -184,11 +184,12 @@ loadDefaultScalesModels 'Загрузить стандартные модели 
 @implementLoadDefaultData(loadDefaultScalesModels);
 
 // --------------------------------------- Генерация групп весов -------------------------------- //
-loadDefaultGroupScales 'Сгенерировать группу весов' = ACTION(equipmentServer, stock, model, num) {
+loadDefaultGroupScales 'Сгенерировать группу весов' = ACTION(equipmentServer, priceListType, stock, model, num) {
     ADDOBJ groupScales;
     FOR g == addedObject() DO {
         SET stockGroupScales(g) <- stock AS stock;
         SET equipmentServerGroupMachinery(g) <- equipmentServer AS equipmentServer;
+        SET priceListTypeGroupMachinery(g) <- priceListType AS priceListType;
         SET nameGroupMachinery(g) <- 'Группа весов по умолчанию' AS STRING[110];
 
         LOCAL numScales = INTEGER();
@@ -200,6 +201,7 @@ loadDefaultGroupScales 'Сгенерировать группу весов' = AC
                 SET numScales() <- numScales() + 1;
                 SET nppMachinery(s) <- numScales();
                 SET scalesModelScales(s) <- model AS scalesModel;
+                SET descriptionMachinery(s) <- string5CM('Весы', toString255(numScales()), '(', name(stock), ')');
             }
         }
     }
@@ -211,7 +213,7 @@ EXTEND FORM defaultData
 
     OBJECTS         cScales=INTEGER FIXED PANEL
     PROPERTIES(cScales)   intValueScales = OBJVALUE
-    PROPERTIES(es, s, sm, cScales)  loadDefaultGroupScales
+    PROPERTIES(es, pt, s, sm, cScales)  loadDefaultGroupScales
 ;
 
 EXTEND DESIGN defaultData {
@@ -224,7 +226,6 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW scales {
             title = 'Весы';
-            ADD PROPERTY(loadDefaultScalesModels);
             ADD PROPERTY(name(sm));
             ADD PROPERTY(intValueScales);
             ADD PROPERTY(loadDefaultGroupScales);

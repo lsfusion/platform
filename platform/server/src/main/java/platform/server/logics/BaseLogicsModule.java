@@ -96,6 +96,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LCP string2SP, istring2SP, string3SP, istring3SP;
     public LCP string2, istring2, string3, istring3;
+    public LCP string5CM;
     public LCP ustring2CM, ustring2SP, ustring3SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
     public LCP ustring2CR;
 
@@ -309,6 +310,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ustring3 = addSFUProp("ustring3", "", 3);
         ustring4 = addSFUProp("ustring4", "", 4);
 
+        string5CM = addSFUProp("string5CM", " ", 5);
         ustring3CM = addSFUProp("ustring3CM", ",", 3);
         ustring4CM = addSFUProp("ustring4CM", ",", 4);
         ustring5CM = addSFUProp("ustring5CM", ",", 5);

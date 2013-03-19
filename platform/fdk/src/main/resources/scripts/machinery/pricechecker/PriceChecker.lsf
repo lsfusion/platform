@@ -142,7 +142,6 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW priceChecker {
             title = 'Прайс-чекеры';
-            ADD PROPERTY(loadDefaultPriceCheckerModels);
             ADD PROPERTY(name(pm));
             ADD PROPERTY(intValuePriceChecker);
             ADD PROPERTY(loadDefaultGroupPriceChecker);

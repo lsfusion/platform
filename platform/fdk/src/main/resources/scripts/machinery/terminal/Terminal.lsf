@@ -412,9 +412,6 @@ EXTEND DESIGN defaultData {
     machinery {
         NEW terminal {
             title = 'ТСД';
-            ADD PROPERTY(loadDefaultTerminalModels);
-            ADD PROPERTY(loadDefaultTerminalHandbookTypes);
-            ADD PROPERTY(loadDefaultTerminalDocumentTypes);
             ADD PROPERTY(name(tm));
             ADD PROPERTY(nameGroupTerminalDocumentType(gtdt));
             ADD PROPERTY(intValueTerminal);
