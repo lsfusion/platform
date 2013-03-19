@@ -152,18 +152,18 @@ V0.6.3 {
     OBJECT prepayment -> Contract_contractSkuForm.prepayment
     OBJECT implement -> Contract_contractSkuForm.implement
     OBJECT requirement -> Contract_contractSkuForm.requirement
-    OBJECT purchaseInvoiceStockPriceListType -> Purchase_systemLedgerPriceListType.purchaseInvoiceStockPriceListType
-    OBJECT purchaseInvoicePriceListType -> Purchase_systemLedgerPriceListType.purchaseInvoicePriceListType
-    OBJECT chargePriceStockPriceListType -> Purchase_systemLedgerPriceListType.chargePriceStockPriceListType
-    OBJECT chargePricePriceListType -> Purchase_systemLedgerPriceListType.chargePricePriceListType
-    OBJECT purchaseRRPInvoiceStockPriceListType -> Purchase_systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType
-    OBJECT purchaseRRPInvoicePriceListType -> Purchase_systemLedgerPriceListType.purchaseRRPInvoicePriceListType
-    OBJECT manufacturingPriceStockPriceListType -> Purchase_systemLedgerPriceListType.manufacturingPriceStockPriceListType
-    OBJECT manufacturingPricePriceListType -> Purchase_systemLedgerPriceListType.manufacturingPricePriceListType
+    OBJECT purchaseInvoiceStockPriceListType -> PriceList_systemLedgerPriceListType.purchaseInvoiceStockPriceListType
+    OBJECT purchaseInvoicePriceListType -> PriceList_systemLedgerPriceListType.purchaseInvoicePriceListType
+    OBJECT chargePriceStockPriceListType -> PriceList_systemLedgerPriceListType.chargePriceStockPriceListType
+    OBJECT chargePricePriceListType -> PriceList_systemLedgerPriceListType.chargePricePriceListType
+    OBJECT purchaseRRPInvoiceStockPriceListType -> PriceList_systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType
+    OBJECT purchaseRRPInvoicePriceListType -> PriceList_systemLedgerPriceListType.purchaseRRPInvoicePriceListType
+    OBJECT manufacturingPriceStockPriceListType -> PriceList_systemLedgerPriceListType.manufacturingPriceStockPriceListType
+    OBJECT manufacturingPricePriceListType -> PriceList_systemLedgerPriceListType.manufacturingPricePriceListType
     OBJECT portrait -> Label_printOrientation.portrait
     OBJECT landscape -> Label_printOrientation.landscape
-    OBJECT supplierPricingPriceListType -> Pricing_systemLedgerPriceListType.supplierPricingPriceListType
-    OBJECT retailPricingPriceListType -> Pricing_systemLedgerPriceListType.retailPricingPriceListType
+    OBJECT supplierPricingPriceListType -> PriceList_systemLedgerPriceListType.supplierPricingPriceListType
+    OBJECT retailPricingPriceListType -> PriceList_systemLedgerPriceListType.retailPricingPriceListType
     OBJECT markupChange -> Repricing_changePriceType.markupChange
     OBJECT discountChange -> Repricing_changePriceType.discountChange
     OBJECT itemItemGroup -> Item_objectItemAttribute.itemItemGroup

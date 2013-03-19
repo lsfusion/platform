@@ -335,11 +335,11 @@ public abstract class LogicsModule {
         return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
     }
 
-    protected void printStaticObjectsChanges(String path, String name, List<String> sids) {
+    protected void printStaticObjectsChanges(String path, String classSID, List<String> sids) {
         try {
             PrintWriter w = new PrintWriter(new FileWriter(path, true));
             for (String sid : sids) {
-                w.print("OBJECT " + sid + " -> " + transformNameToSID(name) + "." + sid + "\n");
+                w.print("OBJECT " + sid + " -> " + classSID + "." + sid + "\n");
             }
             w.close();
         } catch (Exception e) {
@@ -350,7 +350,7 @@ public abstract class LogicsModule {
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
         ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
-//        printStaticObjectsChanges("D:/skolkovo_class_migrate.txt", name, sids);
+//        printStaticObjectsChanges("D:/sot_class_migrate.txt", customClass.getSID(), sids);
         storeCustomClass(customClass);
         return customClass;
     }
