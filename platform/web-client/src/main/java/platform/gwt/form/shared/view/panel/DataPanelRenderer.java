@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
-import platform.gwt.base.client.ui.ResizableLayoutPanel;
+import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.client.HotkeyManager;
@@ -26,7 +26,7 @@ public class DataPanelRenderer implements PanelRenderer {
     protected final Label label;
     protected final GSinglePropertyTable valueTable;
     protected final CellPanel panel;
-    protected ResizableLayoutPanel gridPanel;
+    protected ResizableSimplePanel gridPanel;
 
     private String caption;
 
@@ -56,9 +56,10 @@ public class DataPanelRenderer implements PanelRenderer {
             }
         };
 
-        gridPanel = new ResizableLayoutPanel();
+        gridPanel = new ResizableSimplePanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);
+        valueTable.setSize("100%", "100%");
 
         panel = property.panelLabelAbove ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         panel.addStyleName("dataPanelRendererPanel");
