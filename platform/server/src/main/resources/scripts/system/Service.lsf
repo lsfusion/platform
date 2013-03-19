@@ -12,6 +12,7 @@ packAction 'Упаковать таблицы' = ACTION CUSTOM 'platform.server.
 serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'platform.server.logics.service.ServiceDBActionProperty';
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'platform.server.logics.service.GetVMInfoActionProperty';
 toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
+toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'platform.server.logics.service.ToggleExplainModeActionProperty';
 
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'platform.server.logics.service.RestartActionProperty';
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'platform.server.logics.service.GarbageCollectorActionProperty';
@@ -22,7 +23,7 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, restartServerAction SHOWIF isNotServerRestarting(),
                  cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, recalculateAction,
                  recalculateFollowsAction, packAction, analyzeDBAction, serviceDBAction,
-                 runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode
+                 runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, toggleExplainMode
 ;
 
 NAVIGATOR {

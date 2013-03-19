@@ -48,7 +48,7 @@ inAgreementCustomerGroupOver 'Отм' (agreement, legalEntityGroup) =
 inAgreementCustomerOver 'Отм' (agreement, customer) =
     UNION OVERRIDE inCustomerAgreement(agreement) AND customer IS legalEntity,
                    nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
-                   inAgreementCustomer(agreement, customer);
+                   inAgreementCustomer(agreement, customer) PERSISTENT;
 
 customerAgreement 'Покупатели' (agreement) = GROUP CONCAT name(customer) IF inAgreementCustomerOver(agreement, customer) , ', '
                                                  BY agreement
@@ -70,7 +70,7 @@ levelParentAgreementSupplierGroup (agreement, legalEntityGroup) =
 nearestParentLegalEntitySupplierGroup (agreement, legalEntityGroup) =
     legalEntityGroupLegalEntityGroupLevel(legalEntityGroup, levelParentAgreementSupplierGroup(agreement, legalEntityGroup));
 nearestInAgreementSupplierGroup (agreement, legalEntityGroup) =
-    inAgreementSupplierGroup(agreement, nearestParentLegalEntitySupplierGroup(agreement, legalEntityGroup));
+    inAgreementSupplierGroup(agreement, nearestParentLegalEntitySupplierGroup(agreement, legalEntityGroup)) PERSISTENT;
 
 inAgreementSupplierGroupOver 'Отм' (agreement, legalEntityGroup) =
     UNION OVERRIDE inSupplierAgreement(agreement) AND legalEntityGroup IS legalEntityGroup,
@@ -149,7 +149,7 @@ userDefaultAgreementSupplierCustomer(supplier, customer) => inAgreementCustomerO
 
 calcDefaultAgreementSupplierCustomer(supplier, customer) =
     GROUP MAX agreement IF inAgreementCustomerOver(agreement, customer) AND inAgreementSupplierOver(agreement, supplier)
-    BY supplier, customer;
+    BY supplier, customer PERSISTENT;
 
 defaultAgreementSupplierCustomer(supplier, customer) = UNION OVERRIDE calcDefaultAgreementSupplierCustomer(supplier, customer), userDefaultAgreementSupplierCustomer(supplier, customer) PERSISTENT;
 nameDefaultAgreementSupplierCustomer 'Соглашение по умолчанию' (supplier, customer) = name(defaultAgreementSupplierCustomer(supplier, customer));
