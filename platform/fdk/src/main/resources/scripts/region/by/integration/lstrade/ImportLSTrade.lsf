@@ -24,11 +24,13 @@ importStores 'Импортировать магазины' = DATA BOOLEAN () IN 
 importDepartmentStores 'Импортировать отделы магазина' = DATA BOOLEAN() IN lstradeGroup;
 importBanks 'Импортировать банки' = DATA BOOLEAN() IN lstradeGroup;
 importRateWastes 'Импортировать нормы отходов' = DATA BOOLEAN() IN lstradeGroup;
+importContracts 'Импортировать договоры' = DATA BOOLEAN() IN lstradeGroup;
 
 EXTEND FORM integrationData
     PROPERTIES() importLSTDataAction, importLSTDirectory, importInactive, importGroupItems, importWares, importItems,
     importNumberItems, importNumberItemsAtATime, importPrices, importAssortment, importUserInvoices,
-    importLegalEntities, importWarehouses, importStores, importDepartmentStores, importBanks, importRateWastes
+    importLegalEntities, importWarehouses, importStores, importDepartmentStores, importBanks, importRateWastes,
+    importContracts
 ;
 EXTEND DESIGN integrationData {
     pane {

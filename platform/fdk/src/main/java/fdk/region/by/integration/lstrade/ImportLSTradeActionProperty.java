@@ -20,11 +20,12 @@ import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
@@ -67,6 +68,9 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
                 importData.setWarehousesList((getLCP("importWarehouses").read(context) != null) ?
                         importWarehousesFromDBF(path + "//_sprana.dbf", importInactive) : null);
+
+                importData.setContractsList((getLCP("importContracts").read(context) != null) ?
+                        importContractsFromDBF(path + "//_sprcont.dbf") : null);
 
                 importData.setStoresList((getLCP("importStores").read(context) != null) ?
                         importLegalEntitiesFromDBF(path + "//_sprana.dbf", importInactive, true) : null);
@@ -589,6 +593,37 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             data.add(new RateWaste(("RW_" + rateWasteID), name, coef, country));
         }
         return data;
+    }
+
+    private List<Contract> importContractsFromDBF(String path) throws IOException, xBaseJException, ParseException {
+
+        if (!(new File(path).exists()))
+            throw new RuntimeException("Запрашиваемый файл " + path + " не найден");
+
+        DBF importFile = new DBF(path);
+        int recordCount = importFile.getRecordCount();
+        String shortNameCurrency = "BLR";
+
+        List<Contract> contractsList = new ArrayList<Contract>();
+
+        for (int i = 0; i < recordCount; i++) {
+
+            importFile.read();
+
+            String legalEntity1ID = new String(importFile.getField("K_ANA").getBytes(), "Cp1251").trim();
+            String legalEntity2ID = new String(importFile.getField("DPRK").getBytes(), "Cp1251").trim();
+            String contractID = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
+            String number = new String(importFile.getField("CFULLNAME").getBytes(), "Cp1251").trim();
+
+            java.sql.Date dateFrom = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_VV").getBytes(), "Cp1251").trim(), new String[]{"yyyymmdd"}).getTime());
+            java.sql.Date dateTo = new java.sql.Date(DateUtils.parseDate(new String(importFile.getField("D_END").getBytes(), "Cp1251").trim(), new String[]{"yyyymmdd"}).getTime());
+
+            if (legalEntity1ID.startsWith("ПС"))
+                contractsList.add(new Contract(contractID, legalEntity1ID, legalEntity2ID, number, dateFrom, dateTo, shortNameCurrency));
+            else
+                contractsList.add(new Contract(contractID, legalEntity2ID, legalEntity1ID, number, dateFrom, dateTo, shortNameCurrency));
+        }
+        return contractsList;
     }
 
     private void addIfNotContains(ItemGroup element) {
