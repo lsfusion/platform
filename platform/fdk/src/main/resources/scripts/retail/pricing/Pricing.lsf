@@ -508,8 +508,8 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 // ------------------------------------- Печать ценников ------------------------------ //
 
 @Label.implementPriceTransactionDocument(pricing);
-@defineDocumentLabelTransaction(pricing, sku, departmentStore);
-@extendFormDocumentLabelTransaction(pricings, p, pricing);
+//@defineDocumentLabelTransaction(pricing, sku, departmentStore);
+//@extendFormDocumentLabelTransaction(pricings, p, pricing);
 
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 
@@ -660,7 +660,6 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     retailPricePricingDetail(pricingDetail) += retailPrice###concrete###pricingDetail(pricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailSum, 'Сумма розничная');
     retailSumPricingDetail(pricingDetail) += retailSum###concrete###pricingDetail(pricingDetail);
-//    @defineDocumentHeaderSumPrefix (concrete###pricing, retail, );
 
     @defineDocumentAggregationDetailProperty (invoice, concrete###pricing, retailMarkup, 'Надбавка');
     retailMarkupPricingDetail(pricingDetail) += retailMarkup###concrete###pricingDetail(pricingDetail);
