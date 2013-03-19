@@ -20,6 +20,9 @@ nameOrientationLabelType 'Ориентация' (labelType) = name(orientationLa
 
 fileTemplateLabelType 'Файл шаблона' = DATA STRING[200] (labelType);
 
+priceListTypeLabelType = DATA priceListType (labelType);
+namePriceListTypeLabelType  'Вид цен' (labelType) = name(priceListTypeLabelType(labelType));
+
 TABLE labelTypeStoreType (labelType, storeType);
 TABLE labelTypeStore (labelType, store);
 TABLE labelTypeDepartmentStore (labelType, departmentStore);
@@ -108,11 +111,11 @@ countLabelLabelTypeSku 'Множитель' (labelType, sku) =
     UNION OVERRIDE countLabelLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
                    dataCountLabelLabelTypeSku(labelType, sku);
 
-countLabelSkuDepartmentStore 'Множитель' (sku,departmentStore) = countLabelLabelTypeSku(labelTypeSkuDepartmentStore (sku, departmentStore), sku);
+countLabelSkuDepartmentStore 'Множитель' (sku, departmentStore) = countLabelLabelTypeSku(labelTypeSkuDepartmentStore (sku, departmentStore), sku);
 
 FORM labelType 'Тип ценника'
     OBJECTS l = labelType FIXED PANEL
-    PROPERTIES(l) name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, nameGroupTypeLabelType
+    PROPERTIES(l) name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType, nameGroupTypeLabelType
 
     TREE treeStore a=STRING[3], st=storeType, s=store
     PROPERTIES READONLY OBJVALUE(a), name(st), name(s)
@@ -180,7 +183,7 @@ DESIGN labelType FROM DEFAULT {
 
 FORM labelTypes 'Типы ценников'
     OBJECTS l = labelType
-    PROPERTIES(l) READONLY name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType
+    PROPERTIES(l) READONLY name, widthLabelType, heightLabelType, nameOrientationLabelType, fileTemplateLabelType, namePriceListTypeLabelType
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 ;
 
@@ -300,12 +303,7 @@ DESIGN labelTransactions FROM DEFAULT {
 
 // -------------------------------------------- Действия по печати ценников ------------------------------ //
 
-priceListTypeLabelDepartmentStore = DATA priceListType (departmentStore);
-namePriceListTypeLabelDepartmentStore 'Вид цен для ценников' (departmentStore) = name(priceListTypeLabelDepartmentStore(departmentStore)) IN bookkeepingGroup;
-
-EXTEND FORM departmentStore PROPERTIES(d) namePriceListTypeLabelDepartmentStore;
-
-priceLabelBarcodeDepartmentStore (barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelDepartmentStore(departmentStore),
+priceLabelBarcodeDepartmentStore (barcode, departmentStore) = pricePriceListTypeSkuStockDateTime(priceListTypeLabelType(labelTypeSkuDepartmentStore(skuBarcode(barcode),departmentStore)),
                                                                                                  skuBarcode(barcode),
                                                                                                  departmentStore,
                                                                                                  currentDateTime());

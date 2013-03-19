@@ -2,7 +2,6 @@ MODULE LabelItem;
 
 REQUIRE Label, StoreItem;
 
-GROUP labelGroup 'Ценник' : public;
 
 // ------------------------------ Добавляем атрибуты в ценники ----------------------------- //
 
