@@ -50,10 +50,6 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         }
 
         addFilterButton();
-
-        if (filter != null) {
-            filter.addHotKeys(tree.getElement());
-        }
     }
 
     public void processFormChanges(GFormChanges fc) {

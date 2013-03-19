@@ -90,6 +90,8 @@ public class GFormController extends ResizableSimplePanel {
     private final int ASYNC_TIME_OUT = 50;
     private boolean needToResize = false;
 
+    private HotkeyManager hotkeyManager = new HotkeyManager();
+
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -128,6 +130,8 @@ public class GFormController extends ResizableSimplePanel {
                 onInitialFormChangesReceived();
             }
         });
+
+        hotkeyManager.install(this);
     }
 
     private void initializeRegularFilters() {
@@ -156,8 +160,9 @@ public class GFormController extends ResizableSimplePanel {
             filterCheck.setValue(true, true);
         }
 
+        filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
         if (filter.key != null) {
-            HotkeyManager.get().addHotkeyBinding(getElement(), filter.key, new HotkeyManager.Binding() {
+            addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                     filterCheck.setValue(!filterCheck.getValue(), true);
@@ -177,14 +182,17 @@ public class GFormController extends ResizableSimplePanel {
             filterBox.addItem(filter.getFullCaption(), "" + i);
 
             final int filterIndex = i;
-            HotkeyManager.get().addHotkeyBinding(getElement(), filter.key, new HotkeyManager.Binding() {
-                @Override
-                public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                    filterBox.setSelectedIndex(filterIndex + 1);
-                    setRegularFilter(filterGroup, filterIndex);
-                    return true;
-                }
-            });
+            filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
+            if (filter.key != null) {
+                addHotkeyBinding(filterGroup.groupObject, filter.key, new HotkeyManager.Binding() {
+                    @Override
+                    public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
+                        filterBox.setSelectedIndex(filterIndex + 1);
+                        setRegularFilter(filterGroup, filterIndex);
+                        return true;
+                    }
+                });
+            }
 
         }
 
@@ -734,7 +742,6 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void hideForm() {
-        HotkeyManager.get().removeHotkeyBinding(getElement());
         dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
     }
 
@@ -841,6 +848,10 @@ public class GFormController extends ResizableSimplePanel {
                 return;
             }
         }
+    }
+
+    public void addHotkeyBinding(GGroupObject groupObjcet, GKeyStroke key, HotkeyManager.Binding binding) {
+        hotkeyManager.addHotkeyBinding(groupObjcet, key, binding);
     }
 
     private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {

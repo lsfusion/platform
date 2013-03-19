@@ -65,6 +65,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 stopPropagation(event);
                 form.okPressed();
             }
+        } else if (GKeyStroke.isAddFilterEvent(event)) {
+            getGroupController().addFilter();
+        } else if (GKeyStroke.isRemoveAllFiltersEvent(event)) {
+            getGroupController().removeFilters();
+        } else if (GKeyStroke.isReplaceFilterEvent(event)) {
+            getGroupController().replaceFilter();
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
             GPropertyDraw property = getSelectedProperty();
             if (property != null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {

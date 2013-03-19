@@ -1,13 +1,9 @@
 package platform.gwt.form.client.form.ui.filter;
 
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import platform.gwt.form.client.HotkeyManager;
-import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -216,32 +212,6 @@ public abstract class GFilterController {
             changeState(State.EXPANDED);
             filterView.startEditing(keyEvent, propertyDraw);
         }
-    }
-
-    public void addHotKeys(Element element) {
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2), new HotkeyManager.Binding() {
-            @Override
-            public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                replaceConditionPressed();
-                return true;
-            }
-        });
-
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2, true, false, false), new HotkeyManager.Binding() {
-            @Override
-            public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                addPressed();
-                return true;
-            }
-        });
-
-        HotkeyManager.get().addHotkeyBinding(element, new GKeyStroke(GKeyStroke.KEY_F2, false, false, true), new HotkeyManager.Binding() {
-            @Override
-            public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
-                allRemovedPressed();
-                return true;
-            }
-        });
     }
 
     public abstract void remoteApplyQuery();

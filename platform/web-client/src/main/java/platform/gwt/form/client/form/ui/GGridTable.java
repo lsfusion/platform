@@ -114,6 +114,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
             }
         });
+
+        getElement().setPropertyObject("groupObject", groupObject);
     }
 
     public void update() {

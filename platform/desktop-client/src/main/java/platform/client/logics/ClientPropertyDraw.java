@@ -31,9 +31,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
-import static platform.base.BaseUtils.isRedundantString;
-import static platform.base.BaseUtils.max;
-import static platform.base.BaseUtils.nullTrim;
+import static platform.base.BaseUtils.*;
 import static platform.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -128,7 +126,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public KeyStroke getEditKey() {
-        return (editKey != null) ? editKey : null;
+        return editKey;
     }
 
     public void setEditKey(KeyStroke key) {

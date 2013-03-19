@@ -10,7 +10,6 @@ import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.client.ui.ResizableSimplePanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
-import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.form.ui.GFormController;
 import platform.gwt.form.client.form.ui.GSinglePropertyTable;
 import platform.gwt.form.shared.view.GEditBindingMap;
@@ -89,8 +88,9 @@ public class DataPanelRenderer implements PanelRenderer {
             gridPanel.setWidth(propertyPixelWidth + "px");
         }
 
+        valueTable.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
-            HotkeyManager.get().addHotkeyBinding(form.getElement(), property.editKey, new Binding() {
+            form.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                     focusTargetAfterEdit = event.getEventTarget();

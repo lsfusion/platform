@@ -168,4 +168,16 @@ public class GKeyStroke implements Serializable {
                 && keyCode != KEY_UP
                 && keyCode != KEY_DOWN;
     }
+
+    public static boolean isReplaceFilterEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2;
+    }
+
+    public static boolean isAddFilterEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getAltKey();
+    }
+
+    public static boolean isRemoveAllFiltersEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getShiftKey();
+    }
 }

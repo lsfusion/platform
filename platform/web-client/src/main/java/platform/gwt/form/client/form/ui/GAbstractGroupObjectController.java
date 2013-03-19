@@ -90,6 +90,14 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
         filter.quickEditFilter(editEvent, propertyDraw);
     }
 
+    public void replaceFilter() {
+        filter.replaceConditionPressed();
+    }
+
+    public void addFilter() {
+        filter.addPressed();
+    }
+
     public void removeFilters() {
         filter.allRemovedPressed();
     }

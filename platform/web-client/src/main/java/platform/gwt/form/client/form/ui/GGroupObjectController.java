@@ -68,7 +68,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private void configureToolbar() {
         addFilterButton();
         if (filter != null && grid != null) {
-            filter.addHotKeys(grid.getTable().getElement());
             addToToolbar(GwtClientUtils.createHorizontalStrut(5));
         }
 

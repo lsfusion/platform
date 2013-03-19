@@ -99,8 +99,6 @@ public class MainFrame implements EntryPoint {
             }
         };
 
-        HotkeyManager.get().install(RootPanel.get());
-
         initCommonWindows();
     }
 

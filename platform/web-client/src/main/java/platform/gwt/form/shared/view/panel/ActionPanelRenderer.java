@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.form.client.HotkeyManager;
 import platform.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.ui.GFormController;
@@ -58,8 +57,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
             }
         });
 
+        button.getElement().setPropertyObject("groupObject", property.groupObject);
         if (property.editKey != null) {
-            HotkeyManager.get().addHotkeyBinding(form.getElement(), property.editKey, new Binding() {
+            iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {
                 @Override
                 public boolean onKeyPress(NativeEvent event, GKeyStroke key) {
                     return enabled && click(event.getEventTarget());
