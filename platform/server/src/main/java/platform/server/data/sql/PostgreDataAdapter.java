@@ -1,16 +1,24 @@
 package platform.server.data.sql;
 
+import net.sourceforge.jtds.util.Logger;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.PumpStreamHandler;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.NullOutputStream;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PostgreDataAdapter extends DataAdapter {
@@ -115,6 +123,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getByteArrayType() {
         return "bytea";
     }
+
     @Override
     public int getByteArraySQL() {
         return Types.VARBINARY;
@@ -122,7 +131,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public String getOrderDirection(boolean descending, boolean notNull) {
-        return (descending?"DESC":"ASC")  + (!notNull? " NULLS " + (descending?"LAST":"FIRST"): "");
+        return (descending ? "DESC" : "ASC") + (!notNull ? " NULLS " + (descending ? "LAST" : "FIRST") : "");
     }
 
     @Override
@@ -135,6 +144,7 @@ public class PostgreDataAdapter extends DataAdapter {
 //        return "bit(" + length * 8 + ")";
         return getStringType(length);
     }
+
     @Override
     public int getBinarySQL() {
         return getStringSQL();
@@ -182,11 +192,11 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean orderTopTrouble() {
         return true;
     }
-    
+
     @Override
     public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
-        String path = "\"" + ((binPath == null) ? "" : binPath) + "pg_dump.exe" + "\"";
-        String host = "", port = "5432";
+        String path = "\"" + ((binPath == null) ? "" : binPath) + "pg_dump" + "\"";
+        String host, port = "5432";
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
             port = server.substring(server.lastIndexOf(':') + 1);
@@ -194,12 +204,35 @@ public class PostgreDataAdapter extends DataAdapter {
             host = server;
         }
 
-        String execute = "cmd SET PGPASSWORD=" + password + " /c start \"\" /B " + path + " --host " + host + " --port " + port + " --username " +
-                userID + " --format tar --blobs --verbose --file \"" + dumpDir + "\" " +
-                dataBase + " 2>> \"" + dumpDir + "log.txt\"";
-        Runtime rt = Runtime.getRuntime();
-        Process p = rt.exec(execute);
-        return p.waitFor()==0;
+        CommandLine commandLine = new CommandLine(path);
+        commandLine.addArgument("-h");
+        commandLine.addArgument(host);
+        commandLine.addArgument("-p");
+        commandLine.addArgument(port);
+        commandLine.addArgument("-U");
+        commandLine.addArgument(userID);
+        commandLine.addArgument("-F");
+        commandLine.addArgument("tar");
+        commandLine.addArgument("-b");
+        commandLine.addArgument("-v");
+        commandLine.addArgument("-f");
+        commandLine.addArgument("\"" + dumpDir + "\"");
+        commandLine.addArgument(dataBase);
+
+        Executor executor = new DefaultExecutor();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        executor.setStreamHandler(new PumpStreamHandler(out));
+
+        executor.setExitValue(0);
+
+        Map<String, String> env = new HashMap<String, String>(System.getenv());
+        env.put("PGPASSWORD", password);
+
+        int result = executor.execute(commandLine, env);
+
+        out.writeTo(new FileOutputStream (dumpDir + "log.txt"));
+
+        return result==0;
     }
 
     @Override
