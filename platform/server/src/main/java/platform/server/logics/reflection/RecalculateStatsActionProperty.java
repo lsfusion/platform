@@ -6,6 +6,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -16,6 +17,8 @@ public class RecalculateStatsActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getBL().recalculateStats(context.getSession());
+        DataSession session = context.getSession();
+        context.getBL().recalculateStats(session);
+        session.apply(context.getBL());
     }
 }

@@ -392,12 +392,13 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
         OBJECTS i = invoice
-        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
-                                nameCurrencyInvoice, nameAgreementInvoice, noteInvoice,
+                                nameCurrencyInvoice, nameAgreementInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                                 VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice,
+                                noteInvoice, objectClassName,
                                 toShowProp###invoice
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -429,7 +430,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                 type = SPLITV;
                 childConstraints = TO THE BOTTOM;
 
-                ADD i.box;
+                ADD i.box { fillVertical = 2.0; }
 
                 NEW documentDetail {
                     type = TABBED;
@@ -448,7 +449,6 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                         NEW printContainer {
                             title = 'Печать';
                             childConstraints = TO THE BOTTOM;
-                            fillVertical = 2.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
                         }
                     }
                 }

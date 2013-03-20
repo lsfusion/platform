@@ -147,11 +147,11 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
         OBJECTS c = creditNote
-        PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, objectClassName, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
+        PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
                                 nameSupplierCreditNote, nameSupplierStockCreditNote, nameCustomerCreditNote, nameCustomerStockCreditNote,
-                                nameCurrencyCreditNote, noteCreditNote,
-                                countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
-                                VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote
+                                nameCurrencyCreditNote, countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
+                                VATSumCreditNoteDetailCreditNote, invoiceSumCreditNoteDetailCreditNote,
+                                noteCreditNote, objectClassName
         PROPERTIES (c) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserCreditNote TODRAW c
@@ -177,7 +177,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
 
-            ADD c.box;
+            ADD c.box { fillVertical = 2.0; }
 
             NEW documentDetail {
                 type = TABBED;
@@ -196,7 +196,6 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
                     NEW printContainer {
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
-                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
                     }
                 }
             }

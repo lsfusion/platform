@@ -222,11 +222,12 @@ META defineBlanketOrder(sign)
 
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = blanketOrder
-        PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, objectClassName, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
-                                nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCustomerBlanketOrder, nameCurrencyBlanketOrder, noteBlanketOrder,
+        PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
+                                nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCustomerBlanketOrder, nameCurrencyBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
                                 VATSumBlanketOrderDetailBlanketOrder, invoiceSumBlanketOrderDetailBlanketOrder,
-                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder
+                                shipmentDateBlanketOrder, shipmentTimeBlanketOrder, customerStocksBlanketOrder,
+                                noteBlanketOrder, objectClassName
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -260,7 +261,7 @@ META defineBlanketOrder(sign)
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
 
-            ADD o.box;
+            ADD o.box { fillVertical = 2.0; }
 
             NEW documentDetail {
                 type = TABBED;
@@ -279,7 +280,6 @@ META defineBlanketOrder(sign)
                     NEW printContainer {
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
-                        fillVertical = 1.0;
                     }
                 }
             }

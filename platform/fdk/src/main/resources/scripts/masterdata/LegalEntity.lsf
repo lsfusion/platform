@@ -263,11 +263,11 @@ NAVIGATOR {
 // -------------------------------------------- Макросы --------------------------------------------- //
 META defineDocumentHeaderLegalEntity (object, contact, contactCaption)
     contact###object (object) = DATA legalEntity (object);
-    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderLegalEntity (object, contact, contactCaption)
     contact###object (object) = ABSTRACT legalEntity (object) PERSISTENT;
-    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
+    name###contact###object contactCaption (object)= name(contact###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderLegalEntity (object, contact, contactCaption)
     @defineDocumentAbstractHeaderLegalEntity(object, contact, contactCaption);

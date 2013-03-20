@@ -359,11 +359,13 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
     FORM orders 'Заказы' TITLE 'Заказы'###sign
         OBJECTS o = order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
-                                nameAgreementOrder, namePriceListTypeOrder, noteOrder,
+                                nameAgreementOrder, namePriceListTypeOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
-                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder, toShowProp###order
+                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder,
+                                noteOrder, objectClassName,
+                                toShowProp###order
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -394,7 +396,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
 
-            ADD o.box;
+            ADD o.box { fillVertical = 2.0; }
 
             NEW documentDetail {
                 type = TABBED;
@@ -413,7 +415,6 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                     NEW printContainer {
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
-                        fillVertical = 1.0;
                     }
                 }
             }

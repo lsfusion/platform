@@ -233,8 +233,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         OBJECTS s = shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
-                                nameCurrencyShipment, noteShipment,
-                                countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment, toShowProp###shipment
+                                nameCurrencyShipment, countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
+                                noteShipment, objectClassName,
+                                toShowProp###shipment
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserShipment TODRAW s
@@ -261,7 +262,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
             type = SPLITV;
             childConstraints = TO THE BOTTOM;
 
-            ADD s.box;
+            ADD s.box { fillVertical = 2.0; }
 
             NEW documentDetail {
                 type = TABBED;
@@ -280,7 +281,6 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
                     NEW printContainer {
                         title = 'Печать';
                         childConstraints = TO THE BOTTOM;
-                        fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
                     }
                 }
             }

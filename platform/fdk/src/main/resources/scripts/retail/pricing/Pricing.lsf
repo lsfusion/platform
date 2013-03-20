@@ -411,10 +411,11 @@ editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM use
 
 FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     OBJECTS p = pricing
-    PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, objectClassName, numberPricing, seriesPricing, datePricing, timePricing,
-                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, notePricing,
+    PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, numberPricing, seriesPricing, datePricing, timePricing,
+                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
-                            retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing
+                            retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing,
+                            notePricing, objectClassName
 
     PROPERTIES (p) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -445,7 +446,7 @@ DESIGN pricings FROM DEFAULT {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
-        ADD p.box;
+        ADD p.box { fillVertical = 2.0; }
 
         NEW documentDetail {
             type = TABBED;
@@ -464,7 +465,6 @@ DESIGN pricings FROM DEFAULT {
                 NEW printContainer {
                     title = 'Печать';
                     childConstraints = TO THE BOTTOM;
-                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
                     ADD p.printGroup;
                 }
             }

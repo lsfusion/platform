@@ -115,8 +115,11 @@ namePropertyTableColumn 'Заголовок свойства' (tableColumn) = ca
 quantityTableColumn 'Количество разновидностей' = DATA INTEGER (tableColumn);
 notNullQuantityTableColumn 'Количество не null значений' = DATA INTEGER (tableColumn);
 toNumeric15p2 = FORMULA NUMERIC[15,2] 'CAST($1 AS numeric(15,2))';
-percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0 THEN 100.00 ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
-sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn)<50;
+
+percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0
+                                                          THEN 100.00
+                                                          ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
+sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
 
 recalculateAggregationTableColumn 'Пересчитать аггрегации' = ACTION CUSTOM 'platform.server.logics.reflection.RecalculateTableColumnActionProperty';
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'platform.server.logics.reflection.DropColumnActionProperty';

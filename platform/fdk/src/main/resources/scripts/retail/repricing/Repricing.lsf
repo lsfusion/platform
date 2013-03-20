@@ -491,7 +491,8 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
-               noteRepricing, numberDisposalRepricing, nameRepricingCommitteeRepricing, skipChangeLedgerRepricing
+               numberDisposalRepricing, nameRepricingCommitteeRepricing, skipChangeLedgerRepricing,
+               noteRepricing, objectClassName
 
     PROPERTIES (p) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -528,7 +529,7 @@ DESIGN repricings FROM DEFAULT {
         type = SPLITV;
         childConstraints = TO THE BOTTOM;
 
-        ADD p.box;
+        ADD p.box { fillVertical = 2.0; }
 
         NEW documentDetail {
             type = TABBED;
@@ -547,8 +548,7 @@ DESIGN repricings FROM DEFAULT {
                 NEW printContainer {
                     title = 'Печать';
                     childConstraints = TO THE BOTTOM;
-                    fillVertical = 1.0; // todo : иначе кнопка не всегда показывается, нужно будет пофиксить как-нибудь
-                        ADD p.printGroup;
+                    ADD p.printGroup;
                 }
             }
         }

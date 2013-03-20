@@ -57,10 +57,10 @@ inRoundConditionRoundGroup 'Вкл' = DATA BOOLEAN (roundCondition, roundGroup);
 
 roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP UNIQUE roundCondition
                                                                      BY currencyRoundCondition(roundCondition), roundGroup
-                                                                     WHERE inRoundConditionRoundGroup(roundCondition, roundGroup);
+                                                                     WHERE inRoundConditionRoundGroup(roundCondition, roundGroup) PERSISTENT;
 
 TABLE currencyRoundGroup(currency, roundGroup);
-roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) PERSISTENT;
+roundConditionCurrencyRoundGroup (currency, roundGroup) = (defaultRoundConditionCurrency(currency) AND roundGroup IS roundGroup) OR roundConditionUniqueCurrencyRoundGroup(currency, roundGroup);
 
 roundPriceCurrencyRoundGroup(price, currency, roundGroup) = roundPriceRoundCondition(price, roundConditionCurrencyRoundGroup(currency, roundGroup));
 
