@@ -203,5 +203,5 @@ V0.7.3 {
     OBJECT coefficient -> RetailPrice_methodPrice.coefficient
     OBJECT RRP -> RetailPrice_methodPrice.RRP
     OBJECT previous -> RetailPrice_methodPrice.previous
-    OBJECT userPriceListType -> RetailPrice_systemPriceListType.userPriceListType
+    OBJECT userPriceListType -> PriceList_systemPriceListType.userPriceListType
 }
