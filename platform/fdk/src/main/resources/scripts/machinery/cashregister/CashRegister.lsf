@@ -41,8 +41,6 @@ modelMachinery(machinery) += cashRegisterModelCashRegister(machinery);
 
 departmentStoreCashRegister (cashRegister) = departmentStoreGroupCashRegister(groupCashRegisterCashRegister(cashRegister));
 
-roundSalesGroupCashRegister 'Округление цен до' = DATA INTEGER (groupMachinery) IN base;
-
 numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (cashRegister) IN base;
 cashRegisterNumber (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS cashRegister;
 
@@ -86,7 +84,6 @@ FORM cashRegister 'Касса'
 FORM groupCashRegister 'Группа касс'
     OBJECTS grc=groupCashRegister FIXED PANEL
     PROPERTIES(grc) nameStockGroupMachinery, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                    roundSalesGroupCashRegister,
                     filterSkuGroupMachinery, showFilterSkuGroupMachinery SHOWIF filterSkuGroupMachinery(grc),
                     namePriceListTypeGroupMachinery
 
@@ -108,7 +105,7 @@ FORM groupCashRegister 'Группа касс'
 FORM groupsCashRegister 'Группы касс'
     OBJECTS grc=groupCashRegister, c=cashRegister
     PROPERTIES(grc)  READONLY nameStockGroupMachinery, nameLegalEntityCashRegister, nameEquipmentServerGroupMachinery, nameGroupMachinery,
-                     roundSalesGroupCashRegister, filterSkuGroupMachinery
+                     filterSkuGroupMachinery
     PROPERTIES(grc)  ADDFORM, EDITFORM, delete
 
     PROPERTIES(c) READONLY nppMachinery, descriptionMachinery, portMachinery,

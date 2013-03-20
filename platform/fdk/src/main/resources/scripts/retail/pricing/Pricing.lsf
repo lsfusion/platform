@@ -508,8 +508,8 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 // ------------------------------------- Печать ценников ------------------------------ //
 
 @Label.implementPriceTransactionDocument(pricing);
-//@defineDocumentLabelTransaction(pricing, sku, departmentStore);
-//@extendFormDocumentLabelTransaction(pricings, p, pricing);
+@defineDocumentLabelTransaction(pricing, sku, departmentStore);
+@extendFormDocumentLabelTransaction(pricings, p, pricing);
 
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 

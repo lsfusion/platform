@@ -335,8 +335,7 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
                                                          AND priceLabelBarcodeDepartmentStore(barcode, departmentStore);
 
     IF createLabelTransactionSnapshot() THEN {
-        ADDOBJ labelTransaction;
-        FOR t == addedObject() DO {
+        FOR ADDOBJ t = labelTransaction DO {
             SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode);
             SET quantityLabelTransactionBarcode(t, barcode) <- 1 WHERE inLabelTransactionBarcode(t, barcode);
             EXEC createLabelTransactionFillParams(t, departmentStore);
@@ -347,13 +346,12 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         }
     } ELSE {
         // бежим по всем типам ценников из управленческих параметров
-        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelTypeBarcodeDepartmentStore(barcode, departmentStore), departmentStore](l, departmentStore)) DO {
+        FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelTypeBarcodeDepartmentStore(barcode, departmentStore), departmentStore](labelType, departmentStore)) DO {
             // для каждого создаем по операции печати ценников
-            ADDOBJ labelTransaction;
-            FOR t == addedObject() DO {
-                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelTypeBarcodeDepartmentStore(barcode, departmentStore) == l;
+            FOR ADDOBJ t = labelTransaction DO {
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelTypeBarcodeDepartmentStore(barcode, departmentStore) == labelType AND labelType IS labelType;
                 SET quantityLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inLabelTransactionBarcode(t, barcode);
-                SET labelTypeLabelTransaction(t) <- l;
+                SET labelTypeLabelTransaction(t) <- labelType  WHERE labelType IS labelType;
                 EXEC createLabelTransactionFillParams(t, departmentStore);
                 // вызываем печатную форму для каждого из них
                 FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
@@ -395,7 +393,7 @@ META defineDocumentLabelTransaction (document, skuProp, stockProp)
         SET createLabelTransactionDocument() <- document AS Label.priceTransactionDocument;
         SET createLabelTransactionSnapshot() <- TRUE;
         EXEC createLabelTransaction(stockProp###document(document));
-    } SHORTCUT statusLabelPriceTransactionDocument CONFIRM;
+    } CONFIRM;
 
     showPrintLabelTransaction###document 'Показывать' (document) = isPosted###document(document) AND NOT Label.skipPriceTransactionDocument(document)
                                                                                                  AND NOT printedPriceTransactionDocument(document);
@@ -404,9 +402,8 @@ END
 
 META extendFormDocumentLabelTransaction(form, object, document)
     EXTEND FORM form
-        PROPERTIES(object) statusLabelPriceTransactionDocument BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
-                           create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object),
-                           createSnapshot###document##LabelTransaction SHOWIF isPosted###document(object)
+        PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT 'Перепечатать ценники' EXEC createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
+                           create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object)
     ;
 END
 
