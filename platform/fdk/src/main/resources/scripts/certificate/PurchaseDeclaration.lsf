@@ -271,6 +271,9 @@ EXTEND FORM declaration
     PROPERTIES (d) toCreateDeclarationDetails TODRAW dd FORCE PANEL TOOLBAR
     PROPERTIES (d) setSumDeclarationDetail TODRAW dd FORCE PANEL TOOLBAR
     FILTERS declarationDeclarationDetail(dd) == d
+
+    EVENTS
+        ON OK EXEC prePostDeclaration(d)
 ;
 
 EXTEND DESIGN declaration {
@@ -290,6 +293,11 @@ EXTEND DESIGN declaration {
             fillVertical = 2;
         }
     }
+
+    PROPERTY(formOk) {
+        caption = 'Провести';
+    }
+
     ADD functions.box;
 }
 

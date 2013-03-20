@@ -43,11 +43,19 @@ nameTypeExchangeDeclaration 'Тип обмена' (declaration) = name(typeExcha
 CONSTRAINT currencyTypeExchange(typeExchangeDeclaration(declaration)) != homeCurrencyDeclaration(declaration)
     CHECKED BY homeCurrencyDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';
 
-rateExchangeDeclaration 'Курс для накладных' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));
+rateExchangeDeclaration 'Курс для накладных' = DATA NUMERIC[14,3](declaration);
+calcRateExchangeDeclaration 'Курс для накладных' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));
+rateExchangeDeclaration(declaration) <- calcRateExchangeDeclaration(declaration) WHEN CHANGED (dateDeclaration(declaration)) OR
+                                                                                      CHANGED (typeExchangeDeclaration(declaration)) OR
+                                                                                      CHANGED (currencyDeclaration(declaration));
+
+rateExchangeCustomsZoneDeclaration 'Курс платежей' = DATA NUMERIC[14,3](declaration);
+calcRateExchangeCustomsZoneDeclaration 'Курс платежей' = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyCustomsZoneDeclaration(declaration), dateDeclaration(declaration));
+rateExchangeCustomsZoneDeclaration(declaration) <- calcRateExchangeCustomsZoneDeclaration(declaration) WHEN CHANGED (dateDeclaration(declaration)) OR
+                                                                                                            CHANGED (typeExchangeDeclaration(declaration)) OR
+                                                                                                            CHANGED (customsZoneDeclaration(declaration));
+
 roundCurrencyDeclaration(number, declaration) = roundPriceCurrency(number, currencyTypeExchange(typeExchangeDeclaration(declaration)));
-
-rateExchangeCustomsZoneDeclaration 'Курс платежей' = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyCustomsZoneDeclaration(declaration), dateDeclaration(declaration));
-
 
 FORM declaration 'Таможенная декларация'
     OBJECTS d = declaration FIXED PANEL

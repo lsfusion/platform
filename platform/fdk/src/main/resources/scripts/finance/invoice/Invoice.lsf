@@ -655,7 +655,17 @@ META defineHomeCurrencyInvoice(invoice)
     dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(user###invoice);
     dateRateExchangeInvoice(invoice) += dateRateExchangeUserInvoice(invoice);
 
-    rateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateRateExchangeInvoice(invoice));
+    dateRateExchangeUserInvoice(user###invoice) <- dateInvoice(user###invoice) WHEN CHANGED (dateInvoice(user###invoice));
+
+    calcRateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateRateExchangeInvoice(invoice));
+
+    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](invoice);
+    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](user###invoice);
+    rateExchangeInvoice(invoice) += rateExchangeUserInvoice(invoice);
+
+    rateExchangeUserInvoice(invoice) <- calcRateExchangeInvoice(invoice) WHEN CHANGED (dateRateExchangeInvoice(invoice)) OR
+                                                                              CHANGED (typeExchangeInvoice(invoice)) OR
+                                                                              CHANGED (currencyInvoice(invoice));
 
     roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, homeCurrencyInvoice(invoice));
     ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));

@@ -3199,7 +3199,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", NumericClass.get(14, 2), shipmentDetail);
 
         userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", BL.authenticationLM.currentUser, true, is(shipmentDetail), 1);
-        nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", baseLM.name, userShipmentDetail, 1);
+        nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", BL.contactLM.nameContact, userShipmentDetail, 1);
 
         timeShipmentDetail = addTCProp(Time.DATETIME, "timeShipmentDetail", true, "Время ввода", quantityShipmentDetail);
 
