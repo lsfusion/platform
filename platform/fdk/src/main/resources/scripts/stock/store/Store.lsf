@@ -1,6 +1,6 @@
 MODULE Store;
 
-REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity, Retail;
+REQUIRE System, Utils, Historizable, Stock, Employee, Tax, WriteOff, LegalEntity, Retail, Bank, Cash;
 
 // -------------------------------------- Торговая сеть ------------------------------- //
 
@@ -38,6 +38,14 @@ TABLE store (store);
 
 legalEntityStore = DATA legalEntity (store) NOT NULL;
 nameLegalEntityStore 'Компания' (store) = name(legalEntityStore(store)) IN base;
+
+bankAccountStore = DATA Bank.account (store);
+bankAccountStore(store) <- accountLegalEntity(legalEntityStore(store))
+    WHEN CHANGED(legalEntityStore(store));
+numberBankAccountStore 'Номер счета для инкасаций' = Bank.numberAccount(bankAccountStore(store));
+
+CONSTRAINT Bank.legalEntityAccount(bankAccountStore(store)) != legalEntityStore(store)
+    CHECKED BY bankAccountStore MESSAGE 'Организация магазина должна совпадать с организацией расчетного счета';
 
 isCompanyStore(store) = isCompanyLegalEntity(legalEntityStore(store));
 
@@ -120,6 +128,12 @@ regionStock(stock) += regionStore(storeDepartmentStore(stock));
 tradingSquareStoreDate (store, date) = GROUP SUM tradingSquareDepartmentStoreDate(departmentStore, date) BY storeDepartmentStore(departmentStore), date;
 tradingSquareStore 'Торговая площадь' (store) = tradingSquareStoreDate(store, currentDate());
 
+cashAccountDepartmentStore 'Счет' = DATA Cash.account (departmentStore);
+numberCashAccountDepartmentStore 'Номер счета' = Cash.numberAccount(cashAccountDepartmentStore(departmentStore));
+
+CONSTRAINT legalEntityDepartmentStore(departmentStore) != Cash.legalEntityAccount(cashAccountDepartmentStore(departmentStore))
+    CHECKED BY cashAccountDepartmentStore MESSAGE 'Организация отдела магазина должна совпадать с организацией счета';
+
 inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, department) =
     (storeDepartmentStore(department) == store AND storeType AND chainStores) OR
     (storeTypeDepartmentStore(department) == storeType AND chainStores AND NOT store) OR
@@ -131,7 +145,7 @@ inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, depar
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = departmentStore FIXED PANEL
     PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
-                  explicitBatchLedgerStock
+                  explicitBatchLedgerStock, numberCashAccountDepartmentStore
 
     OBJECTS e = employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact
@@ -151,6 +165,7 @@ DESIGN departmentStore FROM DEFAULT {
                 ADD PROPERTY(nameDep);
                 ADD PROPERTY(nameStoreDepartmentStore);
                 ADD PROPERTY(tradingSquareDepartmentStore);
+                ADD PROPERTY(numberCashAccountDepartmentStore);
             }
             NEW row {
                 childConstraints = TO THE BOTTOM;
@@ -204,7 +219,8 @@ DESIGN departmentStores FROM DEFAULT {
 
 FORM store 'Магазин'
     OBJECTS s=store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, nameRegionStore, latitudePOI, longitudePOI, showOnMapPOI
+    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, numberBankAccountStore,
+                  nameRegionStore, latitudePOI, longitudePOI, showOnMapPOI
 
     OBJECTS d=departmentStore
     PROPERTIES(d) READONLY objectClassName, name, tradingSquareDepartmentStore

@@ -37,10 +37,12 @@ sumToPaymentLedger 'Сумма (на)' = ABSTRACT NUMERIC[16,2] (paymentLedger) 
 
 descriptionPaymentLedger 'Описание' = ABSTRACT STRING[200] (paymentLedger) PERSISTENT;
 
+isPostedPaymentLedger 'Проведен' = ABSTRACT BOOLEAN(paymentLedger);
+
 FORM paymentLedger 'Движение денег'
     OBJECTS pl = paymentLedger
-    PROPERTIES(pl) READONLY descriptionPaymentLedger, dateTimePaymentLedger, nameLegalEntityFromPaymentLedger, nameAccountFromPaymentLedger,
-                            nameLegalEntityToPaymentLedger, nameAccountToPaymentLedger, sumFromPaymentLedger,
+    PROPERTIES(pl) READONLY isPostedPaymentLedger, descriptionPaymentLedger, dateTimePaymentLedger, nameLegalEntityFromPaymentLedger,
+                            nameAccountFromPaymentLedger, sumFromPaymentLedger, nameLegalEntityToPaymentLedger, nameAccountToPaymentLedger,
                             sumToPaymentLedger
 ;
 

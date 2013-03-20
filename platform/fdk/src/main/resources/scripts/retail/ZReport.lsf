@@ -14,11 +14,12 @@ REQUIRE System,
         RetailCRM,
         PriceRound,
         PriceList,
+        PaymentLedger,
         StockDocument; // todo : эту зависимость надо будет убить, но сейчас не получается из-за того что нельзя донаследовать классы
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historizable, numberedObject;
+CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historizable, numberedObject, paymentLedger;
 CLASS zReportPosted 'Z-отчет (проведенный)' : zReport, postedObject;
 
 TABLE zReport (zReport);
@@ -350,6 +351,7 @@ CONSTRAINT sumReceiptDetailReceipt(receipt) < sumNotCashPaymentReceipt(receipt) 
 sumCashZReport 'Сумма наличных Z-отчета' (zReport) = GROUP SUM sumCashPaymentReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 sumCashIncomeCashOrder(zReport) += sumCashZReport(zReport);
 sumReceiptDetailZReport 'Сумма Z-отчета' (zReport) = GROUP SUM sumReceiptDetailReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
+sumMeansCardZReport 'Сумма по карточкам Z-отчета' (zReport) = sumReceiptDetailZReport(zReport) (-) sumCashZReport(zReport);
 discountSumReceiptDetailZReport 'Сумма скидок Z-отчета' (zReport) = GROUP SUM discountSumReceiptDetailReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 discountSumReceiptZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 discountSumZReport 'Сумма скидок Z-отчета' (zReport) = discountSumReceiptDetailZReport(zReport) (+) discountSumReceiptZReport(zReport);
@@ -361,6 +363,21 @@ sumCardDepartmentStoreDateFromTo 'Продано с использованием
 sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentStore, dateFrom, dateTo) = GROUP SUM sumReceiptDetailReceipt(receipt)
     AND dateReceipt(receipt) >= (dateFrom AS DATE) AND dateReceipt(receipt) <= (dateTo AS DATE) AND isPostedReceipt(receipt)
         BY departmentStoreReceipt(receipt), dateFrom, dateTo;
+
+// Aggregation zReport
+
+CLASS zReportCard : paymentLedger;
+
+@defineAggregation(zReport, zReportCard, sumMeansCardZReport);
+
+// Implement шапки документа
+dateTimePaymentLedger(zReportCard) += dateTimeZReport(zReportZReportCard(zReportCard));
+isPostedPaymentLedger(zReportCard) += isPostedZReport(zReportZReportCard(zReportCard));
+descriptionPaymentLedger(zReportCard) += basisZReport(zReportZReportCard(zReportCard));
+
+accountToPaymentLedger(zReportCard) += accountLegalEntity(legalEntityCashRegister(cashRegisterZReport(zReportZReportCard(zReportCard))));
+legalEntityToPaymentLedger(zReportCard) += legalEntityCashRegister(cashRegisterZReport(zReportZReportCard(zReportCard)));
+sumToPaymentLedger(zReportCard) += sumMeansCardZReport(zReportZReportCard(zReportCard));
 
 // ----------------------------------- Проведение по товарному отчету -------------------------- //
 

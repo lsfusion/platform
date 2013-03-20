@@ -1,10 +1,10 @@
 MODULE CashOperation;
 
-REQUIRE CashRegister, Numerator, Document;
+REQUIRE CashRegister, Numerator, Document, Bank;
 
 // ----------------------------- Кассовые документы ---------------------------- //
 
-CLASS ABSTRACT cashDocument 'Кассовый документ';
+CLASS ABSTRACT cashDocument 'Кассовый документ' : paymentLedger;
 TABLE cashDocument (cashDocument);
 
 dateCashDocument 'Дата документа' = ABSTRACT DATE (cashDocument) IN documentHeaderGroup;
@@ -71,6 +71,19 @@ curSumCashDepartmentStore 'Текущая сумма наличных в цен�
 sumCashDepartmentStoreDateTime 'Сумма наличных в центральной кассе на дату/время' (departmentStore, date) =
     sumIncomeCashOrderDateTime(departmentStore, date) (-) sumOutcomeCashOrderDateTime(departmentStore, date);
 
+// Implement шапки документа
+dateTimePaymentLedger(cashDocument) += dateTimeCashDocument(cashDocument);
+isPostedPaymentLedger(cashDocument) += isPostedCashDocument(cashDocument);
+descriptionPaymentLedger(cashDocument) += basisCashDocument(cashDocument);
+
+accountToPaymentLedger(incomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) AND incomeCashOrder IS incomeCashOrder;
+legalEntityToPaymentLedger(incomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(incomeCashOrder)) AND incomeCashOrder IS incomeCashOrder;
+sumToPaymentLedger(incomeCashOrder) += sumCashIncomeCashOrder(incomeCashOrder) AND incomeCashOrder IS incomeCashOrder;
+
+accountFromPaymentLedger(outcomeCashOrder) += cashAccountDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) AND outcomeCashOrder IS outcomeCashOrder;
+legalEntityFromPaymentLedger(outcomeCashOrder) += legalEntityDepartmentStore(departmentStoreCashDocument(outcomeCashOrder)) AND outcomeCashOrder IS outcomeCashOrder;
+sumFromPaymentLedger(outcomeCashOrder) += sumCashOutcomeCashOrder(outcomeCashOrder) AND outcomeCashOrder IS outcomeCashOrder;
+
 //---------------------------- Операции с фискальным регистратором ---------------------------------------//
 
 fiscalXReport 'X-отчёт' = ABSTRACT ACTION();
@@ -90,6 +103,10 @@ isCollection (collection) = collection IS collection;
 @defineDocumentHeaderTime(collection);
 @defineDocumentHeaderDepartmentStore(collection);
 
+bankAccountCollection = DATA Bank.account (collection);
+bankAccountCollection(collection) <- bankAccountStore(storeDepartmentStore(departmentStoreCollection(collection)))
+    WHEN ASSIGNED(departmentStoreCollection(collection));
+
 sumCashCollection 'Сумма инкассации' = DATA NUMERIC[16,2] (collection) IN documentSumGroup;
 castBasisCollection =
     FORMULA STRING[100] '\'Инкассация №\' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT)';
@@ -103,6 +120,10 @@ departmentStoreCashDocument(collection) += departmentStoreCollection(collection)
 sumCashOutcomeCashOrder(collection) += sumCashCollection(collection);
 basisCashDocument(collection) += basisCollection(collection);
 isPostedCashDocument(collection) += TRUE AND collection IS collection;
+
+accountToPaymentLedger(collection) += bankAccountCollection(collection) AND collection IS collection;
+legalEntityToPaymentLedger(collection) += legalEntityDepartmentStore(departmentStoreCollection(collection)) AND collection IS collection;
+sumToPaymentLedger(collection) += sumCashCollection(collection) AND collection IS collection;
 
 sumCashForCollection 'Сумма инкассации' = DATA SESSION NUMERIC[16,2] (departmentStore);
 sessionDepartmentStore 'Отдел' = DATA SESSION departmentStore ();

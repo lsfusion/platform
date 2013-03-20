@@ -13,12 +13,28 @@ nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
 numberAccount 'Номер кассового счета'  = DATA STRING[13] (account) FIXEDCHARWIDTH 13;
 
 legalEntityAccount = DATA legalEntity (account);
+nameLegalEntityAccount 'Организация' = name(legalEntityAccount(account));
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
 
 EXTEND CLASS account : PaymentLedger.account;
-nameAccount (account) += numberAccount(account);
+PaymentLedger.nameAccount(account) += numberAccount(account);
 PaymentLedger.currencyAccount(account) += currencyAccount(account);
 PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
+
+FORM account 'Счет'
+    OBJECTS a = Cash.account FIXED PANEL
+    PROPERTIES(a) numberAccount, nameCurrencyAccount, nameLegalEntityAccount
+
+    EDIT Cash.account OBJECT a
+;
+
+FORM accounts 'Счета'
+    OBJECTS a = Cash.account
+    PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount
+    PROPERTIES(a) ADDFORM, EDITFORM, delete
+
+    DIALOG Cash.account OBJECT a
+;
 
 EXTEND FORM legalEntity
     OBJECTS ca=account

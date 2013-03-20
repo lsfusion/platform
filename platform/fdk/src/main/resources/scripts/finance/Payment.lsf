@@ -50,6 +50,7 @@ legalEntityToPaymentLedger(paymentLedger) += beneficiaryPayment(paymentLedger);
 sumFromPaymentLedger(paymentLedger) += sumFromPayment(paymentLedger);
 sumToPaymentLedger(paymentLedger) += sumToPayment(paymentLedger);
 descriptionPaymentLedger(paymentLedger) += descriptionPayment(paymentLedger);
+PaymentLedger.isPostedPaymentLedger(paymentLedger) += isPostedPayment(paymentLedger);
 
 CONSTRAINT PaymentLedger.legalEntityAccount(accountFromPayment(payment)) != payerPayment(payment)
     CHECKED BY accountFromPayment MESSAGE 'Организация счета(с) должна совпадать с организацией(покупатель)';
