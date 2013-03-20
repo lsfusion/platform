@@ -299,40 +299,44 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                             ADD PROPERTY(isCommissionUserInvoice);
                         }
                     }
-
-                    NEW headerRow10 {
-                        childConstraints = TO THE BOTTOM;
-                        ADD i.documentPrmGroup {
-                            childConstraints = TO THE RIGHTBOTTOM;
-                            ADD PROPERTY(toShowProp###userInvoice);
+                    NEW headerRow124 {
+                        type = TABBED;
+                        NEW headerRow10 {
+                            title = 'Основные параметры';
+                            childConstraints = TO THE BOTTOM;
+                            ADD i.documentPrmGroup {
+                                childConstraints = TO THE RIGHTBOTTOM;
+                                ADD PROPERTY(toShowProp###userInvoice);
+                            }
                         }
-                    }
-
-                    NEW headerRow13 {  // title = 'Сооздать на основании';
-                        childConstraints = TO THE RIGHTBOTTOM;
-                    }
-                    NEW headerRow11 {
-                        NEW headerRow111 {
-                            title = 'Поставка';
-                            childConstraints = TO THE RIGHTBOTTOM;
-                        }
-                        NEW headerRow112 {
-                            title = 'Списание';
-                            childConstraints = TO THE RIGHTBOTTOM;
-                        }
-                        NEW headerRow113 {
-                            title = 'Акт расхождения';
-                            childConstraints = TO THE RIGHTBOTTOM;
-                        }
-                    }
-                    NEW headerRow14 { //title = 'Расценка / Дооценка';
-                        childConstraints = TO THE RIGHTBOTTOM;
-                    }
-                    NEW headerRow15 { //title = 'Расценка / Дооценка для закупки' ;
-                        childConstraints = TO THE RIGHTBOTTOM;
-                    }
+                        NEW headerRow1241{
+                            title = 'Производные документы';
+                            NEW headerRow13 {  // title = 'Сооздать на основании';
+                                childConstraints = TO THE RIGHTBOTTOM;
+                            }
+                            NEW headerRow11 {
+                                NEW headerRow111 {
+                                    title = 'Поставка';
+                                    childConstraints = TO THE RIGHTBOTTOM;
+                                }
+                                NEW headerRow112 {
+                                    title = 'Списание';
+                                    childConstraints = TO THE RIGHTBOTTOM;
+                                }
+                                NEW headerRow113 {
+                                    title = 'Акт расхождения';
+                                    childConstraints = TO THE RIGHTBOTTOM;
+                                }
+                            }
+                                NEW headerRow14 { //title = 'Расценка / Дооценка';
+                                    childConstraints = TO THE RIGHTBOTTOM;
+                                }
+                                NEW headerRow15 { //title = 'Расценка / Дооценка для закупки' ;
+                                    childConstraints = TO THE RIGHTBOTTOM;
+                                }
+                            }
+                     }
                 }
-
                 ADD i.documentSumGroup {
                     childConstraints = TO THE BOTTOM;
                 }

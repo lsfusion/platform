@@ -258,7 +258,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     ;
 
     EXTEND DESIGN userInvoice {
-        headerRow13 {
+        headerRow10 {
             ADD i.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}
         }
     }
