@@ -348,7 +348,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                     SET userOrderUserOrderDetail(d) <- o;
                     SET skuUserOrderDetail(d) <- skuUserOrderDetail(userOrderDetail);
                     SET quantityOrderDetail(d) <- quantityUserOrderDetail(userOrderDetail);
-                    SET stockProp###userOrderDetail(d) <- stockProp###userOrderDetail(userOrderDetail);
+                    SET data###stockProp###userOrderDetail(d) <- data###stockProp###userOrderDetail(userOrderDetail);
                 }
             }
 

@@ -380,7 +380,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                     SET skuUserInvoiceDetail(d) <- skuUserInvoiceDetail(userInvoiceDetail);
                     SET quantityUserInvoiceDetail(d) <- quantityUserInvoiceDetail(userInvoiceDetail);
                     SET priceUserInvoiceDetail(d) <- priceUserInvoiceDetail(userInvoiceDetail);
-                    SET stockProp###userInvoiceDetail(d) <- stockProp###userInvoiceDetail(userInvoiceDetail);
+                    SET data###stockProp###userInvoiceDetail(d) <- data###stockProp###userInvoiceDetail(userInvoiceDetail);
                 }
             }
 
