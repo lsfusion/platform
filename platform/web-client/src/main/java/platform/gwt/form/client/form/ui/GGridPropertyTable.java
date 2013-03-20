@@ -203,7 +203,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             } else if (keyCode == KeyCodes.KEY_END && !ctrlPressed) {
                 getDisplay().setKeyboardSelectedColumn(getDisplay().getColumnCount() - 1);
                 return true;
-            } else if (!ctrlPressed && keyCode == KeyCodes.KEY_ENTER) {
+            } else if (!ctrlPressed && !nativeEvent.getAltKey() && keyCode == KeyCodes.KEY_ENTER) {
                 if (nativeEvent.getShiftKey()) {
                     nextRow(false);
                 } else {

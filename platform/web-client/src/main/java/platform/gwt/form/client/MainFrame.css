@@ -1,5 +1,5 @@
 body, html, textarea, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
-.messageBox-message, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
+.messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
 .filterDialogHeader, .customFontPresenter {
     font-size: 8pt;
 }
@@ -94,8 +94,9 @@ textarea {
     width: 90px;
 }
 
-.messageBox-message {
+.messageBox-messageContainer {
     height: auto;
+    overflow: auto;
     margin-bottom: 10px;
 }
 

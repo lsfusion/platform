@@ -1,7 +1,9 @@
 package platform.gwt.base.client.ui;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import platform.gwt.base.client.EscapeUtils;
 
@@ -71,12 +73,18 @@ public class DialogBoxHelper {
 
         private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
             this.contents = contents;
-            this.contents.addStyleName("messageBox-message");
+
+            ResizableSimplePanel contentsContainer = new ResizableSimplePanel();
+            contentsContainer.setWidget(this.contents);
+            contentsContainer.addStyleName("messageBox-messageContainer");
+            Style contentsContainerStyle = contentsContainer.getElement().getStyle();
+            contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
+            contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
 
             createButtonsPanel(activeOption, options, closeCallback);
 
             final VerticalPanel mainPane = new VerticalPanel();
-            mainPane.add(this.contents);
+            mainPane.add(contentsContainer);
             mainPane.add(buttonPane);
             mainPane.setCellHorizontalAlignment(buttonPane, HasAlignment.ALIGN_CENTER);
 
