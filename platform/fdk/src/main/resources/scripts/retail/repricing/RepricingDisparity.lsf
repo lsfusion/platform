@@ -43,6 +43,7 @@ curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, retailPricingPriceListType, curInputRetail, sku, stock);
 
 @changeDocumentDetailMarkupCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput);
+roundConditionDisparityDetail(disparityDetail) = roundConditionDepartmentStore(stockDisparityDetail(disparityDetail));
 @changeDocumentDetailPriceCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput, currency);
 
 // После

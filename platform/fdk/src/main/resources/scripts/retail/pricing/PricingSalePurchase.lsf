@@ -25,7 +25,16 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
 @deriveDocumentDetailReverseVATSumPrefix(userInvoice, purchaseRetail, purchaseRetail);
 @deriveDocumentDetailMarkupSumPrefix(userInvoice, purchaseRetail, purchaseRetail, );
 
+@defineDocumentInterfacePriceListType (invoice, priceListType, purchaseRetail, ' розничный (закупка)');
+
+purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
+                                                WHEN CHANGED(purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
+
 @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail);
+roundConditionUserInvoiceDetail(userInvoiceDetail) =
+    IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS calcPriceListType
+        THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail, currency);
 
 @defineDocumentInterfaceHeaderSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
@@ -38,10 +47,7 @@ showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS de
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
 toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND createPurchasePricingInvoice(invoice);
 
-@defineDocumentInterfacePriceListType (invoice, priceListType, purchaseRetail, ' розничный (закупка)');
 
-purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
-                                                WHEN CHANGED(purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
 
 @deriveDocumentDetailPriceOnSessionPriceListType (userInvoiceDetail, purchaseRetail, , customerStock);
 

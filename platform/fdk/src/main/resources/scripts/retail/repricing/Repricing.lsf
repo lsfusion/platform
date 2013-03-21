@@ -189,6 +189,7 @@ markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z
     WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(priceUserRepricingDetail(userRepricingDetail));
 
 @changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, retail, , , );
+roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmentStore(departmentStoreUserRepricingDetail(userRepricingDetail));
 @changeDocumentDetailPriceCustomPrefix(userRepricingDetail, retail, , , , currency);
 
 @defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');

@@ -6,6 +6,12 @@ NAMESPACE Purchase;
 
 //----------------------------------------------- Акт расценки ---------------------------------------------------//
 
+@defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
+roundConditionUserInvoiceDetail(userInvoiceDetail) =
+    IF retailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS calcPriceListType
+        THEN roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
+
 @definePricingAggregation(invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
 @definePricingRelation(' (закупка)', customerStock);
 
@@ -13,8 +19,6 @@ NAMESPACE Purchase;
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
     IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
-
-@defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
 
 createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
@@ -42,44 +46,6 @@ retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(u
 retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED(VATUserInvoiceDetail(detail));
 
 // расчет надбавок и цены при изменении priceListType
-
-META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, stockProp)
-    ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
-        LOCAL changedPriceListType = BOOLEAN (idetail);
-        SET changedPriceListType(detail) <- TRUE IF prefix###priceListType###idetail(detail) AND
-                                                    sku###idetail(detail) AND
-                                            (CHANGED(prefix###priceListType###idetail(detail)) OR
-                                             CHANGED(prefixP###price###idetail(detail)) OR
-                                             CHANGED(sku###idetail(detail)) OR
-                                             CHANGED(stockProp###idetail(detail)) OR
-                                             CHANGED(dateTime###idetail(detail)) OR
-                                             CHANGED(value###prefix###VAT###idetail(detail)));
-
-        FOR [GROUP MAX(changedPriceListType(detail)) BY prefix###priceListType###idetail(detail)](priceListType) DO {
-            IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
-            IF priceListType IS calcPriceListType THEN {
-                SET prefix###markup###idetail(detail) <- markupCalcPriceListTypeSku(priceListType, sku###idetail(detail))
-                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
-                SET prefix###price###idetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
-                                                                        prefixP###price###idetail(detail),
-                                                                        prefix###markup###idetail(detail),
-                                                                        value###prefix###VAT###idetail(detail)), roundConditionCalcPriceListType(priceListType))
-                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
-            } ELSE {
-                SET prefix###price###idetail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType,
-                                                                                                   sku###idetail(detail),
-                                                                                                   stockProp###idetail(detail),
-                                                                                                   dateTime###idetail(detail))
-                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
-                SET prefix###markup###idetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
-                                                                         prefix###price###idetail(detail),
-                                                                         prefixP###price###idetail(detail),
-                                                                         value###prefix###VAT###idetail(detail))
-                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
-            }
-        }
-    }
-END
 
 @deriveDocumentDetailPriceOnSessionPriceListType (userInvoiceDetail, retail, , customerStock);
 

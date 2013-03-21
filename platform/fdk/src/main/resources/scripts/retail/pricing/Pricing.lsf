@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, Store, Label, Machinery;
+REQUIRE Invoice, Employee, PriceRoundStore, Label, Machinery;
 
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
@@ -192,17 +192,54 @@ END
 
 //------------------------  derive or change ------------------------------------//
 
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
-    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](    // надо округление для sku?????
-    0.0 IF detail IS detail OR price###detail(detail),
-    0.0 IF detail IS detail OR prefix###markup###detail(detail),
-    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
-                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, stockProp)
+    ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
+        LOCAL changedPriceListType = BOOLEAN (idetail);
+        SET changedPriceListType(detail) <- TRUE IF prefix###priceListType###idetail(detail) AND
+                                                    sku###idetail(detail) AND
+                                            (CHANGED(prefix###priceListType###idetail(detail)) OR
+                                             CHANGED(prefixP###price###idetail(detail)) OR
+                                             CHANGED(sku###idetail(detail)) OR
+                                             CHANGED(stockProp###idetail(detail)) OR
+                                             CHANGED(dateTime###idetail(detail)) OR
+                                             CHANGED(value###prefix###VAT###idetail(detail)));
+        FOR [GROUP MAX(changedPriceListType(detail)) BY prefix###priceListType###idetail(detail)](priceListType) DO {
+            IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
+            IF priceListType IS calcPriceListType THEN {
+                SET prefix###markup###idetail(detail) <- markupCalcPriceListTypeSku(priceListType, sku###idetail(detail))
+                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
+                SET prefix###price###idetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+                                                                        prefixP###price###idetail(detail),
+                                                                        prefix###markup###idetail(detail),
+                                                                        value###prefix###VAT###idetail(detail)), roundConditionCalcPriceListType(priceListType))
+                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
+            } ELSE {
+                SET prefix###price###idetail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType,
+                                                                                                   sku###idetail(detail),
+                                                                                                   stockProp###idetail(detail),
+                                                                                                   dateTime###idetail(detail))
+                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
+                SET prefix###markup###idetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
+                                                                         prefix###price###idetail(detail),
+                                                                         prefixP###price###idetail(detail),
+                                                                         value###prefix###VAT###idetail(detail))
+                                                             WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
+            }
+        }
+    }
 END
 
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
-    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
-END
+//META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
+//    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
+//    0.0 IF detail IS detail OR price###detail(detail),
+//    0.0 IF detail IS detail OR prefix###markup###detail(detail),
+//    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
+//                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+//END
+//
+//META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
+//    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
+//END
 
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
     calc###prefixC###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
@@ -220,10 +257,10 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, p
 END
 META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
 
-    calc###prefixA###price###detail(detail)  = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
+    calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](                 //roundPriceCurrency
     0.0 IF detail IS detail OR prefixB###price###detail(detail),
     0.0 IF detail IS detail OR prefixC###markup###detail(detail),
-    value###prefixD###VAT###detail(detail)), currencyProp###detail(detail));
+    value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));                                     //currencyProp
 
     change###prefixC###markup###detail = ACTION (detail) {
 
@@ -255,6 +292,14 @@ CLASS userPricingPosted 'Проведенный акт расценки (пол�
 @defineDocumentInterfaceCurrency(pricing);
 @deriveDocumentCurrency(userPricing, departmentStore);
 
+@defineDocumentInterfacePriceListType (pricing, priceListType, retail, );
+retailPriceListTypeUserPricingDetail(detail) <-  retailPriceListTypeUserPricing(userPricingUserPricingDetail(detail)) WHEN CHANGED (userPricingUserPricingDetail(detail));
+
+roundConditionUserPricingDetail(userPricingDetail) =
+    IF retailPriceListTypeUserPricingDetail(userPricingDetail) IS calcPriceListType
+        THEN roundConditionCalcPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
+        ELSE roundConditionDepartmentStore(departmentStoreUserPricingDetail(userPricingDetail));
+
 @defineDocumentInterfaceLegalEntity (pricing, supplier, 'Поставщик');
 CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplierUserPricing(userPricing))
     CHECKED BY supplierUserPricing MESSAGE 'Для акта расценки выбрано в качестве поставщика организация, не являющаяся поставщиком или компанией';
@@ -282,7 +327,7 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 @changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, , retail, retail, currency);
 @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
 
-@deriveDocumentDetailPriceMarkupCustomPrefix(userPricingDetail, retail);
+@deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, , departmentStore);
 @deriveDocumentDetailSumPrefix(userPricing, retail, currency, quantity);
 
 @defineDocumentInterfaceHeaderSumPrefix (pricing, retail, ' выходная');
@@ -339,7 +384,7 @@ backgroundRetailPricing 'Цвет' (pricing) = RGB(224, 255, 255) IF pricing IS 
 FORM userPricing 'Акт расценки'
     OBJECTS p = userPricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameDepartmentStoreUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
-                   nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing,
+                   nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing, nameRetailPriceListTypeUserPricing,
                    countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
                    retailSumUserPricingDetailUserPricing BACKGROUND backgroundRetailPricing(p), namePricingCommitteeUserPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerUserPricing
     PROPERTIES (p) SHOWIF pricingCommitteeUserPricing(p)  nameFormedManUserPricing, nameCheckedManUserPricing, nameLabeledManUserPricing,
@@ -347,7 +392,7 @@ FORM userPricing 'Акт расценки'
 
     OBJECTS d = userPricingDetail
     PROPERTIES (d) indexUserPricingDetail, idBarcodeSkuUserPricingDetail, nameSkuUserPricingDetail, shortNameUOMSkuUserPricingDetail,
-                   quantityUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail
+                   quantityUserPricingDetail, nameRetailPriceListTypeUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p)
                    retailMarkupUserPricingDetail ON CHANGE EXEC changeRetailMarkupUserPricingDetail(d), retailMarkupSumUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
                    retailVATSumUserPricingDetail, retailPriceUserPricingDetail ON CHANGE EXEC changeRetailPriceUserPricingDetail(d), retailSumUserPricingDetail
@@ -412,7 +457,7 @@ editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM use
 FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     OBJECTS p = pricing
     PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, numberPricing, seriesPricing, datePricing, timePricing,
-                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing,
+                            nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, nameRetailPriceListTypePricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
                             retailSumPricingDetailPricing BACKGROUND backgroundRetailPricing(p), skipChangeLedgerPricing,
                             notePricing, objectClassName
@@ -426,7 +471,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
 
     OBJECTS d = pricingDetail
     PROPERTIES (d) READONLY indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
-                   quantityPricingDetail, pricePricingDetail, sumPricingDetail
+                   quantityPricingDetail, nameRetailPriceListTypePricingDetail, pricePricingDetail, sumPricingDetail
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p) retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
                    retailPricePricingDetail, retailSumPricingDetail
     PROPERTIES (d) nameDepartmentStorePricingDetail
