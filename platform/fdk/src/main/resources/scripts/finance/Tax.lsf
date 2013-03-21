@@ -413,8 +413,8 @@ END
 
 //-- Сумма НДС в документе
 META defineDocumentHeaderVATSum (object, detail, prefix)
-    VATSum###detail###object 'Сумма НДС' (object) = GROUP SUM VATSum###detail(idetail) BY object###detail(idetail) MINCHARWIDTH 15 PREFCHARWIDTH 15 MAXCHARWIDTH 20 IN documentSumGroup;
-    prefix###sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) MINCHARWIDTH 15 PREFCHARWIDTH 15 MAXCHARWIDTH 20 IN documentSumGroup;
+    VATSum###detail###object 'Сумма НДС' (object) = GROUP SUM VATSum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
+    prefix###sum###detail###object 'Сумма с НДС' (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 META defineDocumentInterfaceHeaderVATSum (object, detail, prefix)
     @defineDocumentHeaderVATSum(object, detail, prefix);
