@@ -1,12 +1,12 @@
 package platform.base.col.interfaces.immutable;
 
 import platform.base.FunctionSet;
-import platform.base.GlobalObject;
 import platform.base.Result;
 import platform.base.col.interfaces.mutable.AddValue;
 import platform.base.col.interfaces.mutable.mapvalue.*;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
 
 public interface ImMap<K, V> {
 
@@ -55,9 +55,9 @@ public interface ImMap<K, V> {
     
     <M> ImFilterValueMap<K, M> mapFilterValues();
 
-    ImMap<K, V> filterFn(FunctionSet<K> filter);
-    ImMap<K, V> filterFnValues(FunctionSet<V> filter);
-    ImMap<K, V> filterFn(GetKeyValue<Boolean, K, V> filter);
+    <EK extends K> ImMap<K, V> filterFn(FunctionSet<K> filter);
+    <EV extends V> ImMap<K, EV> filterFnValues(FunctionSet<V> filter);
+    <EK extends K> ImMap<K, V> filterFn(GetKeyValue<Boolean, K, V> filter);
 
     ImMap<K, V> splitKeys(GetKeyValue<Boolean, K, V> keys, Result<ImMap<K, V>> rest);
     ImMap<K, V> splitKeys(FunctionSet<K> keys, Result<ImMap<K, V>> rest);

@@ -15,7 +15,7 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
 
     final boolean min;
 
-    protected GroupType getGroupType() {
+    public GroupType getGroupType() {
         return min?GroupType.MIN:GroupType.MAX;
     }
 

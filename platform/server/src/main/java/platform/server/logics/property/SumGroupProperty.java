@@ -22,10 +22,8 @@ import platform.server.session.StructChanges;
 
 public class SumGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {
 
-    @Override
-    protected GroupType getGroupType() {
-        return GroupType.SUM;
-    }
+    private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
+    public CalcPropertyMapImplement<?, I> distribute;
 
     public SumGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
         super(sID, caption, innerInterfaces, groupInterfaces, property);
@@ -43,9 +41,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
     }
-
-    private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
-    public CalcPropertyMapImplement<?, I> distribute;
 
     public <L extends PropertyInterface> void setDataChanges(ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> mapOrders, CalcPropertyMapImplement<L, I> restriction, boolean over) {
         ImRevMap<I,L> revMapping = restriction.mapping.reverse();
@@ -128,5 +123,10 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             return dataChanges;
         } else
             return super.calculateDataChanges(propertyChange, changedWhere, propChanges);
+    }
+
+    @Override
+    public GroupType getGroupType() {
+        return GroupType.SUM;
     }
 }

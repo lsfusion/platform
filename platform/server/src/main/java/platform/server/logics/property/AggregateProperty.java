@@ -16,6 +16,8 @@ import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChanges;
 
@@ -89,5 +91,13 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
         query.addProperty("value", calculateClassExpr(query.getMapExprs()));
         return query.getQuery().getClassWhere(SetFact.singleton("value"), full);
+    }
+
+    public boolean supportsDrillDown() {
+        return false;
+    }
+
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return null;
     }
 }

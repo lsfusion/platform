@@ -113,10 +113,10 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public static <T extends PropertyInterface> PropertyObjectEntity<T, ?> create(Property<T> property, ImMap<T, PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
+    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ? extends PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
-            return new CalcPropertyObjectEntity<T>((CalcProperty<T>)property, map, creationScript, creationPath);
+            return new CalcPropertyObjectEntity<I>((CalcProperty<I>)property, map, creationScript, creationPath);
         else
-            return new ActionPropertyObjectEntity<T>((ActionProperty<T>) property, map, creationScript, creationPath);
+            return new ActionPropertyObjectEntity<I>((ActionProperty<I>) property, map, creationScript, creationPath);
     }
 }

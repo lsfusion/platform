@@ -10,7 +10,7 @@ import platform.server.session.PropertyChanges;
 
 public abstract class AddGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
-    protected final CalcPropertyInterfaceImplement<I> groupProperty;
+    public final CalcPropertyInterfaceImplement<I> groupProperty;
 
     protected AddGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
         super(sID, caption, innerInterfaces, groupInterfaces);
@@ -21,11 +21,11 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         this(sID, caption, property.interfaces, interfaces, property.getImplement());
     }
 
-    protected ImList<CalcPropertyInterfaceImplement<I>> getProps() {
+    public ImList<CalcPropertyInterfaceImplement<I>> getProps() {
         return ListFact.singleton(groupProperty);
     }
 
-    protected ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
+    public ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
         return MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER();
     }
 

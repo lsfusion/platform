@@ -112,10 +112,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public static <K> ImMap<K,DataObject> filterDataObjects(ImMap<K,ObjectValue> map) {
-        return BaseUtils.immutableCast(map.filterFnValues(new SFunctionSet<ObjectValue>() {
+        return map.filterFnValues(new SFunctionSet<ObjectValue>() {
             public boolean contains(ObjectValue element) {
                 return element instanceof DataObject;
-            }}));
+            }});
     }
 
     public static <K> ImMap<K,Object> getMapValues(ImMap<K,DataObject> map) {

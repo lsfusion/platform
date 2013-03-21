@@ -7,11 +7,20 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.GroupDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.PropertyChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
 
@@ -24,14 +33,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         }
     }
 
-    private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getInterfaces(ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
-        return ((ImCol<CalcPropertyInterfaceImplement<I>>)interfaceImplements).mapColSetValues(new GetIndexValue<Interface<I>, CalcPropertyInterfaceImplement<I>>() {
-            public Interface<I> getMapValue(int i, CalcPropertyInterfaceImplement<I> value) {
-                return new Interface<I>(i, value);
-            }}).toOrderSet();
-    }
-
-    protected abstract GroupType getGroupType();
+    protected final ImSet<I> innerInterfaces;
 
     protected GroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
         super(sID, caption, getInterfaces(groupInterfaces));
@@ -45,9 +47,11 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
             }});
     }
 
-    protected abstract ImList<CalcPropertyInterfaceImplement<I>> getProps();
-    protected abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
-    protected final ImSet<I> innerInterfaces;
+    public abstract GroupType getGroupType();
+
+    public abstract ImList<CalcPropertyInterfaceImplement<I>> getProps();
+
+    public abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
         return getGroupImplements(mapKeys, false, changes);
@@ -115,5 +119,39 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
             interfaceImplement.implement.mapFillDepends(depends);
         fillDepends(depends, getProps().getCol());
         fillDepends(depends, getOrders().keys());
+    }
+
+    public ImMap<I, ValueClass> getInnerInterfaceClasses() {
+        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
+        Where w = Expr.getWhere(getGroupImplements(mapKeys, PropertyChanges.EMPTY))
+                .and(Expr.getWhere(getExprImplements(mapKeys, PropertyChanges.EMPTY)))
+                .and(Expr.getWhere(getOrderImplements(mapKeys, PropertyChanges.EMPTY).keys()))
+                ;
+
+        ClassWhere<I> classWhere = w.getClassWhere().get(mapKeys, true);
+
+        return classWhere.getCommonParent(innerInterfaces);
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return isFull();
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new GroupDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, BL
+        );
+    }
+
+    private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getInterfaces(ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
+        return ((ImCol<CalcPropertyInterfaceImplement<I>>) interfaceImplements).mapColSetValues(
+                new GetIndexValue<Interface<I>, CalcPropertyInterfaceImplement<I>>() {
+                    public Interface<I> getMapValue(int i, CalcPropertyInterfaceImplement<I> value) {
+                        return new Interface<I>(i, value);
+                    }
+                }).toOrderSet();
     }
 }

@@ -176,11 +176,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                                 top > 0 && syntax.orderTopTrouble() ? orders.keyOrderSet().mapOrder(query.properties) : SetFact.<Expr>EMPTYORDER());
         union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
-            ImMap<V, Type> castTypes = BaseUtils.immutableCast(propertyReaders.filterFnValues(new SFunctionSet<ClassReader>() {
+            ImMap<V, Type> castTypes = propertyReaders.filterFnValues(new SFunctionSet<ClassReader>() {
                 public boolean contains(ClassReader element) {
                     return element instanceof Type;
                 }
-            }));
+            });
 
             String fromString = "";
             for(GroupJoinsWhere queryJoin : queryJoins) {

@@ -1,8 +1,8 @@
 package platform.server.logics.property;
 
+import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.ImCol;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
@@ -27,8 +27,11 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.JoinDrillDownFormEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.actions.edit.AggChangeActionProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataChanges;
@@ -38,6 +41,9 @@ import platform.server.session.StructChanges;
 
 import java.util.Iterator;
 import java.util.Set;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
     public final CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement;
@@ -290,7 +296,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
-        if (implement.mapping.size() == 1 && ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property instanceof ObjectClassProperty) {
+        if (implement.mapping.size() == 1 &&
+                (implement.mapping.singleValue() instanceof CalcPropertyMapImplement) &&
+                ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property instanceof ObjectClassProperty) {
             PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
             if (mapObject instanceof ObjectEntity && !((CustomClass) ((ObjectEntity) mapObject).baseClass).hasChildren())
                 entity.forceViewType = ClassViewType.HIDE;
@@ -320,5 +328,18 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         for(int i=0,size=implement.mapping.size();i<size;i++)
             result = or(interfaces, result, implement.mapping.getValue(i).mapInterfaceCommonClasses(commonClasses.get(implement.mapping.getKey(i))));
         return result;
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return isFull() && implement.property.isFull();
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new JoinDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.join"), this, BL
+        );
     }
 }

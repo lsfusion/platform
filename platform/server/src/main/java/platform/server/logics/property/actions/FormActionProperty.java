@@ -59,7 +59,7 @@ public class FormActionProperty extends SystemActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, ConcreteCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
+    public FormActionProperty(String sID, String caption, FormEntity form, final ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, ConcreteCustomClass formResultClass, LCP formResultProperty, AnyValuePropertyHolder chosenValueProperty) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         this.formResultClass = formResultClass;
@@ -70,12 +70,13 @@ public class FormActionProperty extends SystemActionProperty {
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
         this.sessionScope = sessionScope;
-        this.startAction = setProperties;
+        this.startAction = startAction;
 
         mapObjects = getOrderInterfaces().mapOrderRevKeys(new GetIndex<ObjectEntity>() { // такой же дебилизм и в SessionDataProperty
             public ObjectEntity getMapValue(int i) {
                 return objectsToSet[i];
-            }});
+            }
+        });
         this.form = form;
     }
 
@@ -91,20 +92,20 @@ public class FormActionProperty extends SystemActionProperty {
             context.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
-            for (int i=0,size=mapObjects.size();i<size;i++) {
+            for (int i = 0, size = mapObjects.size(); i < size; i++) {
                 newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(mapObjects.getKey(i)), context.getKeyValue(mapObjects.getValue(i)));
             }
 
             final FormInstance thisFormInstance = context.getFormInstance();
-            if(thisFormInstance!=null) {
+            if (thisFormInstance != null) {
                 if (form instanceof SelfInstancePostProcessor) {
                     ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), thisFormInstance, newFormInstance);
                 }
             }
 
-            if(startAction !=null)
+            if (startAction != null) {
                 newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance);
-
+            }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (form.isPrintForm) {
@@ -147,7 +148,7 @@ public class FormActionProperty extends SystemActionProperty {
                     }
                 }
                 if (formResult == FormCloseType.CLOSE) {
-                    if(closeAction !=null) {
+                    if (closeAction != null) {
                         try {
                             newFormInstance.instanceFactory.getInstance(closeAction).execute(newFormInstance);
                         } catch (SQLException e) {

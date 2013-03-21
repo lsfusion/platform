@@ -559,7 +559,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean useSimpleIncrement();
 
-
     public PropertyChanges getUsedDataChanges(PropertyChanges propChanges) {
         return propChanges.filter(getUsedDataChanges(propChanges.getStruct()));
     }

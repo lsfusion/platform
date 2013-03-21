@@ -415,7 +415,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     tableHeaderScroller.setScrollLeft(scrollLeft);
                 }
                 if (tableFooterScroller != null) {
-                tableFooterScroller.setScrollLeft(scrollLeft);
+                    tableFooterScroller.setScrollLeft(scrollLeft);
                 }
                 lastScrollTime = Duration.currentTimeMillis();
                 if (partialRendering) {

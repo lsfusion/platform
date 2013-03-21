@@ -26,7 +26,7 @@ import platform.server.session.StructChanges;
 public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 
     @Override
-    protected GroupType getGroupType() {
+    public GroupType getGroupType() {
         return GroupType.ANY;
     }
 
@@ -117,5 +117,10 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         newOldWhere = newOldWhere.and(groupProperty.mapExpr(mapKeys, propChanges).getWhere());
 
         return GroupExpr.create(toChange.getChangeExprs(), newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, propChanges)).and(newOldWhere)), toChangeKeys).getWhere();
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return false;
     }
 }

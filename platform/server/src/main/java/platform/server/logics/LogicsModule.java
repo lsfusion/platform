@@ -572,16 +572,16 @@ public abstract class LogicsModule {
         return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startProperties) {
-        return addMFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession);
+    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startAction) {
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession);
     }
 
     protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         return addMFAProp(group, sID, caption, form, objectsToSet, null, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startProperties, newSession, true, false);
+    protected LAP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, newSession, true, false);
     }
 
     public LAP addDMFAProp(String caption, FormEntity form, ObjectEntity... params) {
@@ -592,36 +592,36 @@ public abstract class LogicsModule {
         return addDMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
     }
 
-    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startProperties) {
-        return addDMFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession);
+    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startAction) {
+        return addDMFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession);
     }
 
     protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         return addDMFAProp(group, sID, caption, form, objectsToSet, null, newSession);
     }
 
-    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startProperties,
+    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction,
                          newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
                          ModalityType.DOCKED_MODAL, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startProperties, boolean newSession, boolean isModal) {
-        return addFAProp(group, genSID(), caption, form, objectsToSet, startProperties, newSession, isModal, false);
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal) {
+        return addFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession, isModal, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, boolean newSession, boolean isModal, boolean checkOnOk) {
-        return addFAProp(group, sID, caption, form, objectsToSet, setProperties,
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession, boolean isModal, boolean checkOnOk) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction,
                          newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
                          isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
-        return addFAProp(group, sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, false);
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, false);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity setProperties, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
+    protected LAP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
+        return addProperty(group, new LAP(new FormActionProperty(sID, caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty())));
     }
 
     protected LAP addChangeClassAProp() {

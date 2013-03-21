@@ -137,6 +137,7 @@
       <keyword name="INTERSECT" />
       <keyword name="IS" />
       <keyword name="ISTRING" />
+      <keyword name="JOIN" />
       <keyword name="LEFT" />
       <keyword name="LENGTH" />
       <keyword name="LIMIT" />

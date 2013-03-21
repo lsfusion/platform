@@ -12,18 +12,18 @@ import platform.server.session.PropertyChanges;
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
 
     private final ImList<CalcPropertyInterfaceImplement<I>> props;
-    protected ImList<CalcPropertyInterfaceImplement<I>> getProps() {
+    public ImList<CalcPropertyInterfaceImplement<I>> getProps() {
         return props;
     }
 
     private final GroupType groupType;
-    protected GroupType getGroupType() {
+    public GroupType getGroupType() {
         return groupType;
     }
 
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders;
     private final boolean ordersNotNull;
-    protected ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
+    public ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders() {
         return orders;
     }
 

@@ -27,6 +27,7 @@ import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.type.Type;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.LogFormEntity;
 import platform.server.form.navigator.NavigatorElement;
@@ -407,6 +408,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             finishLogInit();
 
+            setupDrillDown();
+
             showDependencies();
 
             getPropertyList(true);
@@ -491,16 +494,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    private void setupDrillDown() {
+        for (Property p : getOrderProperties()) {
+            if (p instanceof AggregateProperty) {
+                AggregateProperty<?> property = (AggregateProperty<?>) p;
+                if (property.supportsDrillDown()) {
+                    DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
+                    if (drillDownFormEntity != null) {
+                        LAP<?> drillDownFormProperty = LM.addMFAProp(getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects);
+                        ActionProperty formProperty = drillDownFormProperty.property;
+                        property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+                        property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
+                    }
+                }
+            }
+        }
+    }
+
     private void prereadCaches() {
         getAppliedProperties(true);
         getAppliedProperties(false);
         getMapAppliedDepends();
         for (Property property : getPropertyList()) // сделалем чтобы
             property.prereadCaches();
-    }
-
-    public String getFormSerializationPath(String formSID) {
-        return "conf/forms/" + formSID;
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException {
@@ -591,7 +607,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         String print = "";
                         for (Property property : cycle)
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
-                        throw new RuntimeException(ServerResourceBundle.getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
+                        throw new RuntimeException(getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
                     }
                     buildList(innerComponent, null, removedLinks, mResult);
                 }

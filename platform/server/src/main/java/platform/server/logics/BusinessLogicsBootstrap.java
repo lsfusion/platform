@@ -4,11 +4,8 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.base.SystemUtils;
 import platform.base.col.lru.LRUCache;
-import platform.interop.form.RemoteFormInterface;
 import platform.server.Settings;
 import platform.server.SystemProperties;
-
-import java.util.HashMap;
 
 public class BusinessLogicsBootstrap {
     private static final Logger logger = Logger.getLogger(BusinessLogicsBootstrap.class);
