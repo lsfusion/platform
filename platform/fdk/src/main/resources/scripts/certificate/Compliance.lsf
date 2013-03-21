@@ -7,6 +7,8 @@ TABLE compliance(compliance);
 
 CLASS compliancePosted 'Проведенный сертификат' : compliance, postedObject;
 
+@defineNumeratedObjectDefault(compliance, 'Нумератор для сертификатов', 'СС');
+
 @defineDocumentHeaderTimePrefix(compliance, ,' создания');
 @defineDocumentHeaderTimePrefix(compliance, to, ' действия');
 @implementDocumentHeaderTimePrefix(certificate, , compliance, );
@@ -73,7 +75,7 @@ FORM compliances 'Сертификаты соответствия'
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = compliance
     PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance, nameStockCompliance, sumCompliance//, textCompliance
-
+    PROPERTIES(c) ADDFORM, EDITFORM
     DIALOG compliance OBJECT c
 ;
 

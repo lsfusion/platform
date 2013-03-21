@@ -702,9 +702,9 @@ META defineHomeCurrencyInvoice(invoice)
     }
 
     EXTEND FORM invoices
-        PROPERTIES(i) isHomeCurrency, nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
-        PROPERTIES(d) sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrency(i)
-        PROPERTIES(d) homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(i) READONLY isHomeCurrency, nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
+        PROPERTIES(d) READONLY sumHomeInvoiceDetail AFTER sumInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d) READONLY homePriceInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
     ;
 END
 

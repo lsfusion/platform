@@ -99,8 +99,6 @@ nameComplianceComplianceDetail 'Наименование' = DATA STRING[200](com
 skuComplianceDetail = DATA sku(complianceDetail);
 nameSkuComplianceDetail 'Товар на экспертизу' (complianceDetail) = nameSku(skuComplianceDetail(complianceDetail));
 
-CONSTRAINT nameComplianceComplianceDetail(complianceDetail) != nameComplianceSku(skuComplianceDetail(complianceDetail)) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар';
-
 @defineDocumentPosted(compliance);
 //@defineDocumentDetailPosted(compliance, complianceDetail);
 @defineDocumentDetailBatchCustom(complianceDetail, batch);
@@ -129,6 +127,11 @@ inComplianceDetailInvoice = GROUP SUM 1 BY complianceDetailInvoiceDetail(invoice
 invoicesComplianceDetail 'Накладные' (complianceDetail) =
     GROUP CONCAT seriesNumberObject(invoice) IF inComplianceDetailInvoice(complianceDetail, invoice) , ','
               BY complianceDetail ORDER invoice PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40 MAXCHARWIDTH 60;
+
+quantitySkuComplianceDetail 'Кол-во' (sku, complianceDetail) = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
+                                                                      BY skuUserInvoiceDetail(userInvoiceDetail), complianceDetailInvoiceDetail(userInvoiceDetail);
+
+CONSTRAINT complianceDetail IS complianceDetail AND NOT quantitySkuComplianceDetail(skuComplianceDetail(complianceDetail), complianceDetail) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар'; //
 
 // экспертиза
 priceCertificatedComplianceDetail 'Цена для экспертизы' (complianceDetail) = GROUP MIN homePriceInvoiceDetail(userInvoiceDetail) BY complianceDetailInvoiceDetail(userInvoiceDetail);
@@ -246,5 +249,5 @@ EXTEND FORM userInvoice
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundCompliancedInvoice(i) isComplianceInvoice FORCE GRID
-    PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail
+    PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceUserInvoice(i)
 ;
