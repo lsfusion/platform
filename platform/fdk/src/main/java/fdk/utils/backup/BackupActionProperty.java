@@ -38,10 +38,10 @@ public class BackupActionProperty extends ScriptingActionProperty {
             DataSession session = context.createSession();
             dumpDir = (String) LM.findLCPByCompoundName("dumpDirBackupTask").read(session);
             binPath = (String) LM.findLCPByCompoundName("binPathBackupTask").read(session);
-            if (dumpDir != null && binPath != null) {
+            if (dumpDir != null) {
 
                 dumpDir = dumpDir.trim();
-                binPath = binPath.trim();
+                binPath = binPath==null ? null : binPath.trim();
 
                 Calendar calendar = Calendar.getInstance();
 

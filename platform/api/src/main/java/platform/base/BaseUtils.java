@@ -442,6 +442,20 @@ public class BaseUtils {
         return result;
     }
 
+    public static Object deserializeString(DataInputStream inStream) throws IOException {
+
+        int numOfChunks = inStream.readInt();
+
+        if (numOfChunks == 0)
+            return null;
+
+        String result = "";
+        for (int i = 0; i < numOfChunks; i++)
+            result += inStream.readUTF();
+
+        return result;
+    }
+
     public static Object deserializeObject(byte[] state) throws IOException {
 
         return deserializeObject(new DataInputStream(new ByteArrayInputStream(state)));
@@ -460,7 +474,7 @@ public class BaseUtils {
         }
 
         if (objectType == 2) {
-            return inStream.readUTF();
+            return deserializeString(inStream);
         }
 
         if (objectType == 3) {
@@ -499,6 +513,18 @@ public class BaseUtils {
         throw new IOException();
     }
 
+    public static void serializeString(DataOutputStream outStream, Object object) throws IOException {
+
+        int chunkSize = 65535;
+        int length = ((String) object).length();
+        int numOfChunks = (length + chunkSize - 1) / chunkSize;
+
+        outStream.writeInt(numOfChunks);
+
+        for (int i = 0; i < numOfChunks; i++)
+            outStream.writeUTF(((String) object).substring(i * chunkSize, Math.min(length, (i + 1) * chunkSize)));
+    }
+
     public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {
 
 /*        try {
@@ -521,7 +547,7 @@ public class BaseUtils {
 
         if (object instanceof String) {
             outStream.writeByte(2);
-            outStream.writeUTF((String) object);
+            serializeString(outStream, object);
             return;
         }
 
@@ -635,7 +661,7 @@ public class BaseUtils {
         result.put(add, addValue);
         return result;
     }
-    
+
     public static <K> List<K> add(K add, List<? extends K> col) {
         ArrayList<K> result = new ArrayList<K>();
         result.add(add);
@@ -1238,7 +1264,7 @@ public class BaseUtils {
             result.put(element, element.toString());
         return result;
     }
-    
+
     public static Integer[] toObjectArray(int[] a) {
         Integer[] result = new Integer[a.length];
         for(int i=0;i<a.length;i++)
@@ -1614,7 +1640,7 @@ public class BaseUtils {
     public static String padr(String string, int length) {
         if(length == string.length())
             return string;
-            
+
         if (length > string.length())
             return string + spaces(length - string.length());
 
@@ -1855,14 +1881,14 @@ public class BaseUtils {
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-    public static int getNumberOfMonthEnglish(String month) 
+    public static int getNumberOfMonthEnglish(String month)
     {
         for(int i=0; i<monthsEnglish.length; i++)
             if(month.equals(monthsEnglish[i]))
                 return i+1;
         return 1;
     }
-    
+
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatEnglish(Date date) {
 
@@ -2074,7 +2100,7 @@ public class BaseUtils {
     public static List<Integer> consecutiveList(int i) {
         return consecutiveList(i, 1);
     }
-    
+
     public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
         List<K> list = new ArrayList<K>(col);
         Collections.sort(list, comparator);
