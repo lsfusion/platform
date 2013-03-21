@@ -85,12 +85,13 @@ EXTEND FORM userInvoice
                    writeOffPriceUserInvoiceDetail,  writeOffSumUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
-    headerRow112 {
-        title = 'Акт списания';
-        childConstraints = TO THE RIGHTBOTTOM;
-        ADD PROPERTY(createPurchaseWriteOffUserInvoice);
-        ADD PROPERTY(nameWriteOffCommitteeUserInvoice);
-        ADD PROPERTY(nameReasonUserInvoice);
+    headerCreateDocuments {
+        NEW headerCreateWriteOff {
+            title = 'Акт списания';
+            ADD PROPERTY(createPurchaseWriteOffUserInvoice);
+            ADD PROPERTY(nameWriteOffCommitteeUserInvoice);
+            ADD PROPERTY(nameReasonUserInvoice);
+        }
     }
 }
 EXTEND FORM invoices

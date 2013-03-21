@@ -32,10 +32,8 @@ EXTEND FORM userInvoice
     PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) nameRetailPriceListTypeUserInvoiceDetail BEFORE retailMarkupUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
-    headerRow14 {
-        headerRow141 {
-            ADD PROPERTY(nameRetailPriceListTypeUserInvoice);
-        }
+    headerCreatePricing {
+        ADD PROPERTY(nameRetailPriceListTypeUserInvoice);
     }
 }
 EXTEND FORM invoices PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) READONLY nameRetailPriceListTypeInvoiceDetail BEFORE retailMarkupInvoiceDetail;

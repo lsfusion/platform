@@ -759,10 +759,9 @@ META defineRepricing(sign, stockProp)
 
     ;
     EXTEND DESIGN userInvoice {
-        headerRow14 {
-            NEW headerRow142 {
+        headerCreateDocuments {
+            NEW headerCreateRepricing {
                 title = 'Дооценка';
-                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(createRepricingUserInvoice);
                 ADD PROPERTY(nameRepricingCommitteeUserInvoice);
                 ADD PROPERTY(numberDisposalUserInvoice);

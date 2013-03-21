@@ -1119,16 +1119,14 @@ META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
                                  (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
-                                 CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail)));
+                                 CHANGED(dateTime###detail(detail)));
 
     invoice###price###detail(detail) <- prevListSkuPricePVAT###detail (detail)
                             WHEN priceListType###detail(detail) AND
                                  (CHANGED(priceListType###detail(detail)) OR
                                  CHANGED(sku###detail(detail)) OR
                                  CHANGED(stockProp###detail(detail)) OR
-                                 CHANGED(dateTime###detail(detail)) OR
-                                 CHANGED(valueVAT###detail(detail)));
+                                 CHANGED(dateTime###detail(detail)));
 
 END
 
@@ -1210,11 +1208,9 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
                                              CHANGED(batch###detail(detail)) OR
                                              CHANGED(sku###detail(detail)) OR
                                              CHANGED(stockProp###detail(detail)) OR
-                                             CHANGED(dateTime###detail(detail)) OR
-                                             CHANGED(valueVAT###detail(detail)));
+                                             CHANGED(dateTime###detail(detail)));
 
-        FOR [GROUP MAX(changedPriceListType(detail)) BY priceListType###detail(detail)](priceListType) DO {
-            IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
+        FOR [GROUP MAX(changedPriceListType(detail)) BY priceListType###detail(detail)](priceListType) NOINLINE DO {
             SET price###detail(detail) <- prevListPriceMVAT###detail (priceListType, detail)
                 WHERE changedPriceListType(detail) AND priceListType###detail(detail) == priceListType;
             SET invoicePrice###detail(detail) <- prevListPricePVAT###detail (priceListType, detail)

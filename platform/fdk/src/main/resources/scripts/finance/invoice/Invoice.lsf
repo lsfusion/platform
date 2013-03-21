@@ -266,7 +266,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
             NEW header.box BEFORE specification.box {
                 childConstraints = TO THE RIGHT;
 
-                NEW headerRow1 {
+                NEW headerParams {
                     childConstraints = TO THE BOTTOM;
 
                     ADD i.documentHeaderGroup {
@@ -278,30 +278,30 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                         ADD PROPERTY(dateUserInvoice);
                         ADD PROPERTY(timeUserInvoice);
                     }
-                    NEW headerRow12 {
+                    NEW headerLegalEntity {
                         childConstraints = TO THE RIGHTBOTTOM;
-                        NEW headerRow121 {
+                        NEW headerSupplier {
                             title = 'Поставщик';
                             childConstraints = TO THE RIGHTBOTTOM;
                             ADD PROPERTY(nameSupplierUserInvoice);
                             ADD PROPERTY(nameSupplierStockUserInvoice);
                         }
-                        NEW headerRow122 {
+                        NEW headerCustomer {
                             title = 'Покупатель';
                             childConstraints = TO THE RIGHTBOTTOM;
                             ADD PROPERTY(nameCustomerUserInvoice);
                             ADD PROPERTY(nameCustomerStockUserInvoice);
                         }
-                        NEW headerRow123 {
+                        NEW headerContract {
                             title = 'Договор';
                             childConstraints = TO THE RIGHTBOTTOM;
                             ADD PROPERTY(numberContractSkuUserInvoice);
                             ADD PROPERTY(isCommissionUserInvoice);
                         }
                     }
-                    NEW headerRow124 {
+                    NEW headerTabbedPane {
                         type = TABBED;
-                        NEW headerRow10 {
+                        NEW headerMainParams {
                             title = 'Основные параметры';
                             childConstraints = TO THE BOTTOM;
                             ADD i.documentPrmGroup {
@@ -309,32 +309,12 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                                 ADD PROPERTY(toShowProp###userInvoice);
                             }
                         }
-                        NEW headerRow1241{
+                        NEW headerCreateDetail {
+                            title = 'Основание';
+                        }
+                        NEW headerCreateDocuments {
                             title = 'Производные документы';
-                            NEW headerRow13 {  // title = 'Сооздать на основании';
-                                childConstraints = TO THE RIGHTBOTTOM;
-                            }
-                            NEW headerRow11 {
-                                NEW headerRow111 {
-                                    title = 'Поставка';
-                                    childConstraints = TO THE RIGHTBOTTOM;
-                                }
-                                NEW headerRow112 {
-                                    title = 'Списание';
-                                    childConstraints = TO THE RIGHTBOTTOM;
-                                }
-                                NEW headerRow113 {
-                                    title = 'Акт расхождения';
-                                    childConstraints = TO THE RIGHTBOTTOM;
-                                }
-                            }
-                                NEW headerRow14 { //title = 'Расценка / Дооценка';
-                                    childConstraints = TO THE RIGHTBOTTOM;
-                                }
-                                NEW headerRow15 { //title = 'Расценка / Дооценка для закупки' ;
-                                    childConstraints = TO THE RIGHTBOTTOM;
-                                }
-                            }
+                        }
                      }
                 }
                 ADD i.documentSumGroup {
@@ -689,8 +669,8 @@ META defineHomeCurrencyInvoice(invoice)
     ;
 
     EXTEND DESIGN userInvoice {
-        headerRow10 {
-            NEW headerRow100 {
+        headerMainParams {
+            NEW headerHomeCurrency {
                 title = 'Конвертация';
                 childConstraints = TO THE RIGHT;
                 ADD PROPERTY(nameHomeCurrencyInvoice);

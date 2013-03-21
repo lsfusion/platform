@@ -119,10 +119,9 @@ EXTEND FORM Purchase.userInvoice
     PROPERTIES(i) fillInvoiceUserInvoice
 ;
 EXTEND DESIGN Purchase.userInvoice {
-    headerRow13{
-        NEW headerRow131{
-            title = 'Информация о накладной';
-            childConstraints = TO THE RIGHTBOTTOM;
+    headerCreateDetail {
+        NEW headerCreateSale {
+            title = 'Накладная (продажа)';
             ADD PROPERTY(fillInvoiceUserInvoice);
         }
     }
@@ -145,11 +144,9 @@ EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundPurchaseInvoice(i) SHOWIF isCompanyCustomerUserInvoice(i) createPurchaseInvoiceUserInvoice
 ;
 EXTEND DESIGN userInvoice {
-    headerRow15{
-        title = 'Закупка';
-        NEW headerRow151 {
-            title = 'Накладная';
-            childConstraints = TO THE RIGHTBOTTOM;
+    headerCreateDocuments {
+        NEW headerCreatePurchase {
+            title = 'Накладная (закупка)';
             ADD PROPERTY(createPurchaseInvoiceUserInvoice);
         }
     }

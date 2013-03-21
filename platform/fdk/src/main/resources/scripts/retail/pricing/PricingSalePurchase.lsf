@@ -69,10 +69,9 @@ EXTEND FORM userInvoice
     HINTTABLE LIST purchaseRetailMarkupUserInvoiceDetail, valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailPriceUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
-    headerRow15{
-        NEW headerRow152  {
-            title = 'Расценка';
-            childConstraints = TO THE RIGHTBOTTOM;
+    headerCreateDocuments {
+        NEW headerCreateSalePricing  {
+            title = 'Расценка на закупке';
             ADD PROPERTY(createPurchasePricingUserInvoice);
             ADD PROPERTY(namePurchasePricingCommitteeUserInvoice);
             ADD PROPERTY(namePurchaseRetailPriceListTypeInvoice);

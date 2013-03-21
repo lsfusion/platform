@@ -144,7 +144,7 @@ inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, depar
 
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = departmentStore FIXED PANEL
-    PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, dialogTradingSquareDepartmentStore, nameWriteOffCommitteeStock,
+    PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, nameWriteOffCommitteeStock,
                   explicitBatchLedgerStock, numberCashAccountDepartmentStore
 
     OBJECTS e = employee

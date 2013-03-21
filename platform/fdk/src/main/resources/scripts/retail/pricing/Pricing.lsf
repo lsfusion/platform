@@ -614,10 +614,9 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
         HINTTABLE LIST retailMarkupUserInvoiceDetail, valueRetailVATUserInvoiceDetail, retailPriceUserInvoiceDetail
     ;
     EXTEND DESIGN userInvoice {
-        headerRow14 {
-            NEW headerRow141 {
+        headerCreateDocuments {
+            NEW headerCreatePricing {
                 title = 'Расценка';
-                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(createPricingUserInvoice);
                 ADD PROPERTY(namePricingCommitteeUserInvoice);
             }

@@ -64,7 +64,7 @@ PaymentLedger.currencyAccount(account) += currencyAccount(account);
 
 // ------------------------ Привязка банков к юрлицам ------------------------ //
 
-legalEntityAccount = DATA legalEntity (account);
+legalEntityAccount = DATA legalEntity (account) NOT NULL DELETE;
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
 PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 

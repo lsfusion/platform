@@ -632,7 +632,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES(d) shipmentQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF createShipmentInvoice(i) BACKGROUND backgroundShippedInvoice(i)
     ;
     EXTEND DESIGN userInvoice {
-        headerRow111{ADD PROPERTY(createShipmentUserInvoice); }
+        headerCreateDocuments {
+            NEW headerCreateShipment {
+                title = 'Поставка';
+                ADD PROPERTY(createShipmentUserInvoice);
+            }
+        }
     }
 
     EXTEND FORM invoices

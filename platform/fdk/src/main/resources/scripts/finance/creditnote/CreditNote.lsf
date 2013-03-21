@@ -268,7 +268,14 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     needToCreditNoteInvoice (invoice) = GROUP SUM 1 IF needToCreditNoteInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
 
     EXTEND FORM userInvoice PROPERTIES(i) createCreditNoteUserInvoice;
-    EXTEND DESIGN userInvoice { headerRow113 { ADD PROPERTY(createCreditNoteUserInvoice);}}
+    EXTEND DESIGN userInvoice {
+        headerCreateDocuments {
+            NEW headerCreateCreditNote {
+                title = 'Акт расхождения';
+                ADD PROPERTY(createCreditNoteUserInvoice);
+            }
+        }
+    }
 
     EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 
