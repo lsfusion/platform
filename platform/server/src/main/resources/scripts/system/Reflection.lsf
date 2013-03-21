@@ -85,7 +85,7 @@ columnAscendingSortOverridePropertyDrawCustomUser 'Восходящая сорт
 
 hasUserPreferencesGroupObjectCustomUser 'Настройки сохранены для пользователя'= DATA BOOLEAN (groupObject, customUser);
 hasUserPreferencesGroupObject 'Настройки сохранены' = DATA BOOLEAN (groupObject);
-hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохранены' (groupObject, customUser) = (hasUserPreferencesGroupObject(groupObject) AND customUser IS customUser) AND hasUserPreferencesGroupObjectCustomUser(groupObject, customUser);
+hasUserPreferencesOverrideGroupObjectCustomUser 'Настройки сохранены' (groupObject, customUser) = (hasUserPreferencesGroupObject(groupObject) AND customUser IS customUser) OR hasUserPreferencesGroupObjectCustomUser(groupObject, customUser);
 
 CLASS table 'Таблица';
 TABLE tables (table);
