@@ -102,6 +102,7 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
             SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
             SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
             SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+            SET supplierStockUserInvoiceDetail (d) <- supplierStockOrderDetail(orderDetail);
         }
 }
 

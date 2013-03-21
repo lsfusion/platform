@@ -104,8 +104,8 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
                         name###stockProp###orderDetail, toInvoiceOrderDetail
         FILTERS orderOrderDetail(d) == o
 //        FILTERGROUP orderDetail
-//            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == s AND toInvoiceOrderDetail(d) > 0 DEFAULT
-//            FILTER 'Строки со склада' 'F9' stockProp###orderDetail(d) == s
+//            FILTER 'Строки с невыписанными товарами со склада' 'F10' stockProp###orderDetail(d) == stockProp###invoiceOrder() AND toInvoiceOrderDetail(d) > 0 DEFAULT
+//            FILTER 'Строки со склада' 'F9' stockProp###orderDetail(d) == stockProp###invoiceOrder()
     ;
 
     DESIGN invoiceOrders FROM DEFAULT {
@@ -152,7 +152,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 //    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
 //        THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
 //        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
-    inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS orderDetail AND userInvoice IS userInvoice) OR
+    inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS orderDetail AND userInvoice IS userInvoice AND NOT supplierStockUserInvoice(userInvoice)) OR
                                                            supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 
     createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
