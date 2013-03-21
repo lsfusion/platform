@@ -67,7 +67,10 @@ EXTEND CLASS Features.storeSize
 
 //////////// PROPERTY STATEMENT///////////
 // Common syntax:
-// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TABLE <table name>] [TOOLBAR | (SHORTCUT propertyExpression [DEFAULT])]
+// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT] [TABLE <table name>]
+//                                                                                                 [TOOLBAR]
+//                                                                                                 [SHORTCUT propertyName]
+//                                                                                                 [ASONCHANGE propertyName]
 //                                                                                                 [FIXEDCHARWIDTH <int value>]
 //                                                                                                 [MINCHARWIDTH <int value>]
 //                                                                                                 [MAXCHARWIDTH <int value>]
@@ -531,7 +534,10 @@ OBJECTS document, article
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
-PROPERTIES store(document), name(article), testPush(document), testPush2(document), copy(document), date(document), storeName(document) ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); } , documentTypeString(document)
+PROPERTIES(document) store, testPush, testPush2, copy, date,
+                     storeName ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); },
+                     documentTypeString
+PROPERTIES name(article)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article), selCur(document, article), selAll(document, article), selArt(article)
 PROPERTIES ADDOBJ(document), ADDOBJ(article), testAbstractAction(document)
@@ -734,6 +740,16 @@ FILTERGROUP filters1
     FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ;
 
+DESIGN TestHeaders FROM DEFAULT {
+    main {
+        NEW vertical.box BEFORE functions.box {
+            type = SPLITH;
+            ADD s.box;
+            ADD a.box;
+        }
+    }
+}
+
 FORM TestHotkeys 'Тест хоткеев'
 OBJECTS s=store, a=article
 PROPERTIES(s) ns=name, storeSizeCode
@@ -777,7 +793,6 @@ DESIGN TestTabs FROM DEFAULT {
 // Syntax:
 // INDEX propertyName1 [, ..., propertyNameN];
 INDEX quantity;
-
 
 //////////////// WINDOW STATEMENT /////////////////
 // Add new window statement
