@@ -2,7 +2,6 @@ MODULE Pricing;
 
 REQUIRE Invoice, Employee, PriceRoundStore, Label, Machinery;
 
-
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
 costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
@@ -229,17 +228,17 @@ META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, 
     }
 END
 
-//META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
-//    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
-//    0.0 IF detail IS detail OR price###detail(detail),
-//    0.0 IF detail IS detail OR prefix###markup###detail(detail),
-//    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
-//                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
-//END
-//
-//META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
-//    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
-//END
+META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)  // округляет по умолчанию для валюты
+    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
+    0.0 IF detail IS detail OR price###detail(detail),
+    0.0 IF detail IS detail OR prefix###markup###detail(detail),
+    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
+                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
+END
+
+META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
+    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
+END
 
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
     calc###prefixC###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
@@ -257,10 +256,10 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, p
 END
 META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
 
-    calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](                 //roundPriceCurrency
+    calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
     0.0 IF detail IS detail OR prefixB###price###detail(detail),
     0.0 IF detail IS detail OR prefixC###markup###detail(detail),
-    value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));                                     //currencyProp
+    value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));
 
     change###prefixC###markup###detail = ACTION (detail) {
 
