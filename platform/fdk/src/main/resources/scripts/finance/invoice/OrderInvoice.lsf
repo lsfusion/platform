@@ -89,6 +89,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
                 (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS order AND NOT supplierInvoiceOrder()),
                 customerOrder(o) == customerInvoiceOrder() OR (o IS order AND NOT customerInvoiceOrder()),
                 customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder()),
+                (TRUE IF inOrderSupplierStock(o, supplierStockInvoiceOrder())) OR (o IS order AND NOT supplierStockInvoiceOrder()),
                 operationOrder(o) == operationInvoiceOrder() OR (o IS order AND NOT operationInvoiceOrder())
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
@@ -148,9 +149,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
-    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
-        THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
-        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
+//    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
+//        THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
+//        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
+    inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS orderDetail AND userInvoice IS userInvoice) OR
+                                                           supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 
     createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
         IF useExplicitBatchDetailUserInvoiceOrder(userInvoice, order) AND explicitBatchLedgerStock(stockProp##Order(order)) THEN {
@@ -173,23 +176,24 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     SET priceUserInvoiceDetail (d) <- priceOrderDetail(orderDetail);
                     SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
                     SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
+                    SET data###stockProp###userInvoiceDetail (d) <- data###stockProp###orderDetail(orderDetail);
             }
     }
 
     fillUserInvoiceOrder = ACTION (userInvoice, order) {
-        SET supplierUserInvoice(userInvoice) <- supplierOrder(order);
-        SET supplierStockUserInvoice(userInvoice) <- supplierStockOrder(order);
+        SET supplierUserInvoice(userInvoice) <- supplierOrder(order) WHERE supplierOrder(order);
+        SET supplierStockUserInvoice(userInvoice) <- supplierStockOrder(order) WHERE supplierStockOrder(order);
 
-        SET customerUserInvoice(userInvoice) <- customerOrder(order);
-        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
+        SET customerUserInvoice(userInvoice) <- customerOrder(order) WHERE customerOrder(order);
+        SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order) WHERE customerStockOrder(order);
 
-        SET currencyUserInvoice(userInvoice) <- currencyOrder(order);
-        SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
-        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
+        SET currencyUserInvoice(userInvoice) <- currencyOrder(order) WHERE currencyOrder(order);
+        SET agreementUserInvoice(userInvoice) <- agreementOrder(order) WHERE agreementOrder(order);
+        SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order) WHERE priceListTypeOrder(order);
 
-        SET operationUserInvoice(userInvoice) <- operationOrder(order);
+        SET operationUserInvoice(userInvoice) <- operationOrder(order) WHERE operationOrder(order);
 
-        SET noteUserInvoice(userInvoice) <- noteOrder(order);
+        SET noteUserInvoice(userInvoice) <- noteOrder(order) WHERE noteOrder(order);
 
         EXEC createDetailUserInvoiceOrder(userInvoice, order);
     }
@@ -240,11 +244,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
 
     fillOrderUserInvoice 'Заполнить на основе заказа' =  ACTION (userInvoice) {
-        supplierInvoiceOrder() <- supplierUserInvoice(userInvoice);
-        supplierStockInvoiceOrder() <- supplierStockUserInvoice(userInvoice);
-        customerInvoiceOrder() <- customerUserInvoice(userInvoice);
-        customerStockInvoiceOrder() <- customerStockUserInvoice(userInvoice);
-        operationInvoiceOrder() <- operationUserInvoice(userInvoice);
+        supplierInvoiceOrder() <- supplierUserInvoice(userInvoice) WHERE supplierUserInvoice(userInvoice);
+        supplierStockInvoiceOrder() <- supplierStockUserInvoice(userInvoice) WHERE supplierStockUserInvoice(userInvoice);
+        customerInvoiceOrder() <- customerUserInvoice(userInvoice) WHERE customerUserInvoice(userInvoice);
+        customerStockInvoiceOrder() <- customerStockUserInvoice(userInvoice) WHERE customerStockUserInvoice(userInvoice);
+        operationInvoiceOrder() <- operationUserInvoice(userInvoice) WHERE operationUserInvoice(userInvoice);
 
         FORM invoiceOrders MODAL;
         IF formResult() == formResult.ok THEN {
