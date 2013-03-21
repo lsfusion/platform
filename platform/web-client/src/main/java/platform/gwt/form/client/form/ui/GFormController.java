@@ -157,7 +157,7 @@ public class GFormController extends ResizableSimplePanel {
         addFilterComponent(filterGroup, filterCheck);
 
         if (filterGroup.defaultFilterIndex >= 0) {
-            filterCheck.setValue(true, true);
+            filterCheck.setValue(true, false);
         }
 
         filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
@@ -208,7 +208,6 @@ public class GFormController extends ResizableSimplePanel {
         addFilterComponent(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {
             filterBox.setSelectedIndex(filterGroup.defaultFilterIndex + 1);
-            setRegularFilter(filterGroup, filterGroup.defaultFilterIndex);
         }
     }
 

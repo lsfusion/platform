@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 public class GFormTabbedPane extends GAbstractFormContainer {
     private ResizableTabPanel tabsPanel;
     private ArrayList<GComponent> visibleComponents = new ArrayList<GComponent>();
+    private boolean initialTabSet = false;
 
     public GFormTabbedPane(final GFormController formController, final GContainer key) {
         this.key = key;
@@ -24,8 +25,10 @@ public class GFormTabbedPane extends GAbstractFormContainer {
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
             public void onSelection(SelectionEvent<Integer> e) {
-                int index = e.getSelectedItem();
-                formController.setTabVisible(key, visibleComponents.get(index));
+                if (initialTabSet) {
+                    int index = e.getSelectedItem();
+                    formController.setTabVisible(key, visibleComponents.get(index));
+                }
             }
         });
     }
@@ -52,6 +55,9 @@ public class GFormTabbedPane extends GAbstractFormContainer {
     private void ensureTabSelection() {
         if (tabsPanel.getTabBar().getSelectedTab() == -1 && tabsPanel.getWidgetCount() != 0) {
             tabsPanel.selectTab(0);
+            if (!initialTabSet) {
+                initialTabSet = true;
+            }
         }
     }
 
