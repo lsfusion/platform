@@ -71,7 +71,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     IncrementView propertyObjectConstraint;
     IncrementView toDrawConstraint;
     IncrementView columnGroupConstraint;
-    IncrementView propertyCaptionConstraint;
 
     IncrementView containerController;
 
@@ -390,24 +389,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         addDependency("toDraw", columnGroupConstraint);
         addDependency("objects", columnGroupConstraint);
         addDependency(this, "groupObjects", columnGroupConstraint); // порядок тоже важен
-
-
-        // propertyObject подходит по интерфейсу и т.п.
-        propertyCaptionConstraint = new IncrementPropertyConstraint() {
-            public boolean updateProperty(PropertyDrawDescriptor property) {
-                PropertyObjectDescriptor propertyCaption = property.getPropertyCaption();
-                if (propertyCaption != null && !getProperties(property.getColumnGroupObjects(), null).contains(propertyCaption)) {
-                    property.setPropertyCaption(null);
-                }
-                return true;
-            }
-        };
-        addDependency("propertyObject", propertyCaptionConstraint);
-        addDependency("propertyCaption", propertyCaptionConstraint);
-        addDependency("columnGroupObjects", propertyCaptionConstraint);
-        addDependency("baseClass", propertyCaptionConstraint);
-        addDependency("objects", propertyCaptionConstraint);
-        addDependency(this, "groupObjects", propertyCaptionConstraint);
 
         // fitlerProperty.
         IncrementView filterPropertyConstraint = new IncrementView() {
