@@ -149,9 +149,6 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
-//    inOrderDetailUserInvoice (orderDetail, userInvoice) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
-//        THEN TRUE AND orderDetail IS orderDetail AND userInvoice IS userInvoice
-//        ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
     inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS orderDetail AND userInvoice IS userInvoice AND NOT supplierStockUserInvoice(userInvoice)) OR
                                                            supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 

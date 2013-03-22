@@ -241,31 +241,76 @@ addSku () += [ACTION ADDFORM item]();
 
 hasParentGroupGroupTypeItem(group, groupType, item) = isParentGroupGroup(groupGroupTypeSku(groupType, item), group);
 
+nameGroupTypeItem 'Группа товара' (groupType, item) = name(groupGroupTypeSku(groupType, item));
+canonicalNameGroupTypeItem 'Группа товара' (groupType, item) = canonicalNameGroup(groupGroupTypeSku(groupType, item));
+
+FORM items 'Товары'
+
+    OBJECTS gt=groupType FIXED PANEL
+    PROPERTIES(gt) SELECTOR name
+
+    TREE groupTree g=group PARENT parentGroup
+    PROPERTIES READONLY name(g)
+    FILTERS groupTypeGroup(g) == gt
+    ORDER BY name(g)
+
+    OBJECTS i=item
+    PROPERTIES(i) READONLY idBarcodeSku
+    PROPERTIES(i) ADDFORM, EDITFORM, delete
+    PROPERTIES seekBarcode()
+    ON CHANGE EXEC seekSkuBarcode()
+    DIALOG item OBJECT i
+;
+
+DESIGN items FROM DEFAULT {
+
+    NEW rootContainer {
+            type = SPLITH;
+            childConstraints = TO THE RIGHT;
+            NEW row1 {
+                title = 'Классификатор';
+                childConstraints = TO THE BOTTOM;
+                ADD gt.box;
+                ADD groupTree.tree.box;
+            }
+
+            NEW row2 {
+                NEW row21 {
+                    childConstraints = TO THE RIGHT;
+                    ADD PROPERTY(seekBarcode);
+                }
+                ADD i.box {
+                    defaultComponent = TRUE;
+                    fillHorizontal = 4;
+                    PROPERTY(seekBarcode){
+                        editKey = 'F4';
+                    }
+                }
+            }
+    }
+    ADD functions.box;
+}
+
+@extendFormEditable(items);
+
 //FORM items 'Товары'
-//
-//    OBJECTS gt=groupType FIXED PANEL
-//    PROPERTIES(gt) SELECTOR name
-//
-//    TREE groupTree g=group PARENT parentGroup
+//    TREE treeGroup g=itemGroup PARENT parentItemGroup
 //    PROPERTIES READONLY name(g)
-//    FILTERS groupTypeGroup(g) == gt
-//    ORDER BY name(g)
+//    ORDER BY name
 //
 //    OBJECTS i=item
 //    PROPERTIES(i) READONLY idBarcodeSku
 //    PROPERTIES(i) ADDFORM, EDITFORM, delete
-//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL DRAWTOTOOLBAR ON CHANGE EXEC seekSkuBarcode()
+//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
 //
-//    FILTERS hasParentGroupGroupTypeItem(g, i, gt) OR i IS item AND gt IS groupType AND NOT g
 //    DIALOG item OBJECT i
 //;
 //
 //DESIGN items FROM DEFAULT {
-//    ADD gt.box;
 //    NEW rootContainer {
 //            type = SPLITH;
 //            childConstraints = TO THE RIGHT;
-//            ADD groupTree.tree.box;
+//            ADD treeGroup.tree.box;
 //            ADD i.box {
 //                defaultComponent = TRUE;
 //                fillHorizontal = 4;
@@ -276,35 +321,6 @@ hasParentGroupGroupTypeItem(group, groupType, item) = isParentGroupGroup(groupGr
 //    }
 //    ADD functions.box;
 //}
-
-FORM items 'Товары'
-    TREE treeGroup g=itemGroup PARENT parentItemGroup
-    PROPERTIES READONLY name(g)
-    ORDER BY name
-
-    OBJECTS i=item
-    PROPERTIES(i) READONLY idBarcodeSku
-    PROPERTIES(i) ADDFORM, EDITFORM, delete
-    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
-
-    DIALOG item OBJECT i
-;
-
-DESIGN items FROM DEFAULT {
-    NEW rootContainer {
-            type = SPLITH;
-            childConstraints = TO THE RIGHT;
-            ADD treeGroup.tree.box;
-            ADD i.box {
-                defaultComponent = TRUE;
-                fillHorizontal = 4;
-                PROPERTY(seekBarcode){
-                    editKey = 'F4';
-                }
-            }
-    }
-    ADD functions.box;
-}
 
 NAVIGATOR {
     skuNavigator {
@@ -585,13 +601,15 @@ loadDefaultItemAttributes() += ACTION {
     SET numberInNameItemAttribute(a) <- 1 WHERE a == stringItemAttribute.itemCaption;
 }
 
-// для оптимизации запросов
-nameAttributeItemGroupItem 'Наименование' (itemGroup, item) = nameAttributeItem(item) AND isParentItemGroupItem(itemGroup, item) PERSISTENT INDEXED;
+nameAttributeGroupGroupTypeItem 'Наименование' (group, groupType, item) = nameAttributeItem(item) AND
+    hasParentGroupGroupTypeItem(group, groupType, item) PERSISTENT INDEXED;
 
 EXTEND FORM items
-    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItemGroupItem(g, i)
-    FILTERS nameAttributeItemGroupItem(g, i)
-    ORDER BY nameAttributeItemGroupItem
+    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeGroupGroupTypeItem(g, gt, i)
+    PROPERTIES READONLYIF isReadonly() canonicalNameGroupTypeItem(gt,i) AFTER nameAttributeGroupGroupTypeItem(g, gt, i)
+
+    FILTERS nameAttributeGroupGroupTypeItem(g, gt, i)
+    ORDER BY nameAttributeGroupGroupTypeItem
 ;
 
 // Кассы
@@ -736,7 +754,12 @@ changeGroupItem 'Изменить группу' = ACTION (){
     }
 }
 
+
 EXTEND FORM items
-    PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem TODRAW i FORCE PANEL TOOLBAR
-    PROPERTIES  changeGroupItem() TODRAW i FORCE PANEL TOOLBAR
+    PROPERTIES(i) inItem BEFORE idBarcodeSku, replaceItem FORCE PANEL
 ;
+EXTEND DESIGN items {
+    row21 {
+        ADD PROPERTY(replaceItem);
+    }
+}
