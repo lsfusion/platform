@@ -605,11 +605,14 @@ nameAttributeGroupGroupTypeItem 'Наименование' (group, groupType, it
     hasParentGroupGroupTypeItem(group, groupType, item) PERSISTENT INDEXED;
 
 EXTEND FORM items
-    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeGroupGroupTypeItem(g, gt, i)
-    PROPERTIES READONLYIF isReadonly() canonicalNameGroupTypeItem(gt,i) AFTER nameAttributeGroupGroupTypeItem(g, gt, i)
+    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItem(i)
+    PROPERTIES READONLYIF isReadonly() canonicalNameGroupTypeItem(gt,i) AFTER nameAttributeItem(i)
 
-    FILTERS nameAttributeGroupGroupTypeItem(g, gt, i)
-    ORDER BY nameAttributeGroupGroupTypeItem
+    FILTERGROUP groupFilters
+        FILTER 'С группами' 'F9' nameAttributeGroupGroupTypeItem(g, gt, i) DEFAULT
+        FILTER 'Без групп' 'F8' nameAttributeItem(i) AND gt IS groupType AND NOT groupGroupTypeSku(gt,i)
+
+    ORDER BY nameAttributeItem
 ;
 
 // Кассы
