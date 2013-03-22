@@ -18,6 +18,7 @@ import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
+import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
@@ -266,7 +267,7 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        OrderedMap<String,String> contextMenuBindings = entity.getContextMenuBindings();
+        OrderedMap<String,String> contextMenuBindings = filterContextMenuItems(entity.getContextMenuBindings(), pool.context);
         outStream.writeInt(contextMenuBindings == null ? 0 : contextMenuBindings.size());
         if (contextMenuBindings != null) {
             for (int i = 0; i < contextMenuBindings.size(); ++i) {
@@ -274,6 +275,23 @@ public class PropertyDrawView extends ComponentView {
                 pool.writeString(outStream, contextMenuBindings.getValue(i));
             }
         }
+    }
+
+    private OrderedMap<String, String> filterContextMenuItems(OrderedMap<String, String> contextMenuBindings, ServerContext context) {
+        if (contextMenuBindings == null || contextMenuBindings.size() == 0) {
+            return null;
+        }
+
+        OrderedMap<String, String> contextMenuItems = new OrderedMap<String, String>();
+        for (int i = 0; i < contextMenuBindings.size(); ++i) {
+            String actionSID = contextMenuBindings.getKey(i);
+            String caption = contextMenuBindings.getValue(i);
+            ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity);
+            if (context.securityPolicy.property.view.checkPermission(editAction.property)) {
+                contextMenuItems.put(actionSID, caption);
+            }
+        }
+        return contextMenuItems;
     }
 
     @Override

@@ -1920,8 +1920,7 @@ public class VEDLogicsModule extends LogicsModule {
                                                                   "Ввод нового товара",
                                                                   createArticleForm,
                                                                   new ObjectEntity[]{createArticleForm.objBarcode},
-                                                                  true,
-                                                                  createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode)
+                                                                  createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode), true
                                                           ), 1
                                              ), objBarcode));
 

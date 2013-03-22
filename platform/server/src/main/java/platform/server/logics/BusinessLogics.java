@@ -501,7 +501,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 if (property.supportsDrillDown()) {
                     DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
                     if (drillDownFormEntity != null) {
-                        LAP<?> drillDownFormProperty = LM.addMFAProp(getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects);
+                        String drillDownActionSID = LM.isGeneratedSID(property.getSID()) ? LM.genSID() : "drillDownAction_" + property.getSID();
+                        LAP<?> drillDownFormProperty =
+                                LM.addMFAProp(LM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, false);
+
                         ActionProperty formProperty = drillDownFormProperty.property;
                         property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
                         property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));

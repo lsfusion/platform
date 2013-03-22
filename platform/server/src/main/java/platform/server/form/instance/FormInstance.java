@@ -647,19 +647,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
-            PropertyDrawEntity propertyDraw = property.getEntity();
-            if (!pushConfirm && propertyDraw.askConfirm) {
-                int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
-                        entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
-                if (result != JOptionPane.YES_OPTION) {
-                    return;
+        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
+        if (editAction != null && securityPolicy.property.change.checkPermission(editAction.property)) {
+            if (editActionSID.equals(ServerResponse.CHANGE) || editActionSID.equals(ServerResponse.GROUP_CHANGE)) { //ask confirm logics...
+                PropertyDrawEntity propertyDraw = property.getEntity();
+                if (!pushConfirm && propertyDraw.askConfirm) {
+                    int result = (Integer) ThreadLocalContext.requestUserInteraction(new ConfirmClientAction("lsFusion",
+                            entity.getRichDesign().get(propertyDraw).getAskConfirmMessage()));
+                    if (result != JOptionPane.YES_OPTION) {
+                        return;
+                    }
                 }
             }
-        }
-
-        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
-        if (editAction != null) {
             editAction.getRemappedPropertyObject(keys).execute(this, pushChange, pushAdd, property);
         } else {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);

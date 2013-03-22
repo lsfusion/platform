@@ -161,6 +161,7 @@
       <keyword name="NEW" />
       <keyword name="NEWSESSION" />
       <keyword name="NO" />
+      <keyword name="NOINLINE" />
       <keyword name="NOT" />
       <keyword name="NOTHING" />
       <keyword name="NULL" />

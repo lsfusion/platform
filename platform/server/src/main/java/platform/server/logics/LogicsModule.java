@@ -572,7 +572,7 @@ public abstract class LogicsModule {
         return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, ActionPropertyObjectEntity startAction) {
+    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
         return addMFAProp(group, genSID(), caption, form, objectsToSet, startAction, newSession);
     }
 

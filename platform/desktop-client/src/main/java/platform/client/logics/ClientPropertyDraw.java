@@ -78,7 +78,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int maximumCharWidth;
     public int preferredCharWidth;
 
-    protected transient PropertyRendererComponent renderer;
+    private transient PropertyRendererComponent renderer;
 
     protected Format format;
 
