@@ -1,6 +1,6 @@
 MODULE Pricing;
 
-REQUIRE Invoice, Employee, PriceRoundStore, Label, Machinery;
+REQUIRE Invoice, Employee, PriceRoundStore, Machinery;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
@@ -548,12 +548,6 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDeta
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
-
-// ------------------------------------- Печать ценников ------------------------------ //
-
-@Label.implementPriceTransactionDocument(pricing);
-@defineDocumentLabelTransaction(pricing, sku, departmentStore);
-@extendFormDocumentLabelTransaction(pricings, p, pricing);
 
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 

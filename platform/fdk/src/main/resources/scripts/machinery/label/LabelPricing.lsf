@@ -1,0 +1,10 @@
+MODULE LabelPricing;
+
+REQUIRE Pricing, Label;
+
+NAMESPACE Pricing;
+// ------------------------------------- Печать ценников ------------------------------ //
+
+@Label.implementPriceTransactionDocument(pricing);
+@defineDocumentLabelTransaction(pricing, sku, departmentStore);
+@extendFormDocumentLabelTransaction(pricings, p, pricing);

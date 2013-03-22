@@ -581,14 +581,6 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepri
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) WHEN CLASS(retailPriceRepricingDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStoreRepricingDetail(ledger) == stock;
 
-// ------------------------------------- Печать ценников ------------------------------ //
-
-@Label.implementPriceTransactionDocument(repricing);
-Label.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
-
-@defineDocumentLabelTransaction(repricing, sku, departmentStore);
-@extendFormDocumentLabelTransaction(repricings, p, repricing);
-
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 
 @Machinery.implementPriceTransactionDocument(repricing);

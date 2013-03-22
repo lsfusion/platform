@@ -1,8 +1,13 @@
 MODULE ScalesItem;
 
-REQUIRE Item, Scales;
+REQUIRE Item, Machinery, Scales;
 
 NAMESPACE Item;
+
+createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
+    IF groupMachinery IS groupScales THEN
+        SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleScalesBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
+}
 
 GROUP scalesGroup 'Весы' : public;
 
