@@ -1,6 +1,6 @@
 MODULE LabelItem;
 
-REQUIRE Label, StoreItem;
+REQUIRE Label, Item;
 
 
 // ------------------------------ Добавляем атрибуты в ценники ----------------------------- //
