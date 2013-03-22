@@ -79,6 +79,14 @@ isComplianceInvoice 'Сертификация' = ABSTRACT BOOLEAN(invoice);
 isComplianceUserInvoice 'Сертификация' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
 isComplianceInvoice(invoice) += isComplianceUserInvoice(invoice);
 
+isComplianceInvoiceDetail 'Необходимость сертификации' = ABSTRACT BOOLEAN(invoiceDetail);
+isComplianceUserInvoiceDetail 'Необходимость сертификации' = DATA BOOLEAN(userInvoiceDetail);
+isComplianceInvoiceDetail(invoiceDetail) += isComplianceUserInvoiceDetail(invoiceDetail);
+
+isComplianceItemUserInvoiceDetail (userInvoiceDetail) = isCompliancedCountrySku(countryInvoiceDetail(userInvoiceDetail), skuUserInvoiceDetail(userInvoiceDetail));
+isComplianceUserInvoiceDetail(userInvoiceDetail) <- isComplianceItemUserInvoiceDetail(userInvoiceDetail) WHEN CHANGED (countryInvoiceDetail(userInvoiceDetail)) OR
+                                                                                                              CHANGED (skuUserInvoiceDetail(userInvoiceDetail));
+
 //------------------------------------------ позиции сертификата -------------------------------------------------------//
 
 quantityCertificatedUserInvoiceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](userInvoiceDetail);
@@ -244,10 +252,12 @@ EXTEND FORM compliance
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundCompliancedInvoice(i) isComplianceUserInvoice
+    PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) isComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isComplianceUserInvoice(i)
     PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) priceComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isComplianceUserInvoice(i)
 ;
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundCompliancedInvoice(i) isComplianceInvoice FORCE GRID
-    PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceUserInvoice(i)
+    PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) isComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceInvoice(i)
+    PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceInvoice(i)
 ;

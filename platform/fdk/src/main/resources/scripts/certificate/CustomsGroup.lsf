@@ -1,6 +1,6 @@
 MODULE CustomsGroup;
 
-REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax;
+REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax, Stock;
 
 CLASS customsZone 'Таможенная зона' : named;
 TABLE customsZone(customsZone);
@@ -25,6 +25,18 @@ numberCustomsGroup 'Номер строки' = DATA INTEGER(customsGroup) IN bas
 customsZoneCustomsGroup = DATA customsZone(customsGroup) AUTOSET;
 nameCustomsZoneCustomsGroup 'Таможенная зона' (customsGroup) = name(customsZoneCustomsGroup(customsGroup)) IN base;
 
+customsZoneCountry = DATA customsZone(country);
+nameCustomsZoneCountry 'Таможенная зона' (country) = name(customsZoneCountry(country)) IN base;
+
+isCompliancedDataCustomsGroup 'Необходимость сертификации' = DATA BOOLEAN (customsGroup) IN base;
+
+levelParentCustomsGroup (customsGroup) = GROUP MIN levelCustomsGroupCustomsGroup(customsGroup, parent) IF isCompliancedDataCustomsGroup(parent)
+                                                BY customsGroup PERSISTENT;
+
+isCompliancedParentCustomsGroup (customsGroup) = TRUE IF levelParentCustomsGroup(customsGroup);
+
+isCompliancedCustomsGroup 'Необходимость сертификации' (customsGroup) = UNION OVERRIDE isCompliancedParentCustomsGroup(customsGroup), isCompliancedDataCustomsGroup(customsGroup);
+
 TABLE customsGroupData(customsGroup, DATE);
 
 @defineHistorizableCustom(supplierVATCustomsGroup, 'НДС', range, numberRange, customsGroup, codeCustomsGroup, base);
@@ -37,6 +49,16 @@ valueCurrentRateSupplierVATCustomsGroup 'НДС, %' (customsGroup) = valueCurren
 
 @defineHistorizable(registrationCustomsGroup, 'Таможенный сбор', NUMERIC[14,3], customsGroup, codeCustomsGroup, base);
 
+customsGroupCountrySku = ABSTRACT customsGroup(country, sku);
+codeCustomsGroupCountrySku 'ТН ВЭД' (country, sku) = codeCustomsGroup(customsGroupCountrySku(country, sku));
+
+EXTEND FORM country
+    PROPERTIES(c) nameCustomsZoneCountry
+;
+
+EXTEND FORM countries
+    PROPERTIES(c) READONLY nameCustomsZoneCountry
+;
 
 FORM customsZone 'Таможенная зона'
     OBJECTS cz = customsZone FIXED PANEL
@@ -53,11 +75,9 @@ FORM customsZones 'Таможенная зона'
 FORM customsGroup 'Позиция ТН ВЭД'
     OBJECTS cg = customsGroup FIXED PANEL
     PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
-                   dateFromCustomsGroup, dateToCustomsGroup,
-                   registrationCustomsGroup,
+                   dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup ON CHANGE dialogSupplierVATCustomsGroup(cg),
-                   percentDutyCustomsGroup,
-                   weightDutyCustomsGroup
+                   percentDutyCustomsGroup, weightDutyCustomsGroup
 
     EDIT customsGroup OBJECT cg
 ;
@@ -76,13 +96,13 @@ FORM customsGroups 'Позиции ТН ВЭД'
     PROPERTIES(cz) SELECTOR name, nameCurrencyCustomsZone
 
     TREE treeGroups gcg=customsGroup PARENT parentCustomsGroup
-    PROPERTIES READONLY name(gcg), codeCustomsGroup(gcg)
+    PROPERTIES READONLY name(gcg), codeCustomsGroup(gcg), isCompliancedDataCustomsGroup(gcg)
     PROPERTIES(gcg) addCustomsGroup, EDITFORM
     ORDER BY name
 
     OBJECTS cg = customsGroup
     PROPERTIES(cg) READONLY numberCustomsGroup, codeCustomsGroup, name, canonicalNameCustomsGroup, nameParentCustomsGroup,
-                   dateFromCustomsGroup, dateToCustomsGroup, registrationCustomsGroup,
+                   dateFromCustomsGroup, dateToCustomsGroup, isCompliancedCustomsGroup, registrationCustomsGroup,
                    valueCurrentRateSupplierVATCustomsGroup, percentDutyCustomsGroup, weightDutyCustomsGroup
     PROPERTIES(cg) ADDFORM, EDITFORM, delete
 

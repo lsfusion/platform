@@ -64,6 +64,8 @@ extraDescriptionInvoiceDetail 'Доп. наименование' (invoiceDetail)
 
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
+countryInvoiceDetail(invoiceDetail) = countryStock(customerStockInvoice(invoiceInvoiceDetail(invoiceDetail)));
+
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
 META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)

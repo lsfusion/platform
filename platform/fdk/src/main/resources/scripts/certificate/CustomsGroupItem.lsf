@@ -1,0 +1,16 @@
+MODULE CustomsGroupItem;
+
+REQUIRE CustomsGroup, Item;
+
+customsGroupCountryItem = DATA customsGroup(country, item);
+codeCustomsGroupCountryItem 'ТН ВЭД' (country, item) = codeCustomsGroup(customsGroupCountryItem(country, item));
+
+customsGroupCountrySku(country, sku) += customsGroupCountryItem(country, sku);
+
+CONSTRAINT customsZoneCustomsGroup(customsGroupCountryItem(country, item)) != customsZoneCountry(country) CHECKED BY customsGroupCountryItem
+    MESSAGE 'Таможенная зона должна соответствовать стране';
+
+EXTEND FORM item
+    PROPERTIES(c, i) codeCustomsGroupCountryItem
+;
+

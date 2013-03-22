@@ -22,6 +22,8 @@ textCompliance 'Текст сертификата' = DATA TEXT (compliance);
 
 sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](compliance);
 
+isCompliancedCountrySku 'Необходимость сертификации' = ABSTRACT BOOLEAN(country, sku);
+
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'Сертификат № \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
     (seriesNumberObject(compliance), dateCompliance(compliance), toDateCompliance(compliance));

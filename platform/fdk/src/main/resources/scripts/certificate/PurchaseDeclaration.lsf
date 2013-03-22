@@ -28,8 +28,8 @@ nameCustomsSku(sku) += nameSku(sku);
 
 nameCustomsUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameCustomsSku(skuUserInvoiceDetail(userInvoiceDetail));
 
-countryUserInvoiceDetail (userInvoiceDetail) = countrySku(skuUserInvoiceDetail(userInvoiceDetail));
-nameCountryUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countryUserInvoiceDetail(userInvoiceDetail));
+countrySkuUserInvoiceDetail (userInvoiceDetail) = countrySku(skuUserInvoiceDetail(userInvoiceDetail));
+nameCountrySkuUserInvoiceDetail 'Страна' (userInvoiceDetail) = name(countrySkuUserInvoiceDetail(userInvoiceDetail));
 
 UOMUserInvoiceDetail(userInvoiceDetail) = UOMSku(skuUserInvoiceDetail(userInvoiceDetail));
 
@@ -38,6 +38,9 @@ customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
 customsGroupInvoiceDetail(detail) += customsGroupUserInvoiceDetail(detail);
 
 codeCustomsGroupInvoiceDetail 'ТН ВЭД' (invoiceDetail) = codeCustomsGroup(customsGroupInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10;
+
+customsGroupUserInvoiceDetail(invoiceDetail) <- customsGroupCountrySku(countryInvoiceDetail(invoiceDetail), skuInvoiceDetail(invoiceDetail))
+    WHEN CHANGED(countryInvoiceDetail(invoiceDetail)) OR CHANGED(skuInvoiceDetail(invoiceDetail));
 
 sumNetWeightInvoiceDetail 'Вес нетто' (invoiceDetail) = netWeightSku(skuUserInvoiceDetail(invoiceDetail)) * quantityUserInvoiceDetail(invoiceDetail);
 sumGrossWeightInvoiceDetail 'Вес брутто' (invoiceDetail) = grossWeightSku(skuUserInvoiceDetail(invoiceDetail)) * quantityUserInvoiceDetail(invoiceDetail);
@@ -74,7 +77,7 @@ EXTEND FORM declaration
 
     OBJECTS id=userInvoiceDetail
     PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                   nameCustomsUserInvoiceDetail, nameCountryUserInvoiceDetail, sumNetWeightInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail
+                   nameCustomsUserInvoiceDetail, nameCountrySkuUserInvoiceDetail, sumNetWeightInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail
     PROPERTIES(id) codeCustomsGroupInvoiceDetail
     PROPERTIES(id) READONLY homePriceInvoiceDetail, sumHomeInvoiceDetail
 
@@ -107,7 +110,7 @@ quantityGroupDeclaration 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(use
                                               nameCustomsUserInvoiceDetail(userInvoiceDetail),
                                               UOMUserInvoiceDetail(userInvoiceDetail),
                                               customsGroupInvoiceDetail(userInvoiceDetail),
-                                              countryUserInvoiceDetail(userInvoiceDetail),
+                                              countrySkuUserInvoiceDetail(userInvoiceDetail),
                                               priceUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
 
 CLASS declarationDetail 'Позиция декларации';
@@ -247,7 +250,7 @@ toCreateDeclarationDetails 'Создать позиции' = ACTION (declaration
 
         SET declarationDetailInvoiceDetail(invoiceDetail) <- dd WHERE declarationUserInvoiceDetail(invoiceDetail) == declaration AND
             nameCustomsUserInvoiceDetail(invoiceDetail) == customsName AND UOMUserInvoiceDetail(invoiceDetail) == UOM AND
-            customsGroupInvoiceDetail(invoiceDetail) == customsGroup AND countryUserInvoiceDetail(invoiceDetail) == country AND
+            customsGroupInvoiceDetail(invoiceDetail) == customsGroup AND countrySkuUserInvoiceDetail(invoiceDetail) == country AND
             priceUserInvoiceDetail(invoiceDetail) == price;
     };
 
