@@ -314,6 +314,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                         }
                         NEW headerCreateDocuments {
                             title = 'Производные документы';
+                            minimumSize = (300, -1);
                         }
                      }
                 }

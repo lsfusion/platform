@@ -5,7 +5,7 @@ REQUIRE PurchaseInvoice;
 NAMESPACE Purchase;
 
 //------------------------- Рекомендуемая розничная цена-------------------------//
-@defineDocumentInterfaceHeaderCreate (invoice, toShowRRPPrice, 'Отображать RRP');
+@defineDocumentInterfaceHeaderCreate (invoice, toShowRRPPrice, 'RRP');
 @defineDocumentInterfaceDetailPriceListType (invoice, priceListType, RRP, ' (RRP)');
 
 RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail) <- RRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)))

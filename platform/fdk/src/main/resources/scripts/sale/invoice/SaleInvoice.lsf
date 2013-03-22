@@ -5,7 +5,7 @@ REQUIRE SaleOrder, OrderInvoice, StockTax, Store, SaleOperation;
 NAMESPACE Sale;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', Sale);
+@defineInvoice(' (продажа)', supplierStock, showSalePack, 'Упаковка', Sale);
 
 @defineInvoiceBatch(supplierStock);
 
@@ -23,7 +23,7 @@ NAMESPACE Sale;
 
 // ---------------------------------------------- Создание инвойса по заказу ---------------------------------- //
 
-@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
+@defineOrderInvoice(' (продажа)', supplierStock, showSalePack, 'Упаковка', salePack);
 
 // --------------------- НДС расчетный ----------------------- //
 

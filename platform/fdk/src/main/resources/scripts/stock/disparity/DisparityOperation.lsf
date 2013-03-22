@@ -13,7 +13,7 @@ EXTEND FORM operation
 EXTEND DESIGN operation {
     tabContainer{
         NEW aggrContainer{
-            caption = 'Создание объектов';
+            caption = 'Производные документы';
             ADD PROPERTY(createRepricingOperation);
         }
     }

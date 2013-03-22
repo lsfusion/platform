@@ -8,8 +8,8 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-@defineInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
-@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Упаковка', Purchase);
+@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 

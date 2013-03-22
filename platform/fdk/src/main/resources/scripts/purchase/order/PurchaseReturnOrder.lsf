@@ -6,7 +6,7 @@ PRIORITY Purchase, Operation;
 
 NAMESPACE PurchaseReturn;
 
-@defineOrder(' (закупка-возврат)', customer, customerStock, Purchase, showPurchasePack, 'Отображать упаковку');
+@defineOrder(' (закупка-возврат)', customer, customerStock, Purchase, showPurchasePack, 'Упаковка');
 
 @defineOrderStockDestination(customerStock, supplierStock);
 

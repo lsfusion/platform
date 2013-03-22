@@ -6,7 +6,7 @@ PRIORITY Sale, Operation;
 
 NAMESPACE SaleReturn;
 
-@defineOrder(' (продажа-возврат)', supplier, supplierStock, Sale, showSalePack, 'Отображать упаковку');
+@defineOrder(' (продажа-возврат)', supplier, supplierStock, Sale, showSalePack, 'Упаковка');
 
 @defineOrderStockDestination(customerStock, supplierStock);
 

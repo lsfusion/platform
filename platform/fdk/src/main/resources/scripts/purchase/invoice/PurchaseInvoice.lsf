@@ -5,7 +5,7 @@ REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup;
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
+@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', Purchase);
 
 @defineInvoiceBatch(customerStock);
 
@@ -22,7 +22,7 @@ NAMESPACE Purchase;
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 
-@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Отображать упаковку', purchasePack);
+@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
 
 //isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
 

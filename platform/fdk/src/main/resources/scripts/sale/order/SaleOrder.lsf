@@ -4,7 +4,7 @@ REQUIRE Order, Store, SaleOperation, SalePack;
 
 NAMESPACE Sale;
 
-@defineOrder(' (продажа)', supplier, supplierStock, Sale, showSalePack, 'Отображать упаковку');
+@defineOrder(' (продажа)', supplier, supplierStock, Sale, showSalePack, 'Упаковка');
 
 @defineOrderStockDestination(supplierStock, customerStock);
 

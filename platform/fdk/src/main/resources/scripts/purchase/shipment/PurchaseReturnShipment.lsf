@@ -7,7 +7,7 @@ PRIORITY Purchase, Operation;
 NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
-@defineShipment(' (закупка-возврат)', customerStock, showPurchasePack, 'Отображать упаковку', Purchase);
+@defineShipment(' (закупка-возврат)', customerStock, showPurchasePack, 'Упаковка', Purchase);
 @defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(customerStock, supplierStock);

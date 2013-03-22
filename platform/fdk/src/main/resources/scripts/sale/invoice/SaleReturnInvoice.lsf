@@ -7,8 +7,8 @@ PRIORITY Sale, Operation;
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', Sale);
-@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Отображать упаковку', salePack);
+@defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Упаковка', Sale);
+@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Упаковка', salePack);
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
