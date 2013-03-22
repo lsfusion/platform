@@ -94,15 +94,15 @@ META defineDocumentHeaderWriteOffCommittee(object, stockProp)
     CONSTRAINT writeOffCommittee###object (object) AND NOT inCommitteeEmployeeDivision(writeOffCommittee###object (object), stockProp###object(object))
         CHECKED BY writeOffCommittee###object MESSAGE 'Для документа выбрана комиссия, которая не действует для склада документа';
 
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+    inWriteOffCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
+    nameEmployeeWriteOffCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
 END
 META defineDocumentHeaderAbstractWriteOffCommittee(object)
     writeOffCommittee###object (object) = ABSTRACT writeOffCommittee(object);
     nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-    inCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
-    nameEmployeeCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
+    inWriteOffCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
+    nameEmployeeWriteOffCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
 END
 
 META defineDocumentInterfaceHeaderWriteOffCommittee (object, stockProp)

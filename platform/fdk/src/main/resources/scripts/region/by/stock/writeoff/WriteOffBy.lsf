@@ -14,7 +14,7 @@ FORM printWriteOffBy 'Акт списания' PRINT
                    dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
                    nameLegalEntityStockWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
-                   nameEmployeeCommitteeWriteOff, writeOffCommitteeWriteOff, UNPLegalEntityStockWriteOff
+                   nameEmployeeWriteOffCommitteeWriteOff, writeOffCommitteeWriteOff, UNPLegalEntityStockWriteOff
 
     OBJECTS d=writeOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
@@ -26,7 +26,7 @@ FORM printWriteOffBy 'Акт списания' PRINT
     PROPERTIES(e) SELECTOR   nameContact, namePositionEmployee
 
     FILTERS inWriteOffWriteOffDetail(w, d),
-            inCommitteeWriteOffEmployee(w, e)
+            inWriteOffCommitteeWriteOffEmployee(w, e)
 
     EDIT writeOff OBJECT w
 ;
