@@ -525,13 +525,13 @@ META defineInvoiceReturn(NS, NSR, stockProp)
             SET NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
         }
     }
-        WHEN (CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+        WHEN SESSION (CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
             CHANGED(NSR.batchInvoiceDetail(detail)) OR
             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
             CHANGED(NSR.skuInvoiceDetail(detail)) OR
             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
             CHANGED(NSR.dateTimeInvoiceDetail(detail)))
-            DO EXEC recalculatedPriceUserInvoiceDetail(detail) SESSION;
+            DO EXEC recalculatedPriceUserInvoiceDetail(detail);
 
 
     EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;

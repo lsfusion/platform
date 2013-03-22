@@ -12,7 +12,7 @@ necessaryBatchPriceCertificateText = GROUP MAX batch BY skuBatch(batch), costBat
 
 usePurchaseBatchAutoSet 'Автоматически определять партии на приходе' = DATA BOOLEAN ();
 
-ON SESSION {
+ON SESSION { // FORMS userInvoice
     IF usePurchaseBatchAutoSet() THEN 
         FOR CHANGED(skuUserInvoiceDetail(detail)) OR
             CHANGED(shipmentPriceUserInvoiceDetail(detail)) OR

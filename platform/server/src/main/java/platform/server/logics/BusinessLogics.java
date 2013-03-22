@@ -8,14 +8,8 @@ import platform.base.*;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.HSet;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.base.col.interfaces.immutable.ImRevMap;
-import platform.base.col.interfaces.immutable.ImSet;
-import platform.base.col.interfaces.mutable.MExclMap;
-import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderSet;
-import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.event.IDaemonTask;
@@ -38,6 +32,7 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.ListActionProperty;
@@ -720,28 +715,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public ImOrderSet<OldProperty> getApplyEventDependProps() {
-        MOrderSet<OldProperty> result = SetFact.mOrderSet();
+    public ImOrderMap<OldProperty, SessionEnvEvent> getApplyEventDependProps() {
+        MOrderMap<OldProperty, SessionEnvEvent> result = MapFact.mOrderMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
         for (Property<?> property : getPropertyList()) {
-            if (property instanceof ActionProperty && ((ActionProperty) property).onEvent(SystemEvent.APPLY))
-                result.addAll(property.getOldDepends().toOrderSet());
+            SessionEnvEvent sessionEnv;
+            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
+                result.addAll(property.getOldDepends().toMap(sessionEnv).toOrderMap());
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
-                result.addAll(((DataProperty) property).event.getOldDepends().toOrderSet());
+                result.addAll(((DataProperty) property).event.getOldDepends().toMap(SessionEnvEvent.ALWAYS).toOrderMap());
         }
         return result.immutableOrder();
     }
 
     @IdentityLazy
-    public List<Object> getAppliedProperties(boolean onlyCheck) {
+    public ImOrderMap<Object, SessionEnvEvent> getAppliedProperties(boolean onlyCheck) {
         // здесь нужно вернуть список stored или тех кто
-        List<Object> result = new ArrayList<Object>();
-        for (Property property : getPropertyList(onlyCheck)) {
+        ImOrderSet<Property> list = getPropertyList(onlyCheck);
+        MOrderExclMap<Object, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
+        for (Property property : list) {
             if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
-                result.add(property);
-            if (property instanceof ActionProperty && ((ActionProperty) property).onEvent(SystemEvent.APPLY))
-                result.add(new ActionPropertyValueImplement((ActionProperty) property));
+                mResult.exclAdd(property, SessionEnvEvent.ALWAYS);
+            SessionEnvEvent sessionEnv;
+            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
+                mResult.exclAdd(new ActionPropertyValueImplement((ActionProperty) property), sessionEnv);
         }
-        return result;
+        return mResult.immutableOrder();
     }
 
     @IdentityLazy
@@ -753,51 +751,56 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, Map<CalcProperty, MSet<CalcProperty>> mapDepends) {
+    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends) {
         if (!fill.equals(applied) && fill.isStored())
-            mapDepends.get(fill).add(applied);
+            mapDepends.get(fill).add(applied, appliedSet);
         else
             for (CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
-                fillAppliedDependFrom(depend, applied, mapDepends);
+                fillAppliedDependFrom(depend, applied, appliedSet, mapDepends);
     }
 
     @IdentityLazy
-    public List<ActionProperty> getSessionEvents() {
-        List<ActionProperty> result = new ArrayList<ActionProperty>();
-        for (Property property : getPropertyList())
-            if (property instanceof ActionProperty && ((ActionProperty) property).onEvent(SystemEvent.SESSION))
-                result.add((ActionProperty) property);
-        return result;
+    public ImOrderMap<ActionProperty, SessionEnvEvent> getSessionEvents() {
+        ImOrderSet<Property> list = getPropertyList();
+        MOrderExclMap<ActionProperty, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
+        SessionEnvEvent sessionEnv;
+        for (Property property : list)
+            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.SESSION))!=null)
+                mResult.exclAdd((ActionProperty) property, sessionEnv);
+        return mResult.immutableOrder();
     }
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    private ImMap<CalcProperty, ImOrderSet<CalcProperty>> getMapAppliedDepends() {
-        Map<CalcProperty, MSet<CalcProperty>> mapDepends = new HashMap<CalcProperty, MSet<CalcProperty>>();
+    private ImMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> getMapAppliedDepends() {
+        Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends = new HashMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>>();
         for (CalcProperty property : getStoredProperties()) {
-            mapDepends.put(property, SetFact.<CalcProperty>mSet());
-            fillAppliedDependFrom(property, property, mapDepends);
+            mapDepends.put(property, MapFact.mMap(SessionEnvEvent.<CalcProperty>mergeSessionEnv()));
+            fillAppliedDependFrom(property, property, SessionEnvEvent.ALWAYS, mapDepends);
         }
-        for (OldProperty old : getApplyEventDependProps())
-            fillAppliedDependFrom(old.property, old, mapDepends);
+        ImOrderMap<OldProperty, SessionEnvEvent> eventDependProps = getApplyEventDependProps();
+        for (int i=0,size=eventDependProps.size();i<size;i++) {
+            OldProperty old = eventDependProps.getKey(i);
+            fillAppliedDependFrom(old.property, old, eventDependProps.getValue(i), mapDepends);
+        }
 
         ImRevMap<Property, Integer> indexMap = getPropertyList().mapOrderRevValues(new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
                 return i;
             }
         });
-        MExclMap<CalcProperty, ImOrderSet<CalcProperty>> mOrderedMapDepends = MapFact.mExclMap(mapDepends.size());
-        for (Map.Entry<CalcProperty, MSet<CalcProperty>> mapDepend : mapDepends.entrySet()) {
-            ImSet<CalcProperty> depends = mapDepend.getValue().immutable();
-            ImOrderSet<CalcProperty> dependList = indexMap.filterInclRev(depends).reverse().sort().valuesList().toOrderExclSet();
+        MExclMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> mOrderedMapDepends = MapFact.mExclMap(mapDepends.size());
+        for (Map.Entry<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepend : mapDepends.entrySet()) {
+            ImMap<CalcProperty, SessionEnvEvent> depends = mapDepend.getValue().immutable();
+            ImOrderSet<CalcProperty> dependList = indexMap.filterInclRev(depends.keys()).reverse().sort().valuesList().toOrderExclSet();
             assert dependList.size() == depends.size();
-            mOrderedMapDepends.exclAdd(mapDepend.getKey(), dependList);
+            mOrderedMapDepends.exclAdd(mapDepend.getKey(), dependList.mapOrderMap(depends));
         }
         return mOrderedMapDepends.immutable();
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<CalcProperty> getAppliedDependFrom(CalcProperty property) {
+    public ImOrderMap<CalcProperty, SessionEnvEvent> getAppliedDependFrom(CalcProperty property) {
         assert property.isStored();
         return getMapAppliedDepends().get(property);
     }
@@ -838,7 +841,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
                 ActionProperty<?> action = (ActionProperty) property;
-                if (action.onEvent(SystemEvent.APPLY) && action.resolve)
+                if (action.getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && action.resolve)
                     session.resolve(action);
             }
     }

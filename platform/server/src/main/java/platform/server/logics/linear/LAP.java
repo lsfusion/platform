@@ -10,6 +10,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.DataSession;
 
@@ -36,29 +37,29 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, false, lp, mapping);
+        setEventAction(lm, Event.APPLY, lp, mapping);
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean session, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, false, session, lp, mapping);
+    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, Event event, LCP<P> lp, Integer... mapping) {
+        setEventAction(lm, false, event, lp, mapping);
     }
 
     public <P extends PropertyInterface> void setEventSetAction(LogicsModule lm, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, true, false, lp, mapping);
+        setEventAction(lm, true, Event.APPLY, lp, mapping);
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean changedSet, boolean session, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE, session, lp, mapping);
+    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean changedSet, Event event, LCP<P> lp, Integer... mapping) {
+        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE, event, lp, mapping);
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, boolean session, LCP<P> lp, Integer... mapping) {
-        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, session, false);
+    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {
+        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false);
     }
 
-    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean session, boolean descending, boolean ordersNotNull, Object... params) {
+    public <P extends PropertyInterface> void setEventAction(LogicsModule lm, Event event, boolean descending, boolean ordersNotNull, Object... params) {
         ImList<CalcPropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
         ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(1, listImplements.size()).toOrderSet().toOrderMap(descending);
-        lm.addEventAction(property, (CalcPropertyMapImplement<?, T>) listImplements.get(0), orders, ordersNotNull, session, false);
+        lm.addEventAction(property, (CalcPropertyMapImplement<?, T>) listImplements.get(0), orders, ordersNotNull, event, false);
     }
 
     public ValueClass[] getInterfaceClasses() {

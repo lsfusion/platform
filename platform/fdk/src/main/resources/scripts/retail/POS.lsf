@@ -50,7 +50,7 @@ createCurrentReceipt 'Создать новый чек' = ACTION () {
 // Вывод на дисплей
 
 fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION (receiptDetail);
-WHEN CHANGED (quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail) SESSION;
+WHEN SESSION CHANGED (quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail);
 
 // Проведение чека
 
@@ -548,7 +548,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     SET discountSumReceiptSaleDetail(detail) <- promotionSumReceiptSaleDetail(detail) WHERE receiptReceiptSaleDetail(detail) == receipt;
 }
 
-WHEN CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt) SESSION;
+WHEN SESSION CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt);
 
 // Форма POS-терминала
 

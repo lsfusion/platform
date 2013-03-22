@@ -86,6 +86,10 @@ public class MapFact {
         return ((ImMap<K, V>)map1).addExcl(map2);
     }
 
+    public static <K, V> ImOrderMap<K, V> addOrderExcl(ImOrderMap<? extends K, ? extends V> map1, ImOrderMap<? extends K, ? extends V> map2) {
+        return ((ImOrderMap<K, V>)map1).addOrderExcl(map2);
+    }
+
     public static <K, V> ImRevMap<K, V> addRevExcl(ImRevMap<? extends K, ? extends V> map1, K key, V value) {
         return ((ImRevMap<K, V>)map1).addRevExcl(key, value);
     }

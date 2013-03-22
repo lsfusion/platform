@@ -118,10 +118,10 @@ META defineDocumentHeaderTimePrefix (object, prefix, caption)
     prefix###time###object 'Время'##caption = DATA TIME (object) IN documentHeaderGroup;
     prefix###dateTime###object 'Дата/время'##caption (object) = dateTimeToDateTime(prefix###date###object(object), prefix###time###object(object)) PERSISTENT;
 
-    WHEN ASSIGNED(o AS object) DO {
+    WHEN SESSION ASSIGNED(o AS object) DO {
         IF o IS object AND NOT prefix###date###object(o) THEN SET prefix###date###object(o) <- currentDate();
         IF o IS object AND NOT prefix###time###object(o) THEN SET prefix###time###object(o) <- currentTime();
-    } SESSION;
+    };
 END
 META defineDocumentAbstractHeaderTimePrefix (object, prefix, caption)
     prefix###date###object 'Дата'##caption = ABSTRACT DATE (object) IN documentHeaderGroup PERSISTENT;

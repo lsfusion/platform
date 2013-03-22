@@ -241,6 +241,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
+        this.session.registerForm(this);
     }
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
@@ -931,7 +932,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void close() throws SQLException {
         closed = true;
-        session.incrementChanges.remove(this);
+        session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
             if (group.keyTable != null)
                 group.keyTable.drop(session.sql);

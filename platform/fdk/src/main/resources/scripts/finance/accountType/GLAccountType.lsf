@@ -82,9 +82,9 @@ CLASS userGeneralLedgerPosted 'Проведенная проводка (поль
 
 @defineDocumentInterfaceHeaderPosted (generalLedger);
 @defineDocumentInterfaceHeaderDatePrefix(generalLedger, , );
-WHEN ASSIGNED(userGeneralLedger AS userGeneralLedger) DO {
+WHEN SESSION ASSIGNED(userGeneralLedger AS userGeneralLedger) DO {
     IF userGeneralLedger IS userGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
-} SESSION;
+};
 
 debitGeneralLedger = ABSTRACT GLAccount (generalLedger);
 idDebitGeneralLedger 'Дебет' (generalLedger) = idGLAccount(debitGeneralLedger(generalLedger));

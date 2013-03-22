@@ -16,9 +16,11 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.FormEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.FormEnvironment;
+import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.edit.GroupChangeActionProperty;
 import platform.server.logics.property.actions.flow.ChangeFlowType;
@@ -180,18 +182,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyMapImplement<P, V>(this, getMapInterfaces(list));
     }
 
-    public Object events = SetFact.mExclSet();
-    public void addEvent(BaseEvent event) {
-        ((MExclSet<BaseEvent>)events).exclAdd(event);
+    public Object events = MapFact.mExclMap();
+    public void addEvent(BaseEvent event, SessionEnvEvent forms) {
+        ((MExclMap<BaseEvent, SessionEnvEvent>)events).exclAdd(event, forms);
     }
     @LongMutable
-    public ImSet<BaseEvent> getEvents() {
-        return (ImSet<BaseEvent>)events;
+    public ImMap<BaseEvent, SessionEnvEvent> getEvents() {
+        return (ImMap<BaseEvent, SessionEnvEvent>)events;
     }
-    public boolean onEvent(BaseEvent event) {
-        return getEvents().contains(event);
+    public SessionEnvEvent getSessionEnv(BaseEvent event) {
+        return getEvents().get(event);
     }
-    
+
     public Property showDep; // assert что не null когда events не isEmpty
     public boolean singleApply = false;
     public ImSet<CalcProperty> prevStart;
@@ -220,7 +222,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
         beforeAspects = ((MCol<ActionPropertyMapImplement<?, P>>)beforeAspects).immutableCol();
         afterAspects = ((MCol<ActionPropertyMapImplement<?, P>>)afterAspects).immutableCol();
-        events = ((MExclSet<BaseEvent>)events).immutable();
+        events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
     public FlowResult execute(ExecutionContext<P> context) throws SQLException {
@@ -303,7 +305,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public ImSet<OldProperty> getSessionEventOldDepends() { // фильтрует те свойства которые нужны не на
-        assert onEvent(SystemEvent.SESSION);
+        assert getSessionEnv(SystemEvent.SESSION)!=null;
 
         ImSet<OldProperty> result = getOldDepends();
         if(prevStart!=null)

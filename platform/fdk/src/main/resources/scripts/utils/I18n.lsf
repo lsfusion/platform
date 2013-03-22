@@ -85,7 +85,7 @@ translationResultString 'Перевод' = DATA SESSION STRING[50] ();
 
 translateDictionary  = ACTION CUSTOM 'fdk.utils.i18n.TranslateDictionaryActionProperty';
 
-WHEN CHANGED (translationOriginalString()) AND dictionary IS dictionary DO EXEC translateDictionary(dictionary, translationOriginalString()) SESSION;
+WHEN SESSION CHANGED (translationOriginalString()) AND dictionary IS dictionary DO EXEC translateDictionary(dictionary, translationOriginalString());
 
 FORM translation 'Перевод'
     PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,

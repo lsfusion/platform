@@ -353,8 +353,8 @@ recordMarkupSkuOrder(sku, order) = ACTION (sku, order) {
     }
 }
 
-WHEN CHANGED(componentsCalcPriceListTypeOrder(order) AND sku IS sku)
-    DO EXEC recordMarkupSkuOrder(sku, order) SESSION;
+WHEN SESSION CHANGED(componentsCalcPriceListTypeOrder(order) AND sku IS sku)
+    DO EXEC recordMarkupSkuOrder(sku, order);
 
 
 backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS order;
@@ -400,9 +400,9 @@ recordMarkupProductDetail(detail) = ACTION (detail) {
     }
 }
 
-WHEN CHANGED(calcPriceListTypeProductDetail(detail)) OR
+WHEN SESSION CHANGED(calcPriceListTypeProductDetail(detail)) OR
      CHANGED(skuProductDetail(detail))
-     DO EXEC recordMarkupProductDetail(detail) SESSION;
+     DO EXEC recordMarkupProductDetail(detail);
 
 // расчет НДС
 valueVATSkuOrder 'НДС, %' = DATA NUMERIC[10,5] (sku, order);

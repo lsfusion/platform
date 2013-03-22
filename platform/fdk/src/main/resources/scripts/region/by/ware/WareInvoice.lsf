@@ -25,9 +25,9 @@ META defineInvoiceWare(NS)
             }
     }
 
-    WHEN (CHANGED(NS.skuUserInvoiceDetail(detail)) OR CHANGED(NS.quantityUserInvoiceDetail(detail)))
+    WHEN SESSION (CHANGED(NS.skuUserInvoiceDetail(detail)) OR CHANGED(NS.quantityUserInvoiceDetail(detail)))
          AND wareItem(NS.skuUserInvoiceDetail(detail)) AND NOT skipCreateWareUserInvoiceDetail(detail)
-         DO EXEC createWareUserInvoiceDetail(detail) SESSION;
+         DO EXEC createWareUserInvoiceDetail(detail);
 
     NS.skipCreateShipmentInvoiceDetail(detail) += TRUE IF itemWareUserInvoiceDetailUserInvoiceDetail(detail);
 END

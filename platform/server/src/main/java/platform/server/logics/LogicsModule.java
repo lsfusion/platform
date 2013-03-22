@@ -867,7 +867,7 @@ public abstract class LogicsModule {
         LCP timeProperty = addDProp(group, name, caption, time.getConcreteValueClass(), isStored, overrideClasses(changeProp.getInterfaceClasses(), classes));
         LCP curTime = addTProp(time);
         LAP setCurTime = addSetPropertyAProp(BaseUtils.add(directLI(timeProperty), curTime));
-        setCurTime.setEventAction(this, true, changeProp, getIntParams(changeProp));
+        setCurTime.setEventAction(this, Event.SESSION, changeProp, getIntParams(changeProp));
 /*        LAP editAction = changeProp.getEditAction(ServerResponse.CHANGE);
         LAP<?> overrideAction = addListAProp(BaseUtils.add(directLI(editAction), directLI(setCurTime)));
         changeProp.setEditAction(ServerResponse.CHANGE, overrideAction);*/
@@ -2333,17 +2333,17 @@ public abstract class LogicsModule {
     }
 
     public void addConstraint(LCP<?> lp, boolean checkChange) {
-        addConstraint(lp, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null, this);
+        addConstraint(lp, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null, Event.APPLY, this);
     }
 
-    protected void addConstraint(LCP<?> lp, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, LogicsModule lm) {
+    protected void addConstraint(LCP<?> lp, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, Event event, LogicsModule lm) {
         if(!((CalcProperty)lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET);
         // assert что lp уже в списке properties
-        setConstraint((CalcProperty)lp.property, type, checkProps);
+        setConstraint((CalcProperty)lp.property, type, event, checkProps);
     }
 
-    public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProperties) {
+    public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties) {
         assert type != CalcProperty.CheckType.CHECK_SOME || checkProperties != null;
         assert property.noDB();
 
@@ -2358,11 +2358,11 @@ public abstract class LogicsModule {
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), false, false);
+        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, false);
         addProp(constraintAction.property);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ActionProperty<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, boolean session, boolean resolve) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ActionProperty<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
@@ -2371,15 +2371,11 @@ public abstract class LogicsModule {
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);
 
-        addBaseEvent(action, session, resolve, false, null);
+        addBaseEvent(action, event, resolve, false, null);
     }
 
-    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, boolean session, boolean resolve, boolean single, ImSet<CalcProperty> prevStart) {
-        addBaseEvent(action, session ? SystemEvent.SESSION : SystemEvent.APPLY, resolve, single, prevStart);
-    }
-
-    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, BaseEvent event, boolean resolve, boolean single, ImSet<CalcProperty> prevStart) {
-        action.addEvent(event);
+    public <P extends PropertyInterface> void addBaseEvent(ActionProperty<P> action, Event event, boolean resolve, boolean single, ImSet<CalcProperty> prevStart) {
+        action.addEvent(event.base, event.session);
         action.singleApply = single;
         action.prevStart = prevStart;
         action.resolve = resolve;
@@ -2397,25 +2393,25 @@ public abstract class LogicsModule {
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LCP<T> first, LCP<L> second, Integer... mapping) {
-        follows(first, PropertyFollows.RESOLVE_ALL, false, second, mapping);
+        follows(first, PropertyFollows.RESOLVE_ALL, Event.APPLY, second, mapping);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(final LCP<T> first, int options, boolean session, LCP<L> second, final Integer... mapping) {
-        addFollows(first.property, new CalcPropertyMapImplement<L, T>(second.property, second.getRevMap(first.listInterfaces, mapping)), options, session);
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(final LCP<T> first, int options, Event event, LCP<L> second, final Integer... mapping) {
+        addFollows(first.property, new CalcPropertyMapImplement<L, T>(second.property, second.getRevMap(first.listInterfaces, mapping)), options, event);
     }
 
-    public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, boolean session) {
+    public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, Event event) {
         CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses());
         addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, mapClasses.mapping.reverse()),
                 ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
-                options, session);
+                options, event);
     }
 
-    public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, int options, boolean session) {
-        addFollows(property, implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, session);
+    public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, int options, Event event) {
+        addFollows(property, implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options, event);
     }
 
-    public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, String caption, int options, boolean session) {
+    public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(CalcProperty<T> property, CalcPropertyMapImplement<L, T> implement, String caption, int options, Event event) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
         if((options & PropertyFollows.RESOLVE_TRUE)!=0) { // оптимизационная проверка
@@ -2423,14 +2419,14 @@ public abstract class LogicsModule {
             ActionPropertyMapImplement<?, T> setAction = implement.getSetNotNullAction(true);
             if(setAction!=null) {
 //                setAction.property.caption = "RESOLVE TRUE : " + property + " => " + implement.property;
-                setAction.mapEventAction(this, DerivedProperty.createAndNot(property.getChanged(IncrementType.SET), implement), session, true);
+                setAction.mapEventAction(this, DerivedProperty.createAndNot(property.getChanged(IncrementType.SET), implement), event, true);
             }
         }
         if((options & PropertyFollows.RESOLVE_FALSE)!=0) {
             ActionPropertyMapImplement<?, T> setAction = property.getSetNotNullAction(false);
             if(setAction!=null) {
 //                setAction.property.caption = "RESOLVE FALSE : " + property + " => " + implement.property;
-                setAction.mapEventAction(this, DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP)), session, true);
+                setAction.mapEventAction(this, DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP)), event, true);
             }
         }
 
@@ -2455,11 +2451,11 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, int resolve) {
-        setNotNull(lp, false, resolve);
+        setNotNull(lp, Event.APPLY, resolve);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, boolean session, int resolve) {
-        setNotNull(lp.property, resolve, session);
+    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, Event event, int resolve) {
+        setNotNull(lp.property, resolve, event);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionPropertyMapImplement<P, T> mapActionListImplement(LAP<P> property, ImOrderSet<T> mapList) {

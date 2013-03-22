@@ -44,6 +44,8 @@ import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.BaseEvent;
+import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.property.actions.flow.Inline;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -333,6 +335,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
+    public List<FormEntity> findFormsByCompoundName(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
+        List<FormEntity> forms = new ArrayList<FormEntity>();
+        for(String name : names)
+            forms.add(findFormByCompoundName(name));
+        return forms;
+    }
+
+    public Event createEvent(BaseEvent base, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
+        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findFormsByCompoundName(formIds)))) : SessionEnvEvent.ALWAYS);
+    }
+
     public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
         metaCodeFragmentResolver.setParamCnt(paramCnt); // todo [dale]: криво, надо по-хорошему как-то обобщить resolver
         MetaCodeFragment code = metaCodeFragmentResolver.resolve(name);
@@ -510,7 +523,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve, boolean notNullSession) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP property, String name, String caption, List<String> namedParams, String groupName, boolean isPersistent, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name);
@@ -538,7 +551,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (notNullResolve != null) {
-            setNotNull((LCP)property, notNullSession, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
+            setNotNull((LCP)property, notNullEvent, notNullResolve ? PropertyFollows.RESOLVE_FALSE : PropertyFollows.RESOLVE_NOTHING);
         }
 
         if (property.property instanceof CalcProperty) {
@@ -1459,7 +1472,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(mainProp, asList(property)).property;
     }
 
-    public void addScriptedConstraint(LP property, boolean checked, List<String> propNames, String message) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedConstraint(LP property, Event event, boolean checked, List<String> propNames, String message) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + propNames + ", " + message + ");");
         if (!property.property.check()) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
@@ -1475,7 +1488,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             type = CalcProperty.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
         }
-        addConstraint((LCP<?>) property, type, checkedProps, this);
+        addConstraint((LCP<?>) property, type, checkedProps, event, this);
     }
 
     public LPWithParams addScriptedSpecialProp(String propType, LPWithParams property) {
@@ -1493,7 +1506,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props, List<Boolean> sessions) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFollows(String mainPropName, List<String> namedParams, List<Integer> options, List<LPWithParams> props, List<Event> sessions) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParams + ", " + options + ", " + props + ", " + sessions + ");");
         LCP mainProp = (LCP) findLPByCompoundName(mainPropName);
         checkProperty(mainProp, mainPropName);
@@ -1520,15 +1533,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((LCP)mainProp).setEventChange(params.toArray());
     }
 
-    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, boolean session) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + session + ");");
+    public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + baseEvent + ");");
         checkActionProperty(event.property);
         List<Object> params = getParamsPlainList(asList(whenProp), orders);
-        ((LAP)event.property).setEventAction(this, session, descending, false, params.toArray());
+        ((LAP)event.property).setEventAction(this, baseEvent, descending, false, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, boolean session, boolean single, String showDep, List<String> sPrevStarts) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + session + ");");
+    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep, List<String> sPrevStarts) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedGlobalEvent(" + event + ", " + baseEvent + ");");
         checkActionProperty(event.property);
         checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
@@ -1541,7 +1554,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mPrevStart.exclAdd(findLCPByCompoundName(sPrevStart).property);
             prevStart = mPrevStart.immutable();
         }
-        addBaseEvent(action, session, false, single, prevStart);
+        addBaseEvent(action, baseEvent, false, single, prevStart);
     }
 
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {

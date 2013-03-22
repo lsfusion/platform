@@ -4,22 +4,27 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.caches.IdentityLazy;
+import platform.server.logics.property.actions.BaseEvent;
+import platform.server.logics.property.actions.SessionEnvEvent;
+import platform.server.logics.property.actions.SystemEvent;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class Event<C extends PropertyInterface, P extends Property<C>> {
+public class Event {
+    public final BaseEvent base;
+    public final SessionEnvEvent session;
 
-    protected final P writeTo; // что меняем
-    protected final CalcPropertyMapImplement<?, C> where;
+    public static final Event APPLY = new Event(SystemEvent.APPLY, SessionEnvEvent.ALWAYS);
+    public static final Event SESSION = new Event(SystemEvent.SESSION, SessionEnvEvent.ALWAYS);
 
-    public Event(P writeTo, CalcPropertyMapImplement<?, C> where) {
-        assert ((CalcProperty)where.property).noDB();
-        this.writeTo = writeTo;
-        this.where = where;
+    public Event(BaseEvent base, SessionEnvEvent session) {
+        this.base = base;
+        this.session = session;
     }
 
-    public ImSet<OldProperty> getOldDepends() {
-        return where.mapOldDepends();
+    @Override
+    public String toString() {
+        return base + "," + session;
     }
 }

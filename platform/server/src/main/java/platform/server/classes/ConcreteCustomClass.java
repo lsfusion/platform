@@ -104,10 +104,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return getBaseClass().getUpSet();
     }
 
-    public Stat getStat() {
-        return new Stat(getCount());
-    }
-
     public AndClassSet[] getAnd() {
         return new AndClassSet[]{this};
     }

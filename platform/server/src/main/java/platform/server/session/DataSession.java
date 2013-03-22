@@ -5,6 +5,8 @@ import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.MOrderExclSet;
+import platform.base.col.interfaces.mutable.MOrderFilterSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -14,6 +16,7 @@ import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.*;
@@ -27,6 +30,7 @@ import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.navigator.ComputerController;
@@ -38,6 +42,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.ObjectTable;
@@ -357,9 +362,29 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     public DataObject applyObject = null;
     
-    private final List<ActionProperty> sessionEvents;
+    private final ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, List<ActionProperty> sessionEvents) throws SQLException {
+    private ImOrderSet<ActionProperty> activeSessionEvents;
+    @ManualLazy
+    private ImOrderSet<ActionProperty> getActiveSessionEvents() {
+        if(activeSessionEvents == null)
+            activeSessionEvents = filterEnv(sessionEvents);
+        return activeSessionEvents;
+    }
+
+    private ImSet<OldProperty> sessionEventOldDepends;
+    @ManualLazy
+    private ImSet<OldProperty> getSessionEventOldDepends() {
+        if(sessionEventOldDepends==null) {
+            MSet<OldProperty> mResult = SetFact.mSet();
+            for(ActionProperty<?> action : getActiveSessionEvents())
+                mResult.addAll(action.getSessionEventOldDepends());
+            sessionEventOldDepends = mResult.immutable();
+        }
+        return sessionEventOldDepends;
+    }
+
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -409,7 +434,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         news = null;
         
         assert dataModifier.getHintProps().isEmpty(); // hint'ы все должны также уйти
-        
+
         if(cancel) {
             sessionEventChangedOld.clear(sql);
         } else
@@ -624,14 +649,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps();
     private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
 
-    @IdentityLazy
-    private ImSet<OldProperty> getSessionEventOldDepends() {
-        MSet<OldProperty> mResult = SetFact.mSet();
-        for(ActionProperty<?> action : sessionEvents)
-            mResult.addAll(action.getSessionEventOldDepends());
-        return mResult.immutable();
-    }
-
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException {
         if(!isInTransaction())
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends())
@@ -650,7 +667,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             ExecutionEnvironment env = (form != null ? form : this);
 
             inSessionEvent = true;
-            for(ActionProperty<?> action : sessionEvents) {
+            for(ActionProperty<?> action : getActiveSessionEvents()) {
                 action.execute(env);
                 if(!isInSessionEvent())
                     return;
@@ -748,6 +765,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     // узнает список изменений произошедших без него
     public ImSet<CalcProperty> update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
+        assert activeForms.containsKey(form);
 
         UpdateChanges incrementChange = incrementChanges.get(form);
         if(incrementChange!=null) // если не было restart
@@ -857,7 +875,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
-        ImOrderSet<CalcProperty> dependProps = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<CalcProperty> dependProps = filterEnv(BL.getAppliedDependFrom(property)); // !!! важно в лексикографическом порядке должно быть
 
         if(neededProps!=null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for(CalcProperty<D> depend : dependProps)
@@ -1029,12 +1047,41 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 //        assert !isInTransaction();
         startTransaction();
 
-        return recursiveApply(new ArrayList<ActionPropertyValueImplement>(), BL, onlyCheck);
+        return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+    }
+
+    private IdentityHashMap<FormInstance, Object> activeForms = new IdentityHashMap<FormInstance, Object>();
+    public void registerForm(FormInstance form) {
+        activeForms.put(form, true);
+
+        dropFormCaches();
+    }
+    public void unregisterForm(FormInstance form) {
+        activeForms.remove(form);
+        incrementChanges.remove(form);
+        appliedChanges.remove(form);
+        updateChanges.remove(form);
+
+        dropFormCaches();
+    }
+    private void dropFormCaches() {
+        activeSessionEvents = null;
+        sessionEventOldDepends = null;
+    }
+    public Set<FormInstance> getActiveForms() {
+        return activeForms.keySet();
+    }
+    private <K> ImOrderSet<K> filterEnv(ImOrderMap<K, SessionEnvEvent> elements) {
+        return elements.filterOrderValues(new SFunctionSet<SessionEnvEvent>() {
+            public boolean contains(SessionEnvEvent elements) {
+                return elements.contains(DataSession.this);
+            }});
     }
     
-    private boolean recursiveApply(List<ActionPropertyValueImplement> actions, BusinessLogics BL, boolean onlyCheck) throws SQLException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, boolean onlyCheck) throws SQLException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
-        for (Object property : BaseUtils.mergeList(actions, BL.getAppliedProperties(onlyCheck))) {
+        ImOrderMap<Object, SessionEnvEvent> execActions = MapFact.addOrderExcl(actions.toOrderMap(SessionEnvEvent.ALWAYS), BL.getAppliedProperties(onlyCheck));
+        for (Object property : filterEnv(execActions)) {
             if(property instanceof ActionPropertyValueImplement) {
                 startPendingSingles(((ActionPropertyValueImplement) property).property);
                 ((ActionPropertyValueImplement)property).execute(this);
@@ -1059,15 +1106,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             savePropertyChanges(table, readSave(table, groupTables.getValue(i)));
         }
 
-        List<ActionPropertyValueImplement> updatedRecursiveActions = null;
+        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = null;
         if(recursiveActions.size()>0) {
             recursiveUsed.add((SessionDataProperty) currentSession.property);
 
             updateCurrentClasses(filterKeys(data, recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
-            
-            updatedRecursiveActions = new ArrayList<ActionPropertyValueImplement>();
+
+            MOrderExclSet<ActionPropertyValueImplement> mUpdatedRecursiveActions = SetFact.mOrderExclSet();
             for(ActionPropertyValueImplement recursiveAction : recursiveActions)
-                updatedRecursiveActions.add(recursiveAction.updateCurrentClasses(this));
+                mUpdatedRecursiveActions.exclAdd(recursiveAction.updateCurrentClasses(this));
+            updatedRecursiveActions = mUpdatedRecursiveActions.immutableOrder();
         }
 
         saveClassChanges(BL);

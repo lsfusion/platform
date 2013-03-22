@@ -15,7 +15,10 @@ import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
-public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcProperty<C>> {
+public class ChangeEvent<C extends PropertyInterface> {
+
+    protected final CalcProperty<C> writeTo; // что меняем
+    protected final CalcPropertyMapImplement<?, C> where;
 
     private final CalcPropertyInterfaceImplement<C> writeFrom;
 
@@ -24,14 +27,14 @@ public class ChangeEvent<C extends PropertyInterface> extends Event<C, CalcPrope
     }
 
     public ChangeEvent(CalcProperty<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
-        super(writeTo, where);
-
+        assert ((CalcProperty)where.property).noDB();
+        this.writeTo = writeTo;
+        this.where = where;
         this.writeFrom = writeFrom;
     }
 
-    @Override
     public ImSet<OldProperty> getOldDepends() {
-        ImSet<OldProperty> result = super.getOldDepends();
+        ImSet<OldProperty> result = where.mapOldDepends();
         if(Settings.get().isUseEventValuePrevHeuristic())
             return result;
         return result.merge(writeFrom.mapOldDepends());

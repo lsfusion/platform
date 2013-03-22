@@ -34,6 +34,8 @@ grammar LsfLogics;
 	import platform.server.mail.EmailActionProperty.FormStorageType;
 	import platform.server.mail.AttachmentFormat;
 	import platform.server.logics.property.actions.flow.Inline;
+	import platform.server.logics.property.actions.SystemEvent;
+	import platform.server.logics.property.Event;
 	import javax.mail.Message;
 	
 	import java.util.*;
@@ -1315,11 +1317,11 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 	boolean isPersistent = false;
 	Boolean isLoggable = null;
 	Boolean notNullResolve = null;
-	boolean notNullSession = false;
+	Event notNullEvent = null;
 }
 @after {
 	if (inPropParseState()) {
-		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve, notNullSession);
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, table, notNullResolve, notNullEvent);
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1342,7 +1344,7 @@ propertyOptions[LP property, String propertyName, String caption, List<String> n
 		|	echoSymbolsSetting [property]
 		|	indexSetting [propertyName]
 		|	aggPropSetting [property]
-		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullSession = $s.inSession; }
+		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullEvent = $s.event; }
 		|	eventSetting [property, namedParams]
 		|	eventIdSetting [property]
 		)*
@@ -1510,8 +1512,8 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting returns [boolean toResolve = false, boolean inSession = false]
-	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } st=sessionType { $inSession = $st.session; })?
+notNullSetting returns [boolean toResolve = false, Event event = Event.APPLY]
+	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } et=baseEvent { $event = $et.event; })?
 	;
 
 eventSetting [LP property, List<String> context]
@@ -1973,13 +1975,15 @@ constraintStatement
 @init {
 	boolean checked = false;
 	List<String> propNames = null;
+	Event event = Event.APPLY;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, checked, propNames, $message.val);
+		self.addScriptedConstraint($expr.property.property, event, checked, propNames, $message.val);
 	}
 }
-	:	'CONSTRAINT' 
+	:	'CONSTRAINT'
+	    (et=baseEvent { event = $et.event; })
 		expr=propertyExpression[new ArrayList<String>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
 		('CHECKED' { checked = true; } 
 			('BY' list=nonEmptyCompoundIdList { propNames = $list.ids; })? 
@@ -1999,29 +2003,29 @@ followsStatement
 	String mainProp;
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<Integer> options = new ArrayList<Integer>();
-	List<Boolean> sessions = new ArrayList<Boolean>();
-	boolean inSession = false;
+	List<Event> events = new ArrayList<Event>();
+	Event event = Event.APPLY;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context, options, props, sessions);
+		self.addScriptedFollows(mainProp, context, options, props, events);
 	}
 }
 	:	prop=mappedProperty { mainProp = $prop.name; context = $prop.mapping; }
 		'=>'
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType { inSession = $session.session; })?
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType et=baseEvent { event = $et.event; })?
 		{
 			props.add($firstExpr.property); 
 			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-			sessions.add(inSession);
+			events.add(event);
 		}
 		(','
-			{	inSession = false;	} 
-			nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType session=sessionType { inSession = $session.session; })?
+			{	event = Event.APPLY;	}
+			nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType et=baseEvent { event = $et.event; })?
 			{
 		     	props.add($nextExpr.property); 
 		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-				sessions.add(inSession);
+				events.add(event);
 			}
 		)*
 		';'
@@ -2064,17 +2068,17 @@ eventStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $st.session);
+		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event);
 	}
 }
 	:	'WHEN'
-		whenExpr=propertyExpression[context, true] 
+		et=baseEvent
+		whenExpr=propertyExpression[context, true]
 		'DO'
 		action=actionPropertyDefinitionBody[context, false]
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
-		st=sessionType
 		';'
 	;
 
@@ -2084,16 +2088,15 @@ eventStatement
 
 globalEventStatement
 @init {
-	boolean onApply = true;
 	boolean single = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedGlobalEvent($action.property, !onApply, single, $property.text, $prevStart.ids);
+		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.text, $prevStart.ids);
 	}
 }
 	:	'ON' 
-		('APPLY' | 'SESSION' { onApply = false; })
+		et=baseEvent
 		('SINGLE' { single = true; })?
 		('PREVSTART' prevStart=nonEmptyIdList)?
 		('SHOWDEP' property=ID)?
@@ -2829,8 +2832,18 @@ emailAttachFormat returns [AttachmentFormat val]
 	|	'RTF'	{ $val = AttachmentFormat.RTF; }
 	;
 
-sessionType returns [boolean session = false]
-	:	('SESSION'	{ $session = true; })?
+baseEvent returns [Event event]
+@init {
+	SystemEvent baseEvent = SystemEvent.APPLY;
+	List<String> ids = null;
+}
+@after {
+	if (inPropParseState()) {
+		$event = self.createEvent(baseEvent, ids);
+	}
+}
+	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
+	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 	;
 	
 udoubleLiteral returns [double val]
