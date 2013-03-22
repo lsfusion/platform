@@ -1,6 +1,6 @@
 MODULE Item;
 
-REQUIRE System, Stock, Hierarchy, RetailCRM, Barcode, PriceList;
+REQUIRE System, Stock, Hierarchy, Barcode, PriceList;
 
 // ------------------------------------ Классификатор товаров --------------------------- //
 

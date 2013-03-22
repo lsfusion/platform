@@ -293,6 +293,7 @@ sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 quantitySaleLedger (ledger) += quantityReceiptSaleDetail(ledger);
 VATSaleLedger (ledger) += VATReceiptSaleDetail(ledger);
 sumSaleLedger (ledger) += sumReceiptSaleDetail(ledger);
+costSumSaleLedger (ledger) += costSkuSaleLedger(ledger)
 
 // ----------------- Оплаты по чеку ------------------------------
 

@@ -63,6 +63,9 @@ sumOutStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);
 
+// ------------------------------- Себестоимость продажи ------------------------ //
+costSaleInvoiceDetail (invoiceDetail) = GROUP SUM costSumSkuLedger(shipmentDetail) BY invoiceDetailShipmentDetail(shipmentDetail);
+costSumSaleLedger(ledger) += costSaleInvoiceDetail(ledger);
 
 NAVIGATOR {
     saleSaleNavigator {

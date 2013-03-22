@@ -22,6 +22,8 @@ quantitySaleLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (saleLedger) 
 
 sumSaleLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (saleLedger) PERSISTENT;
 
+costSumSaleLedger 'Себестоимость продажи' (ledger) = ABSTRACT NUMERIC[16,2] (saleLedger) PERSISTENT;
+
 customerSaleLedger (ledger) = ABSTRACT legalEntity (saleLedger) PERSISTENT INDEXED;
 nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger(ledger));
 
@@ -42,7 +44,7 @@ valueVATSaleLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSaleLedger(ledge
 sumVATSaleLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
         sumSaleLedger(ledger), valueVATSaleLedger(ledger));
 
-markupSumSaleLedger 'Надбавка' (ledger) = sumSaleLedger(ledger) - sumVATSaleLedger(ledger) - costSumSkuLedger(ledger);
+markupSumSaleLedger 'Надбавка' (ledger) = sumSaleLedger(ledger) (-) sumVATSaleLedger(ledger) (-) costSumSaleLedger(ledger);
 
 quantitySoldSkuStockDate (sku, stock, date) = GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
     BY skuSaleLedger(ledger), stockSaleLedger(ledger), dateSaleLedger(ledger) PERSISTENT;
