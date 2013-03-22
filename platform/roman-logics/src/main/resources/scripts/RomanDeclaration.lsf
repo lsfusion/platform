@@ -1161,7 +1161,7 @@ FORM declaration 'Декларация'
                     priceCustomDeclarationDetail, priceManagerialDeclarationDetail, expenseDeclarationDetail, sumConsultationRateDeclarationDetail,
                     priceManagerialCustomDeclarationDetail
 
-    PROPERTIES (dd) certificatedDeclarationDetail ON CHANGE EXEC changeCertificatedDeclarationSku(dd),
+    PROPERTIES (dd) certificatedDeclarationDetail ON CHANGE changeCertificatedDeclarationSku(dd),
                     sidTemporalCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd),
                     sidPermanentCertificateDeclarationDetail BACKGROUND isCertificatePreparedDeclarationDetail(dd)
 

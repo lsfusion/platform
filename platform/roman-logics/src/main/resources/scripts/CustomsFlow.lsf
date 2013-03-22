@@ -235,7 +235,7 @@ FORM CStoWH 'Расход с СВХ'
     FILTERS inCStoWHCStoWHDetail(c, d)
 
     EVENTS
-        ON OK EXEC prePostCStoWH(c)
+        ON OK prePostCStoWH(c)
 
     EDIT CStoWH OBJECT c
 ;

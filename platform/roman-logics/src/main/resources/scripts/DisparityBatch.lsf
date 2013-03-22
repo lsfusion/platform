@@ -131,7 +131,7 @@ FORM disparityBatch 'Пересорт м/у партиями'
             disparityBatchDisparityOutBatchDetail(do) == o
 
     EVENTS
-        ON OK EXEC prePostDisparityBatch(o)
+        ON OK prePostDisparityBatch(o)
 
     EDIT disparityBatch OBJECT o
 ;
@@ -308,7 +308,7 @@ stockForDisparityBatch 'Склад' (disparityBatch) = ACTION (disparityBatch) {
 
 
 EXTEND FORM disparityBatch
-    PROPERTIES(o)  nameStockDisparityBatch ON CHANGE EXEC stockForDisparityBatch(o), createMixDisparityBatch SHOWIF showActionDisparityBatch(o)
+    PROPERTIES(o)  nameStockDisparityBatch ON CHANGE stockForDisparityBatch(o), createMixDisparityBatch SHOWIF showActionDisparityBatch(o)
     PROPERTIES(di) descriptionBatchDisparityInBatchDetail
     PROPERTIES(do) descriptionBatchDisparityOutBatchDetail
 ;
@@ -460,7 +460,7 @@ FORM disparityBatchA 'Пересорт м/у партиями (бухг.)'
             disparityBatchADisparityOutBatchADetail(do) == o
 
     EVENTS
-        ON OK EXEC prePostDisparityBatchA(o)
+        ON OK prePostDisparityBatchA(o)
 
     EDIT disparityBatchA OBJECT o
 ;

@@ -288,7 +288,7 @@ changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR = ACTION (WHfromCSR) {
     EXEC addDialogSkuFreightUnitWHfromCSRBarcode(WHfromCSR, requestedString());
 };
 addDetailInputBarcodeWHfromCSRDetailWHfromCSR 'Ввод штрих-кода :' (WHfromCSR) = DATA SESSION STRING[14] (WHfromCSR) TOOLBAR EDITKEY 'F4'
-                                                                        ON CHANGE EXEC changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR(WHfromCSR) EVENTID 'SCANNER';
+                                                                        ON CHANGE changeAddDetailInputBarcodeWHfromCSRDetailWHfromCSR(WHfromCSR) EVENTID 'SCANNER';
 
 
 
@@ -535,18 +535,18 @@ FORM WHfromCSR 'Приемка на оптовый склад'
                                        nameBrandSupplierArticleSkuWHfromCSRDetail, netWeightArticleSkuWHfromCSRDetail,
                                        mainCompositionOriginArticleSkuWHfromCSRDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail ON CHANGE EXEC changeGenderArticleSkuWHfromCSRDetail(d),
-                              c = nameCategoryArticleSkuWHfromCSRDetail ON CHANGE EXEC changeCategoryArticleSkuWHfromCSRDetail(d),
-                              nameTypeFabricArticleSkuWHfromCSRDetail ON CHANGE EXEC changeTypeFabricArticleSkuWHfromCSRDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
-                              netWeightSkuWHfromCSRDetail ON CHANGE EXEC changeNetWeightSkuWHfromCSRDetail(d),
-                              nameCountryOfOriginSkuWHfromCSRDetail ON CHANGE EXEC changeCountryOfOriginSkuWHfromCSRDetail(d),
-                              mainCompositionOriginSkuWHfromCSRDetail ON CHANGE EXEC changeMainCompositionOriginSkuWHfromCSRDetail(d),
-                              mainCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeMainCompositionSkuWHfromCSRDetail(d),
-                              additionalCompositionOriginSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
-                              additionalCompositionSkuWHfromCSRDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromCSRDetail(d),
-                              coefficientArticleSkuWHfromCSRDetail ON CHANGE EXEC changeCoefficientArticleSkuWHfromCSRDetail(d)
-    PROPERTIES(d) FORCE GRID   nameTypeLabelWHfromCSRDetail ON CHANGE EXEC changeTypeLabelWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromCSRDetail ON CHANGE changeGenderArticleSkuWHfromCSRDetail(d),
+                              c = nameCategoryArticleSkuWHfromCSRDetail ON CHANGE changeCategoryArticleSkuWHfromCSRDetail(d),
+                              nameTypeFabricArticleSkuWHfromCSRDetail ON CHANGE changeTypeFabricArticleSkuWHfromCSRDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromCSRDetail ON CHANGE changeUnitOfMeasureArticleSkuWHfromCSRDetail(d),
+                              netWeightSkuWHfromCSRDetail ON CHANGE changeNetWeightSkuWHfromCSRDetail(d),
+                              nameCountryOfOriginSkuWHfromCSRDetail ON CHANGE changeCountryOfOriginSkuWHfromCSRDetail(d),
+                              mainCompositionOriginSkuWHfromCSRDetail ON CHANGE changeMainCompositionOriginSkuWHfromCSRDetail(d),
+                              mainCompositionSkuWHfromCSRDetail ON CHANGE changeMainCompositionSkuWHfromCSRDetail(d),
+                              additionalCompositionOriginSkuWHfromCSRDetail ON CHANGE changeAdditionalCompositionOriginSkuWHfromCSRDetail(d),
+                              additionalCompositionSkuWHfromCSRDetail ON CHANGE changeAdditionalCompositionSkuWHfromCSRDetail(d),
+                              coefficientArticleSkuWHfromCSRDetail ON CHANGE changeCoefficientArticleSkuWHfromCSRDetail(d)
+    PROPERTIES(d) FORCE GRID   nameTypeLabelWHfromCSRDetail ON CHANGE changeTypeLabelWHfromCSRDetail(d)
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromCSR(w) mainCompositionWHfromCSRDetail, additionalCompositionWHfromCSRDetail
 

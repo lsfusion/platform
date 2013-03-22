@@ -82,7 +82,7 @@ EXTEND FORM payment
                   writeOutContractLedgerLIFO TODRAW i FORCE PANEL TOOLBAR,
                   nameTypeExchangeContractPayment SHOWIF showTypeExchangeContractPayment(p),
                   rateExchangeContractPayment SHOWIF showTypeExchangeContractPayment(p),
-                  sumContractPayment ON CHANGE EXEC setRateExchangeContractPayment(p),
+                  sumContractPayment ON CHANGE setRateExchangeContractPayment(p),
                   nameCurrencyContractPayment
 
     PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger

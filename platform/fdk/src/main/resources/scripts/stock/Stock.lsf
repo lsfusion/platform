@@ -1683,7 +1683,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         FILTERS           nameSku(s), name(st)
         ORDER BY          nameSku, stockName
 
-        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantitySku###object###stock(s, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st),
+        PROPERTIES        quantitySku###object###stockProp(s, concrete, st) ON CHANGE changeQuantitySku###object###stock(s, concrete, st) BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st),
                           currentBalanceSkuStock(s,st) READONLY, priceSkuStock###object(s, st, concrete) READONLY
     ;
 
@@ -1784,7 +1784,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         OBJECTS s=sku
         PROPERTIES             READONLY    inputName = nameSku(s)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE EXEC changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
+        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
 
         FILTERS                isParentSkuGroupSku(sk, s)
 
@@ -1895,7 +1895,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
         ORDER BY          nameSku, stockName
 
         PROPERTIES quantitySku###object###fromStock(s, concrete, st) READONLY BACKGROUND backgroundQuantitySku###object###Stock(s, concrete, st)
-        PROPERTIES quantitySku###object###fromStock###toStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###toStock(cc) ON CHANGE EXEC changeQuantitySku###object###Stock###toStock(s, concrete, st, cc)
+        PROPERTIES quantitySku###object###fromStock###toStock(s, concrete, st, cc)  COLUMNS (cc) HEADER nameQuantity###toStock(cc) ON CHANGE changeQuantitySku###object###Stock###toStock(s, concrete, st, cc)
         PROPERTIES READONLY currentBalanceSkuStock(s,st)
         PROPERTIES READONLY  priceSkuStock###object###toStock(s, st, concrete, cc)  COLUMNS (cc) HEADER namePrice###toStock(cc)
 
@@ -1977,7 +1977,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         FILTERS groupTypeGroup(gg) == groupType###object(concrete)
 
         OBJECTS s=sku
-        PROPERTIES             inSku###object(s,concrete) ON CHANGE EXEC changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
+        PROPERTIES             inSku###object(s,concrete) ON CHANGE changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete)currentBalanceSku###object READONLY
 

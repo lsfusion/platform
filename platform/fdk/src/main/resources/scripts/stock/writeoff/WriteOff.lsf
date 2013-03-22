@@ -212,7 +212,7 @@ FORM userWriteOff 'Списание'
     FILTERS userWriteOffUserWriteOffDetail(d)==w
 
     EVENTS
-        ON OK EXEC prePostUserWriteOff(w)
+        ON OK prePostUserWriteOff(w)
 
     EDIT userWriteOff OBJECT w
 ;

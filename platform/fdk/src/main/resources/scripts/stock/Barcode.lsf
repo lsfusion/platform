@@ -90,7 +90,7 @@ changeBarcodeInput = ACTION () {
     EXEC formOk();
 }
 FORM barcodeInput 'Ввод штрих-кода'
-    PROPERTIES() barcodeInput ON CHANGE EXEC changeBarcodeInput()
+    PROPERTIES() barcodeInput ON CHANGE changeBarcodeInput()
 ;
 
 DESIGN barcodeInput FROM DEFAULT {
@@ -172,7 +172,7 @@ META defineAddDetailDialogBarcodeCustom(object, idetail, skuProp)
         EXEC addDetailBarcode###idetail###object(object, requestedString());
     };
     addDetailInputBarcode###idetail###object 'Ввод штрих-кода :' (object) = DATA SESSION STRING[14] (object) TOOLBAR EDITKEY 'F4' EVENTID 'SCANNER'
-                                                                            ON CHANGE EXEC changeAddDetailInputBarcode###idetail###object(object);
+                                                                            ON CHANGE changeAddDetailInputBarcode###idetail###object(object);
 END
 
 META defineAddDetailDialogBarcode(object, skuProp)
@@ -211,7 +211,7 @@ EXTEND FORM filterSkus
 
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s) READONLY idBarcodeSku AFTER nameSku
-    PROPERTIES seekBarcode() TODRAW s FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
+    PROPERTIES seekBarcode() TODRAW s FORCE PANEL TOOLBAR ON CHANGE seekSkuBarcode()
 ;
 EXTEND DESIGN currentBalanceSkuStock{
     sts.box{

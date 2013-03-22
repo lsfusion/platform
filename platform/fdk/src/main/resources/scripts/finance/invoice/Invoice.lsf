@@ -152,7 +152,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     @defineDocumentInterfaceDetailPricePrefix (invoice, invoice, ' с НДС'); // объявляем цену с НДС
 
-    // объявляем Action'ы для ON CHANGE EXEC по изменению цен
+    // объявляем Action'ы для ON CHANGE по изменению цен
     @defineDocumentDetailPriceVATOnChange(userInvoice);
     @defineDocumentDetailNumberVATOnChange(userInvoice, stockProp);
     @defineDocumentDetailValueVATOnChange(userInvoice);
@@ -229,12 +229,12 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
-                       amountPackUserInvoiceDetail ON CHANGE EXEC changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE EXEC changeQuantityPackUserInvoiceDetail(d)
-        PROPERTIES (d) quantityUserInvoiceDetail ON CHANGE EXEC changeQuantityUserInvoiceDetail(d), namePriceListTypeUserInvoiceDetail,
-                       priceUserInvoiceDetail ON CHANGE EXEC changePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
-                       numberVATUserInvoiceDetail ON CHANGE EXEC changeNumberVATUserInvoiceDetail(d),
-                       valueVATUserInvoiceDetail ON CHANGE EXEC changeValueVATUserInvoiceDetail(d),
-                       invoicePriceUserInvoiceDetail ON CHANGE EXEC changeInvoicePriceUserInvoiceDetail(d),
+                       amountPackUserInvoiceDetail ON CHANGE changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE changeQuantityPackUserInvoiceDetail(d)
+        PROPERTIES (d) quantityUserInvoiceDetail ON CHANGE changeQuantityUserInvoiceDetail(d), namePriceListTypeUserInvoiceDetail,
+                       priceUserInvoiceDetail ON CHANGE changePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
+                       numberVATUserInvoiceDetail ON CHANGE changeNumberVATUserInvoiceDetail(d),
+                       valueVATUserInvoiceDetail ON CHANGE changeValueVATUserInvoiceDetail(d),
+                       invoicePriceUserInvoiceDetail ON CHANGE changeInvoicePriceUserInvoiceDetail(d),
                        VATSumUserInvoiceDetail, invoiceSumUserInvoiceDetail, ADDOBJ, delete
 
         PROPERTIES(i) TODRAW d fillDocumentInvoice, addDetailDialogSkuStockUserInvoiceDetailUserInvoice,
@@ -242,7 +242,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
         FILTERS userInvoiceUserInvoiceDetail(d) == i
 
         EVENTS
-            ON OK EXEC prePostUserInvoice(i)
+            ON OK prePostUserInvoice(i)
 
         HINTTABLE LIST dateTimeUserInvoiceDetail, skuUserInvoiceDetail, supplierStockUserInvoiceDetail, customerStockUserInvoiceDetail,
                        priceListTypeUserInvoiceDetail, currencyUserInvoiceDetail,
@@ -470,7 +470,7 @@ META defineInvoiceBatch(stockProp)
     };
 
     EXTEND FORM userInvoice
-        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE EXEC changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
+        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
         HINTTABLE LIST batchUserInvoiceDetail
     ;
     EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
@@ -613,8 +613,8 @@ META extendFormDocumentPackSkuCustom(object, form, concrete, toShowProp, NS)
 
     EXTEND FORM form
         PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantity###object##Detail###sku###object(s, concrete) NS.idBarcodePackSku(s) READONLY,
-                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE EXEC changeAmountPackSku###object(s, concrete),
-                   quantityPackSku###object(s, concrete) ON CHANGE EXEC changeQuantityPackSku###object(s, concrete)
+                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE changeAmountPackSku###object(s, concrete),
+                   quantityPackSku###object(s, concrete) ON CHANGE changeQuantityPackSku###object(s, concrete)
     ;
 END
 

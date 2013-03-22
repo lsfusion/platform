@@ -55,7 +55,7 @@ FORM customsGroup 'Позиция ТН ВЭД'
     PROPERTIES(cg) numberCustomsGroup, codeCustomsGroup, name, nameParentCustomsGroup, nameCustomsZoneCustomsGroup,
                    dateFromCustomsGroup, dateToCustomsGroup,
                    registrationCustomsGroup,
-                   valueCurrentRateSupplierVATCustomsGroup ON CHANGE EXEC dialogSupplierVATCustomsGroup(cg),
+                   valueCurrentRateSupplierVATCustomsGroup ON CHANGE dialogSupplierVATCustomsGroup(cg),
                    percentDutyCustomsGroup,
                    weightDutyCustomsGroup
 

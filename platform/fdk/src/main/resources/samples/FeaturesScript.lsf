@@ -502,6 +502,19 @@ ON SESSION globalInt() <- globalInt() (+) 1;
 
 BEFORE constraintAction(store, article) DO MESSAGE 'Before Aspect';
 
+cancledMessage() = ACTION() {
+    MESSAGE 'changes were canceled';
+}
+
+appliedMessage() = ACTION() {
+    MESSAGE 'form apply message';
+}
+
+onChangeStoreName(document) = ACTION {
+    REQUEST STRING[50] INPUT;
+    SET storeName(document) <- requestedString();
+}
+
 //////////////// FORM STATEMENT /////////////////
 // Syntax:
 // FORM name ['caption'] [TITLE 'title'] [PRINT] [DOCKED | MODAL | FULLSCREEN | DOCKEDMODAL] | EXTEND FORM name
@@ -532,10 +545,10 @@ OBJECTS document, article
 // Special properties: SELECTION, OBJVALUE, ADDOBJ, ADDFORM, ADDSESSIONFORM, EDITFORM, EDITSESSIONFORM
 // Property option:    [READONLY] [EDITABLE] [SELECTOR] [HINTNOUPDATE] [HINTTABLE] [COLUMNS (<groupObject list>)] [SHOWIF <mappedProperty>] [BACKGROUND <mappedProperty>]
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
-//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS) action] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
+//                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
 PROPERTIES(document) store, testPush, testPush2, copy, date,
-                     storeName ON CHANGE { REQUEST STRING[50] INPUT; SET storeName(document) <- requestedString(); },
+                     storeName ON CHANGE onChangeStoreName(document),
                      documentTypeString
 PROPERTIES name(article)
 PROPERTIES quantity(document, article)
@@ -553,8 +566,8 @@ FILTERS name(article)
 // ...
 // ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) actionN
 EVENTS
-    ON CANCEL MESSAGE 'changes were canceled',
-    ON APPLY MESSAGE 'form apply message';
+    ON CANCEL cancledMessage(),
+    ON APPLY appliedMessage();
 
 // Hints list syntax:
 // HINTNOUPDATE | HINTTABLE propertyName1, ..., propertyNameN

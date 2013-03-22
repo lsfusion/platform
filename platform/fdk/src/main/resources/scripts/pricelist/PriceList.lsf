@@ -519,7 +519,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(t2) SELECTOR name
 
     OBJECTS s2=sku
-    PROPERTIES inSkuUserPriceList(s2, p) ON CHANGE EXEC changeInSkuUserPriceList(s2, p)
+    PROPERTIES inSkuUserPriceList(s2, p) ON CHANGE changeInSkuUserPriceList(s2, p)
     PROPERTIES READONLY inputName2 = nameSku(s2), idBarcodeSku(s2), currentBalanceSkuStock(s2, ts2)
     PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t, ts2) COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     FILTERGROUP filters
@@ -532,7 +532,7 @@ FORM userPriceList 'Прайс'
     ORDER BY inputName2
 
     EVENTS
-        ON OK EXEC prePostUserPriceList(p)
+        ON OK prePostUserPriceList(p)
 
     EDIT userPriceList OBJECT p
 ;

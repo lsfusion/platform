@@ -487,7 +487,7 @@ formObjectDeclaration returns [String name, String className, String caption, Ac
 	:	(objectName=ID { $name = $objectName.text; } '=')?	
 		id=classId { $className = $id.sid; }
 		(c=stringLiteral { $caption = $c.val; })?
-		('ON' 'CHANGE' faprop=formActionProperty { $event = $faprop.action; })?
+		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
 	; 
 	
 formPropertiesList
@@ -540,9 +540,9 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
-		|	'ON' 'CHANGE' prop=formActionProperty { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
-		|	'ON' 'CHANGE_WYS' prop=formActionProperty { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
-		|	'ON' 'SHORTCUT' c=stringLiteral prop=formActionProperty { $options.addContextMenuEditAction($c.val, $prop.action); }
+		|	'ON' 'CHANGE' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
+		|	'ON' 'CHANGE_WYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
+		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
@@ -587,6 +587,15 @@ formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
 		{
 			if (inPropParseState()) {
 				$property = $formStatement::form.addCalcPropertyObject($mProperty.name, $mProperty.mapping);
+			}
+		}
+	;
+
+formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
+	:	mProperty=mappedProperty
+		{
+			if (inPropParseState()) {
+				$action = $formStatement::form.addActionPropertyObject($mProperty.name, $mProperty.mapping);
 			}
 		}
 	;
@@ -700,26 +709,10 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, FormEventType t
 		|	'CANCEL' { $type = FormEventType.CANCEL; }
 		|	'DROP'	 { $type = FormEventType.DROP; }
 		)
-		faprop=formActionProperty { $action = $faprop.action; }
+		faprop=formActionPropertyObject { $action = $faprop.action; }
 	;
 
-formActionProperty returns [ActionPropertyObjectEntity action]
-@init {
-	List<String> context = new ArrayList<String>();
-	if (inPropParseState()) {
-		context = $formStatement::form.getObjectsNames();
-	}
-}
-@after {
-	if (inPropParseState()) {
-		$action = $formStatement::form.getActionPropertyObject(context, $def.property);
-	}
-}	
-	:	def=actionPropertyDefinitionBody[context, false]
-	; 
-	
 
-	
 filterGroupDeclaration
 @init {
 	String filterGroupSID = null;

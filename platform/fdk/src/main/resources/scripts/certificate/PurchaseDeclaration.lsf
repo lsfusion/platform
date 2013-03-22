@@ -273,7 +273,7 @@ EXTEND FORM declaration
     FILTERS declarationDeclarationDetail(dd) == d
 
     EVENTS
-        ON OK EXEC prePostDeclaration(d)
+        ON OK prePostDeclaration(d)
 ;
 
 EXTEND DESIGN declaration {

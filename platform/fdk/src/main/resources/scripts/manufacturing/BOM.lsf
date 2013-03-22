@@ -378,8 +378,8 @@ FORM BOM 'Спецификация'
 
     OBJECTS c = component
     PROPERTIES(c) indexComponent, idBarcodeSkuComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent,
-                  overCurWastageComponent ON CHANGE EXEC changeWastageComponent(c) BACKGROUND backgroundWastageComponent(c) READONLYIF technologyComponent(c),
-                  overCurBruttoQuantityComponent ON CHANGE EXEC changeBruttoQuantityComponent(c) BACKGROUND backgroundBruttoQuantityComponent(c) READONLYIF technologyComponent(c)
+                  overCurWastageComponent ON CHANGE changeWastageComponent(c) BACKGROUND backgroundWastageComponent(c) READONLYIF technologyComponent(c),
+                  overCurBruttoQuantityComponent ON CHANGE changeBruttoQuantityComponent(c) BACKGROUND backgroundBruttoQuantityComponent(c) READONLYIF technologyComponent(c)
 
     PROPERTIES(c) ADDOBJ, delete
     PROPERTIES(b) TODRAW c deleteComponentBOM

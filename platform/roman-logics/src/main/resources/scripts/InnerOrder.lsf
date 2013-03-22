@@ -231,7 +231,7 @@ FORM orderPicking 'Подбор товара'
     FILTERS orderPickingOrderPickingDetail(d) == p
 
     EVENTS
-        ON OK EXEC prePostOrderPicking(p)
+        ON OK prePostOrderPicking(p)
 
     EDIT orderPicking OBJECT p
 ;

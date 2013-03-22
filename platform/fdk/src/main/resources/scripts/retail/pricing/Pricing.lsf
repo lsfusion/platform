@@ -393,8 +393,8 @@ FORM userPricing 'Акт расценки'
     PROPERTIES (d) indexUserPricingDetail, idBarcodeSkuUserPricingDetail, nameSkuUserPricingDetail, shortNameUOMSkuUserPricingDetail,
                    quantityUserPricingDetail, nameRetailPriceListTypeUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p)
-                   retailMarkupUserPricingDetail ON CHANGE EXEC changeRetailMarkupUserPricingDetail(d), retailMarkupSumUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
-                   retailVATSumUserPricingDetail, retailPriceUserPricingDetail ON CHANGE EXEC changeRetailPriceUserPricingDetail(d), retailSumUserPricingDetail
+                   retailMarkupUserPricingDetail ON CHANGE changeRetailMarkupUserPricingDetail(d), retailMarkupSumUserPricingDetail, numberRetailVATUserPricingDetail, valueRetailVATUserPricingDetail,
+                   retailVATSumUserPricingDetail, retailPriceUserPricingDetail ON CHANGE changeRetailPriceUserPricingDetail(d), retailSumUserPricingDetail
     PROPERTIES (d) nameDepartmentStoreUserPricingDetail, ADDOBJ, delete
 
 
@@ -403,7 +403,7 @@ FORM userPricing 'Акт расценки'
     FILTERS userPricingUserPricingDetail(d) == p
 
     EVENTS
-        ON OK EXEC prePostUserPricing(p)
+        ON OK prePostUserPricing(p)
 
     EDIT userPricing OBJECT p
 ;
@@ -605,9 +605,9 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
                       retailSumUserInvoiceDetailUserInvoice
 
         PROPERTIES(d) BEFORE name###stockProp###userInvoiceDetail(d) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
-                      retailMarkupUserInvoiceDetail ON CHANGE EXEC changeRetailMarkupUserInvoiceDetail(d), retailMarkupSumUserInvoiceDetail, numberRetailVATUserInvoiceDetail,
+                      retailMarkupUserInvoiceDetail ON CHANGE changeRetailMarkupUserInvoiceDetail(d), retailMarkupSumUserInvoiceDetail, numberRetailVATUserInvoiceDetail,
                       valueRetailVATUserInvoiceDetail, retailVATSumUserInvoiceDetail,
-                      retailPriceUserInvoiceDetail ON CHANGE EXEC changeRetailPriceUserInvoiceDetail(d),
+                      retailPriceUserInvoiceDetail ON CHANGE changeRetailPriceUserInvoiceDetail(d),
                       retailSumUserInvoiceDetail
         PROPERTIES(d) pricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
 

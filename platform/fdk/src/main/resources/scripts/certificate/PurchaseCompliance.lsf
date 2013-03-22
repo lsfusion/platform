@@ -181,7 +181,7 @@ EXTEND FORM compliance
     FILTERS complianceComplianceDetail(cd) == c
 
     EVENTS
-        ON OK EXEC prePostCompliance(c)
+        ON OK prePostCompliance(c)
 ;
 
 EXTEND DESIGN compliance {

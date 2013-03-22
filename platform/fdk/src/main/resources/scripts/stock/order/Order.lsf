@@ -148,7 +148,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
     @defineDocumentInterfaceDetailPricePrefix (order, invoice, ' с НДС'); // объявляем цену с НДС
 
-    // объявляем Action'ы для ON CHANGE EXEC
+    // объявляем Action'ы для ON CHANGE
     @defineDocumentDetailPriceVATOnChange(userOrder);
     @defineDocumentDetailNumberVATOnChange(userOrder, stockProp);
     @defineDocumentDetailValueVATOnChange(userOrder);
@@ -221,12 +221,12 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
         OBJECTS d = userOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
         PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
-                       amountPackUserOrderDetail ON CHANGE EXEC changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE EXEC changeQuantityPackUserOrderDetail(d)
-        PROPERTIES (d) quantityUserOrderDetail  ON CHANGE EXEC changeQuantityUserOrderDetail(d), namePriceListTypeUserOrderDetail,
-                       priceUserOrderDetail ON CHANGE EXEC changePriceUserOrderDetail(d), sumUserOrderDetail,
-                       numberVATUserOrderDetail ON CHANGE EXEC changeNumberVATUserOrderDetail(d),
-                       valueVATUserOrderDetail ON CHANGE EXEC changeValueVATUserOrderDetail(d),
-                       invoicePriceUserOrderDetail ON CHANGE EXEC changeInvoicePriceUserOrderDetail(d),
+                       amountPackUserOrderDetail ON CHANGE changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE changeQuantityPackUserOrderDetail(d)
+        PROPERTIES (d) quantityUserOrderDetail  ON CHANGE changeQuantityUserOrderDetail(d), namePriceListTypeUserOrderDetail,
+                       priceUserOrderDetail ON CHANGE changePriceUserOrderDetail(d), sumUserOrderDetail,
+                       numberVATUserOrderDetail ON CHANGE changeNumberVATUserOrderDetail(d),
+                       valueVATUserOrderDetail ON CHANGE changeValueVATUserOrderDetail(d),
+                       invoicePriceUserOrderDetail ON CHANGE changeInvoicePriceUserOrderDetail(d),
                        VATSumUserOrderDetail, invoiceSumUserOrderDetail,
                        name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
                        shipmentTimeUserOrderDetail, ADDOBJ, delete
@@ -236,7 +236,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
         FILTERS userOrderUserOrderDetail(d) == o
 
         EVENTS
-            ON OK EXEC prePostUserOrder(o)
+            ON OK prePostUserOrder(o)
 
         HINTTABLE LIST dateTimeUserOrderDetail, skuUserOrderDetail, supplierStockUserOrderDetail, customerStockUserOrderDetail,
                        priceListTypeUserOrderDetail, currencyUserOrderDetail,
@@ -513,8 +513,8 @@ META extendFormDocumentPackSkuStockCustom(object, form, concrete, stockProp, toS
 
     EXTEND FORM form
         PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) NS.idBarcodePackSku(s) READONLY,
-                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE EXEC changeAmountPackSku###object###Stock(s, concrete, st),
-                   quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE EXEC changeQuantityPackSku###object###Stock(s, concrete, st)
+                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE changeAmountPackSku###object###Stock(s, concrete, st),
+                   quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE changeQuantityPackSku###object###Stock(s, concrete, st)
     ;
 END
 

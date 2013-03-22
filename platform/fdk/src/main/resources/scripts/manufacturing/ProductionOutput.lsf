@@ -319,7 +319,7 @@ FORM userOutput 'Производство'
     FILTERS userOutputUserOutputDetail(d) == o
 
     EVENTS
-        ON OK EXEC prePostUserOutput(o)
+        ON OK prePostUserOutput(o)
 
     HINTTABLE LIST dateTimeUserOutputDetail, skuUserOutputDetail, stockUserOutputDetail,
                    priceListTypeUserOutputDetail, currencyUserOutputDetail, priceUserOutputDetail

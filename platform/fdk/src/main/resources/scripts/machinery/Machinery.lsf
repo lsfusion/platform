@@ -561,7 +561,7 @@ END
 
 META extendFormDocumentMachineryPriceTransaction(form, object, document)
     EXTEND FORM form
-        PROPERTIES(object) statusMachineryPriceTransactionDocument ON SHORTCUT 'Перегрузить все позиции' EXEC createSnapshot###document##MachineryPriceTransaction(object) BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY,
+        PROPERTIES(object) statusMachineryPriceTransactionDocument ON SHORTCUT createSnapshot###document##MachineryPriceTransaction(object) BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY,
                            create###document###MachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransaction###document(object)
     ;
 END

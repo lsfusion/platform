@@ -402,7 +402,7 @@ END
 
 META extendFormDocumentLabelTransaction(form, object, document)
     EXTEND FORM form
-        PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT 'Перепечатать ценники' EXEC createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
+        PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
                            create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object)
     ;
 END

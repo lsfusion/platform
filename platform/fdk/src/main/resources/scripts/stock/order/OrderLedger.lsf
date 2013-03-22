@@ -235,10 +235,10 @@ META extendFormDocumentOrderLedgerStock(object, form, concrete)
         PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete)
 
         PROPERTIES AFTER currentBalanceSkuStock(s, st)
-                   currentReserveSaleSkuStock(s,st) ON CHANGE EXEC reviewReserveSaleSkuStock###object(s,st,concrete),
-                   currentReservePurchaseSkuStock(s,st) ON CHANGE EXEC reviewReservePurchaseSkuStock###object(s,st,concrete),
-                   reserveBSaleSkuStock###object(s, st, concrete) ON CHANGE EXEC reviewReserveBSaleSkuStock###object(s,st,concrete),
-                   reserveBPurchaseSkuStock###object(s, st, concrete) ON CHANGE EXEC reviewReserveBPurchaseSkuStock###object(s,st,concrete)
+                   currentReserveSaleSkuStock(s,st) ON CHANGE reviewReserveSaleSkuStock###object(s,st,concrete),
+                   currentReservePurchaseSkuStock(s,st) ON CHANGE reviewReservePurchaseSkuStock###object(s,st,concrete),
+                   reserveBSaleSkuStock###object(s, st, concrete) ON CHANGE reviewReserveBSaleSkuStock###object(s,st,concrete),
+                   reserveBPurchaseSkuStock###object(s, st, concrete) ON CHANGE reviewReserveBPurchaseSkuStock###object(s,st,concrete)
     ;
     EXTEND DESIGN form {
         PROPERTY(availableQuantitySkuStock###object) { background = #F4FFBD; }
@@ -271,10 +271,10 @@ META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
         PROPERTIES READONLY BEFORE currentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)
 
         PROPERTIES AFTER currentBalanceSku###object(s, concrete)
-                   currentReserveSaleSku###object(s,concrete) ON CHANGE EXEC reviewReserveSaleSku###object(s,concrete),
-                   currentReservePurchaseSku###object(s,concrete) ON CHANGE EXEC reviewReservePurchaseSku###object(s,concrete),
-                   reserveBSaleSku###object(s, concrete) ON CHANGE EXEC reviewReserveBSaleSku###object(s,concrete),
-                   reserveBPurchaseSku###object(s, concrete) ON CHANGE EXEC reviewReserveBPurchaseSku###object(s,concrete)
+                   currentReserveSaleSku###object(s,concrete) ON CHANGE reviewReserveSaleSku###object(s,concrete),
+                   currentReservePurchaseSku###object(s,concrete) ON CHANGE reviewReservePurchaseSku###object(s,concrete),
+                   reserveBSaleSku###object(s, concrete) ON CHANGE reviewReserveBSaleSku###object(s,concrete),
+                   reserveBPurchaseSku###object(s, concrete) ON CHANGE reviewReserveBPurchaseSku###object(s,concrete)
     ;
     EXTEND DESIGN form {
         PROPERTY(availableQuantitySku###object) { background = #F4FFBD; }

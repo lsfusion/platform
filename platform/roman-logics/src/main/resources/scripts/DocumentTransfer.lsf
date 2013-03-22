@@ -50,7 +50,7 @@ META defineDocumentFormTransferOut(object, formCaption)
         FILTERS object##Out###object##OutDetail(d) == t
 
         EVENTS
-            ON OK EXEC prePost###object##Out(t)
+            ON OK prePost###object##Out(t)
 
         EDIT object##Out OBJECT t
     ;

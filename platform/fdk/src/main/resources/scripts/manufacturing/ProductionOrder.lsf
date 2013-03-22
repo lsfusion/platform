@@ -457,7 +457,7 @@ FORM order 'Производственный заказ'
     OBJECTS pd=productDetail
     PROPERTIES(pd) indexProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    componentsPriceProductDetail
-    PROPERTIES(pd) markupProductDetail ON CHANGE EXEC changeMarkupProductDetail(pd),
+    PROPERTIES(pd) markupProductDetail ON CHANGE changeMarkupProductDetail(pd),
                    productsPriceProductDetail, productsSumProductDetail
     PROPERTIES(pd) BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o) valueVATProductDetail
     PROPERTIES(pd) ADDOBJ, delete
@@ -483,19 +483,19 @@ FORM order 'Производственный заказ'
     PROPERTIES(s,o) READONLY bruttoQuantitySkuOrder
     PROPERTIES(s,o) bruttoPriceSkuOrder
     PROPERTIES(s,o) BACKGROUND backgroundSubstitutesOrder(o) nameSubstituteSkuOrder, multiplierSkuOrder, substituteQuantitySkuOrder, substitutePriceSkuOrder
-    PROPERTIES(s,o) priceSkuOrder, markupSkuOrder  ON CHANGE EXEC changeMarkupSkuOrder(s,o), premiumPriceSkuOrder, valueVATSkuOrder BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o)
+    PROPERTIES(s,o) priceSkuOrder, markupSkuOrder  ON CHANGE changeMarkupSkuOrder(s,o), premiumPriceSkuOrder, valueVATSkuOrder BACKGROUND backgroundVATOrder(o) SHOWIF includeVATOrder(o)
     FILTERS bruttoQuantitySkuOrder(s,o)
 
     PROPERTIES(o) FORCE PANEL namePriceListTypeOrder, includeVATOrder  BACKGROUND backgroundVATOrder(o), nameComponentsCalcPriceListTypeOrder
 
     OBJECTS su = substitute
     PROPERTIES(su) READONLY nameToSkuSubstitute, multiplierSubstitute
-    PROPERTIES(su,s,o) isSubstituteSkuOrder ON CHANGE EXEC changeSubstituteSkuOrder(su,s,o)
+    PROPERTIES(su,s,o) isSubstituteSkuOrder ON CHANGE changeSubstituteSkuOrder(su,s,o)
 
     FILTERS fromSkuSubstitute(su) == s
 
     EVENTS
-        ON OK EXEC prePostOrder(o)
+        ON OK prePostOrder(o)
     EDIT order OBJECT o
 ;
 

@@ -459,6 +459,14 @@ public class ScriptingFormEntity {
         return (CalcPropertyObjectEntity) propObject;
     }
 
+    public ActionPropertyObjectEntity addActionPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyObjectEntity propObject = addPropertyObject(property, mapping);
+        if (!(propObject instanceof ActionPropertyObjectEntity)) {
+            LM.getErrLog().emitNotActionPropertyError(LM.getParser());
+        }
+        return (ActionPropertyObjectEntity) propObject;
+    }
+
     public PropertyObjectEntity addPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = getPropertyWithMapping(property, mapping);
         return form.addPropertyObject(prop.property, prop.mapping);

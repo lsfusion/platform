@@ -323,7 +323,7 @@ FORM customCategoryOrigin 'ЕС уровень'
 
     OBJECTS cz = customsZone
     PROPERTIES(cz) READONLY name
-    PROPERTIES(g, cz)  sidCustomCategory10CustomCategoryOriginCustomsZone ON CHANGE EXEC addCategory10CustomCategoryOriginCustomsZone(g, cz)
+    PROPERTIES(g, cz)  sidCustomCategory10CustomCategoryOriginCustomsZone ON CHANGE addCategory10CustomCategoryOriginCustomsZone(g, cz)
     PROPERTIES(g, cz) READONLY nameCustomCategory10CustomCategoryOriginCustomsZone
 
     EDIT customCategoryOrigin OBJECT g

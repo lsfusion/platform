@@ -202,7 +202,7 @@ FORM transferTable 'Трансфер'
     OBJECTS s=sku
     PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s)
 
-    PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE EXEC changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
+    PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
     PROPERTIES READONLY currentBalanceSku(s), quantitySkuTransferTable(s,t) BACKGROUND backgroundSkuTransferTable(s,t)
     PROPERTIES READONLY stringTotalQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) BACKGROUND backgroundOrdersSkuStockTransferTable(s,st,t)
     FILTERS    isParentSkuGroupSku(sk, s),

@@ -913,7 +913,7 @@ FORM inventory 'Инвентаризация'
     OBJECTS          in=inventory FIXED PANEL
     PROPERTIES (in)  isBatchInventory, nameNumeratorObject, numberObject, seriesObject,
                      nameInventory, nameTypeOfAdditionInventory, dateInventory, timeInventory,
-                     noteInventory, infoInventory, nameStockInventory ON CHANGE EXEC dialogStockInventory(in),
+                     noteInventory, infoInventory, nameStockInventory ON CHANGE dialogStockInventory(in),
                      recalculatePriceInventory, recalculateBalanceInventory,
                      timeFromInventory, timeToInventory, nameHeadManInventory,
                      nameCommitteeInventory, nameChairmanCommitteeInventory, nameEmployeeInventory

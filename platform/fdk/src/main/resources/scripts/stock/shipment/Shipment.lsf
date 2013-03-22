@@ -147,9 +147,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         OBJECTS d = userShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
         PROPERTIES (d) SHOWIF toShowProp###userShipment(s) idBarcodePackUserShipmentDetail, shortNameUOMPackUserShipmentDetail,
-                       amountPackUserShipmentDetail ON CHANGE EXEC changeAmountPackUserShipmentDetail(d),
-                       quantityPackUserShipmentDetail ON CHANGE EXEC changeQuantityPackUserShipmentDetail(d)
-        PROPERTIES (d) quantityUserShipmentDetail ON CHANGE EXEC changeQuantityUserShipmentDetail(d), priceUserShipmentDetail, sumUserShipmentDetail,
+                       amountPackUserShipmentDetail ON CHANGE changeAmountPackUserShipmentDetail(d),
+                       quantityPackUserShipmentDetail ON CHANGE changeQuantityPackUserShipmentDetail(d)
+        PROPERTIES (d) quantityUserShipmentDetail ON CHANGE changeQuantityUserShipmentDetail(d), priceUserShipmentDetail, sumUserShipmentDetail,
                        name###stockProp###shipmentDetail, ADDOBJ, delete
 
         PROPERTIES(s) TODRAW d fillDocumentShipment, addDetailDialogSkuStockUserShipmentDetailUserShipment,
@@ -157,7 +157,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         FILTERS userShipmentUserShipmentDetail(d) == s
 
         EVENTS
-            ON OK EXEC prePostUserShipment(s)
+            ON OK prePostUserShipment(s)
 
         EDIT userShipment OBJECT s
     ;
@@ -738,7 +738,7 @@ META defineShipmentBatch(stockProp)
         }
     }
 
-    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE EXEC changeBatchUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE changeBatchUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
     EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
     EXTEND FORM shipmentInvoices
         PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail

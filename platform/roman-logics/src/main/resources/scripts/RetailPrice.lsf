@@ -851,7 +851,7 @@ FORM priceSetDocument 'Розничный прайс'
         FILTER 'Показывать без метода' 'F6' TRUE IF NOT methodBasePriceSetDocumentSku(p, sk)
 
     EVENTS
-        ON OK EXEC prePostPriceSetDocument(p)
+        ON OK prePostPriceSetDocument(p)
 
     EDIT priceSetDocument OBJECT p
 ;

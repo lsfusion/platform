@@ -256,7 +256,7 @@ dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (inv
 
 EXTEND FORM invoiceWHOut
     PROPERTIES(t) numberContractSkuInvoiceWHOut, nameCurrencyInvoiceWHOut, skipSkuLedgerInvoiceWHOut
-    PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE EXEC dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
+    PROPERTIES(d) descriptionBatchInvoiceWHOutDetail ON CHANGE dialogBatchAInvoiceWHOutDetail(d), supplierPriceInvoiceWHOutDetail, supplierSumInvoiceWHOutDetail,
                   valueSupplierVATInvoiceWHOutDetail, sumVATInvoiceWHOutDetail, sumInvoiceInvoiceWHOutDetail, currentBalanceInvoiceWHOutDetail
 ;
 

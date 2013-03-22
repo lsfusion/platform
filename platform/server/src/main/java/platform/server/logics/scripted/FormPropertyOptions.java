@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static platform.base.BaseUtils.isRedundantString;
 import static platform.base.BaseUtils.nvl;
 
 public class FormPropertyOptions {
@@ -157,6 +158,13 @@ public class FormPropertyOptions {
 
     public void addContextMenuEditAction(String caption, ActionPropertyObjectEntity action) {
         if (action != null) {
+            if (isRedundantString(caption)) {
+                caption = action.property.caption;
+            }
+            if (isRedundantString(caption)) {
+                caption = action.property.getSID();
+            }
+
             addEditAction(action.property.getSID(), action);
             addContextMenuBinding(action.property.getSID(), caption);
         }

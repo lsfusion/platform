@@ -90,11 +90,11 @@ FORM customer 'Покупатель'
     OBJECTS cu=customer FIXED PANEL
     PROPERTIES(cu) name, nameCustomerGroupCustomer, nameOwnershipLegalEntity,
                    shortNameOwnershipLegalEntity, fullNameLegalEntity,
-                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(cu),
-                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(cu),
-                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(cu),
-                   accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(cu),
-                   phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(cu),
+                   addressLegalEntity ON CHANGE dialogAddressLegalEntity(cu),
+                   postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(cu),
+                   managerLegalEntity ON CHANGE dialogManagerLegalEntity(cu),
+                   accountantLegalEntity ON CHANGE dialogAccountantLegalEntity(cu),
+                   phoneLegalEntity ON CHANGE dialogPhoneLegalEntity(cu),
                    emailLegalEntity, siteLegalEntity
 
     OBJECTS a=Bank.account

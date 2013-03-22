@@ -60,9 +60,9 @@ EXTEND FORM userInvoice
 
     PROPERTIES(d) BEFORE delete(d) SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
                   namePurchaseRetailPriceListTypeUserInvoiceDetail,
-                  purchaseRetailMarkupUserInvoiceDetail ON CHANGE EXEC changePurchaseRetailMarkupUserInvoiceDetail(d), purchaseRetailMarkupSumUserInvoiceDetail, numberPurchaseRetailVATUserInvoiceDetail,
+                  purchaseRetailMarkupUserInvoiceDetail ON CHANGE changePurchaseRetailMarkupUserInvoiceDetail(d), purchaseRetailMarkupSumUserInvoiceDetail, numberPurchaseRetailVATUserInvoiceDetail,
                   valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailVATSumUserInvoiceDetail,
-                  purchaseRetailPriceUserInvoiceDetail ON CHANGE EXEC changePurchaseRetailPriceUserInvoiceDetail(d),
+                  purchaseRetailPriceUserInvoiceDetail ON CHANGE changePurchaseRetailPriceUserInvoiceDetail(d),
                   purchaseRetailSumUserInvoiceDetail
     PROPERTIES(d) purchasePricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
 

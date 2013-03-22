@@ -131,7 +131,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
         FILTERS object###object##Detail(d) == t
 
         EVENTS
-            ON OK EXEC prePost###object(t)
+            ON OK prePost###object(t)
 
         EDIT object OBJECT t
     ;
@@ -408,7 +408,7 @@ dialogRowReturnRepairDetail 'Строка передачи в ремонт' (ret
 
 
 EXTEND FORM returnRepair
-    PROPERTIES(d) descriptionRowRepairDetailReturnRepairDetail ON CHANGE EXEC dialogRowReturnRepairDetail(d)//, currentBalanceReturnOutDetail READONLY
+    PROPERTIES(d) descriptionRowRepairDetailReturnRepairDetail ON CHANGE dialogRowReturnRepairDetail(d)//, currentBalanceReturnOutDetail READONLY
 
 ;
 
@@ -694,7 +694,7 @@ dialogRowReturnDryCleaningDetail 'Строка передачи в химчис�
 
 
 EXTEND FORM returnDryCleaning
-    PROPERTIES(d) descriptionRowDryCleaningDetailReturnDryCleaningDetail ON CHANGE EXEC dialogRowReturnDryCleaningDetail(d)
+    PROPERTIES(d) descriptionRowDryCleaningDetailReturnDryCleaningDetail ON CHANGE dialogRowReturnDryCleaningDetail(d)
 ;
 
 EXTEND FORM returnDryCleanings

@@ -144,7 +144,7 @@ FORM returnCertification 'Возврат из сертификации'
 
 
     EVENTS
-        ON OK EXEC prePostReturnCertification(w)
+        ON OK prePostReturnCertification(w)
 
     EDIT returnCertification OBJECT w
 ;

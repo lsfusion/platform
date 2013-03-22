@@ -37,7 +37,7 @@ changeSHA256PasswordCustomUser = ACTION(customUser) {
 FORM customUser 'Пользователь'
     OBJECTS u=customUser FIXED PANEL
     PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
-    sha256PasswordCustomUser ON CHANGE EXEC changeSHA256PasswordCustomUser(u), emailContact,
+    sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
     forbidChangePasswordCustomUser, forbidEditProfileCustomUser
 
     EDIT customUser OBJECT u

@@ -300,7 +300,7 @@ FORM naturalLoss 'Ведомость естественной убыли'
     FILTERS inNaturalLossNaturalLossDetail(s, d)
 
     EVENTS
-        ON OK EXEC prePostNaturalLoss(s)
+        ON OK prePostNaturalLoss(s)
 
     EDIT naturalLoss OBJECT s
 ;

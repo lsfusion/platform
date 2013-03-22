@@ -81,7 +81,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         FILTERS userCreditNoteUserCreditNoteDetail(d) == c
 
         EVENTS
-            ON OK EXEC prePostUserCreditNote(c)
+            ON OK prePostUserCreditNote(c)
 
         EDIT userCreditNote OBJECT c
     ;

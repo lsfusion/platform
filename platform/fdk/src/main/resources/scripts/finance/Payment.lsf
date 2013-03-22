@@ -84,10 +84,10 @@ FORM payment 'Платеж'
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment,
                   notePayment, namePayerPayment, nameBeneficiaryPayment, nameAccountToPayment, nameAccountFromPayment,
                   nameCurrencyAccountFromPayment, nameCurrencyAccountToPayment, sumFromPayment, sumToPayment,
-                  rateFromPayment ON CHANGE EXEC setSumFromPayment(p),
-                  rateToPayment ON CHANGE EXEC setSumToPayment(p)
+                  rateFromPayment ON CHANGE setSumFromPayment(p),
+                  rateToPayment ON CHANGE setSumToPayment(p)
     EVENTS
-        ON OK EXEC prePostPayment(p)
+        ON OK prePostPayment(p)
 
     EDIT payment OBJECT p
 ;

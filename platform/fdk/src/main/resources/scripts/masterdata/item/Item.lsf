@@ -130,7 +130,7 @@ FORM item 'Товар'
 
     OBJECTS b=barcode
     PROPERTIES(b)       idBarcode, dateBarcode, shortNameUOMBarcode,
-                        amountBarcode, activeBarcode, primaryBarcode ON CHANGE EXEC changePrimaryBarcodeSku(b,i)
+                        amountBarcode, activeBarcode, primaryBarcode ON CHANGE changePrimaryBarcodeSku(b,i)
     PROPERTIES(i)       generateBarcodeSku TODRAW b FORCE PANEL
     PROPERTIES(b)       ADDOBJ, delete
     FILTERS skuBarcode(b) == i
@@ -258,7 +258,7 @@ FORM items 'Товары'
     PROPERTIES(i) READONLY idBarcodeSku
     PROPERTIES(i) ADDFORM, EDITFORM, delete
     PROPERTIES seekBarcode()
-    ON CHANGE EXEC seekSkuBarcode()
+    ON CHANGE seekSkuBarcode()
     DIALOG item OBJECT i
 ;
 
@@ -301,7 +301,7 @@ DESIGN items FROM DEFAULT {
 //    OBJECTS i=item
 //    PROPERTIES(i) READONLY idBarcodeSku
 //    PROPERTIES(i) ADDFORM, EDITFORM, delete
-//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE EXEC seekSkuBarcode()
+//    PROPERTIES seekBarcode() TODRAW i FORCE PANEL TOOLBAR ON CHANGE seekSkuBarcode()
 //
 //    DIALOG item OBJECT i
 //;

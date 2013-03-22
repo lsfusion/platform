@@ -13,11 +13,11 @@ FORM company 'Компания'
     OBJECTS co=company FIXED PANEL
     PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
-                   addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(co),
-                   postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(co),
-                   managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(co),
-                   accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(co),
-                   phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(co),
+                   addressLegalEntity ON CHANGE dialogAddressLegalEntity(co),
+                   postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(co),
+                   managerLegalEntity ON CHANGE dialogManagerLegalEntity(co),
+                   accountantLegalEntity ON CHANGE dialogAccountantLegalEntity(co),
+                   phoneLegalEntity ON CHANGE dialogPhoneLegalEntity(co),
                    emailLegalEntity, siteLegalEntity
 
     OBJECTS a=Bank.account

@@ -147,7 +147,7 @@ FORM userPriceChange 'Переоценка товаров'
     FILTERS inUserPriceChangeUserPriceChangeDetail(u, d)
 
     EVENTS
-        ON OK EXEC prePostUserPriceChange(u)
+        ON OK prePostUserPriceChange(u)
 
     EDIT userPriceChange OBJECT u
 ;

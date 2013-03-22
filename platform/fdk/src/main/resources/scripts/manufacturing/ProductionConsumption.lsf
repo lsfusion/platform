@@ -306,7 +306,7 @@ FORM userConsumption 'Списание сырья'
     FILTERS userConsumptionUserConsumptionDetail(d) == o
 
     EVENTS
-        ON OK EXEC prePostUserConsumption(o)
+        ON OK prePostUserConsumption(o)
 
     HINTTABLE LIST dateTimeUserConsumptionDetail, skuUserConsumptionDetail, stockUserConsumptionDetail,
                    priceListTypeUserConsumptionDetail, currencyUserConsumptionDetail, priceUserConsumptionDetail

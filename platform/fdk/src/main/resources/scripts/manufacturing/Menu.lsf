@@ -123,7 +123,7 @@ FORM userMenu 'Меню'
 
 
     EVENTS
-        ON OK EXEC prePostUserMenu(m)
+        ON OK prePostUserMenu(m)
 
     HINTTABLE LIST dateTimeUserMenuDetail, skuUserMenuDetail,stockUserMenuDetail,
                    priceListTypeUserMenuDetail, currencyUserMenuDetail, priceUserMenuDetail

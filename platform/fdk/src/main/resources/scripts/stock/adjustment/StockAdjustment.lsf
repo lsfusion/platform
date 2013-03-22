@@ -81,14 +81,14 @@ FORM userAdjustment 'Изменение остатков'
 
     OBJECTS d = userAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
-                   descriptionBatchUserAdjustmentDetail ON CHANGE EXEC batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
+                   descriptionBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
 
     PROPERTIES(i) TODRAW d fillDocumentAdjustment, addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
     FILTERS userAdjustmentUserAdjustmentDetail(d) == i
 
     EVENTS
-        ON OK EXEC prePostUserAdjustment(i)
+        ON OK prePostUserAdjustment(i)
 
     EDIT userAdjustment OBJECT i
 ;
@@ -162,7 +162,7 @@ changeActualQuantitySkuUserAdjustment = ACTION (sku, userAdjustment) {
 }
 
 EXTEND FORM userAdjustment
-    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE EXEC changeActualQuantitySkuUserAdjustment(s, i) BEFORE currentBalanceSkuUserAdjustment(s,i)
+    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE changeActualQuantitySkuUserAdjustment(s, i) BEFORE currentBalanceSkuUserAdjustment(s,i)
 ;
 
 FORM adjustments 'Изменения остатков'

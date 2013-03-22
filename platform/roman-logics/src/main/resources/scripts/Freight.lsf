@@ -207,19 +207,19 @@ EXTEND FORM freightChangeForm
     PROPERTIES (freight, sku) nameCategoryFreightLanguageSku AFTER nameCategoryArticleSku SHOWIF languageFreight(freight),
                               nameCountryLanguageFreightSku  AFTER nameCountrySku SHOWIF languageFreight(freight)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationAllMainComposition(sku)
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT translationAllMainComposition(sku)
     PROPERTIES (sku, freight) sidCustomCategory10SkuFreight BEFORE nameCountrySku,
                               nameSubCategorySkuFreight BEFORE nameCountrySku,
-                              mainCompositionSkuFreight ON CHANGE EXEC changeMainCompositionSkuLanguage(sku, freight) ON SHORTCUT 'Перевести все' EXEC translationAllMainCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
+                              mainCompositionSkuFreight ON CHANGE changeMainCompositionSkuLanguage(sku, freight) ON SHORTCUT translationAllMainCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationAllAdditionalComposition(sku)
-    PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE EXEC changeAdditionalCompositionSkuLanguage(sku, freight) ON SHORTCUT 'Перевести все' EXEC translationAllAdditionalCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT translationAllAdditionalComposition(sku)
+    PROPERTIES (sku, freight) additionalCompositionSkuFreight ON CHANGE changeAdditionalCompositionSkuLanguage(sku, freight) ON SHORTCUT translationAllAdditionalCompositionLanguage(sku, freight) SHOWIF languageFreight(freight)
 
-    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, mainCompositionFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllFreightMainComposition(freight, skuFreight),
-                                     mainCompositionLanguageFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllLanguageMainComposition(freight, skuFreight) SHOWIF languageFreight(freight),
+    PROPERTIES (freight, skuFreight) mainCompositionOriginFreightSku, mainCompositionFreightSku ON SHORTCUT translationAllFreightMainComposition(freight, skuFreight),
+                                     mainCompositionLanguageFreightSku ON SHORTCUT translationAllLanguageMainComposition(freight, skuFreight) SHOWIF languageFreight(freight),
 
-                                     additionalCompositionOriginFreightSku, additionalCompositionFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllFreightAdditionalComposition(freight, skuFreight),
-                                     additionalCompositionLanguageFreightSku ON SHORTCUT 'Перевести все' EXEC translationAllLanguageAdditionalComposition(freight, skuFreight) SHOWIF languageFreight(freight),
+                                     additionalCompositionOriginFreightSku, additionalCompositionFreightSku ON SHORTCUT translationAllFreightAdditionalComposition(freight, skuFreight),
+                                     additionalCompositionLanguageFreightSku ON SHORTCUT translationAllLanguageAdditionalComposition(freight, skuFreight) SHOWIF languageFreight(freight),
 
                                      nameCountryOfOriginLanguageFreightSku AFTER nameCountryOfOriginFreightSku(freight, skuFreight) SHOWIF languageFreight(freight)
 ;

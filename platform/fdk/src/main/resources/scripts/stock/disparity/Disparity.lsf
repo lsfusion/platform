@@ -117,7 +117,7 @@ FORM disparity 'Изменение сортности'
     FILTERS         disparityDisparityDetail(d) == dis
 
     EVENTS
-        ON OK EXEC prePostDisparity(dis)
+        ON OK prePostDisparity(dis)
 
     EDIT disparity OBJECT dis
 ;

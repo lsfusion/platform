@@ -241,7 +241,7 @@ FORM paymentRequest 'Платежное требование'
     PROPERTIES(p) sumPaymentRequest
 
     EVENTS
-        ON OK EXEC prePostPaymentRequest(p)
+        ON OK prePostPaymentRequest(p)
 
     EDIT paymentRequest OBJECT p
 ;
@@ -390,7 +390,7 @@ FORM creditMemo 'Кредитная нота'
     FILTERS contractCreditMemo(c) == contractInContractLedger(i)
 
     EVENTS
-        ON OK EXEC prePostCreditMemo(c)
+        ON OK prePostCreditMemo(c)
 
     EDIT creditMemo OBJECT c
 ;

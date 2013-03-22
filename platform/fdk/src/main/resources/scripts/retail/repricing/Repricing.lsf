@@ -371,14 +371,14 @@ FORM userRepricing 'Акт переоценки'
     PROPERTIES (d) indexUserRepricingDetail, idBarcodeSkuUserRepricingDetail, nameSkuUserRepricingDetail, shortNameUOMSkuUserRepricingDetail, quantityUserRepricingDetail,
 
                    curPriceUserRepricingDetail, curSumUserRepricingDetail,                    
-                   curMarkupUserRepricingDetail ON CHANGE EXEC changeCurMarkupUserRepricingDetail(d), curMarkupSumUserRepricingDetail,
+                   curMarkupUserRepricingDetail ON CHANGE changeCurMarkupUserRepricingDetail(d), curMarkupSumUserRepricingDetail,
                    numberCurVATUserRepricingDetail, valueCurVATUserRepricingDetail, curVATSumUserRepricingDetail,
-                   curRetailPriceUserRepricingDetail ON CHANGE EXEC changeCurRetailPriceUserRepricingDetail(d), curRetailSumUserRepricingDetail,
+                   curRetailPriceUserRepricingDetail ON CHANGE changeCurRetailPriceUserRepricingDetail(d), curRetailSumUserRepricingDetail,
                    
                    priceUserRepricingDetail, sumUserRepricingDetail,                    
-                   markupUserRepricingDetail ON CHANGE EXEC changeMarkupUserRepricingDetail(d), markupSumUserRepricingDetail,
+                   markupUserRepricingDetail ON CHANGE changeMarkupUserRepricingDetail(d), markupSumUserRepricingDetail,
                    numberVATUserRepricingDetail, valueVATUserRepricingDetail, VATSumUserRepricingDetail,
-                   retailPriceUserRepricingDetail ON CHANGE EXEC changeRetailPriceUserRepricingDetail(d), retailSumUserRepricingDetail, ADDOBJ, delete
+                   retailPriceUserRepricingDetail ON CHANGE changeRetailPriceUserRepricingDetail(d), retailSumUserRepricingDetail, ADDOBJ, delete
 
     PROPERTIES changePriceUserRepricing(p) TODRAW d
 
@@ -388,7 +388,7 @@ FORM userRepricing 'Акт переоценки'
     FILTERS userRepricingUserRepricingDetail(d)==p
 
     EVENTS
-        ON OK EXEC prePostUserRepricing(p)
+        ON OK prePostUserRepricing(p)
 
     EDIT userRepricing OBJECT p
 ;
@@ -480,7 +480,7 @@ overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
 
 
 EXTEND FORM userRepricing
-    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE EXEC overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
+    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
 ;
 
 addUserRepricing 'Добавить' = ACTION ADDFORM userRepricing;
@@ -751,9 +751,9 @@ META defineRepricing(sign, stockProp)
 
         PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
                         balanceBSkuUserInvoiceDetail, curPriceUserInvoiceDetail, curSumUserInvoiceDetail,
-                        curMarkupUserInvoiceDetail ON CHANGE EXEC changeCurMarkupUserInvoiceDetail(d), curMarkupSumUserInvoiceDetail,
+                        curMarkupUserInvoiceDetail ON CHANGE changeCurMarkupUserInvoiceDetail(d), curMarkupSumUserInvoiceDetail,
                         numberCurVATUserInvoiceDetail, valueCurVATUserInvoiceDetail, curVATSumUserInvoiceDetail,
-                        curRetailPriceUserInvoiceDetail ON CHANGE EXEC changeCurRetailPriceUserInvoiceDetail(d), curRetailSumUserInvoiceDetail
+                        curRetailPriceUserInvoiceDetail ON CHANGE changeCurRetailPriceUserInvoiceDetail(d), curRetailSumUserInvoiceDetail
         PROPERTIES(d)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
                         afterSumUserInvoiceDetail, afterRetailVATSumUserInvoiceDetail, afterRetailMarkupSumUserInvoiceDetail, afterRetailSumUserInvoiceDetail
 

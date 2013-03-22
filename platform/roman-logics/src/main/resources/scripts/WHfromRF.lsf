@@ -263,7 +263,7 @@ changeAddDetailInputBarcodeWHfromRFDetailWHfromRF = ACTION (WHfromRF) {
     EXEC addDialogSkuFreightUnitWHfromRFBarcode(WHfromRF, requestedString());
 };
 addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WHfromRF) = DATA SESSION STRING[14] (WHfromRF) TOOLBAR EDITKEY 'F4'
-                                                                        ON CHANGE EXEC changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
+                                                                        ON CHANGE changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {
     FOR isNotShippedSkuFreightUnitWHfromRF (sku AS sku, currentFreightUnit(WHfromRF), WHfromRF AS WHfromRF) DO {
@@ -524,18 +524,18 @@ FORM WHfromRF 'Приход товара из РФ'
                                        nameBrandSupplierArticleSkuWHfromRFDetail, netWeightArticleSkuWHfromRFDetail,
                                        mainCompositionOriginArticleSkuWHfromRFDetail
 
-    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail ON CHANGE EXEC changeGenderArticleSkuWHfromRFDetail(d),
-                              c = nameCategoryArticleSkuWHfromRFDetail ON CHANGE EXEC changeCategoryArticleSkuWHfromRFDetail(d),
-                              nameTypeFabricArticleSkuWHfromRFDetail ON CHANGE EXEC changeTypeFabricArticleSkuWHfromRFDetail(d),
-                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail ON CHANGE EXEC changeUnitOfMeasureArticleSkuWHfromRFDetail(d),
-                              netWeightSkuWHfromRFDetail ON CHANGE EXEC changeNetWeightSkuWHfromRFDetail(d),
-                              nameCountryOfOriginSkuWHfromRFDetail ON CHANGE EXEC changeCountryOfOriginSkuWHfromRFDetail(d),
-                              mainCompositionOriginSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionOriginSkuWHfromRFDetail(d),
-                              mainCompositionSkuWHfromRFDetail ON CHANGE EXEC changeMainCompositionSkuWHfromRFDetail(d),
-                              additionalCompositionOriginSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
-                              additionalCompositionSkuWHfromRFDetail ON CHANGE EXEC changeAdditionalCompositionSkuWHfromRFDetail(d),
-                              coefficientArticleSkuWHfromRFDetail ON CHANGE EXEC changeCoefficientArticleSkuWHfromRFDetail(d)
-    PROPERTIES(d) FORCE GRID  nameTypeLabelWHfromRFDetail ON CHANGE EXEC changeTypeLabelWHfromRFDetail(d)
+    PROPERTIES(d) FORCE PANEL sidGenderArticleSkuWHfromRFDetail ON CHANGE changeGenderArticleSkuWHfromRFDetail(d),
+                              c = nameCategoryArticleSkuWHfromRFDetail ON CHANGE changeCategoryArticleSkuWHfromRFDetail(d),
+                              nameTypeFabricArticleSkuWHfromRFDetail ON CHANGE changeTypeFabricArticleSkuWHfromRFDetail(d),
+                              u = nameUnitOfMeasureArticleSkuWHfromRFDetail ON CHANGE changeUnitOfMeasureArticleSkuWHfromRFDetail(d),
+                              netWeightSkuWHfromRFDetail ON CHANGE changeNetWeightSkuWHfromRFDetail(d),
+                              nameCountryOfOriginSkuWHfromRFDetail ON CHANGE changeCountryOfOriginSkuWHfromRFDetail(d),
+                              mainCompositionOriginSkuWHfromRFDetail ON CHANGE changeMainCompositionOriginSkuWHfromRFDetail(d),
+                              mainCompositionSkuWHfromRFDetail ON CHANGE changeMainCompositionSkuWHfromRFDetail(d),
+                              additionalCompositionOriginSkuWHfromRFDetail ON CHANGE changeAdditionalCompositionOriginSkuWHfromRFDetail(d),
+                              additionalCompositionSkuWHfromRFDetail ON CHANGE changeAdditionalCompositionSkuWHfromRFDetail(d),
+                              coefficientArticleSkuWHfromRFDetail ON CHANGE changeCoefficientArticleSkuWHfromRFDetail(d)
+    PROPERTIES(d) FORCE GRID  nameTypeLabelWHfromRFDetail ON CHANGE changeTypeLabelWHfromRFDetail(d)
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
 
@@ -555,7 +555,7 @@ FORM WHfromRF 'Приход товара из РФ'
         FILTER 'Показывать принятые' 'F9' quantityWHfromRFDetail(d) DEFAULT
 
     EVENTS
-        ON OK EXEC prePostWHfromRF(w)
+        ON OK prePostWHfromRF(w)
 
     EDIT WHfromRF OBJECT w
 ;

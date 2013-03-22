@@ -69,7 +69,7 @@ META defineBlanketOrder(sign)
 
     @defineDocumentDetailPriceCustomPrefix (blanketOrderDetail, invoice, ' с НДС'); // объявляем цену с НДС
 
-    // объявляем Action'ы для ON CHANGE EXEC по изменению цен
+    // объявляем Action'ы для ON CHANGE по изменению цен
     @defineDocumentDetailPriceVATOnChange(blanketOrder);
     @defineDocumentDetailNumberVATOnChange(blanketOrder, supplierStock);
     @defineDocumentDetailValueVATOnChange(blanketOrder);
@@ -127,10 +127,10 @@ META defineBlanketOrder(sign)
         PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
 
-                       priceBlanketOrderDetail ON CHANGE EXEC changePriceBlanketOrderDetail(d), sumBlanketOrderDetail,
-                       numberVATBlanketOrderDetail ON CHANGE EXEC changeNumberVATBlanketOrderDetail(d),
-                       valueVATBlanketOrderDetail ON CHANGE EXEC changeValueVATBlanketOrderDetail(d),
-                       invoicePriceBlanketOrderDetail ON CHANGE EXEC changeInvoicePriceBlanketOrderDetail(d),
+                       priceBlanketOrderDetail ON CHANGE changePriceBlanketOrderDetail(d), sumBlanketOrderDetail,
+                       numberVATBlanketOrderDetail ON CHANGE changeNumberVATBlanketOrderDetail(d),
+                       valueVATBlanketOrderDetail ON CHANGE changeValueVATBlanketOrderDetail(d),
+                       invoicePriceBlanketOrderDetail ON CHANGE changeInvoicePriceBlanketOrderDetail(d),
                        VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
 
@@ -146,7 +146,7 @@ META defineBlanketOrder(sign)
                 inCustomerBlanketOrderStock(o,c)
 
         EVENTS
-            ON OK EXEC prePostBlanketOrder(o)
+            ON OK prePostBlanketOrder(o)
 
         EDIT blanketOrder OBJECT o
     ;

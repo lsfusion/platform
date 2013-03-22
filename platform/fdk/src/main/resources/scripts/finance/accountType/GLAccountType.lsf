@@ -192,7 +192,7 @@ FORM userGeneralLedger 'Проводка'
                   sumUserGeneralLedger
 
     EVENTS
-        ON OK EXEC prePostUserGeneralLedger(g)
+        ON OK prePostUserGeneralLedger(g)
 
     EDIT userGeneralLedger OBJECT g
 ;

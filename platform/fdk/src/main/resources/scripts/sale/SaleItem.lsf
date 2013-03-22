@@ -5,8 +5,8 @@ REQUIRE Item, SalePack;
 NAMESPACE Sale;
 
 EXTEND FORM item
-    PROPERTIES(i) saleAmount = amountPackSku ON CHANGE EXEC changePackSku(i)
-    PROPERTIES(b) packBarcode ON CHANGE EXEC changePackBarcodeSku(b,i) BEFORE delete(b)
+    PROPERTIES(i) saleAmount = amountPackSku ON CHANGE changePackSku(i)
+    PROPERTIES(b) packBarcode ON CHANGE changePackBarcodeSku(b,i) BEFORE delete(b)
 ;
 EXTEND DESIGN item {
 //    itemHeaderColumn1 {

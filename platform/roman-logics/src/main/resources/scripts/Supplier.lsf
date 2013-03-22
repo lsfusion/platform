@@ -110,11 +110,11 @@ FORM supplier 'Поставщик'
     OBJECTS s=supplier FIXED PANEL
     PROPERTIES(s) name, fullNameLegalEntity, nameSupplierGroupSupplier, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   emailLegalEntity, siteLegalEntity,
-                  addressLegalEntity ON CHANGE EXEC dialogAddressLegalEntity(s),
-                  postAddressLegalEntity ON CHANGE EXEC dialogPostAddressLegalEntity(s),
-                  managerLegalEntity ON CHANGE EXEC dialogManagerLegalEntity(s),
-                  accountantLegalEntity ON CHANGE EXEC dialogAccountantLegalEntity(s),
-                  phoneLegalEntity ON CHANGE EXEC dialogPhoneLegalEntity(s),
+                  addressLegalEntity ON CHANGE dialogAddressLegalEntity(s),
+                  postAddressLegalEntity ON CHANGE dialogPostAddressLegalEntity(s),
+                  managerLegalEntity ON CHANGE dialogManagerLegalEntity(s),
+                  accountantLegalEntity ON CHANGE dialogAccountantLegalEntity(s),
+                  phoneLegalEntity ON CHANGE dialogPhoneLegalEntity(s),
                   surePercentSupplier, allowablePercentSupplier,
                   afterDaysSupplier, periodicitySupply,
                   returnLossSupplier
@@ -166,8 +166,8 @@ FORM supplier 'Поставщик'
     FILTERS stockGroupStock(st) == sg
 
     PROPERTIES(s, st) emailOrderSupplierStock, contactSupplierStock
-    PROPERTIES       overNameControlSupplierStockDate(s, st, dt) BACKGROUND dataControlSupplierStockDate(s, st, dt) ON CHANGE EXEC overDialogControlSupplierStockDate(s, st),
-                     overNameSureSupplierStockDate(s, st, dt) BACKGROUND dataSureSupplierStockDate(s, st, dt) ON CHANGE EXEC overDialogSureSupplierStockDate(s, st)
+    PROPERTIES       overNameControlSupplierStockDate(s, st, dt) BACKGROUND dataControlSupplierStockDate(s, st, dt) ON CHANGE overDialogControlSupplierStockDate(s, st),
+                     overNameSureSupplierStockDate(s, st, dt) BACKGROUND dataSureSupplierStockDate(s, st, dt) ON CHANGE overDialogSureSupplierStockDate(s, st)
 
     EDIT supplier OBJECT s
 ;

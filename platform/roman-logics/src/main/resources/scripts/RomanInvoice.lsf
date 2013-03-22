@@ -84,15 +84,15 @@ EXTEND FORM boxInvoiceForm
                                    quantityUnclassifiedGenderSupplierSupplier SHOWIF quantityUnclassifiedGenderSupplierSupplier(supplier)
 
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceName(sku)
-    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageName(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT translationInvoiceName(sku)
+    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageName(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceMainComposition(sku)
-    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageMainComposition(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT translationInvoiceMainComposition(sku)
+    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageMainComposition(sku, invoice) SHOWIF languageInvoice(invoice)
 
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceAdditionalComposition(sku)
-    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageAdditionalComposition(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT translationInvoiceAdditionalComposition(sku)
+    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageAdditionalComposition(sku, invoice) SHOWIF languageInvoice(invoice)
 
     OBJECTS a = article
     PROPERTIES (a) READONLY sidArticle
@@ -103,19 +103,19 @@ EXTEND FORM boxInvoiceForm
     FILTERS quantityDocumentArticle(invoice, a)
 
     OBJECTS mc = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(mc) ON CHANGE EXEC changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
+    PROPERTIES OBJVALUE(mc) ON CHANGE changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
     FILTERS countInvoiceMainComposition(invoice, mc)
 
     OBJECTS ac = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(ac) ON CHANGE EXEC changeDocumentAdditionalComposition(invoice, ac), countInvoiceAdditionalComposition(invoice, ac)
+    PROPERTIES OBJVALUE(ac) ON CHANGE changeDocumentAdditionalComposition(invoice, ac), countInvoiceAdditionalComposition(invoice, ac)
     FILTERS countInvoiceAdditionalComposition(invoice, ac)
 
     OBJECTS mcl = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(mcl) ON CHANGE EXEC changeDocumentMainCompositionLanguage(invoice, mcl), countInvoiceMainCompositionLanguage(invoice, mcl)
+    PROPERTIES OBJVALUE(mcl) ON CHANGE changeDocumentMainCompositionLanguage(invoice, mcl), countInvoiceMainCompositionLanguage(invoice, mcl)
     FILTERS countInvoiceMainCompositionLanguage(invoice, mcl)
 
     OBJECTS acl = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(acl) ON CHANGE EXEC changeDocumentAdditionalCompositionLanguage(invoice, acl), countInvoiceAdditionalCompositionLanguage(invoice, acl)
+    PROPERTIES OBJVALUE(acl) ON CHANGE changeDocumentAdditionalCompositionLanguage(invoice, acl), countInvoiceAdditionalCompositionLanguage(invoice, acl)
     FILTERS countInvoiceAdditionalCompositionLanguage(invoice, acl)
 ;
 
@@ -194,15 +194,15 @@ EXTEND FORM simpleInvoiceForm
                                    quantityUnclassifiedGenderSupplierSupplier SHOWIF quantityUnclassifiedGenderSupplierSupplier(supplier)
 
     PROPERTIES (invoice) READONLY nameLanguageInvoice AFTER nameDestinationDestinationDocument
-    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceNameSimple(sku)
-    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE EXEC changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageNameSimple(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) originalNameArticleSku, translateNameArticleSku ON SHORTCUT translationInvoiceNameSimple(sku)
+    PROPERTIES (sku, invoice) translateNameSkuInvoice ON CHANGE changeNameSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageNameSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceMainCompositionSimple(sku)
-    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE EXEC changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageMainCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) mainCompositionOriginSku, mainCompositionSku ON SHORTCUT translationInvoiceMainCompositionSimple(sku)
+    PROPERTIES (sku, invoice) mainCompositionSkuInvoice ON CHANGE changeMainCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageMainCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
 
-    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT 'Перевести все' EXEC translationInvoiceAdditionalCompositionSimple(sku)
-    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE EXEC changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT 'Перевести все' EXEC translationInvoiceLanguageAdditionalCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
+    PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT translationInvoiceAdditionalCompositionSimple(sku)
+    PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageAdditionalCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
     OBJECTS a = article
     PROPERTIES (a) READONLY sidArticle
@@ -213,19 +213,19 @@ EXTEND FORM simpleInvoiceForm
     FILTERS quantityDocumentArticle(invoice, a)
 
     OBJECTS mc = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(mc) ON CHANGE EXEC changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
+    PROPERTIES OBJVALUE(mc) ON CHANGE changeDocumentMainComposition(invoice, mc), countInvoiceMainComposition(invoice, mc)
     FILTERS countInvoiceMainComposition(invoice, mc)
 
     OBJECTS ac = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(ac) ON CHANGE EXEC changeDocumentAdditionalComposition(invoice, ac), countInvoiceAdditionalComposition(invoice, ac)
+    PROPERTIES OBJVALUE(ac) ON CHANGE changeDocumentAdditionalComposition(invoice, ac), countInvoiceAdditionalComposition(invoice, ac)
     FILTERS countInvoiceAdditionalComposition(invoice, ac)
 
     OBJECTS mcl = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(mcl) ON CHANGE EXEC changeDocumentMainCompositionLanguage(invoice, mcl), countInvoiceMainCompositionLanguage(invoice, mcl)
+    PROPERTIES OBJVALUE(mcl) ON CHANGE changeDocumentMainCompositionLanguage(invoice, mcl), countInvoiceMainCompositionLanguage(invoice, mcl)
     FILTERS countInvoiceMainCompositionLanguage(invoice, mcl)
 
     OBJECTS acl = STRING[200] FIXED GRID
-    PROPERTIES OBJVALUE(acl) ON CHANGE EXEC changeDocumentAdditionalCompositionLanguage(invoice, acl), countInvoiceAdditionalCompositionLanguage(invoice, acl)
+    PROPERTIES OBJVALUE(acl) ON CHANGE changeDocumentAdditionalCompositionLanguage(invoice, acl), countInvoiceAdditionalCompositionLanguage(invoice, acl)
     FILTERS countInvoiceAdditionalCompositionLanguage(invoice, acl)
 ;
 

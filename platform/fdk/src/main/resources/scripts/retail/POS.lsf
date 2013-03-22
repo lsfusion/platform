@@ -577,7 +577,7 @@ FORM POS
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[14] FIXED PANEL
-    PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE EXEC changeBarcodeSaleReceipt(r) EVENTID 'SCANNER'
+    PROPERTIES(bs) SHOWIF currentZReport() barcodeSale = OBJVALUE ON CHANGE changeBarcodeSaleReceipt(r) EVENTID 'SCANNER'
 
     OBJECTS pc = promotionCondition FIXED GRID
     PROPERTIES(pc) SHOWIF currentZReport() READONLY namePromotionPromotionCondition, name, dateFromPromotionCondition, dateToPromotionCondition, percentPromotionCondition
@@ -592,7 +592,7 @@ FORM POS
     PROPERTIES() fiscalAdvancePaper, fiscalCutReceipt
 
     EVENTS
-        ON INIT EXEC createCurrentReceipt()
+        ON INIT createCurrentReceipt()
 
     HINTTABLE LIST POSPriceListTypeReceipt, departmentStoreReceipt, groupCashRegisterReceipt
 ;
