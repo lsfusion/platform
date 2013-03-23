@@ -8,16 +8,16 @@ teamName 'Название команды' (team) = DATA STRING[30](Team) IN bas
 
 CLASS Game 'Игра';
 
-gameDate 'Дата' (game) = DATA DATE (Game);
-hostTeam(game) = DATA Team (Game);
-guestTeam(game) = DATA Team (Game);
-hostTeamName 'Хозяева' = teamName(hostTeam(game));
-guestTeamName 'Гости' = teamName(guestTeam(game));
+gameDate 'Дата' = DATA DATE (Game);
+hostTeam = DATA Team (Game);
+guestTeam = DATA Team (Game);
+hostTeamName 'Хозяева' (game) = teamName(hostTeam(game));
+guestTeamName 'Гости' (game) = teamName(guestTeam(game));
 
 CONSTRAINT hostTeam(team) == guestTeam(team) CHECKED BY hostTeam, guestTeam MESSAGE 'Хозяйская и гостевая команды должны быть разными';
 
-hostGoals 'Х голы' (game) = DATA INTEGER (Game);
-guestGoals 'Г голы' (game) = DATA INTEGER (Game);
+hostGoals 'Х голы' = DATA INTEGER (Game);
+guestGoals 'Г голы' = DATA INTEGER (Game);
 
 CONSTRAINT hostGoals(game) == guestGoals(game) MESSAGE 'Игра не может закончиться вничью';
 
@@ -35,8 +35,8 @@ CLASS GameResult 'Р/И' {
     winSO 'ПБ'
 } : named;
 
-userResultGame(game) = DATA GameResult (Game);
-gameResult(game) = UNION OVERRIDE GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1), userResultGame(game);
+userResultGame = DATA GameResult (Game);
+gameResult (game) = UNION OVERRIDE GameResult.win IF ((hostGoals(game) (-) guestGoals(game)) > 1 OR (guestGoals(game) (-) hostGoals(game)) > 1), userResultGame(game);
 gameResultName 'Р/И' (game) = name(gameResult(game));
 
 CONSTRAINT ((hostGoals(game) (-) guestGoals(game)) > 1 OR (hostGoals(game) (-) guestGoals(game)) < -1) AND userResultGame(game) MESSAGE 'Результат игры определен автоматически';
