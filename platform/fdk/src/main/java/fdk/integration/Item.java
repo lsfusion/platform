@@ -23,19 +23,18 @@ public class Item {
     public Double retailVAT;
     public String wareID;
     public Double priceWare;
-    public Double ndsWareField;
+    public Double wareVAT;
     public String writeOffRateID;
     public Double baseMarkup;
     public Double retailMarkup;
-    public String packBarcode;
     public String packBarcodeID;
     public Double amountPack;
 
     public Item(String itemID, String k_grtov, String name, String uomName, String uomShortName, String uomID,
                 String brandName, String brandID, String country, String barcode, String barcodeID, Date date,
                 Boolean isWeightItem, Double netWeightItem, Double grossWeightItem, String composition,
-                Double retailVAT, String wareID, Double priceWare, Double ndsWareField, String writeOffRateID,
-                Double baseMarkup, Double retailMarkup, String packBarcode, String packBarcodeID, Double amountPack) {
+                Double retailVAT, String wareID, Double priceWare, Double wareVAT, String writeOffRateID,
+                Double baseMarkup, Double retailMarkup, String packBarcodeID, Double amountPack) {
         this.itemID = itemID;
         this.k_grtov = k_grtov;
         this.name = name;
@@ -55,11 +54,10 @@ public class Item {
         this.retailVAT = retailVAT;
         this.wareID = wareID;
         this.priceWare = priceWare;
-        this.ndsWareField = ndsWareField;
+        this.wareVAT = wareVAT;
         this.writeOffRateID = writeOffRateID;
         this.baseMarkup = baseMarkup;
         this.retailMarkup = retailMarkup;
-        this.packBarcode = packBarcode;
         this.packBarcodeID = packBarcodeID;
         this.amountPack = amountPack;
     }

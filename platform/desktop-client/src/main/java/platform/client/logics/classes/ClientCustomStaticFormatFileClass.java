@@ -70,6 +70,6 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     }
 
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
-        return new FilePropertyEditor(multiple, filterDescription, filterExtensions);
+        return new FilePropertyEditor(multiple, storeName, filterDescription, filterExtensions);
     }
 }

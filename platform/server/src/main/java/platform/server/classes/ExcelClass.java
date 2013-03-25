@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class ExcelClass extends StaticFormatFileClass {
 
-    public final static ExcelClass instance = new ExcelClass(false);
-    public final static ExcelClass multipleInstance = new ExcelClass(true);
+    public final static ExcelClass instance = new ExcelClass(false, false);
+    public final static ExcelClass multipleInstance = new ExcelClass(true, false);
 
     protected String getFileSID() {
         return "ExcelClass";
@@ -19,12 +19,12 @@ public class ExcelClass extends StaticFormatFileClass {
         DataClass.storeClass(instance, multipleInstance);
     }
 
-    protected ExcelClass(boolean multiple) {
-        super(multiple);
+    protected ExcelClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
-    public ExcelClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ExcelClass(DataInputStream inStream, int version) throws IOException {
+        super(inStream, version);
     }
 
     public String toString() {

@@ -1300,7 +1300,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 3;
+            version = 4;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

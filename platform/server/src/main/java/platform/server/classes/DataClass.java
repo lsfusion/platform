@@ -161,12 +161,12 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         if (type == Data.COLOR) return ColorClass.instance;
 
         if(version>=2) { // обратная совместимость
-            if (type == Data.IMAGE) return new ImageClass(inStream);
-            if (type == Data.WORD) return new WordClass(inStream);
-            if (type == Data.EXCEL) return new ExcelClass(inStream);
-            if (type == Data.CUSTOMSTATICFORMATFILE) return new CustomStaticFormatFileClass(inStream);
-            if (type == Data.DYNAMICFORMATFILE) return new DynamicFormatFileClass(inStream);
-            if (type == Data.PDF) return new PDFClass(inStream);
+            if (type == Data.IMAGE) return new ImageClass(inStream, version);
+            if (type == Data.WORD) return new WordClass(inStream, version);
+            if (type == Data.EXCEL) return new ExcelClass(inStream, version);
+            if (type == Data.CUSTOMSTATICFORMATFILE) return new CustomStaticFormatFileClass(inStream, version);
+            if (type == Data.DYNAMICFORMATFILE) return new DynamicFormatFileClass(inStream, version);
+            if (type == Data.PDF) return new PDFClass(inStream, version);
         } else {
             if (type == Data.IMAGE) return ImageClass.instance;
             if (type == Data.WORD) return WordClass.instance;

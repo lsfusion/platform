@@ -14,13 +14,14 @@ import java.io.IOException;
 public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
     protected final boolean multiple;
+    protected final boolean storeName;
     protected final boolean custom;
     protected final String[] extensions;
 
     protected final JFileChooser fileChooser = new JFileChooser();
     protected int returnValue;
 
-    public FilePropertyEditor(boolean multiple, String description, String... extensions) {
+    public FilePropertyEditor(boolean multiple, boolean storeName, String description, String... extensions) {
         super();
 
         setLatestCurrentDirectory();
@@ -28,6 +29,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
         this.extensions = extensions;
         this.custom = false;
         this.multiple = multiple;
+        this.storeName = storeName;
 
         if (description == null || description.isEmpty()) {
             description = ClientResourceBundle.getString("form.editor.allfiles");
@@ -44,12 +46,13 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
     }
 
     //custom constructor
-    public FilePropertyEditor(boolean multiple) {
+    public FilePropertyEditor(boolean multiple, boolean storeName) {
         super();
 
         setLatestCurrentDirectory();
 
         this.multiple = multiple;
+        this.storeName = storeName;
         this.custom = true;
         this.extensions = null;
 
@@ -81,7 +84,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
         File[] files = multiple ? fileChooser.getSelectedFiles() : new File[]{fileChooser.getSelectedFile()};
 
         try {
-            return BaseUtils.filesToBytes(multiple, custom, files);
+            return BaseUtils.filesToBytes(multiple, storeName, custom, files);
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file") + " " + fileChooser.getSelectedFile());
         }

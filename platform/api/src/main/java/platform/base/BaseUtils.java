@@ -1973,7 +1973,7 @@ public class BaseUtils {
         return extension;
     }
 
-    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) throws IOException {
+    public static byte[] filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
@@ -1982,7 +1982,10 @@ public class BaseUtils {
             if (multiple)
                 outStream.writeInt(files.length);
             for (File file : files) {
-
+                if(storeName) {
+                    outStream.writeInt(file.getName().length());
+                    outStream.writeBytes(file.getName());
+                }
                 byte fileBytes[] = IOUtils.getFileBytes(file);
                 byte ext[] = new byte[0];
                 //int length = fileBytes.length;

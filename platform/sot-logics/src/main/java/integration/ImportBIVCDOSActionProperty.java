@@ -340,7 +340,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                                 uom == null ? null : uom.uomName, null, null, null, null, itemID, date, null,
                                 uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
                                 retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID),
-                                null, itemID, packAmount));
+                                itemID, packAmount));
                 }
             }
         }

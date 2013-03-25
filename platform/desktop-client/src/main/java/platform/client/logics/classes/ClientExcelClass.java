@@ -47,7 +47,7 @@ public class ClientExcelClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.excel.documents"), getExtensions());
+        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.excel.documents"), getExtensions());
     }
 
     @Override

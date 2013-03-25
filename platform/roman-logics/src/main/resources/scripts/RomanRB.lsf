@@ -242,5 +242,5 @@ NAVIGATOR {
     ADD financeNavigator;
     ADD machineryNavigator;
     ADD administration;
-    ADD account;
+    ADD Cash.account;
 }

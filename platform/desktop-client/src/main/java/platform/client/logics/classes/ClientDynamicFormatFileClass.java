@@ -47,7 +47,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple);
+        return new FilePropertyEditor(multiple, storeName);
     }
 
     @Override

@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class DynamicFormatFileClass extends FileClass {
 
-    public final static DynamicFormatFileClass instance = new DynamicFormatFileClass(false);
-    public final static DynamicFormatFileClass multipleInstance = new DynamicFormatFileClass(true);
+    public final static DynamicFormatFileClass instance = new DynamicFormatFileClass(false, false);
+    public final static DynamicFormatFileClass multipleInstance = new DynamicFormatFileClass(true, false);
 
     protected String getFileSID() {
         return "CustomClass"; // для обратной совместимости такое название
@@ -19,12 +19,12 @@ public class DynamicFormatFileClass extends FileClass {
         DataClass.storeClass(instance, multipleInstance);
     }
 
-    protected DynamicFormatFileClass(boolean multiple) {
-        super(multiple);
+    protected DynamicFormatFileClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
-    public DynamicFormatFileClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public DynamicFormatFileClass(DataInputStream inStream, int version) throws IOException {
+        super(inStream, version);
     }
 
     public String toString() {

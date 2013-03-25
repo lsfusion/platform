@@ -7,11 +7,11 @@ public abstract class StaticFormatFileClass extends FileClass {
 
     public abstract String getOpenExtension();
 
-    protected StaticFormatFileClass(boolean multiple) {
-        super(multiple);
+    protected StaticFormatFileClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
-    protected StaticFormatFileClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    protected StaticFormatFileClass(DataInputStream inStream, int version) throws IOException {
+        super(inStream, version);
     }
 }

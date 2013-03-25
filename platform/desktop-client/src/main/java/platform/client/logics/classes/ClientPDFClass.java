@@ -47,7 +47,7 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.pdf"), getExtensions());
+        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.pdf"), getExtensions());
     }
 
     @Override

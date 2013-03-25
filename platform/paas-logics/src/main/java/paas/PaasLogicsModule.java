@@ -19,6 +19,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.AuthenticationLogicsModule;
+import platform.server.logics.ContactLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LAP;
@@ -37,6 +38,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class PaasLogicsModule extends LogicsModule {
 
     private final AuthenticationLogicsModule authenticationLM;
+    private final ContactLogicsModule contactLM;
 
     public ConcreteCustomClass paasUser;
     public ConcreteCustomClass project;
@@ -75,6 +77,7 @@ public class PaasLogicsModule extends LogicsModule {
         super("PaasLogicsModule");
         setBaseLogicsModule(paas.LM);
         this.authenticationLM = paas.authenticationLM;
+        this.contactLM = paas.contactLM;
     }
 
     @Override
@@ -124,8 +127,8 @@ public class PaasLogicsModule extends LogicsModule {
     public void initProperties() {
         projectDescription = addDProp(baseGroup, "projectDescription", "Описание", StringClass.get(300), project);
         projectOwner = addDProp("projectOwner", "Владелец", authenticationLM.customUser, project);
-        projectOwnerName = addJProp(baseGroup, "projectOwnerName", "Владелец", baseLM.name, projectOwner, 1);
-        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", authenticationLM.customUserLogin, projectOwner, 1);
+        projectOwnerName = addJProp(baseGroup, "projectOwnerName", "Владелец", contactLM.nameContact, projectOwner, 1);
+        projectOwnerUserLogin = addJProp("projectOwnerUserName", "Владелец", authenticationLM.loginCustomUser, projectOwner, 1);
 
         moduleInProject = addDProp(baseGroup, "moduleInProject", "Модуль в проекте", LogicalClass.instance, project, module);
         moduleSource = addDProp(baseGroup, "moduleSource", "Исходный код модуля", TextClass.instance, module);

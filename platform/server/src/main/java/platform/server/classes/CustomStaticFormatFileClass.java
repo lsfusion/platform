@@ -22,14 +22,14 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return compClass.equals(this) ? this : null;
     }
 
-    public CustomStaticFormatFileClass(boolean multiple, String filterDescription, String[] filterExtensions) {
-        super(multiple);
+    public CustomStaticFormatFileClass(boolean multiple, boolean storeName, String filterDescription, String[] filterExtensions) {
+        super(multiple, storeName);
         this.filterDescription = filterDescription;
         this.filterExtensions = filterExtensions;
     }
 
-    public CustomStaticFormatFileClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public CustomStaticFormatFileClass(DataInputStream inStream, int version) throws IOException {
+        super(inStream, version);
 
         filterDescription = inStream.readUTF();
         int extCount = inStream.readInt();
@@ -52,14 +52,18 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
 
     private static List<CustomStaticFormatFileClass> instances = new ArrayList<CustomStaticFormatFileClass>();
 
-    public static CustomStaticFormatFileClass getDefinedInstance(boolean multiple, String description, String extensions) {
+    public static CustomStaticFormatFileClass getDefinedInstance(boolean multiple, String description, String extensions){
+        return getDefinedInstance(multiple, false, description, extensions);
+    }
+
+    public static CustomStaticFormatFileClass getDefinedInstance(boolean multiple, boolean storeName, String description, String extensions) {
         String[] fextensions = extensions.split(" ");
         
         for(CustomStaticFormatFileClass instance : instances)
             if(instance.multiple==multiple && instance.filterDescription.equals(description) && Arrays.equals(instance.filterExtensions, fextensions))
                 return instance;
 
-        CustomStaticFormatFileClass instance = new CustomStaticFormatFileClass(multiple, description, fextensions);
+        CustomStaticFormatFileClass instance = new CustomStaticFormatFileClass(multiple, storeName, description, fextensions);
         instances.add(instance);
         DataClass.storeClass(instance);
         return instance;

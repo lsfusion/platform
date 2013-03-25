@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class ImageClass extends StaticFormatFileClass {
 
-    public final static ImageClass instance = new ImageClass(false);
-    public final static ImageClass multipleInstance = new ImageClass(true);
+    public final static ImageClass instance = new ImageClass(false, false);
+    public final static ImageClass multipleInstance = new ImageClass(true, false);
 
     protected String getFileSID() {
         return "ImageClass";
@@ -19,12 +19,12 @@ public class ImageClass extends StaticFormatFileClass {
         DataClass.storeClass(instance, multipleInstance);
     }
 
-    protected ImageClass(boolean multiple) {
-        super(multiple);
+    protected ImageClass(boolean multiple, boolean storeName) {
+        super(multiple, storeName);
     }
 
-    public ImageClass(DataInputStream inStream) throws IOException {
-        super(inStream);
+    public ImageClass(DataInputStream inStream, int version) throws IOException {
+        super(inStream, version);
     }
 
     public String toString() {

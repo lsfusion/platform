@@ -7,7 +7,7 @@ TABLE computer (computer);
 
 hostnameComputer 'Имя хоста' = DATA ISTRING[100] (computer) IN recognize;
 
-CLASS ABSTRACT user 'Пользователь' : named;
+CLASS ABSTRACT user 'Пользователь';
 TABLE user (user);
 
 CLASS systemUser 'Системный пользователь' : user;

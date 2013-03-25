@@ -278,7 +278,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         date, isWeightItem ? isWeightItem : null, null, null,
                         "".equals(composition) ? null : composition, allowedVAT.contains(retailVAT) ? retailVAT : null, wareID,
                         wares.containsKey(itemID) ? wares.get(itemID)[0] : null, wares.containsKey(itemID) ? wares.get(itemID)[1] : null,
-                        "RW_".equals(rateWasteID) ? null : rateWasteID, null, null, null, itemID, quantityPackItem));
+                        "RW_".equals(rateWasteID) ? null : rateWasteID, null, null, itemID, quantityPackItem));
         }
         return data;
     }

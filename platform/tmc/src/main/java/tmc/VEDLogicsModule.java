@@ -1311,12 +1311,12 @@ public class VEDLogicsModule extends LogicsModule {
                         addJProp(baseLM.equals2, subjectIncOrder, 1, 2),
                         xorActionArticle, articleFormatToSell, documentRevalued
                 ), 1, 2, baseLM.vtrue), 1, 2,
-                        addIfAProp(is(baseClass), 1, VEDBL.securityLM.getLAPByName("reloginUser"), 2), 1, 2), 1, barcodeToObject, 2);
+                        addIfAProp(is(baseClass), 1, VEDBL.authenticationLM.getLAPByName("reloginUser"), 2), 1, 2), 1, barcodeToObject, 2);
         barcodeAction3 = addJoinAProp("Ввод штрих-кода 3",
                 addListAProp(addSetPropertyAProp(addCUProp(
                         addSCProp(returnInnerQuantity)
                 ), 1, 2, 3, baseLM.vtrue), 1, 2, 3, 
-                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, VEDBL.securityLM.getLAPByName("reloginUser"), 2), 1, 2, 3), 1, barcodeToObject, 3, 2);
+                        addIfAProp(addJProp(baseLM.and1, is(baseClass), 1, is(baseClass), 2), 1, 3, VEDBL.authenticationLM.getLAPByName("reloginUser"), 2), 1, 2, 3), 1, barcodeToObject, 3, 2);
 
         LCP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);

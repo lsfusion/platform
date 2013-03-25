@@ -111,7 +111,7 @@ public class FileUtils {
             files[i] = new File(APP_TEMP_FOLDER_URL, filesObj.filePaths.get(i));
         }
         try {
-            byte[] bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.custom, files);
+            byte[] bytes = BaseUtils.filesToBytes(filesObj.multiple, false, filesObj.custom, files);
             for (File file : files) {
                 file.delete();
             }

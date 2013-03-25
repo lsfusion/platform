@@ -220,7 +220,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
                             itemsList.add(new Item(itemID, groupID, itemName, uomName, uomShortName, uomID, null, null,
                                     nameCountry, null, null, date, null, null, null, null, retailVAT, null, null, null, null,
-                                    baseMarkup, retailMarkup, null, null, null));
+                                    baseMarkup, retailMarkup, null, null));
                             group1ID = null;
                             group2ID = null;
                             group3ID = null;

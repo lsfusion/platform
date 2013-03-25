@@ -338,9 +338,9 @@ public class ImportActionProperty {
                     i.k_grtov == null ? null : ("IG" + i.k_grtov), i.name, i.uomName, i.uomShortName,
                     i.uomID == null ? null : ("UOM" + i.uomID), i.brandName, i.brandID, i.country, i.barcode,
                     i.barcodeID==null ? null : "BI" + i.barcodeID, i.date, i.isWeightItem, i.netWeightItem, i.grossWeightItem,
-                    i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID), i.priceWare, i.ndsWareField,
+                    i.composition, i.retailVAT, i.wareID == null ? null : ("W" + i.wareID), i.priceWare, i.wareVAT,
                     i.writeOffRateID == null ? null : ("RW" + i.writeOffRateID), "cplt_retail", "Розничная надбавка",
-                    i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup, i.packBarcode,
+                    i.retailMarkup, "cplt_base", "Надбавка базы", i.baseMarkup, null,
                     i.packBarcodeID==null ? null : "BP" + i.packBarcodeID, i.amountPack));
         }
 
@@ -666,7 +666,7 @@ public class ImportActionProperty {
                 ImportField emailField = new ImportField(LM.findLCPByCompoundName("name"));
                 ImportField nameOwnershipField = new ImportField(LM.findLCPByCompoundName("name"));
                 ImportField shortNameOwnershipField = new ImportField(LM.findLCPByCompoundName("shortNameOwnership"));
-                ImportField accountField = new ImportField(LM.findLCPByCompoundName("numberAccount"));
+                ImportField accountField = new ImportField(LM.findLCPByCompoundName("Bank.numberAccount"));
 
                 ImportField chainStoresIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField nameChainStoresField = new ImportField(LM.findLCPByCompoundName("name"));
@@ -870,7 +870,7 @@ public class ImportActionProperty {
                 for (Warehouse w : warehousesList) {
                     data.add(Arrays.asList((Object) (w.legalEntityID == null ? null : ("L" + w.legalEntityID)),
                             w.warehouseGroupID == null ? null : ("WG" + w.warehouseGroupID),
-                            w.sid == null ? null : ("WH" + w.sid), w.name, w.address));
+                            w.warehouseID == null ? null : ("WH" + w.warehouseID), w.warehouseName, w.warehouseAddress));
                 }
 
                 ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseGroupIDField,

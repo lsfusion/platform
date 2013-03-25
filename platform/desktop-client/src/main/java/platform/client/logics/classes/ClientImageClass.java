@@ -57,7 +57,7 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
 
     @Override
     public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new FilePropertyEditor(multiple, ClientResourceBundle.getString("logics.classes.image"), getExtensions());
+        return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.image"), getExtensions());
     }
 
     @Override

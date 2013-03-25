@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.interop.Compare;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
@@ -13,11 +14,12 @@ import static platform.interop.Compare.NOT_EQUALS;
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 
     public boolean multiple;
+    public boolean storeName;
 
     public abstract String getFileSID();
 
     public String getSID() {
-        return getFileSID() + (multiple?"_Multiple":"");
+        return getFileSID() + (multiple ? "_Multiple" : "") + (storeName ? "_StoreName" : "");
     }
 
     protected ClientFileClass() {
@@ -27,6 +29,15 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
         super(inStream);
 
         multiple = inStream.readBoolean();
+        storeName = inStream.readBoolean();
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+
+        outStream.writeBoolean(multiple);
+        outStream.writeBoolean(storeName);
     }
 
     public abstract String[] getExtensions();

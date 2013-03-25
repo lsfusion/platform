@@ -4,16 +4,16 @@ package fdk.integration;
 public class Warehouse {
     public String legalEntityID;
     public String warehouseGroupID;
-    public String sid;
-    public String name;
-    public String address;
+    public String warehouseID;
+    public String warehouseName;
+    public String warehouseAddress;
 
 
-    public Warehouse(String legalEntityID, String warehouseGroupID, String sid, String name, String address) {
+    public Warehouse(String legalEntityID, String warehouseGroupID, String warehouseID, String warehouseName, String warehouseAddress) {
         this.legalEntityID = legalEntityID;
         this.warehouseGroupID = warehouseGroupID;
-        this.sid = sid;
-        this.name = name;
-        this.address = address;
+        this.warehouseID = warehouseID;
+        this.warehouseName = warehouseName;
+        this.warehouseAddress = warehouseAddress;
     }
 }
