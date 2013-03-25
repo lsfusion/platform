@@ -445,15 +445,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void finishAbstract() {
-        List<CaseUnionProperty> abstractUnions = new ArrayList<CaseUnionProperty>();
         for (Property property : getOrderProperties())
-            if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract()) {
+            if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract())
                 property.finalizeInit();
-                abstractUnions.add((CaseUnionProperty) property);
-            }
 
-        for (CaseUnionProperty abstractUnion : abstractUnions)
-            abstractUnion.checkExclusive();
+        for (Property property : getOrderProperties())
+            if(property instanceof CaseUnionProperty) {
+                ((CaseUnionProperty)property).checkAbstract();
+                ((CaseUnionProperty)property).checkExclusive();
+            }
     }
 
     private void finishActions() { // потому как могут использовать abstract

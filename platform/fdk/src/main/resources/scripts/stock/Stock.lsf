@@ -316,7 +316,7 @@ skuDataSkuLedger = ABSTRACT sku (dataSkuLedger) PERSISTENT INDEXED;
 
 stockDataSkuLedger = ABSTRACT stock(dataSkuLedger) PERSISTENT INDEXED;
 
-descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (skuLedger) PERSISTENT;
+descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (dataSkuLedger) PERSISTENT;
 
 changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
 
@@ -333,8 +333,7 @@ nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 stockSkuLedger (ledger) = UNION CLASS stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
-// todo : переделать на UNION CLASS
-descriptionSkuLedger 'Описание' (ledger) = UNION OVERRIDE descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
+descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger);
 
 // -------------------------------- Количества ---------------------------- //
 
@@ -390,7 +389,7 @@ quantityDataSkuLedgerBatch (ledger, batch) = UNION CLASS quantityInLIFOSkuLedger
 
 // Свойства для расчета себестоимости
 
-costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (skuLedger, batch);
+costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (dataSkuLedger, batch);
 
 costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION CLASS quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
 

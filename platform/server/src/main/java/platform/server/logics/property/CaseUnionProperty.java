@@ -275,17 +275,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return false;
     }
 
-    public void checkExclusive() {
-        assert isAbstract();
+    public void checkAbstract() {
+        if(!isAbstract())
+            return;
 
         ImList<Case> listCases = getCases();
-        MList<ClassWhere<Object>> mListClasses = ListFact.<ClassWhere<Object>>mList(); // совместная обработка
-
         ClassWhere<Object> fullClassValueWhere = ClassWhere.FALSE();
         for(Case operand : listCases) {
             ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) operand.where).mapClassWhere());
-            mListClasses.add(operandClassValueWhere);
-
             if(operand.property instanceof CalcPropertyMapImplement)
                 operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) operand.property).mapClassValueWhere());
             else { // идиотизм, но ту еще есть вопросы
@@ -298,18 +295,23 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
             fullClassValueWhere = fullClassValueWhere.or(operandClassValueWhere);
         }
-        ImList<ClassWhere<Object>> listClasses = mListClasses.immutableList();
-
-        if (isExclusive)
-            for(int i=0;i<listCases.size();i++)
-                for(int j=i+1;j<listCases.size();j++) {
-                    CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
-                    CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) listCases.get(j).where;
-                    if(op1.mapIntersect(op2))
-                        throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + listClasses.get(i) + ", Classes 2 : " + listClasses.get(j));
-                }
 
         if(checkFull() && classValueWhere.means(fullClassValueWhere))
             throw new RuntimeException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere);
+    }
+
+    public void checkExclusive() {
+        if(!isExclusive)
+            return;
+
+        ImList<Case> listCases = getCases();
+
+        for(int i=0;i<listCases.size();i++)
+            for(int j=i+1;j<listCases.size();j++) {
+                CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
+                CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) listCases.get(j).where;
+                if(op1.mapIntersect(op2))
+                    throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + op1.mapClassWhere() + ", Classes 2 : " + op2.mapClassWhere());
+            }
     }
 }
