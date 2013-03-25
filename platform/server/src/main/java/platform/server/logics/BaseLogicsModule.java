@@ -236,7 +236,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         privateGroup = addAbstractGroup("private", getString("logics.groups.private"), rootGroup, false);
         baseGroup = addAbstractGroup("base", getString("logics.groups.base"), publicGroup, false);
         recognizeGroup = addAbstractGroup("recognize", getString("logics.groups.recognize"), baseGroup, false);
-        drillDownGroup = addAbstractGroup("drilldown", getString("logics.groups.drilldown"), baseGroup, false);
+        drillDownGroup = addAbstractGroup("drilldown", getString("logics.groups.drilldown"), rootGroup, false);
 
         initBaseGroupAliases();
     }
