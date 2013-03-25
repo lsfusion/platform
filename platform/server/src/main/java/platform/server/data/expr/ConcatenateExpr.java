@@ -25,7 +25,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-public class ConcatenateExpr extends BaseExpr {
+public class ConcatenateExpr extends VariableClassExpr {
 
     private final ImList<BaseExpr> exprs;
 
@@ -68,7 +68,7 @@ public class ConcatenateExpr extends BaseExpr {
         return result;
     }
 
-    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         AndClassSet[] andClasses = new AndClassSet[exprs.size()];
         for(int i=0;i<exprs.size();i++) {
             AndClassSet classSet = exprs.get(i).getAndClassSet(and);
@@ -79,7 +79,7 @@ public class ConcatenateExpr extends BaseExpr {
         return getConcatenateClass(andClasses);
     }
 
-    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add) {
         for(int i=0;i<exprs.size();i++)
             if(!(exprs.get(i).addAndClassSet(and,getPartClass(add, i))))
                 return false;

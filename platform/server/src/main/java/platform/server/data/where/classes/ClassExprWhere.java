@@ -8,10 +8,8 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
@@ -29,7 +27,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
 
-public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere>, KeyType {
+public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere>, OuterContext<ClassExprWhere>, KeyType {
 
     public Type getKeyType(KeyExpr keyExpr) {
         if (wheres.length == 0) {
@@ -61,7 +59,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
 
     public Where getKeepWhere(KeyExpr keyExpr) {
         AndClassSet keepClass = null;
-        for(And<VariableClassExpr> where : wheres) {
+        for(And<VariableSingleClassExpr> where : wheres) {
             AndClassSet keyClass = where.getPartial(keyExpr);
             if (keyClass == null) // потому как в canbechanged например могут появляться pullExpr'ы без классов
                 return Where.TRUE;
@@ -91,7 +89,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         super(isTrue);
     }
 
-    public ClassExprWhere(And<VariableClassExpr> where) {
+    public ClassExprWhere(And<VariableSingleClassExpr> where) {
         super(where);
     }
 
@@ -102,35 +100,35 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return FALSE;
     }
 
-    public ClassExprWhere(VariableClassExpr key, AndClassSet classes) {
+    public ClassExprWhere(VariableSingleClassExpr key, AndClassSet classes) {
         super(key,classes);
     }
 
     public ClassExprWhere(ImMap<KeyExpr,AndClassSet> andKeys) {
-        this(new And<VariableClassExpr>(andKeys));
+        this(new And<VariableSingleClassExpr>(andKeys));
     }
 
-    public ClassExprWhere(ImMap<? extends VariableClassExpr,ValueClass> andKeys, boolean up) {
-        super((ImMap<VariableClassExpr,ValueClass>) andKeys, true);
+    public ClassExprWhere(ImMap<? extends VariableSingleClassExpr,ValueClass> andKeys, boolean up) {
+        super((ImMap<VariableSingleClassExpr,ValueClass>) andKeys, true);
         assert up;
     }
 
-    private ClassExprWhere(And<VariableClassExpr>[] iWheres) {
+    private ClassExprWhere(And<VariableSingleClassExpr>[] iWheres) {
         super(iWheres);
     }
-    protected ClassExprWhere createThis(And<VariableClassExpr>[] wheres) {
+    protected ClassExprWhere createThis(And<VariableSingleClassExpr>[] wheres) {
         return new ClassExprWhere(wheres);
     }
 
-    private static And<VariableClassExpr> andEquals(And<VariableClassExpr> and, EqualMap equals) {
-        MMap<VariableClassExpr, AndClassSet> mResult = null;
+    private static And<VariableSingleClassExpr> andEquals(And<VariableSingleClassExpr> and, EqualMap equals) {
+        MMap<VariableSingleClassExpr, AndClassSet> mResult = null;
         for(int i=0;i<equals.num;i++) {
             Equal equal = equals.comps[i];
             if(!equal.dropped) {
                 AndClassSet andClasses = null;
                 for(int j=0;j<equal.size;j++)
-                    if(equal.exprs[j] instanceof VariableClassExpr) {
-                        AndClassSet classes = and.getPartial((VariableClassExpr) equal.exprs[j]);
+                    if(equal.exprs[j] instanceof VariableClassExpr) { // static'и особо не интересуют, так как либо в явную отработаны, либо не нужны (в булевой логике)
+                        AndClassSet classes = equal.exprs[j].getAndClassSet(and);
                         if(classes!=null) {
                             if(andClasses==null)
                                 andClasses = classes;
@@ -142,39 +140,39 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
                     }
                 if(andClasses!=null)
                     for(int j=0;j<equal.size;j++)
-                        if(equal.exprs[j] instanceof VariableClassExpr) {
+                        if(equal.exprs[j] instanceof VariableSingleClassExpr) {
                             if(mResult==null)
-                                mResult = MapFact.mMap(and, MapFact.<VariableClassExpr, AndClassSet>override());
-                            mResult.add((VariableClassExpr) equal.exprs[j], andClasses);
+                                mResult = MapFact.mMap(and, MapFact.<VariableSingleClassExpr, AndClassSet>override());
+                            mResult.add((VariableSingleClassExpr) equal.exprs[j], andClasses);
                         }
             }
         }
         if(mResult==null)
             return and;
         else
-            return new And<VariableClassExpr>(mResult.immutable());
+            return new And<VariableSingleClassExpr>(mResult.immutable());
     }
     // нужен очень быстрый так как в checkTrue используется
     public ClassExprWhere andEquals(EqualMap equals) {
         if(equals.size()==0 || isFalse() || isTrue()) return this;
 
-        And<VariableClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
-        for(And<VariableClassExpr> where : wheres) {
-            And<VariableClassExpr> andWhere = andEquals(where,equals);
+        And<VariableSingleClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
+        for(And<VariableSingleClassExpr> where : wheres) {
+            And<VariableSingleClassExpr> andWhere = andEquals(where,equals);
             if(andWhere!=null)
                 rawAndWheres[num++] = andWhere;
         }
-        And<VariableClassExpr>[] andWheres = newArray(num); System.arraycopy(rawAndWheres,0,andWheres,0,num);
+        And<VariableSingleClassExpr>[] andWheres = newArray(num); System.arraycopy(rawAndWheres,0,andWheres,0,num);
         return new ClassExprWhere(andWheres);
     }
 
-    private ClassExprWhere(ClassExprWhere classes, ImRevMap<VariableClassExpr, VariableClassExpr> map) {
+    private ClassExprWhere(ClassExprWhere classes, ImRevMap<VariableSingleClassExpr, VariableSingleClassExpr> map) {
         super(classes, map);
     }
 
     private <K> ImMap<K, AndClassSet> getFull(ImMap<K, ? extends BaseExpr> map) {
         MMap<K,AndClassSet> mResult = MapFact.mMap(AbstractClassWhere.<K>addOr());
-        for(And<VariableClassExpr> where : wheres)
+        for(And<VariableSingleClassExpr> where : wheres)
             for(int i=0,size=map.size();i<size;i++) {
                 AndClassSet classSet = map.getValue(i).getAndClassSet(where);
                 if(classSet!=null)
@@ -189,7 +187,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             fullMap = getFull(map);
 
         ClassWhere<K> transWhere = ClassWhere.FALSE();
-        for(And<VariableClassExpr> andWhere : wheres) {
+        for(And<VariableSingleClassExpr> andWhere : wheres) {
             ImFilterValueMap<K, AndClassSet> andTrans = map.mapFilterValues();
             for(int i=0,size=map.size();i<size;i++) {
                 AndClassSet classSet = map.getValue(i).getAndClassSet(andWhere);
@@ -202,16 +200,16 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         }
         return transWhere;
     }
-    public <K> ClassWhere<K> map(ImRevMap<K, ? extends VariableClassExpr> map) {
+    public <K> ClassWhere<K> map(ImRevMap<K, ? extends VariableSingleClassExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.FALSE();
-        for(And<VariableClassExpr> andWhere : wheres)
+        for(And<VariableSingleClassExpr> andWhere : wheres)
             transWhere = transWhere.or(new ClassWhere<K>(andWhere.mapBack(map)));
         return transWhere;
     }
 
     public AndClassSet getAndClassSet(BaseExpr expr) {
         AndClassSet result = null;
-        for(And<VariableClassExpr> andWhere : wheres) {
+        for(And<VariableSingleClassExpr> andWhere : wheres) {
             AndClassSet classSet = expr.getAndClassSet(andWhere);
             if(classSet!=null) {
                 if(result == null)
@@ -225,7 +223,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
 
     public ImSet<NotNullExpr> getExprFollows() {
         ImSet<NotNullExpr>[] follows = new ImSet[wheres.length]; int num = 0;
-        for(And<VariableClassExpr> where : wheres) {
+        for(And<VariableSingleClassExpr> where : wheres) {
             MSet<NotNullExpr> mResult = SetFact.mSet();
             for(int i=0,size=where.size();i<size;i++)
                 mResult.addAll(where.getKey(i).getExprFollows(true, true));
@@ -239,9 +237,9 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         int size = map.size();
 
         ClassExprWhere transWhere = ClassExprWhere.FALSE;
-        for(And<VariableClassExpr> andWhere : wheres) {
+        for(And<VariableSingleClassExpr> andWhere : wheres) {
             boolean isFalse = false;
-            MMap<VariableClassExpr, AndClassSet> andTrans = MapFact.mMapMax(size, ClassExprWhere.<VariableClassExpr>addAnd());
+            MMap<VariableSingleClassExpr, AndClassSet> andTrans = MapFact.mMapMax(size, ClassExprWhere.<VariableSingleClassExpr>addAnd());
             for(int i=0;i<size;i++) {
                 AndClassSet mapSet = map.getValue(i).getAndClassSet(andWhere);
                 if(mapSet==null)
@@ -252,7 +250,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
                 }
             }
             if(!isFalse)
-                transWhere = transWhere.or(new ClassExprWhere(new And<VariableClassExpr>(andTrans.immutable())));
+                transWhere = transWhere.or(new ClassExprWhere(new And<VariableSingleClassExpr>(andTrans.immutable())));
         }
         return transWhere;
     }
@@ -298,7 +296,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
 
         protected int hash(HashContext hash) {
             int result = 0;
-            for(And<VariableClassExpr> andWhere : wheres)
+            for(And<VariableSingleClassExpr> andWhere : wheres)
                 result += AbstractOuterContext.hashKeysOuter(andWhere, hash);
             return result;
         }
@@ -351,17 +349,17 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     }
 
     // аналогичный метод в ClassWhere
-    public ClassExprWhere remove(ImSet<? extends VariableClassExpr> keys) {
+    public ClassExprWhere remove(ImSet<? extends VariableSingleClassExpr> keys) {
         ClassExprWhere result = ClassExprWhere.FALSE;
-        for(And<VariableClassExpr> andWhere : wheres)
+        for(And<VariableSingleClassExpr> andWhere : wheres)
             result = result.or(new ClassExprWhere(andWhere.remove(keys)));
         return result;
     }
 
-    public ClassExprWhere filterInclKeys(ImSet<? extends VariableClassExpr> keys) {
+    public ClassExprWhere filterInclKeys(ImSet<? extends VariableSingleClassExpr> keys) {
         ClassExprWhere result = ClassExprWhere.FALSE;
-        for(And<VariableClassExpr> andWhere : wheres)
-            result = result.or(new ClassExprWhere((And<VariableClassExpr>) andWhere.filterInclKeys(keys)));
+        for(And<VariableSingleClassExpr> andWhere : wheres)
+            result = result.or(new ClassExprWhere((And<VariableSingleClassExpr>) andWhere.filterInclKeys(keys)));
         return result;
     }
 

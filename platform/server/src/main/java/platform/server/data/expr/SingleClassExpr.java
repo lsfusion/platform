@@ -10,7 +10,7 @@ import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
-public abstract class SingleClassExpr extends BaseExpr {
+public abstract class SingleClassExpr extends VariableClassExpr {
 
     protected abstract SingleClassExpr translate(MapTranslate translator);
     public SingleClassExpr translateOuter(MapTranslate translator) {
@@ -36,7 +36,7 @@ public abstract class SingleClassExpr extends BaseExpr {
     private OrClassSet getSet() {
         assert !isTrueWhere();
         OrClassSet result = null;
-        for(ImMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
+        for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
             OrClassSet classSet = getAndClassSet(where).getOr();
             if(result==null)
                 result = classSet;
@@ -51,7 +51,7 @@ public abstract class SingleClassExpr extends BaseExpr {
         if(isTrueWhere())
             return !set.isEmpty();
         else {
-            for(ImMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
+            for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
                 if(!getAndClassSet(where).and(set).isEmpty()) return true; // тут наверное тоже надо getAndClassSet на не null проверять для не полных случаев
             return false;
         }

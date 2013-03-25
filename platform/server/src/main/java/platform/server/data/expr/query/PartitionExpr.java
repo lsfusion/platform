@@ -196,7 +196,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     @Override
-    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         if (!hasNotNull()) {
             Type type = getInner().getType();
             if(type instanceof DataClass)

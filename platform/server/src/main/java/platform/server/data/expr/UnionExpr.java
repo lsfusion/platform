@@ -84,12 +84,12 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     @Override
-    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         return StaticClassExpr.getAndClassSet(this, and);
     }
 
     @Override
-    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add) {
         return StaticClassExpr.addAndClassSet(this, add);
     }
 }

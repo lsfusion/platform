@@ -9,10 +9,7 @@ import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TranslateContext;
 import platform.server.data.Value;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.*;
 import platform.server.logics.DataObject;
 
 public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate {
@@ -53,8 +50,8 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
     }
 
     // для кэша classWhere на самом деле надо
-    public <K> ImRevMap<K, VariableClassExpr> translateVariable(ImRevMap<K, ? extends VariableClassExpr> map) {
-        return ((ImRevMap<K,VariableClassExpr>)map).mapRevValues(this.<VariableClassExpr>TRANS());
+    public <K> ImRevMap<K, VariableSingleClassExpr> translateVariable(ImRevMap<K, ? extends VariableSingleClassExpr> map) {
+        return ((ImRevMap<K,VariableSingleClassExpr>)map).mapRevValues(this.<VariableSingleClassExpr>TRANS());
     }
 
     public <K> ImMap<K, Expr> translate(ImMap<K, ? extends Expr> map) {

@@ -1,16 +1,10 @@
 package platform.server.data.translator;
 
 import platform.base.col.interfaces.immutable.*;
-import platform.server.caches.OuterContext;
 import platform.server.caches.TranslateContext;
 import platform.server.data.Value;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.*;
 import platform.server.logics.DataObject;
-
-import java.util.Map;
 
 public interface MapTranslate extends MapObject {
 
@@ -25,7 +19,7 @@ public interface MapTranslate extends MapObject {
     MapTranslate mapValues(MapValuesTranslate translate);
 
     // для кэша classWhere на самом деле надо
-    <K> ImRevMap<K, VariableClassExpr> translateVariable(ImRevMap<K, ? extends VariableClassExpr> map);
+    <K> ImRevMap<K, VariableSingleClassExpr> translateVariable(ImRevMap<K, ? extends VariableSingleClassExpr> map);
 
     <K> ImMap<K, BaseExpr> translateDirect(ImMap<K, ? extends BaseExpr> map);
 

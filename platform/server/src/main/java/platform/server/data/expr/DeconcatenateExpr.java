@@ -73,7 +73,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.getTypeStat(keyStat);
     }
 
-    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         AndClassSet classSet = expr.getAndClassSet(and);
         if(classSet == null)
             return null;
@@ -105,7 +105,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return result;
     }
 
-    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add) {
         ConcatenateType type = (ConcatenateType) expr.getSelfType();
         ImList<AndClassSet> list = BaseUtils.single(type.getUniversal(baseClass, part, add));
         return expr.addAndClassSet(and, new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()])));

@@ -31,17 +31,17 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return isClass(this, set);
     }
 
-    public static AndClassSet getAndClassSet(StaticClassExprInterface expr, ImMap<VariableClassExpr, AndClassSet> and) {
+    public static AndClassSet getAndClassSet(StaticClassExprInterface expr, ImMap<VariableSingleClassExpr, AndClassSet> and) {
         return expr.getStaticClass();
     }
-    public AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and) {
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
         return getAndClassSet(this, and);
     }
 
     public static boolean addAndClassSet(StaticClassExprInterface expr, AndClassSet add) {
         return expr.getStaticClass().inSet(add);
     }
-    public boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+    public boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add) {
         return addAndClassSet(this, add);
     }
 }

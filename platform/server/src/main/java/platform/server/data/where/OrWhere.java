@@ -374,7 +374,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return true;
         }
     }
-
+/*
     // для проверки - без механизма used
     // на самом деле wheres чисто из object where состоит
     static boolean prevCheckObjectTrue(AndObjectWhere[] wheres, int numWheres) {
@@ -487,7 +487,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
         return true;
     }
-
+*/
     // на самом деле wheres чисто из object where состоит
     static boolean[] checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
 /*        if(Settings.instance.isCheckFollowsWhenObjects()) {

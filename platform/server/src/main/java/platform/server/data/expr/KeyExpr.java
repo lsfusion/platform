@@ -23,7 +23,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> {
+public class KeyExpr extends VariableSingleClassExpr implements InnerBaseJoin<Object> {
 
     private static final GetValue<KeyExpr, Object> genStringKeys = new GetValue<KeyExpr, Object>() {
         public KeyExpr getMapValue(Object value) {

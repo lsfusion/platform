@@ -130,8 +130,8 @@ public abstract class BaseExpr extends Expr {
     }
 
     // может возвращать null, оба метода для ClassExprWhere
-    public abstract AndClassSet getAndClassSet(ImMap<VariableClassExpr, AndClassSet> and);
-    public abstract boolean addAndClassSet(MMap<VariableClassExpr, AndClassSet> and, AndClassSet add);
+    public abstract AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and);
+    public abstract boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add);
 
     public static <K> ImMap<K, Expr> packFollowFalse(final ImMap<K, BaseExpr> mapExprs, Where falseWhere) {
 

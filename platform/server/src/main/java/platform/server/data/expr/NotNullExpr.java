@@ -17,7 +17,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.Where;
 
-public abstract class NotNullExpr extends VariableClassExpr {
+public abstract class NotNullExpr extends VariableSingleClassExpr {
 
     @Override
     public Where calculateOrWhere() {

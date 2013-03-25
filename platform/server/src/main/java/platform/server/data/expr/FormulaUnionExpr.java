@@ -29,7 +29,7 @@ public class FormulaUnionExpr extends UnionExpr {
         return params.values().toSet();
     }
 
-    protected VariableClassExpr translate(MapTranslate translator) {
+    protected VariableSingleClassExpr translate(MapTranslate translator) {
         return new FormulaUnionExpr(formula, dataClass, translator.translate(params));
     }
 

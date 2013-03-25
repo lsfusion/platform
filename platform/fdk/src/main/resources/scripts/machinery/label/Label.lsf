@@ -349,9 +349,9 @@ createLabelTransaction 'Распечатать ценники' = ACTION (departm
         FOR ([GROUP SUM 1 AND inBarcode(barcode) BY labelTypeBarcodeDepartmentStore(barcode, departmentStore), departmentStore](labelType, departmentStore)) DO {
             // для каждого создаем по операции печати ценников
             FOR ADDOBJ t = labelTransaction DO {
-                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) AND labelTypeBarcodeDepartmentStore(barcode, departmentStore) == labelType AND labelType IS labelType;
+                SET inLabelTransactionBarcode(t, barcode) <- inBarcode(barcode) WHERE labelTypeBarcodeDepartmentStore(barcode, departmentStore) == labelType;
                 SET quantityLabelTransactionBarcode(t, barcode) <- countLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inLabelTransactionBarcode(t, barcode);
-                SET labelTypeLabelTransaction(t) <- labelType  WHERE labelType IS labelType;
+                SET labelTypeLabelTransaction(t) <- labelType;
                 EXEC createLabelTransactionFillParams(t, departmentStore);
                 // вызываем печатную форму для каждого из них
                 FORM printLabelTransaction OBJECTS l = t AS labelTransaction;
