@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MainFrame implements EntryPoint {
-    private final NavigatorDispatchAsync dispatcher = new NavigatorDispatchAsync();
+    private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;

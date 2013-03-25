@@ -27,16 +27,20 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.rmi.RemoteException;
 
 public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> extends AbstractStandardDispatchServlet {
     protected final static Logger logger = Logger.getLogger(LogicsDispatchServlet.class);
 
+    private boolean useGETForGwtRPC;
     protected Dispatch dispatch;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+
+        useGETForGwtRPC = Boolean.parseBoolean(getInitParameter("useGETForGwtRPC"));
 
         InstanceActionHandlerRegistry registry = new DefaultActionHandlerRegistry();
         addHandlers(registry);
@@ -44,9 +48,25 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     }
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (useGETForGwtRPC && req.getParameter("payload") != null) {
+            doPost(req, resp);
+        }
+    }
+
+    @Override
+    protected String readContent(HttpServletRequest request) throws ServletException, IOException {
+        if (request.getMethod().equals("POST")) {
+            return super.readContent(request);
+        } else {
+            return request.getParameter("payload");
+        }
+    }
+
+    @Override
     public Result execute(Action<?> action) throws DispatchException {
         try {
-            return dispatch.execute( action );
+            return dispatch.execute(action);
         } catch (RemoteDispatchException e) {
             getLogicsProvider().invalidate();
 

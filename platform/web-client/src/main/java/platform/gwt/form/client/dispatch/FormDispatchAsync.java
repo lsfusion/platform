@@ -4,7 +4,6 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 import platform.gwt.base.client.AsyncCallbackEx;
@@ -16,7 +15,7 @@ import platform.gwt.form.shared.view.GForm;
 import java.util.LinkedList;
 
 public class FormDispatchAsync {
-    private final StandardDispatchAsync gwtDispatch = new StandardDispatchAsync(new DefaultExceptionHandler());
+    private final DispatchAsyncWrapper gwtDispatch = new DispatchAsyncWrapper(new DefaultExceptionHandler());
 
     private final GForm form;
     private final GFormController formController;

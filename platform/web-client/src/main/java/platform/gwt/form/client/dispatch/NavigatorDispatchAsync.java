@@ -1,10 +1,8 @@
 package platform.gwt.form.client.dispatch;
 
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.client.ExceptionHandler;
-import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 
-public class NavigatorDispatchAsync extends StandardDispatchAsync {
+public class NavigatorDispatchAsync extends DispatchAsyncWrapper {
     public static class Instance {
         private static final NavigatorDispatchAsync instance = new NavigatorDispatchAsync();
 
@@ -13,11 +11,7 @@ public class NavigatorDispatchAsync extends StandardDispatchAsync {
         }
     }
 
-    public NavigatorDispatchAsync() {
-        this(new DefaultExceptionHandler());
-    }
-
-    public NavigatorDispatchAsync(ExceptionHandler exceptionHandler) {
-        super(exceptionHandler);
+    private NavigatorDispatchAsync() {
+        super(new DefaultExceptionHandler());
     }
 }

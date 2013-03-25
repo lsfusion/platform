@@ -31,6 +31,11 @@
     <servlet>
         <servlet-name>RemoteGwtService</servlet-name>
         <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
+        <init-param>
+            <description>Разрешает RPC-вызовы GWT используя GET вместо POST (лучше отключать в production).</description>
+            <param-name>useGETForGwtRPC</param-name>
+            <param-value>true</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>
