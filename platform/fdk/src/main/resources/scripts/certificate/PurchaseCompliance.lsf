@@ -27,6 +27,21 @@ nameComplianceSku(sku) += nameSku(sku);
 
 nameComplianceUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameComplianceSku(skuUserInvoiceDetail(userInvoiceDetail));
 
+isComplianceInvoice 'Сертификация' = ABSTRACT BOOLEAN(invoice);
+isComplianceUserInvoice 'Сертификация' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
+isComplianceInvoice(invoice) += isComplianceUserInvoice(invoice);
+
+isComplianceInvoiceDetail 'Необходимость сертификации' = ABSTRACT BOOLEAN(invoiceDetail);
+isComplianceUserInvoiceDetail 'Необходимость сертификации' = DATA BOOLEAN(userInvoiceDetail);
+isComplianceInvoiceDetail(invoiceDetail) += isComplianceUserInvoiceDetail(invoiceDetail);
+
+quantityCompliancedInvoice 'Кол-во для сертификации' (invoice) = GROUP SUM 1 IF isComplianceInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
+//isComplianceUserInvoice(invoice) <- TRUE IF quantityCompliancedInvoice(invoice) WHEN CHANGED(quantityCompliancedInvoice(invoice));
+
+isComplianceItemUserInvoiceDetail (userInvoiceDetail) = isCompliancedCountrySku(countryInvoiceDetail(userInvoiceDetail), skuUserInvoiceDetail(userInvoiceDetail));
+isComplianceUserInvoiceDetail(userInvoiceDetail) <- isComplianceItemUserInvoiceDetail(userInvoiceDetail) WHEN CHANGED (countryInvoiceDetail(userInvoiceDetail)) OR
+                                                                                                              CHANGED (skuUserInvoiceDetail(userInvoiceDetail));
+
 FORM complianceInvoices 'Накладные сертификации'
     OBJECTS c=compliance FIXED PANEL
     PROPERTIES(c) seriesNumberObject, nameLegalEntityCompliance, dateTimeCompliance
@@ -36,14 +51,20 @@ FORM complianceInvoices 'Накладные сертификации'
     PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
     FILTERS inComplianceInvoice(c, i) OR c AS compliance AND NOT complianceUserInvoice(i)
 
+    FILTERGROUP filtersImporter
+        FILTER 'Только получателя' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT
+
+    FILTERGROUP filtersComplianced
+        FILTER 'Требующие сертифицирования' 'F10' quantityCompliancedInvoice(i) DEFAULT
+
     OBJECTS id=userInvoiceDetail
     PROPERTIES(c, id) inComplianceInvoiceDetail
-    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail,
-                   quantityUserInvoiceDetail, priceUserInvoiceDetail
+    PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, isComplianceUserInvoiceDetail,
+                   shortNameUOMSkuUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail
     FILTERS invoiceInvoiceDetail(id)==i
 
-    FILTERGROUP filtersImporter
-        FILTER 'Только импортёра сертификата' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT
+    FILTERGROUP filtersDetail
+        FILTER 'Требующие сертифицирования' 'F9' isComplianceUserInvoiceDetail(id) DEFAULT
 ;
 
 showFormComplianceInvoices 'Накладные сертификации' = ACTION (compliance) {
@@ -55,7 +76,7 @@ EXTEND FORM compliance
     PROPERTIES(c) invoicesCompliance
 
     OBJECTS id=userInvoiceDetail
-    PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail,
+    PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, isComplianceUserInvoiceDetail,
                    quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeInvoiceDetail
 
     PROPERTIES (c) showFormComplianceInvoices TODRAW id FORCE PANEL TOOLBAR
@@ -74,18 +95,6 @@ EXTEND DESIGN compliance {
     }
     ADD functions.box;
 }
-
-isComplianceInvoice 'Сертификация' = ABSTRACT BOOLEAN(invoice);
-isComplianceUserInvoice 'Сертификация' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
-isComplianceInvoice(invoice) += isComplianceUserInvoice(invoice);
-
-isComplianceInvoiceDetail 'Необходимость сертификации' = ABSTRACT BOOLEAN(invoiceDetail);
-isComplianceUserInvoiceDetail 'Необходимость сертификации' = DATA BOOLEAN(userInvoiceDetail);
-isComplianceInvoiceDetail(invoiceDetail) += isComplianceUserInvoiceDetail(invoiceDetail);
-
-isComplianceItemUserInvoiceDetail (userInvoiceDetail) = isCompliancedCountrySku(countryInvoiceDetail(userInvoiceDetail), skuUserInvoiceDetail(userInvoiceDetail));
-isComplianceUserInvoiceDetail(userInvoiceDetail) <- isComplianceItemUserInvoiceDetail(userInvoiceDetail) WHEN CHANGED (countryInvoiceDetail(userInvoiceDetail)) OR
-                                                                                                              CHANGED (skuUserInvoiceDetail(userInvoiceDetail));
 
 //------------------------------------------ позиции сертификата -------------------------------------------------------//
 
