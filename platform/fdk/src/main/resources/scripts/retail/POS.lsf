@@ -546,9 +546,10 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     }
 
     SET discountSumReceiptSaleDetail(detail) <- promotionSumReceiptSaleDetail(detail) WHERE receiptReceiptSaleDetail(detail) == receipt;
+    SET discountSumReceiptSaleDetail(detail) <- calcDiscountSumReceiptSaleDetail(detail) WHERE detail IS receiptSaleDetail AND receiptReceiptSaleDetail(detail) == receipt AND discountPercentReceiptSaleDetail(detail) AND NOT promotionSumReceiptSaleDetail(detail);
 }
 
-WHEN SESSION CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt);
+WHEN SESSION CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) OR CHANGED(discountPercentReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt);
 
 // Форма POS-терминала
 
@@ -572,8 +573,8 @@ FORM POS
 
     OBJECTS d = receiptDetail FIXED GRID
     PROPERTIES(d) SHOWIF currentZReport() READONLY indexReceiptDetail, typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, prevCurrentBalanceReceiptDetail
-    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail,
-                                                   numberVATReceiptDetail, valueVATReceiptDetail, delete
+    PROPERTIES(d) SHOWIF currentZReport()          quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID,
+                                                   discountSumReceiptDetail, numberVATReceiptDetail, valueVATReceiptDetail, delete
     FILTERS receiptReceiptDetail(d) == r
 
     OBJECTS bs = STRING[14] FIXED PANEL

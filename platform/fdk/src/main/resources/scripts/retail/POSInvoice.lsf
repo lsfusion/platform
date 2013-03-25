@@ -1,0 +1,43 @@
+MODULE POSInvoice;
+
+REQUIRE POS, SaleInvoice;
+
+NAMESPACE Sale;
+
+
+createInvoiceReceipt 'Создать накладную' = ACTION (receipt) {       // todo: сделать необходимые округления
+    FOR ADDOBJ i = userInvoice DO {
+        SET supplierStockUserInvoice(userInvoice) <- departmentStoreReceipt(receipt);
+        SET supplierUserInvoice(userInvoice) <- legalEntityStock(departmentStoreReceipt(receipt));
+        SET dateUserInvoice(userInvoice) <- dateReceipt(receipt);
+        SET timeUserInvoice(userInvoice) <- timeReceipt(receipt);
+
+        FOR  receiptReceiptDetail(detail) == receipt ADDOBJ d = userInvoiceDetail DO {
+            SET userInvoiceUserInvoiceDetail(d) <- i;
+            SET skuUserInvoiceDetail(d) <- skuReceiptDetail(detail);
+            SET quantityUserInvoiceDetail(d) <- quantityReceiptDetail(detail);
+            SET invoiceSumUserInvoiceDetail(d) <- sumReceiptDetail(detail);
+            SET invoicePriceUserInvoiceDetail(d) <- sumReceiptDetail(detail)/quantityReceiptDetail(detail);
+
+            EXEC delete(detail);
+        }
+        EXEC delete(receipt);
+
+        FORM userInvoice OBJECTS i=i MANAGESESSION MODAL;
+    }
+    EXEC createCurrentReceipt();
+}
+
+EXTEND FORM POS
+    PROPERTIES(r) createInvoiceReceipt
+;
+EXTEND DESIGN POS {
+    eastContainer {
+        NEW invoiceContainer{
+            title = 'Накладная';
+            childConstraints = TO THE BOTTOM;
+            ADD PROPERTY(createInvoiceReceipt) { focusable = FALSE; font = 'Tahoma bold 24';  }
+
+        }
+    }
+}
