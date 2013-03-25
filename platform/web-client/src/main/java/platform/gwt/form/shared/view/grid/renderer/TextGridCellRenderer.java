@@ -17,14 +17,13 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(platform.gwt.cellview.client.cell.Cell.Context context, DivElement cellElement, Object value) {
-        DivElement div = cellElement.appendChild(Document.get().createDivElement());
-        div.getStyle().setPaddingRight(4, Style.Unit.PX);
-        div.getStyle().setPaddingLeft(4, Style.Unit.PX);
-        div.getStyle().setHeight(100, Style.Unit.PCT);
-        div.getStyle().setWidth(100, Style.Unit.PCT);
-        div.getStyle().setProperty("display", "table");
+        cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
+        cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
+        cellElement.getStyle().setHeight(100, Style.Unit.PCT);
+        cellElement.getStyle().setWidth(100, Style.Unit.PCT);
+        cellElement.getStyle().setProperty("display", "table");
 
-        TextAreaElement textArea = div.appendChild(Document.get().createTextAreaElement());
+        TextAreaElement textArea = cellElement.appendChild(Document.get().createTextAreaElement());
         textArea.setTabIndex(-1);
 
         Style textareaStyle = textArea.getStyle();
@@ -46,7 +45,7 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
-        updateTextArea(cellElement.getFirstChild().getFirstChild().<TextAreaElement>cast(), value);
+        updateTextArea(cellElement.getFirstChild().<TextAreaElement>cast(), value);
     }
 
     private void updateTextArea(TextAreaElement textArea, Object value) {

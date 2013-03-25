@@ -17,8 +17,7 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
-        DivElement div = cellElement.appendChild(Document.get().createDivElement());
-        Style divStyle = div.getStyle();
+        Style divStyle = cellElement.getStyle();
         divStyle.setBackgroundColor("#F1F1F1");
         divStyle.setBorderColor("#BBB #BBB #A0A0A0");
         divStyle.setBorderWidth(1, Style.Unit.PX);
@@ -27,10 +26,10 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
         divStyle.setProperty("display", "table");
         divStyle.setWidth(100, Style.Unit.PCT);
 
-        DivElement innerDiv = div.appendChild(Document.get().createDivElement());
+        DivElement innerDiv = cellElement.appendChild(Document.get().createDivElement());
         innerDiv.setAttribute("align", "center");
         // избавляемся от двух пикселов, добавляемых к 100%-й высоте рамкой
-        div.addClassName("boxSized");
+        cellElement.addClassName("boxSized");
         innerDiv.getStyle().setMarginBottom(-2, Style.Unit.PX);
 
         if (property.icon != null) {
@@ -45,7 +44,6 @@ public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
         if (property.icon != null) {
             ImageElement img = cellElement
-                    .getFirstChild()
                     .getFirstChild()
                     .getFirstChild().cast();
             setImage(img, value);

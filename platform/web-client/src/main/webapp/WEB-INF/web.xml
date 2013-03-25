@@ -152,5 +152,13 @@
         <filter-name>imagesCache</filter-name>
         <url-pattern>/images/*</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>imagesCache</filter-name>
+        <url-pattern>/platform.gwt.form.Form/images/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>imagesCache</filter-name>
+        <url-pattern>/platform.gwt.form.Form/theme/clean/images/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

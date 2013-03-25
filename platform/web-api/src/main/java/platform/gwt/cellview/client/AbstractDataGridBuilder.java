@@ -227,11 +227,11 @@ public abstract class AbstractDataGridBuilder<T> implements CellTableBuilder<T> 
         if (oldCellType != null || newCellType != null) {
             //if types doesn't match, than don't update - render instead
             if (oldCellType == null || !oldCellType.equals(newCellType)) {
-                removeAllChildren(cellParent);
-                if (newCellType == null) {
-                    cellParent.removeAttribute(CELL_TYPE_ATTRIBUTE);
-                }
-                renderCell(cellParent, context, column, rowValue);
+                DivElement newCellParent = Document.get().createDivElement();
+
+                cellParent.getParentNode().replaceChild(newCellParent, cellParent);
+
+                renderCell(newCellParent, context, column, rowValue);
                 return;
             }
         }

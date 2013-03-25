@@ -14,7 +14,6 @@
     border-left: 1px solid #CCCCCC;
     padding: 2px;
     color: #4b4a4a;
-    font-size: fontSize;
 }
 
 .dataGridFirstHeaderCell {}
@@ -33,15 +32,12 @@
 }
 
 .dataGridCell {
-    font-size: fontSize;
-
     border-bottom: 1px solid #CCCCCC;
     border-left: 1px solid #CCCCCC;
 
     padding: 0;
 
     overflow: hidden;
-    white-space: nowrap;
 }
 
 .dataGridFirstCell {}

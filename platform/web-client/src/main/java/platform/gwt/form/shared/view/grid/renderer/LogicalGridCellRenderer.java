@@ -13,10 +13,9 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
         boolean checked = value != null && (Boolean) value;
 
-        DivElement center = cellElement.appendChild(Document.get().createDivElement());
-        center.setAttribute("align", "center");
+        cellElement.setAttribute("align", "center");
 
-        ImageElement img = center.appendChild(Document.get().createImageElement());
+        ImageElement img = cellElement.appendChild(Document.get().createImageElement());
         img.setSrc(getCBImagePath(checked));
         img.getStyle().setVerticalAlign(Style.VerticalAlign.TEXT_BOTTOM);
     }
@@ -24,7 +23,6 @@ public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
         ImageElement img = cellElement
-                .getFirstChild()
                 .getFirstChild().cast();
         img.setSrc(getCBImagePath(value));
     }

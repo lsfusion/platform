@@ -72,7 +72,7 @@
         <gwt.uload.version>0.6.3-compat</gwt.uload.version>
         <gwt.mosaic.version>0.4.0-rc4</gwt.mosaic.version>
         <gwt.dnd.version>3.1.2</gwt.dnd.version>
-        <color.picker.version>2.1</color.picker.version>
+        <color.picker.version>2.1-patched</color.picker.version>
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
 
         <!-- general properties -->

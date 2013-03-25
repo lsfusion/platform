@@ -1,7 +1,6 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import platform.gwt.base.client.EscapeUtils;
 import platform.gwt.cellview.client.cell.Cell;
@@ -22,9 +21,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
-        DivElement div = cellElement.appendChild(Document.get().createDivElement());
-
-        Style divStyle = div.getStyle();
+        Style divStyle = cellElement.getStyle();
         if (textAlign != null) {
             divStyle.setTextAlign(textAlign);
         }
@@ -32,6 +29,8 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingRight(4, Style.Unit.PX);
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
+
+        divStyle.setWhiteSpace(Style.WhiteSpace.NOWRAP);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки
@@ -42,13 +41,12 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
             divStyle.setProperty("font", property.font.getFullFont());
         }
 
-        updateElement(div, value);
+        updateElement(cellElement, value);
     }
 
     @Override
     public void updateDom(DivElement cellElement, Cell.Context context, Object value) {
-        DivElement div = cellElement.getFirstChild().cast();
-        updateElement(div, value);
+        updateElement(cellElement, value);
     }
 
     private void updateElement(DivElement div, Object value) {
