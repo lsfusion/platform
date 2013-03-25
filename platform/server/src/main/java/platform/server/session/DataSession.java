@@ -592,6 +592,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
     
     public void dropChanges(SessionDataProperty property) throws SQLException {
+        if(!data.containsKey(property)) // оптимизация, см. использование
+            return;
+
         aspectDropChanges(property);
 
         updateProperties(SetFact.singleton(property));

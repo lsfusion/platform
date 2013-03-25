@@ -117,16 +117,17 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         if(where==null) // оптимизация, один объект добавляем
             resultChange = new PropertyChange<I>(context.addObject(readClass));
         else {
+            if(result!=null)
+                context.getSession().dropChanges((SessionDataProperty) result.property); // предполагается что пишем в SessionData, потом можно дообобщить
+
             Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
             if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
                 return;
             resultChange = SinglePropertyTableUsage.getChange(context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, MapFact.<Expr, Boolean>EMPTYORDER(), false)));
         }
 
-        if(result != null) {
-            context.getSession().dropChanges((SessionDataProperty) result.property); // предполагается что пишем в SessionData, потом можно дообобщить
+        if(result != null)
             result.change(context.getEnv(), resultChange);
-        }
     }
 
     @Override

@@ -122,7 +122,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, DataObject>EMPTY(), false, true, false, false, false, null);
     }
 
-    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
+    public
+    FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, DataObject connection, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, boolean isModal, boolean manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> additionalFixedFilters) throws SQLException {
         this.manageSession = manageSession;
         this.isModal = isModal;
         this.checkOnOk = checkOnOk;
@@ -235,13 +236,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         applyFilters();
         fireOnInit();
 
+        this.session.registerForm(this);
+
         if (!interactive) {
             endApply();
             this.mapObjects = mapObjects;
         }
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
-        this.session.registerForm(this);
     }
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
