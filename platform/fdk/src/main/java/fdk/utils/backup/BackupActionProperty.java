@@ -1,10 +1,13 @@
 package fdk.utils.backup;
 
 import com.google.common.base.Throwables;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.CalcProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
@@ -41,7 +44,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
             if (dumpDir != null) {
 
                 dumpDir = dumpDir.trim();
-                binPath = binPath==null ? null : binPath.trim();
+                binPath = binPath == null ? null : binPath.trim();
 
                 Calendar calendar = Calendar.getInstance();
 
@@ -68,9 +71,20 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 session.apply(context.getBL());
 
                 LM.findLCPByCompoundName("fileNameBackup").change(dumpDir + dateTime, context.getSession());
+
+
             }
         } catch (Exception e) {
             Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        try {
+            return getChangeProps((CalcProperty) LM.findLCPByCompoundName("dateBackup").property, (CalcProperty) LM.findLCPByCompoundName("timeBackup").property);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            return null;
         }
     }
 }
