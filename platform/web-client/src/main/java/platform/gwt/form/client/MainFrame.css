@@ -65,16 +65,17 @@ textarea {
 }
 
 .closeTabButton {
-    height: 16px;
-    width: 16px;
-    padding: 0 0 4px 0;
+    height: 17px;
+    width: 17px;
+    padding: 0 0 2px 0;
     margin-left: 2px;
     border: 0;
     border-radius: 3px;
     -moz-border-radius: 3px;
     background: transparent;
     color: #000000;
-    font-size: 9pt;
+    font-size: 8pt;
+    font-family: tahoma;
     font-weight: bold;
     cursor: pointer;
     cursor: hand;

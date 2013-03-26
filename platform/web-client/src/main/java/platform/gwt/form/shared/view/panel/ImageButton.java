@@ -57,8 +57,6 @@ public class ImageButton extends Button {
             panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
         }
 
-        label.addStyleName("customFontPresenter");
-
         setText(caption);
         setModuleImagePath(imagePath);
 

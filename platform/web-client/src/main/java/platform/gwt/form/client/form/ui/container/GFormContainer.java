@@ -1,7 +1,10 @@
 package platform.gwt.form.client.form.ui.container;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.HasDirection;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GComponent;
@@ -40,6 +43,7 @@ public class GFormContainer extends GAbstractFormContainer {
 
         if (childKey.hAlign.equals(GContainer.Alignment.RIGHT)) {
             panel.setCellHorizontalAlignment(childView, HasHorizontalAlignment.HorizontalAlignmentConstant.endOf(HasDirection.Direction.LTR));
+            childView.getElement().getStyle().setFloat(Style.Float.RIGHT);
         }
     }
 

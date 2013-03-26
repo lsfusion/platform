@@ -802,7 +802,13 @@ public class GFormController extends ResizableSimplePanel {
         for (GTreeGroupController tgc : treeControllers.values()) {
             tgc.setFilterVisible(selected);
         }
-        relayoutTables(formLayout.getMainKey());
+
+//        пробуем не вызывать. при возникновении проблем с отображением следует раскомментировать
+//        relayoutTables(formLayout.getMainKey());
+
+        if (selected) {
+            focusFirstWidget();
+        }
     }
 
     private static final class Change {

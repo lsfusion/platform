@@ -35,7 +35,6 @@ public class DataPanelRenderer implements PanelRenderer {
 
     public DataPanelRenderer(GFormController form, final GPropertyDraw property, GGroupObjectValue columnKey) {
         label = new Label(caption = property.getEditCaption());
-        label.addStyleName("customFontPresenter");
 
         if (property.headerFont != null) {
             label.getElement().getStyle().setProperty("font", property.headerFont.getFullFont());

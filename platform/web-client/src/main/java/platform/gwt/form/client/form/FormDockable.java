@@ -133,7 +133,6 @@ final class FormDockable {
 
         public TabWidget(String title) {
             label = new Label(title);
-            label.addStyleName("customFontPresenter");
 
             closeButton = new Button();
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
@@ -145,6 +144,8 @@ final class FormDockable {
             closeButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
+                    event.stopPropagation();
+                    event.preventDefault();
                     closePressed();
                 }
             });

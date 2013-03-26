@@ -101,10 +101,8 @@ public abstract class GFilterController {
             getFilterDialog().center();
         }
 
-        state = newState;
-
         String toolbarButtonIconPath = null;
-        switch (state) {
+        switch (newState) {
             case REMOVED:
                 toolbarButtonIconPath = ADD_FILTER;
                 toolbarButton.getElement().getStyle().setProperty("background", "");
@@ -116,13 +114,17 @@ public abstract class GFilterController {
         if (toolbarButtonIconPath != null) {
             toolbarButton.setModuleImagePath(toolbarButtonIconPath);
         }
-        toolbarButton.setEnabled(state != State.EXPANDED);
+        toolbarButton.setEnabled(newState != State.EXPANDED);
 
-        if (state != State.EXPANDED) {
-            filterHidden();
+        if (newState != State.EXPANDED) {
+            if (state == State.EXPANDED) {
+                filterHidden();
+            }
         } else {
             focusOnValue();
         }
+
+        state = newState;
     }
 
     public void collapsePressed() {
