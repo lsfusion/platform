@@ -1981,7 +1981,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete)currentBalanceSku###object READONLY
 
-        FILTERS                hasParent###object###skuGroup(concrete, s, gg) OR s IS sku AND concrete IS object AND NOT gg
+        FILTERS                isParentGroupSku(gg, s) OR s IS sku AND NOT gg
 
         FILTERS nameSku(s)
         ORDER BY inputName
