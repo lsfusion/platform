@@ -206,6 +206,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         SET agreementUserInvoice(userInvoice) <- agreementOrder(order);
         SET priceListTypeUserInvoice(userInvoice) <- priceListTypeOrder(order);
 
+        SET operationUserInvoice(userInvoice) <- operationOrder(order) WHERE operationOrder(order);
         SET noteUserInvoice(userInvoice) <- noteOrder(order);
 
         EXEC createDetailUserInvoiceOrder(userInvoice, order);

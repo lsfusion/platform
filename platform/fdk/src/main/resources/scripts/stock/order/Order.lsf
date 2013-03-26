@@ -15,6 +15,7 @@ REQUIRE System,
         StockReserve,
         OrderLedger,
         Employee,
+        Operation,
         StockTax;
 
 
@@ -60,6 +61,9 @@ toDateOrder 'Дата автоматического закрытия' = ABSTRAC
 
 @defineDocumentHeaderGrossWeight(order);
 @defineDocumentAbstractHeaderCurrency (order);
+
+operationOrder = ABSTRACT operation (order) PERSISTENT;
+nameOperationOrder 'Операция' (order) = name(operationOrder(order));
 
 quantityFromOrderStock 'Кол-во со склада' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
                                                                                                          fromStockOrderDetail(orderDetail);
