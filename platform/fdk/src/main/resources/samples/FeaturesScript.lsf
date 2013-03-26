@@ -1115,6 +1115,17 @@ PROPERTIES OBJVALUE(to), OBJVALUE(i), fib(i, to)
 FILTERS fib(i, to)
 ;
 
+CLASS newtest;
+newtf = DATA INTEGER (newtest);
+ottf = DATA INTEGER (newtest);
+divtf(a) = newtf(a) / ottf(a) PERSISTENT;
+
+FORM newTestForm 'Test Exception'
+ OBJECTS x = newtest
+ PROPERTIES(x) ADDOBJ, newtf, ottf
+;
+
 NAVIGATOR {
     ADD fibForm;
+    ADD newTestForm;
 }

@@ -1050,7 +1050,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 //        assert !isInTransaction();
         startTransaction();
 
-        return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+        try {
+            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+        } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
+            apply.clear(sql);
+            dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
+            rollbackTransaction();
+            throw e;
+        }
     }
 
     private IdentityHashMap<FormInstance, Object> activeForms = new IdentityHashMap<FormInstance, Object>();

@@ -131,6 +131,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void endTransaction() throws SQLException {
+        assert isInTransaction();
         if(--inTransaction == 0) {
             setACID(privateConnection, false);
             if(isolationLevel > 0)
@@ -148,7 +149,7 @@ public class SQLSession extends MutableObject {
     public void rollbackTransaction() throws SQLException {
         if(inTransaction == 1) // транзакция заканчивается
             for(String transactionTable : transactionTables) {
-                dropTemporaryTableFromDB(transactionTable);
+//                dropTemporaryTableFromDB(transactionTable);
 
                 sessionTablesMap.remove(transactionTable);
                 getSQLTemporaryPool().removeTable(transactionTable);
