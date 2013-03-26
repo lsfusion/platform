@@ -101,6 +101,9 @@ groupGroupTypeSku = ABSTRACT group (groupType, sku) EXCLUSIVE PERSISTENT;
 nameGroupGroupTypeSku 'Имя' (type, sku) = name(groupGroupTypeSku(type, sku));
 canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
 
+TABLE groupSku(group, sku);
+isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGroup(group), sku), group) PERSISTENT INDEXED;
+
 // ----------------------------------- Custom Group ------------------------------------------ //
 
 CLASS customGroup 'Дополнительный классификатор SKU' : group;
@@ -1936,8 +1939,6 @@ END
 
 //----------- Подбор товара в документ: галочка (один склад)---------------//
 META defineDocumentInSkuStockCustom(object, detail, skuProp, stockProp)
-
-    hasParent###object###skuGroup(object, sku, group) = isParentGroupGroup(groupGroupTypeSku(groupType###object(object), sku), group);
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
     detail###sku###object(sku, object) = GROUP SUM 1 BY skuProp###detail(detail), object###detail(detail);

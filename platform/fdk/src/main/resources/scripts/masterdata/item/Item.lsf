@@ -238,12 +238,6 @@ seekSkuBarcode = ACTION (){
 editSku(sku) += [ACTION EDITFORM item](sku);
 addSku () += [ACTION ADDFORM item]();
 
-
-hasParentGroupGroupTypeItem(group, groupType, item) = isParentGroupGroup(groupGroupTypeSku(groupType, item), group);
-
-nameGroupTypeItem 'Группа товара' (groupType, item) = name(groupGroupTypeSku(groupType, item));
-canonicalNameGroupTypeItem 'Группа товара' (groupType, item) = canonicalNameGroup(groupGroupTypeSku(groupType, item));
-
 FORM items 'Товары'
 
     OBJECTS gt=groupType FIXED PANEL
@@ -606,10 +600,10 @@ loadDefaultItemAttributes() += ACTION {
 
 EXTEND FORM items
     PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItem(i) // вообще надо использовать nameAttributeGroupGroupTypeItem(g, gt, i) для скорости, но тогда не будет работать отбор без групп
-    PROPERTIES READONLYIF isReadonly() canonicalNameGroupTypeItem(gt,i) AFTER nameAttributeItem(i)
+    PROPERTIES READONLYIF isReadonly() canonicalNameGroupGroupTypeSku(gt,i) AFTER nameAttributeItem(i)
 
     FILTERGROUP groupFilters
-        FILTER 'С группами' 'F9' nameAttributeItem(i) DEFAULT // nameAttributeGroupGroupTypeItem(g, gt, i)
+        FILTER 'С группами' 'F9' isParentGroupSku(g, i) DEFAULT
         FILTER 'Без групп' 'F8' nameAttributeItem(i) AND gt IS groupType AND NOT groupGroupTypeSku(gt,i)
 
     ORDER BY nameAttributeItem

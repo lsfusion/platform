@@ -90,7 +90,6 @@ concatSkuDepartmentStore (sku, departmentStore)= GROUP MAX listLabelTypeDepartme
 
 labelTypeSkuDepartmentStore (sku, departmentStore)= concatSkuDepartmentStore (sku, departmentStore)[2];
 nameLabelTypeSkuDepartmentStore 'Тип ценника по умолчанию' (sku, departmentStore)= name(labelTypeSkuDepartmentStore (sku, departmentStore));
-hasParentLabelTypeSkuGroup(labelType, sku, group) = isParentGroupGroup(groupGroupTypeSku(groupTypeLabelType(labelType), sku), group);
 
 //-- Множитель
 dataCountLabelLabelTypeGroup 'Множитель' = DATA INTEGER (labelType, group);
@@ -141,7 +140,7 @@ FORM labelType 'Тип ценника'
 
     OBJECTS sk = sku
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku
-    FILTERS hasParentLabelTypeSkuGroup(l, sk, g) OR sk IS sku AND l IS labelType AND NOT g
+    FILTERS isParentGroupSku(g, sk) OR sk IS sku AND NOT g
     PROPERTIES(l, sk) inLabelTypeSku, countLabelLabelTypeSku
 
     EDIT labelType OBJECT l

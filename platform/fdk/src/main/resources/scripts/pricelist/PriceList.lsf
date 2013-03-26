@@ -758,8 +758,6 @@ pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcP
 
 backgroundMarkup 'Цвет' (calcPriceListType, group) = RGB(255,160,160) AND markupCalcPriceListTypeGroup(calcPriceListType, group);
 
-hasParentGroupGroupTypeSku(type, sku, group) = isParentGroupGroup(groupGroupTypeSku(groupTypeCalcPriceListType(type), sku), group);
-
 // --------------------------- Формы ------------------------- //
 
 editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -796,7 +794,7 @@ FORM calcPriceListType 'Расчетный вид цен'
 
     OBJECTS s = sku
     PROPERTIES(s) READONLY nameSku, idBarcodeSku
-    FILTERS hasParentGroupGroupTypeSku(c, s, g) OR s IS sku AND c IS calcPriceListType AND NOT g
+    FILTERS isParentGroupSku(g, s) OR s IS sku AND NOT g
     PROPERTIES(c, s) dataMarkupCalcPriceListTypeSku, markupCalcPriceListTypeSku
 
     EDIT calcPriceListType OBJECT c
