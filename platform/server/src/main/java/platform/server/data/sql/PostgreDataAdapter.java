@@ -195,16 +195,16 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
-        String path = ((binPath == null) ? "" : binPath) + "pg_dump";
-        String host, port = "5432";
+        String host, port;
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
             port = server.substring(server.lastIndexOf(':') + 1);
         } else {
             host = server;
+            port = "5432";
         }
 
-        CommandLine commandLine = new CommandLine(path);
+        CommandLine commandLine = new CommandLine("pg_dump");
         commandLine.addArgument("-h");
         commandLine.addArgument(host);
         commandLine.addArgument("-p");
@@ -220,6 +220,8 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument(dataBase);
 
         Executor executor = new DefaultExecutor();
+        if(binPath!=null)
+            executor.setWorkingDirectory(new File(binPath));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         executor.setStreamHandler(new PumpStreamHandler(out));
 
