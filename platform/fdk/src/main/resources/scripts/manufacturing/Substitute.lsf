@@ -5,8 +5,7 @@ REQUIRE BOM;
 // ---------------- Замена ------------------- //
 
 CLASS substitute 'Замена';
-TABLE substitute(material);
-
+TABLE substitute(substitute);
 
 fromSkuSubstitute = DATA sku(substitute);
 nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(substitute)) IN recognize;

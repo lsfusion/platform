@@ -15,15 +15,18 @@ FORM dimensions 'Субконто'
 
 
 CLASS dimensionType 'Тип субконто': named;
+TABLE dimensionType(dimensionType);
 idDimensionType 'Идентификатор' = DATA STRING[20] (dimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 dimensionTypeDimension = ABSTRACT dimensionType (dimension) EXCLUSIVE PERSISTENT;
 nameDimensionTypeDimension 'Тип субконто' (dimension) = name(dimensionTypeDimension(dimension));
 
+TABLE GLAccountDimensionType(GLAccount, dimensionType);
 orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,dimensionType);
 dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
                                                 BY GLAccount
                                                 ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
+TABLE generalLedgerDimensionType(generalLedger, dimensionType);
 debitGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
 nameDebitGeneralLedgerDimensionType 'Субконто (дебит)' (generalLedger,dimensionType)= nameDimension(debitGeneralLedgerDimensionType(generalLedger,dimensionType));
 debitUserGeneralLedgerDimensionType = DATA dimension (userGeneralLedger,dimensionType);

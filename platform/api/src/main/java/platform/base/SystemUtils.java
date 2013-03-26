@@ -217,7 +217,7 @@ public class SystemUtils {
             if (manifestStream != null) {
                 Manifest manifest = new Manifest(manifestStream);
                 Attributes attributes = manifest.getMainAttributes();
-                revision = attributes.getValue("SCM-Revision");
+                revision = attributes.getValue("SCM-Version");
             }
         } catch (IOException ignore) {
         }

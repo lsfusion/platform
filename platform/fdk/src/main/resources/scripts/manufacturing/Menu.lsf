@@ -72,10 +72,12 @@ hasParentMenuGroup 'Количество позиций в группе' (menu, 
 isUserMenuDetailGroup (detail, group)= groupGroupTypeSku(groupTypeUserMenu(userMenuUserMenuDetail(detail)), skuUserMenuDetail(detail))==group;
 isMenuDetailGroup (detail, group)= groupGroupTypeSku(groupTypeMenu(menuMenuDetail(detail)), skuMenuDetail(detail))==group;
 
+TABLE menuDetailGroup(menuDetail, group);
 positionNumberMenuDetailGroup 'Порядок' = ABSTRACT INTEGER (menuDetail, group);
 positionNumberUserMenuDetailGroup 'Порядок' = DATA INTEGER (userMenuDetail, group);
 positionNumberMenuDetailGroup(detail, group) += positionNumberUserMenuDetailGroup(detail, group);
 
+TABLE menuGroup(menu, group);
 positionNumberMenuGroup 'Порядок' = ABSTRACT INTEGER (menu, group);
 positionNumberUserMenuGroup 'Порядок' = DATA INTEGER (userMenu, group);
 positionNumberMenuGroup(menu, group) += positionNumberUserMenuGroup(menu, group);
