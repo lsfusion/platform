@@ -23,7 +23,6 @@ public class DateConverter {
             return (java.sql.Date) date;
         else {
             java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-            assert dateToSql(date).equals(sqlDate);
             return sqlDate;
         }
     }
