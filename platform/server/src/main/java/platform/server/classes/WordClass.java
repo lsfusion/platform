@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class WordClass extends StaticFormatFileClass {
 
-    public final static WordClass instance = new WordClass(false, false);
-    public final static WordClass multipleInstance = new WordClass(true, false);
+    public final static WordClass instance = new WordClass(false);
+    public final static WordClass multipleInstance = new WordClass(true);
 
     protected String getFileSID() {
         return "WordClass";
@@ -19,8 +19,8 @@ public class WordClass extends StaticFormatFileClass {
         DataClass.storeClass(instance, multipleInstance);
     }
 
-    protected WordClass(boolean multiple, boolean storeName) {
-        super(multiple, storeName);
+    protected WordClass(boolean multiple) {
+        super(multiple, false);
     }
 
     public WordClass(DataInputStream inStream, int version) throws IOException {

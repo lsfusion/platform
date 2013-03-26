@@ -25,13 +25,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP permitChangeProperty;
     public LCP forbidChangeProperty;
 
-    public LCP permitViewAllPropertyUserRole;
     public LCP permitViewAllPropertyUser;
-    public LCP forbidChangeAllPropertyUserRole;
     public LCP forbidChangeAllPropertyRole;
-    public LCP forbidViewAllPropertyUserRole;
     public LCP forbidViewAllPropertyUser;
-    public LCP permitChangeAllPropertyUserRole;
     public LCP permitChangeAllPropertyUser;
     public LCP permitViewUserProperty;
     public LCP forbidViewUserProperty;

@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class PDFClass extends StaticFormatFileClass {
 
-    public final static PDFClass instance = new PDFClass(false, false);
-    public final static PDFClass multipleInstance = new PDFClass(true, false);
+    public final static PDFClass instance = new PDFClass(false);
+    public final static PDFClass multipleInstance = new PDFClass(true);
 
     protected String getFileSID() {
         return "PDFClass";
@@ -19,8 +19,8 @@ public class PDFClass extends StaticFormatFileClass {
         DataClass.storeClass(instance, multipleInstance);
     }
 
-    protected PDFClass(boolean multiple, boolean storeName) {
-        super(multiple, storeName);
+    protected PDFClass(boolean multiple) {
+        super(multiple, false);
     }
 
     public PDFClass(DataInputStream inStream, int version) throws IOException {

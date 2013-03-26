@@ -5,8 +5,11 @@ REQUIRE System, Authentication;
 CLASS abstractGroup 'Родит. группа';
 TABLE abstractGroup (abstractGroup);
 
-captionAbstractGroup 'Имя' = DATA STRING[250] (abstractGroup);
 parentAbstractGroup 'Родит. группа' = DATA abstractGroup (abstractGroup);
+levelAbstractGroupAbstractGroup 'Уровень' (child, parent) = RECURSION 1l AND child IS object AND parent == child
+                                                                      STEP 2l AND parent == parentAbstractGroup($parent) PERSISTENT;
+
+captionAbstractGroup 'Имя' = DATA STRING[250] (abstractGroup);
 numberAbstractGroup 'Номер' = DATA INTEGER (abstractGroup);
 SIDAbstractGroup 'Код свойства' = DATA STRING[100] (abstractGroup);
 abstractGroupSID 'Свойство' (sid) = GROUP UNIQUE abstractGroup BY SIDAbstractGroup(abstractGroup) WHERE abstractGroup IS abstractGroup;
