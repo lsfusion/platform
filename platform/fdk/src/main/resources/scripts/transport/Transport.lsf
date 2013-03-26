@@ -35,7 +35,7 @@ nameTruckModelTruck 'Марка' (truck) = name(truckModelTruck(truck));
 nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameTruckModelTruck(truck), sidTruck(truck));
 
 trailerTruck 'Прицеп' = DATA STRING[100](truck);
-weightTruck 'Грузоподьёмность (тонн)' = DATA NUMERIC[14,2](truck);
+weightTruck 'Грузоподъёмность (кг)' = DATA NUMERIC[14,2](truck);
 ownerTruck 'Владелец' = DATA STRING[100](truck);
 
 FORM truck 'Машина'
@@ -62,14 +62,14 @@ typeDriver 'Класс' = DATA STRING[10](driver);
 
 FORM driver 'Водитель'
     OBJECTS d=driver FIXED PANEL
-    PROPERTIES (d) name, firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
+    PROPERTIES (d) firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
 
     EDIT driver OBJECT d
 ;
 
 FORM drivers 'Водители'
     OBJECTS d=driver
-    PROPERTIES(d) READONLY name, firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
+    PROPERTIES(d) READONLY firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
     PROPERTIES(d) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     DIALOG driver OBJECT d
