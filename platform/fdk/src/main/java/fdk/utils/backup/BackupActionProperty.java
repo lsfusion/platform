@@ -2,9 +2,7 @@ package fdk.utils.backup;
 
 import com.google.common.base.Throwables;
 import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
@@ -15,21 +13,13 @@ import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.session.DataSession;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.sql.Date;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.Date;
+
+import static platform.base.IOUtils.readFileToString;
 
 public class BackupActionProperty extends ScriptingActionProperty {
-
-    private String dumpDir;
-    private DateFormat dateFormat;
-    private java.util.Date date;
-    private String binPath;
 
     public BackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, new ValueClass[]{});
@@ -37,42 +27,27 @@ public class BackupActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-
             DataSession session = context.createSession();
-            dumpDir = (String) LM.findLCPByCompoundName("dumpDirBackupTask").read(session);
-            binPath = (String) LM.findLCPByCompoundName("binPathBackupTask").read(session);
-            if (dumpDir != null) {
 
-                dumpDir = dumpDir.trim();
-                binPath = binPath == null ? null : binPath.trim();
+            Date currentDate = Calendar.getInstance().getTime();
+            long currentTime = currentDate.getTime();
+            String backupFileName = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(currentDate);
 
-                Calendar calendar = Calendar.getInstance();
+            String backupFilePath = context.getDbManager().backupDB(backupFileName);
+            if (backupFilePath != null) {
+                String backupFileLogPath = backupFilePath + ".log";
 
-                date = calendar.getTime();
-                dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-                String dateTime = dateFormat.format(date);
-                File f = new File(dumpDir);
-                f.mkdir();
-
-                context.getDbManager().backupDB(binPath, dumpDir + dateTime);
-                Thread.sleep(500);
                 DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("backup"));
-                LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(date.getTime()), session, backupObject);
-                LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(date.getTime()), session, backupObject);
-                LM.findLCPByCompoundName("fileBackup").change(dumpDir + dateTime, session, backupObject);
-                LM.findLCPByCompoundName("fileLogBackup").change(dumpDir + dateTime + "log.txt", session, backupObject);
+                LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
+                LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
+                LM.findLCPByCompoundName("fileBackup").change(backupFilePath, session, backupObject);
+                LM.findLCPByCompoundName("fileLogBackup").change(backupFileLogPath, session, backupObject);
 
-                String log = "";
-                Scanner scanner = new Scanner(new File(dumpDir + dateTime + "log.txt"), Charset.defaultCharset().name());
-                while (scanner.hasNext()) {
-                    log += scanner.nextLine() + "\r\n";
-                }
-                LM.findLCPByCompoundName("logBackup").change(log, session, backupObject);
+                LM.findLCPByCompoundName("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
+
                 session.apply(context.getBL());
 
-                LM.findLCPByCompoundName("fileNameBackup").change(dumpDir + dateTime, context.getSession());
-
-
+                LM.findLCPByCompoundName("fileNameBackup").change(backupFilePath, context.getSession());
             }
         } catch (Exception e) {
             Throwables.propagate(e);

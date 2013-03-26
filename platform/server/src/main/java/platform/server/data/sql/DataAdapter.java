@@ -4,10 +4,9 @@ import org.apache.log4j.Logger;
 import platform.server.data.AbstractConnectionPool;
 import platform.server.data.type.Type;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.*;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
@@ -235,9 +234,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean orderTopTrouble() {
         throw new RuntimeException("unknown");
     }
-    
-    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
-        return true;
+
+    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
+        return null;
     }
 
     public String getAnalyze(){

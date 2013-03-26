@@ -65,6 +65,14 @@ public class IOUtils {
         }
     }
 
+    public static String readFileToString(String fileName) throws IOException {
+        return readFileToString(fileName, null);
+    }
+
+    public static String readFileToString(String fileName, String charsetName) throws IOException {
+        return readStreamToString(new FileInputStream(fileName), charsetName);
+    }
+
     public static String readStreamToString(InputStream inStream) throws IOException {
         return readStreamToString(inStream, null);
     }

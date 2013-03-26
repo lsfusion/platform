@@ -2,9 +2,6 @@ MODULE Backup;
 
 REQUIRE System;
 
-dumpDirBackupTask 'Директорий дампа' = DATA STRING[200] ();
-binPathBackupTask 'Директорий установки PostgreSQL' = DATA STRING[200] ();
-
 makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'fdk.utils.backup.BackupActionProperty' TOOLBAR;
 makeClientBackup 'Скачать резервную копию'= ACTION CUSTOM 'fdk.utils.backup.ClientBackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'fdk.utils.backup.DeleteBackupActionProperty' CONFIRM;
@@ -23,7 +20,7 @@ fileNameBackup 'Файл резервной копии' = DATA SESSION STRING[20
 
 FORM backup 'Резервное копирование'
     OBJECTS b = backup
-    PROPERTIES() binPathBackupTask, dumpDirBackupTask, makeBackup TODRAW b FORCE PANEL, makeClientBackup TODRAW b FORCE PANEL
+    PROPERTIES() makeBackup TODRAW b FORCE PANEL, makeClientBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
     PROPERTIES(b) deleteBackup
 ;

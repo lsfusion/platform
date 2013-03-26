@@ -1,18 +1,18 @@
 package platform.server.data.sql;
 
-import net.sourceforge.jtds.util.Logger;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.base.NullOutputStream;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,21 +20,38 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
+import static platform.base.BaseUtils.isRedundantString;
+
 
 public class PostgreDataAdapter extends DataAdapter {
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
 
+    public String binPath;
+    public String dumpDir;
+
     // Для debuga конструктор
     public PostgreDataAdapter() {
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
         this(dataBase, server, userID, password, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
+        this(dataBase, server, userID, password, null, null, cleanDB);
+    }
+
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir) throws Exception {
+        this(dataBase, server, userID, password, binPath, dumpDir, false);
+    }
+
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir, boolean cleanDB) throws Exception {
         super(dataBase, server, userID, password);
+
+        this.binPath = binPath;
+        this.dumpDir = dumpDir;
+
         internalEnsureDB(cleanDB);
     }
 
@@ -194,7 +211,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
+    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
+        if (isRedundantString(dumpDir) || isRedundantString(binPath)) {
+            return null;
+        }
+
         String host, port;
         if (server.contains(":")) {
             host = server.substring(0, server.lastIndexOf(':'));
@@ -204,7 +225,12 @@ public class PostgreDataAdapter extends DataAdapter {
             port = "5432";
         }
 
-        CommandLine commandLine = new CommandLine("pg_dump");
+        new File(dumpDir).mkdirs();
+
+        String backupFilePath = new File(dumpDir, dumpFileName + ".backup").getPath();
+        String backupLogFilePath = backupFilePath + ".log";
+
+        CommandLine commandLine = new CommandLine(new File(binPath, "pg_dump"));
         commandLine.addArgument("-h");
         commandLine.addArgument(host);
         commandLine.addArgument("-p");
@@ -216,25 +242,30 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("-b");
         commandLine.addArgument("-v");
         commandLine.addArgument("-f");
-        commandLine.addArgument(dumpDir);
+        commandLine.addArgument(backupFilePath);
         commandLine.addArgument(dataBase);
 
-        Executor executor = new DefaultExecutor();
-        if(binPath!=null)
-            executor.setWorkingDirectory(new File(binPath));
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        executor.setStreamHandler(new PumpStreamHandler(out));
 
-        executor.setExitValue(0);
+        FileOutputStream logStream = new FileOutputStream(backupLogFilePath);
+        try {
+            Map<String, String> env = new HashMap<String, String>(System.getenv());
+            env.put("LC_MESSAGES", "en_EN");
+            env.put("PGPASSWORD", password);
 
-        Map<String, String> env = new HashMap<String, String>(System.getenv());
-        env.put("PGPASSWORD", password);
+            Executor executor = new DefaultExecutor();
+            executor.setStreamHandler(new PumpStreamHandler(logStream));
+            executor.setExitValue(0);
 
-        int result = executor.execute(commandLine, env);
+            int result = executor.execute(commandLine, env);
 
-        out.writeTo(new FileOutputStream (dumpDir + "log.txt"));
+            if (result != 0) {
+                throw new IOException("Error executing pg_dump - process returned code: " + result);
+            }
+        } finally {
+            logStream.close();
+        }
 
-        return result==0;
+        return backupFilePath;
     }
 
     @Override

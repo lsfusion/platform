@@ -14,6 +14,8 @@
         <constructor-arg value="${db.server}"/>
         <constructor-arg value="${db.user}"/>
         <constructor-arg value="${db.password}"/>
+        <constructor-arg value="${backup.binPath:}"/>
+        <constructor-arg value="${backup.dumpDir:}"/>
     </bean>
 
     <bean id="dbManager" class="platform.server.logics.DBManager">

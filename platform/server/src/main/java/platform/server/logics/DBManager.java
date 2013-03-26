@@ -1159,8 +1159,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return resultChanges;
     }
 
-    public boolean backupDB(String binPath, String dumpDir) throws IOException, InterruptedException {
-        return adapter.backupDB(binPath, dumpDir);
+    public String backupDB(String dumpFileName) throws IOException, InterruptedException {
+        return adapter.backupDB(dumpFileName);
     }
 
     public void analyzeDB(SQLSession session) throws SQLException {
