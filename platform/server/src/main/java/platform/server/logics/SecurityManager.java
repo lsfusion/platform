@@ -172,7 +172,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             DataObject userObject = session.addObject(businessLogics.authenticationLM.customUser);
             businessLogics.authenticationLM.loginCustomUser.change(username, session, userObject);
             businessLogics.contactLM.emailContact.change(email, session, userObject);
-            businessLogics.authenticationLM.passwordCustomUser.change(password, session, userObject);
             businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
             businessLogics.contactLM.firstNameContact.change(firstName, session, userObject);
             businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
@@ -190,7 +189,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         if (user == null) {
             DataObject addObject = session.addObject(businessLogics.authenticationLM.customUser);
             businessLogics.authenticationLM.loginCustomUser.change(login, session, addObject);
-            businessLogics.authenticationLM.passwordCustomUser.change(defaultPassword, session, addObject);
             businessLogics.authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, addObject);
             Integer userID = (Integer) addObject.object;
             session.apply(businessLogics);
