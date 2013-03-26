@@ -224,9 +224,10 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameSupplierStockUserInvoice, nameCustomerUserInvoice, nameCustomerStockUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice SHOWIF noAgreementUserInvoice(i), noteUserInvoice,
-                       numberContractSkuUserInvoice, isCommissionUserInvoice,
-                       countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
-                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice, toShowProp###userInvoice//, fillDocumentInvoice
+                       numberContractSkuUserInvoice, isCommissionUserInvoice
+        PROPERTIES (i) countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
+                       VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
+        PROPERTIES (i) toShowProp###userInvoice//, fillDocumentInvoice
 
         OBJECTS d = userInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail

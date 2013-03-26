@@ -68,7 +68,7 @@ quantityShipmentDetailTripShipment (trip, shipment) = GROUP SUM quantityShipment
 
 quantityShipmentedTripSku 'Кол-во в поставках' (trip, sku) = GROUP SUM quantityShipmentDetail(shipmentDetail) BY tripShipment(shipmentShipmentDetail(shipmentDetail)), skuShipmentDetail(shipmentDetail);
 
-createShipmentsTrip 'Присоединить поставки' (trip) = ACTION (trip) {
+createShipmentsTrip 'Включить поставки' (trip) = ACTION (trip) {
     SET tripShipment(shipment) <- NULL WHERE tripShipment(shipment) == trip;
     SET tripShipment(shipment) <- trip WHERE quantityShipmentDetailTripShipment(trip, shipment);
 } TOOLBAR CONFIRM;
@@ -140,8 +140,8 @@ FORM trip 'Рейс'
     FILTERGROUP filterDateOrder
         FILTER 'Текущие' 'F9' dateOrder(o) <= dateTrip(t) DEFAULT
     FILTERGROUP filterOrder
-        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripOrder(t, o) DEFAULT
-        FILTER 'В текущем рейсе' 'F10' inTripOrder(t, o)
+        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripOrder(t, o)
+        FILTER 'В текущем рейсе' 'F10' inTripOrder(t, o) DEFAULT
 
     OBJECTS od=orderDetail
     PROPERTIES(od) READONLY idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail, quantityOrderDetail, grossWeightOrderDetail, nameFromStockOrderDetail, nameToStockOrderDetail
@@ -163,8 +163,8 @@ FORM trip 'Рейс'
     FILTERGROUP filterDateShipment
         FILTER 'Текущие' 'F9' dateShipment(s) <= dateTrip(t) DEFAULT
     FILTERGROUP filterShipment
-        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripShipment(t, s) DEFAULT
-        FILTER 'В текущем рейсе' 'F10' inTripShipment(t, s)
+        FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripShipment(t, s)
+        FILTER 'В текущем рейсе' 'F10' inTripShipment(t, s) DEFAULT
 
     OBJECTS sd=shipmentDetail
     PROPERTIES(sd) READONLY idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail, quantityShipmentDetail, grossWeightShipmentDetail, nameFromStockShipmentDetail, nameToStockShipmentDetail
