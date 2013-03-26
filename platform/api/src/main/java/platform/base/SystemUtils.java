@@ -26,7 +26,8 @@ public class SystemUtils {
         if (overwrite || !file.exists()) { // пока сделаем так, хотя это не очень правильно, так как желательно все-таки обновлять dll'ки
 
             InputStream in = cls.getResourceAsStream(path + resource);
-
+            if (in == null)
+                throw new FileNotFoundException("File " + file.getName() + " not found");
             FileOutputStream out = new FileOutputStream(file);
 
             byte[] b = new byte[4096];
@@ -34,11 +35,9 @@ public class SystemUtils {
             while ((read = in.read(b)) != -1) {
                 out.write(b, 0, read);
             }
-
             in.close();
             out.close();
         }
-
         return file.getAbsolutePath();
     }
 
