@@ -1,13 +1,15 @@
 package platform.base;
 
-import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.implementations.HMap;
 import platform.base.col.implementations.HSet;
-import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MFilterSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -31,6 +33,10 @@ public class BaseUtils {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
 
     public static final String lineSeparator = System.getProperty("line.separator");
+
+    //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
+    //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
+    private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
@@ -442,22 +448,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static Object deserializeString(DataInputStream inStream) throws IOException {
-
-        int numOfChunks = inStream.readInt();
-
-        if (numOfChunks == 0)
-            return null;
-
-        String result = "";
-        for (int i = 0; i < numOfChunks; i++)
-            result += inStream.readUTF();
-
-        return result;
-    }
-
     public static Object deserializeObject(byte[] state) throws IOException {
-
         return deserializeObject(new DataInputStream(new ByteArrayInputStream(state)));
     }
 
@@ -513,26 +504,30 @@ public class BaseUtils {
         throw new IOException();
     }
 
-    public static void serializeString(DataOutputStream outStream, Object object) throws IOException {
+    public static Object deserializeString(DataInputStream inStream) throws IOException {
+        int chunksCount = inStream.readInt();
 
-        int chunkSize = 65535;
-        int length = ((String) object).length();
-        int numOfChunks = (length + chunkSize - 1) / chunkSize;
+        if (chunksCount < 0) {
+            return null;
+        } else if (chunksCount == 0) {
+            return "";
+        } else {
+            StringBuilder result = new StringBuilder((chunksCount - 1) * STRING_SERIALIZATION_CHUNK_SIZE);
+            for (int i = 0; i < chunksCount; i++) {
+                result.append(inStream.readUTF());
+            }
 
-        outStream.writeInt(numOfChunks);
+            return result.toString();
+        }
+    }
 
-        for (int i = 0; i < numOfChunks; i++)
-            outStream.writeUTF(((String) object).substring(i * chunkSize, Math.min(length, (i + 1) * chunkSize)));
+    public static byte[] serializeObject(Object value) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        serializeObject(new DataOutputStream(outStream), value);
+        return outStream.toByteArray();
     }
 
     public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {
-
-/*        try {
-            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
-            objectStream.writeObject(object);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
         if (object == null) {
             outStream.writeByte(0);
@@ -547,7 +542,7 @@ public class BaseUtils {
 
         if (object instanceof String) {
             outStream.writeByte(2);
-            serializeString(outStream, object);
+            serializeString(outStream, (String) object);
             return;
         }
 
@@ -604,13 +599,25 @@ public class BaseUtils {
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
-    public static byte[] serializeObject(Object value) throws IOException {
+    public static void serializeString(DataOutputStream outStream, String str) throws IOException {
+        assert str != null;
 
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        serializeObject(new DataOutputStream(outStream), value);
-        return outStream.toByteArray();
+        if (str == null) {
+            outStream.writeInt(-1);
+        } else if (str.length() == 0) {
+            outStream.writeInt(0);
+        } else {
+            int chunkSize = STRING_SERIALIZATION_CHUNK_SIZE;
+            int length = str.length();
+            int chunksCount = (length + chunkSize - 1) / chunkSize;
+
+            outStream.writeInt(chunksCount);
+
+            for (int i = 0; i < chunksCount; i++) {
+                outStream.writeUTF(str.substring(i * chunkSize, min(length, (i + 1) * chunkSize)));
+            }
+        }
     }
-
 
     public static boolean startsWith(char[] string, int off, char[] check) {
         if (string.length - off < check.length)
