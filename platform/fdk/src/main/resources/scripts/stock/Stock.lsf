@@ -333,7 +333,7 @@ nameSkuSkuLedger 'SKU' (ledger) = nameSku(skuSkuLedger(ledger));
 stockSkuLedger (ledger) = UNION CLASS stockDataSkuLedger (ledger), stockBatch (ledger) PERSISTENT INDEXED;
 nameStockSkuLedger 'Склад' (ledger) = name(stockSkuLedger(ledger));
 
-descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger);
+descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSkuLedger (ledger), descriptionBatch (ledger) PERSISTENT;
 
 // -------------------------------- Количества ---------------------------- //
 
@@ -385,7 +385,7 @@ quantityOutFIFOSkuLedgerBatch (ledger, batch) =
                   ORDER orderOutFIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
 quantityDataSkuLedgerBatch (ledger, batch) = UNION CLASS quantityInLIFOSkuLedgerBatch(ledger, batch),
-                                                             quantityOutFIFOSkuLedgerBatch(ledger, batch);
+                                                         quantityOutFIFOSkuLedgerBatch(ledger, batch) PERSISTENT;
 
 // Свойства для расчета себестоимости
 
@@ -481,7 +481,7 @@ sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (inSkuLedger) PERS
 sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (outSkuLedger) PERSISTENT;
 
 signedSumSkuLedger 'Сумма' (ledger) = UNION CLASS sumInSkuLedger(ledger),
-                                                      -sumOutSkuLedger(ledger) PERSISTENT;
+                                                 -sumOutSkuLedger(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
 

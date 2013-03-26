@@ -428,7 +428,7 @@ META defineItemAttributeName (prefix, caption, group)
     name###prefix##AttributeItem 'Наименование'###caption (item) = toString255(
                     [GROUP CONCAT ustring3(prefixInNameItemAttribute(attribute) AND item IS item, valueItemAttribute(item, attribute), postfixInNameItemAttribute(attribute) AND item IS item)
                                   IF numberInName###prefix##ItemAttribute(attribute) AND valueItemAttribute(item, attribute), ' ' BY item ORDER numberInName###prefix##ItemAttribute(attribute)](item))
-                    IN group PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 80 INDEXED AGGPROP;
+                    IN group PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
     EXTEND FORM item PROPERTIES(i) READONLY name###prefix##AttributeItem;
     EXTEND DESIGN item { itemHeaderColumn2 {ADD PROPERTY(name###prefix##AttributeItem); } }
 END
@@ -601,15 +601,15 @@ loadDefaultItemAttributes() += ACTION {
     SET numberInNameItemAttribute(a) <- 1 WHERE a == stringItemAttribute.itemCaption;
 }
 
-nameAttributeGroupGroupTypeItem 'Наименование' (group, groupType, item) = nameAttributeItem(item) AND
-    hasParentGroupGroupTypeItem(group, groupType, item) PERSISTENT INDEXED;
+//nameAttributeGroupGroupTypeItem 'Наименование' (group, groupType, item) = nameAttributeItem(item) AND
+//    hasParentGroupGroupTypeItem(group, groupType, item) PERSISTENT INDEXED;
 
 EXTEND FORM items
-    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItem(i)
+    PROPERTIES READONLY AFTER idBarcodeSku(i) nameAttributeItem(i) // вообще надо использовать nameAttributeGroupGroupTypeItem(g, gt, i) для скорости, но тогда не будет работать отбор без групп
     PROPERTIES READONLYIF isReadonly() canonicalNameGroupTypeItem(gt,i) AFTER nameAttributeItem(i)
 
     FILTERGROUP groupFilters
-        FILTER 'С группами' 'F9' nameAttributeGroupGroupTypeItem(g, gt, i) DEFAULT
+        FILTER 'С группами' 'F9' nameAttributeItem(i) DEFAULT // nameAttributeGroupGroupTypeItem(g, gt, i)
         FILTER 'Без групп' 'F8' nameAttributeItem(i) AND gt IS groupType AND NOT groupGroupTypeSku(gt,i)
 
     ORDER BY nameAttributeItem
@@ -735,17 +735,18 @@ createSkuBarcodeDate(barcode, date) += createItemBarcodeDate(barcode, date);
 
 inItem 'Отм.' = DATA SESSION BOOLEAN (item);
 
-replaceItem 'Объединить' = ACTION (item){
+replaceItem 'Объединить' = ACTION (item) {
     FOR inItem(i) DO{
         IF i != item THEN {
-            EXEC replaceSkuSku(i, item);
-            SET inItem(i) <- NULL;
-            EXEC delete(i);
+            replaceSkuSku(i, item);
+            inItem(i) <- NULL;
+            delete(i);
         } ELSE {
             MESSAGE 'Выделенный товар не может совпадать с объединяемым';
         }
     }
-}
+    apply();
+} CONFIRM;
 
 changeGroupItem 'Изменить группу' = ACTION (){
     FORM dialogItemGroups MODAL;

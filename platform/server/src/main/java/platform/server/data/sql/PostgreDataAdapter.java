@@ -212,7 +212,7 @@ public class PostgreDataAdapter extends DataAdapter {
         commandLine.addArgument("-U");
         commandLine.addArgument(userID);
         commandLine.addArgument("-F");
-        commandLine.addArgument("tar");
+        commandLine.addArgument("custom");
         commandLine.addArgument("-b");
         commandLine.addArgument("-v");
         commandLine.addArgument("-f");
