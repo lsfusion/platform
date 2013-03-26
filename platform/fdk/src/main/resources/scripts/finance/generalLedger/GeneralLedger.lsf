@@ -1,78 +1,6 @@
-MODULE GLAccountType;
+MODULE GeneralLedger;
 
-REQUIRE System,
-        Utils,
-        Document,
-        Stock,
-        Currency,
-        Barcode;
-
-PRIORITY Utils, Stock;
-
-//------------------------- План счетов -------------------------------//
-
-CLASS GLAccountType 'План счетов': named;
-currencyGLAccountType = DATA currency (GLAccountType);
-nameCurrencyGLAccountType 'Валюта' (GLAccountType)= name(currencyGLAccountType(GLAccountType));
-idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
-
-FORM GLAccountType 'План счетов'
-    OBJECTS g = GLAccountType FIXED PANEL
-    PROPERTIES(g) name, idGLAccountType, nameCurrencyGLAccountType
-    EDIT GLAccountType OBJECT g
-;
-
-FORM dialogGLAccountType 'План счетов'
-    OBJECTS g = GLAccountType
-    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
-    DIALOG GLAccountType OBJECT g
-;
-
-FORM GLAccountTypes 'Планы счетов'
-    OBJECTS g = GLAccountType
-    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
-;
-
-//-------------------------- Счета -------------------------//
-
-CLASS GLAccount 'Счет' : named;
-
-GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
-nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
-nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
-
-idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
-
-@defineHierarchy(GLAccount);
-canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
-                           [GROUP CONCAT idGLAccount(parent), ' / ' BY child ORDER DESC levelGLAccountGLAccount(child, parent)](GLAccount))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
-
-CONSTRAINT GLAccountTypeGLAccount(parentGLAccount(GLAccount)) != GLAccountTypeGLAccount(GLAccount)
-           CHECKED BY parentGLAccount MESSAGE 'План счетов родительской объекта должна совпадать с планом счетов объекта';
-
-GLAccountIdTypeIdGLAccount (string1, string2) = GROUP UNIQUE GLAccount
-    BY idGLAccountType(GLAccountTypeGLAccount(GLAccount)), idGLAccount(GLAccount) WHERE GLAccount IS GLAccount;
-
-FORM GLAccount 'Счет'
-    OBJECTS g=GLAccount FIXED PANEL
-    PROPERTIES(g) nameGLAccountTypeGLAccount, name, nameParentGLAccount, idGLAccount
-    EDIT GLAccount OBJECT g
-;
-
-FORM GLAccounts 'Счета'
-    OBJECTS t = GLAccountType FIXED PANEL
-    PROPERTIES(t) SELECTOR name
-
-    TREE treeGroups g=GLAccount PARENT parentGLAccount
-    PROPERTIES(g) READONLY name, idGLAccount, canonicalNameGLAccount, canonicalIdGLAccount
-    PROPERTIES(g) ADDFORM, EDITFORM, delete
-    FILTERS GLAccountTypeGLAccount(g) == t
-    ORDER BY canonicalIdGLAccount
-
-    DIALOG GLAccount OBJECT g
-;
+REQUIRE GLAccountType;
 
 //-------------------------- Проводки -------------------------//
 
@@ -176,13 +104,13 @@ recSumDebitGLAccountDateFromTo 'Сумма (дебит)' (GLAccount, dateFrom, d
 recBalanceGLAccountDateFromTo 'Сальдо' (GLAccount, dateFrom, dateTo)=  GROUP SUM balanceGLAccountDateFromTo(child, dateFrom, dateTo)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, dateFrom, dateTo;
 
-    
+
 @defineGLAccountSum ('(кредит)', credit, rec);
 @defineGLAccountSum ('(дебит)', debit, rec);
 @defineGLAccountBalance ( , rec);
 
 EXTEND FORM GLAccounts
-    PROPERTIES(g) recSumDebitGLAccount, recSumCreditGLAccount, recBalanceGLAccount
+    PROPERTIES(g) READONLY BEFORE delete(g) recSumDebitGLAccount, recSumCreditGLAccount, recBalanceGLAccount
 ;
 
 
@@ -231,7 +159,7 @@ isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS userGeneralLedger;
 
 FORM generalLedgers 'Проводки'
     OBJECTS g = generalLedger
-    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, descriptionGeneralLedger, dateGeneralLedger, idDebitGeneralLedger,
+    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
 
 
@@ -289,116 +217,8 @@ META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, property, d
     sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
 END
 
-//------------------------- Субконто -------------------------------//
-
-CLASS dimension 'Субконто': named;
-
-idDimension 'Идентификатор' = DATA STRING[20] (dimension) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
-
-orderGLAccountDimension 'Порядковый номер' = DATA INTEGER (GLAccount,dimension);
-
-dimensionsGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimension)) IF orderGLAccountDimension (GLAccount,dimension) , ', '
-                                                BY GLAccount
-                                                ORDER orderGLAccountDimension (GLAccount,dimension) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
-
-debitGeneralLedgerDimension 'Субконто (дебит)' = ABSTRACT object (generalLedger,dimension);
-debitUserGeneralLedgerDimension 'Субконто (дебит)' = DATA object (userGeneralLedger,dimension);
-debitGeneralLedgerDimension(generalLedger,dimension) += debitUserGeneralLedgerDimension(generalLedger,dimension);
-
-creditGeneralLedgerDimension 'Субконто (кредит)' = ABSTRACT object (generalLedger,dimension);
-creditUserGeneralLedgerDimension 'Субконто (кредит)' = DATA object (userGeneralLedger,dimension);
-creditGeneralLedgerDimension(generalLedger,dimension) += creditUserGeneralLedgerDimension(generalLedger,dimension);
-
-dimensionIdDimension (string1) = GROUP UNIQUE dimension BY idDimension(dimension) WHERE dimension IS dimension;
-
-FORM dimension 'Субконто'
-    OBJECTS d = dimension FIXED PANEL
-    PROPERTIES(d) name, idDimension
-    EDIT dimension OBJECT d
-;
-
-FORM dimensions 'Субконто'
-    OBJECTS d = dimension
-    PROPERTIES(d) READONLY name, idDimension
-    PROPERTIES(d) ADDFORM, EDITFORM, delete
-    DIALOG dimension OBJECT d
-;
-
-EXTEND FORM GLAccount
-
-    OBJECTS d = dimension
-    PROPERTIES(d) READONLY name, idDimension
-    PROPERTIES orderGLAccountDimension(g,d)
-;
-EXTEND DESIGN GLAccount {
-    ADD d.box BEFORE functions.box;
-}
-EXTEND FORM GLAccounts
-    PROPERTIES(g) READONLY dimensionsGLAccount
-;
-
-orderDebitGeneralLedgerDimension 'Порядковый номер' (ledger, dimension)=  orderGLAccountDimension(debitGeneralLedger(ledger), dimension);
-orderCreditGeneralLedgerDimension 'Порядковый номер' (ledger, dimension)=  orderGLAccountDimension(creditGeneralLedger(ledger), dimension);
-
-EXTEND FORM userGeneralLedger
-
-    OBJECTS d = dimension
-    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimension(g,d)
-    PROPERTIES debitUserGeneralLedgerDimension(g,d)
-    FILTERS orderDebitGeneralLedgerDimension(g,d)
-    ORDER BY orderDebitGeneralLedgerDimension
-
-    OBJECTS c = dimension
-    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimension(g,c)
-    PROPERTIES creditUserGeneralLedgerDimension(g,c)
-    FILTERS orderCreditGeneralLedgerDimension(g,c)
-    ORDER BY orderCreditGeneralLedgerDimension
-
-;
-EXTEND DESIGN userGeneralLedger {
-
-
-    NEW row BEFORE functions.box{
-        childConstraints = TO THE RIGHT;
-        title = 'Субконто';
-
-        ADD d.box {title = 'Дебит';}
-        ADD c.box {title = 'Кредит';}
-    }
-}
-
-EXTEND FORM generalLedgers
-
-    OBJECTS d = dimension
-    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimension(g,d), debitGeneralLedgerDimension(g,d)
-    FILTERS orderDebitGeneralLedgerDimension(g,d)
-    ORDER BY orderDebitGeneralLedgerDimension
-
-    OBJECTS c = dimension
-    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimension(g,c), creditGeneralLedgerDimension(g,c)
-    FILTERS orderCreditGeneralLedgerDimension(g,c)
-    ORDER BY orderCreditGeneralLedgerDimension
-;
-EXTEND DESIGN generalLedgers {
-
-
-    NEW row BEFORE documentHistory{
-        childConstraints = TO THE RIGHT;
-        title = 'Субконто';
-
-        ADD d.box {title = 'Дебит';}
-        ADD c.box {title = 'Кредит';}
-    }
-}
-
-
 NAVIGATOR {
-    financeNavigator {
-        NEW accountType 'Бухгалтерский учет' {
-            ADD GLAccountTypes;
-            ADD GLAccounts;
-            ADD generalLedgers;
-            ADD dimensions;
-        }
+    accountType {
+        ADD generalLedgers;
     }
 }

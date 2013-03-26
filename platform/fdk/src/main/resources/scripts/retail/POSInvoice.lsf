@@ -7,10 +7,10 @@ NAMESPACE Sale;
 
 createInvoiceReceipt 'Создать накладную' = ACTION (receipt) {       // todo: сделать необходимые округления
     FOR ADDOBJ i = userInvoice DO {
-        SET supplierStockUserInvoice(userInvoice) <- departmentStoreReceipt(receipt);
-        SET supplierUserInvoice(userInvoice) <- legalEntityStock(departmentStoreReceipt(receipt));
-        SET dateUserInvoice(userInvoice) <- dateReceipt(receipt);
-        SET timeUserInvoice(userInvoice) <- timeReceipt(receipt);
+        SET supplierStockUserInvoice(i) <- departmentStoreReceipt(receipt);
+        SET supplierUserInvoice(i) <- legalEntityStock(departmentStoreReceipt(receipt));
+        SET dateUserInvoice(i) <- dateReceipt(receipt);
+        SET timeUserInvoice(i) <- timeReceipt(receipt);
 
         FOR  receiptReceiptDetail(detail) == receipt ADDOBJ d = userInvoiceDetail DO {
             SET userInvoiceUserInvoiceDetail(d) <- i;

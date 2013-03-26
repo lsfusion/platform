@@ -1,0 +1,125 @@
+MODULE Dimension;
+
+REQUIRE GeneralLedger;
+
+//------------------------- Субконто -------------------------------//
+
+CLASS ABSTRACT dimension 'Субконто': named;
+nameDimension 'Название' = ABSTRACT STRING[255] (dimension) MINCHARWIDTH 40 PREFCHARWIDTH 50;
+
+FORM dimensions 'Субконто'
+    OBJECTS d = dimension
+    PROPERTIES(d) READONLY objectClassName, nameDimension
+    DIALOG dimension OBJECT d
+;
+
+
+CLASS dimensionType 'Тип субконто': named;
+idDimensionType 'Идентификатор' = DATA STRING[20] (dimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+dimensionTypeDimension = ABSTRACT dimensionType (dimension) EXCLUSIVE PERSISTENT;
+nameDimensionTypeDimension 'Тип субконто' (dimension) = name(dimensionTypeDimension(dimension));
+
+orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,dimensionType);
+dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
+                                                BY GLAccount
+                                                ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+debitGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
+nameDebitGeneralLedgerDimensionType 'Субконто (дебит)' (generalLedger,dimensionType)= nameDimension(debitGeneralLedgerDimensionType(generalLedger,dimensionType));
+debitUserGeneralLedgerDimensionType = DATA dimension (userGeneralLedger,dimensionType);
+nameDebitUserGeneralLedgerDimensionType 'Субконто (дебит)' (userGeneralLedger,dimensionType)= nameDimension(debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += debitUserGeneralLedgerDimensionType(generalLedger,dimensionType);
+CONSTRAINT debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType) AND NOT dimensionTypeDimension(debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)) == dimensionType
+    CHECKED BY debitUserGeneralLedgerDimensionType
+        MESSAGE 'Субконто (дебит) проводки должен соответствовать субконто';
+
+creditGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
+nameCreditGeneralLedgerDimensionType 'Субконто (кредит)' (generalLedger,dimensionType)= nameDimension(creditGeneralLedgerDimensionType(generalLedger,dimensionType));
+creditUserGeneralLedgerDimensionType = DATA dimension (userGeneralLedger,dimensionType);
+nameCreditUserGeneralLedgerDimensionType 'Субконто (кредит)' (userGeneralLedger,dimensionType)= nameDimension(creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += creditUserGeneralLedgerDimensionType(generalLedger,dimensionType);
+CONSTRAINT creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType) AND NOT dimensionTypeDimension(creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)) == dimensionType
+    CHECKED BY creditUserGeneralLedgerDimensionType
+        MESSAGE 'Субконто (кредит) проводки должен соответствовать субконто';
+
+dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS dimensionType;
+
+FORM dimensionType 'Тип субконто'
+    OBJECTS d = dimensionType FIXED PANEL
+    PROPERTIES(d) name, idDimensionType
+    EDIT dimensionType OBJECT d
+;
+
+FORM dimensionTypes 'Тип субконто'
+    OBJECTS d = dimensionType
+    PROPERTIES(d) READONLY name, idDimensionType
+    PROPERTIES(d) ADDFORM, EDITFORM, delete
+    DIALOG dimensionType OBJECT d
+;
+
+EXTEND FORM GLAccount
+
+    OBJECTS d = dimensionType
+    PROPERTIES(d) READONLY name
+    PROPERTIES orderGLAccountDimensionType(g,d)
+;
+EXTEND DESIGN GLAccount {
+    ADD d.box BEFORE functions.box;
+}
+EXTEND FORM GLAccounts
+    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
+;
+
+orderDebitGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(debitGeneralLedger(ledger), dimensionType);
+orderCreditGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(creditGeneralLedger(ledger), dimensionType);
+
+dimensionsDebitGeneralLedger 'Субконто (дебит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
+                                                BY ledger
+                                                ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
+                                                BY ledger
+                                                ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+
+
+EXTEND FORM userGeneralLedger
+
+    OBJECTS d = dimensionType
+    PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimensionType(g,d)
+    PROPERTIES nameDebitUserGeneralLedgerDimensionType(g,d)
+    FILTERS orderDebitGeneralLedgerDimensionType(g,d)
+    ORDER BY orderDebitGeneralLedgerDimensionType
+
+    OBJECTS c = dimensionType
+    PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimensionType(g,c)
+    PROPERTIES nameCreditUserGeneralLedgerDimensionType(g,c)
+    FILTERS orderCreditGeneralLedgerDimensionType(g,c)
+    ORDER BY orderCreditGeneralLedgerDimensionType
+
+;
+EXTEND DESIGN userGeneralLedger {
+
+
+    NEW row BEFORE functions.box{
+        childConstraints = TO THE RIGHT;
+        title = 'Субконто';
+
+        ADD d.box {title = 'Дебит';}
+        ADD c.box {title = 'Кредит';}
+    }
+}
+
+EXTEND FORM generalLedgers
+
+
+    PROPERTIES(g) READONLY BEFORE sumGeneralLedger(g) dimensionsDebitGeneralLedger, dimensionsCreditGeneralLedger
+;
+
+NAVIGATOR {
+    accountType {
+        ADD dimensionTypes;
+    }
+}
+
+
+
+
