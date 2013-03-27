@@ -92,7 +92,7 @@ store(document) = DATA Store (Document) IN base;
 quantity(document, article) = DATA DOUBLE (Document, Article) IN base;
 storeSize(store) = DATA StoreSize (Store) IN base;
 
-sessionObj() = DATA SESSION object ();
+sessionObj() = DATA SESSION Object ();
 
 // Join property
 // Expression syntax:
@@ -162,10 +162,10 @@ documentTypeString 'Тип документа' (doc) = IF (doc IS IncomeDocument
 //      DEFAULT defaultPropertyExpression
 // END
 sizeCode 'Размер склада (код)' (ss) = CASE
-                                          WHEN ss == storeSize.huge THEN ('HUGE' IF ss IS StoreSize)
-                                          WHEN ss == storeSize.big THEN ('BIG' IF ss IS StoreSize)
-                                          WHEN ss == storeSize.medium THEN ('MEDIUM' IF ss IS StoreSize)
-                                          WHEN ss == storeSize.small THEN ('SMALL' IF ss IS StoreSize)
+                                          WHEN ss == StoreSize.huge THEN ('HUGE' IF ss IS StoreSize)
+                                          WHEN ss == StoreSize.big THEN ('BIG' IF ss IS StoreSize)
+                                          WHEN ss == StoreSize.medium THEN ('MEDIUM' IF ss IS StoreSize)
+                                          WHEN ss == StoreSize.small THEN ('SMALL' IF ss IS StoreSize)
                                           DEFAULT 'UNKNOWN' IF ss IS Store
                                       END;
 storeSizeCode 'Размер склада (код)' (s) = sizeCode(storeSize(s));
@@ -251,11 +251,11 @@ foobar(store, article) = [x*x + y](foo(store, article), bar(store, article));   
 baz(store, article) = bar(store, article) > bar2(store, article) IN base;
 baz2 = foo(s, a) >= 15 == foo2(s, a) >= 15;
 
-storeIsHuge(store) = storeSize(store) == storeSize.huge;                        // static object
-storeIsBig(store) = storeSize(store) == storeSize.big;
-storeIsMedium(store) = storeSize(store) == storeSize.medium;
-storeIsSmall(store) = storeSize(store) == storeSize.small;
-storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
+storeIsHuge(store) = storeSize(store) == StoreSize.huge;                        // static object
+storeIsBig(store) = storeSize(store) == StoreSize.big;
+storeIsMedium(store) = storeSize(store) == StoreSize.medium;
+storeIsSmall(store) = storeSize(store) == StoreSize.small;
+storeIsHuge2(store) = (storeSize(store) == StoreSize.huge) == TRUE;
 
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
@@ -380,7 +380,7 @@ createNewStore 'Добавить большой склад' = ACTION () {
     sessionObj() <- addedObject();
 
     name(k) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('New store ', sessionObj()) WHERE k == sessionObj() ;
-    storeSize(k) <- storeSize.big WHERE k == sessionObj();
+    storeSize(k) <- StoreSize.big WHERE k == sessionObj();
 } TOOLBAR IMAGE 'add.png';
 
 //////////////// TEST PUSHING FOR //////
@@ -531,7 +531,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 // Object definition syntax:
 // [alias=] className ['<caption>'] [ON CHANGE action]
 
-OBJECTS document, article
+OBJECTS document=Document, article=Article
 
 // TreeGroup list syntax:
 // TREE [SID] [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] (object1 definition, ..., objectN definition) [PARENT <properties separated with space>],
@@ -619,7 +619,7 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
 };
 
 FORM testModalForm 'Тестовая форма'
-OBJECTS article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
+OBJECTS article=Article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store=Store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
 PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 ;
 
@@ -710,7 +710,7 @@ dateProp(store) = 2007_12_01 AND store IS Store;
 variableDateTime(store) = DATA DATETIME (Store);
 
 FORM TestDataPropForm 'Тест дат'
-OBJECTS store
+OBJECTS store=Store
 PROPERTIES(store) dateProp, variableDateTime
 //PROPERTIES dateTimeProp(store)
 //PROPERTIES timeProp(store)
@@ -718,7 +718,7 @@ PROPERTIES(store) dateProp, variableDateTime
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
 storeSizeString (s, ss) = DATA STRING[10] (Store, StoreSize);
-storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=storeSize.small, storeSizeString(s, ss);
+storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small, storeSizeString(s, ss);
 
 FORM TestColumnGroupObjects 'Тест групп в колонках'
 OBJECTS ss=StoreSize, s=Store
@@ -1095,10 +1095,10 @@ META metaCodeSample(name, name2)
     CLASS name##Class##name2;
 END
 
-@metaCodeSample(testName1);
-@metaCodeSample(testName2);
+@metaCodeSample(TestName1);
+@metaCodeSample(TestName2);
 
-@metaCodeSample(testName1, testName2);
+@metaCodeSample(TestName1, TestName2);
 
 //////////////// TABLE STATEMENT ////////////////
 // Syntax:
@@ -1115,13 +1115,13 @@ PROPERTIES OBJVALUE(to), OBJVALUE(i), fib(i, to)
 FILTERS fib(i, to)
 ;
 
-CLASS newtest;
-newtf = DATA INTEGER (newtest);
-ottf = DATA INTEGER (newtest);
+CLASS Newtest;
+newtf = DATA INTEGER (Newtest);
+ottf = DATA INTEGER (Newtest);
 divtf(a) = newtf(a) / ottf(a) PERSISTENT;
 
 FORM newTestForm 'Test Exception'
- OBJECTS x = newtest
+ OBJECTS x = Newtest
  PROPERTIES(x) ADDOBJ, newtf, ottf
 ;
 
