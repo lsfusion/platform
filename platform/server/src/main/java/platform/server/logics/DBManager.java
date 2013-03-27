@@ -92,6 +92,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
+    private final Map<List<? extends CalcProperty>, Boolean> indexes = new HashMap<List<? extends CalcProperty>, Boolean>();
+
     public DBManager() {
         super(DBMANAGER_ORDER);
 
@@ -1159,6 +1161,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return resultChanges;
     }
 
+    public void addIndex(LCP<?>... lps) {
+        List<CalcProperty> index = new ArrayList<CalcProperty>();
+        for (LCP<?> lp : lps) {
+            index.add((CalcProperty) lp.property);
+        }
+        indexes.put(index, lps[0].property.getType() instanceof DataClass);
+    }
+
     public String backupDB(String dumpFileName) throws IOException, InterruptedException {
         return adapter.backupDB(dumpFileName);
     }
@@ -1307,7 +1317,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 tables.put(table, new HashMap<List<String>, Boolean>());
             }
 
-            for (Map.Entry<List<? extends CalcProperty>, Boolean> index : LM.indexes.entrySet()) {
+            for (Map.Entry<List<? extends CalcProperty>, Boolean> index : indexes.entrySet()) {
                 Iterator<? extends CalcProperty> i = index.getKey().iterator();
                 if (!i.hasNext())
                     throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));

@@ -432,10 +432,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             LM.initClassForms();
 
-            Set idSet = new HashSet<String>();
-            for (Property property : getOrderProperties()) {
-                //            assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
-            }
+//            Set idSet = new HashSet<String>();
+//            for (Property property : getOrderProperties()) {
+//                assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
+//            }
 
             logger.info("Initializing indices.");
             for (LogicsModule module : orderedModules) {
@@ -538,7 +538,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : getOrderProperties()) {
             String propertySID = property.getSID();
             String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
-            if (!LM.isGeneratedSID(propertySID) && LM.getLPBySID(setupPolicyActionSID) == null) {
+            if (!LM.isGeneratedSID(propertySID) &&
+                    //todo: убрать проверку, когда пофиксится баг с поиском дубликатов только в зависимостях, а не во всей логике
+                    LM.getLPBySID(setupPolicyActionSID) == null) {
                 LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
                                                         setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
 

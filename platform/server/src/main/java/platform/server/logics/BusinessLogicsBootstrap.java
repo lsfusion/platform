@@ -17,6 +17,7 @@ public class BusinessLogicsBootstrap {
     public static void start() {
         SystemProperties.enableMailEncodeFileName();
 
+        long startTime = System.currentTimeMillis();
         logger.info("Server is starting...");
 
 //        initLRUCaches();
@@ -33,7 +34,7 @@ public class BusinessLogicsBootstrap {
         if (instanceCreated) {
             try {
                 logicsInstance.start();
-                logger.info("Server has successfully started");
+                logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
                 logger.info("Error starting server, server will be stopped.");
                 stop();

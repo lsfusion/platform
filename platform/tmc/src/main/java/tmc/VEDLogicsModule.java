@@ -1650,7 +1650,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
-        baseLM.addIndex(articleInnerQuantity);
+        addIndex(articleInnerQuantity);
         addIndex(barcode);
     }
 

@@ -19,6 +19,7 @@ import platform.interop.form.GlobalConstants;
 import platform.server.Settings;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.data.expr.StringAggUnionProperty;
@@ -2293,7 +2294,7 @@ public abstract class LogicsModule {
     }
 
     public void addIndex(LCP<?>... lps) {
-        baseLM.addIndex(lps);
+        ThreadLocalContext.getDbManager().addIndex(lps);
     }
 
     protected void addPersistent(LCP lp) {
