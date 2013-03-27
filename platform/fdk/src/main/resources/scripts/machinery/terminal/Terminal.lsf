@@ -59,6 +59,7 @@ CLASS terminalHandbookType 'Вид справочника ТСД' {
     terminalHandbookTypeLegalEntity 'Организация'
 } : named;
 
+TABLE terminalHandbookType(terminalHandbookType);
 idTerminalHandbookType 'Код' = DATA STRING[10] (terminalHandbookType) IN base;
 terminalHandbookTypeID (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS terminalHandbookType;
 

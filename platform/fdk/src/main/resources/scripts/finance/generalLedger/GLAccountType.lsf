@@ -13,6 +13,8 @@ PRIORITY Utils;
 //------------------------- План счетов -------------------------------//
 
 CLASS GLAccountType 'План счетов': named;
+TABLE GLAccountType(GLAccountType);
+
 currencyGLAccountType = DATA currency (GLAccountType);
 nameCurrencyGLAccountType 'Валюта' (GLAccountType)= name(currencyGLAccountType(GLAccountType));
 idGLAccountType 'Идентификатор' = DATA STRING[20] (GLAccountType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;

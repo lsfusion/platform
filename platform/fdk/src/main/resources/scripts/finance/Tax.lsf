@@ -10,8 +10,6 @@ CLASS tax 'Налоги'
     taxNP 'Налог с продаж'
 } : named;
 
-nameTax 'Наименование налога' = DATA STRING[200] (tax) IN base;
-
 // ---------------------------------- Шкала налога --------------------------------------- //
 
 CLASS range 'Шкала';
@@ -103,7 +101,7 @@ currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(ta
 
 FORM tax 'Налог'
     OBJECTS           t = tax FIXED PANEL
-    PROPERTIES(t)     name, nameTax
+    PROPERTIES(t)     name
 
     OBJECTS c = country FIXED PANEL
     PROPERTIES(c) SELECTOR    name
@@ -167,7 +165,7 @@ DESIGN tax FROM DEFAULT {
 
 FORM taxes 'Налоги'
     OBJECTS           t=tax
-    PROPERTIES(t)     READONLY name, nameTax
+    PROPERTIES(t)     READONLY name
     PROPERTIES(t)     EDITFORM, delete
 
     OBJECTS           c=country

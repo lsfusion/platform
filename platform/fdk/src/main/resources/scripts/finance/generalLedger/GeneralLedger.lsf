@@ -5,6 +5,8 @@ REQUIRE GLAccountType;
 //-------------------------- Проводки -------------------------//
 
 CLASS ABSTRACT generalLedger 'Проводка': named;
+TABLE generalLedger(generalLedger);
+
 CLASS userGeneralLedger 'Проводка (польз.)': generalLedger, historizable;
 CLASS userGeneralLedgerPosted 'Проведенная проводка (польз.)': userGeneralLedger, postedObject;
 
@@ -14,14 +16,14 @@ WHEN SESSION ASSIGNED(userGeneralLedger AS userGeneralLedger) DO {
     IF userGeneralLedger IS userGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
 };
 
-debitGeneralLedger = ABSTRACT GLAccount (generalLedger);
+debitGeneralLedger = ABSTRACT GLAccount (generalLedger) PERSISTENT;
 idDebitGeneralLedger 'Дебет' (generalLedger) = idGLAccount(debitGeneralLedger(generalLedger));
 debitUserGeneralLedger = DATA GLAccount (userGeneralLedger);
 idDebitUserGeneralLedger 'Дебет' (userGeneralLedger) = idGLAccount(debitUserGeneralLedger(userGeneralLedger));
 debitGeneralLedger (generalLedger) += debitUserGeneralLedger (generalLedger);
 
 
-creditGeneralLedger = ABSTRACT GLAccount (generalLedger);
+creditGeneralLedger = ABSTRACT GLAccount (generalLedger) PERSISTENT;
 idCreditGeneralLedger 'Кредит' (generalLedger) = idGLAccount(creditGeneralLedger(generalLedger));
 creditUserGeneralLedger = DATA GLAccount (userGeneralLedger);
 idCreditUserGeneralLedger 'Кредит' (userGeneralLedger) = idGLAccount(creditUserGeneralLedger(userGeneralLedger));
@@ -31,11 +33,11 @@ CONSTRAINT GLAccountTypeGLAccount(debitUserGeneralLedger(userGeneralLedger)) != 
     CHECKED BY  debitUserGeneralLedger, creditUserGeneralLedger
     MESSAGE 'У дебета и кредита разные планы счетов';
 
-sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (generalLedger);
+sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (generalLedger) PERSISTENT;
 sumUserGeneralLedger 'Сумма' = DATA NUMERIC[16,2] (userGeneralLedger);
 sumGeneralLedger (generalLedger) += sumUserGeneralLedger (generalLedger);
 
-descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (generalLedger);
+descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (generalLedger) PERSISTENT;
 descriptionUserGeneralLedger 'Описание' = DATA STRING[200] (userGeneralLedger);
 descriptionGeneralLedger (generalLedger) += descriptionUserGeneralLedger (generalLedger);
 
