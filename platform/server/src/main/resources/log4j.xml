@@ -186,7 +186,11 @@
     <category name="platform.server.remote.PausableInvocation" additivity="false">
         <priority value="ALL"/>
         <appender-ref ref="invocationlog"/>
-        <!--<appender-ref ref="stdout"/>-->
+    </category>
+
+    <category name="platform.server.remote.SequentialRequestLock" additivity="false">
+        <priority value="ALL"/>
+        <appender-ref ref="invocationlog"/>
     </category>
 
     <category name="platform.server.data.SQLSessionLoggerAspect" additivity="false">
