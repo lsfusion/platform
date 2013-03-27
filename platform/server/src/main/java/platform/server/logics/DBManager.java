@@ -866,7 +866,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     }
                 }
                 if (drop) {
-//                    sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
                 }
             }
         }
