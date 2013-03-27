@@ -33,7 +33,7 @@ TABLE property (property);
 
 parentProperty 'Родит. группа' = DATA abstractGroup (property);
 numberProperty 'Номер' = DATA INTEGER (property);
-SIDProperty 'Код свойства' = DATA STRING[100] (property);
+SIDProperty 'Код свойства' = DATA STRING[100] (property) IN base;
 loggableProperty 'Логируется' = DATA BOOLEAN (property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (property);
 storedProperty 'Постоянно хранимое' = DATA BOOLEAN (property);
@@ -41,7 +41,7 @@ isSetNotNullProperty 'Не может быть null' = DATA BOOLEAN (property);
 signatureProperty 'Сигнатура' = DATA STRING[100] (property);
 returnProperty 'Возвращаемый класс' = DATA STRING[100] (property);
 classProperty 'Класс свойства' = DATA STRING[100] (property);
-captionProperty 'Заголовок' = DATA STRING[250] (property);
+captionProperty 'Заголовок' = DATA STRING[250] (property) IN base;
 propertySID 'Свойство' (sid) = GROUP UNIQUE property BY SIDProperty(property) WHERE property IS property;
 
 CLASS propertyDraw 'Свойство на форме';

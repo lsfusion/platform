@@ -19,11 +19,13 @@ import platform.server.SystemProperties;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.StringClass;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.type.Type;
-import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.LogFormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
@@ -372,16 +374,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 overrideModulesList(overridingModulesList);
             }
 
+            logger.info("Initializing modules.");
             List<LogicsModule> orderedModules = orderModules();
-
             for (LogicsModule module : orderedModules) {
                 module.initModule();
             }
 
+            logger.info("Initializing property groups.");
             for (LogicsModule module : orderedModules) {
                 module.initGroups();
             }
 
+            logger.info("Initializing classes.");
             for (LogicsModule module : orderedModules) {
                 module.initClasses();
             }
@@ -389,27 +393,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             LM.baseClass.initObjectClass();
             LM.storeCustomClass(LM.baseClass.objectClass);
 
+            logger.info("Initializing tables.");
             for (LogicsModule module : orderedModules) {
                 module.initTables();
             }
 
+            logger.info("Initializing properties.");
+            int i = 1;
             for (LogicsModule module : orderedModules) {
+                logger.info(String.format("Initializing properties for module #%d of %d: %s", i++, orderedModules.size(), module.getName()));
                 module.initProperties();
             }
 
+            logger.info("Finalizing abstracts.");
             finishAbstract();
 
+            logger.info("Finalizing actions.");
             finishActions();
 
+            logger.info("Setup loggables.");
             finishLogInit();
 
-            setupDrillDown();
+            if (!SystemProperties.isDebug) {
+                logger.info("Setup drill-down.");
+                setupDrillDown();
+
+                logger.info("Setup property policy.");
+                setupPropertyPolicyForms();
+            }
 
             showDependencies();
 
+            logger.info("Finalizing properties.");
             getPropertyList(true);
-            for(Property property : getPropertyList())
+            for(Property property : getPropertyList()) {
                 property.finalizeAroundInit();
+            }
 
             LM.initClassForms();
 
@@ -418,6 +437,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 //            assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
             }
 
+            logger.info("Initializing indices.");
             for (LogicsModule module : orderedModules) {
                 module.initIndexes();
             }
@@ -509,11 +529,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    private void setupPropertyPolicyForms() {
+        FormEntity policyFormEntity = securityLM.propertyPolicyForm;
+        ObjectEntity propertyObj = policyFormEntity.getObject("p");
+        LAP<?> setupPolicyFormProperty = LM.addMFAProp(null, "sys", policyFormEntity, new ObjectEntity[]{propertyObj}, true);
+        LAP<?> setupPolicyForPropBySID = LM.addJoinAProp(setupPolicyFormProperty, reflectionLM.propertySID, 1);
+
+        for (Property property : getOrderProperties()) {
+            String propertySID = property.getSID();
+            String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
+            if (!LM.isGeneratedSID(propertySID) && LM.getLPBySID(setupPolicyActionSID) == null) {
+                LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
+                                                        setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
+
+                ActionProperty setupPolicyAction = setupPolicyLAP.property;
+                property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
+                property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
+            }
+        }
+    }
+
     private void prereadCaches() {
         getAppliedProperties(true);
         getAppliedProperties(false);
         getMapAppliedDepends();
-        for (Property property : getPropertyList()) // сделалем чтобы
+        for (Property property : getPropertyList())
             property.prereadCaches();
     }
 
@@ -874,11 +914,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 assert prop.check();
             }
         for (LCP[] props : LM.checkCUProps) {
-            logger.debug("Checking class properties : " + props + "...");
+            logger.debug("Checking class properties : " + Arrays.toString(props) + "...");
             assert !intersect(props);
         }
         for (LCP[] props : LM.checkSUProps) {
-            logger.debug("Checking union properties : " + props + "...");
+            logger.debug("Checking union properties : " + Arrays.toString(props) + "...");
 //            assert intersect(props);
         }
         return true;
@@ -936,11 +976,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public SecurityManager getSecurityManager() {
-        return ThreadLocalContext.getSecurityManager();
-    }
-
-    public DBManager getDbManager() {
+    protected DBManager getDbManager() {
         return ThreadLocalContext.getDbManager();
     }
 }

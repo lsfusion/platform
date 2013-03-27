@@ -305,11 +305,17 @@ EXTEND DESIGN securityPolicy {
 }
 
 FORM userRoles 'Роли'
-
     OBJECTS ur=userRole
     PROPERTIES(ur) READONLY name, sidUserRole
     PROPERTIES(ur) ADDFORM, EDITFORM, delete
     DIALOG userRole OBJECT ur
+;
+
+FORM propertyPolicy 'Политика безопасности для свойства'
+    OBJECTS p=property FIXED PANEL, ur=userRole
+    PROPERTIES(p) READONLY captionProperty, SIDProperty
+    PROPERTIES(ur) READONLY name, sidUserRole
+    PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
 ;
 
 NAVIGATOR {

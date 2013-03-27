@@ -76,6 +76,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public AbstractGroup actionGroup;
     public AbstractGroup recognizeGroup;
     public AbstractGroup drillDownGroup;
+    public AbstractGroup propertyPolicyGroup;
 
     // properties
     public LCP groeq2;
@@ -237,6 +238,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         baseGroup = addAbstractGroup("base", getString("logics.groups.base"), publicGroup, false);
         recognizeGroup = addAbstractGroup("recognize", getString("logics.groups.recognize"), baseGroup, false);
         drillDownGroup = addAbstractGroup("drilldown", getString("logics.groups.drilldown"), rootGroup, false);
+        propertyPolicyGroup = addAbstractGroup("propertyPolicy", getString("logics.groups.policy"), rootGroup, false);
 
         initBaseGroupAliases();
     }

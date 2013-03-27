@@ -1,13 +1,12 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.form.entity.FormEntity;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
-
-import static platform.server.logics.ServerResourceBundle.getString;
 
 
 public class SecurityLogicsModule extends ScriptingLogicsModule{
@@ -56,6 +55,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP mainRoleUser;
     public LCP sidMainRoleCustomUser;
     public LCP nameMainRoleUser;
+
+    public FormEntity propertyPolicyForm;
 
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SecurityLogicsModule.class.getResourceAsStream("/scripts/system/Security.lsf"), baseLM, BL);
@@ -127,5 +128,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // Разрешения для каждого элемента
         permitUserNavigatorElement = getLCPByName("permitUserNavigatorElement");
         forbidUserNavigatorElement = getLCPByName("forbidUserNavigatorElement");
+
+        propertyPolicyForm = (FormEntity) getNavigatorElementByName("propertyPolicy");
     }
 }
