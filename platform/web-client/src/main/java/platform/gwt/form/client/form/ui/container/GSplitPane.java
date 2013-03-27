@@ -91,6 +91,8 @@ public class GSplitPane {
             firstWidget.getElement().getParentElement().getStyle().setProperty("width", firstPercentSize);
             container.setCellWidth(secondWidget, "100%");
         }
+        firstWidget.onResize();
+        secondWidget.onResize();
     }
 
     private void resize(double firstSize) {
