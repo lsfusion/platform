@@ -27,6 +27,13 @@ public class DateConverter {
         }
     }
 
+    public static void assertDateToSql(Date date) {
+        if(date!=null) {
+            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+            assert dateToSql(date).equals(sqlDate);
+        }
+    }
+
     public static Date sqlToDate(java.sql.Date date) {
         return date;
     }

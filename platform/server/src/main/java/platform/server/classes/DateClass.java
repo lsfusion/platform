@@ -68,7 +68,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public Date read(Object value) {
-        assert DateConverter.dateToSql((java.util.Date)value).equals(new java.sql.Date(((java.util.Date)value).getTime()));
+        DateConverter.assertDateToSql((java.util.Date)value);
         return DateConverter.safeDateToSql((java.util.Date)value);
     }
 
@@ -102,8 +102,7 @@ public class DateClass extends DataClass<Date> {
 
     public Date parseString(String s) throws ParseException {
         try {
-            java.util.Date date = getDateFormat().parse(s);
-            assert DateConverter.dateToSql(date).equals(new java.sql.Date(date.getTime()));
+            DateConverter.assertDateToSql(getDateFormat().parse(s));
             return DateConverter.safeDateToSql(getDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
