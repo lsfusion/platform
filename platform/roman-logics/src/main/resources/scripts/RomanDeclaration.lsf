@@ -76,21 +76,21 @@ sidFormedInvoice 'Номер инвойса' (formedInvoice) = sidImporterFreigh
 
 sidDirectInvoice = sidDocument(innerInvoice) AND innerInvoice IS directInvoice;
 
-sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION EXCLUSIVE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN base PERSISTENT;
+sidInnerInvoice 'Номер инвойса' (innerInvoice) = UNION OVERRIDE sidDirectInvoice(innerInvoice), sidFormedInvoice(innerInvoice) IN base PERSISTENT;
 
 dateFormedInvoice 'Дата инвойса' (formedInvoice) = dateImporterFreight(importerInnerInvoice(formedInvoice),
                                                                        freightInnerInvoice(formedInvoice)) IN base;
 
 dateDirectInvoice = date(innerInvoice) AND innerInvoice IS directInvoice;
 
-dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION EXCLUSIVE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN base PERSISTENT;
+dateInnerInvoice 'Дата инвойса' (innerInvoice) = UNION OVERRIDE dateDirectInvoice(innerInvoice), dateFormedInvoice(innerInvoice) IN base PERSISTENT;
 
 contractFormedInvoice 'Договор инвойса (ИД)' (formedInvoice) = contractImporterFreight(importerFormedInvoice(formedInvoice),
                                                                                        freightFormedInvoice(formedInvoice));
 
 contractDirectInvoice 'Договор инвойса (ИД)' (directInvoice) = contractDirectInvoice(directInvoice) IF directInvoice IS directInvoice;
 
-contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = UNION EXCLUSIVE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN base PERSISTENT;
+contractInnerInvoice 'Договор инвойса (ИД)' (innerInvoice) = UNION OVERRIDE contractDirectInvoice(innerInvoice), contractFormedInvoice(innerInvoice) IN base PERSISTENT;
 numberContractInnerInvoice 'Договор' (innerInvoice) = numberContract(contractInnerInvoice(innerInvoice));
 
 quantityFormedInvoiceSku 'Кол-во в инвойсе' (formedInvoice, sku) = quantityProxyImporterFreightSku(importerFormedInvoice(formedInvoice),
@@ -255,7 +255,7 @@ directInvoiceFreightUnit(freightUnit) = UNION EXCLUSIVE freightUnit IF freightUn
 
 formedInvoiceFreightUnit(declaration, freightUnit) = formedInvoiceImporterFreight(importerDeclaration(declaration), freightFreightUnit(freightUnit));
 
-innerInvoiceFreightUnit(declaration, freightUnit) = UNION EXCLUSIVE formedInvoiceFreightUnit(declaration, freightUnit),
+innerInvoiceFreightUnit(declaration, freightUnit) = UNION OVERRIDE formedInvoiceFreightUnit(declaration, freightUnit),
                                                                     directInvoiceFreightUnit(freightUnit) AND declaration IS declaration;
 
 quantityDeclarationSku 'Кол-во в декларации' (declaration, sku) = GROUP SUM quantityInnerInvoiceSku(innerInvoice, sku)

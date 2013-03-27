@@ -26,6 +26,10 @@ dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString25
                                                 BY GLAccount
                                                 ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
+prevGLAccountDimensionType (account, type) = PARTITION PREV type IF orderGLAccountDimensionType(account, type) BY account
+                                                                  ORDER orderGLAccountDimensionType(account, type);
+namePrevGLAccountDimensionType 'Предок' (account, type) = name(prevGLAccountDimensionType(account, type));
+
 TABLE generalLedgerDimensionType(generalLedger, dimensionType);
 debitGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
 nameDebitGeneralLedgerDimensionType 'Субконто (дебит)' (generalLedger,dimensionType)= nameDimension(debitGeneralLedgerDimensionType(generalLedger,dimensionType));
@@ -64,7 +68,7 @@ EXTEND FORM GLAccount
 
     OBJECTS d = dimensionType
     PROPERTIES(d) READONLY name
-    PROPERTIES orderGLAccountDimensionType(g,d)
+    PROPERTIES orderGLAccountDimensionType(g,d), namePrevGLAccountDimensionType(g,d)
 ;
 EXTEND DESIGN GLAccount {
     ADD d.box BEFORE functions.box;
