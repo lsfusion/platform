@@ -31,9 +31,9 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(custo
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserShipment(userShipment) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 customerUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 
 supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
@@ -51,14 +51,14 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 // ------------------------------- Проведение по регистру остатков ------------------------ //
 
-@implementSkuLedgerOutFIFO(shipmentDetail, sku, customerStock);
+@implementSkuLedgerOutFIFO(ShipmentDetail, sku, customerStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 @implementSkuLedgerOutFIFOBatchBalance(shipmentDetail, customerStock);
 sumOutSkuLedger (ledger) += sumShipmentDetail(ledger);
 
 // ------------------------------- Проведение по товарному отчету ------------------------ //
 
-@implementStockDocumentLedgerOut(shipment, customerStock);
+@implementStockDocumentLedgerOut(Shipment, customerStock);
 sumOutStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

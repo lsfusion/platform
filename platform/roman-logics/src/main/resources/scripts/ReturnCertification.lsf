@@ -18,9 +18,9 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule;
 
-CLASS returnCertification 'Возврат из сертификации' : historizable, numeratedObject;
-CLASS returnCertificationPosted 'Проведенный возврат из сертификации' : returnCertification, postedObject;
-CLASS returnCertificationDetail 'Строка возврата из сертификации' : batchB;
+CLASS ReturnCertification 'Возврат из сертификации' : Historizable, NumeratedObject;
+CLASS ReturnCertificationPosted 'Проведенный возврат из сертификации' : ReturnCertification, PostedObject;
+CLASS ReturnCertificationDetail 'Строка возврата из сертификации' : BatchB;
 
 @defineDocumentTables(returnCertification);
 
@@ -30,7 +30,7 @@ CLASS returnCertificationDetail 'Строка возврата из сертиф
 @defineDocumentPosted(returnCertification);
 @defineDocumentDetailIndex(returnCertification);
 @defineDocumentTime(returnCertification);
-@defineDocumentHeaderNote(returnCertification);
+@defineDocumentHeaderNote(ReturnCertification);
 @defineDocumentDetailActions(returnCertification);
 @defineDocumentStock(returnCertification, stock, 'Склад');
 @defineDocumentDetailSku(returnCertification, sku);
@@ -54,13 +54,13 @@ isPostedBatch (batch) += isPostedReturnCertificationDetail(batch);
 skuBatch (batch) += skuReturnCertificationDetail(batch);
 stockBatch (batch) += stockReturnCertificationDetail(batch);
 descriptionBatch (batch) += descriptionReturnCertificationDetail(batch);
-costBatch (batch) += 0.0 IF batch IS returnCertificationDetail;
+costBatch (batch) += 0.0 IF batch IS ReturnCertificationDetail;
 
 quantityBatch (batch) += quantityReturnCertificationDetail(batch);
-sumInSkuLedger(batch) += 0.0 IF batch IS returnCertificationDetail;
-skipASkuLedger (ledger) += ledger IS returnCertificationDetail;
+sumInSkuLedger(batch) += 0.0 IF batch IS ReturnCertificationDetail;
+skipASkuLedger (ledger) += ledger IS ReturnCertificationDetail;
 
-customStoreReturnCertification = DATA customStore(returnCertification);
+customStoreReturnCertification = DATA CustomStore(ReturnCertification);
 nameCustomStoreReturnCertification 'СВХ' (returnCertification) = name(customStoreReturnCertification(returnCertification));
 
 customStoreReturnCertificationDetail (returnCertificationDetail) = customStoreReturnCertification(returnCertificationReturnCertificationDetail(returnCertificationDetail));
@@ -72,7 +72,7 @@ quantityReturnCertificationStoreSku 'Кол-во возвращёное' (store,
 
 quantityForReturnCertificationStoreSku 'Остаток' (store, sku) = quantityCertificatedCustomStoreSku(store, sku) (-) quantityReturnCertificationStoreSku(store, sku);
 
-dialogCertificatedSkuCustomStore = DATA SESSION customStore();
+dialogCertificatedSkuCustomStore = DATA SESSION CustomStore();
 dialogCertificatedSkuNameCustomStore 'Склад' () = name(dialogCertificatedSkuCustomStore());
 
 addDetailDialogSkuReturnCertification 'Подбор товаров' = ACTION (returnCertification) {
@@ -91,13 +91,13 @@ EXTEND FORM dialogCertificatedSku
 ;
 
 
-//returnCertificationQuantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (sku);
+//returnCertificationQuantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (Sku);
 //
 //returnCertificationStock = DATA SESSION stock ();
 //returnCertificationNameStock 'Склад' () = name(returnCertificationStock()) PREFCHARWIDTH 30;
 //
 //returnCertificationBalance 'Остаток' (sku) = quantityForReturnCertificationStoreSku(returnCertificationStock(), sku);
-//returnCertificationBalanceFilter (sku) = (TRUE AND returnCertificationBalance(sku)) OR (sku IS sku AND NOT returnCertificationStock());
+//returnCertificationBalanceFilter (sku) = (TRUE AND returnCertificationBalance(sku)) OR (sku IS Sku AND NOT returnCertificationStock());
 //
 //FORM dialogCertificatedSku 'Подбор SKU'
 //    TREE skuTree sk = skuGroup PARENT parentSkuGroup
@@ -106,7 +106,7 @@ EXTEND FORM dialogCertificatedSku
 //
 //    PROPERTIES returnCertificationNameStock()
 //
-//    OBJECTS s=sku
+//    OBJECTS s=Sku
 //    PROPERTIES READONLY    inputName = nameSku(s)
 //    PROPERTIES(s)          returnCertificationQuantity
 //    PROPERTIES(s) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
@@ -114,7 +114,7 @@ EXTEND FORM dialogCertificatedSku
 //    FILTERS                returnCertificationBalanceFilter(s)
 //    ORDER BY inputName
 //
-//    OBJECTS si=sku
+//    OBJECTS si=Sku
 //    PROPERTIES READONLY     selectedName = nameSku(si)
 //    PROPERTIES              returnCertificationQuantity(si)
 //    PROPERTIES(si) READONLY returnCertificationBalance SHOWIF returnCertificationStock()
@@ -124,7 +124,7 @@ EXTEND FORM dialogCertificatedSku
 
 FORM returnCertification 'Возврат из сертификации'
 
-    OBJECTS w = returnCertification FIXED PANEL, d = returnCertificationDetail
+    OBJECTS w = ReturnCertification FIXED PANEL, d = ReturnCertificationDetail
     PROPERTIES(w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateReturnCertification, timeReturnCertification, //nameCompanyReturnCertification,
                   nameCustomStoreReturnCertification, nameStockReturnCertification
 
@@ -146,7 +146,7 @@ FORM returnCertification 'Возврат из сертификации'
     EVENTS
         ON OK prePostReturnCertification(w)
 
-    EDIT returnCertification OBJECT w
+    EDIT ReturnCertification OBJECT w
 ;
 
 DESIGN returnCertification FROM DEFAULT {
@@ -186,7 +186,7 @@ DESIGN returnCertification FROM DEFAULT {
 
 FORM returnCertifications 'Возвраты из сертификации'
 
-    OBJECTS w = returnCertification
+    OBJECTS w = ReturnCertification
 
     PROPERTIES(w) READONLY isPostedReturnCertification FORCE GRID, objectClassName, numberObject, seriesObject, dateReturnCertification,
                   timeReturnCertification, nameCustomStoreReturnCertification, nameStockReturnCertification,
@@ -197,7 +197,7 @@ FORM returnCertifications 'Возвраты из сертификации'
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed,
                                         hostnameComputerClosed
 
-    OBJECTS d = returnCertificationDetail
+    OBJECTS d = ReturnCertificationDetail
     PROPERTIES(d) READONLY indexReturnCertificationDetail, barcodeReturnCertificationDetail, nameCategoryReturnCertificationDetail,
                            nameBrandReturnCertificationDetail, sidArticleReturnCertificationDetail, sidSizeReturnCertificationDetail,
                            sidColorReturnCertificationDetail, nameColorReturnCertificationDetail,

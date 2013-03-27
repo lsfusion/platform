@@ -4,24 +4,24 @@ REQUIRE BOM;
 
 // ---------------- Замена ------------------- //
 
-CLASS substitute 'Замена';
-TABLE substitute(substitute);
+CLASS Substitute 'Замена';
+TABLE substitute(Substitute);
 
-fromSkuSubstitute = DATA sku(substitute);
+fromSkuSubstitute = DATA Sku(Substitute);
 nameFromSkuSubstitute 'Товар с' (substitute)= nameSku(fromSkuSubstitute(substitute)) IN recognize;
 
-toSkuSubstitute = DATA sku(substitute);
+toSkuSubstitute = DATA Sku(Substitute);
 nameToSkuSubstitute 'Товар на' (substitute)= nameSku(toSkuSubstitute(substitute)) IN recognize;
 
-multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (substitute);
+multiplierSubstitute 'Коэффициент' = DATA NUMERIC[8,3] (Substitute);
 
-allBOMsSubstitute 'Во всех спецификациях'= DATA BOOLEAN (substitute);
-allBOMsSubstitute(substitute) <- TRUE WHEN ASSIGNED(substitute IS substitute);
+allBOMsSubstitute 'Во всех спецификациях'= DATA BOOLEAN (Substitute);
+allBOMsSubstitute(substitute) <- TRUE WHEN ASSIGNED(substitute IS Substitute);
 
-TABLE substituteComponent(substitute, component);
-includeSubstituteComponent 'Вкл.'= DATA BOOLEAN (substitute, component);
-excludeSubstituteComponent 'Искл.'= DATA BOOLEAN (substitute, component);
-toShowIncludeSubstitute (substitute) = substitute IS substitute AND NOT allBOMsSubstitute(substitute);
+TABLE substituteComponent(Substitute, Component);
+includeSubstituteComponent 'Вкл.'= DATA BOOLEAN (Substitute, Component);
+excludeSubstituteComponent 'Искл.'= DATA BOOLEAN (Substitute, Component);
+toShowIncludeSubstitute (substitute) = substitute IS Substitute AND NOT allBOMsSubstitute(substitute);
 
 nameBOMComponent 'Спецификация' (component) = name(BOMComponent(component));
 seriesNumberBOMComponent 'Серия/номер спецификации' (component)= seriesNumberObject(BOMComponent(component));
@@ -36,18 +36,18 @@ inclSubstituteComponent 'Вкл.' (substitute, component)=  allBOMsSubstitute(su
 
 FORM substitute 'Замена'
 
-    OBJECTS sk = sku
+    OBJECTS sk = Sku
     PROPERTIES(sk) READONLY nameSku, idBarcodeSku, shortNameUOMSku
     FILTERGROUP filters
         FILTER 'Есть в спецификациях' 'F11' inMaterial(sk) DEFAULT
 
-    OBJECTS s=substitute
+    OBJECTS s=Substitute
     PROPERTIES(s) nameFromSkuSubstitute, nameToSkuSubstitute, multiplierSubstitute, allBOMsSubstitute
     PROPERTIES(s) ADDOBJ, delete
 
     FILTERS fromSkuSubstitute(s)==sk
 
-    OBJECTS c = component
+    OBJECTS c = Component
     PROPERTIES(c) READONLY descriptionComponent, nameMaterialComponent, shortNameUOMComponent
     PROPERTIES(s,c) SHOWIF toShowIncludeSubstitute(s) includeSubstituteComponent
     PROPERTIES(s,c) SHOWIF allBOMsSubstitute(s) excludeSubstituteComponent

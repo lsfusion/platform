@@ -9,26 +9,26 @@ UNPLegalEntityStockWriteOff 'УНП' (writeOff) = UNPLegalEntity(legalEntityStoc
 // --------------------------- Печатная форма ---------------------------------
 
 FORM printWriteOffBy 'Акт списания' PRINT
-    OBJECTS w=writeOff FIXED PANEL
+    OBJECTS w=WriteOff FIXED PANEL
     PROPERTIES (w)  SELECTOR numberWriteOff, seriesWriteOff, nameStockWriteOff,
                    dateWriteOff, timeWriteOff, nameReasonWriteOff, noteWriteOff, countWriteOffDetailWriteOff, quantityWriteOffDetailWriteOff,
                    sumWriteOffDetailWriteOff,
                    nameLegalEntityStockWriteOff, addressLegalEntityWriteOff, nameWriteOffCommitteeWriteOff,
                    nameEmployeeWriteOffCommitteeWriteOff, writeOffCommitteeWriteOff, UNPLegalEntityStockWriteOff
 
-    OBJECTS d=writeOffDetail
+    OBJECTS d=WriteOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
 
     PROPERTIES(e) SELECTOR   nameContact, namePositionEmployee
 
     FILTERS inWriteOffWriteOffDetail(w, d),
             inWriteOffCommitteeWriteOffEmployee(w, e)
 
-    EDIT writeOff OBJECT w
+    EDIT WriteOff OBJECT w
 ;
 
 printWriteOffBy 'Акт списания' (writeOff) = ACTION FORM printWriteOffBy OBJECTS w = writeOff IMAGE 'print.png' IN printGroup;

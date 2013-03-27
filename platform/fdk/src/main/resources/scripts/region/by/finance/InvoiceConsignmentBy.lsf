@@ -6,7 +6,7 @@ REQUIRE Invoice,
 NAMESPACE Invoice;
 
 @defineConsignmentAbstractHeader(invoice);
-@implementConsignmentHeader (invoice);
+@implementConsignmentHeader (Invoice);
 @implementConsignmentDetail (invoice);
 
 supplierConsignment (consignment) += fromLegalEntityInvoice(consignment);

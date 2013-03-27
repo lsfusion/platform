@@ -4,7 +4,7 @@ REQUIRE Compliance, CustomsGroupItem;
 
 isCompliancedCustomsGroupCountryItem 'Необходимость сертификации' (country, item) = isCompliancedCustomsGroup(customsGroupCountryItem(country, item));
 
-isCompliancedCountryItem 'Необходимость сертификации' = DATA BOOLEAN(country, item);
+isCompliancedCountryItem 'Необходимость сертификации' = DATA BOOLEAN(Country, Item);
 isCompliancedCountrySku(country, sku) += isCompliancedCountryItem(country, sku);
 
 isCompliancedCountryItem(country, item) <- isCompliancedCustomsGroupCountryItem(country, item) WHEN CHANGED(customsGroupCountryItem(country, item));

@@ -2,7 +2,10 @@ package fdk.region.by.masterdata;
 
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jdom.Document;
+import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.DateClass;
 import platform.server.classes.ValueClass;
@@ -13,12 +16,12 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
+import platform.server.session.DataSession;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,16 +29,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import platform.server.session.DataSession;
-
 public class ImportNBRBExchangeRateActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface currencyInterface;
 
     public ImportNBRBExchangeRateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("currency")});
+        super(LM, new ValueClass[]{LM.findClassByCompoundName("Currency")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         currencyInterface = i.next();
@@ -82,28 +80,28 @@ public class ImportNBRBExchangeRateActionProperty extends ScriptingActionPropert
             ImportField foreignRateField = new ImportField(LM.findLCPByCompoundName("rateExchange"));
             ImportField dateField = new ImportField(DateClass.instance);
 
-            ImportKey<?> typeExchangeBYRKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("typeExchange"),
+            ImportKey<?> typeExchangeBYRKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("TypeExchange"),
                     LM.findLCPByCompoundName("typeExchangeName").getMapping(typeExchangeBYRField));
 
-            ImportKey<?> typeExchangeForeignKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("typeExchange"),
+            ImportKey<?> typeExchangeForeignKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("TypeExchange"),
                     LM.findLCPByCompoundName("typeExchangeName").getMapping(typeExchangeForeignField));
 
-            ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("currency"),
+            ImportKey<?> currencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Сurrency"),
                     LM.findLCPByCompoundName("currencyShortName").getMapping(currencyField));
 
-            ImportKey<?> homeCurrencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("currency"),
+            ImportKey<?> homeCurrencyKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Сurrency"),
                     LM.findLCPByCompoundName("currencyShortName").getMapping(homeCurrencyField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
 
             props.add(new ImportProperty(typeExchangeBYRField, LM.findLCPByCompoundName("name").getMapping(typeExchangeBYRKey)));
             props.add(new ImportProperty(homeCurrencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeBYRKey),
-                    LM.object(LM.findClassByCompoundName("currency")).getMapping(homeCurrencyKey)));
+                    LM.object(LM.findClassByCompoundName("Currency")).getMapping(homeCurrencyKey)));
             props.add(new ImportProperty(rateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeBYRKey, currencyKey, dateField)));
 
             props.add(new ImportProperty(typeExchangeForeignField, LM.findLCPByCompoundName("name").getMapping(typeExchangeForeignKey)));
             props.add(new ImportProperty(currencyField, LM.findLCPByCompoundName("currencyTypeExchange").getMapping(typeExchangeForeignKey),
-                    LM.object(LM.findClassByCompoundName("currency")).getMapping(currencyKey)));
+                    LM.object(LM.findClassByCompoundName("Currency")).getMapping(currencyKey)));
             props.add(new ImportProperty(foreignRateField, LM.findLCPByCompoundName("rateExchange").getMapping(typeExchangeForeignKey, homeCurrencyKey, dateField)));
 
             List<List<Object>> data = new ArrayList<List<Object>>();

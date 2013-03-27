@@ -40,7 +40,7 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
     List<Object> row;
 
     public ImportGroupsXMLDeclarationActionProperty(ScriptingLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("declaration")});
+        super(LM, new ValueClass[]{LM.getClassByName("Declaration")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();

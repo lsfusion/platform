@@ -47,15 +47,15 @@ inSkuCategory (category, sku) = UNION OVERRIDE categoryArticleSku(sku) == catego
 
 //stringEqualsAll(string) = string == 'Все';
 
-inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier IS supplier,
+inSupplierBrandArticle(supplier, brand, article) = UNION OVERRIDE brandSupplierArticle(article) == brand AND supplier IS Supplier,
                                                                   supplierArticle(article) == supplier AND NOT brand,
                                                                   article == article AND NOT supplier AND NOT brand;
 
-inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSku(sku) == brand AND supplier IS supplier,
+inSupplierBrandSku(supplier, brand, sku) = UNION OVERRIDE brandSupplierArticleSku(sku) == brand AND supplier IS Supplier,
                                                           supplierArticleSku(sku) == supplier AND NOT brand,
                                                           sku == sku AND NOT supplier AND NOT brand;
 
-inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySupplier, article) = UNION OVERRIDE subCategorySupplierArticle(article) == subCategorySupplier AND categorySupplier IS categorySupplier,
+inCategorySupplierSubCategorySupplierArticle(categorySupplier, subCategorySupplier, article) = UNION OVERRIDE subCategorySupplierArticle(article) == subCategorySupplier AND categorySupplier IS CategorySupplier,
                                                                                                               categorySupplierArticle(article) == categorySupplier AND NOT subCategorySupplier,
                                                                                                               article == article AND NOT categorySupplier AND NOT subCategorySupplier;
 
@@ -63,37 +63,41 @@ inSeasonSeasonYear (season, seasonYear) = seasonSeasonYear(seasonYear)==season;
 
 // подбор курса обмена валют
 META defineNearestRateExchangeObject(object, typeEx, typeCur, propDate, group)
+    @defineNearestRateExchangeObjectInner(object, ###object, typeEx, typeCur, propDate, group);
+END
+
+META defineNearestRateExchangeObjectInner(object, class, typeEx, typeCur, propDate, group)
 
     nearestPredDate###typeEx###typeCur###object(object) = GROUP MAX date IF rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), date) AND date <= propDate(object) AND date IS DATE BY object;
 
-    rateExchange###typeEx###typeCur###object 'Курс обмена' (object) = rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), nearestPredDate###typeEx###typeCur###object(object)) IF object IS object IN group;
+    rateExchange###typeEx###typeCur###object 'Курс обмена' (object) = rateExchange(typeExchange###typeEx###object(object), currency###typeCur###object(object), nearestPredDate###typeEx###typeCur###object(object)) IF object IS class IN group;
 
 END
 
-priceRateDocumentSku(document, sku) <- priceRateOriginDocumentSku(document, sku) WHEN CHANGED(date(document) AND sku IS sku) OR
-                                                                                      CHANGED(currencyDocument(document) AND sku IS sku) OR
+priceRateDocumentSku(document, sku) <- priceRateOriginDocumentSku(document, sku) WHEN CHANGED(date(document) AND sku IS Sku) OR
+                                                                                      CHANGED(currencyDocument(document) AND sku IS Sku) OR
                                                                                       CHANGED(quantityDocumentSku(document, sku)) ;
 
 //------------------------ Приведение штрих-кодов RomanLogicsModule к логике Barcode.lsf -----------------------------//
 
 syncBarcodeSku 'Синхронизировать штрих-код' (sku) = ACTION (sku) {
-//    SET dataBarcodeIdDate(barcode, date) IF barcode == barcode(sku AS RomanLogicsModule.sku) AND date == 2001_01_01 NOT NULL;
+//    SET dataBarcodeIdDate(barcode, date) IF barcode == barcode(sku AS RomanLogicsModule.Sku) AND date == 2001_01_01 NOT NULL;
 
-    LOCAL syncBarcode = barcode();
-    SET syncBarcode() <- [GROUP MAX barcode BY skuBarcode(barcode)](sku AS RomanLogicsModule.sku); //dataBarcodeIdDate(barcode(sku), 2001_01_01);
-    IF TRUE AND NOT syncBarcode() IS barcode THEN {
-        ADDOBJ barcode;
+    LOCAL syncBarcode = Barcode();
+    SET syncBarcode() <- [GROUP MAX barcode BY skuBarcode(barcode)](sku AS RomanLogicsModule.Sku); //dataBarcodeIdDate(barcode(sku), 2001_01_01);
+    IF TRUE AND NOT syncBarcode() IS Barcode THEN {
+        ADDOBJ Barcode;
         SET syncBarcode() <- addedObject();
-        SET skuBarcode(barcode) <- sku AS RomanLogicsModule.sku WHERE barcode == syncBarcode();
+        SET skuBarcode(barcode) <- sku AS RomanLogicsModule.Sku WHERE barcode == syncBarcode();
     }
 
-    SET idBarcode(barcode) <- barcode(sku AS RomanLogicsModule.sku) WHERE barcode == syncBarcode();
+    SET idBarcode(barcode) <- barcode(sku AS RomanLogicsModule.Sku) WHERE barcode == syncBarcode();
 } IN base;
 
-WHEN CHANGED(barcode(sku)) AND sku IS RomanLogicsModule.sku DO EXEC syncBarcodeSku(sku);
+WHEN CHANGED(barcode(sku)) AND sku IS RomanLogicsModule.Sku DO EXEC syncBarcodeSku(sku);
 
 EXTEND FORM migrationData
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, barcode FORCE GRID, idBarcodeSku
     PROPERTIES(s) syncBarcodeSku
 ;
@@ -107,13 +111,13 @@ EXTEND DESIGN migrationData {
 @defineHierarchy(category);
 
 FORM category 'Товарная группа'
-    OBJECTS g = category FIXED PANEL
+    OBJECTS g = Category FIXED PANEL
     PROPERTIES(g) nameParentCategory, name, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory
 
-    OBJECTS l = language
+    OBJECTS l = Language
     PROPERTIES name(l) READONLY, languageName(g, l)
 
-    EDIT category OBJECT g
+    EDIT Category OBJECT g
 ;
 
 DESIGN category FROM DEFAULT {
@@ -146,23 +150,23 @@ DESIGN category FROM DEFAULT {
 }
 
 addCategory 'Добавить' = ACTION (category) NEWSESSION {
-    ADDOBJ category;
+    ADDOBJ Category;
     FOR g == addedObject() DO {
-        SET parentCategory(g) <- category AS category;
+        SET parentCategory(g) <- category AS Category;
         FORM category OBJECTS g=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN
+        IF formResult() == FormResult.ok THEN
             EXEC apply();
     };
 } TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
 
 FORM categories 'Товарные группы'
-    TREE treeGroups g=category PARENT parentCategory
+    TREE treeGroups g=Category PARENT parentCategory
     PROPERTIES READONLY name(g)
     PROPERTIES(g) addCategory, EDITFORM
     ORDER BY name
 
-    OBJECTS c = category
+    OBJECTS c = Category
     PROPERTIES(c) READONLY name, canonicalNameCategory, nameOrigin, nameTypeInvoiceCategory, warrantyCategory, nameUnitOfMeasureCategory, necessaryStampCategory, nameParentCategory
     PROPERTIES(c) delete
 
@@ -173,7 +177,7 @@ FORM categories 'Товарные группы'
         FILTER 'Всех потомков' 'F9' isParentCategoryCategory(c, g)
         FILTER 'Только непосредственных потомков' 'F8' parentCategory(c) == g
 
-    DIALOG category OBJECT c
+    DIALOG Category OBJECT c
 ;
 
 DESIGN categories FROM DEFAULT {
@@ -196,101 +200,101 @@ DESIGN categories FROM DEFAULT {
 // ---------------------------------- Формы для выбора атрибутов ------------------------------------ //
 
 FORM gender 'Пол'
-    OBJECTS g = gender FIXED PANEL
+    OBJECTS g = Gender FIXED PANEL
     PROPERTIES(g) sidGender
 
-    OBJECTS l= language
+    OBJECTS l= Language
     PROPERTIES(l) READONLY name
     PROPERTIES(g, l) languageName
 
-    EDIT gender OBJECT g;
+    EDIT Gender OBJECT g;
 ;
 
 FORM genders 'Пол'
-    OBJECTS g = gender FIXED PANEL
+    OBJECTS g = Gender FIXED PANEL
     PROPERTIES(g) sidGender
 
     PROPERTIES(g) ADDFORM, EDITFORM, delete
-    DIALOG gender OBJECT g
+    DIALOG Gender OBJECT g
 ;
 
 FORM gendersDialog 'Пол'
 
-    OBJECTS g = gender
+    OBJECTS g = Gender
     PROPERTIES(g) READONLY sidGender
     PROPERTIES(g) ADDFORM, EDITFORM, delete
-    DIALOG gender OBJECT g;
+    DIALOG Gender OBJECT g;
 ;
 
 FORM typeFabric 'Тип одежды'
 
-    OBJECTS t = typeFabric FIXED PANEL
+    OBJECTS t = TypeFabric FIXED PANEL
     PROPERTIES(t) name
 
-    OBJECTS l= language
+    OBJECTS l= Language
     PROPERTIES(l) READONLY name
     PROPERTIES(t, l) languageName
 
-    EDIT typeFabric OBJECT t;
+    EDIT TypeFabric OBJECT t;
 ;
 
 FORM typeFabrics 'Типы одежды'
-    OBJECTS t = typeFabric
+    OBJECTS t = TypeFabric
     PROPERTIES(t) READONLY name
     PROPERTIES(t) ADDFORM, EDITFORM, delete
-    DIALOG typeFabric OBJECT t
+    DIALOG TypeFabric OBJECT t
 ;
 
 FORM seasonYear 'Сезон'
 
-    //OBJECTS ss = season FIXED PANEL
+    //OBJECTS ss = Season FIXED PANEL
     //PROPERTIES(ss) name
 
-    OBJECTS s = seasonYear FIXED PANEL
+    OBJECTS s = SeasonYear FIXED PANEL
     PROPERTIES(s) nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
 
-    EDIT seasonYear OBJECT s;
+    EDIT SeasonYear OBJECT s;
 ;
 
 FORM seasonYears 'Сезоны'
-    OBJECTS ss = season
+    OBJECTS ss = Season
     PROPERTIES(ss) READONLY name
-    OBJECTS s = seasonYear
+    OBJECTS s = SeasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
 FORM dialogSeasonYear 'Сезон'
-    OBJECTS s = seasonYear
+    OBJECTS s = SeasonYear
     PROPERTIES(s) READONLY nameSeasonSeasonYear, yearSeasonYear, nameSeasonYear
     PROPERTIES(s) ADDFORM, EDITFORM, delete
-    DIALOG seasonYear OBJECT s;
+    DIALOG SeasonYear OBJECT s;
 ;
 
 FORM unitOfMeasures 'Единицы измерений'
-    OBJECTS u = unitOfMeasure
+    OBJECTS u = UnitOfMeasure
     PROPERTIES(u) READONLY name, shortName, nameOrigin
-    DIALOG unitOfMeasure OBJECT u
+    DIALOG UnitOfMeasure OBJECT u
 ;
 
 FORM typeLabel 'Тип этикетки'
-    OBJECTS tl = typeLabel FIXED PANEL
+    OBJECTS tl = TypeLabel FIXED PANEL
     PROPERTIES(tl) name, sidTypeLabel
-    EDIT typeLabel OBJECT tl
+    EDIT TypeLabel OBJECT tl
 ;
 
 FORM typeLabels 'Типы этикеток'
-    OBJECTS tl = typeLabel
+    OBJECTS tl = TypeLabel
     PROPERTIES(tl) READONLY name, sidTypeLabel
     PROPERTIES(tl) ADDFORM, EDITFORM, delete
-    DIALOG typeLabel OBJECT tl;
+    DIALOG TypeLabel OBJECT tl;
 ;
 
 //----------------------Определения себестоимости при создании оптового прайса  ----------------------//
 
 // todo : это нужно убрать
-priceCustomBatch 'Себестоимость (БУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
-priceManagerialBatch 'Себестоимость (УУ)' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+priceCustomBatch 'Себестоимость (БУ)' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
+priceManagerialBatch 'Себестоимость (УУ)' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
 
 
 concatPriceCustomBatchArticleDateTime (article, dateTime) = GROUP MAX orderBatch(batch) AND priceCustomBatch(batch) AND
@@ -311,20 +315,20 @@ priceManagerialDateTime(article, dateTime) = priceManagerialBatch(batchPriceMana
 
 //--------------------------------- Склады временного хранения -------------------------------------------//
 
-TABLE customStore (customStore);
-warehouseGroupCustomStore = DATA warehouseGroup(customStore);
+TABLE customStore (CustomStore);
+warehouseGroupCustomStore = DATA WarehouseGroup(CustomStore);
 nameWarehouseGroupCustomStore 'Группа складов' (customStore) = name(warehouseGroupCustomStore(customStore));
 
 stockGroupStock (stock) += warehouseGroupCustomStore(stock);
 
 legalEntityStock(stock) += legalEntityCustomStore(stock);
 
-allowImportExportXLSLegalEntityUA 'Разрешить импорт/экспорт из/в Excel(Украина)' = DATA BOOLEAN (legalEntity) IN lawGroup;
-allowImportExportXMLLegalEntityBY 'Разрешить импорт/экспорт из/в XML(Беларусь)' = DATA BOOLEAN (legalEntity) IN lawGroup;
+allowImportExportXLSLegalEntityUA 'Разрешить импорт/экспорт из/в Excel(Украина)' = DATA BOOLEAN (LegalEntity) IN lawGroup;
+allowImportExportXMLLegalEntityBY 'Разрешить импорт/экспорт из/в XML(Беларусь)' = DATA BOOLEAN (LegalEntity) IN lawGroup;
 
 FORM customStore 'Склад временного хранения'
 
-    OBJECTS c=customStore FIXED PANEL
+    OBJECTS c=CustomStore FIXED PANEL
 
     PROPERTIES(c) name, nameLegalEntityStock, nameWarehouseGroupCustomStore //fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
@@ -335,7 +339,7 @@ FORM customStore 'Склад временного хранения'
                   //phoneLegalEntity, dialogPhoneLegalEntity,
                   //emailLegalEntity, siteLegalEntity, allowImportExportXLSLegalEntityUA, allowImportExportXMLLegalEntityBY
 
-    EDIT customStore OBJECT c
+    EDIT CustomStore OBJECT c
 ;
 
 DESIGN customStore FROM DEFAULT {
@@ -370,7 +374,7 @@ DESIGN customStore FROM DEFAULT {
 
 FORM customStores 'Склады временного хранения'
 
-    OBJECTS c=customStore
+    OBJECTS c=CustomStore
 
     PROPERTIES(c) READONLY name, nameLegalEntityStock, nameWarehouseGroupCustomStore//, fullNameLegalEntity, nameOwnershipLegalEntity, shortNameOwnershipLegalEntity,
                   //UNPLegalEntity, OKPOLegalEntity, OKYLPLegalEntity,
@@ -421,18 +425,18 @@ EXTEND FORM freightListForm
 
 FORM skuDialog 'SKU'
 
-    OBJECTS s=sku
+    OBJECTS s=Sku
 
     PROPERTIES(s) FORCE GRID READONLY barcode, nameSku, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku, shortNameUOMSku,
                                       nameSupplierArticleSku, sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem
 
-    DIALOG sku OBJECT s
+    DIALOG Sku OBJECT s
 ;
 
 //----------------------------- для печати маркировок ----------------------------------------------------------------//
 
-nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS legalEntity AND sku IS sku;
-addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS legalEntity AND sku IS sku;
+nameImporterSku 'Наименование' (importer, sku) = name(importer) AND importer IS LegalEntity AND sku IS Sku;
+addressImporterSku 'Адрес' (importer, sku) = addressLegalEntity(importer) AND importer IS LegalEntity AND sku IS Sku;
 
 localeLanguageCompany (company) = localeLanguage(languageLegalEntity(company));
 mainCompositionSkuCompany 'Состав (иностр.)' (sku, company) = mainCompositionSkuLanguage(sku, languageLegalEntity(company)) MINCHARWIDTH 20 MAXCHARWIDTH 50 PREFCHARWIDTH 50;
@@ -458,14 +462,14 @@ overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime) += retai
 
 //@implementSkuLedger(userPriceChange, sku, departmentStore);
 //quantityInLIFOSkuLedger (ledger) += quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger);
-//limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS batch;
+//limitInLIFOSkuLedgerBatch (ledger, batch) +=  (quantityUserPriceChangeDetail(ledger) (-) quantityUserPriceChangeDetail(ledger)) AND  batch IS Batch;
 //sumInSkuLedger(ledger) += (retailPriceUserPriceChangeDetail(ledger) (-) curRetailPriceUserPriceChangeDetail(ledger))*quantityUserPriceChangeDetail(ledger);
 
 // ------------------------------- Добавление объектов правильных классов -------------------- //
 
 // Магазины
 addRomanStore 'Добавить' = ACTION () NEWSESSION {
-    FOR ADDOBJ st = RomanLogicsModule.store DO {
+    FOR ADDOBJ st = RomanLogicsModule.Store DO {
         FORM store OBJECTS s = st MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
@@ -475,20 +479,20 @@ EXTEND FORM stores
 ;
 
 EXTEND DESIGN stores {
-    REMOVE PROPERTY(addFormStore_store);
+    REMOVE PROPERTY(addFormStore_Store);
     //s.filters { ADD PROPERTY(addRomanStore) BEFORE PROPERTY(editFormStore_store); }
 }
 
 FORM destinations 'Магазины'
-    OBJECTS d=destination
+    OBJECTS d=Destination
     PROPERTIES(d) READONLY name, nameStoreTypeStore, nameLegalEntityStore, nameRegionStore
-    DIALOG destination OBJECT d
+    DIALOG Destination OBJECT d
 ;
 
 //Единицы измерения
 
 addRomanUOM 'Добавить' = ACTION () NEWSESSION {
-    FOR ADDOBJ um = RomanLogicsModule.unitOfMeasure DO {
+    FOR ADDOBJ um = RomanLogicsModule.UnitOfMeasure DO {
         FORM UOM OBJECTS u = um MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
@@ -542,10 +546,10 @@ EXTEND DESIGN options {
 
 EXTEND FORM migrationData
 
-    OBJECTS l = language FIXED PANEL
+    OBJECTS l = Language FIXED PANEL
     PROPERTIES(l) SELECTOR name
 
-    OBJECTS m = multiLanguageNamed
+    OBJECTS m = MultiLanguageNamed
     PROPERTIES(m) objectClassName TODRAW m FORCE GRID
     PROPERTIES(m) name TODRAW m FORCE GRID
     PROPERTIES(m, l) languageName
@@ -568,8 +572,8 @@ EXTEND DESIGN migrationData {
 
 //------------------------ Для учета рекламных материалов---------------------------------//
 boxInvoiceAddFormInvoice 'Добавить' (supplier) = ACTION (supplier) NEWSESSION {
-    FOR ADDOBJ i = RomanLogicsModule.boxInvoice DO {
-        SET supplierDocument (i) <- supplier AS supplier;
+    FOR ADDOBJ i = RomanLogicsModule.BoxInvoice DO {
+        SET supplierDocument (i) <- supplier AS Supplier;
         FORM boxInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKEDMODAL;
     }
 } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;
@@ -579,8 +583,8 @@ EXTEND FORM boxInvoiceForm
 ;
 
 simpleInvoiceAddFormInvoice 'Добавить' (supplier) = ACTION (supplier) NEWSESSION {
-    FOR ADDOBJ i = RomanLogicsModule.simpleInvoice DO {
-        SET supplierDocument (i) <- supplier AS supplier;
+    FOR ADDOBJ i = RomanLogicsModule.SimpleInvoice DO {
+        SET supplierDocument (i) <- supplier AS Supplier;
         FORM simpleInvoiceEditForm OBJECTS invoice = i MANAGESESSION DOCKEDMODAL;
         }
     } EDITKEY 'INSERT' IMAGE 'add.png' TOOLBAR;

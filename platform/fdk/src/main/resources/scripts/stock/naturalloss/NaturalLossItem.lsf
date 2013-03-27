@@ -2,7 +2,7 @@ MODULE NaturalLossItem;
 
 REQUIRE NaturalLoss, Item;
 
-subNaturalLossGroupCountryItem = DATA subNaturalLossGroup (country, item);
+subNaturalLossGroupCountryItem = DATA SubNaturalLossGroup (Country, Item);
 nameSubNaturalLossGroupCountryItem 'Группа естественной убыли' = name(subNaturalLossGroupCountryItem(country, item));
 
 CONSTRAINT countrySubNaturalLossGroup(subNaturalLossGroupCountryItem(country, item)) != country
@@ -11,7 +11,7 @@ CONSTRAINT countrySubNaturalLossGroup(subNaturalLossGroupCountryItem(country, it
 subNaturalLossGroupCountrySku (country, sku) += subNaturalLossGroupCountryItem (country, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET subNaturalLossGroupCountryItem(country, d) <- subNaturalLossGroupCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
+    SET subNaturalLossGroupCountryItem(country, d) <- subNaturalLossGroupCountryItem(country, s) IF country IS Country AND s IS Item AND d IS Item;
 }
 
 EXTEND FORM item

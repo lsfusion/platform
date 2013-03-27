@@ -17,9 +17,9 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(c
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userCreditNote IS userCreditNote);
+    WHEN ASSIGNED(userCreditNote IS UserCreditNote);
 customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userCreditNote IS userCreditNote);
+    WHEN ASSIGNED(userCreditNote IS UserCreditNote);
 
 supplierStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserCreditNote(userCreditNote))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserCreditNote(userCreditNote)) == 1

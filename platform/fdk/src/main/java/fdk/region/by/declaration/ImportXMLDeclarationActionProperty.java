@@ -7,7 +7,6 @@ import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.CustomStaticFormatFileClass;
 import platform.server.classes.DateClass;
 import platform.server.integration.*;
@@ -18,7 +17,6 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.session.DataSession;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,7 +33,7 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
     List<Object> row;
 
     public ImportXMLDeclarationActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClassByCompoundName("declaration"));
+        super(LM, LM.findClassByCompoundName("Declaration"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();
@@ -143,10 +141,10 @@ public class ImportXMLDeclarationActionProperty extends ScriptingActionProperty 
 
                     properties.add(new ImportProperty(codeCustomsGroupField, getLCP("codeCustomsGroup").getMapping(customsGroupKey)));
                     properties.add(new ImportProperty(codeCustomsGroupField, getLCP("customsGroupDeclarationDetail").getMapping(declarationDetailKey),
-                            LM.object(getClass("customsGroup")).getMapping(customsGroupKey)));
+                            LM.object(getClass("CustomsGroup")).getMapping(customsGroupKey)));
                     properties.add(new ImportProperty(sidOrigin2CountryField, LM.findLCPByCompoundName("sidOrigin2CountryDeclarationDetail").getMapping(declarationDetailKey)));
                     properties.add(new ImportProperty(sidOrigin2CountryField, LM.findLCPByCompoundName("countryDeclarationDetail").getMapping(declarationDetailKey),
-                            LM.object(getClass("country")).getMapping(countryKey)));
+                            LM.object(getClass("Country")).getMapping(countryKey)));
 
                     List<ImportField> fields = BaseUtils.toList(userNumberField, nameCustomsField, sumDataField,
                             sumDutyDataField, sumVATDataField, dateField, codeCustomsGroupField, sidOrigin2CountryField,

@@ -6,7 +6,7 @@ NAMESPACE Stock;
 
 //------------------------- НДС -------------------------//
 
-VATSkuCountryDate = ABSTRACT range (sku, country, DATE);
+VATSkuCountryDate = ABSTRACT Range (Sku, Country, DATE);
 
 META deriveDocumentDetailVAT (concrete, prefixP, dateProp,  skuProp, stockProp)
     prefixP###VAT###concrete##Detail(detail) <- VATSkuCountryDate (skuProp###concrete##Detail(detail), countryStock(stockProp###concrete##Detail(detail)), dateProp###concrete##Detail(detail))
@@ -21,12 +21,12 @@ END
 
 //НДС расчетный
 META defineDocumentHeaderTax (object, taxSID, taxCaption, prefix)
-    prefix###taxSID###object = DATA range(object);
+    prefix###taxSID###object = DATA Range(###object);
     number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
     value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate (prefix###taxSID###object(object),  date###object(object)) IN documentPrmGroup;
 END
 META defineDocumentAbstractHeaderTax (object, taxSID, taxCaption, prefix)
-    prefix###taxSID###object = ABSTRACT range(object);
+    prefix###taxSID###object = ABSTRACT Range(###object);
     number###prefix###taxSID###object taxCaption (object) = numberRange(prefix###taxSID###object(object)) IN documentPrmGroup;
     value###prefix###taxSID###object taxCaption (object) = valueRateRangeDate(prefix###taxSID###object(object), date###object(object)) IN documentPrmGroup;
 END

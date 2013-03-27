@@ -7,7 +7,7 @@ NAMESPACE Invoice;
 createUserInvoiceOrder 'Создать накладную' = ABSTRACT ACTION (order);
 createUserInvoicePostedOrder 'Создать проведенную накладную' = ABSTRACT ACTION (order);
 
-orderInvoiceDetail = ABSTRACT order(invoiceDetail);
+orderInvoiceDetail = ABSTRACT Order(InvoiceDetail);
 
 quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceDetail)
                                                BY orderInvoiceDetail(invoiceDetail),
@@ -17,10 +17,10 @@ quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceD
 
 META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
-    orderInvoiceDetail = ABSTRACT order (invoiceDetail) PERSISTENT;
+    orderInvoiceDetail = ABSTRACT Order (InvoiceDetail) PERSISTENT;
     Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
 
-    orderUserInvoiceDetail = DATA order(userInvoiceDetail);
+    orderUserInvoiceDetail = DATA Order(UserInvoiceDetail);
     orderInvoiceDetail(invoiceDetail) += orderUserInvoiceDetail(invoiceDetail);
 
     CONSTRAINT supplierInvoiceDetail(invoiceDetail) != supplierOrder(orderUserInvoiceDetail(invoiceDetail)) OR
@@ -59,43 +59,43 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     inOrderSupplierStock (order, supplierStock) = GROUP SUM 1 IF supplierStockOrderDetail(orderDetail) == supplierStock BY orderOrderDetail(orderDetail), supplierStock;
     inOrderSupplier (order, supplier) = GROUP SUM 1 IF legalEntityStock(supplierStockOrderDetail(orderDetail)) == supplier BY orderOrderDetail(orderDetail), supplier;
 
-    supplierInvoiceOrder = DATA SESSION legalEntity ();
+    supplierInvoiceOrder = DATA SESSION LegalEntity ();
     nameSupplierInvoiceOrder 'Поставщик' = name(supplierInvoiceOrder());
 
-    supplierStockInvoiceOrder = DATA SESSION stock ();
+    supplierStockInvoiceOrder = DATA SESSION Stock ();
     nameSupplierStockInvoiceOrder 'Склад поставщика' = name(supplierStockInvoiceOrder());
 
     CONSTRAINT legalEntityStock(supplierStockInvoiceOrder())!= supplierInvoiceOrder() CHECKED BY supplierStockInvoiceOrder MESSAGE 'Выбран склад не текущего поставщика';
 
-    customerInvoiceOrder = DATA SESSION legalEntity ();
+    customerInvoiceOrder = DATA SESSION LegalEntity ();
     nameCustomerInvoiceOrder 'Покупатель' = name(customerInvoiceOrder());
 
-    customerStockInvoiceOrder = DATA SESSION stock ();
+    customerStockInvoiceOrder = DATA SESSION Stock ();
     nameCustomerStockInvoiceOrder 'Склад покупателя' = name(customerStockInvoiceOrder());
 
     CONSTRAINT legalEntityStock(customerStockInvoiceOrder())!= customerInvoiceOrder() CHECKED BY customerStockInvoiceOrder MESSAGE 'Выбран склад не текущего покупателя';
 
-    operationInvoiceOrder = DATA SESSION operation ();
+    operationInvoiceOrder = DATA SESSION Operation ();
     nameOperationInvoiceOrder 'Операция' = name(operationInvoiceOrder());
 
     FORM invoiceOrders 'Заказы'###sign
         PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, nameOperationInvoiceOrder
 
-        OBJECTS o = order
+        OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order
         FILTERS isPostedOrder(o),
-                (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS order AND NOT supplierInvoiceOrder()),
-                customerOrder(o) == customerInvoiceOrder() OR (o IS order AND NOT customerInvoiceOrder()),
-                customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS order AND NOT customerStockInvoiceOrder()),
-                (TRUE IF inOrderSupplierStock(o, supplierStockInvoiceOrder())) OR (o IS order AND NOT supplierStockInvoiceOrder()),
-                operationOrder(o) == operationInvoiceOrder() OR (o IS order AND NOT operationInvoiceOrder())
+                (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS Order AND NOT supplierInvoiceOrder()),
+                customerOrder(o) == customerInvoiceOrder() OR (o IS Order AND NOT customerInvoiceOrder()),
+                customerStockOrder(o) == customerStockInvoiceOrder() OR (o IS Order AND NOT customerStockInvoiceOrder()),
+                (TRUE IF inOrderSupplierStock(o, supplierStockInvoiceOrder())) OR (o IS Order AND NOT supplierStockInvoiceOrder()),
+                operationOrder(o) == operationInvoiceOrder() OR (o IS Order AND NOT operationInvoiceOrder())
 //        FILTERGROUP order
 //            FILTER 'Заказы с невыписанными товарами со склада' 'F10' toInvoiceOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
-        OBJECTS d = orderDetail
+        OBJECTS d = OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
                        amountPackOrderDetail, quantityPackOrderDetail
@@ -145,11 +145,11 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     }
 
     createExplicitBatchDetailUserInvoiceOrder = ABSTRACT ACTION (userInvoice, order);
-    useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (userInvoice, order);
+    useExplicitBatchDetailUserInvoiceOrder = ABSTRACT BOOLEAN (UserInvoice, Order);
 
     differentStocksInDetailsStock (stock) = differentStocksInDetailsLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
-    inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS orderDetail AND userInvoice IS userInvoice AND NOT supplierStockUserInvoice(userInvoice)) OR
+    inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS OrderDetail AND userInvoice IS UserInvoice AND NOT supplierStockUserInvoice(userInvoice)) OR
                                                            supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 
     createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
@@ -159,7 +159,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
             FOR orderOrderDetail(orderDetail) == order AND
                 toInvoiceOrderDetail(orderDetail) > 0 // возможно еще нужно фильтровать по складам
                 AND inOrderDetailUserInvoice(orderDetail, userInvoice)
-                ADDOBJ d = userInvoiceDetail DO {
+                ADDOBJ d = UserInvoiceDetail DO {
                     SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
                     SET orderUserInvoiceDetail(d) <- order;
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
@@ -197,7 +197,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
     fillSupplierStockUserInvoiceOrder = ACTION (supplierStock, userInvoice, order) {
         SET supplierUserInvoice(userInvoice) <- legalEntityStock(supplierStock);
-        SET supplierStockUserInvoice(userInvoice) <- supplierStock AS stock;
+        SET supplierStockUserInvoice(userInvoice) <- supplierStock AS Stock;
 
         SET customerUserInvoice(userInvoice) <- customerOrder(order);
         SET customerStockUserInvoice(userInvoice) <- customerStockOrder(order);
@@ -213,8 +213,8 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     }
 
     createUserInvoiceOrder 'Создать накладную' = ACTION (order) {
-        IF order IS order THEN {
-            FOR ADDOBJ i = userInvoice DO {
+        IF order IS Order THEN {
+            FOR ADDOBJ i = UserInvoice DO {
                 EXEC fillUserInvoiceOrder(i, order);
             }
         }
@@ -222,15 +222,15 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     Invoice.createUserInvoiceOrder (order) += createUserInvoiceOrder(order);
 
     createUserInvoicePostedOrder 'Создать проведенную накладную' = ACTION (order) {
-        IF order IS order THEN {
+        IF order IS Order THEN {
             IF differentStocksInDetailsStock(customerStockOrder(order)) THEN {
-                FOR ADDOBJ i = userInvoicePosted DO {
+                FOR ADDOBJ i = UserInvoicePosted DO {
                     EXEC fillUserInvoiceOrder(i, order);
                 }
             }
                 ELSE {
                 FOR inOrderSupplierStock(order, supplierStock) DO {
-                        FOR ADDOBJ i = userInvoicePosted DO {
+                        FOR ADDOBJ i = UserInvoicePosted DO {
                             EXEC fillSupplierStockUserInvoiceOrder(supplierStock, i, order);
                         }
                     }
@@ -249,7 +249,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         operationInvoiceOrder() <- operationUserInvoice(userInvoice) WHERE operationUserInvoice(userInvoice);
 
         FORM invoiceOrders MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             EXEC fillUserInvoiceOrder(userInvoice, chosenObject('o'));
         }
     } IN orderGroup;

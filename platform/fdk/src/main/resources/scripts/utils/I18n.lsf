@@ -4,48 +4,48 @@ REQUIRE System, MasterData, Utils;
 
 // ------------------------------------------------ Язык ---------------------------------------------- //
 
-CLASS dictionary 'Словарь' : named;
-TABLE dictionary (dictionary);
+CLASS Dictionary 'Словарь' : Named;
+TABLE dictionary (Dictionary);
 
-insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (dictionary);
+insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
 
-languageFromDictionary = DATA language (dictionary);
+languageFromDictionary = DATA Language (Dictionary);
 nameLanguageFromDictionary 'С языка'(dictionary) = name(languageFromDictionary(dictionary));
-languageToDictionary = DATA language (dictionary);
+languageToDictionary = DATA Language (Dictionary);
 nameLanguageToDictionary 'На язык'(dictionary) = name(languageToDictionary(dictionary));
 
-CLASS dictionaryEntry 'Слова';
-TABLE dictionaryEntry (dictionaryEntry);
+CLASS DictionaryEntry 'Слова';
+TABLE dictionaryEntry (DictionaryEntry);
 
-dictionaryDictionaryEntry 'Словарь' = DATA dictionary (dictionaryEntry);
-termDictionaryEntry 'Термин' = DATA STRING[50] (dictionaryEntry);
+dictionaryDictionaryEntry 'Словарь' = DATA Dictionary (DictionaryEntry);
+termDictionaryEntry 'Термин' = DATA STRING[50] (DictionaryEntry);
 insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
-translationDictionaryEntry 'Перевод' = DATA STRING[50] (dictionaryEntry);
+translationDictionaryEntry 'Перевод' = DATA STRING[50] (DictionaryEntry);
 
-dictionaryEntryDictionaryTerm = GROUP UNIQUE dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS dictionaryEntry;
+dictionaryEntryDictionaryTerm = GROUP UNIQUE dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
 translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
 nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = name (dictionaryDictionaryEntry(dictionaryEntry));
-insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS dictionaryEntry;
+insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
 insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
 
-CLASS language 'Язык' : named;
-TABLE language(language);
+CLASS Language 'Язык' : Named;
+TABLE language(Language);
 
-localeLanguage 'Locale' = DATA STRING[5] (language);
+localeLanguage 'Locale' = DATA STRING[5] (Language);
 
 FORM language 'Язык'
-    OBJECTS l = language FIXED PANEL
+    OBJECTS l = Language FIXED PANEL
     PROPERTIES(l) name, localeLanguage
 
-    EDIT language OBJECT l
+    EDIT Language OBJECT l
 ;
 
 FORM languages 'Языки'
-    OBJECTS l = language
+    OBJECTS l = Language
     PROPERTIES(l) READONLY name, localeLanguage
     PROPERTIES(l)          ADDFORM, EDITFORM, delete
 
-    DIALOG language OBJECT l
+    DIALOG Language OBJECT l
 ;
 
 NAVIGATOR {
@@ -59,9 +59,9 @@ NAVIGATOR {
 translationOriginal 'Текст для перевода' = DATA SESSION TEXT ();
 translationResult 'Переведённый текст' = DATA SESSION TEXT ();      //STRING[50]
 
-languageFromTranslation = DATA language ();
+languageFromTranslation = DATA Language ();
 nameLanguageFromTranslation 'С языка'() = name(languageFromTranslation());
-languageToTranslation = DATA language ();
+languageToTranslation = DATA Language ();
 nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
 
 translate  = ACTION CUSTOM 'fdk.utils.i18n.TranslateActionProperty';
@@ -85,7 +85,7 @@ translationResultString 'Перевод' = DATA SESSION STRING[50] ();
 
 translateDictionary  = ACTION CUSTOM 'fdk.utils.i18n.TranslateDictionaryActionProperty';
 
-WHEN SESSION CHANGED (translationOriginalString()) AND dictionary IS dictionary DO EXEC translateDictionary(dictionary, translationOriginalString());
+WHEN SESSION CHANGED (translationOriginalString()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationOriginalString());
 
 FORM translation 'Перевод'
     PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
@@ -130,22 +130,22 @@ NAVIGATOR {
 
 // ---------------------------------------------- Мультиязычный объект -------------------------------- //
 
-CLASS multiLanguageNamed 'Мультиязычный объект';
+CLASS MultiLanguageNamed 'Мультиязычный объект';
 
-TABLE multiLanguageNamedLanguage(multiLanguageNamed, language);
-languageName 'Название (иностр.)' = DATA ISTRING[110] (multiLanguageNamed, language);
+TABLE multiLanguageNamedLanguage(MultiLanguageNamed, Language);
+languageName 'Название (иностр.)' = DATA ISTRING[110] (MultiLanguageNamed, Language);
 
 // ---------------------------------------------- Словари --------------------------------------------- //
 
 FORM dictionary 'Словарь'
-    OBJECTS d = dictionary FIXED PANEL
+    OBJECTS d = Dictionary FIXED PANEL
     PROPERTIES(d) name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
-    OBJECTS e = dictionaryEntry
+    OBJECTS e = DictionaryEntry
     PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, delete
     FILTERS       dictionaryDictionaryEntry(e) == d
 
-    EDIT dictionary OBJECT d
+    EDIT Dictionary OBJECT d
 
     PROPERTIES() translationOriginalString, translationResultString
 ;
@@ -173,12 +173,12 @@ DESIGN dictionary FROM DEFAULT {
 }
 
 FORM dictionaries 'Словари'
-    OBJECTS d = dictionary
+    OBJECTS d = Dictionary
     PROPERTIES(d) READONLY name, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
 
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 
-    DIALOG dictionary OBJECT d
+    DIALOG Dictionary OBJECT d
 ;
 
 NAVIGATOR {

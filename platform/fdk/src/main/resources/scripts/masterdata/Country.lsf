@@ -2,32 +2,32 @@ MODULE Country;
 
 REQUIRE System, MasterData, Utils, DefaultData, I18n, Currency;
 
-CLASS country 'Страна' : named, multiLanguageNamed;
+CLASS Country 'Страна' : Named, MultiLanguageNamed;
 
-TABLE country(country);
-TABLE countryDate(country, DATE);
-TABLE countryCountry(country, country);
+TABLE country(Country);
+TABLE countryDate(Country, DATE);
+TABLE countryCountry(Country, Country);
 
-nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (country) IN base; //logics.country.name.origin.country
-sidCountry 'Код страны' (country) = DATA STRING[3] (country) IN base; // logics.country.key
-//sid3Country 'Код 3 знака' (country) = DATA STRING[3] (country) IN base MINCHARWIDTH 15;
+nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (Country) IN base; //logics.country.name.origin.country
+sidCountry 'Код страны' (country) = DATA STRING[3] (Country) IN base; // logics.country.key
+//sid3Country 'Код 3 знака' (country) = DATA STRING[3] (Country) IN base MINCHARWIDTH 15;
 countrySID 'Страна' (sid) =  GROUP UNIQUE country BY sidCountry(country);  // logics.country
 
-sidOrigin2Country 'Код 2 знака (ориг.)' (country) = DATA STRING[2] (country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.2.country
-sidOrigin3Country 'Код 3 знака (ориг.)' (country) = DATA STRING[3] (country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.3.country
+sidOrigin2Country 'Код 2 знака (ориг.)' (country) = DATA STRING[2] (Country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.2.country
+sidOrigin3Country 'Код 3 знака (ориг.)' (country) = DATA STRING[3] (Country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.3.country
 
-currencyCountry 'Валюта' (country) = DATA currency (country); // logics.country.currency
+currencyCountry 'Валюта' (country) = DATA Currency (Country); // logics.country.currency
 nameCurrencyCountry 'Валюта' (country) = name(currencyCountry(country)) IN base PREFCHARWIDTH 10;
 
-generateDatesCountry 'Генерировать выходные' (country) = DATA BOOLEAN (country); // logics.day.generate.days.off
+generateDatesCountry 'Генерировать выходные' (country) = DATA BOOLEAN (Country); // logics.day.generate.days.off
 
-residentCountry 'Отечественный производитель' (country) = DATA BOOLEAN (country) IN base MINCHARWIDTH 15; // logics.country.resident.country
+residentCountry 'Отечественный производитель' (country) = DATA BOOLEAN (Country) IN base MINCHARWIDTH 15; // logics.country.resident.country
 
-countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS country;
+countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS Country;
 
-countrySIDOrigin2(sidOrigin2) = GROUP UNIQUE country BY sidOrigin2Country(country) WHERE country IS country;
+countrySIDOrigin2(sidOrigin2) = GROUP UNIQUE country BY sidOrigin2Country(country) WHERE country IS Country;
 
-defaultCountry 'Страна по умолчанию' () = DATA country (); // logics.country.default.country
+defaultCountry 'Страна по умолчанию' () = DATA Country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country
 
 jumpWorkdays = FORMULA DATE 'jumpWorkdays($1, $2, $3)'; //1 - country, 2 - date, 3 - days to jump
@@ -42,23 +42,23 @@ EXTEND DESIGN options {
     }
 }
 
-languageCountry = DATA language (country);
+languageCountry = DATA Language (Country);
 nameLanguageCountry 'Язык' (country) = name(languageCountry(country)) MINCHARWIDTH 5 PREFCHARWIDTH 10 MAXCHARWIDTH 15;
 
 FORM country 'Страна'
-    OBJECTS c = country FIXED PANEL
+    OBJECTS c = Country FIXED PANEL
 
     PROPERTIES(c) name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                   residentCountry, nameCurrencyCountry, nameLanguageCountry
 
-    OBJECTS l = language
+    OBJECTS l = Language
     PROPERTIES name(l) READONLY, languageName(c, l)
 
-    EDIT country OBJECT c
+    EDIT Country OBJECT c
 ;
 
 FORM countries 'Страны'
-    OBJECTS c = country
+    OBJECTS c = Country
 
     PROPERTIES(c) READONLY name, nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country,
                            residentCountry, nameCurrencyCountry, nameLanguageCountry
@@ -66,7 +66,7 @@ FORM countries 'Страны'
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     ORDER BY name
 
-    DIALOG country OBJECT c
+    DIALOG Country OBJECT c
 ;
 
 NAVIGATOR {
@@ -77,13 +77,13 @@ NAVIGATOR {
 
 // ------------------------------------------------ Выходные дни --------------------------------------- //
 
-isDayOffCountryDate 'Выходной' (country, date) = DATA BOOLEAN (country, DATE) IN base; // logics.day.off
+isDayOffCountryDate 'Выходной' (country, date) = DATA BOOLEAN (Country, DATE) IN base; // logics.day.off
 
 fillDaysOff 'Заполнить выходные дни' = ACTION CUSTOM 'fdk.utils.FillDaysOffActionProperty';
 
 addDayOff 'Добавить выходной день' = ACTION (country) NEWSESSION {
     FORM dialogDate MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         FOR d == chosenDate('d') DO {
             SET isDayOffCountryDate (country, d) <- TRUE;
             EXEC apply();
@@ -92,7 +92,7 @@ addDayOff 'Добавить выходной день' = ACTION (country) NEWSES
 }
 
 FORM daysOffForm 'Выходные дни' // logics.days.off
-    OBJECTS country 'Страна', day=DATE 'День'
+    OBJECTS country=Country 'Страна', day=DATE 'День'
     PROPERTIES(country) FORCE PANEL fillDaysOff, addDayOff
     PROPERTIES(country) READONLY nameOriginCountry, sidCountry, sidOrigin2Country, sidOrigin3Country, nameCurrencyCountry, residentCountry
     PROPERTIES OBJVALUE(day), isDayOffCountryDate(country, day)
@@ -114,7 +114,7 @@ NAVIGATOR {
 // ------------------------------------------------ Стандартные значения --------------------------------------- //
 
 loadDefaultCountry 'Добавить страны' = ACTION (string, number, stringA, stringB, stringC, shortCurrency) {//, value) {
-    ADDOBJ country;
+    ADDOBJ Country;
     FOR c == addedObject() DO {
        SET name(c) <- string AS STRING[110];
        SET sidCountry(c) <- number AS STRING[3];

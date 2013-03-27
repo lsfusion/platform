@@ -4,10 +4,10 @@ REQUIRE PriceChange,
         POS;
 
 //-----------------Переоценка проданных со скидкой позиций---------------------------------
-CLASS priceChangeZReport 'Переоценка по проданным товарам' : priceChangeDocument;
-CLASS priceChangeZReportDetail 'Строка переоценки по проданным товарам' : priceChangeDocumentDetail;
+CLASS PriceChangeZReport 'Переоценка по проданным товарам' : PriceChangeDocument;
+CLASS PriceChangeZReportDetail 'Строка переоценки по проданным товарам' : PriceChangeDocumentDetail;
 
-isDiscountPriceChangeDepartmentStore 'Проводить уценку проданных со скидкой позиций' = DATA BOOLEAN (departmentStore);
+isDiscountPriceChangeDepartmentStore 'Проводить уценку проданных со скидкой позиций' = DATA BOOLEAN (DepartmentStore);
 
 EXTEND FORM departmentStore
     PROPERTIES (d) isDiscountPriceChangeDepartmentStore
@@ -17,7 +17,7 @@ EXTEND FORM departmentStores
     PROPERTIES (d) isDiscountPriceChangeDepartmentStore
 ;
 
-@defineDocumentHeaderNote(zReport);
+@defineDocumentHeaderNote(ZReport);
 
 needToPriceChangeReceiptSaleDetail (receiptSaleDetail) =
     TRUE IF discountSumReceiptSaleDetail (receiptSaleDetail) > 0
@@ -97,8 +97,8 @@ retailPricePriceChangeZReportDetail (priceChangeZReportDetail) =
     (priceReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail)) * quantityPriceChangeZReportDetail (priceChangeZReportDetail) -
      discountSumReceiptSaleDetail (receiptSaleDetailPriceChangeZReportDetail(priceChangeZReportDetail)))/quantityPriceChangeZReportDetail (priceChangeZReportDetail);
 
-numberDisposalPriceChangeZReport '№ распоряжения на переоценку' (priceChangeZReport) = DATA STRING[30] (priceChangeZReport);
-priceChangeCommitteePriceChangeZReport 'Комиссия переоценки ИД' (priceChangeZReport) = DATA priceChangeCommittee (priceChangeZReport);
+numberDisposalPriceChangeZReport '№ распоряжения на переоценку' (priceChangeZReport) = DATA STRING[30] (PriceChangeZReport);
+priceChangeCommitteePriceChangeZReport 'Комиссия переоценки ИД' (priceChangeZReport) = DATA PriceChangeCommittee (PriceChangeZReport);
 
 @implementPriceChangeDocument(priceChangeZReport, sku);
 @implementPriceChangeDocumentDetailAllPrice (priceChangeZReport);

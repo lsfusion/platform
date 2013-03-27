@@ -4,28 +4,28 @@ REQUIRE GLAccountType;
 
 //-------------------------- Проводки -------------------------//
 
-CLASS ABSTRACT generalLedger 'Проводка': named;
-TABLE generalLedger(generalLedger);
+CLASS ABSTRACT GeneralLedger 'Проводка': Named;
+TABLE generalLedger(GeneralLedger);
 
-CLASS userGeneralLedger 'Проводка (польз.)': generalLedger, historizable;
-CLASS userGeneralLedgerPosted 'Проведенная проводка (польз.)': userGeneralLedger, postedObject;
+CLASS UserGeneralLedger 'Проводка (польз.)': GeneralLedger, Historizable;
+CLASS UserGeneralLedgerPosted 'Проведенная проводка (польз.)': UserGeneralLedger, PostedObject;
 
 @defineDocumentInterfaceHeaderPosted (generalLedger);
 @defineDocumentInterfaceHeaderDatePrefix(generalLedger, , );
-WHEN SESSION ASSIGNED(userGeneralLedger AS userGeneralLedger) DO {
-    IF userGeneralLedger IS userGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
+WHEN SESSION ASSIGNED(userGeneralLedger AS UserGeneralLedger) DO {
+    IF userGeneralLedger IS UserGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
 };
 
-debitGeneralLedger = ABSTRACT GLAccount (generalLedger) PERSISTENT;
+debitGeneralLedger = ABSTRACT GLAccount (GeneralLedger) PERSISTENT;
 idDebitGeneralLedger 'Дебет' (generalLedger) = idGLAccount(debitGeneralLedger(generalLedger));
-debitUserGeneralLedger = DATA GLAccount (userGeneralLedger);
+debitUserGeneralLedger = DATA GLAccount (UserGeneralLedger);
 idDebitUserGeneralLedger 'Дебет' (userGeneralLedger) = idGLAccount(debitUserGeneralLedger(userGeneralLedger));
 debitGeneralLedger (generalLedger) += debitUserGeneralLedger (generalLedger);
 
 
-creditGeneralLedger = ABSTRACT GLAccount (generalLedger) PERSISTENT;
+creditGeneralLedger = ABSTRACT GLAccount (GeneralLedger) PERSISTENT;
 idCreditGeneralLedger 'Кредит' (generalLedger) = idGLAccount(creditGeneralLedger(generalLedger));
-creditUserGeneralLedger = DATA GLAccount (userGeneralLedger);
+creditUserGeneralLedger = DATA GLAccount (UserGeneralLedger);
 idCreditUserGeneralLedger 'Кредит' (userGeneralLedger) = idGLAccount(creditUserGeneralLedger(userGeneralLedger));
 creditGeneralLedger (generalLedger) += creditUserGeneralLedger (generalLedger);
 
@@ -33,16 +33,16 @@ CONSTRAINT GLAccountTypeGLAccount(debitUserGeneralLedger(userGeneralLedger)) != 
     CHECKED BY  debitUserGeneralLedger, creditUserGeneralLedger
     MESSAGE 'У дебета и кредита разные планы счетов';
 
-sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (generalLedger) PERSISTENT;
-sumUserGeneralLedger 'Сумма' = DATA NUMERIC[16,2] (userGeneralLedger);
+sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (GeneralLedger) PERSISTENT;
+sumUserGeneralLedger 'Сумма' = DATA NUMERIC[16,2] (UserGeneralLedger);
 sumGeneralLedger (generalLedger) += sumUserGeneralLedger (generalLedger);
 
-descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (generalLedger) PERSISTENT;
-descriptionUserGeneralLedger 'Описание' = DATA STRING[200] (userGeneralLedger);
+descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (GeneralLedger) PERSISTENT;
+descriptionUserGeneralLedger 'Описание' = DATA STRING[200] (UserGeneralLedger);
 descriptionGeneralLedger (generalLedger) += descriptionUserGeneralLedger (generalLedger);
 
-skipGeneralLedger 'Не изменять значение' (generalLedger) = ABSTRACT BOOLEAN (generalLedger) PERSISTENT;
-skipUserGeneralLedger 'Не изменять значение' (userGeneralLedger) = DATA BOOLEAN (userGeneralLedger);
+skipGeneralLedger 'Не изменять значение' (generalLedger) = ABSTRACT BOOLEAN (GeneralLedger) PERSISTENT;
+skipUserGeneralLedger 'Не изменять значение' (userGeneralLedger) = DATA BOOLEAN (UserGeneralLedger);
 skipGeneralLedger (generalLedger) += skipUserGeneralLedger (generalLedger);
 
 editGeneralLedger 'Редактировать' = ABSTRACT ACTION (generalLedger) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
@@ -117,14 +117,14 @@ EXTEND FORM GLAccounts
 
 
 FORM userGeneralLedger 'Проводка'
-    OBJECTS g=userGeneralLedger FIXED PANEL
+    OBJECTS g=UserGeneralLedger FIXED PANEL
     PROPERTIES(g) descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger,
                   sumUserGeneralLedger
 
     EVENTS
         ON OK prePostUserGeneralLedger(g)
 
-    EDIT userGeneralLedger OBJECT g
+    EDIT UserGeneralLedger OBJECT g
 ;
 
 DESIGN userGeneralLedger FROM DEFAULT{
@@ -154,13 +154,13 @@ DESIGN userGeneralLedger FROM DEFAULT{
         }
     }
 }
-addUserGeneralLedger 'Добавить' = ACTION ADDFORM userGeneralLedger;
-editUserGeneralLedger 'Редактировать' (userGeneralLedger) = ACTION EDITFORM userGeneralLedger;
+addUserGeneralLedger 'Добавить' = ACTION ADDFORM UserGeneralLedger;
+editUserGeneralLedger 'Редактировать' (userGeneralLedger) = ACTION EDITFORM UserGeneralLedger;
 editGeneralLedger(generalLedger) += editUserGeneralLedger(generalLedger);
-isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS userGeneralLedger;
+isUserGeneralLedger(generalLedger) = TRUE IF generalLedger IS UserGeneralLedger;
 
 FORM generalLedgers 'Проводки'
-    OBJECTS g = generalLedger
+    OBJECTS g = GeneralLedger
     PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
 
@@ -172,7 +172,7 @@ FORM generalLedgers 'Проводки'
     PROPERTIES (g) editGeneralLedger//, copyOrder
     PROPERTIES     delete(g) FORCE PANEL TOOLBAR  SHOWIF isUserGeneralLedger(g)
 
-    DIALOG generalLedger OBJECT g
+    DIALOG GeneralLedger OBJECT g
 ;
 DESIGN generalLedgers FROM DEFAULT {
     PROPERTY (delete(g)) {
@@ -189,33 +189,41 @@ DESIGN generalLedgers FROM DEFAULT {
 }
 
 META defineGeneralLedgerAggregation (object, prop, property, dateProp, description, debit, credit, accountType)
+    @defineGeneralLedgerAggregationInner (object, prop, ###prop, property, dateProp, description, debit, credit, accountType);
+END
 
-    CLASS prop###generalLedger : generalLedger;
+META defineGeneralLedgerAggregationInner (object, prop, propClass, property, dateProp, description, debit, credit, accountType)
 
-    TABLE prop###generalLedger (prop###generalLedger);
+    CLASS propClass###generalLedger : GeneralLedger;
+
+    TABLE prop###generalLedger (propClass###generalLedger);
     @defineAggregation(object, prop###generalLedger, property);
 
     isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###object(object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS prop###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS prop###generalLedger;
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS propClass###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(object###prop###generalLedger(generalLedger));
 
 END
 
 META defineGeneralLedgerAggregation (prim1Object, prim2Object, prop, property, dateProp, description, debit, credit, accountType)   //  prim1Object - документ
+    @defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, ###prop, property, dateProp, description, debit, credit, accountType);
+END
 
-    CLASS prop###generalLedger : generalLedger;
+META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propClass, property, dateProp, description, debit, credit, accountType)
 
-    TABLE prop###generalLedger (prop###generalLedger);
+    CLASS propClass###generalLedger : GeneralLedger;
+
+    TABLE prop###generalLedger (propClass###generalLedger);
     @defineAggregation (prim1Object, prim2Object, prop###generalLedger, property);
 
     isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
     dateGeneralLedger(generalLedger) += dateProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
-    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS prop###generalLedger;
-    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS prop###generalLedger;
+    debitGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, debit) AND generalLedger IS propClass###generalLedger;
+    creditGeneralLedger(generalLedger) += GLAccountIdTypeIdGLAccount(accountType, credit) AND generalLedger IS propClass###generalLedger;
     sumGeneralLedger(generalLedger) += property(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));
 END
 

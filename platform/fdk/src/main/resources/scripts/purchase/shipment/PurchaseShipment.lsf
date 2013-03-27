@@ -30,9 +30,9 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(custo
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserShipment(userShipment) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 customerUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 
 supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
@@ -42,10 +42,10 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
         WHEN CHANGED(customerUserShipment(userShipment));
 
 // ------------------------------- Расчет учетной цены для поставки ------------------------ //
-overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 calcShipmentPriceUserInvoiceDetail (detail) = costPriceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
 
-extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 
 // Цены учетные
 priceUserShipmentDetail (detail) <- costPriceInvoiceDetail(invoiceDetailUserShipmentDetail(detail))
@@ -58,17 +58,17 @@ shipmentPriceUserInvoiceDetail(detail) <- calcShipmentPriceUserInvoiceDetail(det
 
 // ------------------------------- Проведение по регистру остатков ------------------------ //
 
-overCreateBatchShipmentDetail = ABSTRACT BOOLEAN (shipmentDetail);
-createBatchShipmentDetail (detail) = (detail IS shipmentDetail OR overCreateBatchShipmentDetail(detail)) AND NOT batchShipmentDetail(detail);
+overCreateBatchShipmentDetail = ABSTRACT BOOLEAN (ShipmentDetail);
+createBatchShipmentDetail (detail) = (detail IS ShipmentDetail OR overCreateBatchShipmentDetail(detail)) AND NOT batchShipmentDetail(detail);
 
 // Создаем партию
-CLASS shipmentBatch 'Партия на основе закупки';
+CLASS ShipmentBatch 'Партия на основе закупки';
 @defineAggregation(shipmentDetail, shipmentBatch, createBatchShipmentDetail);
 
 @defineSkuLedgerAggregation(shipmentDetail, shipmentBatch, sku, customerStock);
 priceShipmentBatch (batch) = priceShipmentDetail(shipmentDetailShipmentBatch(batch));
 
-@implementBatch(shipmentBatch, sku, stock, price);
+@implementBatch(ShipmentBatch, sku, stock, price);
 quantityBatch (ledger) += quantityShipmentDetail(shipmentDetailShipmentBatch(ledger));
 sumInSkuLedger (ledger) += sumShipmentDetail(shipmentDetailShipmentBatch(ledger));
 
@@ -81,15 +81,15 @@ batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailI
 @implementSystemLedgerPriceListTypeBatch(account, shipmentBatch, stock);
 
 // Создаем просто inLIFOSkuLedger
-createSkuLedgerShipmentDetail (detail) = detail IS shipmentDetail AND NOT createBatchShipmentDetail(detail);
+createSkuLedgerShipmentDetail (detail) = detail IS ShipmentDetail AND NOT createBatchShipmentDetail(detail);
 
-CLASS shipmentSkuLedger 'Изменение остатка на основе закупки';
+CLASS ShipmentSkuLedger 'Изменение остатка на основе закупки';
 @defineAggregation(shipmentDetail, shipmentSkuLedger, createSkuLedgerShipmentDetail);
 
 @defineSkuLedgerAggregation(shipmentDetail, shipmentSkuLedger, sku, customerStock);
 priceShipmentSkuLedger (ledger) = priceShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
-@implementSkuLedgerInLIFO(shipmentSkuLedger, sku, stock);
+@implementSkuLedgerInLIFO(ShipmentSkuLedger, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 limitInLIFOSkuLedgerBatch(ledger, batch) += quantityShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) IF batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger)));
@@ -106,7 +106,7 @@ costShipmentDetailBatch(detail, batch) += IF createBatchShipmentDetail(detail) T
 batchPriceListLedger(ledger) += batchShipmentDetail(shipmentDetailShipmentSkuLedger(ledger));
 
 // ------------------------------- Проведение по товарному отчету ------------------------ //
-@implementStockDocumentLedgerInc(shipment, customerStock);
+@implementStockDocumentLedgerInc(Shipment, customerStock);
 sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

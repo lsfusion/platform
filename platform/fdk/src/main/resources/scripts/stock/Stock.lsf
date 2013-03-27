@@ -4,16 +4,16 @@ REQUIRE System, MasterData, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, 
 
 // ----------------------------------- Склады ------------------------------------------ //
 
-CLASS ABSTRACT stockGroup 'Группа складов' : named;
+CLASS ABSTRACT StockGroup 'Группа складов' : Named;
 @defineHierarchyAbstract(stockGroup);
 
-CLASS ABSTRACT stock 'Склад' : named;
-TABLE stock(stock);
+CLASS ABSTRACT Stock 'Склад' : Named;
+TABLE stock(Stock);
 
-stockGroupStock (stock) = ABSTRACT stockGroup (stock) PERSISTENT;
+stockGroupStock (stock) = ABSTRACT StockGroup (Stock) PERSISTENT;
 nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 
-legalEntityStock (stock) = ABSTRACT legalEntity (stock) PERSISTENT NOT NULL;
+legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
 isCompanyStock(stock) = isCompanyLegalEntity(legalEntityStock(stock));
@@ -22,32 +22,32 @@ quantityStocksStockGroup 'Кол-во складов' (stockGroup) = GROUP SUM 1
     AND isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup)
     BY stockGroup PERSISTENT;
 
-TABLE userLegalEntityStock (legalEntity, stock);
-userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (legalEntity, stock) PERSISTENT;
+TABLE userLegalEntityStock (LegalEntity, Stock);
+userLegalEntityStock 'Отм.' = ABSTRACT BOOLEAN (LegalEntity, Stock) PERSISTENT;
 inLegalEntityStock 'Отм.' (legalEntity, stock) = (legalEntityStock(stock) == legalEntity) OR userLegalEntityStock(legalEntity, stock);
 isDefaultLegalEntityStock 'Свой склад' (legalEntity, stock) = legalEntityStock(stock) == legalEntity;
 
 currencyStock (stock) = currencyLegalEntity(legalEntityStock(stock)) PERSISTENT;
 languageStock (stock) = languageLegalEntity(legalEntityStock(stock)) PERSISTENT;
 
-EXTEND CLASS stock : POI;
+EXTEND CLASS Stock : POI;
 
-namePOI(poi) += name(poi) IF poi IS stock;
+namePOI(poi) += name(poi) IF poi IS Stock;
 
 countryStock (stock) = countryLegalEntity(legalEntityStock(stock)) PERSISTENT;
 nameCountryStock 'Страна' (stock) = name(countryStock(stock));
 countryPOI (poi) += countryStock(poi);
 
-addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (stock) PERSISTENT;
+addressStock 'Адрес' (stock) = ABSTRACT STRING[100] (Stock) PERSISTENT;
 addressPOI (poi) += addressStock(poi);
 
-//latitudeStock 'Координата X' = DATA NUMERIC[10,5](stock);
-//longitudeStock 'Координата Y' = DATA NUMERIC[10,5](stock);
+//latitudeStock 'Координата X' = DATA NUMERIC[10,5](Stock);
+//longitudeStock 'Координата Y' = DATA NUMERIC[10,5](Stock);
 
 //latitudePOI(stock) += latitudeStock(stock);
 //longitudePOI(stock) += longitudeStock(stock);
 
-TABLE stockGroupStock (stockGroup, stock);
+TABLE stockGroupStock (StockGroup, Stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
 GROUP createGroup 'Создавать по умолчанию' : public;
@@ -57,15 +57,15 @@ GROUP bookkeepingGroup 'Учет и цены' : public;
 
 // -------------------------------------- Регион ------------------------------- //
 
-CLASS region 'Регион' : named;
-TABLE region (region);
+CLASS Region 'Регион' : Named;
+TABLE region (Region);
 
-regionStock 'Регион' (stock) = ABSTRACT region (stock) PERSISTENT;
+regionStock 'Регион' (stock) = ABSTRACT Region (Stock) PERSISTENT;
 nameRegionStock 'Регион' (stock)= name(regionStock(stock));
 
 // ----------------------------------- Единицы измерения ------------------------------------------ //
 
-CLASS UOM 'Единица измерения' : doubleNamed;
+CLASS UOM 'Единица измерения' : DoubleNamed;
 TABLE UOM (UOM);
 
 baseUOM = DATA UOM(UOM);
@@ -87,33 +87,33 @@ FORM UOMs 'Единицы измерений'
 
 // ----------------------------------- Абстрактная группа ------------------------------------------ //
 
-CLASS ABSTRACT group 'Классификатор SKU' : named;
+CLASS ABSTRACT Group 'Классификатор SKU' : Named;
 @defineHierarchyAbstract(group);
 
-CLASS ABSTRACT groupType 'Тип классификатора SKU' : named;
-CLASS systemGroupType 'Системный тип классификатор SKU' : groupType;
+CLASS ABSTRACT GroupType 'Тип классификатора SKU' : Named;
+CLASS SystemGroupType 'Системный тип классификатор SKU' : GroupType;
 
-groupTypeGroup = ABSTRACT groupType (group) PERSISTENT;
+groupTypeGroup = ABSTRACT GroupType (Group) PERSISTENT;
 nameGroupTypeGroup 'Тип классификатора SKU' (group) = name(groupTypeGroup(group));
 
-TABLE groupTypeSku(groupType, sku);
-groupGroupTypeSku = ABSTRACT group (groupType, sku) EXCLUSIVE PERSISTENT;
+TABLE groupTypeSku(GroupType, Sku);
+groupGroupTypeSku = ABSTRACT Group (GroupType, Sku) EXCLUSIVE PERSISTENT;
 nameGroupGroupTypeSku 'Имя' (type, sku) = name(groupGroupTypeSku(type, sku));
 canonicalNameGroupGroupTypeSku 'Каноническое имя' (type, sku) = canonicalNameGroup(groupGroupTypeSku(type, sku));
 
-TABLE groupSku(group, sku);
+TABLE groupSku(Group, Sku);
 isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGroup(group), sku), group) PERSISTENT INDEXED;
 
 // ----------------------------------- Custom Group ------------------------------------------ //
 
-CLASS customGroup 'Дополнительный классификатор SKU' : group;
+CLASS CustomGroup 'Дополнительный классификатор SKU' : Group;
 @defineHierarchy(customGroup);
 
 parentGroup (group) += parentCustomGroup(group);
 
-CLASS customGroupType 'Тип дополнительного классификатора SKU' : groupType;
+CLASS CustomGroupType 'Тип дополнительного классификатора SKU' : GroupType;
 
-customGroupTypeCustomGroup = DATA customGroupType (customGroup) AUTOSET;
+customGroupTypeCustomGroup = DATA CustomGroupType (CustomGroup) AUTOSET;
 nameCustomGroupTypeCustomGroup 'Тип классификатора' (customGroup) = name(customGroupTypeCustomGroup(customGroup));
 
 CONSTRAINT customGroupTypeCustomGroup(parentCustomGroup(group)) != customGroupTypeCustomGroup(group)
@@ -121,18 +121,18 @@ CONSTRAINT customGroupTypeCustomGroup(parentCustomGroup(group)) != customGroupTy
 
 groupTypeGroup (group) += customGroupTypeCustomGroup(group);
 
-TABLE customGroupTypeSku(customGroupType, sku);
-customGroupCustomGroupTypeSku = ABSTRACT customGroup (customGroupType, sku) PERSISTENT;
+TABLE customGroupTypeSku(CustomGroupType, Sku);
+customGroupCustomGroupTypeSku = ABSTRACT CustomGroup (CustomGroupType, Sku) PERSISTENT;
 
 groupGroupTypeSku(type, sku) += customGroupCustomGroupTypeSku(type, sku);
 
-inCustomGroup 'Отм.' = DATA SESSION BOOLEAN (customGroup);
+inCustomGroup 'Отм.' = DATA SESSION BOOLEAN (CustomGroup);
 
 FORM moveCustomGroup 'Дополнительные группы'
-    OBJECTS t = customGroupType FIXED PANEL
+    OBJECTS t = CustomGroupType FIXED PANEL
     PROPERTIES(t) READONLY name
 
-    TREE treeGroups g=customGroup PARENT parentCustomGroup
+    TREE treeGroups g=CustomGroup PARENT parentCustomGroup
     PROPERTIES(g) READONLY name, canonicalNameCustomGroup
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
@@ -141,160 +141,160 @@ FORM moveCustomGroup 'Дополнительные группы'
 moveCustomGroup 'Перенести отмеченные группы' = ACTION (customGroupType){
 
     FORM moveCustomGroup OBJECTS t = customGroupType MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET parentCustomGroup(customGroup) <- chosenObject('g') WHERE inCustomGroup(customGroup);
         SET inCustomGroup(customGroup) <- NULL;
     }
 }
 
 FORM customGroupType 'Тип дополнительного классификатора SKU'
-    OBJECTS t = customGroupType FIXED PANEL
+    OBJECTS t = CustomGroupType FIXED PANEL
     PROPERTIES(t) name
-    EDIT customGroupType OBJECT t
+    EDIT CustomGroupType OBJECT t
 ;
 
 FORM dialogCustomGroupType 'Тип дополнительного классификатора SKU'
-    OBJECTS t = customGroupType
+    OBJECTS t = CustomGroupType
     PROPERTIES(t) READONLY name
-    DIALOG customGroupType OBJECT t
+    DIALOG CustomGroupType OBJECT t
 ;
 
 FORM customGroupTypes 'Типы дополнительного классификатора SKU'
-    OBJECTS t = customGroupType
+    OBJECTS t = CustomGroupType
     PROPERTIES(t) READONLY name
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 ;
 
 FORM customGroup 'Дополнительная группа'
-    OBJECTS g=customGroup FIXED PANEL
+    OBJECTS g=CustomGroup FIXED PANEL
     PROPERTIES(g) nameCustomGroupTypeCustomGroup, name, nameParentCustomGroup
-    EDIT customGroup OBJECT g
+    EDIT CustomGroup OBJECT g
 ;
 
 FORM customGroups 'Дополнительные группы'
-    OBJECTS t = customGroupType FIXED PANEL
+    OBJECTS t = CustomGroupType FIXED PANEL
     PROPERTIES(t) SELECTOR name
 
-    TREE treeGroups g=customGroup PARENT parentCustomGroup
+    TREE treeGroups g=CustomGroup PARENT parentCustomGroup
     PROPERTIES inCustomGroup(g), moveCustomGroup(t) TODRAW g FORCE PANEL TOOLBAR
     PROPERTIES(g) READONLY name, canonicalNameCustomGroup
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS customGroupTypeCustomGroup(g) == t
     ORDER BY canonicalNameCustomGroup
 
-    DIALOG customGroup OBJECT g
+    DIALOG CustomGroup OBJECT g
 ;
 
 // ----------------------------------- Sku Group ------------------------------------------ //
 
-CLASS ABSTRACT skuGroup 'Группа SKU' : group;
+CLASS ABSTRACT SkuGroup 'Группа SKU' : Group;
 @defineHierarchyAbstract(skuGroup);
 
-EXTEND CLASS systemGroupType { skuGroupType 'Основной' }
+EXTEND CLASS SystemGroupType { skuGroupType 'Основной' }
 
 parentGroup(skuGroup) += parentSkuGroup(skuGroup);
 
-TABLE skuGroupLanguage(skuGroup, language);
-nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRING[110] (skuGroup, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
+TABLE skuGroupLanguage(SkuGroup, Language);
+nameSkuGroupLanguage 'Наименование (иностр.)' = ABSTRACT STRING[110] (SkuGroup, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
 
 nameSkuGroupStock 'Наименование (иностр.)' (skuGroup, stock) = IF languageStock(stock) THEN nameSkuGroupLanguage(skuGroup, languageStock(stock)) ELSE name(skuGroup);
 
 // ----------------------------------- Sku Type ------------------------------------------ //
 
-CLASS skuType {
+CLASS SkuType {
     skuTypeItem 'Товар',
     skuTypeContainer 'Тара',
     skuTypeCharge 'Услуги'
-} : named;
+} : Named;
 
-isStockSkuType 'Складируемые' (type) = type IS skuType AND NOT type == skuType.skuTypeCharge PERSISTENT;
+isStockSkuType 'Складируемые' (type) = type IS SkuType AND NOT type == SkuType.skuTypeCharge PERSISTENT;
 
 // ----------------------------------- Sku ------------------------------------------ //
 
-CLASS ABSTRACT sku 'SKU';
-TABLE sku(sku);
-TABLE legalEntitySku(legalEntity, sku);
-TABLE countrySku(country, sku);
+CLASS ABSTRACT Sku 'SKU';
+TABLE sku(Sku);
+TABLE legalEntitySku(LegalEntity, Sku);
+TABLE countrySku(Country, Sku);
 
-skuGroupSku (sku) = ABSTRACT skuGroup (sku) PERSISTENT;
+skuGroupSku (sku) = ABSTRACT SkuGroup (Sku) PERSISTENT;
 
-groupTypeGroup(group) += systemGroupType.skuGroupType IF group IS skuGroup;
-groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == systemGroupType.skuGroupType;
+groupTypeGroup(group) += SystemGroupType.skuGroupType IF group IS SkuGroup;
+groupGroupTypeSku(type, sku) += skuGroupSku(sku) WHEN CLASS(skuGroupSku(sku)) AND type == SystemGroupType.skuGroupType;
 
-nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
+nameSku 'Наименование' (sku) = ABSTRACT STRING[255] (Sku) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP IN recognize;
 
-TABLE skuLanguage(sku, language);
-nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (sku, language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
+TABLE skuLanguage(Sku, Language);
+nameSkuLanguage 'Наименование (иностр.)' = ABSTRACT STRING[200] (Sku, Language) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 INDEXED AGGPROP;
 
 nameSkuStock 'Наименование (иностр.)' (sku, stock) = IF languageStock(stock) THEN nameSkuLanguage(sku, languageStock(stock)) ELSE nameSku(sku);
 
-UOMSku (sku) = ABSTRACT UOM (sku) PERSISTENT;
+UOMSku (sku) = ABSTRACT UOM (Sku) PERSISTENT;
 shortNameUOMSku 'Ед. изм.' (sku) = shortName(UOMSku(sku)) IN recognize;
 
-countrySku = ABSTRACT country (sku) PERSISTENT;
+countrySku = ABSTRACT Country (Sku) PERSISTENT;
 nameCountrySku 'Страна' (sku) = name(countrySku(sku)) IN recognize;
 
-TABLE skuGroupSku(skuGroup, sku);
+TABLE skuGroupSku(SkuGroup, Sku);
 isParentSkuGroupSku (skuGroup, sku) = isParentSkuGroupSkuGroup(skuGroupSku(sku), skuGroup) PERSISTENT;
 
-netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
-grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
-volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (sku) PERSISTENT;
-compositionSku 'Состав' = ABSTRACT STRING[255] (sku) PERSISTENT;
+netWeightSku 'Вес нетто' = ABSTRACT NUMERIC[9,3] (Sku) PERSISTENT;
+grossWeightSku 'Вес брутто' = ABSTRACT NUMERIC[9,3] (Sku) PERSISTENT;
+volumeSku 'Объем' = ABSTRACT NUMERIC[9,3] (Sku) PERSISTENT;
+compositionSku 'Состав' = ABSTRACT STRING[255] (Sku) PERSISTENT;
 
-skuTypeSku = ABSTRACT skuType (sku) PERSISTENT;
+skuTypeSku = ABSTRACT SkuType (Sku) PERSISTENT;
 
 isStockSku 'Складируемый' (sku) = isStockSkuType(skuTypeSku(sku)) PERSISTENT;
 
-isItemSku 'Товар' (sku) = skuTypeSku(sku) == skuType.skuTypeItem PERSISTENT;
-isContainerSku 'Тара' (sku) = skuTypeSku(sku) == skuType.skuTypeContainer PERSISTENT;
-isChargeSku 'Услуги' (sku) = skuTypeSku(sku) == skuType.skuTypeCharge PERSISTENT;
+isItemSku 'Товар' (sku) = skuTypeSku(sku) == SkuType.skuTypeItem PERSISTENT;
+isContainerSku 'Тара' (sku) = skuTypeSku(sku) == SkuType.skuTypeContainer PERSISTENT;
+isChargeSku 'Услуги' (sku) = skuTypeSku(sku) == SkuType.skuTypeCharge PERSISTENT;
 
-isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (sku) PERSISTENT;
+isWeightSku 'Весовой товар' =  ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
-inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (sku) PERSISTENT;
+inactiveSku 'Неактивный' = ABSTRACT BOOLEAN (Sku) PERSISTENT;
 
 replaceSkuSku = ABSTRACT ACTION(sku, sku);
 
 // ----------------------------------- Ledger ------------------------------------------ //
 
-CLASS ABSTRACT skuLedger 'Изменение остатка по товару';
-TABLE skuLedger (skuLedger);
+CLASS ABSTRACT SkuLedger 'Изменение остатка по товару';
+TABLE skuLedger (SkuLedger);
 
-CLASS ABSTRACT inSkuLedger 'Приход' : skuLedger;
-CLASS ABSTRACT outSkuLedger 'Расход' : skuLedger;
+CLASS ABSTRACT InSkuLedger 'Приход' : SkuLedger;
+CLASS ABSTRACT OutSkuLedger 'Расход' : SkuLedger;
 
-CLASS ABSTRACT batch 'Партия' : inSkuLedger;
+CLASS ABSTRACT Batch 'Партия' : InSkuLedger;
 
-CLASS ABSTRACT dataSkuLedger 'Изменение остатка с первичной себестоимостью' : skuLedger;
+CLASS ABSTRACT DataSkuLedger 'Изменение остатка с первичной себестоимостью' : SkuLedger;
 
-CLASS ABSTRACT inLIFOSkuLedger 'Приход по LIFO' : inSkuLedger, dataSkuLedger;
-CLASS ABSTRACT outFIFOSkuLedger 'Расход по FIFO' : outSkuLedger, dataSkuLedger;
+CLASS ABSTRACT InLIFOSkuLedger 'Приход по LIFO' : InSkuLedger, DataSkuLedger;
+CLASS ABSTRACT OutFIFOSkuLedger 'Расход по FIFO' : OutSkuLedger, DataSkuLedger;
 
 // --------------------------------- Партии ------------------------------------------------ //
 
-TABLE batch(batch);
-TABLE skuLedgerBatch (skuLedger, batch);
-TABLE batchStock(batch, stock);
+TABLE batch(Batch);
+TABLE skuLedgerBatch (SkuLedger, Batch);
+TABLE batchStock(Batch, Stock);
 
-dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (batch) PERSISTENT INDEXED;
+dateTimeBatch 'Дата/время' (batch) = ABSTRACT DATETIME (Batch) PERSISTENT INDEXED;
 dateBatch 'Дата' (batch) = toDate(dateTimeBatch(batch));
 timeBatch 'Время' (batch) = toTime(dateTimeBatch(batch));
 
-isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (batch) PERSISTENT;
+isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (Batch) PERSISTENT;
 
-skuBatch (batch) = ABSTRACT sku (batch) PERSISTENT INDEXED;
+skuBatch (batch) = ABSTRACT Sku (Batch) PERSISTENT INDEXED;
 nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognize;
 
-stockBatch (batch) = ABSTRACT stock (batch) PERSISTENT INDEXED ;
+stockBatch (batch) = ABSTRACT Stock (Batch) PERSISTENT INDEXED ;
 nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognize;
 
-costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (batch) PERSISTENT;
+costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (Batch) PERSISTENT;
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
 
-descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
+descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
-expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (batch) PERSISTENT INDEXED;
+expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (Batch) PERSISTENT INDEXED;
 prevExpiryDateBatch 'Годен до' (batch) = PREV(expiryDateBatch(batch));
 
 expiresBatchDateTime(batch, dateTime, period) = expiryDateBatch(batch) < sumDate(toDate(dateTime), period);
@@ -310,18 +310,18 @@ isContainerBatch 'Тара' (batch) = isContainerSku(skuBatch(batch));
 
 //---------------------------- Количественные регистры (конкретная реализация) ----------------------------------------//
 
-dateTimeDataSkuLedger 'Дата/время' = ABSTRACT DATETIME (dataSkuLedger) PERSISTENT INDEXED;
+dateTimeDataSkuLedger 'Дата/время' = ABSTRACT DATETIME (DataSkuLedger) PERSISTENT INDEXED;
 dateDataSkuLedger 'Дата' (ledger) = toDate(dateTimeDataSkuLedger(ledger)) PERSISTENT;
 
-isPostedDataSkuLedger 'Проведен' = ABSTRACT BOOLEAN (dataSkuLedger) PERSISTENT;
+isPostedDataSkuLedger 'Проведен' = ABSTRACT BOOLEAN (DataSkuLedger) PERSISTENT;
 
-skuDataSkuLedger = ABSTRACT sku (dataSkuLedger) PERSISTENT INDEXED;
+skuDataSkuLedger = ABSTRACT Sku (DataSkuLedger) PERSISTENT INDEXED;
 
-stockDataSkuLedger = ABSTRACT stock(dataSkuLedger) PERSISTENT INDEXED;
+stockDataSkuLedger = ABSTRACT Stock(DataSkuLedger) PERSISTENT INDEXED;
 
-descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (dataSkuLedger) PERSISTENT;
+descriptionDataSkuLedger 'Название документа' = ABSTRACT STRING[200] (DataSkuLedger) PERSISTENT;
 
-changedDataSkuLedger = ABSTRACT BOOLEAN (dataSkuLedger);
+changedDataSkuLedger = ABSTRACT BOOLEAN (DataSkuLedger);
 
 // -------------------------------- Для всего ledger'а -------------------- //
 
@@ -340,14 +340,14 @@ descriptionSkuLedger 'Описание' (ledger) = UNION CLASS descriptionDataSk
 
 // -------------------------------- Количества ---------------------------- //
 
-quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (batch) PERSISTENT;
+quantityBatch 'Кол-во в партии' = ABSTRACT NUMERIC[14,3] (Batch) PERSISTENT;
 
-quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger) PERSISTENT;
+quantityInLIFOSkuLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (InLIFOSkuLedger) PERSISTENT;
 
 quantityInSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityBatch(ledger),
                                                         quantityInLIFOSkuLedger(ledger) PERSISTENT;
 
-quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger) PERSISTENT;
+quantityOutFIFOSkuLedger 'Кол-во' = ABSTRACT NUMERIC[14,3] (OutFIFOSkuLedger) PERSISTENT;
 
 quantityOutSkuLedger 'Кол-во' (ledger) = UNION CLASS quantityOutFIFOSkuLedger(ledger) PERSISTENT;
 
@@ -362,15 +362,15 @@ signedQuantitySkuLedger 'Кол-во' (ledger) = UNION CLASS quantityInSkuLedger
 
 // -------------------------------------------- Расчет себестоимости -------------------------------------- //
 
-explicitBatchLedgerStock 'Партионный учет' = ABSTRACT BOOLEAN (stock) PERSISTENT IN bookkeepingGroup;
+explicitBatchLedgerStock 'Партионный учет' = ABSTRACT BOOLEAN (Stock) PERSISTENT IN bookkeepingGroup;
 
 orderDataSkuLedger (ledger) = STRUCT(dateTimeDataSkuLedger(ledger), ledger);
 
 // Формулы для расчета
 quantityBatchBatch 'Кол-во' (ledger, batch) = quantityBatch(ledger) AND batch == ledger;
 
-limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (inLIFOSkuLedger, batch);
-orderInLIFOSkuLedgerBatch = ABSTRACT LONG (inLIFOSkuLedger, batch);
+limitInLIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (InLIFOSkuLedger, Batch);
+orderInLIFOSkuLedgerBatch = ABSTRACT LONG (InLIFOSkuLedger, Batch);
 
 quantityInLIFOSkuLedgerBatch (ledger, batch) =
         PARTITION UNGROUP quantityInLIFOSkuLedger
@@ -378,8 +378,8 @@ quantityInLIFOSkuLedgerBatch (ledger, batch) =
                   BY ledger
                   ORDER DESC orderInLIFOSkuLedgerBatch(ledger, batch), orderBatch(batch);
 
-limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (outFIFOSkuLedger, batch);
-orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (outFIFOSkuLedger, batch);
+limitOutFIFOSkuLedgerBatch = ABSTRACT NUMERIC[14,3] (OutFIFOSkuLedger, Batch);
+orderOutFIFOSkuLedgerBatch = ABSTRACT LONG (OutFIFOSkuLedger, Batch);
 
 quantityOutFIFOSkuLedgerBatch (ledger, batch) =
         PARTITION UNGROUP quantityOutFIFOSkuLedger
@@ -392,11 +392,11 @@ quantityDataSkuLedgerBatch (ledger, batch) = UNION CLASS quantityInLIFOSkuLedger
 
 // Свойства для расчета себестоимости
 
-costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (dataSkuLedger, batch);
+costDataSkuLedgerBatch 'Расписано из партии (перв.)' (ledger, batch) = DATA NUMERIC[14,3] (DataSkuLedger, Batch);
 
 costSkuLedgerBatch 'Расписано из партии' (ledger, batch) = UNION CLASS quantityBatchBatch(ledger, batch), costDataSkuLedgerBatch(ledger, batch) PERSISTENT;
 
-signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS outSkuLedger
+signedCostSkuLedgerBatch (ledger, batch) = IF ledger IS OutSkuLedger
                                               THEN -costSkuLedgerBatch(ledger, batch)
                                               ELSE costSkuLedgerBatch(ledger, batch);
 
@@ -416,10 +416,10 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 
 // мгновенный расчет себестоимости
 //WHEN ASSIGNED(isPostedDataSkuLedger(ledger)) DO EXEC resetCostDataSkuLedger (ledger) ORDER orderDataSkuLedger(ledger);
-changedCostDataSkuLedger 'Перерасчитывалась себестоимость' = DATA SESSION BOOLEAN (dataSkuLedger);
+changedCostDataSkuLedger 'Перерасчитывалась себестоимость' = DATA SESSION BOOLEAN (DataSkuLedger);
 
 ON APPLY {
-    LOCAL changedLedger = BOOLEAN (dataSkuLedger);
+    LOCAL changedLedger = BOOLEAN (DataSkuLedger);
     SET changedLedger(ledger) <- ASSIGNED(isPostedDataSkuLedger(ledger)) OR ((
                                   CHANGED(quantityDataSkuLedger(ledger))
                                   OR CHANGED(skuDataSkuLedger(ledger))
@@ -431,7 +431,7 @@ ON APPLY {
         NEWSESSION SINGLE {
             SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE changedLedger(ledger);
 
-            LOCAL orderedLedger = INTEGER (dataSkuLedger);
+            LOCAL orderedLedger = INTEGER (DataSkuLedger);
             SET orderedLedger(ledger) <- PARTITION SUM 1 IF changedLedger(ledger) BY skuDataSkuLedger(ledger) ORDER orderDataSkuLedger(ledger);
 
             FOR iterate(i, 1, [GROUP MAX orderedLedger(ledger)]()) DO {
@@ -454,7 +454,7 @@ setDataSkuLedgerBatchCost 'Дорассчитать себестоимость' 
 
 resetDataSkuLedgerBatchCost 'Перерассчитать себестоимость' = ACTION () NEWSESSION {
     FORM dialogDate MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
 
         FOR d == chosenDate('d') DO {
             SET costDataSkuLedgerBatch(ledger, batch) <- NULL WHERE dateDataSkuLedger(ledger) >= (d AS DATE);
@@ -480,22 +480,22 @@ costSumSkuLedger 'Сумма поставщика без НДС' = GROUP SUM cos
 // ---------------------------- Учетные цены и суммы ------------------------------- //
 
 // сумма операции
-sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (inSkuLedger) PERSISTENT;
-sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (outSkuLedger) PERSISTENT;
+sumInSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (InSkuLedger) PERSISTENT;
+sumOutSkuLedger 'Сумма' (ledger) = ABSTRACT NUMERIC[16,2] (OutSkuLedger) PERSISTENT;
 
 signedSumSkuLedger 'Сумма' (ledger) = UNION CLASS sumInSkuLedger(ledger),
                                                  -sumOutSkuLedger(ledger) PERSISTENT;
 
 // ---------------------------- Остаток по товару -------------------------------- //
 
-TABLE skuStock(sku, stock);
-TABLE skuStockDate(sku, stock, DATE);
+TABLE skuStock(Sku, Stock);
+TABLE skuStockDate(Sku, Stock, DATE);
 
-TABLE skuGroupStock(skuGroup, stock);
-TABLE skuStockGroup(sku, stockGroup);
+TABLE skuGroupStock(SkuGroup, Stock);
+TABLE skuStockGroup(Sku, StockGroup);
 
 META defineSkuLedgerBalanceProperties(postfix, caption)
-    skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (skuLedger) PERSISTENT;
+    skip##postfix##SkuLedger 'Не проводить по учету'###caption = ABSTRACT BOOLEAN (SkuLedger) PERSISTENT;
     active##postfix##SkuLedger 'Активен'###caption (ledger) = isPostedSkuLedger(ledger) AND NOT skip##postfix##SkuLedger(ledger) PERSISTENT;
 
     signedQuantityActive##postfix##SkuLedger(ledger) = signedQuantitySkuLedger(ledger) AND active##postfix##SkuLedger(ledger) PERSISTENT;
@@ -649,7 +649,7 @@ costSumBatchStockDateTo 'Сумма на конец' (batch, stock, dateTo) = co
 //---------------------------------------------- За период ------------------------------------------//
 
 costInBalanceBatchStockDateFromTo 'Приход' (batch, stock, dateFrom, dateTo) = GROUP SUM costSkuLedgerBatch (ledger, batch)
-    IF ledger IS inSkuLedger AND isPostedSkuLedger(ledger)
+    IF ledger IS InSkuLedger AND isPostedSkuLedger(ledger)
     AND dateSkuLedger(ledger) >= (dateFrom AS DATE)  AND dateSkuLedger(ledger)<= (dateTo AS DATE)
     BY batch, stockSkuLedger(ledger), dateFrom, dateTo;
 
@@ -657,7 +657,7 @@ costSumInBalanceBatchStockDateFromTo 'Сумма прихода' (batch, stock, 
     costBatch(batch) * costInBalanceBatchStockDateFromTo(batch, stock, dateFrom, dateTo);
 
 costOutBalanceBatchStockDateFromTo 'Расход' (batch, stock, dateFrom, dateTo) = GROUP SUM costSkuLedgerBatch (ledger, batch)
-    IF ledger IS outSkuLedger AND isPostedSkuLedger(ledger)
+    IF ledger IS OutSkuLedger AND isPostedSkuLedger(ledger)
     AND dateSkuLedger(ledger) >= (dateFrom AS DATE)  AND dateSkuLedger(ledger)<= (dateTo AS DATE)
     BY batch, stockSkuLedger(ledger), dateFrom, dateTo;
 
@@ -666,10 +666,10 @@ costSumOutBalanceBatchStockDateFromTo 'Сумма расхода' (batch, stock,
 
 // ---------------------------------- Доступ к складам --------------------------------------------------- //
 
-EXTEND CLASS stockGroup : employeeDivisionGroup;
+EXTEND CLASS StockGroup : EmployeeDivisionGroup;
 parentEmployeeDivisionGroup(stockGroup) += parentStockGroup(stockGroup);
 
-EXTEND CLASS stock : employeeDivision;
+EXTEND CLASS Stock : EmployeeDivision;
 employeeDivisionGroupEmployeeDivision (stock) += stockGroupStock(stock);
 
 countAccessStockEmployeeLegalEntity (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
@@ -707,7 +707,7 @@ META defineSkuLedgerAggregation(primObject, aggrObject, skuProp, stockProp)
 END
 
 META implementSkuLedgerInLIFO(object, skuProp, stockProp)
-    EXTEND CLASS object : inLIFOSkuLedger;
+    EXTEND CLASS object : InLIFOSkuLedger;
     @implementSkuLedger(object, skuProp, stockProp);
 END
 
@@ -734,7 +734,7 @@ META implementSkuLedgerInLIFOBalance (object, stockProp)
 END
 
 META implementSkuLedgerOutFIFO(object, skuProp, stockProp)
-    EXTEND CLASS object : outFIFOSkuLedger;
+    EXTEND CLASS object : OutFIFOSkuLedger;
     @implementSkuLedger(object, skuProp, stockProp);
 END
 
@@ -768,7 +768,7 @@ META implementBatchCustom(object, skuProp, stockProp, costProp)
 END
 
 META implementBatch(object, skuProp, stockProp, costProp)
-    EXTEND CLASS object : batch;
+    EXTEND CLASS object : Batch;
     @implementBatchCustom(object, skuProp, stockProp, costProp);
 END
 
@@ -781,7 +781,11 @@ END
 
 // Склады
 META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
-    prefix###stockClass###object = DATA stockClass(object);
+    @defineDocumentHeaderStockInner (object, stockClass, ###stockClass, stockCaption, prefix);
+END
+
+META defineDocumentHeaderStockInner (object, stockClass, stockClassUpper, stockCaption, prefix)
+    prefix###stockClass###object = DATA stockClassUpper(###object);
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -793,8 +797,13 @@ META defineDocumentHeaderStock (object, stockClass, stockCaption, prefix)
 
     prefix###country###object (object) = countryStock(prefix###stockClass###object(object));
 END
+
 META defineDocumentAbstractHeaderStock (object, stockClass, stockCaption, prefix)
-    prefix###stockClass###object = ABSTRACT stockClass(object) PERSISTENT;
+    @defineDocumentAbstractHeaderStockInner(object, stockClass, ###stockClass, stockCaption, prefix);
+END
+
+META defineDocumentAbstractHeaderStockInner (object, stockClass, stockClassUpper, stockCaption, prefix)
+    prefix###stockClass###object = ABSTRACT stockClassUpper(###object) PERSISTENT;
     name###prefix###stockClass###object stockCaption (object) = name(prefix###stockClass###object(object)) IN documentHeaderGroup
             MINCHARWIDTH 20 PREFCHARWIDTH 20;
 
@@ -833,15 +842,24 @@ META defineDocumentDetailStock (object, stockProp, stockCaption)
 END
 
 META defineDocumentDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
-    data###stockProp###detail = DATA stockClass(detail);
+    @defineDocumentDetailDataStockInner (object, detail, stockClass, ###stockClass, stockProp, stockCaption);
+END
+
+META defineDocumentDetailDataStockInner (object, detail, stockClass, stockClassUpper, stockProp, stockCaption)
+    data###stockProp###detail = DATA stockClassUpper(###detail);
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
     legalEntity###stockProp###detail (idetail) = legalEntityStock(stockProp###detail(idetail));
     name###legalEntity###stockProp###detail 'Компания ('###stockCaption###')' (idetail) = name(legalEntity###stockProp###detail (idetail));
 END
+
 META defineDocumentAbstractDetailDataStock (object, detail, stockClass, stockProp, stockCaption)
-    data###stockProp###detail = ABSTRACT stockClass(detail) PERSISTENT;
+    @defineDocumentAbstractDetailDataStockInner (object, detail, stockClass, ###stockClass, stockProp, stockCaption);
+END
+
+META defineDocumentAbstractDetailDataStockInner (object, detail, stockClass, stockClassUpper, stockProp, stockCaption)
+    data###stockProp###detail = ABSTRACT stockClassUpper(###detail) PERSISTENT;
     stockProp###detail (idetail) = UNION OVERRIDE stockProp###object(object###detail(idetail)), data###stockProp###detail(idetail) PERSISTENT;
     name###stockProp###detail stockCaption (idetail) = name(stockProp###detail(idetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
     country###stockProp###detail (idetail) = countryStock(stockProp###detail(idetail));
@@ -913,14 +931,23 @@ END
 
 // Sku
 META defineDocumentDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
-    prefix###skuClass###detail = DATA skuClass (detail);
+    @defineDocumentDetailSkuCustomPrefixInner(detail, skuClass, ###skuClass, prefix, caption);
+END
+
+META defineDocumentDetailSkuCustomPrefixInner (detail, skuClass, skuClassUpper, prefix, caption)
+    prefix###skuClass###detail = DATA skuClassUpper (###detail);
     prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
     replaceSkuSku(s, d) += ACTION (s, d){SET prefix###skuClass###detail(detail) <- d WHERE prefix###skuClass###detail(detail) == s;}
 END
+
 META defineDocumentAbstractDetailSkuCustomPrefix (detail, skuClass, prefix, caption)
-    prefix###skuClass###detail = ABSTRACT skuClass (detail) PERSISTENT;
+    @defineDocumentAbstractDetailSkuCustomPrefixInner(detail, skuClass, ###skuClass, prefix, caption);
+END
+
+META defineDocumentAbstractDetailSkuCustomPrefixInner (detail, skuClass, skuClassUpper, prefix, caption)
+    prefix###skuClass###detail = ABSTRACT skuClassUpper (###detail) PERSISTENT;
     prefix###nameSku###detail 'SKU'###caption (detail) = nameSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###shortNameUOMSku###detail 'Ед. изм.'###caption = shortNameUOMSku(prefix###skuClass###detail(detail)) IN recognize;
     prefix###idBarcodeSku###detail 'Штрих-код'###caption (detail) = idBarcodeSku(prefix###skuClass###detail(detail)) IN recognize;
@@ -1019,10 +1046,10 @@ END
 // ---------------------------------------------- Кол-во -------------------------------------------- //
 
 META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (detail);
+    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (###detail);
 END
 META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
@@ -1062,10 +1089,10 @@ END
 
 // --------------------- Задание  значения по умолчанию для stock ---------------------------//
 META defineDocumentHeaderCreate(object, createProp, caption)
-    createProp###object caption (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+    createProp###object caption (object) = DATA BOOLEAN(###object) IN documentPrmGroup;
 END
 META defineDocumentAbstractHeaderCreate(object, createProp, caption)
-    createProp###object caption (object) = ABSTRACT BOOLEAN(object) PERSISTENT IN documentPrmGroup;
+    createProp###object caption (object) = ABSTRACT BOOLEAN(###object) PERSISTENT IN documentPrmGroup;
 END
 
 META defineDocumentInterfaceHeaderCreate (object, createProp, caption)
@@ -1091,10 +1118,10 @@ END
 // ---------------------------------------------- Учетные суммы -------------------------------------------- //
 
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (detail);
+    prefix###price###detail 'Цена'###caption = DATA NUMERIC[14,2] (###detail);
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (detail) PERSISTENT;
+    prefix###price###detail 'Цена'###caption = ABSTRACT NUMERIC[14,2] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -1165,10 +1192,10 @@ META defineDocumentHeaderAndDetailSumCustomCaption (object, detail, caption, cap
 END
 //--
 META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (detail);
+    prefix###sum###detail 'Сумма'###caption = DATA NUMERIC[16,2] (###detail);
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
+    prefix###sum###detail 'Сумма'###caption = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -1284,10 +1311,10 @@ END
 // ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
 
 META defineDocumentDetailDataQuantityPackCustomPrefix (detail, prefix, caption)
-    prefix###quantityPack###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (detail);
+    prefix###quantityPack###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (###detail);
 END
 META defineDocumentDetailAbstractDataQuantityPackCustomPrefix (detail, prefix, caption)
-    prefix###quantityPack###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+    prefix###quantityPack###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
 END
 META defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (detail, prefix, caption)
     @defineDocumentDetailAbstractDataQuantityPackCustomPrefix(detail, prefix, caption);
@@ -1300,7 +1327,11 @@ END
 
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustomPrefix(detail, batchProp, prefix)
-    prefix###batch###detail = DATA batchProp (detail);
+    @defineDocumentDetailBatchCustomPrefixInner(detail, batchProp, ###batchProp, prefix);
+END
+
+META defineDocumentDetailBatchCustomPrefixInner(detail, batchProp, batchClass, prefix)
+    prefix###batch###detail = DATA batchClass (###detail);
     prefix###descriptionBatch###detail 'Партия' (detail) = descriptionBatch(prefix###batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     CONSTRAINT skuBatch(prefix###batch###detail(detail)) != prefix###sku###detail(detail) CHECKED BY prefix###batch###detail
@@ -1311,7 +1342,7 @@ META defineDocumentDetailBatchCustomPrefix(detail, batchProp, prefix)
 END
 
 //META defineDocumentDetailBatchCustom(detail, batchProp)
-//    batch###detail = DATA batchProp (detail);
+//    batch###detail = DATA batchProp (Detail);
 //    descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 //
 //    CONSTRAINT skuBatch(batch###detail(detail)) != sku###detail(detail) CHECKED BY batch###detail
@@ -1325,7 +1356,11 @@ META defineDocumentDetailBatchCustom(detail, batchProp)
 END
 
 META defineDocumentAbstractDetailBatchCustom(detail, batchProp)
-    batch###detail = ABSTRACT batchProp (detail) PERSISTENT;
+    @defineDocumentAbstractDetailBatchCustomInner(detail, batchProp, ###batchProp);
+END
+
+META defineDocumentAbstractDetailBatchCustomInner(detail, batchProp, batchClass)
+    batch###detail = ABSTRACT batchClass (###detail) PERSISTENT;
     descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 END
 META defineDocumentInterfaceDetailBatchCustom(detail, batchProp)
@@ -1573,11 +1608,11 @@ META defineDocumentDetailSkuBalance (object, skuProp, stockProp)
         skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
 END
 META defineDocumentDetailSkuBalanceCustom (detail)
-    balanceBSku###detail 'Количество до' (detail) = DATA NUMERIC[14,3] (detail);
+    balanceBSku###detail 'Количество до' (detail) = DATA NUMERIC[14,3] (###detail);
 
 END
 META defineDocumentAbstractDetailSkuBalanceCustom (detail)
-    balanceBSku###detail 'Количество до' (detail) = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+    balanceBSku###detail 'Количество до' (detail) = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
 END
 
 
@@ -1602,7 +1637,7 @@ END
 
 META defineDocumentDetailSkuBatchBalance (object, skuProp, stockProp)
     balanceBSkuBatch###object##Detail 'Текущий остаток' (object##Detail) =
-        IF batch###object##Detail(object##Detail) IS batch
+        IF batch###object##Detail(object##Detail) IS Batch
         THEN balanceBBatchStockDateTime(batch###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail))
             ELSE balanceBSkuStockDateTime(skuProp###object##Detail(object##Detail), stockProp###object##Detail(object##Detail), dateTime###object##Detail(object##Detail));
 END
@@ -1615,7 +1650,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     quantitySku###object###stockProp 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
     priceSkuStock###object 'Цена' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
     ledgerPriceSkuStock###object 'Цена (базовая)' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stock, dateTime###object(object));
@@ -1636,7 +1671,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
 
         } ELSE {
             IF requestedNumeric() THEN {
-                FOR ADDOBJ d = detail DO {
+                FOR ADDOBJ d = ###detail DO {
                    SET object###detail(d) <- object;
                    SET data###stockProp###detail (d) <- stock;
                    SET skuProp###detail(d) <- sku;
@@ -1662,21 +1697,21 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
 
     EXTEND FORM form
 
-        TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+        TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
         PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
         ORDER BY sgTreeName
         FILTERS stringEqualsAll(a),
                 stockGroupStock(ts) == sg
 
-        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        TREE skuTree sk = SkuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
         ORDER BY skuTreeName
 
-        OBJECTS           sts=(st=stock, s=sku)
+        OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
 
         FILTERS           isParentSkuGroupSku(sk, s),
-                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
+                          (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
                           st == stockProp###object(concrete) AND NOT sg AND NOT ts
 
         FILTERGROUP stockFilters
@@ -1719,18 +1754,21 @@ END
 
 META defineDocumentSkuPriceListType(object, stockProp)
     @defineDocumentSku(object, sku, stockProp);
-    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
 
     priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
     ledgerPriceSku###object 'Цена (базовая)' (sku, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stockProp###object(object), dateTime###object(object));
 END
 META defineDocumentSkuSystemLedgerPriceListType(object, priceListTypeProp, stockProp)
     @defineDocumentSku(object, sku, stockProp);
-    priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(systemLedgerPriceListType.##priceListTypeProp, sku, stockProp###object(object), dateTime###object(object));
+    priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.##priceListTypeProp, sku, stockProp###object(object), dateTime###object(object));
 END
 
-
 META defineDocumentSku(object, detail, skuProp, stockProp)
+    @defineDocumentSkuInner(object, detail, ###detail, skuProp, stockProp);
+END
+
+META defineDocumentSkuInner(object, detail, detailClass, skuProp, stockProp)
     detail###Sku###object###stockProp (sku, object, stock) =  GROUP MAX detail
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
     detail###Sku###object (sku, object) = detail###Sku###object###stockProp(sku, object, stockProp###object(object));
@@ -1753,7 +1791,7 @@ META defineDocumentSku(object, detail, skuProp, stockProp)
             }
         } ELSE {
             IF requestedNumeric() THEN {
-                ADDOBJ detail;
+                ADDOBJ detailClass;
                 FOR d == addedObject() DO {
                     SET object###detail(d) <- object;
                     SET stockProp###detail (d) <- stockProp###object(object);
@@ -1779,11 +1817,11 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
 
     EXTEND FORM form
 
-        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        TREE skuTree sk = SkuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
         ORDER BY skuTreeName
 
-        OBJECTS s=sku
+        OBJECTS s=Sku
         PROPERTIES             READONLY    inputName = nameSku(s)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
@@ -1846,7 +1884,7 @@ META defineDocumentSkuStockContractorCustom(object, detail, skuProp, stockProp, 
             }
         } ELSE {
             IF requestedNumeric() THEN {
-                FOR ADDOBJ d = detail DO {
+                FOR ADDOBJ d = ###detail DO {
 
                    SET object###detail(d) <- object;
                    SET data###stockProp###detail (d) <- stockProp;
@@ -1871,23 +1909,23 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
 
     EXTEND FORM form
 
-        TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+        TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
         PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
         ORDER BY sgTreeName
         FILTERS stringEqualsAll(a),
                 stockGroupStock(ts) == sg
 
-        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        TREE skuTree sk = SkuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
         ORDER BY skuTreeName
 
-        OBJECTS cc = stock FIXED GRID
+        OBJECTS cc = Stock FIXED GRID
 
-        OBJECTS           sts=(st=stock, s=sku)
+        OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
 
         FILTERS           isParentSkuGroupSku(sk, s),
-                          (st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
+                          (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
                           st == fromStock###object(concrete) AND NOT sg AND NOT ts
 
         FILTERGROUP stockFilters
@@ -1955,7 +1993,7 @@ META defineDocumentInSkuStockCustom(object, detail, skuProp, stockProp)
             }
         } ELSE {
             IF requestedLogical() THEN {
-                FOR ADDOBJ d = detail DO {
+                FOR ADDOBJ d = ###detail DO {
                    SET object###detail(d) <- object;
                    SET skuProp###detail(d) <- sku;
                 }
@@ -1972,16 +2010,16 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
 
     EXTEND FORM form
 
-        TREE treeGroup gg=group PARENT parentGroup
+        TREE treeGroup gg=Group PARENT parentGroup
         PROPERTIES READONLY name(gg)
         FILTERS groupTypeGroup(gg) == groupType###object(concrete)
 
-        OBJECTS s=sku
+        OBJECTS s=Sku
         PROPERTIES             inSku###object(s,concrete) ON CHANGE changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete)currentBalanceSku###object READONLY
 
-        FILTERS                isParentGroupSku(gg, s) OR s IS sku AND NOT gg
+        FILTERS                isParentGroupSku(gg, s) OR s IS Sku AND NOT gg
 
         FILTERS nameSku(s)
         ORDER BY inputName
@@ -2014,9 +2052,9 @@ END
 //-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
 
 META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)
-    contact###entity###object = DATA SESSION legalEntity (object);
+    contact###entity###object = DATA SESSION LegalEntity (###object);
     name###contact###entity###object contactCaption (object) = name(contact###entity###object(object));
-    relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS sku AND NOT contact###entity###object(object));
+    relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS Sku AND NOT contact###entity###object(object));
 
     EXTEND FORM form
         PROPERTIES name###contact###entity###object(concrete) FORCE PANEL
@@ -2035,18 +2073,18 @@ editSessionStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'e
 
 FORM stocks 'Склады'
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
 
-    OBJECTS s = stock
+    OBJECTS s = Stock
     PROPERTIES(s) READONLY stockName = name, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(s)          editStock
     ORDER BY stockName
-    FILTERS isParentStockGroupStock(sg, s) OR (s IS stock AND NOT sg)
+    FILTERS isParentStockGroupStock(sg, s) OR (s IS Stock AND NOT sg)
 
-    DIALOG stock OBJECT s
+    DIALOG Stock OBJECT s
 ;
 
 DESIGN stocks FROM DEFAULT {
@@ -2077,17 +2115,17 @@ editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' ED
 addSku 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
 FORM skus 'Sku'
-    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuGroupName = name(sg)
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
     PROPERTIES() addSku TODRAW s
     PROPERTIES(s) editSku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
 
-    DIALOG sku OBJECT s
+    DIALOG Sku OBJECT s
 ;
 
 DESIGN skus FROM DEFAULT {
@@ -2115,10 +2153,10 @@ DESIGN skus FROM DEFAULT {
 }
 
 FORM filterSkus 'Sku'
-    TREE skuTree sg = skuGroup PARENT parentSkuGroup
+    TREE skuTree sg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuGroupName = name(sg)
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
     PROPERTIES() addSku TODRAW s
     PROPERTIES(s) editSku
@@ -2151,11 +2189,11 @@ DESIGN filterSkus FROM DEFAULT {
 }
 
 FORM dialogBatch 'Партии'
-    OBJECTS st = stock FIXED PANEL
+    OBJECTS st = Stock FIXED PANEL
     OBJECTS t = DATETIME FIXED PANEL
-    OBJECTS sk = sku FIXED PANEL
+    OBJECTS sk = Sku FIXED PANEL
 
-    OBJECTS bt = batch
+    OBJECTS bt = Batch
     PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, quantityBatch, costBatch
     PROPERTIES  READONLY balanceBBatchStockDateTime(bt, st, t)
     FILTERS skuBatch(bt) == sk
@@ -2174,7 +2212,7 @@ DESIGN dialogBatch FROM DEFAULT {
 // ------------------------------------------------- Себестоимость --------------------------- //
 
 FORM costSkuLedger 'Себестоимость (операции)'
-    OBJECTS bil = skuLedger
+    OBJECTS bil = SkuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameSkuSkuLedger, nameStockSkuLedger,
                              quantitySkuLedger, costedSkuLedger
     PROPERTIES(bil)          resetCostDataSkuLedger FORCE GRID
@@ -2183,7 +2221,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
     FILTERGROUP needToCostDataSkuLedger
         FILTER 'Нерасписанные строки' 'F9' needToCostDataSkuLedger(bil)
 
-    OBJECTS bt = batch
+    OBJECTS bt = Batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
     PROPERTIES(bil, bt)     costSkuLedgerBatch FORCE GRID
     FILTERS skuBatch(bt) == skuSkuLedger(bil)
@@ -2194,7 +2232,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
 
     PROPERTIES() setDataSkuLedgerBatchCost, resetDataSkuLedgerBatchCost, clearDataSkuLedgerBatchCost
 ;
-@extendFormFilterAccess(skuLedger, bil, costSkuLedger, stock);
+@extendFormFilterAccess(SkuLedger, bil, costSkuLedger, stock);
 
 
 DESIGN costSkuLedger FROM DEFAULT {
@@ -2217,13 +2255,13 @@ DESIGN costSkuLedger FROM DEFAULT {
 }
 
 FORM costSkuBatchLedger 'Себестоимость (партии)'
-    OBJECTS i = sku FIXED PANEL
+    OBJECTS i = Sku FIXED PANEL
     PROPERTIES(i) SELECTOR nameSku//, idBarcodeSku
 
-    OBJECTS bt = batch
+    OBJECTS bt = Batch
     PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
 
-    OBJECTS bil = skuLedger
+    OBJECTS bil = SkuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameStockSkuLedger,
                              quantitySkuLedger, costedSkuLedger
 //    PROPERTIES(bil)          resetCostSkuLedger
@@ -2258,20 +2296,20 @@ DESIGN costSkuBatchLedger FROM DEFAULT {
 
 FORM currentBalanceSkuStock 'Текущие остатки'
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           sts=(st=stock, s=sku)
+    OBJECTS           sts=(st=Stock, s=Sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
     FILTERS           isParentSkuGroupSku(sk, s),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+                      st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
     ORDER BY          nameSku
 
@@ -2284,20 +2322,20 @@ FORM currentBalanceSkuStock 'Текущие остатки'
         FILTER 'Товары с движением не позднее 7 дней' 'F8' balanceSkuStockDatePeriod(s, st, currentDate(), 7)
         FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDatePeriod(s, st, currentDate(), 30)
 
-    OBJECTS bil=skuLedger
+    OBJECTS bil=SkuLedger
     PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger, skipSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 
-    OBJECTS bt=batch
+    OBJECTS bt=Batch
     PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
     PROPERTIES(bt, st) READONLY  currentBalanceBatchStock
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
 ;
-@extendFormFilterStockAccess(stock, st, currentBalanceSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, currentBalanceSkuStock, accessEmployeeEmployeeDivision);
-@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, st, currentBalanceSkuStock);
+@extendFormFilterStockGroupAccess(Stock, ts, currentBalanceSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, currentBalanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceSkuStock FROM DEFAULT {
     main{
@@ -2339,21 +2377,21 @@ FORM balanceSkuStock 'Остатки на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           sts=(st=stock, s=sku)
+    OBJECTS           sts=(st=Stock, s=Sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)  //  idBarcodeSku
 
     FILTERS           isParentSkuGroupSku(sk, s),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+                      st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
     PROPERTIES(s, st, t) READONLY balanceASkuStockDateTime
     PROPERTIES(s, st) READONLY dateTimeLastMovedSkuStock
@@ -2364,20 +2402,20 @@ FORM balanceSkuStock 'Остатки на дату'
         FILTER 'Товары с движением не позднее 7 дней' 'F8' balanceSkuStockDateTimePeriod(s, st, t, 7)
         FILTER 'Товары с движением не позднее 30 дней' 'F7' balanceSkuStockDateTimePeriod(s, st, t, 30)
 
-    OBJECTS bil=skuLedger
+    OBJECTS bil=SkuLedger
     PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, signedSumSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==s AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
 
-    OBJECTS bt=batch
+    OBJECTS bt=Batch
     PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
     PROPERTIES(bt, st, t) READONLY  balanceBBatchStockDateTime
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
 ;
-@extendFormFilterStockAccess(stock, st, balanceSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, balanceSkuStock, accessEmployeeEmployeeDivision);
-@extendFormFilterStockGroupAccess(stockGroup, sg, balanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, st, balanceSkuStock);
+@extendFormFilterStockGroupAccess(Stock, ts, balanceSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, balanceSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceSkuStock FROM DEFAULT {
     main{
@@ -2422,26 +2460,26 @@ DESIGN balanceSkuStock FROM DEFAULT {
 
 FORM currentBalanceBatchStock 'Текущие остатки по партиям'
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           stb=(st=stock, bt=batch)
+    OBJECTS           stb=(st=Stock, bt=Batch)
     PROPERTIES        READONLY nameSkuBatch(bt), stockName = name(st)
     PROPERTIES        currentBalanceBatchStock(bt, st)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+                      st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
     ORDER BY          dateTimeBatch
 
-    OBJECTS bil=skuLedger
+    OBJECTS bil=SkuLedger
     PROPERTIES(bil) READONLY descriptionSkuLedger, dateTimeSkuLedger, signedQuantitySkuLedger, skipSkuLedger
     FILTERS isPostedSkuLedger(bil) AND skuSkuLedger(bil)==skuBatch(bt) AND stockSkuLedger(bil)==st
     ORDER BY dateTimeSkuLedger DESC
@@ -2458,9 +2496,9 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
         FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDate(bt, currentDate(), 7)
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
 ;
-@extendFormFilterStockAccess(stock, st, currentBalanceBatchStock);
-@extendFormFilterStockGroupAccess(stock, ts, currentBalanceBatchStock, accessEmployeeEmployeeDivision);
-@extendFormFilterStockGroupAccess(stockGroup, sg, currentBalanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, st, currentBalanceBatchStock);
+@extendFormFilterStockGroupAccess(Stock, ts, currentBalanceBatchStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, currentBalanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN currentBalanceBatchStock FROM DEFAULT {
     main{
@@ -2499,22 +2537,22 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg), tsTreeName = name(ts)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a),
             stockGroupStock(ts) == sg
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           stb=(st=stock, bt=batch)
+    OBJECTS           stb=(st=Stock, bt=Batch)
     PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
     PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
-                      st == ts AND sg IS stockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS stock AND NOT sg AND NOT ts
+                      st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
     ORDER BY          dateTimeBatch
 
     FILTERGROUP filterBalance
@@ -2529,9 +2567,9 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
         FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDateTime(bt, t, 7)
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDateTime(bt, t, 30)
 ;
-@extendFormFilterStockAccess(stock, st, balanceBatchStock);
-@extendFormFilterStockGroupAccess(stock, ts, balanceBatchStock, accessEmployeeEmployeeDivision);
-@extendFormFilterStockGroupAccess(stockGroup, sg, balanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, st, balanceBatchStock);
+@extendFormFilterStockGroupAccess(Stock, ts, balanceBatchStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, balanceBatchStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN balanceBatchStock FROM DEFAULT {
     main{
@@ -2567,11 +2605,11 @@ DESIGN balanceBatchStock FROM DEFAULT {
 
 FORM batches 'Партии'
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           bt=batch
+    OBJECTS           bt=Batch
     PROPERTIES(bt)    READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameStockBatch, quantityBatch, costBatch, expiryDateBatch
 
     FILTERS           isParentSkuGroupBatch(sk, bt)
@@ -2588,10 +2626,10 @@ FORM batches 'Партии'
         FILTER 'Партии со сроком годности, истекающим через 7 дней' 'F5' expiresBatchDate(bt, currentDate(), 7)
         FILTER 'Партии со сроком годности, истекающим через 30 дней' 'F4' expiresBatchDate(bt, currentDate(), 30)
 
-    DIALOG batch OBJECT bt
+    DIALOG Batch OBJECT bt
 ;
 
-@extendFormFilterAccess(batch, bt, batches, stock);
+@extendFormFilterAccess(Batch, bt, batches, stock);
 
 DESIGN batches FROM DEFAULT {
     main{
@@ -2638,21 +2676,21 @@ NAVIGATOR {
 
 META defineDialogSku (form)
 
-    form###quantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (sku);
+    form###quantity 'Кол-во' = DATA SESSION NUMERIC[14,3] (Sku);
 
 
     FORM form 'Подбор SKU'
-        TREE skuTree sk = skuGroup PARENT parentSkuGroup
+        TREE skuTree sk = SkuGroup PARENT parentSkuGroup
         PROPERTIES READONLY skuTreeName = name(sk)
         ORDER BY skuTreeName
 
-        OBJECTS s=sku                                 //form###nameSku 'Наименование' (sku) = IF form###stock() THEN nameSkuStock(sku, form###stock()) ELSE nameSku(sku);
+        OBJECTS s=Sku                                 //form###nameSku 'Наименование' (sku) = IF form###stock() THEN nameSkuStock(sku, form###stock()) ELSE nameSku(sku);
         PROPERTIES READONLY    inputName = nameSku(s) //form###nameSku(s)
         PROPERTIES(s)          form###quantity
         FILTERS                isParentSkuGroupSku(sk, s)
         ORDER BY inputName
 
-        OBJECTS si=sku
+        OBJECTS si=Sku
         PROPERTIES READONLY     selectedName = nameSku(si)
         PROPERTIES(si)          form###quantity
         FILTERS                 form###quantity(si)
@@ -2697,12 +2735,12 @@ META defineDialogStockSku (form)
 
     @defineDialogSku (form);
 
-    form###stock = DATA SESSION stock ();
-    form###all 'Весь остаток' = DATA SESSION BOOLEAN (sku);
+    form###stock = DATA SESSION Stock ();
+    form###all 'Весь остаток' = DATA SESSION BOOLEAN (Sku);
     form###nameStock 'Склад' () = name(form###stock()) PREFCHARWIDTH 30;
 
     form###balance 'Остаток' (sku) = currentBalanceSkuStock(sku, form###stock());
-    form###balanceFilter (sku) = (TRUE AND form###balance(sku)) OR (sku IS sku AND NOT form###stock());
+    form###balanceFilter (sku) = (TRUE AND form###balance(sku)) OR (sku IS Sku AND NOT form###stock());
 
     form###quantity(sku) <- form###balance(sku) WHEN ASSIGNED(form###all(sku));
 
@@ -2729,12 +2767,16 @@ META defineAddDetailDialogSkuStock (object, skuProp, stockProp, form)
 END
 
 META defineAddDetailDialogSkuStockCustom (object, detail, caption, skuProp, stockProp, form)
+    @defineAddDetailDialogSkuStockCustomInner(object, ###object, detail, caption, skuProp, stockProp, form);
+END
+
+META defineAddDetailDialogSkuStockCustomInner (object, class, detail, caption, skuProp, stockProp, form)
     @defineAddDetailDialogSkuCustom(object, detail, caption, skuProp, form);
     addDetailDialogSkuStock###detail###object 'Подбор товаров'###caption = ACTION (object) {
         SET form###stock() <- stockProp###object(object);
         SET form###all(sku) <- NULL;
 
-        EXEC addDetailDialogSku###detail###object(object AS object);
+        EXEC addDetailDialogSku###detail###object(object AS class);
     } TOOLBAR;
 END
 
@@ -2743,12 +2785,16 @@ META defineAddDetailDialogSku (object, skuProp, form)
 END
 
 META defineAddDetailDialogSkuCustom (object, detail, caption, skuProp, form)
+    @defineAddDetailDialogSkuCustomInner (object, ###object, detail, ###detail, caption, skuProp, form);
+END
+
+META defineAddDetailDialogSkuCustomInner (object, class, detail, detailClass, caption, skuProp, form)
     addDetailDialogSku###detail###object 'Подбор товаров'###caption = ACTION (object) {
         FORM form MODAL;
-        IF formResult() == formResult.ok THEN {
-            FOR form###quantity(sku) ADDOBJ w = detail INLINE DO {
-                SET object###detail(w) <- object AS object;
-                SET skuProp###detail(w) <- sku AS sku;
+        IF formResult() == FormResult.ok THEN {
+            FOR form###quantity(sku) ADDOBJ w = detailClass INLINE DO {
+                SET object###detail(w) <- object AS class;
+                SET skuProp###detail(w) <- sku AS Sku;
                 SET quantity###detail(w) <- form###quantity(sku);
             }
         }
@@ -2760,18 +2806,18 @@ END
 
 FORM chooseStocks 'Выбор складов'
 
-    OBJECTS l = legalEntity
+    OBJECTS l = LegalEntity
 
-    TREE stockTree a = STRING[3], sg = stockGroup PARENT parentStockGroup
+    TREE stockTree a = STRING[3], sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(a)
 
-    OBJECTS s=stock
+    OBJECTS s=Stock
     PROPERTIES(s) READONLY name, addressStock, nameLegalEntityStock
     PROPERTIES userLegalEntityStock(l, s)
     ORDER BY name
-    FILTERS isParentStockGroupStock(sg, s) OR (s IS stock AND sg IS stockGroup AND NOT stockGroupStock(s)) OR (s IS stock AND NOT sg)
+    FILTERS isParentStockGroupStock(sg, s) OR (s IS Stock AND sg IS StockGroup AND NOT stockGroupStock(s)) OR (s IS Stock AND NOT sg)
 ;
 
 DESIGN chooseStocks FROM DEFAULT{
@@ -2792,22 +2838,22 @@ chooseStocksLegalEntity 'Выбрать склады' = ACTION (legalEntity) {
 }
 
 EXTEND FORM legalEntity
-    TREE stockTree b=STRING[3], sg = stockGroup PARENT parentStockGroup
+    TREE stockTree b=STRING[3], sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(b), sgTreeName = name(sg)
     ORDER BY sgTreeName
     FILTERS stringEqualsAll(b)
 
-    OBJECTS st=stock
+    OBJECTS st=Stock
     PROPERTIES(st) READONLY name, nameLegalEntityStock, nameCountryStock, addressStock
     PROPERTIES(st) FORCE PANEL TOOLBAR SHOWIF isDefaultLegalEntityStock(l,st) editSessionStock, delete
     PROPERTIES chooseStocksLegalEntity(l) TODRAW st FORCE PANEL TOOLBAR
-    FILTERS isParentStockGroupStock(sg, st) OR (st IS stock AND NOT sg)
+    FILTERS isParentStockGroupStock(sg, st) OR (st IS Stock AND NOT sg)
     FILTERS inLegalEntityStock(l, st)
 
-    OBJECTS s=legalEntity
+    OBJECTS s=LegalEntity
     PROPERTIES(s) READONLY name
 
-    OBJECTS c=legalEntity
+    OBJECTS c=LegalEntity
     PROPERTIES(c) READONLY name
 ;
 
@@ -2849,37 +2895,37 @@ EXTEND DESIGN legalEntity{
 
 // ----------------------------------------------- Документы с товарами ---------------------------------------- //
 
-CLASS ABSTRACT document 'Документ с товарами';
-CLASS ABSTRACT documentDetail 'Строка документа';
+CLASS ABSTRACT Document 'Документ с товарами';
+CLASS ABSTRACT DocumentDetail 'Строка документа';
 
-numberDocument 'Номер' = ABSTRACT STRING[10](document);
-seriesDocument 'Серия' = ABSTRACT STRING[10](document);
-dateDocument 'Дата' = ABSTRACT DATE(document);
+numberDocument 'Номер' = ABSTRACT STRING[10](Document);
+seriesDocument 'Серия' = ABSTRACT STRING[10](Document);
+dateDocument 'Дата' = ABSTRACT DATE(Document);
 
-supplierDocument = ABSTRACT legalEntity(document);
+supplierDocument = ABSTRACT LegalEntity(Document);
 nameSupplierDocument 'Поставщик' (document) = name(supplierDocument(document));
-supplierStockDocument = ABSTRACT stock(document);
+supplierStockDocument = ABSTRACT Stock(Document);
 nameSupplierStockDocument 'Склад поставщика' (document) = name(supplierStockDocument(document));
 
-customerDocument = ABSTRACT legalEntity(document);
+customerDocument = ABSTRACT LegalEntity(Document);
 nameCustomerDocument 'Покупатель' (document) = name(customerDocument(document));
-customerStockDocument = ABSTRACT stock(document);
+customerStockDocument = ABSTRACT Stock(Document);
 nameCustomerStockDocument 'Склад покупателя'(document) = name(customerStockDocument(document));
 
-documentDocumentDetail = ABSTRACT document(documentDetail);
+documentDocumentDetail = ABSTRACT Document(DocumentDetail);
 
-skuDocumentDetail = ABSTRACT sku(documentDetail);
+skuDocumentDetail = ABSTRACT Sku(DocumentDetail);
 nameSkuDocumentDetail 'Товар' (documentDetail) = nameSku(skuDocumentDetail(documentDetail));
-quantityDocumentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3](documentDetail);
-priceDocumentDetail 'Цена' = ABSTRACT NUMERIC[14,3](documentDetail);
-indexDocumentDetail 'Номер' = ABSTRACT INTEGER(documentDetail);
+quantityDocumentDetail 'Кол-во' = ABSTRACT NUMERIC[14,3](DocumentDetail);
+priceDocumentDetail 'Цена' = ABSTRACT NUMERIC[14,3](DocumentDetail);
+indexDocumentDetail 'Номер' = ABSTRACT INTEGER(DocumentDetail);
 
 FORM documents 'Документы с товарами'
-    OBJECTS d=document
+    OBJECTS d=Document
     PROPERTIES(d) READONLY numberDocument, seriesDocument, dateDocument, nameSupplierDocument, nameSupplierStockDocument,
                   nameCustomerDocument, nameCustomerStockDocument, objectClassName
 
-    OBJECTS dd=documentDetail
+    OBJECTS dd=DocumentDetail
     PROPERTIES(dd) READONLY indexDocumentDetail, nameSkuDocumentDetail, quantityDocumentDetail, priceDocumentDetail
 
     FILTERS documentDocumentDetail(dd)==d
@@ -2900,19 +2946,19 @@ META implementDocument(object)
     seriesDocument(object) += series###object(object);
     dateDocument(object) += date###object(object);
 
-    indexDocumentDetail(object##Detail) += indexUser###object##Detail(object##Detail);
-    skuDocumentDetail(object##Detail) += sku###object##Detail(object##Detail);
-    quantityDocumentDetail(object##Detail) += quantity###object##Detail(object##Detail);
-    priceDocumentDetail(object##Detail) += price###object##Detail(object##Detail);
+    indexDocumentDetail(detail) += indexUser###object##Detail(detail);
+    skuDocumentDetail(detail) += sku###object##Detail(detail);
+    quantityDocumentDetail(detail) += quantity###object##Detail(detail);
+    priceDocumentDetail(detail) += price###object##Detail(detail);
 
-    documentDocumentDetail(object##Detail) += object###object##Detail(object##Detail);
+    documentDocumentDetail(detail) += object###object##Detail(detail);
 
     fillDocument###object 'Подбор документа' = ACTION (user###object) {
         FORM documents MODAL;
-        IF formResult() == formResult.ok THEN {
-            LOCAL chosenDocument = document();
+        IF formResult() == FormResult.ok THEN {
+            LOCAL chosenDocument = Document();
             SET chosenDocument() <- chosenObject('d');
-            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = user###object##Detail DO {
+            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = User###object##Detail DO {
                 SET user###object##User###object##Detail(i) <- user###object;
                 SET sku###object##Detail(i) <- skuDocumentDetail(documentDetail);
                 SET quantity###object##Detail(i) <- quantityDocumentDetail(documentDetail);

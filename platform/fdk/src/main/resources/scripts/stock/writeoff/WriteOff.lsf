@@ -16,22 +16,22 @@ REQUIRE System,
 PRIORITY Stock;
 
 //--------------------------------Комиссия для списания----------------------------------//
-CLASS writeOffCommittee 'Комиссия для списания товаров' : committee;
+CLASS WriteOffCommittee 'Комиссия для списания товаров' : Committee;
 
-writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA writeOffCommittee (stock);
+writeOffCommitteeStock 'Комиссия для списания товаров (ИД)' = DATA WriteOffCommittee (Stock);
 nameWriteOffCommitteeStock 'Комиссия для списания товаров' (stock) = name(writeOffCommitteeStock(stock)) IN committeeGroup;
 isWriteOffCommitteeStock 'По умолчанию' (writeOffCommittee, stock) = writeOffCommitteeStock(stock) == writeOffCommittee;
 CONSTRAINT writeOffCommitteeStock(stock) AND NOT inCommitteeEmployeeDivision(writeOffCommitteeStock(stock), stock)
     CHECKED BY writeOffCommitteeStock MESSAGE 'Для отдела выбрана комиссия, которая для него не действует';
 
 FORM writeOffCommittee 'Комиссия для списания товаров'
-    OBJECTS c=writeOffCommittee FIXED PANEL
+    OBJECTS c=WriteOffCommittee FIXED PANEL
     PROPERTIES(c)      name
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup
+    TREE stockTree sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY sgTreeName = name(sg)
 
-    OBJECTS ts=stock
+    OBJECTS ts=Stock
     PROPERTIES    READONLY tsTreeName = name(ts)
     PROPERTIES(c, ts) inCommitteeEmployeeDivision FORCE GRID, isWriteOffCommitteeStock
 
@@ -39,7 +39,7 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
     ORDER BY tsTreeName
 
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
@@ -51,10 +51,10 @@ FORM writeOffCommittee 'Комиссия для списания товаров'
     FILTERGROUP filters5
         FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, ts)
 
-    EDIT writeOffCommittee OBJECT c
+    EDIT WriteOffCommittee OBJECT c
 ;
-@extendFormFilterStockAccess(stock, ts, writeOffCommittee);
-@extendFormFilterStockGroupAccess(stockGroup, sg, writeOffCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, ts, writeOffCommittee);
+@extendFormFilterStockGroupAccess(StockGroup, sg, writeOffCommittee, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN writeOffCommittee FROM DEFAULT {
     main {
@@ -76,17 +76,17 @@ DESIGN writeOffCommittee FROM DEFAULT {
 }
 
 FORM writeOffCommittees 'Комиссии для списания товаров'
-    OBJECTS w=writeOffCommittee
+    OBJECTS w=WriteOffCommittee
     PROPERTIES(w)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee
     PROPERTIES(w)      ADDFORM, EDITFORM
 
-    DIALOG writeOffCommittee OBJECT w
+    DIALOG WriteOffCommittee OBJECT w
 ;
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 
 META defineDocumentHeaderWriteOffCommittee(object, stockProp)
 
-    writeOffCommittee###object (object) = DATA writeOffCommittee(object);
+    writeOffCommittee###object (object) = DATA WriteOffCommittee(###object);
     nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     writeOffCommittee###object (object) <- writeOffCommitteeStock(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
@@ -98,7 +98,7 @@ META defineDocumentHeaderWriteOffCommittee(object, stockProp)
     nameEmployeeWriteOffCommittee###object 'Члены комиссии' (object) = namePositionEmployeeCommittee(writeOffCommittee###object (object));
 END
 META defineDocumentHeaderAbstractWriteOffCommittee(object)
-    writeOffCommittee###object (object) = ABSTRACT writeOffCommittee(object);
+    writeOffCommittee###object (object) = ABSTRACT WriteOffCommittee(###object);
     nameWriteOffCommittee###object 'Комиссия для списания товаров' (object) = name(writeOffCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inWriteOffCommittee###object##Employee (object, employee) = inCommitteeEmployee(writeOffCommittee###object (object), employee);
@@ -112,20 +112,20 @@ META defineDocumentInterfaceHeaderWriteOffCommittee (object, stockProp)
 END
 
 //----------------------------------------------- Списание товара ---------------------------------------------------//
-CLASS reason 'Причина списания' : named;
-TABLE reason (reason);
+CLASS Reason 'Причина списания' : Named;
+TABLE reason (Reason);
 
 FORM reason 'Причина списания'
-    OBJECTS r=reason  FIXED PANEL
+    OBJECTS r=Reason  FIXED PANEL
     PROPERTIES(r) name
 ;
 
-CLASS writeOff 'Списание' : document;
-CLASS writeOffDetail 'Строка списания' : documentDetail;
+CLASS WriteOff 'Списание' : Document;
+CLASS WriteOffDetail 'Строка списания' : DocumentDetail;
 
-CLASS userWriteOff 'Списание (польз.)' : writeOff, historizable, numeratedDocument;
-CLASS userWriteOffDetail 'Строка списания (польз.)' : writeOffDetail;
-CLASS userWriteOffPosted 'Проведенное списание (польз.)' : userWriteOff, postedObject;
+CLASS UserWriteOff 'Списание (польз.)' : WriteOff, Historizable, NumeratedDocument;
+CLASS UserWriteOffDetail 'Строка списания (польз.)' : WriteOffDetail;
+CLASS UserWriteOffPosted 'Проведенное списание (польз.)' : UserWriteOff, PostedObject;
 
 @defineDocumentInterface(writeOff);
 @defineDocumentInterfaceDataStock(writeOff, stock, 'Склад');
@@ -150,8 +150,8 @@ addressLegalEntityUserWriteOff 'Адрес' (userWriteOff) = addressLegalEntityD
 @deriveDocumentDetailSum(userWriteOff, quantity);
 
 priceUserWriteOffDetail (detail)  <- IF batchUserWriteOffDetail(detail)
-                THEN priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
-                ELSE priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batchUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuUserWriteOffDetail(detail), stockUserWriteOffDetail(detail), dateTimeUserWriteOffDetail(detail))
                 WHEN CHANGED(skuUserWriteOffDetail(detail)) OR CHANGED(batchUserWriteOffDetail(detail)) OR CHANGED(stockUserWriteOffDetail(detail)) OR CHANGED (dateTimeUserWriteOffDetail(detail));
 
 skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AND batchUserWriteOffDetail(detail)
@@ -172,20 +172,20 @@ skuUserWriteOffDetail (detail)  <- skuBatch( batchUserWriteOffDetail(detail)) AN
 
 @defineDocumentInterfaceHeaderWriteOffCommittee(writeOff, stock);
 
-reasonWriteOff 'Причина списания (ИД)' = ABSTRACT reason (writeOff);
-reasonUserWriteOff 'Причина списания (ИД)' = DATA reason (userWriteOff);
+reasonWriteOff 'Причина списания (ИД)' = ABSTRACT Reason (WriteOff);
+reasonUserWriteOff 'Причина списания (ИД)' = DATA Reason (UserWriteOff);
 reasonWriteOff(writeOff) += reasonUserWriteOff(writeOff);
 nameReasonWriteOff 'Причина списания' (writeOff) = name(reasonWriteOff (writeOff)) IN documentPrmGroup;
 nameReasonUserWriteOff 'Причина списания' (userWriteOff) = name(reasonUserWriteOff (userWriteOff)) IN documentPrmGroup;
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(writeOffDetail, sku, stock);
+@implementSkuLedgerOutFIFO(WriteOffDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityWriteOffDetail(ledger);
-@implementSkuLedgerOutFIFOBatchBalance(writeOffDetail, stock);
+@implementSkuLedgerOutFIFOBatchBalance(WriteOffDetail, stock);
 sumOutSkuLedger (ledger) += sumWriteOffDetail(ledger);
 
 // Товарный отчет
-@implementStockDocumentLedgerOut(writeOff, stock);
+@implementStockDocumentLedgerOut(WriteOff, stock);
 sumOutStockDocumentLedger (ledger) += sumWriteOffDetailWriteOff(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemWriteOffDetailWriteOff(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerWriteOffDetailWriteOff(ledger);
@@ -196,13 +196,13 @@ supplierStockDocument(writeOff) += stockWriteOff(writeOff);
 // --------------------------- Формы списания ---------------------------------
 
 FORM userWriteOff 'Списание'
-    OBJECTS w=userWriteOff FIXED PANEL
+    OBJECTS w=UserWriteOff FIXED PANEL
     PROPERTIES (w) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateUserWriteOff, timeUserWriteOff,
                    nameStockUserWriteOff, nameCurrencyUserWriteOff, noteUserWriteOff, sumUserWriteOffDetailUserWriteOff,
                    countUserWriteOffDetailUserWriteOff, quantityUserWriteOffDetailUserWriteOff, nameReasonUserWriteOff,
                    nameWriteOffCommitteeUserWriteOff
 
-    OBJECTS d=userWriteOffDetail
+    OBJECTS d=UserWriteOffDetail
     PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
                    descriptionBatchUserWriteOffDetail, quantityUserWriteOffDetail,
                    priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, delete
@@ -214,7 +214,7 @@ FORM userWriteOff 'Списание'
     EVENTS
         ON OK prePostUserWriteOff(w)
 
-    EDIT userWriteOff OBJECT w
+    EDIT UserWriteOff OBJECT w
 ;
 
 DESIGN userWriteOff FROM DEFAULT{
@@ -258,11 +258,11 @@ DESIGN userWriteOff FROM DEFAULT{
     }
 }
 
-addUserWriteOff 'Добавить' = ACTION ADDFORM userWriteOff;
-editUserWriteOff 'Редактировать'  = ACTION EDITFORM userWriteOff;
+addUserWriteOff 'Добавить' = ACTION ADDFORM UserWriteOff;
+editUserWriteOff 'Редактировать'  = ACTION EDITFORM UserWriteOff;
 
 FORM writeOffs 'Списания'
-    OBJECTS w=writeOff
+    OBJECTS w=WriteOff
     PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, objectClassName, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
                             nameReasonWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
                             sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
@@ -272,13 +272,13 @@ FORM writeOffs 'Списания'
     PROPERTIES (w) editUserWriteOff
     PROPERTIES (w) delete FORCE PANEL TOOLBAR  SHOWIF isUserWriteOff(w)
 
-    OBJECTS d=writeOffDetail
+    OBJECTS d=WriteOffDetail
     PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
     FILTERS writeOffWriteOffDetail(d) == w
 ;
-@extendFormFilterAccess(writeOff, w, writeOffs, stock);
+@extendFormFilterAccess(WriteOff, w, writeOffs, stock);
 
 DESIGN writeOffs FROM DEFAULT {
     PROPERTY (delete(w)) {

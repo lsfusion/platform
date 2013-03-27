@@ -2,13 +2,13 @@ MODULE Currency;
 
 REQUIRE System, MasterData, DefaultData;
 
-CLASS currency 'Валюта' : named;
-TABLE currency(currency);
+CLASS Currency 'Валюта' : Named;
+TABLE currency(Currency);
 
-symbolCurrency 'Символ' = DATA STRING[5] (currency);
-shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (currency);
-documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (currency);
-currencyShortName (string) = GROUP UNIQUE currency BY shortNameCurrency(currency) WHERE currency IS currency;
+symbolCurrency 'Символ' = DATA STRING[5] (Currency);
+shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (Currency);
+documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (Currency);
+currencyShortName (string) = GROUP UNIQUE currency BY shortNameCurrency(currency) WHERE currency IS Currency;
 
 GROUP nbrbGroup 'Курсы нацбанка' : public;
 
@@ -18,31 +18,31 @@ importNBRBExchangeRateDateTo 'Дата по' = DATA DATE () IN nbrbGroup;
 // Формы
 
 FORM currency 'Валюта'
-    OBJECTS c = currency FIXED PANEL
+    OBJECTS c = Currency FIXED PANEL
     PROPERTIES (c)  name, shortNameCurrency, symbolCurrency, documentNameCurrency
 
-    EDIT currency OBJECT c
+    EDIT Currency OBJECT c
 ;
 
 FORM currencies 'Валюты'
-    OBJECTS c = currency
+    OBJECTS c = Currency
     PROPERTIES(c) READONLY name, shortNameCurrency, symbolCurrency, documentNameCurrency
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
-    DIALOG currency OBJECT c
+    DIALOG Currency OBJECT c
 ;
 
 // ---------------------------------- Типы обмена ---------------------------- //
 
-CLASS typeExchange 'Тип обмена' : named;
-TABLE typeExchange(typeExchange);
-TABLE rateExchange (typeExchange, currency, DATE);
+CLASS TypeExchange 'Тип обмена' : Named;
+TABLE typeExchange(TypeExchange);
+TABLE rateExchange (TypeExchange, Currency, DATE);
 
-currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA currency(typeExchange);
+currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA Currency(TypeExchange);
 nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange)) IN base;
-rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (typeExchange, currency, DATE);
-typeExchangeName (name) = GROUP UNIQUE typeExchange BY name(typeExchange) WHERE typeExchange IS typeExchange;
+rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (TypeExchange, Currency, DATE);
+typeExchangeName (name) = GROUP UNIQUE typeExchange BY name(typeExchange) WHERE typeExchange IS TypeExchange;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE
@@ -57,8 +57,8 @@ curRateTypeExchangeCurrency 'Текущий курс обмена' (typeExchange
 // -------------------------------------------- Курсы валют --------------------------------- //
 
 FORM dialogTypeExchangeCurrency 'Курс обмена на дату'
-    OBJECTS t=typeExchange FIXED PANEL
-    OBJECTS c=currency FIXED PANEL
+    OBJECTS t=TypeExchange FIXED PANEL
+    OBJECTS c=Currency FIXED PANEL
     OBJECTS d=DATE FIXED PANEL
     PROPERTIES READONLY name(t),  nameCurrencyTypeExchange(t), name(c)
     PROPERTIES val=OBJVALUE(d), rateExchange(t,c,d)
@@ -93,13 +93,13 @@ deleteTypeExchangeCurrencyDate 'Удалить' (typeExchange, currency, date) =
 
 FORM typeExchangeCurrencyDate 'Тип обмена / Курсы валют'
 
-    OBJECTS t = typeExchange
+    OBJECTS t = TypeExchange
     PROPERTIES(t) READONLY name, nameCurrencyTypeExchange
     PROPERTIES(t) ADDFORM, EDITFORM, delete
 
     PROPERTIES() importNBRBExchangeRateDateFrom, importNBRBExchangeRateDateTo
 
-    OBJECTS c = currency
+    OBJECTS c = Currency
     PROPERTIES(c) READONLY name
     PROPERTIES(c) ADDFORM, EDITFORM, delete
     PROPERTIES(t, c) READONLY curRateTypeExchangeCurrency
@@ -143,11 +143,11 @@ NAVIGATOR {
 
 // --------------------------------------------------- Макросы по добавлению валюты в документы ------------------------------------ //
 META defineDocumentHeaderCurrency (object)
-    currency###object (object) = DATA currency (object);
+    currency###object (object) = DATA Currency (###object);
     nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentAbstractHeaderCurrency (object)
-    currency###object (object) = ABSTRACT currency (object) PERSISTENT;
+    currency###object (object) = ABSTRACT Currency (###object) PERSISTENT;
     nameCurrency###object 'Валюта' (object)= name(currency###object(object)) IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 END
 META defineDocumentInterfaceHeaderCurrency (object)
@@ -199,7 +199,7 @@ END
 // --------------------------------------------------- Стандартные значения ------------------------------------ //
 
 loadDefaultCurrency 'Добавить валюты' = ACTION (ishortName, iname, isymbol) {
-    ADDOBJ currency;
+    ADDOBJ Currency;
     FOR c == addedObject() DO {
        SET shortNameCurrency(c) <- ishortName;
        SET name(c) <- iname;

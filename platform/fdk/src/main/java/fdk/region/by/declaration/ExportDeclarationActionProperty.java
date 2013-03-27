@@ -9,7 +9,6 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
@@ -30,7 +29,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
     String row;
 
     public ExportDeclarationActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClassByCompoundName("declaration"));
+        super(LM, LM.findClassByCompoundName("Declaration"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();
@@ -115,7 +114,7 @@ public class ExportDeclarationActionProperty extends ScriptingActionProperty {
                 addStringCellToRow(title, ";");
             writerTSDocs44.println(row);
 
-            LCP<?> isDeclarationDetail = LM.is(getClass("declarationDetail"));
+            LCP<?> isDeclarationDetail = LM.is(getClass("DeclarationDetail"));
             ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isDeclarationDetail.getMapKeys();
             KeyExpr key = keys.singleValue();
             QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);

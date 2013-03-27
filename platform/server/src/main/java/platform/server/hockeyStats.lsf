@@ -3,18 +3,18 @@ MODULE HockeyStats;
 REQUIRE System;
 
 CLASS Game 'Game';
-CLASS Team 'Team' : named;
+CLASS Team 'Team' : Named;
 
-CLASS Conference 'Conference' : named;
+CLASS Conference 'Conference' : Named;
 
-CLASS City : named;
+CLASS City : Named;
 
 CLASS GameResult 'S/O'
 {
     win '',
     winOT 'OT',
     winSO 'SO'
-} : named;
+} : Named;
 
 city 'City' (team) = DATA City (Team);
 cityName(team) = name(city(team)) IN base;

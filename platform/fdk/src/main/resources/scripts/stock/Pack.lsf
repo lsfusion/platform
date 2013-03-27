@@ -10,7 +10,7 @@ PRIORITY Utils, Stock;
 GROUP itemPackGroup 'Упаковка товара' : public;
 
 META definePackSku (caption, NS)
-    packBarcodeSku 'Штрих-код для '##caption = DATA barcode (sku);
+    packBarcodeSku 'Штрих-код для '##caption = DATA Barcode (Sku);
     packBarcode 'Штрих-код для '##caption (barcode)=  packBarcodeSku(skuBarcode(barcode)) == barcode;
     
     CONSTRAINT skuBarcode(packBarcodeSku(item)) != item CHECKED BY packBarcodeSku MESSAGE 'Выбран неверный sku для штрих-кода';
@@ -35,7 +35,7 @@ META definePackSku (caption, NS)
         IF requestedNumeric() THEN {
             IF TRUE AND NOT  packBarcodeSku(sku) THEN {
     
-                FOR ADDOBJ b = barcode DO {
+                FOR ADDOBJ b = Barcode DO {
                    SET skuBarcode(b) <- sku;
                    SET amountBarcode (b) <- requestedNumeric();
     

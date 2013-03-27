@@ -34,15 +34,19 @@ META defineDocumentTransferOut(object, caption, skuProp, stockProp)
 END
 
 META defineDocumentFormTransferOut(object, formCaption)
+    @defineDocumentFormTransferOutInner(object, ###object, formCaption);
+END
+
+META defineDocumentFormTransferOutInner(object, class, formCaption)
 
     FORM object##Out formCaption
-        OBJECTS t = object##Out FIXED PANEL
+        OBJECTS t = class##Out FIXED PANEL
 
         PROPERTIES (t) objectClassName, numberObject, seriesObject, date###object##Out, time###object##Out,
                        nameStock###object##Out, nameDestinationStock###object##Out, note###object##Out,
                        count###object##OutDetail###object##Out, quantity###object##OutDetail###object##Out
 
-        OBJECTS d = object##OutDetail
+        OBJECTS d = class##OutDetail
 
         PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##OutDetail###object##Out, addDetailInputBarcode###object##OutDetail###object##Out,
                                delete###object##OutDetail###object##Out
@@ -52,7 +56,7 @@ META defineDocumentFormTransferOut(object, formCaption)
         EVENTS
             ON OK prePost###object##Out(t)
 
-        EDIT object##Out OBJECT t
+        EDIT class##Out OBJECT t
     ;
 
     DESIGN object##Out FROM DEFAULT {
@@ -88,7 +92,7 @@ META defineDocumentFormTransferOut(object, formCaption)
     }
 
     FORM object##Out##s formCaption
-        OBJECTS t = object##Out
+        OBJECTS t = class##Out
         PROPERTIES (t) READONLY isPosted###object##Out FORCE GRID, numberObject, seriesObject, date###object##Out, time###object##Out,
                                 nameStock###object##Out, nameDestinationStock###object##Out, note###object##Out,
                                 count###object##OutDetail###object##Out, quantity###object##OutDetail###object##Out
@@ -97,7 +101,7 @@ META defineDocumentFormTransferOut(object, formCaption)
 
         PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-        OBJECTS d = object##OutDetail
+        OBJECTS d = class##OutDetail
 
         FILTERS object##Out###object##OutDetail(d) == t
     ;
@@ -136,10 +140,14 @@ META defineDocumentFormTransferOut(object, formCaption)
 END
 
 META defineDocumentTransferOutBatch(object, skuProp)
+    @defineDocumentTransferOutBatchInner(object, ###object, skuProp);
+END
 
-    TABLE object##OutBatchDetail(object##OutBatchDetail);
+META defineDocumentTransferOutBatchInner(object, class, skuProp)
 
-    cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS object##OutDetail;
+    TABLE object##OutBatchDetail(class##OutBatchDetail);
+
+    cost###object##OutDetailBatch (ledger, batch) = costDataSkuLedgerBatch(ledger, batch) AND ledger IS class##OutDetail;
     @defineAggregation(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
 
     object##Out###object##OutBatchDetail (detail) = object##Out###object##OutDetail(object##OutDetail###object##OutBatchDetail(detail));
@@ -156,7 +164,7 @@ END
 META defineDocumentFormTransferOutBatch(object)
 
     EXTEND FORM object##Outs
-        OBJECTS o = object##OutBatchDetail
+        OBJECTS o = ###object##OutBatchDetail
         PROPERTIES(o) READONLY descriptionBatch###object##OutBatchDetail
         FILTERS object##Out###object##OutBatchDetail(o) == t
     ;
@@ -227,7 +235,7 @@ END
 META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentTables(object##In);
-    TABLE object##InBatch (object##In, batch);
+    TABLE object##InBatch (###object##In, Batch);
 
     @defineDocumentAggregation(object##Out, object##In, is###object##Out);
     @defineDocumentDetailIndex(object##In);
@@ -253,14 +261,14 @@ END
 META defineDocumentFormTransferIn(object, caption)
 
     FORM object##Ins caption
-        OBJECTS t = object##In
+        OBJECTS t = ###object##In
         PROPERTIES (t) READONLY isPosted###object##In FORCE GRID, number###object##In, series###object##In, date###object##In, time###object##In,
                                 nameStock###object##In, nameSourceStock###object##In, note###object##In,
                                 count###object##InDetail###object##In, quantity###object##InDetail###object##In
 
         PROPERTIES (t) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
-        OBJECTS d = object##InDetail
+        OBJECTS d = ###object##InDetail
 
         FILTERS object##In###object##InDetail(d) == t
     ;
@@ -291,11 +299,15 @@ META defineDocumentFormTransferIn(object, caption)
 END
 
 META defineDocumentTransferRec(object, caption, skuProp, stockProp)
+    @defineDocumentTransferRecInner(object, ###object, caption, skuProp, stockProp);
+END
+
+META defineDocumentTransferRecInner(object, class, caption, skuProp, stockProp)
 
     @defineDocument(object##Rec);
 
-    object##In###object##Rec = DATA object##In (object##Rec) NOT NULL DELETE;
-    object##Rec###object##In = GROUP UNIQUE object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS object##Rec;
+    object##In###object##Rec = DATA class##In (class##Rec) NOT NULL DELETE;
+    object##Rec###object##In = GROUP UNIQUE object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS class##Rec;
 
     object##In###object##RecDetail (detail) = object##In###object##Rec(object##Rec###object##RecDetail(detail));
     object##Rec###object##InDetail (detail) = object##Rec###object##In(object##In###object##InDetail(detail));
@@ -319,22 +331,26 @@ META defineDocumentTransferRec(object, caption, skuProp, stockProp)
 END
 
 META defineDocumentFormTransferRec(object, caption)
+    @defineDocumentFormTransferRecInner(object, ###object, caption);
+END
+
+META defineDocumentFormTransferRecInner(object, class, caption)
 
     FORM object##Rec caption
-        OBJECTS t = object##Rec FIXED PANEL
+        OBJECTS t = class##Rec FIXED PANEL
 
         PROPERTIES (t) number###object##Rec, series###object##Rec, date###object##Rec, time###object##Rec,
                        nameStock###object##Rec, note###object##Rec,
                        count###object##RecDetail###object##Rec, quantity###object##RecDetail###object##Rec
 
-        OBJECTS d = object##RecDetail
+        OBJECTS d = class##RecDetail
 
         PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##RecDetail###object##Rec, addDetailInputBarcode###object##RecDetail###object##Rec,
                                delete###object##RecDetail###object##Rec
 
         FILTERS object##Rec###object##RecDetail(d) == t
 
-        EDIT object##Rec OBJECT t
+        EDIT class##Rec OBJECT t
     ;
 
     DESIGN object##Rec FROM DEFAULT {
@@ -363,30 +379,30 @@ META defineDocumentFormTransferRec(object, caption)
 
     // Действия
     receive###object##In 'Принять' (object##In) = ACTION (object##In) NEWSESSION {
-        IF object##Rec###object##In(object##In) IS object##Rec THEN {
+        IF object##Rec###object##In(object##In) IS class##Rec THEN {
             FOR r == object##Rec###object##In(object##In) DO {
-                IF r IS object##RecPosted THEN {
-                    CHANGECLASS r TO object##Rec;
+                IF r IS class##RecPosted THEN {
+                    CHANGECLASS r TO class##Rec;
                 }
                 FORM object##Rec OBJECTS t = r MODAL;
             }
         } ELSE {
-            ADDOBJ object##Rec;
+            ADDOBJ class##Rec;
             FOR t == addedObject() DO {
-                SET object##In###object##Rec (t) <- object##In AS object##In;
+                SET object##In###object##Rec (t) <- object##In AS class##In;
                 FORM object##Rec OBJECTS t = t MODAL;
             }
         }
-        IF formResult() == formResult.ok THEN EXEC apply();
+        IF formResult() == FormResult.ok THEN EXEC apply();
     } TOOLBAR;
 
     postRec###object##In 'Пометить как принятое' (object##In) = post###object##Rec(object##Rec###object##In(object##In)) TOOLBAR;
     isDraftRec###object##In (object##In) = isDraft###object##Rec(object##Rec###object##In(object##In));
 
     statusRec###object##In 'Статус приемки' (object##In) =
-        IF object##Rec###object##In (object##In) IS object##RecPosted THEN 'Принят' IF object##In IS object##In ELSE
-        IF object##Rec###object##In (object##In) IS object##Rec THEN 'Принимается' IF object##In IS object##In ELSE
-        'Не принят' IF object##In IS object##In PREFCHARWIDTH 15 MINCHARWIDTH 15;
+        IF object##Rec###object##In (object##In) IS class##RecPosted THEN 'Принят' IF object##In IS class##In ELSE
+        IF object##Rec###object##In (object##In) IS class##Rec THEN 'Принимается' IF object##In IS class##In ELSE
+        'Не принят' IF object##In IS class##In PREFCHARWIDTH 15 MINCHARWIDTH 15;
 
     quantity###object##RecDetail###object##In 'Кол-во принятое' (object##In) = quantity###object##RecDetail###object##Rec(object##Rec###object##In(object##In));
 
@@ -394,7 +410,7 @@ META defineDocumentFormTransferRec(object, caption)
         PROPERTIES(t) quantity###object##RecDetail###object##In, statusRec###object##In,
                       receive###object##In, postRec###object##In SHOWIF isDraftRec###object##In(t)
 
-        OBJECTS r = object##RecDetail
+        OBJECTS r = class##RecDetail
         FILTERS object##In###object##RecDetail(r) == t
     ;
 
@@ -429,8 +445,8 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     // Создание документов
 
     @defineDocumentTables(object##Diff);
-    TABLE object##DiffSDetail (object##DiffSDetail);
-    TABLE object##DiffEDetail (object##DiffEDetail);
+    TABLE object##DiffSDetail (###object##DiffSDetail);
+    TABLE object##DiffEDetail (###object##DiffEDetail);
 
     @defineAggregation(object##Rec, object##Diff, countDiff###object##Rec);
 
@@ -484,7 +500,7 @@ META defineDocumentFormTransferDiff(object)
     EXTEND FORM object##Ins
         PROPERTIES(t) countDiff###object##In, quantityDiff###object##In
 
-        OBJECTS f = object##DiffDetail
+        OBJECTS f = ###object##DiffDetail
         FILTERS object##In###object##DiffDetail(f) == t
     ;
 
@@ -502,7 +518,7 @@ END
 
 META defineDocumentHeaderSkipSkuLedgerCustom(object)
 
-    skipSkuLedger###object 'Не проводить по учету' (object) = DATA BOOLEAN (object) IN documentPrmGroup;
+    skipSkuLedger###object 'Не проводить по учету' (object) = DATA BOOLEAN (###object) IN documentPrmGroup;
 END
 
 META defineDocumentDetailSkipSkuLedgerCustom(object, detail)

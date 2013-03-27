@@ -3,7 +3,6 @@ package fdk.retail;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import platform.base.IOUtils;
-import platform.base.OrderedMap;
 import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -13,7 +12,6 @@ import platform.interop.action.ExportFileClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.Query;
 import platform.server.data.query.QueryBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -32,13 +30,15 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class ExportReceiptsActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface zReportInterface;
 
     public ExportReceiptsActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("zReport")});
+        super(LM, new ValueClass[]{LM.findClassByCompoundName("ZReport")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         zReportInterface = i.next();

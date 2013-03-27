@@ -2,48 +2,48 @@ MODULE Receipt;
 
 REQUIRE Stock, Item, LegalEntity;
 
-CLASS receipt 'Приходная накладная';
-CLASS receiptDetail 'Строка приходной накладной';
+CLASS Receipt 'Приходная накладная';
+CLASS ReceiptDetail 'Строка приходной накладной';
 
-receiptReceiptDetail 'Документ строки' (receiptDetail) = DATA receipt(receiptDetail);
+receiptReceiptDetail 'Документ строки' (receiptDetail) = DATA Receipt(ReceiptDetail);
 
 indexReceiptDetail 'Номер строки' (receiptDetail) =
-        PARTITION SUM 1 IF receiptDetail IS receiptDetail BY receiptReceiptDetail(receiptDetail)
+        PARTITION SUM 1 IF receiptDetail IS ReceiptDetail BY receiptReceiptDetail(receiptDetail)
         ORDER receiptDetail;
 
-numberReceipt 'Номер накладной' (receipt) = DATA STRING[10](receipt);
-dateReceipt 'Дата накладной' (receipt) = DATA DATE(receipt);
+numberReceipt 'Номер накладной' (receipt) = DATA STRING[10](Receipt);
+dateReceipt 'Дата накладной' (receipt) = DATA DATE(Receipt);
 
-supplierReceipt 'Поставщик' (receipt) = DATA legalEntity(receipt);
+supplierReceipt 'Поставщик' (receipt) = DATA LegalEntity(Receipt);
 nameSupplierReceipt 'Наименование поставщика' (receipt) = nameLegalEntity(supplierReceipt(receipt));
 
-stockReceipt 'Склад' (receipt) = DATA stock(receipt);
+stockReceipt 'Склад' (receipt) = DATA Stock(Receipt);
 nameStockReceipt 'Наименование склада' (receipt) = nameStock(stockReceipt(receipt));
 
-itemReceiptDetail 'Товар' (receiptDetail) = DATA item(receiptDetail);
+itemReceiptDetail 'Товар' (receiptDetail) = DATA Item(ReceiptDetail);
 nameItemReceiptDetail 'Наименование товара' (receiptDetail) = nameItem(itemReceiptDetail(receiptDetail));
 
-quantityReceiptDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,2](receiptDetail);
-priceReceiptDetail 'Цена поставщика' (receiptDetail) = DATA NUMERIC[17,2](receiptDetail);
+quantityReceiptDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,2](ReceiptDetail);
+priceReceiptDetail 'Цена поставщика' (receiptDetail) = DATA NUMERIC[17,2](ReceiptDetail);
 sumReceiptDetail 'Сумма поставщика' (receiptDetail) = quantityReceiptDetail(receiptDetail)*priceReceiptDetail(receiptDetail);
 
 FORM receipt 'Приходная накладная'
-	OBJECTS r=receipt FIXED PANEL
+	OBJECTS r=Receipt FIXED PANEL
 	PROPERTIES(r) numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
 
-	OBJECTS d=receiptDetail
+	OBJECTS d=ReceiptDetail
 	PROPERTIES(d) indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail READONLY, ADDOBJ, delete
 	FILTERS receiptReceiptDetail(d) == r
 
-	EDIT receipt OBJECT r
+	EDIT Receipt OBJECT r
 ;
 
 FORM receipts 'Приходные накладные'
-	OBJECTS r=receipt
+	OBJECTS r=Receipt
 	PROPERTIES(r) READONLY numberReceipt, dateReceipt, nameSupplierReceipt, nameStockReceipt
 	PROPERTIES(r) ADDFORM, EDITFORM, delete
 
-	OBJECTS d=receiptDetail
+	OBJECTS d=ReceiptDetail
 	PROPERTIES(d) READONLY indexReceiptDetail, nameItemReceiptDetail, quantityReceiptDetail, priceReceiptDetail, sumReceiptDetail
 	FILTERS receiptReceiptDetail(d) == r
  ;

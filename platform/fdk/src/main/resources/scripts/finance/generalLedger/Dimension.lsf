@@ -4,24 +4,24 @@ REQUIRE GeneralLedger;
 
 //------------------------- Субконто -------------------------------//
 
-CLASS ABSTRACT dimension 'Субконто': named;
-nameDimension 'Название' = ABSTRACT STRING[255] (dimension) MINCHARWIDTH 40 PREFCHARWIDTH 50;
+CLASS ABSTRACT Dimension 'Субконто': Named;
+nameDimension 'Название' = ABSTRACT STRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 50;
 
 FORM dimensions 'Субконто'
-    OBJECTS d = dimension
+    OBJECTS d = Dimension
     PROPERTIES(d) READONLY objectClassName, nameDimension
-    DIALOG dimension OBJECT d
+    DIALOG Dimension OBJECT d
 ;
 
 
-CLASS dimensionType 'Тип субконто': named;
-TABLE dimensionType(dimensionType);
-idDimensionType 'Идентификатор' = DATA STRING[20] (dimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
-dimensionTypeDimension = ABSTRACT dimensionType (dimension) EXCLUSIVE PERSISTENT;
+CLASS DimensionType 'Тип субконто': Named;
+TABLE dimensionType(DimensionType);
+idDimensionType 'Идентификатор' = DATA STRING[20] (DimensionType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+dimensionTypeDimension = ABSTRACT DimensionType (Dimension) EXCLUSIVE PERSISTENT;
 nameDimensionTypeDimension 'Тип субконто' (dimension) = name(dimensionTypeDimension(dimension));
 
-TABLE GLAccountDimensionType(GLAccount, dimensionType);
-orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,dimensionType);
+TABLE GLAccountDimensionType(GLAccount, DimensionType);
+orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,DimensionType);
 dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
                                                 BY GLAccount
                                                 ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
@@ -30,43 +30,43 @@ prevGLAccountDimensionType (account, type) = PARTITION PREV type IF orderGLAccou
                                                                   ORDER orderGLAccountDimensionType(account, type);
 namePrevGLAccountDimensionType 'Предок' (account, type) = name(prevGLAccountDimensionType(account, type));
 
-TABLE generalLedgerDimensionType(generalLedger, dimensionType);
-debitGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
+TABLE generalLedgerDimensionType(GeneralLedger, DimensionType);
+debitGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType);
 nameDebitGeneralLedgerDimensionType 'Субконто (дебит)' (generalLedger,dimensionType)= nameDimension(debitGeneralLedgerDimensionType(generalLedger,dimensionType));
-debitUserGeneralLedgerDimensionType = DATA dimension (userGeneralLedger,dimensionType);
+debitUserGeneralLedgerDimensionType = DATA Dimension (UserGeneralLedger, DimensionType);
 nameDebitUserGeneralLedgerDimensionType 'Субконто (дебит)' (userGeneralLedger,dimensionType)= nameDimension(debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += debitUserGeneralLedgerDimensionType(generalLedger,dimensionType);
 CONSTRAINT debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType) AND NOT dimensionTypeDimension(debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)) == dimensionType
     CHECKED BY debitUserGeneralLedgerDimensionType
         MESSAGE 'Субконто (дебит) проводки должен соответствовать субконто';
 
-creditGeneralLedgerDimensionType = ABSTRACT dimension (generalLedger,dimensionType);
+creditGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType);
 nameCreditGeneralLedgerDimensionType 'Субконто (кредит)' (generalLedger,dimensionType)= nameDimension(creditGeneralLedgerDimensionType(generalLedger,dimensionType));
-creditUserGeneralLedgerDimensionType = DATA dimension (userGeneralLedger,dimensionType);
+creditUserGeneralLedgerDimensionType = DATA Dimension (UserGeneralLedger,DimensionType);
 nameCreditUserGeneralLedgerDimensionType 'Субконто (кредит)' (userGeneralLedger,dimensionType)= nameDimension(creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
 creditGeneralLedgerDimensionType(generalLedger,dimensionType) += creditUserGeneralLedgerDimensionType(generalLedger,dimensionType);
 CONSTRAINT creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType) AND NOT dimensionTypeDimension(creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)) == dimensionType
     CHECKED BY creditUserGeneralLedgerDimensionType
         MESSAGE 'Субконто (кредит) проводки должен соответствовать субконто';
 
-dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS dimensionType;
+dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS DimensionType;
 
 FORM dimensionType 'Тип субконто'
-    OBJECTS d = dimensionType FIXED PANEL
+    OBJECTS d = DimensionType FIXED PANEL
     PROPERTIES(d) name, idDimensionType
-    EDIT dimensionType OBJECT d
+    EDIT DimensionType OBJECT d
 ;
 
 FORM dimensionTypes 'Тип субконто'
-    OBJECTS d = dimensionType
+    OBJECTS d = DimensionType
     PROPERTIES(d) READONLY name, idDimensionType
     PROPERTIES(d) ADDFORM, EDITFORM, delete
-    DIALOG dimensionType OBJECT d
+    DIALOG DimensionType OBJECT d
 ;
 
 EXTEND FORM GLAccount
 
-    OBJECTS d = dimensionType
+    OBJECTS d = DimensionType
     PROPERTIES(d) READONLY name
     PROPERTIES orderGLAccountDimensionType(g,d), namePrevGLAccountDimensionType(g,d)
 ;
@@ -90,13 +90,13 @@ dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP
 
 EXTEND FORM userGeneralLedger
 
-    OBJECTS d = dimensionType
+    OBJECTS d = DimensionType
     PROPERTIES READONLY name(d), orderDebitGeneralLedgerDimensionType(g,d)
     PROPERTIES nameDebitUserGeneralLedgerDimensionType(g,d)
     FILTERS orderDebitGeneralLedgerDimensionType(g,d)
     ORDER BY orderDebitGeneralLedgerDimensionType
 
-    OBJECTS c = dimensionType
+    OBJECTS c = DimensionType
     PROPERTIES READONLY name(c), orderCreditGeneralLedgerDimensionType(g,c)
     PROPERTIES nameCreditUserGeneralLedgerDimensionType(g,c)
     FILTERS orderCreditGeneralLedgerDimensionType(g,c)

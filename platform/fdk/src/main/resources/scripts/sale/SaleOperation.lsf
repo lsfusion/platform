@@ -10,12 +10,12 @@ NAMESPACE Sale;
 @defineOperationLegalEntity(supplier, s, isCompanyLegalEntity, 'Поставщики');
 @defineOperationLegalEntity(customer, c, isBuyerLegalEntity, 'Покупатели');
 
-createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (operation) IN createGroup;
-createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (operation) IN createGroup;
-createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (operation) IN createGroup;
-createPurchaseInvoiceOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (operation) IN createGroup;
-createPurchasePricingOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (operation) IN createGroup;
-purchaseRetailPriceListTypeOperation = DATA priceListType (operation);
+createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (Operation) IN createGroup;
+createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (Operation) IN createGroup;
+createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (Operation) IN createGroup;
+createPurchaseInvoiceOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (Operation) IN createGroup;
+createPurchasePricingOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (Operation) IN createGroup;
+purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
 namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = name(purchaseRetailPriceListTypeOperation(operation));
 
 EXTEND FORM operation

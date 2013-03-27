@@ -1,22 +1,31 @@
 MODULE Hierarchy;
 
 META defineHierarchy (object)
-    parent###object = DATA object (object) AUTOSET;
-    @defineHierarchyCustom(object);
+    @defineHierarchyInner(object, ###object);
 END
 
 META defineHierarchyAbstract (object)
-    parent###object = ABSTRACT object (object) PERSISTENT;
-    @defineHierarchyCustom(object);
+    @defineHierarchyAbstractInner(object, ###object);
 END
 
-META defineHierarchyCustom (object)
-    TABLE object(object);
-    TABLE object###object (object, object);
+
+META defineHierarchyInner (object, class)
+    parent###object = DATA class (class) AUTOSET;
+    @defineHierarchyCustom(object, class);
+END
+
+META defineHierarchyAbstractInner (object, class)
+    parent###object = ABSTRACT class (class) PERSISTENT;
+    @defineHierarchyCustom(object, class);
+END
+
+META defineHierarchyCustom (object, class)
+    TABLE object(class);
+    TABLE object###object (class, class);
 
     nameParent###object 'Родительский объект' = name(parent###object(object)) IN base;
 
-    level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS object AND parent == child
+    level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS class AND parent == child
                                                                   STEP 2l AND parent == parent###object($parent) PERSISTENT;
 
     object###object##Level (child, level) = GROUP MAX parent IF level == level###object###object(child, parent)
@@ -28,7 +37,7 @@ META defineHierarchyCustom (object)
 
     descendantNumber###object 'Кол-во всех потомков' (object) = GROUP SUM 1 IF isParent###object###object(child, parent) BY parent PERSISTENT;
 
-    isLeaf###object 'Лист' (object) = object IS object AND NOT childNumber###object(object) PERSISTENT;
+    isLeaf###object 'Лист' (object) = object IS class AND NOT childNumber###object(object) PERSISTENT;
 
     isParentLeaf###object###object (child, parent) = isParent###object###object(child, parent) AND isLeaf###object(child);
 

@@ -152,33 +152,33 @@ quantitySoldBrandGroupSizeSubCategoryDateFromTo 'Продано за интер�
 
 FORM salesArticle 'Продажи по группам'
 
-    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
-    OBJECTS s=supplier FIXED PANEL
+    OBJECTS s=Supplier FIXED PANEL
     PROPERTIES     SELECTOR nameSup = name(s)
     PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo),
                    balanceASupplierDate(s,dTo), percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo),
                    sumSoldSupplierDateFromTo(s,dFrom,dTo), sumSoldTypeExchangeSupplierDateFromTo(te,s,dFrom,dTo)
 
-    OBJECTS b=brandSupplier
+    OBJECTS b=BrandSupplier
     PROPERTIES     READONLY nameBr = name(b), balanceBBrandSupplierDate(b,dFrom), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
                    quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDate(b,dTo), percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
                    sumSoldBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldTypeExchangeBrandSupplierDateFromTo(te,b,dFrom,dTo)
 
-    OBJECTS c=categorySupplier
+    OBJECTS c=CategorySupplier
     PROPERTIES     READONLY nameCat = name(c), balanceBBrandSupplierCategorySupplierDate(b,c,dFrom), quantityReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo),
                    quantitySoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), balanceABrandSupplierCategorySupplierDate(b,c,dTo),
                    percentBalanceReceivedBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo), sumSoldBrandSupplierCategorySupplierDateFromTo(b,c,dFrom,dTo),
                    sumSoldTypeExchangeBrandSupplierCategorySupplierDateFromTo(te,b,c,dFrom,dTo)
 
-    OBJECTS sc=subCategorySupplier
+    OBJECTS sc=SubCategorySupplier
     PROPERTIES     READONLY nameSubCat = name(sc), sidSubCategorySupplier(sc), balanceBBrandSupplierSubCategorySupplierDate(b,sc,dFrom),
                    quantityReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), quantitySoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo),
                    balanceABrandSupplierSubCategorySupplierDate(b,sc,dTo), percentBalanceReceivedBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo),
                    sumSoldBrandSupplierSubCategorySupplierDateFromTo(b,sc,dFrom,dTo), sumSoldTypeExchangeBrandSupplierSubCategorySupplierDateFromTo(te,b,sc,dFrom,dTo)
 
-    OBJECTS aa=article
+    OBJECTS aa=Article
     PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle
 
     PROPERTIES  READONLY balanceBArticleDate(aa,dFrom), quantityReceivedArticleDateFromTo(aa,dFrom,dTo), quantitySoldArticleDateFromTo(aa,dFrom,dTo),
@@ -250,27 +250,27 @@ DESIGN salesArticle FROM DEFAULT {
 
 FORM salesArticleTheme 'Продажи по темам'
 
-    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=typeExchange) FIXED PANEL
+    OBJECTS dates = (dFrom = DATE, dTo = DATE, te=TypeExchange) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo), nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
-    OBJECTS s=supplier FIXED PANEL
+    OBJECTS s=Supplier FIXED PANEL
     PROPERTIES     SELECTOR nameSup = name(s)
     PROPERTIES     READONLY balanceBSupplierDate(s,dFrom), quantityReceivedSupplierDateFromTo(s,dFrom,dTo), quantitySoldSupplierDateFromTo(s,dFrom,dTo),
                    balanceASupplierDate(s,dTo), percentBalanceReceivedSupplierDateFromTo(s,dFrom,dTo),
                    sumSoldSupplierDateFromTo(s,dFrom,dTo), sumSoldTypeExchangeSupplierDateFromTo(te,s,dFrom,dTo)
 
-    OBJECTS b=brandSupplier
+    OBJECTS b=BrandSupplier
     PROPERTIES     READONLY nameBr = name(b), balanceBBrandSupplierDate(b,dFrom), quantityReceivedBrandSupplierDateFromTo(b,dFrom,dTo),
                    quantitySoldBrandSupplierDateFromTo(b,dFrom,dTo), balanceABrandSupplierDate(b,dTo),
                    percentBalanceReceivedBrandSupplierDateFromTo(b,dFrom,dTo), sumSoldBrandSupplierDateFromTo(b,dFrom,dTo),
                    sumSoldTypeExchangeBrandSupplierDateFromTo(te,b,dFrom,dTo)
-    OBJECTS t=themeSupplier
+    OBJECTS t=ThemeSupplier
     PROPERTIES     READONLY nameTh = name(t), balanceBBrandSupplierThemeSupplierDate(b,t,dFrom), quantityReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo),
                    quantitySoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), balanceABrandSupplierThemeSupplierDate(b,t,dTo),
                    percentBalanceReceivedBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo), sumSoldBrandSupplierThemeSupplierDateFromTo(b,t,dFrom,dTo),
                    sumSoldTypeExchangeBrandSupplierThemeSupplierDateFromTo(te,b,t,dFrom,dTo)
 
-    OBJECTS aa=article
+    OBJECTS aa=Article
     PROPERTIES (aa)READONLY sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategorySupplierArticle, nameSubCategorySupplierArticle, nameThemeSupplierArticle
 
     PROPERTIES  READONLY balanceBArticleDate(aa,dFrom), quantityReceivedArticleDateFromTo(aa, dFrom, dTo), quantitySoldArticleDateFromTo(aa, dFrom, dTo),
@@ -342,18 +342,18 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
-    OBJECTS s=supplier FIXED PANEL
+    OBJECTS s=Supplier FIXED PANEL
     PROPERTIES     SELECTOR nameSup = name(s)
     PROPERTIES     READONLY quantitySkuSoldSupplierDateFromTo(s,dFrom,dTo)
 
-    OBJECTS g=sizeGroupSupplier FIXED PANEL
+    OBJECTS g=SizeGroupSupplier FIXED PANEL
     PROPERTIES  nameGr = name(g) SELECTOR, quantitySkuSoldSupplierGroupSizeDateFromTo(s,g,dFrom,dTo)  READONLY
 
-    OBJECTS ss = sizeSupplier
+    OBJECTS ss = SizeSupplier
     PROPERTIES     READONLY sidSizeSupplier(ss), orderSizeSupplier(ss), nameGroupSizeSupplier(ss)
     ORDER BY       orderSizeSupplier
 
-    OBJECTS b=brandSupplier
+    OBJECTS b=BrandSupplier
     PROPERTIES     READONLY nameBr = name(b)
     FILTERGROUP filtersSold3
         FILTER 'Бренд с продажей' 'F11' quantitySoldBrandGroupSizeDateFromTo(b,g,dFrom, dTo) DEFAULT
@@ -365,13 +365,13 @@ FORM salesSizeSupplierItem 'Продажи по размерам'
     FILTERGROUP filtersSold
         FILTER 'Размеры с продажей' 'F10' quantitySoldSizeDateFromTo(ss, dFrom, dTo) DEFAULT
 
-    OBJECTS c=categorySupplier
+    OBJECTS c=CategorySupplier
     PROPERTIES     READONLY nameCat = name(c)
     PROPERTIES     READONLY quantitySoldBrandCategorySizeDateFromTo(b,c,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
     FILTERGROUP filtersSold1
         FILTER 'Группы с продажей' 'F11' quantitySoldBrandGroupSizeCategoryDateFromTo(b,g,c,dFrom, dTo) DEFAULT
 
-    OBJECTS sc=subCategorySupplier
+    OBJECTS sc=SubCategorySupplier
     PROPERTIES     READONLY nameSubCat = name(sc)
     PROPERTIES     READONLY quantitySoldBrandSubCategorySizeDateFromTo(b,sc,ss,dFrom, dTo) COLUMNS (ss) HEADER sidSizeSupplier (ss)
 

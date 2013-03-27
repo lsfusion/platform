@@ -2,16 +2,16 @@ MODULE Contact;
 
 REQUIRE System;
 
-CLASS ABSTRACT contact 'Контакт';
-TABLE contact (contact);
+CLASS ABSTRACT Contact 'Контакт';
+TABLE contact (Contact);
 
-firstNameContact 'Имя' = DATA STRING[30] (contact) MINCHARWIDTH 10;
-lastNameContact 'Фамилия' = DATA STRING[30] (contact) MINCHARWIDTH 10;
+firstNameContact 'Имя' = DATA STRING[30] (Contact) MINCHARWIDTH 10;
+lastNameContact 'Фамилия' = DATA STRING[30] (Contact) MINCHARWIDTH 10;
 nameContact 'Имя'(contact) = istring2SP(firstNameContact(contact), lastNameContact(contact));
 
-phoneContact 'Телефон' = DATA STRING[30] (contact) MINCHARWIDTH 10;
-postAddressContact 'Почтовый адрес' = DATA STRING[100] (contact) MINCHARWIDTH 20;
-birthdayContact 'День рождения' = DATA DATE (contact);
+phoneContact 'Телефон' = DATA STRING[30] (Contact) MINCHARWIDTH 10;
+postAddressContact 'Почтовый адрес' = DATA STRING[100] (Contact) MINCHARWIDTH 20;
+birthdayContact 'День рождения' = DATA DATE (Contact);
 
-emailContact 'E-mail'= DATA STRING[50] (contact);
-contactEmail (email) = GROUP UNIQUE contact BY emailContact(contact) WHERE contact IS contact;
+emailContact 'E-mail'= DATA STRING[50] (Contact);
+contactEmail (email) = GROUP UNIQUE contact BY emailContact(contact) WHERE contact IS Contact;

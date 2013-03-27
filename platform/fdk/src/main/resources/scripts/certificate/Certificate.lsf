@@ -2,14 +2,14 @@ MODULE Certificate;
 
 REQUIRE Document, Stock;
 
-CLASS ABSTRACT certificate 'Документ качества';
-TABLE certificate(certificate);
+CLASS ABSTRACT Certificate 'Документ качества';
+TABLE certificate(Certificate);
 
 @defineDocumentAbstractHeaderTimePrefix(certificate, ,' создания');
 @defineDocumentAbstractHeaderTimePrefix(certificate, to, ' действия');
 
-numberCertificate 'Номер' = ABSTRACT STRING[18] (certificate) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
-seriesCertificate 'Серия' = ABSTRACT STRING[2] (certificate) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3;
+numberCertificate 'Номер' = ABSTRACT STRING[18] (Certificate) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
+seriesCertificate 'Серия' = ABSTRACT STRING[2] (Certificate) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3;
 seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
 descriptionCertificate 'Документ качества' (certificate) =
@@ -21,7 +21,7 @@ descriptionCertificate 'Документ качества' (certificate) =
 META defineDocumentCertificate(document, object)
 
     EXTEND FORM user###document
-        OBJECTS dc = user###document##Detail
+        OBJECTS dc = User###document##Detail
         PROPERTIES (dc) indexUser###document##Detail, idBarcodeSkuUser###document##Detail, nameSkuUser###document##Detail,
                         descriptionBatchUser###document##Detail ON CHANGE changeBatchUser###document##Detail(dc)
         FILTERS user###document##User###document##Detail(dc) == object
@@ -38,7 +38,7 @@ META defineDocumentCertificate(document, object)
     }
 
     EXTEND FORM document##s
-        OBJECTS dc = document##Detail
+        OBJECTS dc = ###document##Detail
         PROPERTIES(dc) READONLY index###document##Detail, idBarcodeSku###document##Detail, nameSku###document##Detail,
                                 descriptionBatch###document##Detail
         FILTERS document###document##Detail(dc) == object
@@ -60,8 +60,8 @@ END
 
 META defineDocumentCertificateText(document)
 
-    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (document##Detail);
-    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (user###document##Detail);
+    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (###document##Detail);
+    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (User###document##Detail);
     certificateText###document##Detail(detail) += certificateTextUser###document##Detail(detail);
 
     EXTEND FORM user###document PROPERTIES(dc) certificateTextUser###document##Detail;
@@ -85,14 +85,18 @@ META defineDocumentCertificateText(document)
 END
 
 META defineDocumentCertificateObject(prop, document, object, caption)
+    @defineDocumentCertificateObjectInner(prop, ###prop, document, object, caption);
+END
 
-    prop###document##Detail = ABSTRACT prop (document##Detail);
+META defineDocumentCertificateObjectInner(prop, propClass, document, object, caption)
+
+    prop###document##Detail = ABSTRACT propClass (###document##Detail);
     description###prop###document##Detail caption (detail) = description###prop(prop###document##Detail(detail));
 
-    prop###user###document = DATA prop (user###document);
+    prop###user###document = DATA propClass (User###document);
     description###prop###user###document caption (document) = description###prop(prop###user###document(document));
 
-    data###prop###user###document##Detail = DATA prop (user###document##Detail);
+    data###prop###user###document##Detail = DATA propClass (User###document##Detail);
     prop###user###document##Detail (detail) =
         UNION OVERRIDE prop###user###document(user###document##User###document##Detail(detail)), data###prop###user###document##Detail(detail);
     prop###document##Detail(detail) += prop###user###document##Detail(detail);
@@ -118,7 +122,11 @@ END
 // ------------------------------------ Сертификаты для партий ----------------------------------- //
 
 META defineCertificateObjectBatch(prop, caption)
-    prop###batch = ABSTRACT prop (batch) PERSISTENT;
+    @defineCertificateObjectBatchInner(prop, ###prop, caption);
+END
+
+META defineCertificateObjectBatchInner(prop, propClass, caption)
+    prop###batch = ABSTRACT propClass (Batch) PERSISTENT;
     description###prop###batch caption (batch) = description###prop(prop###batch(batch));
     batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
 
@@ -128,7 +136,7 @@ META defineCertificateObjectBatch(prop, caption)
     EXTEND FORM balanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
 END
 
-certificateTextBatch 'Дополнительные сертификаты' = ABSTRACT TEXT (batch) PERSISTENT;
+certificateTextBatch 'Дополнительные сертификаты' = ABSTRACT TEXT (Batch) PERSISTENT;
 
 EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
 EXTEND FORM balanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);

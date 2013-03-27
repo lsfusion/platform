@@ -5,19 +5,19 @@ REQUIRE Menu;
 //-----------------Печатные формы (выводятся на печать только два уровня групп)-----------------//
 
 FORM menuPrint 'Меню' PRINT
-    OBJECTS m = menu FIXED PANEL
+    OBJECTS m = Menu FIXED PANEL
     PROPERTIES (m) objectClassName, nameStockMenu, nameNumeratorObject, numberObject, seriesObject, dateMenu, timeMenu,
                    nameCurrencyMenu, namePriceListTypeMenu, noteMenu, countMenuDetailMenu,
                    nameGroupTypeMenu
 
-    OBJECTS g1=group
+    OBJECTS g1=Group
     PROPERTIES READONLY nameG = name(g1)
     PROPERTIES(m,g1) positionNumberMenuGroup
     FILTERS groupTypeGroup(g1) == groupTypeMenu(m),
-            g1 IS group AND NOT parentGroup(g1)
+            g1 IS Group AND NOT parentGroup(g1)
     ORDER BY positionNumberMenuGroup(m,g1)
 
-    OBJECTS g2=group
+    OBJECTS g2=Group
     PROPERTIES READONLY nameGr = name(g2)
     PROPERTIES(m,g2) positionNumberMenuGroup
     FILTERS groupTypeGroup(g2) == groupTypeMenu(m),
@@ -25,7 +25,7 @@ FORM menuPrint 'Меню' PRINT
     ORDER BY positionNumberMenuGroup(m,g2)
 
 
-    OBJECTS d = menuDetail
+    OBJECTS d = MenuDetail
     PROPERTIES (d) READONLY idBarcodeSkuMenuDetail, nameSkuMenuDetail,
                    priceMenuDetail, compositionMenuDetail, productYieldMenuDetail
     PROPERTIES (d,g2) positionNumberMenuDetailGroup

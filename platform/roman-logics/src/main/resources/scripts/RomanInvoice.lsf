@@ -34,16 +34,16 @@ changeAdditionalCompositionSkuLanguageInvoice = ACTION (sku, invoice) {
 
 // ----------- Групповое изменение составов ----------------- //
 
-countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+countInvoiceMainComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
                                              BY document, mainCompositionSku(sku);
 
-countInvoiceAdditionalComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+countInvoiceAdditionalComposition 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
                                              BY document, additionalCompositionSku(sku);
 
-countInvoiceMainCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+countInvoiceMainCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
                                                      BY document, mainCompositionSkuLanguage(sku, languageInvoice(document));
 
-countInvoiceAdditionalCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS invoice
+countInvoiceAdditionalCompositionLanguage 'Кол-во' = GROUP SUM 1 IF quantityDocumentSku(document, sku) AND document IS Invoice
                                                            BY document, additionalCompositionSkuLanguage(sku, languageInvoice(document));
 
 changeDocumentMainComposition = ACTION (document, comp) {
@@ -94,7 +94,7 @@ EXTEND FORM boxInvoiceForm
     PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT translationInvoiceAdditionalComposition(sku)
     PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageAdditionalComposition(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    OBJECTS a = article
+    OBJECTS a = Article
     PROPERTIES (a) READONLY sidArticle
     PROPERTIES (a) sidSeasonSupplierArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
                    nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle,
@@ -204,7 +204,7 @@ EXTEND FORM simpleInvoiceForm
     PROPERTIES (sku) additionalCompositionOriginSku, additionalCompositionSku ON SHORTCUT translationInvoiceAdditionalCompositionSimple(sku)
     PROPERTIES (sku, invoice) additionalCompositionSkuInvoice ON CHANGE changeAdditionalCompositionSkuLanguageInvoice(sku, invoice) ON SHORTCUT translationInvoiceLanguageAdditionalCompositionSimple(sku, invoice) SHOWIF languageInvoice(invoice)
 
-    OBJECTS a = article
+    OBJECTS a = Article
     PROPERTIES (a) READONLY sidArticle
     PROPERTIES (a) sidSeasonSupplierArticle, nameSeasonYearArticle, nameBrandSupplierArticle, nameCollectionSupplierArticle, nameSubCategorySupplierArticle,
                    nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle, nameTypeFabricArticle,

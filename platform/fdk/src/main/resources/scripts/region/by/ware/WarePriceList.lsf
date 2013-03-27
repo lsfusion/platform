@@ -4,34 +4,34 @@ REQUIRE PriceList, Ware, WareItem;
 
 NAMESPACE PriceList;
 
-CLASS warePriceListType 'Цена cо стеклопосудой' : priceListType;
+CLASS WarePriceListType 'Цена cо стеклопосудой' : PriceListType;
 
-basePriceListTypeWarePriceListType(type) = DATA basePriceListType (warePriceListType);
+basePriceListTypeWarePriceListType(type) = DATA BasePriceListType (WarePriceListType);
 nameBasePriceListTypeWarePriceListType 'Базовый вид цены' (type) = name(basePriceListTypeWarePriceListType(type));
 
-ledgerPriceListTypePriceListType(type) += basePriceListTypeWarePriceListType(type) AS ledgerPriceListType;
+ledgerPriceListTypePriceListType(type) += basePriceListTypeWarePriceListType(type) AS LedgerPriceListType;
 
-includeVATPriceListType(type) += TRUE IF type IS warePriceListType;
+includeVATPriceListType(type) += TRUE IF type IS WarePriceListType;
 
 @defineDocumentHeaderCurrency(warePriceListType);
 currencyPriceListType(warePriceListType) += currencyWarePriceListType(warePriceListType);
 
-wareSku (sku) = ABSTRACT ware (sku);
+wareSku (sku) = ABSTRACT Ware (Sku);
 wareSku (sku) += wareItem(sku);
 
 priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    priceBasePriceListTypeSkuStockDateTime(basePriceListTypeWarePriceListType(type), sku, stock, dateTime) (+) (warePriceDate(wareSku(sku), toDate(dateTime)) AND dateTime IS DATETIME AND type IS warePriceListType AND stock IS stock);
+    priceBasePriceListTypeSkuStockDateTime(basePriceListTypeWarePriceListType(type), sku, stock, dateTime) (+) (warePriceDate(wareSku(sku), toDate(dateTime)) AND dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
 priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    priceBasePriceListTypeBatchStockDateTime(basePriceListTypeWarePriceListType(type), batch, stock, dateTime) (+) (warePriceDate(wareSku(skuBatch(batch)), toDate(dateTime)) AND dateTime IS DATETIME AND type IS warePriceListType AND stock IS stock);
+    priceBasePriceListTypeBatchStockDateTime(basePriceListTypeWarePriceListType(type), batch, stock, dateTime) (+) (warePriceDate(wareSku(skuBatch(batch)), toDate(dateTime)) AND dateTime IS DATETIME AND type IS WarePriceListType AND stock IS Stock);
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceWarePriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceWarePriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
 
 FORM warePriceListType 'Цена cо стеклопосудой'
-    OBJECTS w = warePriceListType FIXED PANEL
+    OBJECTS w = WarePriceListType FIXED PANEL
     PROPERTIES(w) name, includeVATPriceListType, nameCurrencyWarePriceListType, nameBasePriceListTypeWarePriceListType
 
-    EDIT warePriceListType OBJECT w
+    EDIT WarePriceListType OBJECT w
 ;
 
 DESIGN warePriceListType FROM DEFAULT {
@@ -43,8 +43,8 @@ DESIGN warePriceListType FROM DEFAULT {
     }
 }
 
-addWarePriceListType 'Добавить цену cо стеклопосудой' = ACTION ADDFORM warePriceListType;
-editWarePriceListType 'Редактировать' = ACTION EDITFORM warePriceListType;
+addWarePriceListType 'Добавить цену cо стеклопосудой' = ACTION ADDFORM WarePriceListType;
+editWarePriceListType 'Редактировать' = ACTION EDITFORM WarePriceListType;
 editPriceListType(priceListType) += editWarePriceListType(priceListType);
 
 EXTEND FORM priceListTypes

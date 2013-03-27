@@ -22,13 +22,13 @@ exportSOTDirectory 'Папка' = DATA STRING[200] () IN sotGroup;
 exportSOTReep 'Массив REEP' = DATA BOOLEAN () IN sotGroup;
 exportSOTDateFrom 'Дата с' = DATA DATE () IN sotGroup;
 exportSOTDateTo 'Дата по' = DATA DATE () IN sotGroup;
-exportSOTSupplier 'Поставщик' = DATA legalEntity () IN sotGroup;
+exportSOTSupplier 'Поставщик' = DATA LegalEntity () IN sotGroup;
 nameExportSOTSupplier 'Поставщик' () = name(exportSOTSupplier()) IN sotGroup;
-exportSOTSupplierStock 'Склад поставщика' = DATA warehouse () IN sotGroup;
+exportSOTSupplierStock 'Склад поставщика' = DATA Warehouse () IN sotGroup;
 nameExportSOTSupplierStock 'Склад поставщика' () = name(exportSOTSupplierStock()) IN sotGroup;
-exportSOTCustomer 'Покупатель' = DATA legalEntity () IN sotGroup;
+exportSOTCustomer 'Покупатель' = DATA LegalEntity () IN sotGroup;
 nameExportSOTCustomer 'Покупатель' () = name(exportSOTCustomer()) IN sotGroup;
-exportSOTCustomerStock 'Склад покупателя' = DATA warehouse () IN sotGroup;
+exportSOTCustomerStock 'Склад покупателя' = DATA Warehouse () IN sotGroup;
 nameExportSOTCustomerStock 'Склад покупателя' () = name(exportSOTCustomerStock()) IN sotGroup;
 
 EXTEND FORM integrationData

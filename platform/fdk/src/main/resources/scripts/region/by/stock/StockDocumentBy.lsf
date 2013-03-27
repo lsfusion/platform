@@ -6,7 +6,7 @@ NAMESPACE StockDocument;
 
 FORM printStockDocumentBy 'Товарный отчет' PRINT
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = stock FIXED PANEL
+            ds = Stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
     PROPERTIES(ds) SELECTOR name, nameLegalEntityStock, nameMRPStock, namePositionMRPStock, nameAccountantStock,
                             namePositionAccountantStock, nameAuditorStock, namePositionAuditorStock, UNPStock
@@ -18,7 +18,7 @@ FORM printStockDocumentBy 'Товарный отчет' PRINT
                subtotalItemIncStockDocumentStockDateInterval, subtotalContainerIncStockDocumentStockDateInterval,
                sumItemOutStockDocumentStoreDateInterval, sumContainerOutStockDocumentStockDateInterval
 
-    OBJECTS il = incStockDocumentLedger
+    OBJECTS il = IncStockDocumentLedger
     PROPERTIES(il) SELECTOR iDateTime = dateTimeStockDocumentLedger, iObjName = objectClassName, iDescription = descriptionStockDocumentLedger,
                    sumItemIncStockDocumentLedger, sumContainerIncStockDocumentLedger, sumIncStockDocumentLedger
     FILTERS isPostedStockDocumentLedger(il),
@@ -27,7 +27,7 @@ FORM printStockDocumentBy 'Товарный отчет' PRINT
             dateStockDocumentLedger(il) <= dtTo
     ORDER BY iDateTime
 
-    OBJECTS ol = outStockDocumentLedger
+    OBJECTS ol = OutStockDocumentLedger
     PROPERTIES(ol) SELECTOR oDateTime = dateTimeStockDocumentLedger, oObjName = objectClassName, oDescription = descriptionStockDocumentLedger,
                    sumItemOutStockDocumentLedger, sumContainerOutStockDocumentLedger, sumOutStockDocumentLedger
     FILTERS isPostedStockDocumentLedger(ol),

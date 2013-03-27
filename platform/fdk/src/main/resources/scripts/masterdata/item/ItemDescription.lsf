@@ -7,37 +7,37 @@ NAMESPACE Item;
 GROUP itemDescriptionGroup 'Описание' : public;
 
 // Вид
-CLASS type 'Вид товара' : named;
-TABLE type(type);
+CLASS Type 'Вид товара' : Named;
+TABLE type(Type);
 
 @defineObjectItemAttribute(type, name, 'Вид', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (type, name, 'Вид');
 
 // Сорт
-CLASS sort 'Сорт товара' : named;
-TABLE sort(sort);
+CLASS Sort 'Сорт товара' : Named;
+TABLE sort(Sort);
 
 @defineObjectItemAttribute(sort, name, 'Сорт', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (sort, name, 'Сорт');
 
 // Форма
-CLASS form 'Форма товара' : named;
-TABLE form(form);
+CLASS Form 'Форма товара' : Named;
+TABLE form(Form);
 
 @defineObjectItemAttribute(form, name, 'Форма', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (form, name, 'Форма');
 
 // Особенность
-CLASS feature 'Особенность товара' : doubleNamed;
-TABLE feature(feature);
+CLASS Feature 'Особенность товара' : DoubleNamed;
+TABLE feature(Feature);
 
 @defineObjectItemAttribute(feature, name, 'Особенность', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (feature, name, 'Особенность');
 @implementObjectShortItemAttribute(feature, 'Особенность (сокр.)');
 
 // Упаковка
-CLASS pack 'Упаковка' : doubleNamed;
-TABLE pack(pack);
+CLASS Pack 'Упаковка' : DoubleNamed;
+TABLE pack(Pack);
 
 @defineObjectItemAttribute(pack, name, 'Упаковка', itemDescriptionGroup);
 @defineObjectItemAttributeBatch (pack, name, 'Упаковка');

@@ -2,5 +2,5 @@ MODULE PriceRoundItem;
 
 REQUIRE PriceRound, Item;
 
-EXTEND CLASS itemGroup : roundGroup;
+EXTEND CLASS ItemGroup : RoundGroup;
 roundGroupSku(sku) += itemGroupItem(sku);

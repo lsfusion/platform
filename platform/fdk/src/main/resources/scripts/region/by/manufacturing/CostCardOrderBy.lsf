@@ -5,7 +5,7 @@ NAMESPACE Production;
 
 // ----------------  Калькуляционная карта ------------------- //
 
-calcMultiplierSkuOrder(sku, order)= (1.000 IF sku IS sku AND order IS order) OR  multiplierSkuOrder(sku, order);
+calcMultiplierSkuOrder(sku, order)= (1.000 IF sku IS Sku AND order IS Order) OR  multiplierSkuOrder(sku, order);
 
 quantityBOMSkuOrder (BOM, sku, order) = [GROUP SUM recBruttoNodeQuantityBOMSkuDate (BOM, sku, dateOrder(order)) * calcMultiplierSkuOrder(sku, order)
     BY BOM, sku, order](BOM, sku, order) AND bruttoQuantitySkuOrder(sku, order);
@@ -73,12 +73,12 @@ descriptionBOMProduct 'Спецификация'(product) = descriptionBOM(BOMPr
 
 FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
-    OBJECTS o = order FIXED PANEL
+    OBJECTS o = Order FIXED PANEL
     PROPERTIES(o) objectClassName, nameProductsLegalEntityStockOrder, UNPProductsLegalEntityStockOrder, addressProductsLegalEntityStockOrder,
                   nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject, seriesNumberObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, quantityComponentDetailOrder
 
-    OBJECTS pd=productDetail
+    OBJECTS pd=ProductDetail
     PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, quantityInBOMProductDetail, shortNameUOMProductProductDetail, nameSkuProductDetail,  nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    componentsPriceProductDetail, componentsSumInBOMProductDetail, premiumComponentsSumInBOMProductDetail, VATSumProductDetail, retailMarkupSumInBOMProductDetail
     PROPERTIES(pd) markupProductDetail, productsPriceProductDetail, productsSumInBOMProductDetail, valueVATProductDetail,
@@ -86,7 +86,7 @@ FORM costCardOrderBy 'Калькуляционная карта' PRINT
 
     FILTERS orderProductDetail(pd)==o
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(pd,s)quantityProductDetailSku, quantityProductProductDetailSku, componentsSumProductDetailSku, premiumComponentsSumProductDetailSku, totalVATSumProductDetailSku
     PROPERTIES(s,o) nameSkuSkuOrder, idBarcodeSkuSkuOrder, shortNameUOMSkuSkuOrder, totalPriceSkuOrder, valueVATSkuOrder, markupSkuOrder, totalPremiumPriceSkuOrder
 
@@ -97,11 +97,11 @@ printCostCardOrder 'Калькуляционная карта' (order) = ACTION 
 
 FORM intakeSheetOrderBy 'Заборный лист' PRINT
 
-    OBJECTS o = order FIXED PANEL
+    OBJECTS o = Order FIXED PANEL
     PROPERTIES(o) nameProductsLegalEntityStockOrder, nameComponentsStockOrder, nameProductsStockOrder, numberObject, seriesObject, seriesNumberObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder
 
-    OBJECTS pd=productDetail
+    OBJECTS pd=ProductDetail
     PROPERTIES(pd) indexProductDetail, idBarcodeSkuProductDetail, descriptionBOMProductDetail, nameSkuProductDetail,  shortNameUOMProductDetail,
                    componentsPriceProductDetail, productsPriceProductDetail
 
@@ -113,18 +113,18 @@ EXTEND FORM orders
     PROPERTIES(o) FORCE PANEL printCostCardOrder, printIntakeSheetOrder
 ;
 
-selectDateProduct = DATA SESSION BOOLEAN (DATE, product);
+selectDateProduct = DATA SESSION BOOLEAN (DATE, Product);
 
 FORM technologicalCardsProductBy 'Технологическая карта' PRINT
     OBJECTS dt=DATE FIXED PANEL
     PROPERTIES (dt) OBJVALUE
 
-    OBJECTS p = product
+    OBJECTS p = Product
     PROPERTIES(p) indexProduct, nameSkuProduct, idBarcodeSkuProduct, shortNameUOMProduct, quantityProduct, fastProduct,
                   carbohydratesProduct, proteinsProduct, energyProduct, recipesProduct
     FILTERS       selectDateProduct(dt,p)
 
-    OBJECTS c = component
+    OBJECTS c = Component
     PROPERTIES(c) indexComponent, nameMaterialComponent, idBarcodeSkuComponent, shortNameUOMComponent, nettoQuantityComponent
     PROPERTIES(c,dt) bruttoQuantityComponentDate
     PROPERTIES(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
@@ -134,9 +134,9 @@ FORM technologicalCardsProductBy 'Технологическая карта' PRI
 
 printTechnologicalCardBOM 'Технологическая карта'  = ACTION (BOM) NEWSESSION AUTOAPPLY {
     FORM dialogDate MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             FOR BOMProduct(product) == BOM DO {
-                SET selectDateProduct(date,product) <- TRUE IF product IS product WHERE date == chosenDate('d');
+                SET selectDateProduct(date,product) <- TRUE IF product IS Product WHERE date == chosenDate('d');
             }
             FORM technologicalCardsProductBy  OBJECTS dt = chosenDate('d') MODAL;
         }
@@ -154,7 +154,7 @@ EXTEND DESIGN BOMs {
 printTechnologicalCardOrder 'Технологическая карта'  = ACTION (order) NEWSESSION AUTOAPPLY {
 
     FOR quantityProductOrder(product,order) DO {
-        SET selectDateProduct(date,product) <- TRUE IF product IS product WHERE date == dateOrder(order);
+        SET selectDateProduct(date,product) <- TRUE IF product IS Product WHERE date == dateOrder(order);
     }
     FORM technologicalCardsProductBy  OBJECTS dt = dateOrder(order) MODAL;
 
@@ -178,12 +178,12 @@ EXTEND FORM orders
 //    PROPERTIES(b) READONLY descriptionBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM,
 //                  fatsBOM, carbohydratesBOM, proteinsBOM, energyBOM
 //
-//    OBJECTS p = product
+//    OBJECTS p = Product
 //    PROPERTIES(p) indexProduct, nameSkuProduct, idBarcodeSkuProduct, shortNameUOMProduct, quantityProduct, fastProduct,
 //                  carbohydratesProduct, proteinsProduct, energyProduct, recipesProduct
 //    FILTERS       BOMProduct(p)==b
 //
-//    OBJECTS c = component
+//    OBJECTS c = Component
 //    PROPERTIES(c) indexComponent, nameMaterialComponent, idBarcodeSkuComponent, shortNameUOMComponent, nettoQuantityComponent
 //    PROPERTIES(c,dt) bruttoQuantityComponentDate
 //    PROPERTIES(c) fatsComponent, carbohydratesComponent, proteinsComponent, energyComponent
@@ -191,7 +191,7 @@ EXTEND FORM orders
 //;
 //printTechnologicalCardBOM 'Технологическая карта'  = ACTION (BOM) {
 //    FORM dialogDate MODAL;
-//    IF formResult() == formResult.ok THEN {
+//    IF formResult() == FormResult.ok THEN {
 //        FORM technologicalCardBOMBy OBJECTS b = BOM, dt = chosenDate('d');
 //    }
 //} IMAGE 'print.png' IN printGroup;
@@ -205,18 +205,18 @@ FORM actStudyOfCulinaryBOM 'Акт контрольной проработки' 
     PROPERTIES(b) name, descriptionBOM, noteBOM
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM,
                   nameActStudyOfCulinaryCommitteeBOM, nameCompanyBOM, nameEmployeeCommitteeBOM READONLY, actStudyOfCulinaryCommitteeBOM
-    OBJECTS p = product
+    OBJECTS p = Product
     PROPERTIES(p) indexProduct, idBarcodeSkuProduct, nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct, netWeightProduct, descriptionBOMProduct
 
     FILTERS       BOMProduct(p) == b
 
-    OBJECTS c = component
+    OBJECTS c = Component
     PROPERTIES(c) indexComponent, idBarcodeSkuComponent, nameMaterialComponent, shortNameUOMComponent, nameTechnologyComponent, nettoQuantityComponent
     PROPERTIES(c,dt) wastageComponentDate, bruttoQuantityComponentDate
 
     FILTERS       BOMComponent(c) == BOMProduct(p)
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY nameContact, namePositionEmployee
     FILTERS       inCommitteeBOMEmployee(b,e)
 
@@ -224,7 +224,7 @@ FORM actStudyOfCulinaryBOM 'Акт контрольной проработки' 
 printActStudyOfCulinaryBOM 'Акт контрольной проработки'  = ACTION (BOM) NEWSESSION AUTOAPPLY {
 
     FORM dialogDate MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             FORM actStudyOfCulinaryBOM  OBJECTS dt = chosenDate('d'), b = BOM MODAL;
         }
 

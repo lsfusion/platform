@@ -25,7 +25,7 @@ public class FiscalVMKPrintReceiptActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface receiptInterface;
 
     public FiscalVMKPrintReceiptActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("receipt")});
+        super(LM, new ValueClass[]{LM.findClassByCompoundName("Receipt")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         receiptInterface = i.next();

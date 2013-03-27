@@ -4,13 +4,13 @@ REQUIRE StockContract, Company;
 
 NAMESPACE Contract;
 
-//CLASS contractSkuCompany 'Договор на поставку между компаниями' : contractSku;
+//CLASS ContractSkuCompany 'Договор на поставку между компаниями' : ContractSku;
 //
-//companyAContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
+//companyAContractSkuCompany = DATA Company (ContractSkuCompany) AUTOSET;
 //nameCompanyAContractSkuCompany 'Компания (поставщик)' (contract) = name(companyAContractSkuCompany(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyAContract (contract) += companyAContractSkuCompany(contract);
 //
-//companyBContractSkuCompany = DATA company (contractSkuCompany) AUTOSET;
+//companyBContractSkuCompany = DATA Company (ContractSkuCompany) AUTOSET;
 //nameCompanyBContractSkuCompany 'Компания (покупатель)' (contract) = name(companyBContractSkuCompany(contract)) IN recognize MAXCHARWIDTH 30 PREFCHARWIDTH 30;
 //partyBContract (contract) += companyBContractSkuCompany(contract);
 //
@@ -18,12 +18,12 @@ NAMESPACE Contract;
 //
 //// Формы
 //FORM contractSkuCompany 'Договор'
-//    OBJECTS c=contractSkuCompany FIXED PANEL
+//    OBJECTS c=ContractSkuCompany FIXED PANEL
 //    PROPERTIES(c) nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany,
 //                  numberContract, dateFromContract, dateToContract,
 //                  nameCurrencyContract, noteContract
 //
-//    OBJECTS pc = paymentCondition
+//    OBJECTS pc = PaymentCondition
 //    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
 //                            nameFormPaymentCondition
 //    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
@@ -31,27 +31,27 @@ NAMESPACE Contract;
 //
 //    FILTERS contractPaymentCondition(pc) == c
 //
-//    EDIT contractSkuCompany OBJECT c
+//    EDIT ContractSkuCompany OBJECT c
 //;
 //
 //FORM contractsSkuCompany 'Договора'
-//    OBJECTS c=contractSkuCompany
+//    OBJECTS c=ContractSkuCompany
 //    PROPERTIES(c) READONLY numberContract, dateFromContract, dateToContract,
 //                           nameCompanyAContractSkuCompany, nameCompanyBContractSkuCompany, nameTypeContractSku
 //
 //    PROPERTIES(c) ADDFORM, EDITFORM, delete
 //    ORDER BY dateFromContract
 //
-//    DIALOG contractSkuCompany OBJECT c
+//    DIALOG ContractSkuCompany OBJECT c
 //;
 //
 //EXTEND FORM company
 //
-//    OBJECTS cb=company
+//    OBJECTS cb=Company
 //    PROPERTIES(cb) name
 //    PROPERTIES(co, cb)    numberContractSkuCompanyCompanyACompanyB
 //
-//    OBJECTS cc=contractSkuCompany
+//    OBJECTS cc=ContractSkuCompany
 //    PROPERTIES(cc)  READONLY numberContract, dateFromContract, dateToContract,
 //                            nameTypeContractSku, nameFormContractSku,
 //                            nameCurrencyContract, noteContract

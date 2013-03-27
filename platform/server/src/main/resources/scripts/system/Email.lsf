@@ -4,25 +4,25 @@ REQUIRE System, Reflection;
 
 GROUP email 'Настройки почтового сервера' : public;   //rootGroup
 
-CLASS encryptedConnectionTypeStatus 'Тип шифрованного подключения' {
+CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подключения' {
     SSL 'SSL', TLS 'TLS'
-} : named;
+} : Named;
 
-encryptedConnectionType 'Тип шифрованного подключения' = DATA encryptedConnectionTypeStatus();
+encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus();
 nameEncryptedConnectionType 'Тип шифрованного подключения' = name(encryptedConnectionType()) PREFCHARWIDTH 3 IN email;
 
-CLASS notification 'Уведомление';
-TABLE notification (notification);
-TABLE notificationProperty (notification, property);
+CLASS Notification 'Уведомление';
+TABLE notification (Notification);
+TABLE notificationProperty (Notification, Property);
 
-isEventNotification 'При любом изменении' = DATA BOOLEAN (notification);
-emailFromNotification 'Адрес отправителя' = DATA STRING[50] (notification);
-emailToNotification 'Адрес получателя' = DATA STRING[50] (notification);
-emailToCCNotification 'Копия' = DATA STRING[50] (notification);
-emailToBCNotification 'Скрытая копия' = DATA STRING[50] (notification);
-textNotification 'Текст письма' = DATA TEXT (notification);
-subjectNotification 'Тема письма'= DATA STRING[100] (notification);
-inNotificationProperty 'Вкл.' = DATA BOOLEAN (notification, property);
+isEventNotification 'При любом изменении' = DATA BOOLEAN (Notification);
+emailFromNotification 'Адрес отправителя' = DATA STRING[50] (Notification);
+emailToNotification 'Адрес получателя' = DATA STRING[50] (Notification);
+emailToCCNotification 'Копия' = DATA STRING[50] (Notification);
+emailToBCNotification 'Скрытая копия' = DATA STRING[50] (Notification);
+textNotification 'Текст письма' = DATA TEXT (Notification);
+subjectNotification 'Тема письма'= DATA STRING[100] (Notification);
+inNotificationProperty 'Вкл.' = DATA BOOLEAN (Notification, Property);
 
 smtpHost 'SMTP хост' = DATA STRING[50]() IN email;
 smtpPort 'SMTP порт' = DATA STRING[10]() IN email;
@@ -35,12 +35,12 @@ disableEmail 'Отключить отсылку почты' = DATA BOOLEAN() IN 
 
 FORM remindUserPass 'Напоминание пароля'
 
-    OBJECTS u=customUser FIXED PANEL
+    OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) READONLY loginCustomUser, passwordCustomUser, name
 ;
 
 emailUserPassUser 'Напоминание пароля' (user) = ACTION EMAIL
-                               SUBJECT 'Напоминание пароля' AND user IS customUser
+                               SUBJECT 'Напоминание пароля' AND user IS CustomUser
                                TO emailContact(user)
                                INLINE remindUserPass OBJECTS u = user;
 
@@ -49,8 +49,8 @@ FORM notification 'Почта'
     PROPERTIES() smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, emailAccount, emailPassword,
                                      emailBlindCarbonCopy, disableEmail
 
-    OBJECTS n=notification
-    OBJECTS p=property
+    OBJECTS n=Notification
+    OBJECTS p=Property
 
     PROPERTIES(n, p) inNotificationProperty
     PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ

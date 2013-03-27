@@ -3,60 +3,60 @@ MODULE Route;
 REQUIRE Transport, Numerator;
 
 // ------------------------------- Route ----------------------------------- //
-CLASS route 'Маршрут' : numeratedObject;
-TABLE route(route);
+CLASS Route 'Маршрут' : NumeratedObject;
+TABLE route(Route);
 
-truckRoute = DATA truck(route);
+truckRoute = DATA Truck(Route);
 sidTruckRoute 'Машина' (route) = sidTruck(truckRoute(route));
 
 FORM route 'Маршрут'
-    OBJECTS r=route FIXED PANEL
+    OBJECTS r=Route FIXED PANEL
     PROPERTIES(r) nameNumeratorObject, numberObject, seriesObject, sidTruckRoute
 
-    EDIT route OBJECT r
+    EDIT Route OBJECT r
 ;
 
 FORM routes 'Маршруты'
-    OBJECTS r=route
+    OBJECTS r=Route
     PROPERTIES(r) READONLY nameNumeratorObject, numberObject, seriesObject, sidTruckRoute
     PROPERTIES(r) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 ;
 
 
 // ------------------------------- Node ------------------------------------ //
-CLASS ABSTRACT node 'Пункт';
+CLASS ABSTRACT Node 'Пункт';
 
-nameNode 'Наименование' = ABSTRACT STRING[110](node);
-addressNode 'Адрес' = ABSTRACT STRING[110](node);
-legalEntityNode = ABSTRACT legalEntity(node);
+nameNode 'Наименование' = ABSTRACT STRING[110](Node);
+addressNode 'Адрес' = ABSTRACT STRING[110](Node);
+legalEntityNode = ABSTRACT LegalEntity(Node);
 
 nameLegalEntityNode 'Юр. лицо' (node) = name(legalEntityNode(node));
 
-TABLE nodeRoute(node, route);
-inNodeRoute 'Вкючен' = DATA BOOLEAN(node, route);
-numberNodeRoute 'Порядковый номер' = DATA INTEGER(node, route);
+TABLE nodeRoute(Node, Route);
+inNodeRoute 'Вкючен' = DATA BOOLEAN(Node, Route);
+numberNodeRoute 'Порядковый номер' = DATA INTEGER(Node, Route);
 
-EXTEND CLASS stock : node;
+EXTEND CLASS Stock : Node;
 //EXTEND CLASS supplier : node;
 
-nameNode(stock) += name(stock) IF stock IS stock;
+nameNode(stock) += name(stock) IF stock IS Stock;
 
-addressNode(stock) += addressStock(stock) IF stock IS stock;
+addressNode(stock) += addressStock(stock) IF stock IS Stock;
 
 legalEntityNode(stock) += legalEntityStock(stock);
 
 
-//nameNode(supplier) += name(supplier) IF supplier IS supplier;
+//nameNode(supplier) += name(supplier) IF supplier IS Supplier;
 
 EXTEND FORM route
 
-    OBJECTS n=node
+    OBJECTS n=Node
     PROPERTIES (n) READONLY nameNode, addressNode
     PROPERTIES (n, r) inNodeRoute, numberNodeRoute
 ;
 
 EXTEND FORM routes
-    OBJECTS n=node
+    OBJECTS n=Node
     PROPERTIES (n) READONLY nameNode, addressNode
     PROPERTIES(n, r) READONLY numberNodeRoute
     FILTERS inNodeRoute(n, r)

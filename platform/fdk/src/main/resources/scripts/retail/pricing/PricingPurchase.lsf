@@ -8,7 +8,7 @@ NAMESPACE Purchase;
 
 @defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
-    IF retailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS calcPriceListType
+    IF retailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
@@ -18,7 +18,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 @defineRepricing(' (закупка)', customerStock);
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
-    IF customerStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
+    IF customerStockUserInvoiceDetail(detail) IS DepartmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
 
 createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
@@ -45,7 +45,7 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 
 // расчет надбавок и цены при изменении priceListType
 
-@deriveDocumentDetailPriceOnSessionPriceListType (userInvoiceDetail, retail, , customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, retail, , customerStock);
 
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPricingUserInvoice(d) <- createPricingUserInvoice(s);

@@ -4,10 +4,10 @@ REQUIRE System, I18n;
 
 NAMESPACE I18n;
 
-dictionaryCompositionLanguage = DATA dictionary(language);
+dictionaryCompositionLanguage = DATA Dictionary(Language);
 nameDictionaryCompositionLanguage 'Словарь для составов' = name(dictionaryCompositionLanguage(language)) IN base;
 
-dictionaryNameLanguage = DATA dictionary(language);
+dictionaryNameLanguage = DATA Dictionary(Language);
 nameDictionaryNameLanguage 'Словарь для наименований' = name(dictionaryNameLanguage(language)) IN base;
 
 EXTEND FORM language

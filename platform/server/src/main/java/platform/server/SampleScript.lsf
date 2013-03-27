@@ -4,8 +4,8 @@ REQUIRE System;
 
 GROUP base : base;
 
-CLASS article 'Товар' : named;
-CLASS store 'Склад' : named;
+CLASS article 'Товар' : Named;
+CLASS store 'Склад' : Named;
 CLASS document 'Документ' : transaction;
 CLASS incomeDocument 'Приход' : document;
 CLASS outcomeDocument 'Расход' : document;
@@ -16,17 +16,17 @@ CLASS storeSize 'Размер склада'
     big 'большой',
     medium 'средний',
     small 'маленький'
-} : named;
+} : Named;
 
-store = DATA store (document) IN base;
-quantity = DATA DOUBLE (document, article) IN base;
-storeSize = DATA storeSize (store) IN base;
+store = DATA Store (Document) IN base;
+quantity = DATA DOUBLE (Document, Article) IN base;
+storeSize = DATA StoreSize (Store) IN base;
 
 storeName(document) = name(store(document)) IN base;
 storeSizeName(store) = name(storeSize(store)) IN base;
 
-inQuantity(document, article) = quantity(document, article) IF document IS incomeDocument;
-outQuantity(document, article) = quantity(document, article) IF document IS outcomeDocument;
+inQuantity(document, article) = quantity(document, article) IF document IS IncomeDocument;
+outQuantity(document, article) = quantity(document, article) IF document IS OutcomeDocument;
 
 incomeQuantity(store, article) = GROUP SUM inQuantity(document, article) BY store(document), article;
 outcomeQuantity(store, article) = GROUP SUM outQuantity(document, article) BY store(document), article;

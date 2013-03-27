@@ -15,38 +15,38 @@ REQUIRE System,
 PRIORITY Stock;
 
 // ----------------------------------------- Группы складов ------------------------------ //
-CLASS groupDefectStock 'Группа складов брака' : stockGroup, employeeDivisionGroup;
+CLASS GroupDefectStock 'Группа складов брака' : StockGroup, EmployeeDivisionGroup;
 
 @defineHierarchy(groupDefectStock);
 parentStockGroup (stockGroup) += parentGroupDefectStock (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //
 
-CLASS defectStock 'Склад брака' : stock, employeeDivision;
-TABLE defectStock (defectStock);
+CLASS DefectStock 'Склад брака' : Stock, EmployeeDivision;
+TABLE defectStock (DefectStock);
 
-groupDefectStockDefectStock (defectStock) = DATA groupDefectStock (defectStock);
+groupDefectStockDefectStock (defectStock) = DATA GroupDefectStock (DefectStock);
 nameGroupDefectStockDefectStock 'Группа складов' (defectStock) = name(groupDefectStockDefectStock(defectStock)) IN base;
 stockGroupStock (stock) += groupDefectStockDefectStock (stock);
 
-companyDefectStock (defectStock) = DATA company (defectStock);
+companyDefectStock (defectStock) = DATA Company (DefectStock);
 nameCompanyDefectStock 'Компания' (defectStock) = name(companyDefectStock(defectStock)) IN base;
 legalEntityStock (stock) += companyDefectStock(stock);
 
-addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (defectStock);
+addressDefectStock 'Адрес' (defectStock) = DATA STRING[100] (DefectStock);
 addressStock(stock) += addressDefectStock(stock);
 
 // -------------------------------------------------- Формы ----------------------------------------- //
 FORM defectStock 'Склад брака'
-    OBJECTS           d=defectStock FIXED PANEL
+    OBJECTS           d=DefectStock FIXED PANEL
     PROPERTIES(d)     name, nameGroupDefectStockDefectStock, addressDefectStock, nameCompanyDefectStock, nameWriteOffCommitteeStock
 
     ORDER BY          name
-    EDIT defectStock OBJECT d
+    EDIT DefectStock OBJECT d
 ;
 
 FORM defectStocks 'Склады брака'
-    OBJECTS           d=defectStock
+    OBJECTS           d=DefectStock
     PROPERTIES(d)     READONLY name, addressDefectStock, nameCompanyDefectStock
     PROPERTIES(d)     ADDFORM, EDITFORM, delete
 
@@ -55,36 +55,36 @@ FORM defectStocks 'Склады брака'
 
 // -------------------------------------- Внешние склады ------------------------------- //
 
-CLASS ABSTRACT externalStock 'Внешний склад' : named;
-TABLE externalStock(externalStock);
+CLASS ABSTRACT ExternalStock 'Внешний склад' : Named;
+TABLE externalStock(ExternalStock);
 
-CLASS repairShop 'Ремонтная мастерская' : externalStock;
-TABLE repairShop(repairShop);
+CLASS RepairShop 'Ремонтная мастерская' : ExternalStock;
+TABLE repairShop(RepairShop);
 
-CLASS cleaningStock 'Химчистка' : externalStock;
-TABLE cleaningStock(cleaningStock);
+CLASS CleaningStock 'Химчистка' : ExternalStock;
+TABLE cleaningStock(CleaningStock);
 
-addressExternalStock 'Адрес' = DATA STRING[100] (externalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
-phoneExternalStock 'Телефон' = DATA STRING[100] (externalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
-siteExternalStock 'Сайт' = DATA STRING[100] (externalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
-workingTimeExternalStock 'Время работы' = DATA STRING[100] (externalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
-contactNameExternalStock 'Контактное лицо' = DATA STRING[100] (externalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+addressExternalStock 'Адрес' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+phoneExternalStock 'Телефон' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+siteExternalStock 'Сайт' = DATA STRING[100] (ExternalStock) IN lawGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+workingTimeExternalStock 'Время работы' = DATA STRING[100] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+contactNameExternalStock 'Контактное лицо' = DATA STRING[100] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-infoExternalStock 'Дополнительная информация' = DATA STRING[300] (externalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
+infoExternalStock 'Дополнительная информация' = DATA STRING[300] (ExternalStock) IN contactGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
 // -------------------------------------- Ремонт ------------------------------- //
 
-CLASS repair 'Передача в ремонт' : historizable, numberedObject, consignment, outStockDocumentLedger;
-CLASS repairPosted 'Проведенная передача в ремонт' : repair, postedObject;
-CLASS repairDetail 'Строка передачи в ремонт' : consignmentDetail;
+CLASS Repair 'Передача в ремонт' : Historizable, NumberedObject, Consignment, OutStockDocumentLedger;
+CLASS RepairPosted 'Проведенная передача в ремонт' : Repair, PostedObject;
+CLASS RepairDetail 'Строка передачи в ремонт' : ConsignmentDetail;
 
 @defineDocument(repair);
 
-@defineDocumentDetailNote(repair);
+@defineDocumentDetailNote(Repair);
 
 @defineDocumentStock(repair, stock, 'Склад-отправитель');
 
-repairShopRepair = DATA repairShop (repair);
+repairShopRepair = DATA RepairShop (Repair);
 nameRepairShopRepair 'Ремонтная мастерская' (repair) = name(repairShopRepair(repair));
 repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
 
@@ -113,17 +113,20 @@ repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
 @defineAddDetailDialogSkuStock(repair, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(repair, sku);
 
-
 META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption, formsCaption)
+    @defineDocumentFormDefectProcessInner(object, ###object, stockProp1, stockProp2, formCaption, formsCaption);
+END
+
+META defineDocumentFormDefectProcessInner(object, class, stockProp1, stockProp2, formCaption, formsCaption)
 
     FORM object formCaption
-        OBJECTS t = object FIXED PANEL
+        OBJECTS t = class FIXED PANEL
 
         PROPERTIES (t) objectClassName, numberObject, seriesObject, date###object, time###object,
                        name###stockProp1###object, name###stockProp2###object, note###object,
                        count###object##Detail###object, quantity###object##Detail###object
 
-        OBJECTS d = object##Detail
+        OBJECTS d = class##Detail
 
 //        PROPERTIES(t) TODRAW d addDetailDialogSkuStock###object##Detail###object, addDetailInputBarcode###object##Detail###object,
 //                               delete###object##Detail###object
@@ -133,7 +136,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
         EVENTS
             ON OK prePost###object(t)
 
-        EDIT object OBJECT t
+        EDIT class OBJECT t
     ;
 
     DESIGN object FROM DEFAULT {
@@ -171,7 +174,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
     }
 
     FORM object##s formsCaption
-        OBJECTS t = object
+        OBJECTS t = class
         PROPERTIES (t) READONLY isPosted###object FORCE GRID, numberObject, seriesObject, date###object, time###object,
                                 name###stockProp1###object, name###stockProp2###object, note###object,
                                 count###object##Detail###object, quantity###object##Detail###object
@@ -180,7 +183,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
 
         PROPERTIES (t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-        OBJECTS d = object##Detail
+        OBJECTS d = class##Detail
 
         FILTERS object###object##Detail(d) == t
     ;
@@ -224,7 +227,7 @@ META defineDocumentFormDefectProcess(object, stockProp1, stockProp2, formCaption
     @extendFormDocumentDetailSkuArticleReadonly(object##s, d, object);
 
     @defineDocumentRetailPrice(object, d);
-    useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS departmentStore
+    useRetailPrice###object##Detail(detail) = stock###object##Detail(detail) IS DepartmentStore
         AND NOT costLedgerDepartmentStore(stock###object##Detail(detail));
     @defineDocumentTransferAccount(object, useRetailPrice###object##Detail);
 
@@ -249,10 +252,10 @@ END
 
 META defineDocumentCourierAndDateTo(object)
 
-    courier###object = DATA customUser (object);
+    courier###object = DATA CustomUser (###object);
     nameCourier###object 'Курьер' (object) = nameContact(courier###object(object)) IN documentPrmGroup MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-    dateTo###object##Detail 'Дата исполнения' = DATA DATE (object##Detail);
+    dateTo###object##Detail 'Дата исполнения' = DATA DATE (###object##Detail);
 END
 META extendFormDocumentCourierAndDateTo (object)
 
@@ -284,7 +287,7 @@ END
 
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(repairDetail, sku, stock);
+@implementSkuLedgerOutFIFO(RepairDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityRepairDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockRepairDetail(ledger));
 
@@ -294,17 +297,17 @@ skipASkuLedger (ledger) += skipSkuLedgerRepairDetail(ledger);
 
 // -------------------------------------- Возврат из ремонта ------------------------------- //
 
-CLASS returnRepair 'Возврат из ремонта' : historizable, numberedObject, outStockDocumentLedger;
-CLASS returnRepairPosted 'Проведенный возврат из ремонта' : returnRepair, postedObject;
-CLASS returnRepairDetail 'Строка возврата из ремонта';
+CLASS ReturnRepair 'Возврат из ремонта' : Historizable, NumberedObject, OutStockDocumentLedger;
+CLASS ReturnRepairPosted 'Проведенный возврат из ремонта' : ReturnRepair, PostedObject;
+CLASS ReturnRepairDetail 'Строка возврата из ремонта';
 
 @defineDocument(returnRepair);
 
-@defineDocumentDetailNote(returnRepair);
+@defineDocumentDetailNote(ReturnRepair);
 
 @defineDocumentStock(returnRepair, stock, 'Склад-получатель');
 
-repairShopReturnRepair = DATA repairShop (returnRepair);
+repairShopReturnRepair = DATA RepairShop (ReturnRepair);
 nameRepairShopReturnRepair 'Ремонтная мастерская' (returnRepair) = name(repairShopReturnRepair(returnRepair));
 repairShopReturnRepairDetail (detail) = repairShopReturnRepair(returnRepairReturnRepairDetail(detail));
 
@@ -333,10 +336,10 @@ repairShopReturnRepairDetail (detail) = repairShopReturnRepair(returnRepairRetur
 @defineDocumentFormDefectProcess(returnRepair, stock, repairShop, 'Возврат из ремонта', 'Возвраты из ремонта');
 @extendFormDefectProcessButtonSelection(returnRepair);
 
-repairDetailReturnRepairDetail = DATA repairDetail (returnRepairDetail);
+repairDetailReturnRepairDetail = DATA RepairDetail (ReturnRepairDetail);
 descriptionRowRepairDetailReturnRepairDetail 'Строка передачи в ремонт' (returnRepairDetail) = descriptionRowRepairDetail(repairDetailReturnRepairDetail(returnRepairDetail));
 
-CONSTRAINT detail IS returnRepairDetail AND NOT repairDetailReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
+CONSTRAINT detail IS ReturnRepairDetail AND NOT repairDetailReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
     MESSAGE 'Для строки возврата из ремонта не задана строка передачи в ремонт';
 
 CONSTRAINT skuRepairDetail(repairDetailReturnRepairDetail(detail)) != skuReturnRepairDetail(detail) CHECKED BY repairDetailReturnRepairDetail
@@ -355,7 +358,7 @@ quantityReturnQuantityRepairDetail 'К-во (возврат)' (repairDetail) = G
 diffQuantityRepairDetail 'К-во (в ремонте)' (repairDetail) =  quantityRepairDetail(repairDetail) (-) quantityReturnQuantityRepairDetail(repairDetail) AND isPostedRepairDetail(repairDetail);
 quantityOverdueRepairDetail 'К-во (просрочено)' (repairDetail) = diffQuantityRepairDetail(repairDetail) AND diffQuantityRepairDetail(repairDetail) > 0 AND dateToRepairDetail(repairDetail) < currentDate();
 
-TABLE repairShopSku(repairShop, sku);
+TABLE repairShopSku(RepairShop, Sku);
 quantityOverdueRepairShopSku 'К-во (просрочено)' (repairShop, sku)= GROUP SUM  quantityOverdueRepairDetail(detail) BY repairShopRepairDetail(detail), skuRepairDetail(detail) PERSISTENT;
 quantityOverdueRepairShop 'К-во (просрочено)' (repairShop) = GROUP SUM  quantityOverdueRepairShopSku(repairShop, sku) BY repairShop;
 
@@ -367,14 +370,14 @@ usefulRepair 'Был товар в отгрузке' (repair) = GROUP SUM 1 IF s
 
 FORM repairDetailReturnRepairDetail 'Передачи в ремонт'
 
-    OBJECTS rd = returnRepairDetail FIXED PANEL
+    OBJECTS rd = ReturnRepairDetail FIXED PANEL
 
-    OBJECTS dc = repair
+    OBJECTS dc = Repair
     PROPERTIES (dc) READONLY isPostedRepair FORCE GRID, numberObject, seriesObject, dateRepair, timeRepair,
                             nameStockRepair, nameRepairShopRepair, noteRepair
 
 
-    OBJECTS dd = repairDetail
+    OBJECTS dd = RepairDetail
 
     FILTERGROUP skuFilters
             FILTER 'Документ с этим товаром' 'F10' usefulRepair(dc) DEFAULT
@@ -401,7 +404,7 @@ EXTEND FORM repairDetailReturnRepairDetail
 
 dialogRowReturnRepairDetail 'Строка передачи в ремонт' (returnRepairDetail) = ACTION (returnRepairDetail) {
     FORM repairDetailReturnRepairDetail OBJECTS rd = returnRepairDetail MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET repairDetailReturnRepairDetail(returnRepairDetail) <- chosenObject('dd');
     }
 }
@@ -418,7 +421,7 @@ EXTEND FORM returnRepairs
 
 // Проводим по регистру
 
-@implementSkuLedgerInLIFO(returnRepairDetail, sku, stock);
+@implementSkuLedgerInLIFO(ReturnRepairDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnRepairDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(repairDetailReturnRepairDetail(ledger), batch);
 
@@ -441,9 +444,9 @@ currentBalanceRepairShop 'Текущий остаток' (repairShop) =  GROUP S
 
 FORM repairShop 'Ремонтная мастерская'
 
-    OBJECTS s=repairShop FIXED PANEL
+    OBJECTS s=RepairShop FIXED PANEL
     PROPERTIES(s)  name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
-    EDIT repairShop OBJECT s
+    EDIT RepairShop OBJECT s
 ;
 DESIGN repairShop FROM DEFAULT {
     main{
@@ -460,21 +463,21 @@ DESIGN repairShop FROM DEFAULT {
 
 FORM repairShops 'Ремонтные мастерские'
 
-    OBJECTS s=repairShop
+    OBJECTS s=RepairShop
     PROPERTIES(s)  READONLY name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceRepairShop, quantityOverdueRepairShop
     PROPERTIES(s)  ADDFORM, EDITFORM, delete
 
-    OBJECTS sk=sku
+    OBJECTS sk=Sku
     PROPERTIES(sk)  READONLY nameSku, idBarcodeSku
 
     PROPERTIES(s, sk)  READONLY currentBalanceRepairShopSku, parishRepairShopSku, expenseRepairShopSku, quantityOverdueRepairShopSku
 
-    OBJECTS d=repairDetail
+    OBJECTS d=RepairDetail
     PROPERTIES(d)  READONLY descriptionRepairDetail, dateTimeRepairDetail, quantityRepairDetail, diffQuantityRepairDetail,
                    dateToRepairDetail, quantityOverdueRepairDetail
 
-    OBJECTS dd=returnRepairDetail
+    OBJECTS dd=ReturnRepairDetail
     PROPERTIES(dd)  READONLY descriptionReturnRepairDetail, dateTimeReturnRepairDetail, quantityReturnRepairDetail
 
 
@@ -524,17 +527,17 @@ DESIGN repairShops FROM DEFAULT {
 
 // -------------------------------------- Химчистка ------------------------------- //
 
-CLASS dryCleaning 'Передача в химчистку' : historizable, numberedObject, consignment, outStockDocumentLedger;
-CLASS dryCleaningPosted 'Проведенная передача в химчистку' : dryCleaning, postedObject;
-CLASS dryCleaningDetail 'Строка передачи в химчистку' : consignmentDetail;
+CLASS DryCleaning 'Передача в химчистку' : Historizable, NumberedObject, Consignment, OutStockDocumentLedger;
+CLASS DryCleaningPosted 'Проведенная передача в химчистку' : DryCleaning, PostedObject;
+CLASS DryCleaningDetail 'Строка передачи в химчистку' : ConsignmentDetail;
 
 @defineDocument(dryCleaning);
 
-@defineDocumentDetailNote(dryCleaning);
+@defineDocumentDetailNote(DryCleaning);
 
 @defineDocumentStock(dryCleaning, stock, 'Склад-отправитель');
 
-cleaningStockDryCleaning = DATA cleaningStock (dryCleaning);
+cleaningStockDryCleaning = DATA CleaningStock (DryCleaning);
 nameCleaningStockDryCleaning 'Химчистка' (dryCleaning) = name(cleaningStockDryCleaning(dryCleaning));
 cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDryCleaningDetail(detail));
 
@@ -571,7 +574,7 @@ cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDr
 @extendFormDocumentCourierAndDateTo(dryCleaning);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(dryCleaningDetail, sku, stock);
+@implementSkuLedgerOutFIFO(DryCleaningDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDryCleaningDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceBatchStock(batch, stockDryCleaningDetail(ledger));
 
@@ -581,17 +584,17 @@ skipASkuLedger (ledger) += skipSkuLedgerDryCleaningDetail(ledger);
 
 // -------------------------------------- Возврат из химчистки ------------------------------- //
 
-CLASS returnDryCleaning 'Возврат из химчистки' : historizable, numberedObject, outStockDocumentLedger;
-CLASS returnDryCleaningPosted 'Проведенный возврат из химчистки' : returnDryCleaning, postedObject;
-CLASS returnDryCleaningDetail 'Строка возврата из химчистки';
+CLASS ReturnDryCleaning 'Возврат из химчистки' : Historizable, NumberedObject, OutStockDocumentLedger;
+CLASS ReturnDryCleaningPosted 'Проведенный возврат из химчистки' : ReturnDryCleaning, PostedObject;
+CLASS ReturnDryCleaningDetail 'Строка возврата из химчистки';
 
 @defineDocument(returnDryCleaning);
 
-@defineDocumentDetailNote(returnDryCleaning);
+@defineDocumentDetailNote(ReturnDryCleaning);
 
 @defineDocumentStock(returnDryCleaning, stock, 'Склад-получатель');
 
-cleaningStockReturnDryCleaning = DATA cleaningStock (returnDryCleaning);
+cleaningStockReturnDryCleaning = DATA CleaningStock (ReturnDryCleaning);
 nameCleaningStockReturnDryCleaning 'Химчистка' (returnDryCleaning) = name(cleaningStockReturnDryCleaning(returnDryCleaning));
 cleaningStockReturnDryCleaningDetail (detail) = cleaningStockReturnDryCleaning(returnDryCleaningReturnDryCleaningDetail(detail));
 
@@ -620,10 +623,10 @@ cleaningStockReturnDryCleaningDetail (detail) = cleaningStockReturnDryCleaning(r
 @defineDocumentFormDefectProcess(returnDryCleaning, stock, cleaningStock, 'Возврат из химчистки', 'Возвраты из химчистки');
 @extendFormDefectProcessButtonSelection(returnDryCleaning);
 
-dryCleaningDetailReturnDryCleaningDetail = DATA dryCleaningDetail (returnDryCleaningDetail);
+dryCleaningDetailReturnDryCleaningDetail = DATA DryCleaningDetail (ReturnDryCleaningDetail);
 descriptionRowDryCleaningDetailReturnDryCleaningDetail 'Строка передачи в химчистку' (returnDryCleaningDetail) = descriptionRowDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(returnDryCleaningDetail));
 
-CONSTRAINT detail IS returnDryCleaningDetail AND NOT dryCleaningDetailReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
+CONSTRAINT detail IS ReturnDryCleaningDetail AND NOT dryCleaningDetailReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
     MESSAGE 'Для строки возврата из химчистки не задана строка передачи в химчистку';
 
 CONSTRAINT skuDryCleaningDetail(dryCleaningDetailReturnDryCleaningDetail(detail)) != skuReturnDryCleaningDetail(detail) CHECKED BY dryCleaningDetailReturnDryCleaningDetail
@@ -642,7 +645,7 @@ quantityReturnQuantityDryCleaningDetail 'К-во (возврат)' (dryCleaningD
 diffQuantityDryCleaningDetail 'К-во в химчистке' (dryCleaningDetail) =  quantityDryCleaningDetail(dryCleaningDetail) (-) quantityReturnQuantityDryCleaningDetail(dryCleaningDetail) AND isPostedDryCleaningDetail(dryCleaningDetail);
 quantityOverdueDryCleaningDetail 'К-во (просрочено)' (dryCleaningDetail) = diffQuantityDryCleaningDetail(dryCleaningDetail) AND diffQuantityDryCleaningDetail(dryCleaningDetail) >0 AND dateToDryCleaningDetail(dryCleaningDetail) < currentDate();
 
-TABLE cleaningStockSku(cleaningStock, sku);
+TABLE cleaningStockSku(CleaningStock, Sku);
 quantityOverdueCleaningStockSku 'К-во (просрочено)' (cleaningStock, sku)= GROUP SUM  quantityOverdueDryCleaningDetail(detail) BY cleaningStockDryCleaningDetail(detail), skuDryCleaningDetail(detail) PERSISTENT;
 quantityOverdueCleaningStock 'К-во (просрочено)' (cleaningStock) = GROUP SUM  quantityOverdueCleaningStockSku(cleaningStock, sku) BY cleaningStock;
 
@@ -654,14 +657,14 @@ usefulDryCleaning 'Был товар в отгрузке' (dryCleaning) = GROUP 
 
 FORM dryCleaningDetailReturnDryCleaningDetail 'Передачи в химчистку'
 
-    OBJECTS rd = returnDryCleaningDetail FIXED PANEL
+    OBJECTS rd = ReturnDryCleaningDetail FIXED PANEL
 
-    OBJECTS dc = dryCleaning
+    OBJECTS dc = DryCleaning
     PROPERTIES (dc) READONLY isPostedDryCleaning FORCE GRID, numberObject, seriesObject, dateDryCleaning, timeDryCleaning,
                             nameStockDryCleaning, nameCleaningStockDryCleaning, noteDryCleaning
 
 
-    OBJECTS dd = dryCleaningDetail
+    OBJECTS dd = DryCleaningDetail
 
     FILTERGROUP skuFilters
             FILTER 'Документ с этим товаром' 'F10' usefulDryCleaning(dc) DEFAULT
@@ -687,7 +690,7 @@ EXTEND FORM dryCleaningDetailReturnDryCleaningDetail
 
 dialogRowReturnDryCleaningDetail 'Строка передачи в химчистку' (returnDryCleaningDetail) = ACTION (returnDryCleaningDetail) {
     FORM dryCleaningDetailReturnDryCleaningDetail OBJECTS rd = returnDryCleaningDetail MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET dryCleaningDetailReturnDryCleaningDetail(returnDryCleaningDetail) <- chosenObject('dd');
     }
 }
@@ -703,7 +706,7 @@ EXTEND FORM returnDryCleanings
 
 // Проводим по регистру
 
-@implementSkuLedgerInLIFO(returnDryCleaningDetail, sku, stock);
+@implementSkuLedgerInLIFO(ReturnDryCleaningDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnDryCleaningDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += costDataSkuLedgerBatch(dryCleaningDetailReturnDryCleaningDetail(ledger), batch);
 
@@ -726,9 +729,9 @@ currentBalanceCleaningStock 'Текущий остаток' (cleaningStock) =  G
 
 FORM cleaningStock 'Химчистка'
 
-    OBJECTS s=cleaningStock FIXED PANEL
+    OBJECTS s=CleaningStock FIXED PANEL
     PROPERTIES(s)  name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock, contactNameExternalStock, infoExternalStock
-    EDIT cleaningStock OBJECT s
+    EDIT CleaningStock OBJECT s
 ;
 DESIGN cleaningStock FROM DEFAULT {
     main{
@@ -745,21 +748,21 @@ DESIGN cleaningStock FROM DEFAULT {
 
 FORM cleaningStocks 'Химчистки'
 
-    OBJECTS s=cleaningStock
+    OBJECTS s=CleaningStock
     PROPERTIES(s)  READONLY name, addressExternalStock, phoneExternalStock, siteExternalStock, workingTimeExternalStock,
                    contactNameExternalStock, infoExternalStock, currentBalanceCleaningStock, quantityOverdueCleaningStock
     PROPERTIES(s)  ADDFORM, EDITFORM, delete
 
-    OBJECTS sk=sku
+    OBJECTS sk=Sku
     PROPERTIES(sk)  READONLY nameSku, idBarcodeSku
 
     PROPERTIES(s, sk)  READONLY currentBalanceCleaningStockSku, parishCleaningStockSku, expenseCleaningStockSku, quantityOverdueCleaningStockSku
 
-    OBJECTS d=dryCleaningDetail
+    OBJECTS d=DryCleaningDetail
     PROPERTIES(d)  READONLY descriptionDryCleaningDetail, dateTimeDryCleaningDetail, quantityDryCleaningDetail, diffQuantityDryCleaningDetail,
                    dateToDryCleaningDetail, quantityOverdueDryCleaningDetail
 
-    OBJECTS dd=returnDryCleaningDetail
+    OBJECTS dd=ReturnDryCleaningDetail
     PROPERTIES(dd)  READONLY descriptionReturnDryCleaningDetail, dateTimeReturnDryCleaningDetail, quantityReturnDryCleaningDetail
 
 

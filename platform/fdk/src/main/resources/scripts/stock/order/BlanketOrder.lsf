@@ -6,11 +6,11 @@ REQUIRE Order;
 
 META defineBlanketOrder(sign)
 
-    CLASS blanketOrder 'Множественный заказ'###sign : historizable, numeratedDocument;
-    CLASS blanketOrderDetail 'Строка множественного заказа'###sign : named;
+    CLASS BlanketOrder 'Множественный заказ'###sign : Historizable, NumeratedDocument;
+    CLASS BlanketOrderDetail 'Строка множественного заказа'###sign : Named;
 
-    CLASS blanketOrderPosted 'Проведенный множественный заказ'###sign : blanketOrder, postedObject;
-    CLASS blanketOrderClosed 'Закрытый множественный заказ'###sign : blanketOrderPosted;
+    CLASS BlanketOrderPosted 'Проведенный множественный заказ'###sign : BlanketOrder, PostedObject;
+    CLASS BlanketOrderClosed 'Закрытый множественный заказ'###sign : BlanketOrderPosted;
 
     @defineDocument(blanketOrder);
     @defineDocumentHeaderLegalEntity (blanketOrder, supplier, 'Поставщик');
@@ -34,9 +34,9 @@ META defineBlanketOrder(sign)
     @defineDocumentCurrency (blanketOrder);
     @deriveDocumentCurrency(blanketOrder, supplierStock);
 
-    TABLE blanketOrderStock(blanketOrder, stock);
+    TABLE blanketOrderStock(BlanketOrder, Stock);
 
-    customerStockBlanketOrderDetail (blanketOrderDetail) = DATA stock (blanketOrderDetail);
+    customerStockBlanketOrderDetail (blanketOrderDetail) = DATA Stock (BlanketOrderDetail);
     nameCustomerStockBlanketOrderDetail 'Склад покупателя' (blanketOrderDetail) = name(customerStockBlanketOrderDetail(blanketOrderDetail));
 
     @defineDocumentDetailSku(blanketOrder, sku);
@@ -49,7 +49,7 @@ META defineBlanketOrder(sign)
     @defineDocumentHeaderSkuQuantity(blanketOrder, sku);
 
     countBlanketOrderDetailStockBlanketOrder 'Кол-во строк по складу '(stock, blanketOrder) = GROUP SUM 1 BY supplierStockBlanketOrderDetail(blanketOrderDetail), blanketOrderBlanketOrderDetail(blanketOrderDetail);
-    inBlanketOrderStock 'В заказе' (blanketOrder, stock) = DATA BOOLEAN (blanketOrder, stock); //customerStock
+    inBlanketOrderStock 'В заказе' (blanketOrder, stock) = DATA BOOLEAN (BlanketOrder, Stock); //customerStock
     inCustomerBlanketOrderStock 'Отм.' (blanketOrder, stock) = inLegalEntityStock(customerBlanketOrder(blanketOrder), stock);
 
     @defineDocumentHeaderAgreement (blanketOrder);
@@ -57,7 +57,7 @@ META defineBlanketOrder(sign)
 
     @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
 
-    priceListTypeBlanketOrderStock (blanketOrder, stock) = DATA priceListType (blanketOrder, stock);
+    priceListTypeBlanketOrderStock (blanketOrder, stock) = DATA PriceListType (BlanketOrder, Stock);
     namePriceListTypeBlanketOrderStock 'Вид цены' (blanketOrder, stock) = name(priceListTypeBlanketOrderStock (blanketOrder, stock)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
     backgroundPriceListTypeBlanketOrderStock (blanketOrder, stock) = RGB(200,200,200) IF agreementBlanketOrderStock (blanketOrder, stock);
 
@@ -82,7 +82,7 @@ META defineBlanketOrder(sign)
         IF agreementBlanketOrderStock(blanketOrder, stock) THEN
             priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrder, stock), sku)
         ELSE
-            priceListTypeBlanketOrderStock(blanketOrder, stock) AND sku IS sku;
+            priceListTypeBlanketOrderStock(blanketOrder, stock) AND sku IS Sku;
     // записываем вид цены из соглашения
      priceListTypeBlanketOrderDetail (detail) <- IF agreementBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
         THEN priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)), skuBlanketOrderDetail(detail))
@@ -117,13 +117,13 @@ META defineBlanketOrder(sign)
 // --------------------------- Формы Заказа ---------------------------------
 
     FORM blanketOrder 'Множественный заказ'###sign
-        OBJECTS o = blanketOrder FIXED PANEL
+        OBJECTS o = BlanketOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameNumeratorObject, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                        nameCurrencyBlanketOrder, noteBlanketOrder, nameCustomerBlanketOrder, nameAgreementBlanketOrder,
                        countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
                        VATSumBlanketOrderDetailBlanketOrder, invoiceSumBlanketOrderDetailBlanketOrder, shipmentDateBlanketOrder, shipmentTimeBlanketOrder
 
-        OBJECTS d = blanketOrderDetail
+        OBJECTS d = BlanketOrderDetail
         PROPERTIES (d) indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
 
@@ -134,7 +134,7 @@ META defineBlanketOrder(sign)
                        VATSumBlanketOrderDetail, invoiceSumBlanketOrderDetail, nameSupplierStockBlanketOrderDetail, nameCustomerStockBlanketOrderDetail,
                        shipmentDateBlanketOrderDetail, shipmentTimeBlanketOrderDetail, ADDOBJ, delete
 
-        OBJECTS c = stock
+        OBJECTS c = Stock
         PROPERTIES     name(c) READONLY, inBlanketOrderStock(o,c)
         PROPERTIES(o,c) nameNumeratorBlanketOrderStock, numberBlanketOrderStock, seriesBlanketOrderStock,
                         nameAgreementBlanketOrderStock, namePriceListTypeBlanketOrderStock BACKGROUND backgroundPriceListTypeBlanketOrderStock(o, c)
@@ -148,7 +148,7 @@ META defineBlanketOrder(sign)
         EVENTS
             ON OK prePostBlanketOrder(o)
 
-        EDIT blanketOrder OBJECT o
+        EDIT BlanketOrder OBJECT o
     ;
 
     DESIGN blanketOrder FROM DEFAULT{
@@ -213,7 +213,7 @@ META defineBlanketOrder(sign)
         }
     }
 
-    editBlanketOrder 'Редактировать' = ACTION EDITFORM blanketOrder;
+    editBlanketOrder 'Редактировать' = ACTION EDITFORM BlanketOrder;
 
 //-- SKU
     @defineDocumentSkuStockContractor(blanketOrder, sku, supplierStock, customerStock);
@@ -221,7 +221,7 @@ META defineBlanketOrder(sign)
     @defineDocumentContactSkuStock (blanketOrder, blanketOrder, supplier, 'Поставщик', o, sts);
 
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
-        OBJECTS o = blanketOrder
+        OBJECTS o = BlanketOrder
         PROPERTIES (o) READONLY isPostedBlanketOrder FORCE GRID, numberObject, seriesObject, dateBlanketOrder, timeBlanketOrder,
                                 nameSupplierBlanketOrder, nameSupplierStockBlanketOrder, nameCustomerBlanketOrder, nameCurrencyBlanketOrder,
                                 countBlanketOrderDetailBlanketOrder, quantityBlanketOrderDetailBlanketOrder, sumBlanketOrderDetailBlanketOrder,
@@ -235,7 +235,7 @@ META defineBlanketOrder(sign)
         PROPERTIES (o) closeBlanketOrder SHOWIF isOpenedBlanketOrder(o)
 
 
-        OBJECTS d=blanketOrderDetail
+        OBJECTS d=BlanketOrderDetail
         PROPERTIES (d) READONLY indexBlanketOrderDetail, idBarcodeSkuBlanketOrderDetail, nameSkuBlanketOrderDetail, shortNameUOMSkuBlanketOrderDetail,
                        quantityBlanketOrderDetail, namePriceListTypeBlanketOrderDetail,
                        priceBlanketOrderDetail, sumBlanketOrderDetail,
@@ -245,9 +245,9 @@ META defineBlanketOrder(sign)
 
 
         FILTERS blanketOrderBlanketOrderDetail(d) == o
-        DIALOG blanketOrder OBJECT o
+        DIALOG BlanketOrder OBJECT o
     ;
-    @extendFormFilterAccess(blanketOrder, o, blanketOrders, supplierStock);
+    @extendFormFilterAccess(BlanketOrder, o, blanketOrders, supplierStock);
 
     DESIGN blanketOrders FROM DEFAULT {
         PROPERTY(objectClassName) {
@@ -289,10 +289,10 @@ END
 
 META defineOrderBlanketOrder(sign)
 
-    CLASS blanketOrderOrder 'Заказ на основе множественного'###sign : order;
-    CLASS blanketOrderOrderDetail 'Строка заказа на основе множественного'###sign : orderDetail;
+    CLASS BlanketOrderOrder 'Заказ на основе множественного'###sign : Order;
+    CLASS BlanketOrderOrderDetail 'Строка заказа на основе множественного'###sign : OrderDetail;
 
-    CLASS blanketOrderOrderPosted 'Проведенный заказ на основе множественного'###sign : blanketOrderOrder, postedObject;
+    CLASS BlanketOrderOrderPosted 'Проведенный заказ на основе множественного'###sign : BlanketOrderOrder, PostedObject;
 
     @defineDocumentTables(blanketOrderOrder);
 

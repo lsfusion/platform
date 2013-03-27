@@ -4,63 +4,63 @@ REQUIRE System, Document, StockDocument, Stock, Store, StorePrice, Ware;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
-CLASS priceChangeCommittee 'Комиссия переоценки' : committee;
+CLASS PriceChangeCommittee 'Комиссия переоценки' : Committee;
 
 // ----------------------------------- Акт переоценки ------------------------------------------ //
 
-CLASS ABSTRACT priceChangeDocument 'Акт переоценки';
-TABLE priceChangeDocument (priceChangeDocument);
+CLASS ABSTRACT PriceChangeDocument 'Акт переоценки';
+TABLE priceChangeDocument (PriceChangeDocument);
 
-CLASS ABSTRACT priceChangeDocumentDetail 'Строка переоценки';
-TABLE priceChangeDocumentDetail (priceChangeDocumentDetail);
+CLASS ABSTRACT PriceChangeDocumentDetail 'Строка переоценки';
+TABLE priceChangeDocumentDetail (PriceChangeDocumentDetail);
 
-dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (priceChangeDocument) PERSISTENT INDEXED;
+dateTimePriceChangeDocument 'Дата/время' (priceChangeDocument) = ABSTRACT DATETIME (PriceChangeDocument) PERSISTENT INDEXED;
 datePriceChangeDocument 'Дата' (priceChangeDocument) = toDate(dateTimePriceChangeDocument(priceChangeDocument)) PERSISTENT;
 
-isPostedPriceChangeDocument 'Проведен' (priceChangeDocument) = ABSTRACT BOOLEAN (priceChangeDocument) PERSISTENT;
+isPostedPriceChangeDocument 'Проведен' (priceChangeDocument) = ABSTRACT BOOLEAN (PriceChangeDocument) PERSISTENT;
 
-numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = ABSTRACT STRING[18] (priceChangeDocument) PERSISTENT;
-seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = ABSTRACT STRING[2] (priceChangeDocument) PERSISTENT;
+numberPriceChangeDocument 'Номер документа' (priceChangeDocument) = ABSTRACT STRING[18] (PriceChangeDocument) PERSISTENT;
+seriesPriceChangeDocument 'Серия документа' (priceChangeDocument) = ABSTRACT STRING[2] (PriceChangeDocument) PERSISTENT;
 
-departmentStorePriceChangeDocument (priceChangeDocument) = ABSTRACT departmentStore (priceChangeDocument) PERSISTENT;
+departmentStorePriceChangeDocument (priceChangeDocument) = ABSTRACT DepartmentStore (PriceChangeDocument) PERSISTENT;
 nameDepartmentStorePriceChangeDocument 'Отдел магазина' (priceChangeDocument) = name(departmentStorePriceChangeDocument(priceChangeDocument));
 
-descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = ABSTRACT STRING[200] (priceChangeDocument) PERSISTENT;
+descriptionPriceChangeDocument 'Название документа' (priceChangeDocument) = ABSTRACT STRING[200] (PriceChangeDocument) PERSISTENT;
 
-numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = ABSTRACT STRING[30] (priceChangeDocument) PERSISTENT;
-priceChangeCommitteePriceChangeDocument (priceChangeDocument) = ABSTRACT priceChangeCommittee (priceChangeDocument) PERSISTENT;
+numberDisposalPriceChangeDocument '№ распоряжения на переоценку' (priceChangeDocument) = ABSTRACT STRING[30] (PriceChangeDocument) PERSISTENT;
+priceChangeCommitteePriceChangeDocument (priceChangeDocument) = ABSTRACT PriceChangeCommittee (PriceChangeDocument) PERSISTENT;
 
-priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail) = ABSTRACT priceChangeDocument (priceChangeDocumentDetail) PERSISTENT INDEXED;
+priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail) = ABSTRACT PriceChangeDocument (PriceChangeDocumentDetail) PERSISTENT INDEXED;
 datePriceChangeDocumentDetail 'Дата' (priceChangeDocumentDetail) = datePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail)) PERSISTENT;
 
-skuPriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT sku (priceChangeDocumentDetail) PERSISTENT INDEXED;
+skuPriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT Sku (PriceChangeDocumentDetail) PERSISTENT INDEXED;
 nameSkuPriceChangeDocumentDetail 'Товар' (priceChangeDocumentDetail) = nameSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail));
 shortNameUOMSkuPriceChangeDocumentDetail 'Ед. изм.' (priceChangeDocumentDetail) = shortNameUOMSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,3] (priceChangeDocumentDetail) PERSISTENT;
+quantityPriceChangeDocumentDetail 'Остаток' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,3] (PriceChangeDocumentDetail) PERSISTENT;
 
-curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
-warePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT ware (priceChangeDocumentDetail) PERSISTENT;
+curWarePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT Ware (PriceChangeDocumentDetail) PERSISTENT;
+warePriceChangeDocumentDetail (priceChangeDocumentDetail) = ABSTRACT Ware (PriceChangeDocumentDetail) PERSISTENT;
 
 nameWarePriceChangeDocumentDetail 'Посуда' (priceChangeDocumentDetail) = name(warePriceChangeDocumentDetail(priceChangeDocumentDetail)) MINCHARWIDTH 20 PREFCHARWIDTH 30;
 
 @defineDocumentDetailWareRange(priceChangeDocument);
 @defineDocumentDetailWareRangePrefix(priceChangeDocument, cur, ' (тек.)');
 
-curWarePricePriceChangeDocumentDetail 'Цена посуды (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-warePricePriceChangeDocumentDetail 'Цена посуды' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
+curWarePricePriceChangeDocumentDetail 'Цена посуды (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
+warePricePriceChangeDocumentDetail 'Цена посуды' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
 
-curImporterPricePriceChangeDocumentDetail 'Цена изготовителя (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-importerPricePriceChangeDocumentDetail 'Цена изготовителя' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
+curImporterPricePriceChangeDocumentDetail 'Цена изготовителя (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
+importerPricePriceChangeDocumentDetail 'Цена изготовителя' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
 
-curSupplierPricePriceChangeDocumentDetail 'Цена поставщика (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
+curSupplierPricePriceChangeDocumentDetail 'Цена поставщика (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
+supplierPricePriceChangeDocumentDetail 'Цена поставщика' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
 
-curValueRetailVATPriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
-valueRetailVATPriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (priceChangeDocumentDetail) PERSISTENT;
+curValueRetailVATPriceChangeDocumentDetail 'НДС, % (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (PriceChangeDocumentDetail) PERSISTENT;
+valueRetailVATPriceChangeDocumentDetail 'НДС, %' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[10,5] (PriceChangeDocumentDetail) PERSISTENT;
 
-curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
-retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (priceChangeDocumentDetail) PERSISTENT;
+curRetailPricePriceChangeDocumentDetail 'Розничная цена (тек.)' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
+retailPricePriceChangeDocumentDetail 'Розничная цена' (priceChangeDocumentDetail) = ABSTRACT NUMERIC[14,2] (PriceChangeDocumentDetail) PERSISTENT;
 
 @defineDocumentDetailOutPriceAggregation(priceChangeDocument);
 @defineDocumentDetailOutPriceAggregationPrefix(priceChangeDocument, cur, ' (тек.)');
@@ -127,14 +127,14 @@ diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument 'Сумма �
     GROUP SUM diffRetailSumPriceChangeDocumentDetail(priceChangeDocumentDetail) IF isContainerSku(skuPriceChangeDocumentDetail(priceChangeDocumentDetail))
         BY  priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail);
 
-@implementStockDocumentLedgerInc(priceChangeDocument, departmentStore);
+@implementStockDocumentLedgerInc(PriceChangeDocument, departmentStore);
 sumIncStockDocumentLedger (ledger) += diffRetailSumPriceChangeDocumentDetailPriceChangeDocument(ledger);
 sumItemIncStockDocumentLedger (ledger) += diffRetailSumItemPriceChangeDocumentDetailPriceChangeDocument(ledger);
 sumContainerIncStockDocumentLedger (ledger) += diffRetailSumContainerPriceChangeDocumentDetailPriceChangeDocument(ledger);
 
                          // --------- Комиссия переоценки --------------- //
 
-isPriceChangeCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS priceChangeDocument AND priceChangeCommitteePriceChangeDocument(priceChangeDocument);
+isPriceChangeCommitteePriceChangeDocument(priceChangeDocument) = priceChangeDocument IS PriceChangeDocument AND priceChangeCommitteePriceChangeDocument(priceChangeDocument);
 
 namePriceChangeCommitteePriceChangeDocument 'Комиссия переоценки' (priceChangeDocument) = name(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
 nameEmployeeCommitteePriceChangeDocument 'Сотрудники комиссии' (priceChangeDocument) = namePositionEmployeeCommittee(priceChangeCommitteePriceChangeDocument(priceChangeDocument));
@@ -144,7 +144,7 @@ namePositionChairmanPriceChangeDocument 'Должность' (priceChangeDocumen
 
                             //----------печатная форма--------//
 FORM priceChangePrint 'Акт переоценки' PRINT
-    OBJECTS pc=priceChangeDocument  FIXED PANEL
+    OBJECTS pc=PriceChangeDocument  FIXED PANEL
     PROPERTIES(pc) SELECTOR  numberPriceChangeDocument, seriesPriceChangeDocument, objectClassName, isPostedPriceChangeDocument,
                              nameDepartmentStorePriceChangeDocument, datePriceChangeDocument, namePriceChangeCommitteePriceChangeDocument,
                              nameChairmanPriceChangeDocument, namePositionChairmanPriceChangeDocument, nameEmployeeCommitteePriceChangeDocument,
@@ -158,7 +158,7 @@ FORM priceChangePrint 'Акт переоценки' PRINT
 
     PROPERTIES()    showWare TODRAW pc
 
-    OBJECTS pcd=priceChangeDocumentDetail
+    OBJECTS pcd=PriceChangeDocumentDetail
     PROPERTIES(pcd) READONLY indexPriceChangeDocumentDetail, nameSkuPriceChangeDocumentDetail, shortNameUOMSkuPriceChangeDocumentDetail,
                              quantityPriceChangeDocumentDetail,
                              curSupplierISumPriceChangeDocumentDetail, curMarkupSumPriceChangeDocumentDetail,
@@ -172,7 +172,7 @@ FORM priceChangePrint 'Акт переоценки' PRINT
                              diffWareVATSumPriceChangeDocumentDetail, diffRetailSumPriceChangeDocumentDetail,
                              nameWarePriceChangeDocumentDetail
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY   nameContact, namePositionEmployee
 
     FILTERS                  priceChangeDocumentPriceChangeDocumentDetail(pcd) == pc,
@@ -183,14 +183,14 @@ printPriceChange 'Акт переоценки' (priceChangeDocument) = ACTION FO
 
 
 FORM priceChangeDocuments 'Акты переоценки'
-    OBJECTS pc=priceChangeDocument
+    OBJECTS pc=PriceChangeDocument
     PROPERTIES(pc) READONLY objectClassName, isPostedPriceChangeDocument FORCE GRID, dateTimePriceChangeDocument, nameDepartmentStorePriceChangeDocument,
                             numberPriceChangeDocument, seriesPriceChangeDocument,
                             diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                             diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(),
                             diffRetailSumPriceChangeDocumentDetailPriceChangeDocument, namePriceChangeCommitteePriceChangeDocument
 
-    OBJECTS pcd=priceChangeDocumentDetail
+    OBJECTS pcd=PriceChangeDocumentDetail
     PROPERTIES(pcd) READONLY nameSkuPriceChangeDocumentDetail, quantityPriceChangeDocumentDetail,
                              curImporterPricePriceChangeDocumentDetail, importerPricePriceChangeDocumentDetail,
                              curSupplierPricePriceChangeDocumentDetail, supplierPricePriceChangeDocumentDetail,
@@ -223,7 +223,7 @@ DESIGN priceChangeDocuments FROM DEFAULT{
 
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
-priceChangeCommitteeDepartmentStore = DATA priceChangeCommittee (departmentStore);
+priceChangeCommitteeDepartmentStore = DATA PriceChangeCommittee (DepartmentStore);
 namePriceChangeCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(priceChangeCommitteeDepartmentStore(departmentStore));
 isPriceChangeCommitteeDepartmentStore 'По умолчанию' (priceChangeCommittee, departmentStore) = priceChangeCommitteeDepartmentStore(departmentStore) == priceChangeCommittee;
 CONSTRAINT priceChangeCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(priceChangeCommitteeDepartmentStore(departmentStore), departmentStore)
@@ -234,21 +234,21 @@ EXTEND FORM departmentStore PROPERTIES namePriceChangeCommitteeDepartmentStore(d
 // ----------------------------------- Формы для комиссий переоценки ------------------------------------------ //
 
 FORM priceChangeCommittee 'Комиссия переоценки'
-    OBJECTS c=priceChangeCommittee FIXED PANEL
+    OBJECTS c=PriceChangeCommittee FIXED PANEL
     PROPERTIES(c)      name, nameChairmanCommittee
 
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
-    OBJECTS dep=departmentStore
+    OBJECTS dep=DepartmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isPriceChangeCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
@@ -260,7 +260,7 @@ FORM priceChangeCommittee 'Комиссия переоценки'
     FILTERGROUP filters5
         FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
 
-    EDIT priceChangeCommittee OBJECT c
+    EDIT PriceChangeCommittee OBJECT c
 ;
 
 DESIGN priceChangeCommittee FROM DEFAULT {
@@ -287,22 +287,26 @@ DESIGN priceChangeCommittee FROM DEFAULT {
 }
 
 FORM priceChangeCommitteeDialog 'Комиссии переоценки'
-    OBJECTS rc=priceChangeCommittee
+    OBJECTS rc=PriceChangeCommittee
     PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(rc)      ADDFORM, EDITFORM
 
-    DIALOG priceChangeCommittee OBJECT rc
+    DIALOG PriceChangeCommittee OBJECT rc
 ;
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 
 META defineDocumentHeaderPriceChange (object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
+    @defineDocumentHeaderPriceChangeInner(object, ###object);
+END
 
-    priceChangeCommittee###object = DATA priceChangeCommittee (object);
+META defineDocumentHeaderPriceChangeInner (object, class)
+    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (class) IN documentPrmGroup;
+
+    priceChangeCommittee###object = DATA PriceChangeCommittee (class);
     namePriceChangeCommittee###object 'Комиссия переоценки' (object) = name(priceChangeCommittee###object(object)) IN documentPrmGroup;
     priceChangeCommittee###object(object) <- priceChangeCommitteeDepartmentStore(departmentStore###object(object))
-        WHEN object IS object;
+        WHEN object IS class;
 END
 
 // ----------------------------------- Макросы для создания документов переоценки ------------------------------------------ //
@@ -402,7 +406,7 @@ isPostedPriceChangeDocumentDetail (priceChangeDocumentDetail) = isPostedPriceCha
 departmentStorePriceChangeDocumentDetail (priceChangeDocumentDetail) = departmentStorePriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
 descriptionPriceChangeDocumentDetail (priceChangeDocumentDetail)= descriptionPriceChangeDocument(priceChangeDocumentPriceChangeDocumentDetail(priceChangeDocumentDetail));
 
-@implementSkuLedgerInLIFO(priceChangeDocumentDetail, sku, departmentStore);
-quantityInLIFOSkuLedger (ledger) += 0.0 IF ledger IS priceChangeDocumentDetail;
-limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS priceChangeDocumentDetail AND  batch IS batch;
+@implementSkuLedgerInLIFO(PriceChangeDocumentDetail, sku, departmentStore);
+quantityInLIFOSkuLedger (ledger) += 0.0 IF ledger IS PriceChangeDocumentDetail;
+limitInLIFOSkuLedgerBatch (ledger, batch) +=  0.0 IF ledger IS PriceChangeDocumentDetail AND  batch IS Batch;
 sumInSkuLedger(ledger) += diffRetailSumPriceChangeDocumentDetail(ledger);

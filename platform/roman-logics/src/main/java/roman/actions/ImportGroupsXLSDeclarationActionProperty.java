@@ -33,7 +33,7 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
     String row;
 
     public ImportGroupsXLSDeclarationActionProperty(ScriptingLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("declaration")});
+        super(LM, new ValueClass[]{LM.getClassByName("Declaration")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         declarationInterface = i.next();

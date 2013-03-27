@@ -19,7 +19,7 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
     private final ClassPropertyInterface tableColumnInterface;
 
     public RecalculateTableColumnActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("tableColumn")});
+        super(LM, new ValueClass[]{LM.getClassByName("TableColumn")});
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableColumnInterface = i.next();
     }

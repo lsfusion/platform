@@ -2,29 +2,29 @@ MODULE SaleLedger;
 
 REQUIRE System, Stock, Tax, Employee, Sale, PriceRound;
 
-CLASS ABSTRACT saleLedger 'Продажа товара';
-TABLE saleLedger(saleLedger);
+CLASS ABSTRACT SaleLedger 'Продажа товара';
+TABLE saleLedger(SaleLedger);
 
-dateTimeSaleLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (saleLedger) PERSISTENT INDEXED;
+dateTimeSaleLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (SaleLedger) PERSISTENT INDEXED;
 dateSaleLedger 'Дата' (ledger) = toDate(dateTimeSaleLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedSaleLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (saleLedger) PERSISTENT;
+isPostedSaleLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (SaleLedger) PERSISTENT;
 
-skuSaleLedger (ledger) = ABSTRACT sku (saleLedger) PERSISTENT INDEXED;
+skuSaleLedger (ledger) = ABSTRACT Sku (SaleLedger) PERSISTENT INDEXED;
 nameSkuSaleLedger 'SKU' (ledger) = nameSku(skuSaleLedger(ledger));
 
-stockSaleLedger (ledger) = ABSTRACT stock (saleLedger) PERSISTENT INDEXED;
+stockSaleLedger (ledger) = ABSTRACT Stock (SaleLedger) PERSISTENT INDEXED;
 nameStockSaleLedger 'Склад' (ledger) = name(stockSaleLedger(ledger));
 
-descriptionSaleLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (saleLedger) PERSISTENT;
+descriptionSaleLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (SaleLedger) PERSISTENT;
 
-quantitySaleLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (saleLedger) PERSISTENT;
+quantitySaleLedger 'Кол-во' (ledger) = ABSTRACT NUMERIC[14,3] (SaleLedger) PERSISTENT;
 
-sumSaleLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (saleLedger) PERSISTENT;
+sumSaleLedger 'Сумма продажи' (ledger) = ABSTRACT NUMERIC[16,2] (SaleLedger) PERSISTENT;
 
-costSumSaleLedger 'Себестоимость продажи' (ledger) = ABSTRACT NUMERIC[16,2] (saleLedger) PERSISTENT;
+costSumSaleLedger 'Себестоимость продажи' (ledger) = ABSTRACT NUMERIC[16,2] (SaleLedger) PERSISTENT;
 
-customerSaleLedger (ledger) = ABSTRACT legalEntity (saleLedger) PERSISTENT INDEXED;
+customerSaleLedger (ledger) = ABSTRACT LegalEntity (SaleLedger) PERSISTENT INDEXED;
 nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger(ledger));
 
 inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
@@ -38,7 +38,7 @@ CONSTRAINT quantitySaleLedger(saleLedger) == 0 MESSAGE 'ошибка: Колич
 
 averagePriceSaleLedger 'Цена продажи (средняя)' (saleLedger) = sumSaleLedger(saleLedger)/quantitySaleLedger(saleLedger);
 
-VATSaleLedger (ledger) = ABSTRACT range (saleLedger) PERSISTENT;
+VATSaleLedger (ledger) = ABSTRACT Range (SaleLedger) PERSISTENT;
 valueVATSaleLedger 'НДС, %' (ledger) = valueRateRangeDate(VATSaleLedger(ledger), dateSaleLedger(ledger));
 
 sumVATSaleLedger 'Сумма НДС' (ledger) = [X*Y/(100+Y)](
@@ -106,11 +106,11 @@ sumSoldTypeExchangeSkuDateFromTo 'Продано за интервал (сумм
 
 skuStockAverageInterval 'Интервал расчета продаж в день' = DATA INTEGER ();
 
-averageSoldSkuStock 'Продаж в день' = DATA NUMERIC[14,3] (sku, stock);
+averageSoldSkuStock 'Продаж в день' = DATA NUMERIC[14,3] (Sku, Stock);
 
 calcQuantitySoldInterval = ACTION (dateFrom, dateTo) {
-    LOCAL balance = NUMERIC[14,3] (sku, stock);
-    LOCAL days = INTEGER (sku, stock);
+    LOCAL balance = NUMERIC[14,3] (Sku, Stock);
+    LOCAL days = INTEGER (Sku, Stock);
     LOCAL dateCur = DATE();
 
     SET dateCur() <- (dateFrom AS DATE);
@@ -146,17 +146,17 @@ FORM saleLedger 'Продажи по позициям'
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
-    OBJECTS te = typeExchange FIXED PANEL
+    OBJECTS te = TypeExchange FIXED PANEL
     PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
-    OBJECTS s = saleLedger
+    OBJECTS s = SaleLedger
     PROPERTIES(s) READONLY dateSaleLedger, dateTimeSaleLedger, nameStockSaleLedger, nameCustomerSaleLedger, nameSkuSaleLedger, descriptionSaleLedger,
                            quantitySaleLedger, costSumSkuLedger, markupSumSaleLedger, sumVATSaleLedger, sumSaleLedger, averagePriceSaleLedger
     PROPERTIES    READONLY sumSoldTypeExchangeSaleLedger (te, s)
     FILTERS isPostedSaleLedger(s)
     FILTERS dateSaleLedger(s) >= dFrom, dateSaleLedger(s) <= dTo
 ;
-@extendFormFilterAccess(saleLedger, s, saleLedger, stock);
+@extendFormFilterAccess(SaleLedger, s, saleLedger, stock);
 
 DESIGN saleLedger FROM DEFAULT {
     main {
@@ -183,25 +183,25 @@ FORM saleSkuStock 'Продажи по SKU'
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
-    OBJECTS te = typeExchange FIXED PANEL
+    OBJECTS te = TypeExchange FIXED PANEL
     PROPERTIES nameType = name(te) SELECTOR, nameCurrencyTypeExchange(te) READONLY
 
     OBJECTS w = INTEGER
     FILTERS quantitySkuSoldWeekDateFromTo(w, dFrom, dTo)
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
     FILTERS stockGroupStock(ts) == sg
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS           sts=(st=stock, s=sku)
+    OBJECTS           sts=(st=Stock, s=Sku)
     PROPERTIES        READONLY nameSku(s), stockName = name(st)
 
     FILTERS           isParentSkuGroupSku(sk, s),
-                      (st == ts AND sg IS stockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
+                      (st == ts AND sg IS StockGroup) OR (isParentStockGroupStock(sg, st) AND NOT ts)
 
     ORDER BY          nameSku
 
@@ -216,9 +216,9 @@ FORM saleSkuStock 'Продажи по SKU'
         FILTER 'Показывать с остатками' 'F10' balanceASkuStockDate(s, st, dTo)
 
 ;
-@extendFormFilterStockAccess(stock, st, saleSkuStock);
-@extendFormFilterStockGroupAccess(stock, ts, saleSkuStock, accessEmployeeEmployeeDivision);
-@extendFormFilterStockGroupAccess(stockGroup, sg, saleSkuStock, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Stock, st, saleSkuStock);
+@extendFormFilterStockGroupAccess(Stock, ts, saleSkuStock, accessEmployeeEmployeeDivision);
+@extendFormFilterStockGroupAccess(StockGroup, sg, saleSkuStock, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN saleSkuStock FROM DEFAULT {
 
@@ -267,9 +267,9 @@ NAVIGATOR {
 //---------------------------------------------- Расширение формы подбор товаров -------------------------------------//
 META defineCustomerDialogStockSku (form)
 
-    form###customer = DATA SESSION legalEntity ();
+    form###customer = DATA SESSION LegalEntity ();
     form###nameCustomer 'Покупатель' () = name(form###customer()) PREFCHARWIDTH 30;
-    form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS sku AND NOT form###customer());
+    form###customersFilter (sku) =  (TRUE AND inCustomerSku(form###customer(), sku)) OR (sku IS Sku AND NOT form###customer());
 
     EXTEND FORM form
         PROPERTIES() form###nameCustomer
@@ -294,7 +294,7 @@ META implementSaleLedgerCustom(concrete, skuProp, stockProp)
     descriptionSaleLedger (ledger) += description###concrete##Detail(ledger);
 END
 META implementSaleLedger(concrete, skuProp, stockProp)
-    EXTEND CLASS concrete##Detail : saleLedger;
+    EXTEND CLASS concrete##Detail : SaleLedger;
     @implementSaleLedgerCustom(concrete, skuProp, stockProp);
 END
 

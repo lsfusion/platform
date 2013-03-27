@@ -9,7 +9,7 @@ currentBalanceItemStock 'Текущий остаток' (item, stock) = received
 CONSTRAINT currentBalanceItemStock(item, stock)<0 MESSAGE 'Остаток по товару не может быть отрицательным';
 
 FORM currentBalanceItemStock 'Текущие остатки'
-    OBJECTS si=(s=stock, i=item)
+    OBJECTS si=(s=Stock, i=Item)
     PROPERTIES READONLY nameItem(i), barcodeItem(i), nameStock(s), currentBalanceItemStock(i, s)
 	FILTERS currentBalanceItemStock(i, s)
 ;

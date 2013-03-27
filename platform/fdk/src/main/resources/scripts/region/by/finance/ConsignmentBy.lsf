@@ -11,31 +11,31 @@ REQUIRE System,
 
 NAMESPACE Consignment;
 
-CLASS wayOfLoading 'Способ ПРР' : named;
-TABLE wayOfLoading (wayOfLoading);
+CLASS WayOfLoading 'Способ ПРР' : Named;
+TABLE wayOfLoading (WayOfLoading);
 
 
 GROUP sumConsignmentGroup 'Суммы' : base;
 
-CLASS ABSTRACT consignment 'Накладная';
-CLASS ABSTRACT consignmentDetail 'Строка накладной';
+CLASS ABSTRACT Consignment 'Накладная';
+CLASS ABSTRACT ConsignmentDetail 'Строка накладной';
 
-dateConsignment 'Дата' (consignment) = ABSTRACT DATE (consignment);
+dateConsignment 'Дата' (consignment) = ABSTRACT DATE (Consignment);
 
 // ---------------------------------- Юридические лица ---------------------- //
-supplierConsignment = ABSTRACT legalEntity (consignment);
+supplierConsignment = ABSTRACT LegalEntity (Consignment);
 UNPSupplierConsignment 'УНП отправителя' (consignment) = UNPLegalEntity(supplierConsignment(consignment));
 addressSupplierConsignment 'Юридический адрес отправителя' (consignment) =
     addressLegalEntityDate(supplierConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 fullNameSupplierConsignment 'Наименование для накладных отправителя' (consignment) = fullNameLegalEntity(supplierConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-customerConsignment = ABSTRACT legalEntity (consignment);
+customerConsignment = ABSTRACT LegalEntity (Consignment);
 UNPCustomerConsignment 'УНП получателя' (consignment) = UNPLegalEntity(customerConsignment(consignment));
 addressCustomerConsignment 'Юридический адрес получателя' (consignment) =
     addressLegalEntityDate(customerConsignment(consignment), dateConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 fullNameCustomerConsignment 'Наименование для накладных получателя' (consignment) = fullNameLegalEntity(customerConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-payerConsignment = ABSTRACT legalEntity (consignment);
+payerConsignment = ABSTRACT LegalEntity (Consignment);
 UNPPayerConsignment 'УНП заказчика перевозки' (consignment) = UNPLegalEntity(payerConsignment(consignment));
 addressPayerConsignment 'Юридический адрес заказчика перевозки' (consignment) =
     addressLegalEntityDate(payerConsignment(consignment), dateConsignment(consignment));
@@ -46,121 +46,121 @@ fullNamePayerConsignment 'Наименование для накладных з�
 
 GROUP carConsignmentGroup 'Автомобиль' : base;
 
-truckConsignment = ABSTRACT truck(consignment);
-dataNameTruckConsignment = ABSTRACT STRING[70] (consignment);
+truckConsignment = ABSTRACT Truck(Consignment);
+dataNameTruckConsignment = ABSTRACT STRING[70] (Consignment);
 nameTruckConsignment 'Автомобиль' (consignment) = UNION OVERRIDE nameTruck(truckConsignment(consignment)),
                                                                  dataNameTruckConsignment(consignment) IN carConsignmentGroup;
 
-dataOwnerConsignment = ABSTRACT STRING[100] (consignment);
+dataOwnerConsignment = ABSTRACT STRING[100] (Consignment);
 ownerTruckConsignment 'Владелец автомобиля' (consignment) = UNION OVERRIDE ownerTruck(truckConsignment(consignment)),
                                                                            dataOwnerConsignment(consignment) IN carConsignmentGroup;
 
-dataTrailerConsignment = ABSTRACT STRING[100] (consignment);
+dataTrailerConsignment = ABSTRACT STRING[100] (Consignment);
 trailerConsignment 'Прицеп' (consignment) = UNION OVERRIDE trailerTruck(truckConsignment(consignment)),
                                                            dataTrailerConsignment(consignment) IN carConsignmentGroup;
 
-driverConsignment = ABSTRACT driver(consignment);
-dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (consignment);
+driverConsignment = ABSTRACT Driver(Consignment);
+dataNameDriverConsignment 'Водитель' = ABSTRACT STRING[40] (Consignment);
 nameDriverConsignment 'Водитель' (consignment) = UNION OVERRIDE nameContact(driverConsignment(consignment)),
                                                                 dataNameDriverConsignment(consignment) IN carConsignmentGroup;
 
-dataWaybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (consignment) IN carConsignmentGroup;
+dataWaybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[20] (Consignment) IN carConsignmentGroup;
 
-waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[200] (consignment) IN carConsignmentGroup;
+waybillConsignment 'Путевой лист' (consignment) = ABSTRACT STRING[200] (Consignment) IN carConsignmentGroup;
 
 overWaybillConsignment 'Путевой лист' (consignment) = UNION OVERRIDE waybillConsignment(consignment), dataWaybillConsignment(consignment);
 
 
 // Склад погрузки
-supplierStockConsignment (consignment) = ABSTRACT stock (consignment);
+supplierStockConsignment (consignment) = ABSTRACT Stock (Consignment);
 nameSupplierStockConsignment 'Склад погрузки' (consignment) = name(supplierStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-dataAddressSupplierStockConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (consignment);
+dataAddressSupplierStockConsignment 'Пункт погрузки' (consignment) = ABSTRACT STRING[50] (Consignment);
 addressSupplierStockConsignment 'Пункт погрузки' (consignment) = UNION OVERRIDE addressStock(supplierStockConsignment(consignment)),
                                                                                 dataAddressSupplierStockConsignment (consignment) IN carConsignmentGroup;
 
 // Склад разгрузки
-customerStockConsignment (consignment) = ABSTRACT stock (consignment);
+customerStockConsignment (consignment) = ABSTRACT Stock (Consignment);
 nameCustomerStockConsignment 'Склад разгрузки' (consignment) = name(customerStockConsignment(consignment)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
 
-dataAddressCustomerStockConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
+dataAddressCustomerStockConsignment 'Пункт разгрузки' (consignment) = ABSTRACT STRING[50] (Consignment) IN carConsignmentGroup;
 addressCustomerStockConsignment 'Пункт разгрузки' (consignment) = UNION OVERRIDE addressStock(customerStockConsignment(consignment)),
                                                                                  dataAddressCustomerStockConsignment (consignment) IN carConsignmentGroup;
 
-readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (consignment) IN carConsignmentGroup;
+readdressingConsignment 'Переадресовка' (consignment) = ABSTRACT STRING[50] (Consignment) IN carConsignmentGroup;
 
 // ------------------------------------- Отпуск товара --------------------------------- //
 
 GROUP issuanceConsignmentGroup 'Отпуск' : base;
 
-shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
+shipmentBaseConsignment 'Основание отпуска' (consignment) = ABSTRACT STRING[30] (Consignment) IN issuanceConsignmentGroup;
 
-issuanceAllowedConsignment (consignment) = ABSTRACT employee (consignment);
+issuanceAllowedConsignment (consignment) = ABSTRACT Employee (Consignment);
 nameIssuanceAllowedConsignment 'Отпуск разрешил' (consignment) = nameContact(issuanceAllowedConsignment(consignment)) IN issuanceConsignmentGroup;
 
-issuanceExecutedConsignment (consignment) = ABSTRACT employee(consignment);
+issuanceExecutedConsignment (consignment) = ABSTRACT Employee(Consignment);
 nameIssuanceExecutedConsignment 'Отпуск произвел' (consignment) = nameContact(issuanceExecutedConsignment(consignment)) IN issuanceConsignmentGroup;
 
-forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
+forwarderConsignment 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (consignment) = ABSTRACT STRING[40] (Consignment) IN issuanceConsignmentGroup;
 
-warrantConsignment 'По доверенности (номер, дата)' (consignment) = ABSTRACT STRING[30] (consignment) IN issuanceConsignmentGroup;
-warrantHolderConsignment 'По доверенности выданной (наименование орг-ии)' (consignment) = ABSTRACT STRING[100] (consignment) IN issuanceConsignmentGroup;
+warrantConsignment 'По доверенности (номер, дата)' (consignment) = ABSTRACT STRING[30] (Consignment) IN issuanceConsignmentGroup;
+warrantHolderConsignment 'По доверенности выданной (наименование орг-ии)' (consignment) = ABSTRACT STRING[100] (Consignment) IN issuanceConsignmentGroup;
 
-goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = ABSTRACT STRING[40] (consignment) IN issuanceConsignmentGroup;
+goodsAcceptedConsignment 'Принял грузополучатель' (consignment) = ABSTRACT STRING[40] (Consignment) IN issuanceConsignmentGroup;
 
 // ------------------------------------- Погрузочно-разгрузочные работы --------------------------------- //
 
 GROUP loadingConsignmentGroup 'ПРР' : base;
 
-loadingExecuterConsignment (consignment) = ABSTRACT employee(consignment);
+loadingExecuterConsignment (consignment) = ABSTRACT Employee(Consignment);
 nameLoadingExecuterConsignment 'Исполнитель ПРР' (consignment) = nameContact(loadingExecuterConsignment(consignment)) IN loadingConsignmentGroup;
 
-wayOfLoadingConsignment (consignment) = ABSTRACT wayOfLoading(consignment);
+wayOfLoadingConsignment (consignment) = ABSTRACT WayOfLoading(Consignment);
 nameWayOfLoadingConsignment 'Способ ПРР' (consignment) = name(wayOfLoadingConsignment(consignment)) IN loadingConsignmentGroup;
 
-codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (consignment)IN loadingConsignmentGroup;
+codeLoadingConsignment 'Код ПРР' (consignment) = ABSTRACT STRING[3] (Consignment)IN loadingConsignmentGroup;
 
-arrivalTimeConsignment 'Время прибытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
-departureTimeConsignment 'Время убытия' (consignment) = ABSTRACT DATETIME(consignment) IN carConsignmentGroup;
-downtimeConsignment 'Время простоя' (consignment) = ABSTRACT STRING[10] (consignment) IN carConsignmentGroup;
+arrivalTimeConsignment 'Время прибытия' (consignment) = ABSTRACT DATETIME(Consignment) IN carConsignmentGroup;
+departureTimeConsignment 'Время убытия' (consignment) = ABSTRACT DATETIME(Consignment) IN carConsignmentGroup;
+downtimeConsignment 'Время простоя' (consignment) = ABSTRACT STRING[10] (Consignment) IN carConsignmentGroup;
 
-raceQuantityConsignment 'Количество ездок' (consignment) = ABSTRACT INTEGER (consignment) IN carConsignmentGroup;
+raceQuantityConsignment 'Количество ездок' (consignment) = ABSTRACT INTEGER (Consignment) IN carConsignmentGroup;
 
-noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (consignment) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+noteConsignment 'Примечание' (consignment) = ABSTRACT STRING[100] (Consignment) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 namePayerConsignment 'Заказчик перевозки ' (consignment) =
     [FORMULA STRING[100] 'CAST($1 AS TEXT) ||  \' , \' || CAST($2 AS TEXT)']
     (name(payerConsignment(consignment)), UNPLegalEntity(payerConsignment(consignment))) IN carConsignmentGroup;
 
-skuConsignmentDetail (consignmentDetail) = ABSTRACT sku (consignmentDetail);
+skuConsignmentDetail (consignmentDetail) = ABSTRACT Sku (ConsignmentDetail);
 nameSkuConsignmentDetail 'Наименование товара' (consignmentDetail) = nameSku(skuConsignmentDetail(consignmentDetail));
 
 shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = shortNameUOMSku(skuConsignmentDetail(consignmentDetail));
-//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (consignmentDetail);
+//shortNameUOMConsignmentDetail 'Единица измерения' (consignmentDetail) = ABSTRACT STRING[15] (ConsignmentDetail);
 
-consignmentConsignmentDetail (consignmentDetail) = ABSTRACT consignment (consignmentDetail);
+consignmentConsignmentDetail (consignmentDetail) = ABSTRACT Consignment (ConsignmentDetail);
 
-quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
+quantityConsignmentDetail 'Количество' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
 
-priceConsignmentDetail 'Цена' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
+priceConsignmentDetail 'Цена' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
 
-sumConsignmentDetail 'Стоимость' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
+sumConsignmentDetail 'Стоимость' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (ConsignmentDetail);
 
-vatConsignmentDetail 'НДС, %' (consignmentDetail) = ABSTRACT NUMERIC[10,5] (consignmentDetail);
+vatConsignmentDetail 'НДС, %' (consignmentDetail) = ABSTRACT NUMERIC[10,5] (ConsignmentDetail);
 
-sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
+sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (ConsignmentDetail);
 
-sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (consignmentDetail);
+sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (ConsignmentDetail);
 
-quantityPackConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
+quantityPackConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
 
-grossWeightConsignmentDetail 'Масса груза, кг.' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (consignmentDetail);
+grossWeightConsignmentDetail 'Масса груза, кг.' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
 grossWeightTonConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round6(grossWeightConsignmentDetail(consignmentDetail) / 1000);
 
-noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
-extraDescriptionConsignmentDetail 'Доп. наименование' (consignmentDetail) = ABSTRACT STRING[255] (consignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+noteConsignmentDetail 'Примечание' (consignmentDetail) = ABSTRACT STRING[100] (ConsignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+extraDescriptionConsignmentDetail 'Доп. наименование' (consignmentDetail) = ABSTRACT STRING[255] (ConsignmentDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
-countConsignmentDetailConsignment 'Количество строк' (consignment) = GROUP SUM 1 IF consignmentDetail IS consignmentDetail
+countConsignmentDetailConsignment 'Количество строк' (consignment) = GROUP SUM 1 IF consignmentDetail IS ConsignmentDetail
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 quantityConsignmentDetailConsignment 'Количество (всего)' (consignment) = GROUP SUM quantityConsignmentDetail(consignmentDetail)
@@ -176,26 +176,26 @@ grossWeightConsignmentDetailConsignment 'Общая масса груза, кг.
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 
-isCustomsFlowConsignment 'Расход с СВХ' (consignment) = ABSTRACT BOOLEAN (consignment);
+isCustomsFlowConsignment 'Расход с СВХ' (consignment) = ABSTRACT BOOLEAN (Consignment);
 
-currencyConsignment 'Валюта (ИД)' (consignment) = ABSTRACT currency (consignment);
+currencyConsignment 'Валюта (ИД)' (consignment) = ABSTRACT Currency (Consignment);
 shortNameCurrencyConsignment 'Валюта' (consignment) = shortNameCurrency(currencyConsignment(consignment));
 documentNameCurrencyConsignment 'Валюта в накладной сокр.' (consignment) = documentNameCurrency(currencyConsignment(consignment));
 isCurrencyConsignment 'Выбрана валюта' (consignment) = TRUE IF currencyConsignment(consignment);
 
 // Посуда на возврате
-isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (consignment);
-wareSumConsignmentDetailConsignment 'Сумма посуды с НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
-supplierSumConsignmentDetailConsignment 'Сумма поставщика без НДС' (consignment) = ABSTRACT NUMERIC[14,2] (consignment);
+isWareConsignment 'Возврат поставщику' (consignment) = ABSTRACT BOOLEAN (Consignment);
+wareSumConsignmentDetailConsignment 'Сумма посуды с НДС' (consignment) = ABSTRACT NUMERIC[14,2] (Consignment);
+supplierSumConsignmentDetailConsignment 'Сумма поставщика без НДС' (consignment) = ABSTRACT NUMERIC[14,2] (Consignment);
 
-wareConsignmentDetail (consignmentDetail) = ABSTRACT ware (consignmentDetail);
+wareConsignmentDetail (consignmentDetail) = ABSTRACT Ware (ConsignmentDetail);
 nameWareConsignmentDetail 'Посуда' (consignmentDetail) = name(wareConsignmentDetail(consignmentDetail));
-warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-valueWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (consignmentDetail);
-wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
-wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (consignmentDetail);
+warePriceConsignmentDetail 'Цена посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
+wareSumConsignmentDetail 'Сумма посуды с НДС' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
+valueWareRangeConsignmentDetail 'НДС посуды, %' (consignmentDetail) = ABSTRACT NUMERIC[6,2] (ConsignmentDetail);
+wareVATSumConsignmentDetail 'Сумма НДС по посуде' (consignmentDetail) = ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
+wareSupplierPriceConsignmentDetail 'Цена посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
+wareSupplierSumConsignmentDetail 'Сумма посуды без НДС' (consignmentDetail) =  ABSTRACT NUMERIC[14,2] (ConsignmentDetail);
 
 sumIaWConsignmentDetail 'Сумма с посудой без НДС' (consignmentDetail) = sumConsignmentDetail(consignmentDetail) (+) wareSupplierSumConsignmentDetail(consignmentDetail);
 sumConsignmentDetailConsignment 'Сумма с посудой без НДС (всего)' (consignment) = GROUP SUM sumIaWConsignmentDetail(consignmentDetail)
@@ -214,7 +214,7 @@ sumInvoiceConsignmentDetailConsignment 'Сумма c НДС (всего)' (consi
 META defineConsignmentFormSimple(form, caption)
 
     FORM form caption PRINT
-        OBJECTS c=consignment FIXED PANEL
+        OBJECTS c=Consignment FIXED PANEL
 
         PROPERTIES (c) dateConsignment, shipmentBaseConsignment, nameIssuanceAllowedConsignment, nameIssuanceExecutedConsignment,
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
@@ -223,7 +223,7 @@ META defineConsignmentFormSimple(form, caption)
                        fullNameCustomerConsignment, numberObject, seriesObject, countConsignmentDetailConsignment,
                        isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
 
-        OBJECTS d=consignmentDetail
+        OBJECTS d=ConsignmentDetail
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
@@ -242,7 +242,7 @@ END
 
 META defineConsignmentForm(form, caption)
     FORM form caption PRINT
-        OBJECTS c=consignment FIXED PANEL
+        OBJECTS c=Consignment FIXED PANEL
 
         PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
                        fullNameCustomerConsignment, nameTruckConsignment, ownerTruckConsignment, trailerConsignment, nameDriverConsignment, overWaybillConsignment,
@@ -256,7 +256,7 @@ META defineConsignmentForm(form, caption)
                        countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
                        seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
 
-        OBJECTS d=consignmentDetail
+        OBJECTS d=ConsignmentDetail
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
@@ -277,7 +277,7 @@ END
 @defineConsignmentForm(consignmentAttach, 'Приложение к ТТН-1');
 
 FORM consignment 'Атрибуты накладной'
-    OBJECTS c=consignment FIXED PANEL
+    OBJECTS c=Consignment FIXED PANEL
 
     PROPERTIES (c) READONLY objectClassName, nameSupplierStockConsignment, seriesObject, numberObject
     PROPERTIES (c) dateConsignment, UNPCustomerConsignment, UNPSupplierConsignment, addressSupplierConsignment, addressCustomerConsignment, fullNameSupplierConsignment,
@@ -292,7 +292,7 @@ FORM consignment 'Атрибуты накладной'
                    countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment//, SHOWIF isCustomsFlowConsignment(c)
 
 
-    OBJECTS d=consignmentDetail
+    OBJECTS d=ConsignmentDetail
 
     PROPERTIES(d) nameSkuConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
@@ -403,7 +403,7 @@ editConsignment 'Заполнить атрибуты накладной' (consig
 
 
 FORM printConsignment 'Печать накладных'
-    OBJECTS c=consignment FIXED PANEL
+    OBJECTS c=Consignment FIXED PANEL
 
     PROPERTIES (c)  printConsignmentSimpleVertical, printConsignmentSimpleHorizontal, printConsignmentSimpleAttach,
                     printConsignmentVerticalA, printConsignmentHorizontalA, printConsignmentVerticalB,
@@ -460,85 +460,92 @@ printConsignment 'Печать' (consignment) = ACTION FORM printConsignment OBJ
 // ----------------- Объявление заголовка накладной --------------- //
 
 META defineConsignmentHeader (object)
+    @defineConsignmentHeaderInner (object, ###object);
+END
 
-    payer###object (object) = DATA legalEntity (object) IN carConsignmentGroup;
+META defineConsignmentHeaderInner (object, class)
+    payer###object (object) = DATA LegalEntity (class) IN carConsignmentGroup;
 
-    dataNameTruck###object 'Автомобиль' (object) = DATA STRING[30] (object) IN carConsignmentGroup;
-    dataOwner###object 'Владелец автомобиля' (object) = DATA STRING[100] (object) IN carConsignmentGroup;
-    dataTrailer###object 'Прицеп' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
-    dataNameDriver###object 'Водитель' (object) = DATA STRING[40] (object) IN carConsignmentGroup;
-    waybill###object 'Путевой лист' (object) = DATA STRING[20] (object) IN carConsignmentGroup;
+    dataNameTruck###object 'Автомобиль' (object) = DATA STRING[30] (class) IN carConsignmentGroup;
+    dataOwner###object 'Владелец автомобиля' (object) = DATA STRING[100] (class) IN carConsignmentGroup;
+    dataTrailer###object 'Прицеп' (object) = DATA STRING[10] (class) IN carConsignmentGroup;
+    dataNameDriver###object 'Водитель' (object) = DATA STRING[40] (class) IN carConsignmentGroup;
+    waybill###object 'Путевой лист' (object) = DATA STRING[20] (class) IN carConsignmentGroup;
 
-    dataAddressSupplierStock###object 'Пункт погрузки' (object) = DATA STRING[50] (object);
-    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = DATA STRING[50] (object);
+    dataAddressSupplierStock###object 'Пункт погрузки' (object) = DATA STRING[50] (class);
+    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = DATA STRING[50] (class);
 
-    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (object) IN carConsignmentGroup;
+    readdressing###object 'Переадресовка' (object) = DATA STRING[50] (class) IN carConsignmentGroup;
 
-    shipmentBase###object 'Основание отпуска' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
+    shipmentBase###object 'Основание отпуска' (object) = DATA STRING[30] (class) IN issuanceConsignmentGroup;
 
-    issuanceAllowed###object (object) = DATA employee(object);
+    issuanceAllowed###object (object) = DATA Employee(class);
 
-    issuanceExecuted###object (object) = DATA employee(object);
+    issuanceExecuted###object (object) = DATA Employee(class);
 
-    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
+    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = DATA STRING[40] (class) IN issuanceConsignmentGroup;
 
-    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30] (object) IN issuanceConsignmentGroup;
-    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = DATA STRING[100] (object) IN issuanceConsignmentGroup;
+    warrant###object 'По доверенности (номер, дата)' (object) = DATA STRING[30] (class) IN issuanceConsignmentGroup;
+    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = DATA STRING[100] (class) IN issuanceConsignmentGroup;
 
-    goodsAccepted###object 'Принял грузополучатель' (object) = DATA STRING[40] (object) IN issuanceConsignmentGroup;
+    goodsAccepted###object 'Принял грузополучатель' (object) = DATA STRING[40] (class) IN issuanceConsignmentGroup;
 
-    loadingExecuter###object (object) = DATA employee(object);
+    loadingExecuter###object (object) = DATA Employee(class);
 
-    wayOfLoading###object (object) = DATA wayOfLoading(object);
+    wayOfLoading###object (object) = DATA WayOfLoading(class);
 
-    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (object) IN loadingConsignmentGroup;
+    codeLoading###object 'Код ПРР' (object) = DATA STRING[3] (class) IN loadingConsignmentGroup;
 
-    arrivalTime###object 'Время прибытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
-    departureTime###object 'Время убытия' (object) = DATA DATETIME(object) IN carConsignmentGroup;
-    downtime###object 'Время простоя' (object) = DATA STRING[10] (object) IN carConsignmentGroup;
+    arrivalTime###object 'Время прибытия' (object) = DATA DATETIME(class) IN carConsignmentGroup;
+    departureTime###object 'Время убытия' (object) = DATA DATETIME(class) IN carConsignmentGroup;
+    downtime###object 'Время простоя' (object) = DATA STRING[10] (class) IN carConsignmentGroup;
 
-    raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (object) IN carConsignmentGroup;
+    raceQuantity###object 'Количество ездок' (object) = DATA INTEGER (class) IN carConsignmentGroup;
 END
 
 META defineConsignmentAbstractHeader(object)
+    @defineConsignmentAbstractHeaderInner(object, ###object);
+END
 
-    payer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT legalEntity (object) IN carConsignmentGroup;
+META defineConsignmentAbstractHeaderInner(object, class)
 
-    dataNameTruck###object 'Автомобиль' (object) = ABSTRACT STRING[30] (object) IN carConsignmentGroup;
-    dataOwner###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (object) IN carConsignmentGroup;
-    dataTrailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
-    dataNameDriver###object 'Водитель' (object) = ABSTRACT STRING[40] (object) IN carConsignmentGroup;
-    waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (object) IN carConsignmentGroup;
+    payer###object 'Заказчик перевозки (ИД)' (object) = ABSTRACT LegalEntity (class) IN carConsignmentGroup;
 
-    dataAddressSupplierStock###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (object);
-    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (object);
+    dataNameTruck###object 'Автомобиль' (object) = ABSTRACT STRING[30] (class) IN carConsignmentGroup;
+    dataOwner###object 'Владелец автомобиля' (object) = ABSTRACT STRING[100] (class) IN carConsignmentGroup;
+    dataTrailer###object 'Прицеп' (object) = ABSTRACT STRING[10] (class) IN carConsignmentGroup;
+    dataNameDriver###object 'Водитель' (object) = ABSTRACT STRING[40] (class) IN carConsignmentGroup;
+    waybill###object 'Путевой лист' (object) = ABSTRACT STRING[20] (class) IN carConsignmentGroup;
 
-    readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (object) IN carConsignmentGroup;
+    dataAddressSupplierStock###object 'Пункт погрузки' (object) = ABSTRACT STRING[50] (class);
+    dataAddressCustomerStock###object 'Пункт разгрузки' (object) = ABSTRACT STRING[50] (class);
 
-    shipmentBase###object 'Основание отпуска' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
+    readdressing###object 'Переадресовка' (object) = ABSTRACT STRING[50] (class) IN carConsignmentGroup;
 
-    issuanceAllowed###object (object) = ABSTRACT employee(object);
+    shipmentBase###object 'Основание отпуска' (object) = ABSTRACT STRING[30] (class) IN issuanceConsignmentGroup;
 
-    issuanceExecuted###object (object) = ABSTRACT employee(object);
+    issuanceAllowed###object (object) = ABSTRACT Employee(class);
 
-    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+    issuanceExecuted###object (object) = ABSTRACT Employee(class);
 
-    warrant###object 'По доверенности (номер, дата)' (object) = ABSTRACT STRING[30] (object) IN issuanceConsignmentGroup;
-    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = ABSTRACT STRING[100] (object) IN issuanceConsignmentGroup;
+    forwarder###object 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы' (object) = ABSTRACT STRING[40] (class) IN issuanceConsignmentGroup;
 
-    goodsAccepted###object 'Принял грузополучатель' (object) = ABSTRACT STRING[40] (object) IN issuanceConsignmentGroup;
+    warrant###object 'По доверенности (номер, дата)' (object) = ABSTRACT STRING[30] (class) IN issuanceConsignmentGroup;
+    warrantHolder###object 'По доверенности выданной (наименование орг-ии)' (object) = ABSTRACT STRING[100] (class) IN issuanceConsignmentGroup;
 
-    loadingExecuter###object (object) = ABSTRACT employee(object);
+    goodsAccepted###object 'Принял грузополучатель' (object) = ABSTRACT STRING[40] (class) IN issuanceConsignmentGroup;
 
-    wayOfLoading###object (object) = ABSTRACT wayOfLoading(object);
+    loadingExecuter###object (object) = ABSTRACT Employee(class);
 
-    codeLoading###object 'Код ПРР' (object) = ABSTRACT STRING[3] (object) IN loadingConsignmentGroup;
+    wayOfLoading###object (object) = ABSTRACT WayOfLoading(class);
 
-    arrivalTime###object 'Время прибытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
-    departureTime###object 'Время убытия' (object) = ABSTRACT DATETIME(object) IN carConsignmentGroup;
-    downtime###object 'Время простоя' (object) = ABSTRACT STRING[10] (object) IN carConsignmentGroup;
+    codeLoading###object 'Код ПРР' (object) = ABSTRACT STRING[3] (class) IN loadingConsignmentGroup;
 
-    raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (object) IN carConsignmentGroup;
+    arrivalTime###object 'Время прибытия' (object) = ABSTRACT DATETIME(class) IN carConsignmentGroup;
+    departureTime###object 'Время убытия' (object) = ABSTRACT DATETIME(class) IN carConsignmentGroup;
+    downtime###object 'Время простоя' (object) = ABSTRACT STRING[10] (class) IN carConsignmentGroup;
+
+    raceQuantity###object 'Количество ездок' (object) = ABSTRACT INTEGER (class) IN carConsignmentGroup;
 END
 
 META defineConsignmentInterfaceHeader(object, stockProp)
@@ -553,7 +560,7 @@ END
 // ----------------- Implement заголовка накладной --------------- //
 
 META implementConsignmentHeader (concrete)
-    EXTEND CLASS concrete : consignment;
+    EXTEND CLASS concrete : Consignment;
 
     dateConsignment (consignment) += date###concrete(consignment);
 
@@ -686,7 +693,11 @@ END
 // -------------------------- Implement строк накладной -------------------- //
 
 META implementConsignmentDetail (concrete, skuProp)
-    EXTEND CLASS concrete##Detail : consignmentDetail;
+    @implementConsignmentDetailInner (concrete, ###concrete, skuProp);
+END
+
+META implementConsignmentDetailInner (concrete, concreteClass, skuProp)
+    EXTEND CLASS concreteClass##Detail : ConsignmentDetail;
 
     consignmentConsignmentDetail (consignmentDetail) += concrete###concrete##Detail (consignmentDetail);
     skuConsignmentDetail (consignmentDetail) += skuProp###concrete##Detail (consignmentDetail);

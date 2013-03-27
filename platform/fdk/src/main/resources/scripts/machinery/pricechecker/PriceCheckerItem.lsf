@@ -3,6 +3,6 @@ MODULE PriceCheckerItem;
 REQUIRE Item, Machinery, PriceChecker;
 
 createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupPriceChecker THEN
+    IF groupMachinery IS GroupPriceChecker THEN
         SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
 }

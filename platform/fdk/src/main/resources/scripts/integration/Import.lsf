@@ -34,36 +34,36 @@ REQUIRE System,
         WarePurchaseInvoice,
         WriteOffItem;
 
-EXTEND CLASS bank : externalizable;
-EXTEND CLASS barcode : externalizable;
-EXTEND CLASS brand : externalizable;
-EXTEND CLASS calcPriceListType : externalizable;
-EXTEND CLASS chainStores : externalizable;
-EXTEND CLASS departmentStore : externalizable;
-EXTEND CLASS employee : externalizable;
-EXTEND CLASS item : externalizable;
-EXTEND CLASS itemGroup : externalizable;
-EXTEND CLASS legalEntity : externalizable;
-EXTEND CLASS position : externalizable;
-EXTEND CLASS store : externalizable;
-EXTEND CLASS UOM : externalizable;
-EXTEND CLASS userContractSku : externalizable;
-EXTEND CLASS userInvoiceDetail : externalizable;
-EXTEND CLASS userPriceList : externalizable;
-EXTEND CLASS ware : externalizable;
-EXTEND CLASS warehouse : externalizable;
-EXTEND CLASS warehouseGroup : externalizable;
-EXTEND CLASS writeOffRate : externalizable;
+EXTEND CLASS Bank : Externalizable;
+EXTEND CLASS Barcode : Externalizable;
+EXTEND CLASS Brand : Externalizable;
+EXTEND CLASS CalcPriceListType : Externalizable;
+EXTEND CLASS ChainStores : Externalizable;
+EXTEND CLASS DepartmentStore : Externalizable;
+EXTEND CLASS Employee : Externalizable;
+EXTEND CLASS Item : Externalizable;
+EXTEND CLASS ItemGroup : Externalizable;
+EXTEND CLASS LegalEntity : Externalizable;
+EXTEND CLASS Position : Externalizable;
+EXTEND CLASS Store : Externalizable;
+EXTEND CLASS UOM : Externalizable;
+EXTEND CLASS UserContractSku : Externalizable;
+EXTEND CLASS UserInvoiceDetail : Externalizable;
+EXTEND CLASS UserPriceList : Externalizable;
+EXTEND CLASS Ware : Externalizable;
+EXTEND CLASS Warehouse : Externalizable;
+EXTEND CLASS WarehouseGroup : Externalizable;
+EXTEND CLASS WriteOffRate : Externalizable;
 
-numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS userInvoice;
+numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
 
-userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS userPriceListDetail;
+userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
 storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP UNIQUE storeType BY name (storeType), sidExternalizable(storeType);
 
-sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (batch) PERSISTENT;
+sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
 
-sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS shipmentBatch;
+sidExternalizableBatch (batch) += sidExternalizable (invoiceDetailShipmentDetail(shipmentDetailShipmentBatch(batch))) IF batch IS ShipmentBatch;
 
 EXTEND FORM legalEntities
     PROPERTIES (l) READONLY sidExternalizable BEFORE delete(l)

@@ -72,27 +72,35 @@ round3 (number) = round(number, 3);
 round6 (number) = round(number, 6);
 // --------------------------------------------- Двойное имя --------------------------------- //
 
-CLASS doubleNamed 'Объект с кратким наименованием' : named;
+CLASS DoubleNamed 'Объект с кратким наименованием' : Named;
 
-shortName 'Краткое наименование' = DATA STRING[5] (doubleNamed) MINCHARWIDTH 4 PREFCHARWIDTH 4 MAXCHARWIDTH 5 IN base;
+shortName 'Краткое наименование' = DATA STRING[5] (DoubleNamed) MINCHARWIDTH 4 PREFCHARWIDTH 4 MAXCHARWIDTH 5 IN base;
 
 // --------------------------------------------- Yes/No --------------------------------- //
-CLASS yesNo 'Логическое' {
+CLASS YesNo 'Логическое' {
     yes 'ДА',
     no 'НЕТ'
-} : named;
+} : Named;
 
-classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS yesNo;
+classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS YesNo;
 
 META defineHistorizableYesNo(property, caption, object1, object1Identity, object2, object2Identity, group)
-    default###property###object1###object2 = yesNo.no AND object1 IS object1 AND object2 IS object2;
-    @defineHistorizableCustomDefault(property, default###property###object1###object2, caption, yesNo, name,
+    @defineHistorizableYesNoInner(property, caption, object1, ###object1, object1Identity, object2, ###object2, object2Identity, group);
+END
+
+META defineHistorizableYesNoInner(property, caption, object1, object1Class, object1Identity, object2, object2Class, object2Identity, group)
+    default###property###object1###object2 = YesNo.no AND object1 IS object1Class AND object2 IS object2Class;
+    @defineHistorizableCustomDefault(property, default###property###object1###object2, caption, YesNo, name,
         object1, object1Identity, object2, object2Identity, 7, group);
 END
 
 META defineHistorizableYesNo(property, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    default###property###object1###object2###object3 = yesNo.no AND object1 IS object1 AND object2 IS object2 AND object3 IS object3;
-    @defineHistorizableCustomDefault(property, default###property###object1###object2###object3, caption, yesNo, name,
+    @defineHistorizableYesNoInner(property, caption, object1, ###object1, object1Identity, object2, ###object2, object2Identity, object3, ###object3, object3Identity, group);
+END
+
+META defineHistorizableYesNoInner(property, caption, object1, object1Class, object1Identity, object2, object2Class, object2Identity, object3, object3Class, object3Identity, group)
+    default###property###object1###object2###object3 = YesNo.no AND object1 IS object1Class AND object2 IS object2Class AND object3 IS object3Class;
+    @defineHistorizableCustomDefault(property, default###property###object1###object2###object3, caption, YesNo, name,
         object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
 END
 
@@ -127,55 +135,79 @@ DESIGN dialogNumeric FROM DEFAULT {
 // --------------------------- Агрегации --------------------------------- //
 
 META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
+    @defineAggregationCustomInner(primProperty, primObject, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationCustomInner (primProperty, primObject, aggrObject, aggrClass, aggrProperty)
     aggrObject###primObject (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
-        WHERE aggrObject IS aggrObject PERSISTENT INDEXED;
+        WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
     aggrProperty(primObject) => aggrObject###primObject(primObject) RESOLVE TRUE;
 
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) = aggrObject IS aggrClass;
     is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
 END
 
 META defineAggregation (primObject, aggrObject, aggrProperty)
-    primObject###aggrObject = DATA primObject (aggrObject) INDEXED;
+    @defineAggregationInner(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationInner (primObject, primClass, aggrObject, aggrClass, aggrProperty)
+    primObject###aggrObject = DATA primClass (aggrClass) INDEXED;
 
     @defineAggregationCustom (primObject###aggrObject, primObject, aggrObject, aggrProperty);
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
+    @defineAggregationCustomInner(prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationCustomInner (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object (prim1Object, prim2Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
-        WHERE aggrObject IS aggrObject;
+        WHERE aggrObject IS aggrClass;
 
     aggrProperty(prim1Object, prim2Object) => aggrObject###prim1Object###prim2Object(prim1Object, prim2Object) RESOLVE TRUE;
 
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) = aggrObject IS aggrClass;
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
 END
 
 META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
-    prim1Object###aggrObject = DATA prim1Object (aggrObject) INDEXED;
-    prim2Object###aggrObject = DATA prim2Object (aggrObject) INDEXED;
+    @defineAggregationInner(prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationInner (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
+    prim1Object###aggrObject = DATA prim1Class (aggrClass) INDEXED;
+    prim2Object###aggrObject = DATA prim2Class (aggrClass) INDEXED;
 
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim2Object, aggrObject, aggrProperty);
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
+    @defineAggregationCustomInner(prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationCustomInner (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object###prim3Object (prim1Object, prim2Object, prim3Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
-        WHERE aggrObject IS aggrObject PERSISTENT INDEXED;
+        WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
     aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE TRUE;
 
-    is###aggrObject(aggrObject) = aggrObject IS aggrObject;
+    is###aggrObject(aggrObject) = aggrObject IS aggrClass;
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE FALSE;
 END
 
 META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
-    prim1Object###aggrObject = DATA prim1Object (aggrObject);
-    prim2Object###aggrObject = DATA prim2Object (aggrObject);
-    prim3Object###aggrObject = DATA prim3Object (aggrObject);
+    @defineAggregationInner(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationInner (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
+    prim1Object###aggrObject = DATA prim1Class (aggrClass);
+    prim2Object###aggrObject = DATA prim2Class (aggrClass);
+    prim3Object###aggrObject = DATA prim3Class (aggrClass);
 
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty);
 END
@@ -205,6 +237,3 @@ META extendFormEditable (form)
         }
     }
 END
-
-
-

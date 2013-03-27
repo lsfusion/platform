@@ -18,8 +18,8 @@ REQUIRE System,
         ContractLedger,
         StockTax;
 
-CLASS ABSTRACT invoice 'Накладная' : contractLedger, contractALedger, inContractLedger, outContractLedger, document;
-CLASS ABSTRACT invoiceDetail 'Строка накладной' : documentDetail;
+CLASS ABSTRACT Invoice 'Накладная' : ContractLedger, ContractALedger, InContractLedger, OutContractLedger, Document;
+CLASS ABSTRACT InvoiceDetail 'Строка накладной' : DocumentDetail;
 
 @defineDocumentAbstract(invoice);
 @defineDocumentAbstractNumber(invoice);
@@ -55,12 +55,12 @@ CLASS ABSTRACT invoiceDetail 'Строка накладной' : documentDetail;
 @defineDocumentAbstractDetailVAT(invoice, , );
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
-@defineDocumentAbstractDetailNote (invoice);
+@defineDocumentAbstractDetailNote (Invoice);
 
 shortDescriptionInvoice (invoice) = [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
                                                seriesNumberObject(invoice), dateInvoice(invoice));
 
-extraDescriptionInvoiceDetail 'Доп. наименование' (invoiceDetail) = ABSTRACT STRING[255] (invoiceDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
+extraDescriptionInvoiceDetail 'Доп. наименование' (invoiceDetail) = ABSTRACT STRING[255] (InvoiceDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 editInvoice 'Редактировать' = ABSTRACT ACTION (invoice) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
@@ -70,12 +70,12 @@ countryInvoiceDetail(invoiceDetail) = countryStock(customerStockInvoice(invoiceI
 
 META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
-    CLASS ABSTRACT invoice 'Накладная'###sign : Invoice.invoice;
-    CLASS ABSTRACT invoiceDetail 'Строка накладной'###sign : Invoice.invoiceDetail;
+    CLASS ABSTRACT Invoice 'Накладная'###sign : Invoice.Invoice;
+    CLASS ABSTRACT InvoiceDetail 'Строка накладной'###sign : Invoice.InvoiceDetail;
 
-    CLASS userInvoice 'Накладная (польз.)'###sign : invoice, historizable, numeratedDocument;
-    CLASS userInvoiceDetail 'Строка накладной (польз.)'###sign : invoiceDetail;
-    CLASS userInvoicePosted 'Проведенная накладная (польз.)'###sign : userInvoice, postedObject;
+    CLASS UserInvoice 'Накладная (польз.)'###sign : Invoice, Historizable, NumeratedDocument;
+    CLASS UserInvoiceDetail 'Строка накладной (польз.)'###sign : InvoiceDetail;
+    CLASS UserInvoicePosted 'Проведенная накладная (польз.)'###sign : UserInvoice, PostedObject;
 
     GROUP invoiceGroup 'Информация о накладной' : base;
 
@@ -126,7 +126,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     @defineDocumentInterfaceHeaderAgreement(invoice);
     @deriveDocumentHeaderAgreement (userInvoice, supplierUserInvoice, customerUserInvoice);
-    noAgreementUserInvoice (invoice) = invoice IS userInvoice AND NOT agreementUserInvoice(invoice);
+    noAgreementUserInvoice (invoice) = invoice IS UserInvoice AND NOT agreementUserInvoice(invoice);
 
     @defineDocumentInterfaceDetailSku(invoice, sku);
     Invoice.skuInvoiceDetail(detail) += skuInvoiceDetail(detail);
@@ -205,10 +205,10 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
 //    fillDocumentInvoice 'Подбор документа' = ACTION (userInvoice) {
 //        FORM documents MODAL;
-//        IF formResult() == formResult.ok THEN {
-//            LOCAL chosenDocument = document();
+//        IF formResult() == FormResult.ok THEN {
+//            LOCAL chosenDocument = Document();
 //            SET chosenDocument() <- chosenObject('d');
-//            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = userInvoiceDetail DO {
+//            FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = UserInvoiceDetail DO {
 //                SET userInvoiceUserInvoiceDetail(i) <- userInvoice;
 //                SET skuInvoiceDetail(i) <- skuDocumentDetail(documentDetail);
 //                SET quantityInvoiceDetail(i) <- quantityDocumentDetail(documentDetail);
@@ -223,7 +223,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     Invoice.editInvoice (invoice) += editInvoice(invoice);
 
     FORM userInvoice 'Накладная'###sign
-        OBJECTS i = userInvoice FIXED PANEL
+        OBJECTS i = UserInvoice FIXED PANEL
         PROPERTIES (i) objectClassName, nameSupplierUserInvoice, nameSupplierStockUserInvoice, nameCustomerUserInvoice, nameCustomerStockUserInvoice,
                        nameNumeratorObject, numberObject, seriesObject, dateUserInvoice, timeUserInvoice,
                        nameCurrencyUserInvoice, nameAgreementUserInvoice, namePriceListTypeUserInvoice SHOWIF noAgreementUserInvoice(i), noteUserInvoice,
@@ -232,7 +232,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
         PROPERTIES (i) toShowProp###userInvoice//, fillDocumentInvoice
 
-        OBJECTS d = userInvoiceDetail
+        OBJECTS d = UserInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
         PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
                        amountPackUserInvoiceDetail ON CHANGE changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE changeQuantityPackUserInvoiceDetail(d)
@@ -254,7 +254,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                        priceListTypeUserInvoiceDetail, currencyUserInvoiceDetail,
                        priceUserInvoiceDetail, VATUserInvoiceDetail, valueVATUserInvoiceDetail, invoicePriceUserInvoiceDetail
 
-        EDIT userInvoice OBJECT i
+        EDIT UserInvoice OBJECT i
     ;
 
     DESIGN userInvoice FROM DEFAULT{
@@ -338,14 +338,14 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     @defineDocumentSkuPriceListType(userInvoice, stockProp);
     @extendFormDocumentSku(userInvoice, userInvoice, i);
 
-    addUserInvoice 'Добавить' = ACTION ADDFORM userInvoice;
-    editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM userInvoice;
+    addUserInvoice 'Добавить' = ACTION ADDFORM UserInvoice;
+    editUserInvoice 'Редактировать' (userInvoice) = ACTION EDITFORM UserInvoice;
     editInvoice (invoice) += editUserInvoice(invoice);
 
     overCopyInvoice = ABSTRACT ACTION (s, d);
 
     copyInvoice 'Копировать' = ACTION (userInvoice) NEWSESSION {
-        FOR ADDOBJ i = userInvoice DO {
+        FOR ADDOBJ i = UserInvoice DO {
             SET supplierUserInvoice(i) <- supplierUserInvoice(userInvoice);
             SET supplierStockUserInvoice(i) <- supplierStockUserInvoice(userInvoice);
             SET customerUserInvoice(i) <- customerUserInvoice(userInvoice);
@@ -362,7 +362,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
             EXEC overCopyInvoice(userInvoice, i);
 
             FOR userInvoiceUserInvoiceDetail(userInvoiceDetail) == userInvoice DO {
-                FOR ADDOBJ d=userInvoiceDetail DO {
+                FOR ADDOBJ d=UserInvoiceDetail DO {
                     SET userInvoiceUserInvoiceDetail(d) <- i;
                     SET skuUserInvoiceDetail(d) <- skuUserInvoiceDetail(userInvoiceDetail);
                     SET quantityUserInvoiceDetail(d) <- quantityUserInvoiceDetail(userInvoiceDetail);
@@ -378,7 +378,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
 
     FORM invoices 'Накладные' TITLE 'Накладные'###sign
-        OBJECTS i = invoice
+        OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, nameAgreementInvoice,
@@ -393,7 +393,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (i) editInvoice, copyInvoice
         PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserInvoice(i)
 
-        OBJECTS d = invoiceDetail
+        OBJECTS d = InvoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
                        amountPackInvoiceDetail, quantityPackInvoiceDetail
@@ -402,9 +402,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
         FILTERS invoiceInvoiceDetail(d) == i
 
-        DIALOG invoice OBJECT i
+        DIALOG Invoice OBJECT i
     ;
-    @extendFormFilterAccess(invoice, i, invoices, stockProp);
+    @extendFormFilterAccess(Invoice, i, invoices, stockProp);
 
     DESIGN invoices FROM DEFAULT {
         main {
@@ -444,14 +444,14 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     }
 
     FORM invoiceDetails 'Продажа'
-        OBJECTS d = invoiceDetail
+        OBJECTS d = InvoiceDetail
         PROPERTIES(d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                                descriptionInvoiceDetail,
                                quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                                numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail,
                                name###stockProp###invoiceDetail
 
-        DIALOG invoiceDetail OBJECT d
+        DIALOG InvoiceDetail OBJECT d
     ;
 
 END
@@ -467,9 +467,9 @@ META defineInvoiceBatch(stockProp)
                                  t = dateTimeUserInvoiceDetail(userInvoiceDetail),
                                  sk = skuUserInvoiceDetail(userInvoiceDetail) MODAL SHOWDROP;
 
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             SET batchUserInvoiceDetail(userInvoiceDetail) <- chosenObject('bt');
-        } ELSE IF formResult() == formResult.drop THEN {
+        } ELSE IF formResult() == FormResult.drop THEN {
             SET batchUserInvoiceDetail(userInvoiceDetail) <- NULL;
         }
 
@@ -483,8 +483,8 @@ META defineInvoiceBatch(stockProp)
 END
 
 META defineInvoiceReturn(NS, NSR, stockProp)
-    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.invoiceDetail (NSR.invoiceDetail) PERSISTENT;
-    invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.invoiceDetail (NSR.userInvoiceDetail);
+    invoiceDetailInvoiceDetail (invoiceDetail) = ABSTRACT NS.InvoiceDetail (NSR.InvoiceDetail) PERSISTENT;
+    invoiceDetailUserInvoiceDetail (userInvoiceDetail) = DATA NS.InvoiceDetail (NSR.UserInvoiceDetail);
     invoiceDetailInvoiceDetail(detail) += invoiceDetailUserInvoiceDetail(detail);
 
     returnQuantityInvoiceDetail 'Кол-во (возвращено)' (invoiceDetail)= GROUP SUM NSR.quantityInvoiceDetail(invoiceDetail) BY invoiceDetailInvoiceDetail(invoiceDetail);
@@ -587,7 +587,7 @@ META defineDocumentPackSkuCustom(object, detail, skuProp, stockProp, NS)
             }
         } ELSE {
             IF requestedNumeric() THEN
-                FOR ADDOBJ d = detail DO {
+                FOR ADDOBJ d = ###detail DO {
                 SET object###detail(d) <- object;
                 SET stockProp###detail (d) <- stockProp###object(object);
                 SET skuProp###detail(d) <- sku;
@@ -626,28 +626,29 @@ END
 
 // вторая валюта
 META defineHomeCurrencyInvoice(invoice)
-    isHomeCurrency 'Конвертация' = DATA BOOLEAN(invoice) IN documentPrmGroup;
+    isHomeCurrency 'Конвертация' = DATA BOOLEAN(###invoice) IN documentPrmGroup;
 
-    homeCurrencyInvoice = ABSTRACT currency(invoice);
-    homeCurrencyUserInvoice = DATA currency(user###invoice);
+    homeCurrencyInvoice = ABSTRACT Currency(###invoice);
+    homeCurrencyUserInvoice = DATA Currency(User###invoice);
     homeCurrencyInvoice(invoice) += homeCurrencyUserInvoice(invoice);
     nameHomeCurrencyInvoice 'Валюта (пост.)' (invoice) = name(homeCurrencyInvoice(invoice));
 
-    typeExchangeInvoice = ABSTRACT typeExchange(invoice);
-    typeExchangeUserInvoice = DATA typeExchange(user###invoice);
+    typeExchangeInvoice = ABSTRACT TypeExchange(###invoice);
+    typeExchangeUserInvoice = DATA TypeExchange(User###invoice);
     typeExchangeInvoice(invoice) += typeExchangeUserInvoice(invoice);
     nameTypeExchangeInvoice 'Тип обмена' (invoice) = name(typeExchangeInvoice(invoice));
 
-    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(invoice);
-    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(user###invoice);
+    dateRateExchangeInvoice 'Дата конвертации' = ABSTRACT DATE(###invoice);
+
+    dateRateExchangeUserInvoice 'Дата конвертации' = DATA DATE(User###invoice);
     dateRateExchangeInvoice(invoice) += dateRateExchangeUserInvoice(invoice);
 
     dateRateExchangeUserInvoice(user###invoice) <- dateInvoice(user###invoice) WHEN CHANGED (dateInvoice(user###invoice));
 
     calcRateExchangeInvoice 'Курс' (invoice) = rateTypeExchangeCurrencyDate(typeExchangeInvoice(invoice), currencyInvoice(invoice), dateRateExchangeInvoice(invoice));
 
-    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](invoice);
-    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](user###invoice);
+    rateExchangeInvoice 'Курс' = ABSTRACT NUMERIC[14,3](###invoice);
+    rateExchangeUserInvoice 'Курс' = DATA NUMERIC[14,3](User###invoice);
     rateExchangeInvoice(invoice) += rateExchangeUserInvoice(invoice);
 
     rateExchangeUserInvoice(invoice) <- calcRateExchangeInvoice(invoice) WHEN CHANGED (dateRateExchangeInvoice(invoice)) OR
@@ -657,8 +658,8 @@ META defineHomeCurrencyInvoice(invoice)
     roundCurrencyInvoice(number, invoice) = roundPriceCurrency(number, homeCurrencyInvoice(invoice));
     ratePriceInvoiceDetail 'Цена (пост.)' (invoice##Detail) = roundCurrencyInvoice(priceInvoiceDetail(invoice##Detail)*rateExchangeInvoice(invoiceInvoiceDetail(invoice##Detail)), invoiceInvoiceDetail(invoice##Detail));
 
-    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](invoice##Detail);
-    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](user###invoice##Detail);
+    homePriceInvoiceDetail 'Цена (пост.)' = ABSTRACT NUMERIC[14,3](###invoice##Detail);
+    homePriceUserInvoiceDetail 'Цена (пост.)' = DATA NUMERIC[14,3](User###invoice##Detail);
     homePriceInvoiceDetail(invoiceDetail) += homePriceUserInvoiceDetail(invoiceDetail);
 
     homePriceUserInvoiceDetail(invoice##Detail) <- ratePriceInvoiceDetail(invoice##Detail) WHEN CHANGED (dateInvoice(invoiceInvoiceDetail(invoice##Detail))) OR

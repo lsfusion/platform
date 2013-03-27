@@ -33,9 +33,9 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(cust
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 
 supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
@@ -51,14 +51,14 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
 
 // ------------------------------- Проведение по регистру остатков ------------------------ //
 
-@implementSkuLedgerInLIFO(shipmentDetail, sku, supplierStock);
+@implementSkuLedgerInLIFO(ShipmentDetail, sku, supplierStock);
 quantityInLIFOSkuLedger (ledger) += quantityShipmentDetail(ledger);
 @implementSkuLedgerInLIFOBatchBalance(shipmentDetail, supplierStock);
 sumInSkuLedger(ledger) += sumShipmentDetail(ledger);
 
 // ------------------------------- Проведение по товарному отчету ------------------------ //
 
-@implementStockDocumentLedgerInc(shipment, supplierStock);
+@implementStockDocumentLedgerInc(Shipment, supplierStock);
 sumIncStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

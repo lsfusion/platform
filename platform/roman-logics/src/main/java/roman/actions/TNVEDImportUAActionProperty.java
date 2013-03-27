@@ -26,7 +26,7 @@ public class TNVEDImportUAActionProperty extends CustomReadValueActionProperty {
     private final ClassPropertyInterface customsZoneInterface;
 
     public TNVEDImportUAActionProperty(String sID, String caption, RomanLogicsModule LM) {
-        super(sID, caption, new ValueClass[]{LM.getClassByName("customsZone")});
+        super(sID, caption, new ValueClass[]{LM.getClassByName("CustomsZone")});
         this.LM = LM;
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

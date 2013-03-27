@@ -26,19 +26,19 @@ Order.operationOrder(order) += operationOrder(order);
 
 @defineDocumentInterfaceHeaderTAX(order, VAT, 'НДС расч.');
 
-CONSTRAINT taxRange(VATUserOrder(userOrder)) != tax.taxVAT OR
+CONSTRAINT taxRange(VATUserOrder(userOrder)) != Tax.taxVAT OR
            countryRange(VATUserOrder(userOrder)) != countryStock(supplierStockOrder(userOrder)) OR
-           rangeTypeRange(VATUserOrder(userOrder)) != rangeType.units
+           rangeTypeRange(VATUserOrder(userOrder)) != RangeType.units
            CHECKED BY VATUserOrder
            MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
-VATUserOrder (userOrder) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserOrder(userOrder)))
+VATUserOrder (userOrder) <- rangeTaxTaxUnit(Tax.taxVAT, storeDepartmentStore(supplierStockUserOrder(userOrder)))
         WHEN CHANGED(supplierStockUserOrder(userOrder));
 
 @deriveDocumentDetailVATHeader(userOrder, VAT, supplierStock);
 
 derivedVATSumUserOrderDetail (userOrderDetail) =
-    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
         THEN roundPriceCurrency(invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail) * valueVATUserOrderDetail (userOrderDetail)/100, currencyUserOrderDetail(userOrderDetail))
         ELSE roundPriceCurrency((sumUserOrderDetail(userOrderDetail) * valueVATUserOrderDetail (userOrderDetail) / 100), currencyUserOrderDetail(userOrderDetail))
     PERSISTENT;
@@ -48,7 +48,7 @@ VATSumUserOrderDetail (userOrderDetail) <- derivedVATSumUserOrderDetail (userOrd
       OR CHANGED(sumUserOrderDetail(userOrderDetail)) OR CHANGED(currencyUserOrderDetail(userOrderDetail));
 
 derivedInvoiceSumUserOrderDetail (userOrderDetail) =
-    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
         THEN invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail)
         ELSE sumUserOrderDetail (userOrderDetail) (+) VATSumUserOrderDetail (userOrderDetail)
     PERSISTENT;
@@ -58,7 +58,7 @@ invoiceSumUserOrderDetail (userOrderDetail) <- derivedInvoiceSumUserOrderDetail 
     OR CHANGED(sumUserOrderDetail(userOrderDetail)) OR CHANGED(VATSumUserOrderDetail(userOrderDetail));
 
 derivedPriceUserOrderDetail (userOrderDetail) =
-    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
         THEN invoicePriceUserOrderDetail(userOrderDetail)*(100-valueVATUserOrderDetail (userOrderDetail))/100
         ELSE invoicePriceUserOrderDetail(userOrderDetail)*100/(100+valueVATUserOrderDetail (userOrderDetail))
     PERSISTENT;
@@ -66,7 +66,7 @@ derivedPriceUserOrderDetail (userOrderDetail) =
 priceUserOrderDetail (userOrderDetail) <- derivedPriceUserOrderDetail (userOrderDetail)
     WHEN CHANGED(invoicePriceUserOrderDetail(userOrderDetail)) OR CHANGED(VATUserOrderDetail (userOrderDetail));
 
-isDepartmentStoreSupplierStockOrder (order) = supplierStockOrder(order) IS departmentStore;
+isDepartmentStoreSupplierStockOrder (order) = supplierStockOrder(order) IS DepartmentStore;
 
 EXTEND FORM userOrder
     PROPERTIES(o) numberVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o), valueVATUserOrder SHOWIF isDepartmentStoreSupplierStockOrder(o);
@@ -75,13 +75,13 @@ EXTEND FORM userOrder
 // ----------------------------- Автоматическая отсылка почты ---------------------------------- //
 
 FORM emailOrder 'Заказ' PRINT
-    OBJECTS o = order FIXED PANEL
+    OBJECTS o = Order FIXED PANEL
     PROPERTIES (o) numberOrder, seriesOrder, nameSupplierOrder, nameCustomerOrder, nameSupplierStockOrder, nameCustomerStockOrder,
                    numberObject, seriesObject, dateOrder, timeOrder, nameCurrencyOrder, noteOrder,
                    countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                    VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder
 
-    OBJECTS d = orderDetail
+    OBJECTS d = OrderDetail
     PROPERTIES (d) indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
                    quantityOrderDetail, priceOrderDetail,  sumOrderDetail, valueVATOrderDetail,
                    VATSumOrderDetail, invoiceSumOrderDetail
@@ -111,9 +111,9 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
+    WHEN ASSIGNED(userOrder IS UserOrder);
 customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
+    WHEN ASSIGNED(userOrder IS UserOrder);
 
 supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
@@ -152,7 +152,7 @@ EXTEND FORM userOrder
 @extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
 
 //--------------------- Проводим по регистру резерва ------------------//
-@implementSaleOrderLedger(order, sku, shipmentDateTime, supplierStock, customer);
+@implementSaleOrderLedger(Order, sku, shipmentDateTime, supplierStock, customer);
 
 
 NAVIGATOR {

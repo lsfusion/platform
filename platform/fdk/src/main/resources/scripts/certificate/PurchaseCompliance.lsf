@@ -20,19 +20,19 @@ invoicesCompliance 'Накладные' (compliance) =
     GROUP CONCAT shortDescriptionInvoice(invoice) IF inComplianceInvoice (compliance, invoice), ','
               BY compliance ORDER invoice PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80 MAXCHARWIDTH 120;
 
-backgroundCompliancedInvoice 'Цвет' (invoice) = RGB(224, 224, 255) IF invoice IS invoice;
+backgroundCompliancedInvoice 'Цвет' (invoice) = RGB(224, 224, 255) IF invoice IS Invoice;
 
-nameComplianceSku 'Наименование (декл.)' = ABSTRACT STRING[200](sku);
+nameComplianceSku 'Наименование (декл.)' = ABSTRACT STRING[200](Sku);
 nameComplianceSku(sku) += nameSku(sku);
 
 nameComplianceUserInvoiceDetail 'Наименование (декл.)' (userInvoiceDetail) = nameComplianceSku(skuUserInvoiceDetail(userInvoiceDetail));
 
-isComplianceInvoice 'Сертификация' = ABSTRACT BOOLEAN(invoice);
-isComplianceUserInvoice 'Сертификация' = DATA BOOLEAN(userInvoice) IN documentPrmGroup;
+isComplianceInvoice 'Сертификация' = ABSTRACT BOOLEAN(Invoice);
+isComplianceUserInvoice 'Сертификация' = DATA BOOLEAN(UserInvoice) IN documentPrmGroup;
 isComplianceInvoice(invoice) += isComplianceUserInvoice(invoice);
 
-isComplianceInvoiceDetail 'Необходимость сертификации' = ABSTRACT BOOLEAN(invoiceDetail);
-isComplianceUserInvoiceDetail 'Необходимость сертификации' = DATA BOOLEAN(userInvoiceDetail);
+isComplianceInvoiceDetail 'Необходимость сертификации' = ABSTRACT BOOLEAN(InvoiceDetail);
+isComplianceUserInvoiceDetail 'Необходимость сертификации' = DATA BOOLEAN(UserInvoiceDetail);
 isComplianceInvoiceDetail(invoiceDetail) += isComplianceUserInvoiceDetail(invoiceDetail);
 
 quantityCompliancedInvoice 'Кол-во для сертификации' (invoice) = GROUP SUM 1 IF isComplianceInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
@@ -43,13 +43,13 @@ isComplianceUserInvoiceDetail(userInvoiceDetail) <- isComplianceItemUserInvoiceD
                                                                                                               CHANGED (skuUserInvoiceDetail(userInvoiceDetail));
 
 FORM complianceInvoices 'Накладные сертификации'
-    OBJECTS c=compliance FIXED PANEL
+    OBJECTS c=Compliance FIXED PANEL
     PROPERTIES(c) seriesNumberObject, nameLegalEntityCompliance, dateTimeCompliance
 
-    OBJECTS i=userInvoice
+    OBJECTS i=UserInvoice
     PROPERTIES (c, i) inComplianceInvoice
     PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
-    FILTERS inComplianceInvoice(c, i) OR c AS compliance AND NOT complianceUserInvoice(i)
+    FILTERS inComplianceInvoice(c, i) OR c AS Compliance AND NOT complianceUserInvoice(i)
 
     FILTERGROUP filtersImporter
         FILTER 'Только получателя' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT
@@ -57,7 +57,7 @@ FORM complianceInvoices 'Накладные сертификации'
     FILTERGROUP filtersComplianced
         FILTER 'Требующие сертифицирования' 'F10' quantityCompliancedInvoice(i) DEFAULT
 
-    OBJECTS id=userInvoiceDetail
+    OBJECTS id=UserInvoiceDetail
     PROPERTIES(c, id) inComplianceInvoiceDetail
     PROPERTIES(id) READONLY indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, isComplianceUserInvoiceDetail,
                    shortNameUOMSkuUserInvoiceDetail, quantityUserInvoiceDetail, priceUserInvoiceDetail
@@ -75,7 +75,7 @@ showFormComplianceInvoices 'Накладные сертификации' = ACTIO
 EXTEND FORM compliance
     PROPERTIES(c) invoicesCompliance
 
-    OBJECTS id=userInvoiceDetail
+    OBJECTS id=UserInvoiceDetail
     PROPERTIES(id) READONLY seriesNumberInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, isComplianceUserInvoiceDetail,
                    quantityUserInvoiceDetail, priceUserInvoiceDetail, homePriceInvoiceDetail, sumHomeInvoiceDetail
 
@@ -98,22 +98,22 @@ EXTEND DESIGN compliance {
 
 //------------------------------------------ позиции сертификата -------------------------------------------------------//
 
-quantityCertificatedUserInvoiceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](userInvoiceDetail);
+quantityCertificatedUserInvoiceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](UserInvoiceDetail);
 
-TABLE complianceComplianceName(compliance, STRING[200]);
+TABLE complianceComplianceName(Compliance, STRING[200]);
 
 quantityGroupCompliance 'Кол-во' = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
                                           BY complianceUserInvoiceDetail(userInvoiceDetail),
                                              nameComplianceUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
 
-CLASS complianceDetail 'Позиция сертификата';
-TABLE complianceDetail(complianceDetail);
+CLASS ComplianceDetail 'Позиция сертификата';
+TABLE complianceDetail(ComplianceDetail);
 
-complianceComplianceDetail = DATA compliance(complianceDetail);
+complianceComplianceDetail = DATA Compliance(ComplianceDetail);
 
-nameComplianceComplianceDetail 'Наименование' = DATA STRING[200](complianceDetail);
+nameComplianceComplianceDetail 'Наименование' = DATA STRING[200](ComplianceDetail);
 
-skuComplianceDetail = DATA sku(complianceDetail);
+skuComplianceDetail = DATA Sku(ComplianceDetail);
 nameSkuComplianceDetail 'Товар на экспертизу' (complianceDetail) = nameSku(skuComplianceDetail(complianceDetail));
 
 @defineDocumentPosted(compliance);
@@ -121,10 +121,10 @@ nameSkuComplianceDetail 'Товар на экспертизу' (complianceDetail
 @defineDocumentDetailBatchCustom(complianceDetail, batch);
 
 numberDefaultComplianceDetail 'Номер' (complianceDetail) =
-        PARTITION SUM 1 IF complianceDetail IS complianceDetail BY complianceComplianceDetail(complianceDetail)
+        PARTITION SUM 1 IF complianceDetail IS ComplianceDetail BY complianceComplianceDetail(complianceDetail)
         ORDER complianceDetail;
 
-userNumberComplianceDetail 'Пользовательский номер' (complianceDetail) = DATA INTEGER (complianceDetail);
+userNumberComplianceDetail 'Пользовательский номер' (complianceDetail) = DATA INTEGER (ComplianceDetail);
 numberComplianceDetail 'Номер' (complianceDetail) = UNION OVERRIDE numberDefaultComplianceDetail(complianceDetail), userNumberComplianceDetail(complianceDetail);
 
 dateTimeComplianceDetail (complianceDetail) = dateTimeCompliance(complianceComplianceDetail(complianceDetail));
@@ -132,7 +132,7 @@ stockComplianceDetail (complianceDetail) = stockCompliance(complianceComplianceD
 descriptionComplianceDetail (complianceDetail) = descriptionCompliance(complianceComplianceDetail(complianceDetail));
 
 // привязка строк накладных
-complianceDetailInvoiceDetail(invoiceDetail) = DATA complianceDetail(invoiceDetail);
+complianceDetailInvoiceDetail(invoiceDetail) = DATA ComplianceDetail(InvoiceDetail);
 inInvoiceDetailComplianceDetail 'Вкл.' (invoiceDetail, complianceDetail) = complianceDetailInvoiceDetail(invoiceDetail)==complianceDetail;
 
 quantityComplianceDetail 'Кол-во' (complianceDetail) = GROUP SUM quantityUserInvoiceDetail(invoiceDetail) BY complianceDetailInvoiceDetail(invoiceDetail) PERSISTENT;
@@ -148,19 +148,19 @@ invoicesComplianceDetail 'Накладные' (complianceDetail) =
 quantitySkuComplianceDetail 'Кол-во' (sku, complianceDetail) = GROUP SUM quantityUserInvoiceDetail(userInvoiceDetail)
                                                                       BY skuUserInvoiceDetail(userInvoiceDetail), complianceDetailInvoiceDetail(userInvoiceDetail);
 
-CONSTRAINT complianceDetail IS complianceDetail AND NOT quantitySkuComplianceDetail(skuComplianceDetail(complianceDetail), complianceDetail) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар'; //
+CONSTRAINT complianceDetail IS ComplianceDetail AND NOT quantitySkuComplianceDetail(skuComplianceDetail(complianceDetail), complianceDetail) CHECKED BY skuComplianceDetail MESSAGE 'Не тот товар'; //
 
 // экспертиза
 priceCertificatedComplianceDetail 'Цена для экспертизы' (complianceDetail) = GROUP MIN homePriceInvoiceDetail(userInvoiceDetail) BY complianceDetailInvoiceDetail(userInvoiceDetail);
 
-quantityCertificatedComplianceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](complianceDetail);
+quantityCertificatedComplianceDetail 'Кол-во на экспертизу' = DATA NUMERIC[14,3](ComplianceDetail);
 
 sumCertificatedComplianceDetail 'Стоимость экспертизы (расч.)' (complianceDetail) = quantityCertificatedComplianceDetail(complianceDetail) * priceCertificatedComplianceDetail(complianceDetail);
 
-sumDataCertificatedComplianceDetail 'Стоимость для экспертизы' (complianceDetail) = DATA NUMERIC[14,2](complianceDetail);
+sumDataCertificatedComplianceDetail 'Стоимость для экспертизы' (complianceDetail) = DATA NUMERIC[14,2](ComplianceDetail);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(complianceDetail, sku, stock);
+@implementSkuLedgerOutFIFO(ComplianceDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityCertificatedComplianceDetail(ledger);
 @implementSkuLedgerOutFIFOBatchBalance(complianceDetail, stock);
 sumOutSkuLedger (ledger) += sumDataCertificatedComplianceDetail(ledger);
@@ -173,7 +173,7 @@ setSumComplianceDetail 'Рассчитать стоимость' = ACTION (compl
 };
 
 toCreateComplianceDetails 'Создать позиции' = ACTION (compliance) {
-    FOR quantityGroupCompliance(compliance, complianceName)>0 ADDOBJ cd=complianceDetail DO {
+    FOR quantityGroupCompliance(compliance, complianceName)>0 ADDOBJ cd=ComplianceDetail DO {
         SET complianceComplianceDetail(cd) <- compliance;
         SET nameComplianceComplianceDetail(cd) <- complianceName;
 
@@ -187,7 +187,7 @@ toCreateComplianceDetails 'Создать позиции' = ACTION (compliance) 
 
 EXTEND FORM compliance
 
-    OBJECTS cd=complianceDetail
+    OBJECTS cd=ComplianceDetail
     PROPERTIES(id, cd) inInvoiceDetailComplianceDetail
     PROPERTIES(cd) numberComplianceDetail
     PROPERTIES(cd) READONLY invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail
@@ -217,15 +217,15 @@ EXTEND FORM compliances
 
     PROPERTIES(c) FORCE GRID isPostedCompliance BEFORE objectClassName(c)
 
-    OBJECTS cd=complianceDetail
+    OBJECTS cd=ComplianceDetail
     PROPERTIES(cd) READONLY numberComplianceDetail, invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail,
                    nameSkuComplianceDetail, quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail
     FILTERS complianceComplianceDetail(cd)==c
 ;
 
 //--------------------------------------------- себестоимость --------------------------------------------------------//
-priceComplianceInvoiceDetail 'Сертификация (ед.)' = ABSTRACT NUMERIC[14,2](invoiceDetail);
-priceComplianceUserInvoiceDetail 'Сертификация (ед.)' = DATA NUMERIC[14,2](userInvoiceDetail);
+priceComplianceInvoiceDetail 'Сертификация (ед.)' = ABSTRACT NUMERIC[14,2](InvoiceDetail);
+priceComplianceUserInvoiceDetail 'Сертификация (ед.)' = DATA NUMERIC[14,2](UserInvoiceDetail);
 priceComplianceInvoiceDetail(detail) += priceComplianceUserInvoiceDetail(detail);
 
 coeffInvoiceDetailComplianceDetail(invoiceDetail) = sumHomeInvoiceDetail(invoiceDetail)/sumHomeComplianceDetail(complianceDetailInvoiceDetail(invoiceDetail));

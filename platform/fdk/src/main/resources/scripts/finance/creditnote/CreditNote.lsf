@@ -6,12 +6,12 @@ REQUIRE Shipment, Invoice;
 
 META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
-    CLASS ABSTRACT creditNote 'Акт расхождения'###sign ;
-    CLASS ABSTRACT creditNoteDetail 'Строка акта расхождения'###sign ;
+    CLASS ABSTRACT CreditNote 'Акт расхождения'###sign ;
+    CLASS ABSTRACT CreditNoteDetail 'Строка акта расхождения'###sign ;
 
-    CLASS userCreditNote 'Акт расхождения (польз.)'###sign : creditNote, historizable, numeratedDocument;
-    CLASS userCreditNoteDetail 'Строка акта расхождения (польз.)'###sign : creditNoteDetail;
-    CLASS userCreditNotePosted 'Проведенный акта расхождения (польз.)'###sign : userCreditNote, postedObject;
+    CLASS UserCreditNote 'Акт расхождения (польз.)'###sign : CreditNote, Historizable, NumeratedDocument;
+    CLASS UserCreditNoteDetail 'Строка акта расхождения (польз.)'###sign : CreditNoteDetail;
+    CLASS UserCreditNotePosted 'Проведенный акта расхождения (польз.)'###sign : UserCreditNote, PostedObject;
 
     @defineDocumentInterface(creditNote);
 
@@ -63,14 +63,14 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 // --------------------------- Формы --------------------------------- //
 
     FORM userCreditNote 'Акт расхождений'###sign
-        OBJECTS c = userCreditNote FIXED PANEL
+        OBJECTS c = UserCreditNote FIXED PANEL
         PROPERTIES (c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateUserCreditNote, timeUserCreditNote,
                        nameSupplierUserCreditNote, nameCustomerUserCreditNote, nameSupplierStockUserCreditNote, nameCustomerStockUserCreditNote,
                        nameCurrencyUserCreditNote, noteUserCreditNote,
                        countUserCreditNoteDetailUserCreditNote, quantityUserCreditNoteDetailUserCreditNote, sumUserCreditNoteDetailUserCreditNote,
                        VATSumUserCreditNoteDetailUserCreditNote, invoiceSumUserCreditNoteDetailUserCreditNote
 
-        OBJECTS d = userCreditNoteDetail
+        OBJECTS d = UserCreditNoteDetail
         PROPERTIES (d) indexUserCreditNoteDetail, idBarcodeSkuUserCreditNoteDetail, nameSkuUserCreditNoteDetail, shortNameUOMSkuUserCreditNoteDetail,
                        quantityUserCreditNoteDetail, priceUserCreditNoteDetail, sumUserCreditNoteDetail,
                        numberVATUserCreditNoteDetail, valueVATUserCreditNoteDetail, VATSumUserCreditNoteDetail, invoiceSumUserCreditNoteDetail,
@@ -83,7 +83,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         EVENTS
             ON OK prePostUserCreditNote(c)
 
-        EDIT userCreditNote OBJECT c
+        EDIT UserCreditNote OBJECT c
     ;
 
     DESIGN userCreditNote FROM DEFAULT{
@@ -142,11 +142,11 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         }
     }
 
-    addUserCreditNote 'Добавить' = ACTION ADDFORM userCreditNote;
-    editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM userCreditNote;
+    addUserCreditNote 'Добавить' = ACTION ADDFORM UserCreditNote;
+    editUserCreditNote 'Редактировать' (userCreditNote) = ACTION EDITFORM UserCreditNote;
 
     FORM creditNotes 'Акты расхождений' TITLE 'Акты расхождений'###sign
-        OBJECTS c = creditNote
+        OBJECTS c = CreditNote
         PROPERTIES (c) READONLY isPostedCreditNote FORCE GRID, numberCreditNote, seriesCreditNote, dateCreditNote, timeCreditNote,
                                 nameSupplierCreditNote, nameSupplierStockCreditNote, nameCustomerCreditNote, nameCustomerStockCreditNote,
                                 nameCurrencyCreditNote, countCreditNoteDetailCreditNote, quantityCreditNoteDetailCreditNote, sumCreditNoteDetailCreditNote,
@@ -158,15 +158,15 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
         PROPERTIES (c) editUserCreditNote
         PROPERTIES (c) delete FORCE PANEL TOOLBAR SHOWIF isUserCreditNote(c)
 
-        OBJECTS d = creditNoteDetail
+        OBJECTS d = CreditNoteDetail
         PROPERTIES (d) READONLY indexCreditNoteDetail, idBarcodeSkuCreditNoteDetail, nameSkuCreditNoteDetail, shortNameUOMSkuCreditNoteDetail,
                                 quantityCreditNoteDetail, priceCreditNoteDetail, sumCreditNoteDetail, numberVATCreditNoteDetail, valueVATCreditNoteDetail,
                                  VATSumCreditNoteDetail, invoiceSumCreditNoteDetail, name###stockProp###creditNoteDetail
         FILTERS creditNoteCreditNoteDetail(d) == c
 
-        DIALOG creditNote OBJECT c
+        DIALOG CreditNote OBJECT c
     ;
-    @extendFormFilterAccess(creditNote, c, creditNotes, stockProp);
+    @extendFormFilterAccess(CreditNote, c, creditNotes, stockProp);
 
     DESIGN creditNotes FROM DEFAULT {
         PROPERTY (delete(c)) {
@@ -204,8 +204,8 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
 
 //--  Связь акта и накладной
-    invoiceDetailCreditNoteDetail = ABSTRACT invoiceDetail (creditNoteDetail) PERSISTENT;
-    invoiceDetailUserCreditNoteDetail = DATA invoiceDetail (userCreditNoteDetail);
+    invoiceDetailCreditNoteDetail = ABSTRACT InvoiceDetail (CreditNoteDetail) PERSISTENT;
+    invoiceDetailUserCreditNoteDetail = DATA InvoiceDetail (UserCreditNoteDetail);
     invoiceDetailCreditNoteDetail(creditNoteDetail) += invoiceDetailUserCreditNoteDetail(creditNoteDetail);
 
     CONSTRAINT supplierCreditNoteDetail(detail) != supplierInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)) OR
@@ -279,9 +279,9 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
 
     EXTEND FORM invoices PROPERTIES(i) READONLY createCreditNoteInvoice;
 
-    CLASS invoiceCreditNote 'Акт расхождения на основе инвойса' : creditNote;
-    CLASS invoiceCreditNotePosted 'Проведенный акт расхождения на основе инвойса' : invoiceCreditNote, postedObject;
-    CLASS invoiceCreditNoteDetail 'Строка акта расхождения на основе инвойса' : creditNoteDetail;
+    CLASS InvoiceCreditNote 'Акт расхождения на основе инвойса' : CreditNote;
+    CLASS InvoiceCreditNotePosted 'Проведенный акт расхождения на основе инвойса' : InvoiceCreditNote, PostedObject;
+    CLASS InvoiceCreditNoteDetail 'Строка акта расхождения на основе инвойса' : CreditNoteDetail;
 
     @defineDocumentTables(invoiceCreditNote);
 

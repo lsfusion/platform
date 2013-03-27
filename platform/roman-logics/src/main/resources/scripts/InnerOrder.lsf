@@ -17,8 +17,8 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Внутренний заказ ------------------------------------ //
-CLASS innerOrder 'Внутренний заказ': historizable, numeratedObject;
-CLASS innerOrderDetail 'Строка внутреннего заказа';
+CLASS InnerOrder 'Внутренний заказ': Historizable, NumeratedObject;
+CLASS InnerOrderDetail 'Строка внутреннего заказа';
 
 @defineNumeratedObjectDefault(innerOrder, 'Нумератор для внутренних заказов', 'ВЗ');
 
@@ -49,23 +49,23 @@ CLASS innerOrderDetail 'Строка внутреннего заказа';
 @defineAddDetailDialogSkuStock(innerOrder, sku, stock, dialogSku);
 @defineAddDetailDialogBarcode(innerOrder, sku);
 
-messageInnerOrder 'Сообщение' (innerOrder) = DATA TEXT (innerOrder) IN documentPrmGroup;
+messageInnerOrder 'Сообщение' (innerOrder) = DATA TEXT (InnerOrder) IN documentPrmGroup;
 
 FORM innerOrder 'Внутренний заказ'
-    OBJECTS o = innerOrder FIXED PANEL
+    OBJECTS o = InnerOrder FIXED PANEL
 
     PROPERTIES (o) nameNumeratorObject, numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
         nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder,
         messageInnerOrder
 
-    OBJECTS d = innerOrderDetail
+    OBJECTS d = InnerOrderDetail
 
     PROPERTIES(o) TODRAW d addDetailDialogSkuStockInnerOrderDetailInnerOrder, addDetailInputBarcodeInnerOrderDetailInnerOrder,
                            deleteInnerOrderDetailInnerOrder
 
     FILTERS innerOrderInnerOrderDetail(d) == o
 
-    EDIT innerOrder OBJECT o
+    EDIT InnerOrder OBJECT o
 ;
 
 DESIGN innerOrder FROM DEFAULT {
@@ -102,7 +102,7 @@ DESIGN innerOrder FROM DEFAULT {
 }
 
 FORM innerOrders 'Внутренние заказы'
-    OBJECTS o = innerOrder
+    OBJECTS o = InnerOrder
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
                             nameStockInnerOrder, nameDestinationStockInnerOrder,
                             countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
@@ -111,7 +111,7 @@ FORM innerOrders 'Внутренние заказы'
 
     PROPERTIES (o) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS d = innerOrderDetail
+    OBJECTS d = InnerOrderDetail
 
     FILTERS innerOrderInnerOrderDetail(d) == o
 ;
@@ -149,14 +149,14 @@ DESIGN innerOrders FROM DEFAULT {
 @extendFormDocumentDetailSkuArticleReadonly(innerOrders, d, innerOrder);
 
 // ---------------------------------------- Подбор товара ------------------------------------ //
-CLASS orderPicking 'Подбор товара по заказу': historizable, numeratedObject;
-CLASS orderPickingPosted 'Проведенный подбор товара по заказу': orderPicking, postedObject;
+CLASS OrderPicking 'Подбор товара по заказу': Historizable, NumeratedObject;
+CLASS OrderPickingPosted 'Проведенный подбор товара по заказу': OrderPicking, PostedObject;
 
-CLASS orderPickingDetail 'Строка подбора товара по заказу';
+CLASS OrderPickingDetail 'Строка подбора товара по заказу';
 
 @defineNumeratedObjectDefault(orderPicking, 'Нумератор для подборок товара по заказу', 'ПЗ');
 
-innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA innerOrder (orderPicking) AUTOSET NOT NULL DELETE;
+innerOrderOrderPicking 'Подбор товара по заказу (ИД)' (orderPicking) = DATA InnerOrder (OrderPicking) AUTOSET NOT NULL DELETE;
 //orderPickingInnerOrder 'Подбор заказа (ИД)' (innerOrder) = GROUP UNIQUE  orderPicking BY innerOrderOrderPicking(orderPicking);
 
 inInnerOrderOrderPicking (innerOrder, orderPicking) = innerOrderOrderPicking(orderPicking) == innerOrder;
@@ -204,15 +204,15 @@ quantityOrderPickingInnerOrderDetail 'Количество подобрано' (
     quantitySkuInnerOrder(skuInnerOrderDetail(innerOrderDetail), innerOrderInnerOrderDetail(innerOrderDetail));
 
 FORM orderPicking 'Подбор товара'
-    OBJECTS o = innerOrder FIXED PANEL
-    OBJECTS p = orderPicking FIXED PANEL
+    OBJECTS o = InnerOrder FIXED PANEL
+    OBJECTS p = OrderPicking FIXED PANEL
 
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking, nameCurrencyOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking, messageOrderPicking READONLY
 
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(s) READONLY FORCE GRID barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                            sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem, shortNameUOMSku
     PROPERTIES(s, o) quantityInnerOrderDetailSkuInnerOrder, quantitySkuInnerOrder
@@ -223,7 +223,7 @@ FORM orderPicking 'Подбор товара'
     FILTERGROUP filters1
         FILTER 'Неподобранные товары' 'F10' (quantityInnerOrderDetailSkuInnerOrder(s, o) (-) quantitySkuInnerOrder(s, o)) > 0 DEFAULT
 
-    OBJECTS d = orderPickingDetail
+    OBJECTS d = OrderPickingDetail
 
     PROPERTIES(p) TODRAW d addDetailDialogSkuStockOrderPickingDetailOrderPicking, addDetailInputBarcodeOrderPickingDetailOrderPicking,
                            deleteOrderPickingDetailOrderPicking
@@ -233,7 +233,7 @@ FORM orderPicking 'Подбор товара'
     EVENTS
         ON OK prePostOrderPicking(p)
 
-    EDIT orderPicking OBJECT p
+    EDIT OrderPicking OBJECT p
 ;
 
 @extendFormDocumentDetailSkuArticle(orderPicking, d, orderPicking);
@@ -284,16 +284,16 @@ DESIGN orderPicking FROM DEFAULT {
 }
 
 //Свойства генерируемых документов
-orderPickingInnerDocument (innerDocument) = ABSTRACT orderPicking (innerDocument) PERSISTENT;
+orderPickingInnerDocument (innerDocument) = ABSTRACT OrderPicking (InnerDocument) PERSISTENT;
 
 quantityInnerDocumentOrderPicking 'Количество документов' (orderPicking) =
     GROUP SUM 1 IF orderPickingInnerDocument (innerDocument) == orderPicking BY orderPicking;
 
 needInnerDocumentOrderPicking 'Необходимо создать документы по заказу' (orderPicking) =
-    orderPicking IS orderPickingPosted AND NOT quantityInnerDocumentOrderPicking(orderPicking);
+    orderPicking IS OrderPickingPosted AND NOT quantityInnerDocumentOrderPicking(orderPicking);
 
 quantityPostedInnerDocumentOrderPicking 'Количество проведенных документов' (orderPicking) =
-    GROUP SUM 1 IF orderPickingInnerDocument (innerDocument) == orderPicking AND innerDocument IS postedObject BY orderPicking;;
+    GROUP SUM 1 IF orderPickingInnerDocument (innerDocument) == orderPicking AND innerDocument IS PostedObject BY orderPicking;;
 
 quantityDraftInnerDocumentOrderPicking 'Количество непроведенных документов' (orderPicking) =
     quantityInnerDocumentOrderPicking(orderPicking) (-) quantityPostedInnerDocumentOrderPicking(orderPicking);
@@ -309,7 +309,7 @@ quantityDraftInnerDocumentInnerOrder 'Количество непроведен�
     BY innerOrderOrderPicking(orderPicking);
 
 // Перемещение по накладным
-orderPickingTransferOut (moveOut) = DATA orderPicking (transferOut);
+orderPickingTransferOut (moveOut) = DATA OrderPicking (TransferOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingTransferOut (innerDocument);
 stockInnerDocument (innerDocument) += stockTransferOut (innerDocument);
@@ -326,7 +326,7 @@ quantityDetailInnerDocument (innerDocument) += quantityTransferOutDetailTransfer
 skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerTransferOut (innerDocument);
 
 // Продажа товара
-orderPickingSaleOut (saleOut) = DATA orderPicking (saleOut);
+orderPickingSaleOut (saleOut) = DATA OrderPicking (SaleOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingSaleOut (innerDocument);
 stockInnerDocument (innerDocument) += stockSaleOut (innerDocument);
@@ -343,7 +343,7 @@ quantityDetailInnerDocument (innerDocument) += quantitySaleOutDetailSaleOut (inn
 skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerSaleOut (innerDocument);
 
 // Возврат товара
-orderPickingReturnOut (returnOut) = DATA orderPicking (returnOut);
+orderPickingReturnOut (returnOut) = DATA OrderPicking (ReturnOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingReturnOut (innerDocument);
 stockInnerDocument (innerDocument) += stockReturnOut (innerDocument);
@@ -360,7 +360,7 @@ quantityDetailInnerDocument (innerDocument) += quantityReturnOutDetailReturnOut 
 skipSkuLedgerInnerDocument (innerDocument) += skipSkuLedgerReturnOut (innerDocument);
 
 // Перемещение без накладных
-orderPickingMoveOut (moveOut) = DATA orderPicking (moveOut);
+orderPickingMoveOut (moveOut) = DATA OrderPicking (MoveOut);
 
 orderPickingInnerDocument (innerDocument) += orderPickingMoveOut (innerDocument);
 stockInnerDocument (innerDocument) += stockMoveOut (innerDocument);
@@ -382,7 +382,7 @@ quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) =
                   ORDER orderBBatch(batch), orderBatch(batch);
 
 quantityAOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
-    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchA AND NOT commissionContractSkuBatchA(batch)
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS BatchA AND NOT commissionContractSkuBatchA(batch)
     BY skuBatch(batch), orderPicking;
 
 quantityOrderPickingDetailSkuContractSkuOrderPicking(sku, contractSku, orderPicking) = GROUP SUM
@@ -414,21 +414,21 @@ quantityOrderPickingDetailCommissionContractOrderPicking (commissionContract, or
 
 
 quantityBOrderPickingDetailSkuOrderPicking (sku, orderPicking) = GROUP SUM
-    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS batchB
+    quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF batch IS BatchB
     BY skuBatch(batch), orderPicking;
 
 createDocumentsOrderPicking 'Создать документы' (orderPicking) = ACTION (orderPicking) {
     IF isPostedOrderPicking (orderPicking) THEN {
         IF companyOrderPicking(orderPicking) == destinationCompanyOrderPicking(orderPicking) THEN {
             IF [GROUP SUM quantityAOrderPickingDetailSkuOrderPicking(sku, orderPicking) BY orderPicking](orderPicking) THEN {
-                ADDOBJ transferOutPosted;
+                ADDOBJ TransferOutPosted;
                 FOR t == addedObject() DO {
                     SET stockTransferOut(t) <- stockOrderPicking(orderPicking);
                     SET destinationStockTransferOut(t) <- destinationStockOrderPicking(orderPicking);
                     SET orderPickingTransferOut(t) <- orderPicking;
 
                     FOR quantityAOrderPickingDetailSkuOrderPicking(sku, orderPicking) DO {
-                        ADDOBJ transferOutDetail;
+                        ADDOBJ TransferOutDetail;
                         FOR d == addedObject() DO {
                              SET transferOutTransferOutDetail(d) <- t;
                              SET skuTransferOutDetail(d) <- sku;
@@ -438,7 +438,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                 }
             }
             FOR quantityOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking) DO {
-                ADDOBJ transferOutPosted;
+                ADDOBJ TransferOutPosted;
                 FOR t == addedObject() DO {
                     SET stockTransferOut(t) <- stockOrderPicking(orderPicking);
                     SET destinationStockTransferOut(t) <- destinationStockOrderPicking(orderPicking);
@@ -446,7 +446,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                     SET commissionContractSkuTransferOut(t) <- commissionContract;
 
                     FOR quantityOrderPickingDetailSkuCommissionContractOrderPicking(sku, commissionContract, orderPicking) DO {
-                        ADDOBJ transferOutDetail;
+                        ADDOBJ TransferOutDetail;
                         FOR d == addedObject() DO {
                              SET transferOutTransferOutDetail(d) <- t;
                              SET skuTransferOutDetail(d) <- sku;
@@ -459,7 +459,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             // Делаем возвраты поставщику, если эти партии от него же и приходили
             FOR quantityOrderPickingDetailSkuContractCompanyOrderPicking(contractSku, orderPicking) AND
                 supplierContractSku(contractSku) == destinationCompanyOrderPicking(orderPicking) DO {
-                ADDOBJ returnOutPosted;
+                ADDOBJ ReturnOutPosted;
                 FOR r == addedObject() DO {
                     SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                     SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
@@ -467,7 +467,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                     SET contractSkuReturnOut(r) <- contractSku;
 
                     FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF contractSkuSaleInBatchDetail(batch) == contractSku DO {
-                        ADDOBJ returnOutDetail;
+                        ADDOBJ ReturnOutDetail;
                         FOR d == addedObject() DO {
                              SET returnOutReturnOutDetail(d) <- r;
                              SET skuReturnOutDetail(d) <- skuBatch(batch);
@@ -479,14 +479,14 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             }
             // Все оставшееся кидаем договором продажи
             IF [GROUP SUM leftOrderPickingDetailSkuCompanyOrderPicking(sku, destinationCompanyOrderPicking(orderPicking), orderPicking) BY orderPicking](orderPicking) THEN {
-                ADDOBJ saleOutPosted;
+                ADDOBJ SaleOutPosted;
                 FOR s == addedObject() DO {
                     SET stockSaleOut(s) <- stockOrderPicking(orderPicking);
                     SET destinationStockSaleOut(s) <- destinationStockOrderPicking(orderPicking);
                     SET orderPickingSaleOut(s) <- orderPicking;
 
                     FOR leftOrderPickingDetailSkuCompanyOrderPicking(sku, destinationCompanyOrderPicking(orderPicking), orderPicking) DO {
-                        ADDOBJ saleOutDetail;
+                        ADDOBJ SaleOutDetail;
                         FOR d == addedObject() DO {
                              SET saleOutSaleOutDetail(d) <- s;
                              SET skuSaleOutDetail(d) <- sku;
@@ -498,7 +498,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
             FOR quantityOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking) DO {
                 // значит просто возврат на указанный склад
                 IF destinationCompanyOrderPicking(orderPicking) == supplierContractSku(commissionContract) THEN {
-                    ADDOBJ returnOutPosted;
+                    ADDOBJ ReturnOutPosted;
                     FOR r == addedObject() DO {
                         SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                         SET destinationStockReturnOut(r) <- destinationStockOrderPicking(orderPicking);
@@ -506,7 +506,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                         SET contractSkuReturnOut(r) <- commissionContract;
 
                         FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
-                            ADDOBJ returnOutDetail;
+                            ADDOBJ ReturnOutDetail;
                             FOR d == addedObject() DO {
                                  SET returnOutReturnOutDetail(d) <- r;
                                  SET skuReturnOutDetail(d) <- skuBatch(batch);
@@ -517,7 +517,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                     }
                 } ELSE {
                     // Возврат на один из складов
-                    ADDOBJ returnOutPosted;
+                    ADDOBJ ReturnOutPosted;
                     FOR r == addedObject() DO {
                         SET stockReturnOut(r) <- stockOrderPicking(orderPicking);
                         SET destinationStockReturnOut(r) <- stockOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking);
@@ -525,7 +525,7 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                         SET contractSkuReturnOut(r) <- commissionContract;
 
                         FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
-                            ADDOBJ returnOutDetail;
+                            ADDOBJ ReturnOutDetail;
                             FOR d == addedObject() DO {
                                  SET returnOutReturnOutDetail(d) <- r;
                                  SET skuReturnOutDetail(d) <- skuBatch(batch);
@@ -535,14 +535,14 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
                         }
                     }
                     // Продажа всей этой хрени
-                    ADDOBJ saleOutPosted;
+                    ADDOBJ SaleOutPosted;
                     FOR s == addedObject() DO {
                         SET stockSaleOut(s) <- stockOrderPickingDetailCommissionContractOrderPicking(commissionContract, orderPicking);
                         SET destinationStockSaleOut(s) <- destinationStockOrderPicking(orderPicking);
                         SET orderPickingSaleOut(s) <- orderPicking;
 
                         FOR quantityOrderPickingDetailBatchOrderPicking (batch, orderPicking) IF commissionContractSkuBatchA(batch) == commissionContract DO {
-                            ADDOBJ saleOutDetail;
+                            ADDOBJ SaleOutDetail;
                             FOR d == addedObject() DO {
                                  SET saleOutSaleOutDetail(d) <- s;
                                  SET skuSaleOutDetail(d) <- skuBatch(batch);
@@ -555,14 +555,14 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
         }
         // Все партии типа B перемещаем своим документом
         IF [GROUP SUM quantityBOrderPickingDetailSkuOrderPicking(sku, orderPicking) BY orderPicking](orderPicking) THEN {
-            ADDOBJ moveOutPosted;
+            ADDOBJ MoveOutPosted;
             FOR m == addedObject() DO {
                 SET stockMoveOut(m) <- stockOrderPicking(orderPicking);
                 SET destinationStockMoveOut(m) <- destinationStockOrderPicking(orderPicking);
                 SET orderPickingMoveOut(m) <- orderPicking;
 
                 FOR quantityBOrderPickingDetailSkuOrderPicking(sku, orderPicking) DO {
-                    ADDOBJ moveOutDetail;
+                    ADDOBJ MoveOutDetail;
                     FOR d == addedObject() DO {
                          SET moveOutMoveOutDetail(d) <- m;
                          SET skuMoveOutDetail(d) <- sku;
@@ -576,47 +576,47 @@ createDocumentsOrderPicking 'Создать документы' (orderPicking) =
 } TOOLBAR CONFIRM;
 
 editInnerDocument 'Редактировать' (innerDocument) = ACTION (innerDocument) NEWSESSION AUTOAPPLY {
-    IF innerDocument IS moveOut THEN {
+    IF innerDocument IS MoveOut THEN {
         FORM moveOut OBJECTS t = innerDocument MODAL;
     } ELSE {
-        IF innerDocument IS transferOut THEN {
+        IF innerDocument IS TransferOut THEN {
             FORM transferOut OBJECTS t = innerDocument MODAL;
         } ELSE
-            IF innerDocument IS saleOut THEN {
+            IF innerDocument IS SaleOut THEN {
                 FORM saleOut OBJECTS t = innerDocument MODAL;
             } ELSE
-                IF innerDocument IS returnOut THEN {
+                IF innerDocument IS ReturnOut THEN {
                     FORM returnOut OBJECTS t = innerDocument MODAL;
                 } ELSE
-                    IF innerDocument IS invoiceWHOut THEN {
+                    IF innerDocument IS InvoiceWHOut THEN {
                         FORM invoiceWHOut OBJECTS t = innerDocument MODAL;
                 }
     }
 } IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE;
 
-quantityOrderPickingPostedInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS orderPickingPosted BY innerOrderOrderPicking(orderPicking);
-quantityOrderPickingInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS orderPicking BY innerOrderOrderPicking(orderPicking);
+quantityOrderPickingPostedInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS OrderPickingPosted BY innerOrderOrderPicking(orderPicking);
+quantityOrderPickingInnerOrder (innerOrder) = GROUP SUM 1 IF orderPicking IS OrderPicking BY innerOrderOrderPicking(orderPicking);
 
 statusInnerOrder 'Статус' (innerOrder) =
-    IF quantityInnerDocumentInnerOrder (innerOrder) AND NOT quantityDraftInnerDocumentInnerOrder (innerOrder) THEN 'Документы выверены' IF innerOrder IS innerOrder ELSE
-    IF quantityPostedInnerDocumentInnerOrder (innerOrder) > 0 THEN 'Документы выверяются' IF innerOrder IS innerOrder ELSE
-    IF quantityInnerDocumentInnerOrder (innerOrder)  THEN 'Документы сформированы' IF innerOrder IS innerOrder ELSE
-    IF quantityOrderPickingPostedInnerOrder (innerOrder) == quantityOrderPickingInnerOrder(innerOrder)  THEN 'Товары подобраны частично' IF innerOrder IS innerOrder ELSE
-    IF quantityOrderPickingPostedInnerOrder (innerOrder) != quantityOrderPickingInnerOrder(innerOrder) AND quantityOrderPickingInnerOrder (innerOrder) THEN 'Товары подобираются' IF innerOrder IS innerOrder ELSE
-    'Требуется подборка' IF innerOrder IS innerOrder IN documentPrmGroup PREFCHARWIDTH 25 MINCHARWIDTH 25;
+    IF quantityInnerDocumentInnerOrder (innerOrder) AND NOT quantityDraftInnerDocumentInnerOrder (innerOrder) THEN 'Документы выверены' IF innerOrder IS InnerOrder ELSE
+    IF quantityPostedInnerDocumentInnerOrder (innerOrder) > 0 THEN 'Документы выверяются' IF innerOrder IS InnerOrder ELSE
+    IF quantityInnerDocumentInnerOrder (innerOrder)  THEN 'Документы сформированы' IF innerOrder IS InnerOrder ELSE
+    IF quantityOrderPickingPostedInnerOrder (innerOrder) == quantityOrderPickingInnerOrder(innerOrder)  THEN 'Товары подобраны частично' IF innerOrder IS InnerOrder ELSE
+    IF quantityOrderPickingPostedInnerOrder (innerOrder) != quantityOrderPickingInnerOrder(innerOrder) AND quantityOrderPickingInnerOrder (innerOrder) THEN 'Товары подобираются' IF innerOrder IS InnerOrder ELSE
+    'Требуется подборка' IF innerOrder IS InnerOrder IN documentPrmGroup PREFCHARWIDTH 25 MINCHARWIDTH 25;
 
 
 statusOrderPicking 'Статус' (orderPicking) =
-    IF quantityInnerDocumentOrderPicking (orderPicking) AND NOT quantityDraftInnerDocumentOrderPicking (orderPicking) THEN 'Документы выверены' IF orderPicking IS orderPicking ELSE
-    IF quantityPostedInnerDocumentOrderPicking (orderPicking) > 0 THEN 'Документы выверяются' IF orderPicking IS orderPicking ELSE
-    IF quantityInnerDocumentOrderPicking (orderPicking)  THEN 'Документы сформированы' IF orderPicking IS orderPicking ELSE
-    IF orderPicking IS orderPickingPosted THEN 'Товары подобраны' IF orderPicking IS orderPicking ELSE
-    IF quantityOrderPickingDetailOrderPicking(orderPicking) AND orderPicking IS orderPicking THEN 'Товары подобираются' IF orderPicking IS orderPicking ELSE
-    'Требуется подборка' IF orderPicking IS orderPicking PREFCHARWIDTH 25 MINCHARWIDTH 25;
+    IF quantityInnerDocumentOrderPicking (orderPicking) AND NOT quantityDraftInnerDocumentOrderPicking (orderPicking) THEN 'Документы выверены' IF orderPicking IS OrderPicking ELSE
+    IF quantityPostedInnerDocumentOrderPicking (orderPicking) > 0 THEN 'Документы выверяются' IF orderPicking IS OrderPicking ELSE
+    IF quantityInnerDocumentOrderPicking (orderPicking)  THEN 'Документы сформированы' IF orderPicking IS OrderPicking ELSE
+    IF orderPicking IS OrderPickingPosted THEN 'Товары подобраны' IF orderPicking IS OrderPicking ELSE
+    IF quantityOrderPickingDetailOrderPicking(orderPicking) AND orderPicking IS OrderPicking THEN 'Товары подобираются' IF orderPicking IS OrderPicking ELSE
+    'Требуется подборка' IF orderPicking IS OrderPicking PREFCHARWIDTH 25 MINCHARWIDTH 25;
 
 
 EXTEND FORM innerOrders
-    OBJECTS p = orderPicking
+    OBJECTS p = OrderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking,
@@ -625,7 +625,7 @@ EXTEND FORM innerOrders
 
     PROPERTIES(p) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS pd=orderPickingDetail
+    OBJECTS pd=OrderPickingDetail
 
     PROPERTIES (o) READONLY  quantityInnerDocumentInnerOrder, quantityPostedInnerDocumentInnerOrder, quantityDraftInnerDocumentInnerOrder,
         statusInnerOrder
@@ -634,7 +634,7 @@ EXTEND FORM innerOrders
             orderPickingOrderPickingDetail (pd) == p
 
 
-    OBJECTS id = innerDocument
+    OBJECTS id = InnerDocument
 
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
                     nameStockInnerDocument, nameDestinationStockInnerDocument, countDetailInnerDocument, quantityDetailInnerDocument
@@ -670,15 +670,15 @@ EXTEND DESIGN innerOrders {
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS innerOrderRec 'Приемка товаров по внутреннему заказу' : historizable;
-CLASS innerOrderRecPosted 'Проведенная приемка товаров по внутреннему заказу' : innerOrderRec, postedObject;
+CLASS InnerOrderRec 'Приемка товаров по внутреннему заказу' : Historizable;
+CLASS InnerOrderRecPosted 'Проведенная приемка товаров по внутреннему заказу' : InnerOrderRec, PostedObject;
 
-CLASS innerOrderRecDetail 'Строка приемки товаров по внутреннему заказу';
+CLASS InnerOrderRecDetail 'Строка приемки товаров по внутреннему заказу';
 
 @defineDocument(innerOrderRec);
 
-orderPickingInnerOrderRec (innerOrderRec) = DATA orderPicking (innerOrderRec);
-innerOrderRecOrderPicking (orderPicking) = GROUP UNIQUE innerOrderRec BY orderPickingInnerOrderRec(innerOrderRec) WHERE innerOrderRec IS innerOrderRec;
+orderPickingInnerOrderRec (innerOrderRec) = DATA OrderPicking (InnerOrderRec);
+innerOrderRecOrderPicking (orderPicking) = GROUP UNIQUE innerOrderRec BY orderPickingInnerOrderRec(innerOrderRec) WHERE innerOrderRec IS InnerOrderRec;
 
 orderPickingInnerOrderRecDetail (detail) = orderPickingInnerOrderRec(innerOrderRecInnerOrderRecDetail(detail));
 innerOrderRecOrderPickingDetail (detail) = innerOrderRecOrderPicking(orderPickingOrderPickingDetail(detail));
@@ -699,20 +699,20 @@ innerOrderRecOrderPickingDetail (detail) = innerOrderRecOrderPicking(orderPickin
 @defineDocumentHeaderSkuQuantity(innerOrderRec, sku);
 
 FORM innerOrderRec 'Приемка товаров по внутреннему заказу'
-    OBJECTS t = innerOrderRec FIXED PANEL
+    OBJECTS t = InnerOrderRec FIXED PANEL
 
     PROPERTIES (t) numberInnerOrderRec, seriesInnerOrderRec, dateInnerOrderRec, timeInnerOrderRec,
                    nameStockInnerOrderRec, noteInnerOrderRec,
                    countInnerOrderRecDetailInnerOrderRec, quantityInnerOrderRecDetailInnerOrderRec
 
-    OBJECTS d = innerOrderRecDetail
+    OBJECTS d = InnerOrderRecDetail
 
     PROPERTIES(t) TODRAW d addDetailDialogSkuStockInnerOrderRecDetailInnerOrderRec, addDetailInputBarcodeInnerOrderRecDetailInnerOrderRec,
                            deleteInnerOrderRecDetailInnerOrderRec
 
     FILTERS innerOrderRecInnerOrderRecDetail(d) == t
 
-    EDIT innerOrderRec OBJECT t
+    EDIT InnerOrderRec OBJECT t
 ;
 
 DESIGN innerOrderRec FROM DEFAULT {
@@ -740,21 +740,21 @@ DESIGN innerOrderRec FROM DEFAULT {
 }
 
 receiveOrderPicking 'Принять' (orderPicking) = ACTION (orderPicking) NEWSESSION {
-    IF innerOrderRecOrderPicking(orderPicking) IS innerOrderRec THEN {
+    IF innerOrderRecOrderPicking(orderPicking) IS InnerOrderRec THEN {
         FOR r == innerOrderRecOrderPicking(orderPicking) DO {
-            IF r IS innerOrderRecPosted THEN {
-                CHANGECLASS r TO innerOrderRec;
+            IF r IS InnerOrderRecPosted THEN {
+                CHANGECLASS r TO InnerOrderRec;
             }
             FORM innerOrderRec OBJECTS t = r MODAL;
         }
     } ELSE {
-        ADDOBJ innerOrderRec;
+        ADDOBJ InnerOrderRec;
         FOR t == addedObject() DO {
-            SET orderPickingInnerOrderRec (t) <- orderPicking AS orderPicking;
+            SET orderPickingInnerOrderRec (t) <- orderPicking AS OrderPicking;
             FORM innerOrderRec OBJECTS t = t MODAL;
         }
     }
-    IF formResult() == formResult.ok THEN EXEC apply();
+    IF formResult() == FormResult.ok THEN EXEC apply();
 } TOOLBAR;
 
 
@@ -763,16 +763,16 @@ postRecOrderPicking 'Пометить как принятое' (orderPicking) = 
 isDraftRecOrderPicking (orderPicking) = isDraftInnerOrderRec(innerOrderRecOrderPicking(orderPicking));
 
 statusRecOrderPicking 'Статус приемки' (orderPicking) =
-    IF innerOrderRecOrderPicking (orderPicking) IS innerOrderRecPosted THEN 'Принят' IF orderPicking IS orderPicking ELSE
-    IF innerOrderRecOrderPicking (orderPicking) IS innerOrderRec THEN 'Принимается' IF orderPicking IS orderPicking ELSE
-    'Не принят' IF orderPicking IS orderPicking PREFCHARWIDTH 15 MINCHARWIDTH 15;
+    IF innerOrderRecOrderPicking (orderPicking) IS InnerOrderRecPosted THEN 'Принят' IF orderPicking IS OrderPicking ELSE
+    IF innerOrderRecOrderPicking (orderPicking) IS InnerOrderRec THEN 'Принимается' IF orderPicking IS OrderPicking ELSE
+    'Не принят' IF orderPicking IS OrderPicking PREFCHARWIDTH 15 MINCHARWIDTH 15;
 
 quantityInnerOrderRecDetailOrderPicking 'Кол-во принятое' (orderPicking) = quantityInnerOrderRecDetailInnerOrderRec(innerOrderRecOrderPicking(orderPicking));
 
 EXTEND FORM innerOrders
     PROPERTIES(p) quantityInnerOrderRecDetailOrderPicking, statusRecOrderPicking
 
-    OBJECTS r = innerOrderRecDetail
+    OBJECTS r = InnerOrderRecDetail
     PROPERTIES(p) TODRAW r receiveOrderPicking, postRecOrderPicking SHOWIF isDraftRecOrderPicking(p)
     FILTERS orderPickingInnerOrderRecDetail(r) == p
 ;
@@ -793,11 +793,11 @@ EXTEND DESIGN innerOrders {
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
 
-CLASS innerOrderDiff 'Акт расхождений приемки товаров по внутреннему заказу' : historizable;
+CLASS InnerOrderDiff 'Акт расхождений приемки товаров по внутреннему заказу' : Historizable;
 
-CLASS ABSTRACT innerOrderDiffDetail 'Строка расхождений акта приемки товаров по по внутреннему заказу';
-CLASS innerOrderDiffEDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (излишек)' : innerOrderDiffDetail;
-CLASS innerOrderDiffSDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (недостача)' : innerOrderDiffDetail;
+CLASS ABSTRACT InnerOrderDiffDetail 'Строка расхождений акта приемки товаров по по внутреннему заказу';
+CLASS InnerOrderDiffEDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (излишек)' : InnerOrderDiffDetail;
+CLASS InnerOrderDiffSDetail 'Строка расхождений акта приемки товаров по внутреннему заказу (недостача)' : InnerOrderDiffDetail;
 
 //@defineDocumentTransferDiff(transfer, 'Акт расхождений приемки товаров по накладной (перемещение)', sku, stock);
 //@defineDocumentFormTransferDiff(transfer);
@@ -820,8 +820,8 @@ hasExcessSkuInnerOrderRec(sku, innerOrderRec) = diffSkuInnerOrderRec(sku, innerO
 // Создание документов
 
 @defineDocumentTables(innerOrderDiff);
-TABLE innerOrderDiffSDetail (innerOrderDiffSDetail);
-TABLE innerOrderDiffEDetail (innerOrderDiffEDetail);
+TABLE innerOrderDiffSDetail (InnerOrderDiffSDetail);
+TABLE innerOrderDiffEDetail (InnerOrderDiffEDetail);
 
 @defineAggregation(innerOrderRec, innerOrderDiff, countDiffInnerOrderRec);
 
@@ -869,7 +869,7 @@ quantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantityIn
 signedQuantityInnerOrderDiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantityInnerOrderDiffEDetail(detail), -quantityInnerOrderDiffSDetail(detail) PERSISTENT;
 
 EXTEND FORM innerOrders
-    OBJECTS f = innerOrderDiffDetail
+    OBJECTS f = InnerOrderDiffDetail
     PROPERTIES(p) READONLY countDiffOrderPicking, quantityDiffOrderPicking
     FILTERS orderPickingInnerOrderDiffDetail(f) == p
 ;
@@ -885,30 +885,30 @@ EXTEND DESIGN innerOrders {
 @defineDocumentDetailSkuArticle(innerOrderDiff);
 @extendFormDocumentDetailSkuArticleReadonlyQuantity(innerOrders, f, innerOrderDiff, signedQuantityInnerOrderDiffDetail);
 
-costInnerOrderDiffEDetail(detail) = 0.0 IF detail IS innerOrderDiffEDetail;
-EXTEND CLASS innerOrderDiffEDetail : batchB;
+costInnerOrderDiffEDetail(detail) = 0.0 IF detail IS InnerOrderDiffEDetail;
+EXTEND CLASS InnerOrderDiffEDetail : BatchB;
 @implementBatchCustom(innerOrderDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityInnerOrderDiffEDetail(batch);
-skipASkuLedger (ledger) += ledger IS innerOrderDiffEDetail;
+skipASkuLedger (ledger) += ledger IS InnerOrderDiffEDetail;
 
-@implementSkuLedgerOutFIFO(innerOrderDiffSDetail, sku, stock);
+@implementSkuLedgerOutFIFO(InnerOrderDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityInnerOrderDiffSDetail(ledger);
 @implementSkuLedgerOutFIFOBalance (innerOrderDiffSDetail, stock);
-orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS innerOrderDiffSDetail;
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS InnerOrderDiffSDetail;
 
 //accountPriceInnerOrderRecBatchA (innerOrderRec, batchA) = GROUP MAX accountPriceInnerOrderDetailBatchA(detail, batchA) BY innerOrderRecInnerOrderDetail(detail), batchA;
 //accountSumTransferDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceInnerOrderRecBatchA(innerOrderRecInnerOrderDiffSDetail(detail), batch) BY detail PERSISTENT;
 //sumOutSkuLedger(ledger) += accountSumInnerOrderDiffSDetail(ledger);
 
-skipASkuLedger (ledger) += ledger IS innerOrderDiffSDetail;
+skipASkuLedger (ledger) += ledger IS InnerOrderDiffSDetail;
 
 descriptionInnerOrderOrderPicking 'Внутренний заказ' (orderPicking) =
     [FORMULA STRING[200] '\'Внутр. заказ \' ||  \' \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'](
     seriesNumberObject(innerOrderOrderPicking(orderPicking)), dateInnerOrder(innerOrderOrderPicking(orderPicking)));
 
 FORM orderPickings 'Подборки товара'
-//    OBJECTS o = innerOrder
-    OBJECTS p = orderPicking
+//    OBJECTS o = InnerOrder
+    OBJECTS p = OrderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, descriptionInnerOrderOrderPicking, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking,
@@ -917,7 +917,7 @@ FORM orderPickings 'Подборки товара'
     ORDER BY descriptionInnerOrderOrderPicking
 //    PROPERTIES (p) FORCE PANEL  createDocumentsOrderPicking
 
-    OBJECTS id = innerDocument
+    OBJECTS id = InnerDocument
     PROPERTIES(p) TODRAW id createDocumentsOrderPicking
 
     PROPERTIES (id) READONLY isPostedInnerDocument, objectClassName, seriesObject, numberObject, dateInnerDocument,
@@ -932,12 +932,12 @@ FORM orderPickings 'Подборки товара'
 
 ;
 
-notDraftOrderPicking 'Непринятые' (orderPicking) = orderPicking IS orderPicking  AND NOT innerOrderRecOrderPicking (orderPicking) IS innerOrderRecPosted;
+notDraftOrderPicking 'Непринятые' (orderPicking) = orderPicking IS OrderPicking  AND NOT innerOrderRecOrderPicking (orderPicking) IS InnerOrderRecPosted;
 
 FORM innerOrderRecs 'Приемка по внутр. заказам'
-    OBJECTS st = stock FIXED PANEL
+    OBJECTS st = Stock FIXED PANEL
     PROPERTIES (st) SELECTOR name
-    OBJECTS p = orderPicking
+    OBJECTS p = OrderPicking
 
     PROPERTIES (p) READONLY isPostedOrderPicking FORCE GRID, descriptionInnerOrderOrderPicking, numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking,
@@ -946,7 +946,7 @@ FORM innerOrderRecs 'Приемка по внутр. заказам'
         quantityInnerOrderRecDetailOrderPicking
     ORDER BY descriptionInnerOrderOrderPicking
 
-    OBJECTS r = innerOrderRecDetail
+    OBJECTS r = InnerOrderRecDetail
     PROPERTIES(p) TODRAW r receiveOrderPicking, postRecOrderPicking SHOWIF isDraftRecOrderPicking(p)
     FILTERS orderPickingInnerOrderRecDetail(r) == p,
             destinationStockOrderPicking(p) == st
@@ -958,14 +958,14 @@ FORM innerOrderRecs 'Приемка по внутр. заказам'
 @extendFormDocumentDetailSkuArticleReadonly(innerOrderRecs, r, innerOrderRec);
 
 FORM orderPickingPrint 'Подборочный лист' PRINT
-    OBJECTS p = orderPicking FIXED PANEL
+    OBJECTS p = OrderPicking FIXED PANEL
 
     PROPERTIES (p) numberObject, seriesObject, dateOrderPicking, timeOrderPicking,
         nameStockOrderPicking, nameDestinationStockOrderPicking,
         countOrderPickingDetailOrderPicking, quantityOrderPickingDetailOrderPicking,
         descriptionInnerOrderOrderPicking
 
-    OBJECTS d = orderPickingDetail
+    OBJECTS d = OrderPickingDetail
     FILTERS orderPickingOrderPickingDetail(d) == p
 ;
 

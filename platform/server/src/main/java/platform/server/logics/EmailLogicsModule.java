@@ -12,7 +12,6 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 import platform.server.mail.AttachmentFormat;
@@ -64,7 +63,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        notification = (ConcreteCustomClass) getClassByName("notification");
+        notification = (ConcreteCustomClass) getClassByName("Notification");
     }
 
     @Override

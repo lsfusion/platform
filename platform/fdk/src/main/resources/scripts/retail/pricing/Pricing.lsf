@@ -4,12 +4,12 @@ REQUIRE Invoice, Employee, PriceRoundStore, Machinery;
 
 // ----------------------------------- Создавать акт расценки по умолчанию для отдела ------------------------------------------ //
 
-costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
+costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (DepartmentStore) IN bookkeepingGroup;
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
-CLASS pricingCommittee 'Комиссия для акта расценки' : committee;
+CLASS PricingCommittee 'Комиссия для акта расценки' : Committee;
 
 //@defineCommitteeEmployee(committee, chairman, 'Председатель');
 @defineCommitteeEmployeePrefix(pricingCommittee, formedMan, 'Цены сформировал');
@@ -20,7 +20,7 @@ CLASS pricingCommittee 'Комиссия для акта расценки' : com
 
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
-pricingCommitteeDepartmentStore 'Комиссия для акта расценки (ИД)' = DATA pricingCommittee (departmentStore);
+pricingCommitteeDepartmentStore 'Комиссия для акта расценки (ИД)' = DATA PricingCommittee (DepartmentStore);
 namePricingCommitteeDepartmentStore 'Комиссия для акта расценки' (departmentStore) = name(pricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultPricingCommitteeDepartmentStore 'По умолчанию' (pricingCommittee, departmentStore) = pricingCommitteeDepartmentStore(departmentStore) == pricingCommittee;
 CONSTRAINT pricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(pricingCommitteeDepartmentStore(departmentStore), departmentStore)
@@ -31,15 +31,15 @@ EXTEND FORM departmentStore PROPERTIES namePricingCommitteeDepartmentStore(d);
 // ----------------------------------- Формы для комиссий для реестра цен ------------------------------------------ //
 
 FORM pricingCommittee 'Комиссия для акта расценки'
-    OBJECTS c=pricingCommittee FIXED PANEL
+    OBJECTS c=PricingCommittee FIXED PANEL
     PROPERTIES(c)      name, nameFormedManPricingCommittee, nameCheckedManPricingCommittee,
                        nameLabeledManPricingCommittee, nameAccountantManPricingCommittee, nameHeadManPricingCommittee
 
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
-    OBJECTS dep=departmentStore
+    OBJECTS dep=DepartmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultPricingCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
@@ -48,12 +48,12 @@ FORM pricingCommittee 'Комиссия для акта расценки'
     FILTERGROUP filters5
         FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
 
-    EDIT pricingCommittee OBJECT c
+    EDIT PricingCommittee OBJECT c
 ;
-@extendFormFilterStockAccess(departmentStore, dep, pricingCommittee);
-@extendFormFilterStockGroupAccess(chainStores, t, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(storeType, st, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(store, s, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(DepartmentStore, dep, pricingCommittee);
+@extendFormFilterStockGroupAccess(ChainStores, t, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(StoreType, st, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(Store, s, pricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN pricingCommittee FROM DEFAULT {
     main {
@@ -88,12 +88,12 @@ DESIGN pricingCommittee FROM DEFAULT {
 }
 
 FORM pricingCommitteeDialog 'Комиссии для акта расценки'
-    OBJECTS r=pricingCommittee
+    OBJECTS r=PricingCommittee
     PROPERTIES(r)      READONLY name, nameEmployeeDivisionCommittee, nameFormedManPricingCommittee, nameCheckedManPricingCommittee, nameLabeledManPricingCommittee,
                        nameAccountantManPricingCommittee, nameHeadManPricingCommittee
     PROPERTIES(r)      ADDFORM, EDITFORM
 
-    DIALOG pricingCommittee OBJECT r
+    DIALOG PricingCommittee OBJECT r
 ;
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
@@ -101,7 +101,7 @@ FORM pricingCommitteeDialog 'Комиссии для акта расценки'
 GROUP pricingCommitteeGroup 'Комиссия' : public;
 
 META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
-    prefix###pricingCommittee###object (object) = DATA pricingCommittee(object);
+    prefix###pricingCommittee###object (object) = DATA PricingCommittee(###object);
 
     name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     prefix###pricingCommittee###object (object) <- pricingCommitteeDepartmentStore(stockClass###object(object))
@@ -118,7 +118,7 @@ META defineDocumentHeaderPricingCommittee(object, stockClass, prefix)
 
 END
 META defineDocumentHeaderAbstractPricingCommittee(object, stockClass, prefix)
-    prefix###pricingCommittee###object (object) = ABSTRACT pricingCommittee(object) PERSISTENT;
+    prefix###pricingCommittee###object (object) = ABSTRACT PricingCommittee(###object) PERSISTENT;
 
     name###prefix###pricingCommittee###object 'Комиссия для акта расценки' (object) = name(prefix###pricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
@@ -142,10 +142,10 @@ END
 // ---------------------------------------------- Надбавка -------------------------------------------- //
 
 META defineDocumentDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (detail);
+    prefix###markup###detail 'Надбавка,%'###caption = DATA NUMERIC[8,3] (###detail);
 END
 META defineDocumentAbstractDetailMarkupCustomPrefix (detail, prefix, caption)
-    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (detail) PERSISTENT;
+    prefix###markup###detail 'Надбавка,%'###caption = ABSTRACT NUMERIC[8,3] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailMarkupCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupCustomPrefix(detail, prefix, caption);
@@ -164,10 +164,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (detail);
+    prefix###markupSum###detail 'Сумма надбавки'###caption = DATA NUMERIC[14,3] (###detail);
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+    prefix###markupSum###detail 'Сумма надбавки'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
@@ -193,7 +193,7 @@ END
 
 META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, stockProp)
     ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
-        LOCAL changedPriceListType = BOOLEAN (idetail);
+        LOCAL changedPriceListType = BOOLEAN (###idetail);
         SET changedPriceListType(detail) <- TRUE IF prefix###priceListType###idetail(detail) AND
                                                     sku###idetail(detail) AND
                                             (CHANGED(prefix###priceListType###idetail(detail)) OR
@@ -204,7 +204,7 @@ META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, 
                                              CHANGED(value###prefix###VAT###idetail(detail)));
         FOR [GROUP MAX(changedPriceListType(detail)) BY prefix###priceListType###idetail(detail)](priceListType) DO {
             IF 1 == 2 THEN BREAK; // чтобы не компилировала в один запрос, а выполняло императивно
-            IF priceListType IS calcPriceListType THEN {
+            IF priceListType IS CalcPriceListType THEN {
                 SET prefix###markup###idetail(detail) <- markupCalcPriceListTypeSku(priceListType, sku###idetail(detail))
                                                              WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
                 SET prefix###price###idetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
@@ -228,10 +228,14 @@ META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, 
     }
 END
 
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)  // округляет по умолчанию для валюты
-    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
-    0.0 IF detail IS detail OR price###detail(detail),
-    0.0 IF detail IS detail OR prefix###markup###detail(detail),
+META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
+    @deriveDocumentDetailPriceMarkupCustomPrefixInner(detail, ###detail, prefix, currencyProp);
+END
+
+META deriveDocumentDetailPriceMarkupCustomPrefixInner(detail, detailClass, prefix, currencyProp)
+    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](    // надо округление для sku?????
+    0.0 IF detail IS detailClass OR price###detail(detail),
+    0.0 IF detail IS detailClass OR prefix###markup###detail(detail),
     value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
                     WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
@@ -241,10 +245,14 @@ META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
 END
 
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
+    @changeDocumentDetailMarkupCustomPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD);
+END
+
+META changeDocumentDetailMarkupCustomPrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD)
     calc###prefixC###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
-        0.0 IF detail IS detail OR prefixA###price###detail(detail),
+        0.0 IF detail IS detailClass OR prefixA###price###detail(detail),
         prefixB###price###detail(detail),
-        0.0 IF detail IS detail OR value###prefixD###VAT###detail(detail));
+        0.0 IF detail IS detailClass OR value###prefixD###VAT###detail(detail));
 
     change###prefixA###price###detail = ACTION (detail) {
 
@@ -254,11 +262,16 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, p
         SET prefixC###markup###detail(detail) <- calc###prefixC###markup###detail(detail);
     }
 END
+
 META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
+    @changeDocumentDetailPriceCustomPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD, currencyProp);
+END
+
+META changeDocumentDetailPriceCustomPrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD, currencyProp)
 
     calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
-    0.0 IF detail IS detail OR prefixB###price###detail(detail),
-    0.0 IF detail IS detail OR prefixC###markup###detail(detail),
+    0.0 IF detail IS detailClass OR prefixB###price###detail(detail),
+    0.0 IF detail IS detailClass OR prefixC###markup###detail(detail),
     value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));
 
     change###prefixC###markup###detail = ACTION (detail) {
@@ -272,12 +285,12 @@ END
 
 //----------------------------------------------- Расценка ---------------------------------------------------//
 
-CLASS ABSTRACT pricing 'Акт расценки';
-CLASS ABSTRACT pricingDetail 'Строка акта расценки';
+CLASS ABSTRACT Pricing 'Акт расценки';
+CLASS ABSTRACT PricingDetail 'Строка акта расценки';
 
-CLASS userPricing 'Акт расценки (польз.)' : pricing, historizable, numeratedDocument;
-CLASS userPricingDetail 'Строка акта расценки (польз.)' : pricingDetail;
-CLASS userPricingPosted 'Проведенный акт расценки (польз.)' : userPricing, postedObject;
+CLASS UserPricing 'Акт расценки (польз.)' : Pricing, Historizable, NumeratedDocument;
+CLASS UserPricingDetail 'Строка акта расценки (польз.)' : PricingDetail;
+CLASS UserPricingPosted 'Проведенный акт расценки (польз.)' : UserPricing, PostedObject;
 
 @defineDocumentInterface(pricing);
 
@@ -295,7 +308,7 @@ CLASS userPricingPosted 'Проведенный акт расценки (пол�
 retailPriceListTypeUserPricingDetail(detail) <-  retailPriceListTypeUserPricing(userPricingUserPricingDetail(detail)) WHEN CHANGED (userPricingUserPricingDetail(detail));
 
 roundConditionUserPricingDetail(userPricingDetail) =
-    IF retailPriceListTypeUserPricingDetail(userPricingDetail) IS calcPriceListType
+    IF retailPriceListTypeUserPricingDetail(userPricingDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
         ELSE roundConditionDepartmentStore(departmentStoreUserPricingDetail(userPricingDetail));
 
@@ -347,14 +360,14 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 @defineDocumentInterfaceHeaderSkip (pricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
 
-descriptionDocumentPricing 'Документы-основания'= ABSTRACT STRING[255] (pricing)PERSISTENT;
+descriptionDocumentPricing 'Документы-основания'= ABSTRACT STRING[255] (Pricing)PERSISTENT;
 
-isReturnPricing 'Обратный' = ABSTRACT BOOLEAN (pricing);
+isReturnPricing 'Обратный' = ABSTRACT BOOLEAN (Pricing);
 
 //------------------------------------ Печатные формы акт расценки ------------------------------------------------ //
 
 FORM pricing 'Акт расценки (печать)' PRINT
-    OBJECTS p=pricing FIXED PANEL
+    OBJECTS p=Pricing FIXED PANEL
     PROPERTIES (p)  SELECTOR objectClassName
 
     PROPERTIES (p) nameDepartmentStorePricing, nameLegalEntityStockPricing, numberPricing, seriesPricing, datePricing, timePricing,
@@ -365,7 +378,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
                    nameFormedManPricing, nameCheckedManPricing, nameLabeledManPricing, nameAccountantManPricing,
                    nameHeadManPricing    //notPassToBookkeepingListRegister
 
-    OBJECTS d=pricingDetail
+    OBJECTS d=PricingDetail
 
     PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
                    quantityPricingDetail, pricePricingDetail, sumPricingDetail,
@@ -379,9 +392,9 @@ printPricing 'Акт расценки' (pricing) = ACTION FORM pricing OBJECTS p
 
 // --------------------------- Формы --------------------------------- //
 
-backgroundRetailPricing 'Цвет' (pricing) = RGB(224, 255, 255) IF pricing IS pricing;
+backgroundRetailPricing 'Цвет' (pricing) = RGB(224, 255, 255) IF pricing IS Pricing;
 FORM userPricing 'Акт расценки'
-    OBJECTS p = userPricing FIXED PANEL
+    OBJECTS p = UserPricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameDepartmentStoreUserPricing, nameNumeratorObject, numberObject, seriesObject, dateUserPricing, timeUserPricing,
                    nameSupplierUserPricing, nameCurrencyUserPricing, noteUserPricing, nameRetailPriceListTypeUserPricing,
                    countUserPricingDetailUserPricing, quantityUserPricingDetailUserPricing, sumUserPricingDetailUserPricing,
@@ -389,7 +402,7 @@ FORM userPricing 'Акт расценки'
     PROPERTIES (p) SHOWIF pricingCommitteeUserPricing(p)  nameFormedManUserPricing, nameCheckedManUserPricing, nameLabeledManUserPricing,
                    nameAccountantManUserPricing, nameHeadManUserPricing
 
-    OBJECTS d = userPricingDetail
+    OBJECTS d = UserPricingDetail
     PROPERTIES (d) indexUserPricingDetail, idBarcodeSkuUserPricingDetail, nameSkuUserPricingDetail, shortNameUOMSkuUserPricingDetail,
                    quantityUserPricingDetail, nameRetailPriceListTypeUserPricingDetail, priceUserPricingDetail, sumUserPricingDetail
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p)
@@ -405,7 +418,7 @@ FORM userPricing 'Акт расценки'
     EVENTS
         ON OK prePostUserPricing(p)
 
-    EDIT userPricing OBJECT p
+    EDIT UserPricing OBJECT p
 ;
 
 DESIGN userPricing FROM DEFAULT{
@@ -450,11 +463,11 @@ DESIGN userPricing FROM DEFAULT{
     }
 }
 
-addUserPricing 'Добавить' = ACTION ADDFORM userPricing;
-editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM userPricing;
+addUserPricing 'Добавить' = ACTION ADDFORM UserPricing;
+editUserPricing 'Редактировать' (userPricing) = ACTION EDITFORM UserPricing;
 
 FORM pricings 'Акты расценки' TITLE 'Акты расценки'
-    OBJECTS p = pricing
+    OBJECTS p = Pricing
     PROPERTIES (p) READONLY isPostedPricing FORCE GRID, isReturnPricing, numberPricing, seriesPricing, datePricing, timePricing,
                             nameDepartmentStorePricing, nameSupplierPricing, nameCurrencyPricing, nameRetailPriceListTypePricing,
                             countPricingDetailPricing, quantityPricingDetailPricing, sumPricingDetailPricing,
@@ -468,7 +481,7 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
     PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPricing(p)
     PROPERTIES (p) printPricing FORCE PANEL
 
-    OBJECTS d = pricingDetail
+    OBJECTS d = PricingDetail
     PROPERTIES (d) READONLY indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
                    quantityPricingDetail, nameRetailPriceListTypePricingDetail, pricePricingDetail, sumPricingDetail
     PROPERTIES (d) BACKGROUND backgroundRetailPricing(p) retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
@@ -477,9 +490,9 @@ FORM pricings 'Акты расценки' TITLE 'Акты расценки'
 
     FILTERS pricingPricingDetail(d) == p
 
-    DIALOG pricing OBJECT p
+    DIALOG Pricing OBJECT p
 ;
-@extendFormFilterAccess(pricing, p, pricings, departmentStore);
+@extendFormFilterAccess(Pricing, p, pricings, departmentStore);
 
 DESIGN pricings FROM DEFAULT {
     PROPERTY (delete(p)) {
@@ -527,13 +540,13 @@ NAVIGATOR {
 
 // ---------------------------- Создание PriceList ----------------------------------- //
 
-EXTEND CLASS systemLedgerPriceListType {
+EXTEND CLASS SystemLedgerPriceListType {
     supplierPricingPriceListType 'Поставщика (расценка)',
     retailPricingPriceListType 'Розничная (расценка)'
 }
-includeVATSystemLedgerPriceListType (priceListType) += TRUE WHEN priceListType == systemLedgerPriceListType.retailPricingPriceListType;
+includeVATSystemLedgerPriceListType (priceListType) += TRUE WHEN priceListType == SystemLedgerPriceListType.retailPricingPriceListType;
 
-EXTEND CLASS pricingDetail : priceListLedger;
+EXTEND CLASS PricingDetail : PriceListLedger;
 
 fromDateTimePriceListLedger (ledger) += dateTimePricingDetail(ledger);
 
@@ -544,14 +557,14 @@ skuPriceListLedger (ledger) += skuPricingDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionPricingDetail(ledger);
 
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) WHEN CLASS(pricePricingDetail(ledger)) AND type == systemLedgerPriceListType.supplierPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += pricePricingDetail(ledger) WHEN CLASS(pricePricingDetail(ledger)) AND type == SystemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == SystemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPricePricingDetail(ledger) WHEN CLASS(retailPricePricingDetail(ledger)) AND type == SystemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) == stock;
 
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 
-@Machinery.implementPriceTransactionDocument(pricing);
+@Machinery.implementPriceTransactionDocument(Pricing);
 @defineDocumentMachineryPriceTransaction(pricing, sku, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(pricings, p, pricing);
 
@@ -559,6 +572,10 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 
 //-- аггр.объект
 META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, prefix)
+    @definePricingAggregationInner(concrete, ###concrete, sign, caption, captionPost, stockProp, prefix);
+END
+
+META definePricingAggregationInner(concrete, concreteClass, sign, caption, captionPost, stockProp, prefix)
 
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
     @defineDocumentInterfaceDetailPricePrefix(invoice, retail, ' розничная');
@@ -570,7 +587,7 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
     @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, retail);
     @defineDocumentInterfaceDetailQuantityPrefix (invoice, pricing, ' (расценено)');
-    extraPricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (userInvoiceDetail) PERSISTENT;
+    extraPricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (UserInvoiceDetail) PERSISTENT;
     pricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPricingQuantityUserInvoiceDetail(detail)
         WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPricingQuantityUserInvoiceDetail(detail));
 
@@ -588,11 +605,11 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
 
     @defineDocumentInterfaceCreate (invoice, createPricing, 'Создать акт расценки');
 
-    showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
+    showCreatePricingInvoice (invoice) = stockProp###invoice(invoice) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     showPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND NOT createPricingInvoice(invoice);
     toShowPricingInvoice (invoice) = showCreatePricingInvoice (invoice) AND createPricingInvoice(invoice);
 
-    backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS invoice;
+    backgroundRetailInvoice 'Цвет' (invoice) = RGB(224, 255, 255) IF invoice IS Invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) SHOWIF showCreatePricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) createPricingUserInvoice
         PROPERTIES(i) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) namePricingCommitteeUserInvoice,
@@ -626,9 +643,9 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     ;
 
 
-    CLASS concrete###pricing caption###sign : pricing;
-    CLASS concrete###pricingPosted captionPost###sign : concrete###pricing, postedObject;
-    CLASS concrete###pricingDetail caption###sign : pricingDetail;
+    CLASS concreteClass###pricing caption###sign : Pricing;
+    CLASS concreteClass###pricingPosted captionPost###sign : concreteClass###pricing, PostedObject;
+    CLASS concreteClass###pricingDetail caption###sign : PricingDetail;
 
     @defineDocumentTables(concrete###pricing);
 
@@ -653,9 +670,9 @@ META definePricingAggregation(concrete, sign, caption, captionPost, stockProp, p
     timePricing(pricing) += time###concrete###pricing(pricing);
 
     @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, stockProp, 'Склад', , );
-    departmentStorePricing(pricing) += stockProp###concrete###pricing(pricing) IF stockProp###concrete###pricing(pricing) IS departmentStore;
+    departmentStorePricing(pricing) += stockProp###concrete###pricing(pricing) IF stockProp###concrete###pricing(pricing) IS DepartmentStore;
     dataDepartmentStorePricingDetail(pricingDetail) += data###stockProp###invoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail))
-                                                       IF data###stockProp###invoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail)) IS departmentStore;
+                                                       IF data###stockProp###invoiceDetail(invoiceDetail###concrete###pricingDetail(pricingDetail)) IS DepartmentStore;
 
     @defineDocumentAggregationStockPrefix(invoice, concrete###pricing, supplier, 'Поставщик', , );
     supplierPricing(pricing) += supplier###concrete###pricing(pricing);
@@ -714,8 +731,8 @@ END
 //--  Связь накладной и расценки
 META definePricingRelation(sign, stockProp)
 
-    invoiceDetailPricingDetail = ABSTRACT invoiceDetail (pricingDetail) PERSISTENT;
-    invoiceDetailUserPricingDetail = DATA invoiceDetail (userPricingDetail);
+    invoiceDetailPricingDetail = ABSTRACT InvoiceDetail (PricingDetail) PERSISTENT;
+    invoiceDetailUserPricingDetail = DATA InvoiceDetail (UserPricingDetail);
     invoiceDetailPricingDetail(pricingDetail) += invoiceDetailUserPricingDetail(pricingDetail);
 
     CONSTRAINT supplierPricingDetail(detail) != supplierInvoiceDetail(invoiceDetailUserPricingDetail(detail)) OR
@@ -745,12 +762,12 @@ META definePricingRelation(sign, stockProp)
     // Создание расценки на основе инвойса //
 
     FORM pricingInvoices 'Накладные'###sign
-        OBJECTS s = legalEntity FIXED PANEL
+        OBJECTS s = LegalEntity FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = stock FIXED PANEL
+        OBJECTS c = Stock FIXED PANEL
         PROPERTIES (c) READONLY name
 
-        OBJECTS i = invoice
+        OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice, nameCurrencyInvoice, noteInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
@@ -763,7 +780,7 @@ META definePricingRelation(sign, stockProp)
             FILTER 'Накладные с нерасцененными товарами' 'F10' toPricingInvoiceDetailStockInvoice(c,i) DEFAULT
             FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(c,i)
 
-        OBJECTS d = invoiceDetail
+        OBJECTS d = InvoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail,
                        quantityInvoiceDetail, pricingInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        name###stockProp###invoiceDetail, descriptionOrderInvoiceDetail, toPricingInvoiceDetail
@@ -809,14 +826,14 @@ META definePricingRelation(sign, stockProp)
 
     fillInvoiceUserPricing 'Заполнить на основе накладной' =  ACTION (userPricing) {
         FORM pricingInvoices OBJECTS s = supplierUserPricing(userPricing), c = departmentStoreUserPricing(userPricing) MODAL;
-        IF formResult() == formResult.ok THEN {
-            LOCAL saleInvoice = invoice();
+        IF formResult() == FormResult.ok THEN {
+            LOCAL saleInvoice = Invoice();
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
                 stockProp###invoiceDetail(invoiceDetail) == departmentStoreUserPricing(userPricing) AND
                 toPricingInvoiceDetail(invoiceDetail) > 0
-                ADDOBJ d = userPricingDetail DO {
+                ADDOBJ d = UserPricingDetail DO {
                 SET userPricingUserPricingDetail(d) <- userPricing;
                 SET invoiceDetailUserPricingDetail(d) <- invoiceDetail;
 

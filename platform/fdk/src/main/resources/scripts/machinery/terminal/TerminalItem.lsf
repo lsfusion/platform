@@ -3,6 +3,6 @@ MODULE TerminalItem;
 REQUIRE Item, Machinery,  Terminal;
 
 createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupTerminal THEN
+    IF groupMachinery IS GroupTerminal THEN
         SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleCashRegisterBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
 }

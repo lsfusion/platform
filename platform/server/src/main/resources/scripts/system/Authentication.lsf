@@ -2,27 +2,27 @@ MODULE Authentication;
 
 REQUIRE System, Contact;
 
-CLASS computer 'Рабочее место';
-TABLE computer (computer);
+CLASS Computer 'Рабочее место';
+TABLE computer (Computer);
 
-hostnameComputer 'Имя хоста' = DATA ISTRING[100] (computer) IN recognize;
+hostnameComputer 'Имя хоста' = DATA ISTRING[100] (Computer) IN recognize;
 
-CLASS ABSTRACT user 'Пользователь';
-TABLE user (user);
+CLASS ABSTRACT User 'Пользователь';
+TABLE user (User);
 
-CLASS systemUser 'Системный пользователь' : user;
+CLASS SystemUser 'Системный пользователь' : User;
 
-CLASS customUser 'Обычный пользователь' : user, contact;
-TABLE customUser (customUser);
+CLASS CustomUser 'Обычный пользователь' : User, Contact;
+TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
-loginCustomUser 'Логин' = DATA STRING[30] (customUser);
-customUserLogin 'Обычный пользователь' (login) = GROUP UNIQUE customUser BY loginCustomUser(customUser) WHERE customUser IS customUser;
-passwordCustomUser 'Пароль' = DATA STRING[30] (customUser);
-sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (customUser);
+loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
+customUserLogin 'Обычный пользователь' (login) = GROUP UNIQUE customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
+passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser);
+sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser);
 calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();
-forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (customUser);
-forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (customUser);
+forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
+forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'platform.server.logics.authentication.CalculateBase64HashActionProperty';
 logOut 'Выйти' = ACTION CUSTOM 'platform.server.logics.authentication.LogOutActionProperty';
@@ -35,12 +35,12 @@ changeSHA256PasswordCustomUser = ACTION(customUser) {
 }
 
 FORM customUser 'Пользователь'
-    OBJECTS u=customUser FIXED PANEL
+    OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
     sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
     forbidChangePasswordCustomUser, forbidEditProfileCustomUser
 
-    EDIT customUser OBJECT u
+    EDIT CustomUser OBJECT u
 ;
 
 EXTEND DESIGN customUser {
@@ -52,16 +52,16 @@ EXTEND DESIGN customUser {
 }
 
 FORM customUsers 'Пользователи'
-    OBJECTS u=customUser
+    OBJECTS u=CustomUser
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser,
                   ADDFORM, EDITFORM FORCE PANEL, delete
 
-    DIALOG customUser OBJECT u
+    DIALOG CustomUser OBJECT u
 ;
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
-    OBJECTS u=customUser FIXED PANEL
+    OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) loginCustomUser READONLY
     PROPERTIES(u) READONLYIF forbidEditProfileCustomUser(u) firstNameContact, lastNameContact, emailContact
 
@@ -103,8 +103,8 @@ EXTEND DESIGN reloginLoginUser {
 
 reloginLoginUser = ACTION () {
     FORM reloginLoginUser MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL user = customUser();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL user = CustomUser();
         SET user() <- customUserLogin(chosenString('login'));
         IF user() THEN {
             IF TRUE AND NOT sha256PasswordCustomUser(user()) THEN {
@@ -152,7 +152,7 @@ EXTEND DESIGN reloginPasswordUser {
 
 reloginPasswordUser = ACTION (customUser) {
     FORM reloginPasswordUser MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
             IF passwordCustomUser(customUser)==chosenString('password') THEN {
                 EXEC reloginUser(customUser);
@@ -176,7 +176,7 @@ reloginPasswordUser = ACTION (customUser) {
 // ---------------- Действия по изменению даннных пользователя ------------------- //
 
 FORM changePasswordUser 'Сменить пароль'
-    OBJECTS u=customUser FIXED PANEL
+    OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) READONLY loginCustomUser
 
     OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) FIXED PANEL
@@ -214,7 +214,7 @@ EXTEND DESIGN changePasswordUser {
 
 changePasswordUser = ACTION (customUser) {
     FORM changePasswordUser MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         IF TRUE AND NOT sha256PasswordCustomUser(customUser) THEN {
             IF  chosenString('old') != passwordCustomUser(customUser) THEN {
                 MESSAGE 'Неверный старый пароль';

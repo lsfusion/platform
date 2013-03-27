@@ -2,27 +2,27 @@ MODULE Compliance;
 
 REQUIRE Certificate, Shipment;
 
-CLASS compliance 'Сертификат соответствия' : certificate, numeratedObject;
-TABLE compliance(compliance);
+CLASS Compliance 'Сертификат соответствия' : Certificate, NumeratedObject;
+TABLE compliance(Compliance);
 
-CLASS compliancePosted 'Проведенный сертификат' : compliance, postedObject;
+CLASS CompliancePosted 'Проведенный сертификат' : Compliance, PostedObject;
 
 @defineNumeratedObjectDefault(compliance, 'Нумератор для сертификатов', 'СС');
 
-@defineDocumentHeaderTimePrefix(compliance, ,' создания');
-@defineDocumentHeaderTimePrefix(compliance, to, ' действия');
+@defineDocumentHeaderTimePrefix(Compliance, ,' создания');
+@defineDocumentHeaderTimePrefix(Compliance, to, ' действия');
 @implementDocumentHeaderTimePrefix(certificate, , compliance, );
 @implementDocumentHeaderTimePrefix(certificate, to, compliance, to);
 
-seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS compliance;
-numberCertificate(compliance) += numberObject(compliance) AND compliance IS compliance;
-numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compliance) WHERE compliance IS compliance;
+seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS Compliance;
+numberCertificate(compliance) += numberObject(compliance) AND compliance IS Compliance;
+numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compliance) WHERE compliance IS Compliance;
 
-textCompliance 'Текст сертификата' = DATA TEXT (compliance);
+textCompliance 'Текст сертификата' = DATA TEXT (Compliance);
 
-sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](compliance);
+sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](Compliance);
 
-isCompliancedCountrySku 'Необходимость сертификации' = ABSTRACT BOOLEAN(country, sku);
+isCompliancedCountrySku 'Необходимость сертификации' = ABSTRACT BOOLEAN(Country, Sku);
 
 descriptionCompliance 'Сертификат соответствия' (compliance) =
     [FORMULA STRING[100] ' \'Сертификат № \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
@@ -30,7 +30,7 @@ descriptionCompliance 'Сертификат соответствия' (complianc
 
 @defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 
-legalEntityCompliance = DATA legalEntity(compliance);
+legalEntityCompliance = DATA LegalEntity(Compliance);
 nameLegalEntityCompliance 'Владелец' (compliance) = name(legalEntityCompliance(compliance));
 
 @defineDocumentHeaderStock(compliance, stock, 'Склад');
@@ -40,10 +40,10 @@ CONSTRAINT legalEntityCompliance(compliance) AND stockCompliance(compliance) AND
     CHECKED BY stockCompliance MESSAGE 'Владелец и склад для сертификата не имеют связи';
 
 FORM compliance 'Сертификат соответствия'
-    OBJECTS c = compliance FIXED PANEL
+    OBJECTS c = Compliance FIXED PANEL
     PROPERTIES(c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance,
                   nameLegalEntityCompliance, nameStockCompliance, sumCompliance
-    EDIT compliance OBJECT c
+    EDIT Compliance OBJECT c
 ;
 
 DESIGN compliance FROM DEFAULT{
@@ -68,17 +68,17 @@ DESIGN compliance FROM DEFAULT{
 }
 
 FORM compliances 'Сертификаты соответствия'
-    OBJECTS c = compliance
+    OBJECTS c = Compliance
     PROPERTIES(c) READONLY objectClassName, numberObject, seriesObject, dateCompliance, timeCompliance, toDateCompliance,
                   toTimeCompliance, nameLegalEntityCompliance, nameStockCompliance, sumCompliance //, textCompliance
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
-    OBJECTS c = compliance
+    OBJECTS c = Compliance
     PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance, nameStockCompliance, sumCompliance//, textCompliance
     PROPERTIES(c) ADDFORM, EDITFORM
-    DIALOG compliance OBJECT c
+    DIALOG Compliance OBJECT c
 ;
 
 NAVIGATOR {

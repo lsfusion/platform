@@ -16,7 +16,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
     public DeleteBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClassByCompoundName("backup"));
+        super(LM, LM.findClassByCompoundName("Backup"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();

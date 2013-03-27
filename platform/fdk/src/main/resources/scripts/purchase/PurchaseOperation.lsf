@@ -10,13 +10,13 @@ NAMESPACE Purchase;
 @defineOperationLegalEntity(supplier, s, isSellerLegalEntity, 'Поставщики');
 @defineOperationLegalEntity(customer, c, isCompanyLegalEntity, 'Покупатели');
 
-createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (operation) IN createGroup;
-createPurchaseWriteOffOperation 'Создавать акт списания' = DATA BOOLEAN (operation) IN createGroup;
-createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (operation) IN createGroup;
-createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (operation) IN createGroup;
-pricingPriceListTypeOperation = DATA priceListType (operation);
+createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (Operation) IN createGroup;
+createPurchaseWriteOffOperation 'Создавать акт списания' = DATA BOOLEAN (Operation) IN createGroup;
+createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (Operation) IN createGroup;
+createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (Operation) IN createGroup;
+pricingPriceListTypeOperation = DATA PriceListType (Operation);
 namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
-createRepricingOperation 'Создавать акт дооценки' = DATA BOOLEAN (operation) IN createGroup;
+createRepricingOperation 'Создавать акт дооценки' = DATA BOOLEAN (Operation) IN createGroup;
 
 EXTEND FORM operation
     PROPERTIES(o) createShipmentOperation, createPurchaseWriteOffOperation,

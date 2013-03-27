@@ -27,8 +27,8 @@ changeAdditionalCompositionSkuLanguage = ACTION (sku, freight) {
     SET additionalCompositionSkuLanguage(sku, language) <- requestedString() WHERE language == languageFreight(freight);
 }
 
-mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
-additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+mainCompositionLanguageFreightSku (freight, sku) <- mainCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS FreightChanged);
+additionalCompositionLanguageFreightSku (freight, sku) <- additionalCompositionSkuFreight(sku, freight) WHEN ASSIGNED (freight IS FreightChanged);
 
 nameCountryLanguageFreightSku 'Страна (иностр.)' (freight, sku) = nameCountrySkuLanguage(sku, languageFreight(freight));
 nameCountryOfOriginLanguageFreightSku 'Страна (иностр.)' (freight, sku) = languageName(countryOfOriginFreightSku(freight, sku), languageFreight(freight));
@@ -53,7 +53,7 @@ CONSTRAINT customsZoneFreight(freight) != customsZoneSubCategory(subCategorySkuF
     CHECKED BY subCategorySkuFreight
     MESSAGE 'ТН ВЭД для другой таможенной зоны';
 
-//customCategory10LanguageFreightSku(freight, sku) <- customCategory10SkuFreight(sku, freight) WHEN ASSIGNED (freight IS freightChanged);
+//customCategory10LanguageFreightSku(freight, sku) <- customCategory10SkuFreight(sku, freight) WHEN ASSIGNED (freight IS FreightChanged);
 
 CONSTRAINT customsZoneFreight(freight) != customsZoneCustomCategory10(customCategory10FreightSku(freight, sku))
     CHECKED BY customCategory10FreightSku
@@ -81,46 +81,46 @@ END
 
 FORM dateFreightArrived
 
-    OBJECTS f = freight FIXED PANEL
+    OBJECTS f = Freight FIXED PANEL
     PROPERTIES(f) dateArrivalFreight, sumFreightFreight
 ;
 
-isFreightShipped(freight) = freight IS freightShipped;
-isFreightArrived(freight) = freight IS freightArrived;
+isFreightShipped(freight) = freight IS FreightShipped;
+isFreightArrived(freight) = freight IS FreightArrived;
 
 toShipFreight 'Отгрузить' =  [ACTION (freight) {
 
     FORM dateFreightShipped MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             SET dateShipmentFreight(freight) <- chosenDate('d');
-            CHANGECLASS freight TO freightShipped;
+            CHANGECLASS freight TO FreightShipped;
             EXEC apply();
         }
 
-}](freight) IF freight IS freightPriced AND NOT freight IS freightShipped IMAGE 'sign_tick.png';
+}](freight) IF freight IS FreightPriced AND NOT freight IS FreightShipped IMAGE 'sign_tick.png';
 
 toArrivedFreight 'Прибыл' = [ACTION (freight) {
 
     FORM dateFreightArrived MODAL;
 
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             //SET dateArrivalFreight(freight) <- chosenDate('d');
             //SET sumFreightFreight(freight) <- chosenNumeric('n');
-            CHANGECLASS freight TO freightArrived;
+            CHANGECLASS freight TO FreightArrived;
             EXEC apply();
         }
 
-}](freight) IF freight IS freightShipped IMAGE 'sign_tick.png'; //AND NOT freight IS freightArrived
+}](freight) IF freight IS FreightShipped IMAGE 'sign_tick.png'; //AND NOT freight IS FreightArrived
 
 FORM freight 'Фрахт'
 
-    OBJECTS f = freight FIXED PANEL
+    OBJECTS f = Freight FIXED PANEL
     PROPERTIES(f) objectClassName, nameNumeratorObject, numberObject, seriesObject, date, dateShipmentFreight SHOWIF isFreightShipped(f),
                   dateArrivalFreight SHOWIF isFreightArrived(f), nameCountryFreight, nameLanguageFreight, nameRouteFreight,
                   nameExporterFreight, descriptionFreight, volumeDataFreight, palletCountDataFreight,
                   nameCurrencyFreight, sumFreightFreight
 
-    EDIT freight OBJECT f
+    EDIT Freight OBJECT f
 ;
 
 DESIGN freight FROM DEFAULT {

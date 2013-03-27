@@ -2,43 +2,43 @@ MODULE Payment;
 
 REQUIRE Bank, Document, LegalEntity, Numerator, PaymentLedger;
 
-CLASS payment 'Платеж' : numeratedObject, paymentLedger;
-CLASS paymentPosted 'Проведенный платеж' : payment, postedObject;
-TABLE payment(payment);
+CLASS Payment 'Платеж' : NumeratedObject, PaymentLedger;
+CLASS PaymentPosted 'Проведенный платеж' : Payment, PostedObject;
+TABLE payment(Payment);
 
 @defineDocumentHeaderPosted(payment);
 @defineNumeratedObjectDefault(payment, 'Нумератор для платежей', 'ПЛ');
 
-datePayment 'Дата' (payment) = DATA DATE (payment);
-datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS payment);
-timePayment 'Время' (payment) = DATA TIME (payment);
-timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS payment);
+datePayment 'Дата' (payment) = DATA DATE (Payment);
+datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS Payment);
+timePayment 'Время' (payment) = DATA TIME (Payment);
+timePayment(payment) <- currentTime() WHEN ASSIGNED(payment IS Payment);
 dateTimePayment 'Дата время' (payment) = dateTimeToDateTime(datePayment(payment), timePayment(payment));
 
-payerPayment(payment) = DATA legalEntity (payment);
+payerPayment(payment) = DATA LegalEntity (Payment);
 namePayerPayment 'Организация (покупатель)' (payment) = name(payerPayment(payment));
-accountFromPayment(payment) = DATA PaymentLedger.account (payment);
+accountFromPayment(payment) = DATA PaymentLedger.Account (Payment);
 accountFromPayment(payment) <- accountLegalEntity(payerPayment(payment))
     WHEN CHANGED(payerPayment(payment));
 nameAccountFromPayment 'Счет' (payment) = PaymentLedger.nameAccount(accountFromPayment(payment));
 currencyAccountFromPayment (payment) = PaymentLedger.currencyAccount(accountFromPayment(payment));
 nameCurrencyAccountFromPayment 'Валюта счета' (payment) = PaymentLedger.nameCurrencyAccount(accountFromPayment(payment));
-sumFromPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (payment) PREFCHARWIDTH 16;
+sumFromPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (Payment) PREFCHARWIDTH 16;
 
-beneficiaryPayment(payment) = DATA legalEntity (payment);
+beneficiaryPayment(payment) = DATA LegalEntity (Payment);
 nameBeneficiaryPayment 'Организация (поставщик)' (payment) = name(beneficiaryPayment(payment));
-accountToPayment(payment) = DATA PaymentLedger.account (payment);
+accountToPayment(payment) = DATA PaymentLedger.Account (Payment);
 accountToPayment(payment) <- accountLegalEntity(beneficiaryPayment(payment))
     WHEN CHANGED(beneficiaryPayment(payment));
 nameAccountToPayment 'Счет' (payment) = PaymentLedger.nameAccount(accountToPayment(payment));
 currencyAccountToPayment(payment) = PaymentLedger.currencyAccount(accountToPayment(payment));
 nameCurrencyAccountToPayment 'Валюта счета' (payment) = PaymentLedger.nameCurrencyAccount(accountToPayment(payment));
-sumToPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (payment) PREFCHARWIDTH 16;
+sumToPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (Payment) PREFCHARWIDTH 16;
 
 rateFromPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumToPayment(payment),sumFromPayment(payment)) PREFCHARWIDTH 15;
 rateToPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumFromPayment(payment),sumToPayment(payment)) PREFCHARWIDTH 15;
 
-notePayment 'Примечание' (payment) = DATA STRING[200] (payment);
+notePayment 'Примечание' (payment) = DATA STRING[200] (Payment);
 
 descriptionPayment 'Название документа' =
     [FORMULA STRING[200] '\'Платеж \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
@@ -73,14 +73,14 @@ setSumToPayment = ACTION (payment){
 
 backgroundPaymentDate 'Цвет' (payment, date) = RGB(255,160,160) AND datePayment(payment) > (date AS DATE);
 
-partyA = DATA SESSION legalEntity();
+partyA = DATA SESSION LegalEntity();
 namePartyA 'Организация (поставщик)' = name(partyA());
-partyB = DATA SESSION legalEntity();
+partyB = DATA SESSION LegalEntity();
 namePartyB 'Организация (покупатель)' = name(partyB());
 
 FORM payment 'Платеж'
 
-    OBJECTS p = payment FIXED PANEL
+    OBJECTS p = Payment FIXED PANEL
     PROPERTIES(p) objectClassName, nameNumeratorObject, numberObject, seriesObject, datePayment, timePayment,
                   notePayment, namePayerPayment, nameBeneficiaryPayment, nameAccountToPayment, nameAccountFromPayment,
                   nameCurrencyAccountFromPayment, nameCurrencyAccountToPayment, sumFromPayment, sumToPayment,
@@ -89,7 +89,7 @@ FORM payment 'Платеж'
     EVENTS
         ON OK prePostPayment(p)
 
-    EDIT payment OBJECT p
+    EDIT Payment OBJECT p
 ;
 
 DESIGN payment FROM DEFAULT{
@@ -147,14 +147,14 @@ FORM payments 'Платежи'
 
     PROPERTIES() namePartyA, namePartyB
 
-    OBJECTS p = payment
+    OBJECTS p = Payment
     PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, dateTimePayment,
                                                                   namePayerPayment, nameBeneficiaryPayment, notePayment
 
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 
-    FILTERS payerPayment(p) == partyB() OR (p IS payment AND NOT partyB()),
-            beneficiaryPayment(p) == partyA() OR (p IS payment AND NOT partyA())
+    FILTERS payerPayment(p) == partyB() OR (p IS Payment AND NOT partyB()),
+            beneficiaryPayment(p) == partyA() OR (p IS Payment AND NOT partyA())
 
 ;
 

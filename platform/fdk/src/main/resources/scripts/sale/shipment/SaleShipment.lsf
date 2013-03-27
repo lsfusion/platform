@@ -31,9 +31,9 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(cust
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS userShipment);
+    WHEN ASSIGNED(userShipment IS UserShipment);
 
 supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
@@ -49,16 +49,16 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
 
 // ------------------------------- Проведение по регистру остатков ------------------------ //
 
-@implementSkuLedgerOutFIFO(shipmentDetail, sku, supplierStock);
+@implementSkuLedgerOutFIFO(ShipmentDetail, sku, supplierStock);
 quantityOutFIFOSkuLedger (ledger) += quantityShipmentDetail (ledger);
 @implementSkuLedgerOutFIFOBatchBalance(shipmentDetail, supplierStock);
 sumOutSkuLedger(ledger) += sumShipmentDetail(ledger);
 
-costShipmentDetailBatch(detail, batch) += costSkuLedgerBatch(detail, batch) IF detail IS shipmentDetail;
+costShipmentDetailBatch(detail, batch) += costSkuLedgerBatch(detail, batch) IF detail IS ShipmentDetail;
 
 // ------------------------------- Проведение по товарному отчету ------------------------ //
 
-@implementStockDocumentLedgerOut(shipment, supplierStock);
+@implementStockDocumentLedgerOut(Shipment, supplierStock);
 sumOutStockDocumentLedger (ledger) += sumShipmentDetailShipment(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemShipmentDetailShipment(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerShipmentDetailShipment(ledger);

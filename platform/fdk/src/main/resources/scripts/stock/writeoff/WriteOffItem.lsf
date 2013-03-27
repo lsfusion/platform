@@ -2,7 +2,7 @@ MODULE WriteOffItem;
 
 REQUIRE PurchaseWriteOff, Item;
 
-writeOffRateCountryItem 'Норма отходов' = DATA writeOffRate (country, item);
+writeOffRateCountryItem 'Норма отходов' = DATA WriteOffRate (Country, Item);
 nameWriteOffRateCountryItem 'Норма отходов' = name(writeOffRateCountryItem(country, item));
 percentWriteOffRateCountryItem 'Норма отходов,%' = percentWriteOffRate(writeOffRateCountryItem(country, item));
 
@@ -12,7 +12,7 @@ CONSTRAINT countryWriteOffRate(writeOffRateCountryItem(country, item)) != countr
 writeOffRateCountrySku (country, sku) += writeOffRateCountryItem (country, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET writeOffRateCountryItem(country, d) <- writeOffRateCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
+    SET writeOffRateCountryItem(country, d) <- writeOffRateCountryItem(country, s) IF country IS Country AND s IS Item AND d IS Item;
 }
 
 EXTEND FORM item

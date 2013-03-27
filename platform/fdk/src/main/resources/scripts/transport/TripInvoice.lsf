@@ -4,10 +4,10 @@ REQUIRE OrderInvoice, Shipment, Trip;   //  Order, Invoice
 
 quantityTripInvoice (trip, invoice) = GROUP SUM quantityOrderInvoice(order, invoice) IF inTripOrder(trip, order) BY trip, invoice;
 
-tripInvoice = DATA trip(invoice);
+tripInvoice = DATA Trip(Invoice);
 
 inTripInvoice 'Включен' (trip, invoice) = tripInvoice(invoice)==trip;
-filterTripInvoice(trip, invoice) = tripInvoice(invoice)==trip OR (trip IS trip AND invoice IS invoice AND NOT tripInvoice(invoice));
+filterTripInvoice(trip, invoice) = tripInvoice(invoice)==trip OR (trip IS Trip AND invoice IS Invoice AND NOT tripInvoice(invoice));
 
 quantityInvoicedTripSku 'Кол-во в накладных' (trip, sku) = GROUP SUM quantityInvoiceDetail(invoiceDetail) BY tripInvoice(invoiceInvoiceDetail(invoiceDetail)), skuInvoiceDetail(invoiceDetail);
 
@@ -29,7 +29,7 @@ EXTEND FORM trip
 
     PROPERTIES (t) grossWeightInvoicedTrip BEFORE grossWeightShipmentedTrip(t)
 
-    OBJECTS i=invoice
+    OBJECTS i=Invoice
     PROPERTIES (t, i) inTripInvoice
     PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameFromLegalEntityInvoice, nameFromStockInvoice, nameToLegalEntityInvoice, nameToStockInvoice
 
@@ -41,14 +41,14 @@ EXTEND FORM trip
         FILTER 'Не расписанные или в текущем рейсе' 'F11' filterTripInvoice(t, i)
         FILTER 'В текущем рейсе' 'F10' inTripInvoice(t, i) DEFAULT
 
-    FILTERS customerInvoice(i) == partyB() OR (i IS invoice AND NOT partyB()),
-            supplierInvoice(i) == partyA() OR (i IS invoice AND NOT partyA())
+    FILTERS customerInvoice(i) == partyB() OR (i IS Invoice AND NOT partyB()),
+            supplierInvoice(i) == partyA() OR (i IS Invoice AND NOT partyA())
 
-    OBJECTS id=invoiceDetail
+    OBJECTS id=InvoiceDetail
     PROPERTIES (id) READONLY idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail, quantityInvoiceDetail, grossWeightInvoiceDetail, nameFromStockInvoiceDetail, nameToStockInvoiceDetail
     FILTERS invoiceInvoiceDetail(id)==i
 
-    OBJECTS i2=invoice
+    OBJECTS i2=Invoice
     PROPERTIES(i2) READONLY numberInvoice, seriesInvoice, dateInvoice, nameSupplierStockInvoice, nameCustomerStockInvoice
     PROPERTIES(i2) editInvoice
     PROPERTIES(sk, i2) READONLY quantityInvoiceDetailSkuInvoice
@@ -81,7 +81,7 @@ EXTEND DESIGN trip {
 
 EXTEND FORM trips
     PROPERTIES (t) grossWeightInvoicedTrip AFTER grossWeightOrderedTrip(t)
-    OBJECTS i=invoice
+    OBJECTS i=Invoice
     PROPERTIES (i) READONLY numberInvoice, seriesInvoice, dateInvoice, nameFromLegalEntityInvoice, nameFromStockInvoice, nameToLegalEntityInvoice, nameToStockInvoice
     FILTERS inTripInvoice(t, i)
 ;

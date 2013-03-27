@@ -2,30 +2,30 @@ MODULE Bank;
 
 REQUIRE System, LegalEntity, Finance, PaymentLedger;
 
-CLASS bank 'Банк' : named;
-TABLE bank (bank);
-TABLE bankDate (bank, DATE);
+CLASS Bank 'Банк' : Named;
+TABLE bank (Bank);
+TABLE bankDate (Bank, DATE);
 
 GROUP bank 'Информация о банке' : base;
 
-MFOBank 'Код МФО' = DATA STRING[9] (bank) IN bank;
-departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN bank;
-CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN bank;
-infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN bank;
+MFOBank 'Код МФО' = DATA STRING[9] (Bank) IN bank;
+departmentBank 'Отдел банка' = DATA STRING[100] (Bank) IN bank;
+CBUBank 'ЦБУ' = DATA STRING[3] (Bank) IN bank;
+infoBank 'Дополнительные сведения' = DATA STRING[100] (Bank) IN bank;
 
-countryBank = DATA country (bank);
+countryBank = DATA Country (Bank);
 nameCountryBank 'Страна' (bank) = name(countryBank(bank)) IN bank MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;
 
 @defineHistorizable(addressBank, 'Адрес банка', STRING[150], bank, name, bank);
 
 FORM bank 'Банк'
-    OBJECTS b=bank FIXED PANEL
+    OBJECTS b=Bank FIXED PANEL
     PROPERTIES(b)  name, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
-    EDIT bank OBJECT b
+    EDIT Bank OBJECT b
 ;
 
 FORM banks 'Банки'
-    OBJECTS b=bank
+    OBJECTS b=Bank
     PROPERTIES(b) READONLY name, addressBank, MFOBank, departmentBank, CBUBank, nameCountryBank, infoBank
     PROPERTIES(b) ADDFORM, EDITFORM, delete
 ;
@@ -38,37 +38,37 @@ NAVIGATOR {
 
 // ----------------------------------- Расчетный счет ------------------------------------------ //
 
-CLASS account 'Расчетный счет';
-TABLE account (account);
+CLASS Account 'Расчетный счет';
+TABLE account (Account);
 
-bankAccount = DATA bank (account);
+bankAccount = DATA Bank (Account);
 
 GROUP accountGroup 'Банковская информация' : base;
 
-currencyAccount = DATA currency (account);
+currencyAccount = DATA Currency (Account);
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account)) IN accountGroup;
 
-numberAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN accountGroup FIXEDCHARWIDTH 13;
-accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS account;
+numberAccount 'Номер расчетного счета'  = DATA STRING[13] (Account) IN accountGroup FIXEDCHARWIDTH 13;
+accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS Account;
 
 nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
 addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;
 MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN accountGroup;
 departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN accountGroup;
 CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN accountGroup;
-noteAccount 'Примечание'  = DATA STRING[50] (account) IN accountGroup;
+noteAccount 'Примечание'  = DATA STRING[50] (Account) IN accountGroup;
 
-EXTEND CLASS account : PaymentLedger.account;
+EXTEND CLASS Account : PaymentLedger.Account;
 nameAccount(account) += numberAccount(account);
 PaymentLedger.currencyAccount(account) += currencyAccount(account);
 
 // ------------------------ Привязка банков к юрлицам ------------------------ //
 
-legalEntityAccount = DATA legalEntity (account) NOT NULL DELETE;
+legalEntityAccount = DATA LegalEntity (Account) NOT NULL DELETE;
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
 PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 
-userAccountLegalEntity = DATA account (legalEntity);
+userAccountLegalEntity = DATA Account (LegalEntity);
 CONSTRAINT legalEntityAccount(userAccountLegalEntity(legalEntity)) != legalEntity CHECKED MESSAGE 'ошибка: Р/сч. по умолчанию должен соответствовать р/сч. Ю.Л.';
 
 accountLegalEntity (legalEntity) = UNION OVERRIDE defaultAccountLegalEntity(legalEntity), userAccountLegalEntity(legalEntity);
@@ -79,7 +79,7 @@ equalsLegalEntityAccount 'Основной' (legalEntity, account) = userAccount
 EXTEND FORM legalEntity
     PROPERTIES(l)  numberAccountLegalEntity
 
-    OBJECTS a=account
+    OBJECTS a=Account
     PROPERTIES(a)  numberAccount, nameCurrencyAccount, nameBankAccount, addressBankAccount, departmentBankAccount,
                    CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(a) == l

@@ -6,7 +6,7 @@ NAMESPACE Repricing;
 
 // ------------------------------------- Печать ценников ------------------------------ //
 
-@Label.implementPriceTransactionDocument(repricing);
+@Label.implementPriceTransactionDocument(Repricing);
 Label.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
 
 @defineDocumentLabelTransaction(repricing, sku, departmentStore);

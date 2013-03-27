@@ -4,13 +4,13 @@ REQUIRE LegalEntity, Bank;
 
 NAMESPACE LegalEntity;
 
-CLASS company 'Компания' : legalEntity, taxUnitGroup;
-TABLE company (company);
+CLASS Company 'Компания' : LegalEntity, TaxUnitGroup;
+TABLE company (Company);
 
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 
 FORM company 'Компания'
-    OBJECTS co=company FIXED PANEL
+    OBJECTS co=Company FIXED PANEL
     PROPERTIES(co) name, nameCountryLegalEntity, nameLanguageLegalEntity, nameCurrencyLegalEntity,
                    nameOwnershipLegalEntity, shortNameOwnershipLegalEntity, fullNameLegalEntity,
                    addressLegalEntity ON CHANGE dialogAddressLegalEntity(co),
@@ -20,11 +20,11 @@ FORM company 'Компания'
                    phoneLegalEntity ON CHANGE dialogPhoneLegalEntity(co),
                    emailLegalEntity, siteLegalEntity
 
-    OBJECTS a=Bank.account
+    OBJECTS a=Bank.Account
     PROPERTIES(a)  numberAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, noteAccount, ADDOBJ, delete
     FILTERS Bank.legalEntityAccount(a) == co
 
-    EDIT company OBJECT co
+    EDIT Company OBJECT co
 ;
 
 DESIGN company FROM DEFAULT {
@@ -63,7 +63,7 @@ DESIGN company FROM DEFAULT {
 
 FORM companies 'Компании'
 
-    OBJECTS co=company
+    OBJECTS co=Company
     PROPERTIES(co) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                             numberAccountLegalEntity, addressLegalEntity, phoneLegalEntity
     PROPERTIES(co) ADDFORM, EDITFORM, delete

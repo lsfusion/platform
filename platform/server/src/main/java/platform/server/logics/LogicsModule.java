@@ -326,17 +326,14 @@ public abstract class LogicsModule {
     }
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, CustomClass... parents) {
-        assert parents.length > 0;
-        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, parents);
-        storeCustomClass(customClass);
-        return customClass;
+        return addConcreteClass(name, caption, new ArrayList<String>(), new ArrayList<String>(), parents);
     }
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, String[] sids, String[] names, CustomClass... parents) {
         return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
     }
 
-    protected void printStaticObjectsChanges(String path, String classSID, List<String> sids) {
+    protected static void printStaticObjectsChanges(String path, String classSID, List<String> sids) {
         try {
             PrintWriter w = new PrintWriter(new FileWriter(path, true));
             for (String sid : sids) {
@@ -348,15 +345,42 @@ public abstract class LogicsModule {
         }
     }
 
+    protected static void printStaticObjectsChanges2(String path, String newSID, String oldSID, List<String> sids) {
+        if (!newSID.equals(oldSID)) {
+            try {
+                PrintWriter w = new PrintWriter(new FileWriter(path, true));
+                for (String sid : sids) {
+                    w.print("OBJECT " + oldSID + "." + sid + " -> " + newSID + "." + sid + "\n");
+                }
+                w.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected static void printClassNamesChanges(String path, String newSID, String oldSID) {
+        if (!newSID.equals(oldSID)) {
+            try {
+                PrintWriter w = new PrintWriter(new FileWriter(path, true));
+                w.print("CLASS " + oldSID + " -> " + newSID + "\n");
+                w.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
+        assert name.charAt(0) >= 'A' && name.charAt(0) <= 'Z';
         ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
-//        printStaticObjectsChanges("D:/sot_class_migrate.txt", customClass.getSID(), sids);
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String name, String caption, CustomClass... parents) {
+        assert name.charAt(0) >= 'A' && name.charAt(0) <= 'Z';
         AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, parents);
         storeCustomClass(customClass);
         return customClass;

@@ -2,10 +2,10 @@ MODULE Integration;
 
 REQUIRE System;
 
-CLASS externalizable 'Внешний объект';
-TABLE externalizable (externalizable);
+CLASS Externalizable 'Внешний объект';
+TABLE externalizable (Externalizable);
 
-sidExternalizable 'Внешний код' = DATA STRING[100] (externalizable);
-externalizableSID (sid) = GROUP UNIQUE externalizable BY sidExternalizable (externalizable) WHERE externalizable IS externalizable;
+sidExternalizable 'Внешний код' = DATA STRING[100] (Externalizable);
+externalizableSID (sid) = GROUP UNIQUE externalizable BY sidExternalizable (externalizable) WHERE externalizable IS Externalizable;
 
 

@@ -24,7 +24,7 @@ META defineDocumentDetailSkuArticle (object)
 
     changeTypeLabel###object##Detail = ACTION (object##Detail) {
     REQUEST OBJECT tl FORM typeLabels MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             SET typeLabelArticle(article) <- chosenObject('tl') WHERE article == article###object##Detail(object##Detail);
         }
     };
@@ -111,7 +111,7 @@ END
 
 META defineDocumentRetailPrice (concrete, object)
 
-    retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (concrete##Detail);
+    retailPrice###concrete##Detail 'Цена розничная' = DATA NUMERIC[14,2] (###concrete##Detail);
     retailSum###concrete##Detail 'Сумма розничная' (detail) = quantity###concrete##Detail(detail) * retailPrice###concrete##Detail(detail);
 
     retailPrice###concrete##Detail(concrete##Detail) <- priceAPriceSetDocumentSkuCurrencyDateTime(sku###concrete##Detail(concrete##Detail), currency###concrete##Detail(concrete##Detail), dateTime###concrete##Detail(concrete##Detail))
@@ -129,13 +129,17 @@ META defineDocumentRetailPrice (concrete, object)
 END
 
 META defineDocumentTransferAccountCustom(concrete, retailProp, detail, object)
+    @defineDocumentTransferAccountCustomInner(concrete, retailProp, detail, ###detail, object);
+END
+
+META defineDocumentTransferAccountCustomInner(concrete, retailProp, detail, detailClass, object)
 
     // Учетные суммы
     accountSum###detail 'Сумма учетная' (idetail) = IF retailProp(idetail)  THEN retailSum###detail(idetail)
-                                                                            ELSE (supplierSumSkuLedger(idetail) AND idetail IS detail);
+                                                                            ELSE (supplierSumSkuLedger(idetail) AND idetail IS detailClass);
 
-    accountPrice###detail##BatchA (idetail, batch) = IF retailProp(idetail) THEN retailPrice###detail(idetail) AND batch IS batchA
-                                                                            ELSE supplierPriceBatchA(batch) AND idetail IS detail;
+    accountPrice###detail##BatchA (idetail, batch) = IF retailProp(idetail) THEN retailPrice###detail(idetail) AND batch IS BatchA
+                                                                            ELSE supplierPriceBatchA(batch) AND idetail IS detailClass;
 
     accountSum###concrete 'Сумма учетная' (iconcrete) = GROUP SUM accountSum###detail(idetail) BY concrete###detail(idetail) IN documentSumGroup;
 
@@ -151,22 +155,22 @@ META defineDocumentTransferAccount(concrete, retailProp)
 END
 
 // --------------------------------- Документы для генерации по трансферу -------------------------------- //
-CLASS ABSTRACT innerDocument 'Внутренний документ' : historizable, numberedObject;
+CLASS ABSTRACT InnerDocument 'Внутренний документ' : Historizable, NumberedObject;
 
-dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (innerDocument);
+dateInnerDocument 'Дата' (innerDocument) = ABSTRACT DATE (InnerDocument);
 
-stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
+stockInnerDocument 'Склад-отправитель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
 nameStockInnerDocument 'Склад-отправитель' (innerDocument) = name(stockInnerDocument(innerDocument)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-//destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT stock (innerDocument);
+//destinationStockInnerDocument 'Склад-получатель (ИД)' (innerDocument) = ABSTRACT Stock (InnerDocument);
 //nameDestinationStockInnerDocument 'Склад-получатель' (innerDocument) = name(destinationStockInnerDocument(innerDocument));
 
-nameDestinationStockInnerDocument 'Получатель' (innerDocument) = ABSTRACT STRING[200] (innerDocument) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+nameDestinationStockInnerDocument 'Получатель' (innerDocument) = ABSTRACT STRING[200] (InnerDocument) MINCHARWIDTH 30 PREFCHARWIDTH 50;
 
-countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (innerDocument);
-quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (innerDocument);
+countDetailInnerDocument 'Количество строк в документе' (innerDocument) = ABSTRACT INTEGER (InnerDocument);
+quantityDetailInnerDocument 'Кол-во (всего)' (innerDocument) = ABSTRACT NUMERIC[14,3] (InnerDocument);
 
-isPostedInnerDocument 'Проведен' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
-isDraftInnerDocument 'Не проведен' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
+isPostedInnerDocument 'Проведен' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);
+isDraftInnerDocument 'Не проведен' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);
 
-skipSkuLedgerInnerDocument 'Не проводить по учету' (innerDocument) = ABSTRACT BOOLEAN (innerDocument);
+skipSkuLedgerInnerDocument 'Не проводить по учету' (innerDocument) = ABSTRACT BOOLEAN (InnerDocument);

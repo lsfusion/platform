@@ -11,8 +11,8 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentSto
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userInvoiceDetail IS userInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
-    0.0 IF userInvoiceDetail IS userInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
+    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
     priceUserInvoiceDetail(userInvoiceDetail))
     WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(priceUserInvoiceDetail(userInvoiceDetail));
 
@@ -20,8 +20,8 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 @deriveDocumentDetailVAT (userInvoice, retail, date, sku, customerStock);
 @deriveDocumentDetailValueVAT(userInvoice, retail);
 
-skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
-isReturnPricing(pricing) +=  pricing IS invoicePricing;
+skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
+isReturnPricing(pricing) +=  pricing IS InvoicePricing;
 //--
 
 createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))

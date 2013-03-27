@@ -12,7 +12,6 @@ import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StaticValueExpr;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
@@ -31,10 +30,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public ConcreteCustomClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
         super(sID, caption, parents);
         assert names.size() == captions.size();
-
-        for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null));
-        }
+        addStaticObjects(names, captions);
     }
 
     public static ConcreteCustomClass createObjectClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
@@ -158,7 +154,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("id not found");
     }
 
-    public void addStaticObjects(List<String> names, List<String> captions) {
+    public final void addStaticObjects(List<String> names, List<String> captions) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
             staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null));

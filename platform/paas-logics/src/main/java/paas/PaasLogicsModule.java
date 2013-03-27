@@ -98,17 +98,17 @@ public class PaasLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-//        paasUser = addConcreteClass("paasUser", "Пользователь", baseLM.user, baseLM.emailObject);
+//        paasUser = addConcreteClass("PaasUser", "Пользователь", baseLM.user, baseLM.emailObject);
 
-        project = addConcreteClass("project", "Проект", baseClass.named);
+        project = addConcreteClass("Project", "Проект", baseClass.named);
 
-        module = addConcreteClass("module", "Модуль", baseClass.named);
+        module = addConcreteClass("Module", "Модуль", baseClass.named);
 
-        configuration = addConcreteClass("configuration", "Конфигурация", baseClass.named);
+        configuration = addConcreteClass("Configuration", "Конфигурация", baseClass.named);
 
-        database = addConcreteClass("database", "База данных", baseClass.named);
+        database = addConcreteClass("Database", "База данных", baseClass.named);
 
-        status = addConcreteClass("status", "Статус конфигурации",
+        status = addConcreteClass("Status", "Статус конфигурации",
                                 new String[]{"stopped", "started", "busyPort"},
                                 new String[]{"Остановлен", "Работает", "Порт занят"},
                                 baseClass.named);

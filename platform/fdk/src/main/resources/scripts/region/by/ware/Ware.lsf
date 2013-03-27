@@ -14,35 +14,35 @@ EXTEND DESIGN options {
 }
 
 // ----------------------------------------- Группа посуды ----------------------------- //
-CLASS wareGroup 'Группа посуды' : named, skuGroup;
+CLASS WareGroup 'Группа посуды' : Named, SkuGroup;
 
 @defineHierarchy(wareGroup);
 
 parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);
 
 // ------------------------------------------ Посуда ----------------------------------------------- //
-CLASS ware 'Посуда' : named, sku;
-TABLE ware(ware);
+CLASS Ware 'Посуда' : Named, Sku;
+TABLE ware(Ware);
 
-wareGroupWare = DATA wareGroup(ware) AUTOSET;
+wareGroupWare = DATA WareGroup(Ware) AUTOSET;
 skuGroupSku(ware) += wareGroupWare(ware);
 
-nameSku(ware) += name(ware) IF ware IS ware;
+nameSku(ware) += name(ware) IF ware IS Ware;
 
 nameWareGroupWare 'Группа посуды' (ware) = name(wareGroupWare(ware));
 canonicalNameWareGroupWare 'Группа посуды' (ware) = canonicalNameWareGroup(wareGroupWare(ware)) IN base;
 
-TABLE wareGroupWare (wareGroup, ware);
+TABLE wareGroupWare (WareGroup, Ware);
 
 isParentWareGroupware (wareGroup, ware) = isParentWareGroupWareGroup(wareGroupWare(ware), wareGroup) PERSISTENT;
 
-TABLE wareDate(ware, DATE);
+TABLE wareDate(Ware, DATE);
 
 @defineHistorizable(warePrice, 'Цена', NUMERIC[14,2], ware, name, base);
 
-@defineHistorizableCustom(rangeWare, 'НДС', range, numberRange, ware, name, base);
+@defineHistorizableCustom(rangeWare, 'НДС', Range, numberRange, ware, name, base);
 
-CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
+CONSTRAINT taxRange(dataRangeWareDate(ware, date)) != Tax.taxVAT CHECKED BY dataRangeWareDate MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
 
 dataValueRangeWareDate 'НДС, %' (ware, date) = valueRateRangeDate(dataRangeWareDate(ware, date), date) IN base;
 valueCurrentRateRangeWare 'НДС, %' (ware) = valueCurrentRateRange(rangeWare(ware)) IN base;
@@ -55,19 +55,19 @@ EXTEND FORM dialogRangeWare
 ;
 
 FORM ware 'Посуда'
-    OBJECTS w=ware FIXED PANEL
+    OBJECTS w=Ware FIXED PANEL
     PROPERTIES(w) name, canonicalNameWareGroupWare, warePrice
     PROPERTIES(w) numberRangeRangeWare, valueCurrentRateRangeWare
 
-    EDIT ware OBJECT w
+    EDIT Ware OBJECT w
 ;
 
 FORM wares 'Посуда'
-    OBJECTS w=ware
+    OBJECTS w=Ware
     PROPERTIES(w) READONLY name, canonicalNameWareGroupWare, warePrice, numberRangeRangeWare, valueCurrentRateRangeWare
     PROPERTIES(w)          ADDFORM, EDITFORM, delete
 
-    DIALOG ware OBJECT w
+    DIALOG Ware OBJECT w
 ;
 
 NAVIGATOR {

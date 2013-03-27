@@ -6,7 +6,7 @@ NAMESPACE CashOperation;
 
 FORM printIncomeCashOrderBy 'ПКО' PRINT
 
-    OBJECTS i = incomeCashOrder FIXED PANEL
+    OBJECTS i = IncomeCashOrder FIXED PANEL
     PROPERTIES(i) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
                            nameDepartmentStoreCashDocument, sumCashIncomeCashOrder, basisCashDocument
 
@@ -14,7 +14,7 @@ FORM printIncomeCashOrderBy 'ПКО' PRINT
 
 FORM printOutcomeCashOrderBy 'РКО' PRINT
 
-    OBJECTS o = outcomeCashOrder FIXED PANEL
+    OBJECTS o = OutcomeCashOrder FIXED PANEL
     PROPERTIES(o) READONLY numberCashDocument, dateCashDocument, timeCashDocument, nameLegalEntityCashDocument,
                            nameDepartmentStoreCashDocument, sumCashOutcomeCashOrder, basisCashDocument
 

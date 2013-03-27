@@ -3,16 +3,16 @@ MODULE UserPriceChange;
 REQUIRE System, Stock, PriceChange, Numerator, Label, Machinery, Terminal, Barcode;
 
 
-CLASS userPriceChange 'Переоценка товаров' : priceChangeDocument, numeratedObject, historizable;
-CLASS userPriceChangeDetail 'Строка переоценки товаров' : priceChangeDocumentDetail;
-CLASS userPriceChangePosted 'Проведенная переоценка товаров' : userPriceChange, postedObject;
+CLASS UserPriceChange 'Переоценка товаров' : PriceChangeDocument, NumeratedObject, Historizable;
+CLASS UserPriceChangeDetail 'Строка переоценки товаров' : PriceChangeDocumentDetail;
+CLASS UserPriceChangePosted 'Проведенная переоценка товаров' : UserPriceChange, PostedObject;
 
 @defineDocument(userPriceChange);
 @defineDocumentDepartmentStore(userPriceChange);
 @defineDocumentPosted(userPriceChange);
 
-numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS userPriceChange;
-seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS userPriceChange;
+numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS UserPriceChange;
+seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS UserPriceChange;
 
 @defineNumeratedObjectDefault(userPriceChange, 'Нумератор для переоценки товара', 'ПT');
 @defineDocumentDetailSku(userPriceChange, sku);
@@ -37,15 +37,15 @@ descriptionUserPriceChangeDetail 'Название документа' (userPric
 @defineAddDetailDialogBarcode(userPriceChange, sku);
 @defineAddDetailDialogTerminal(userPriceChange, sku);
 
-@implementBaseSkuDepartmentStoreLedger(userPriceChange, sku);
+@implementBaseSkuDepartmentStoreLedger(UserPriceChange, sku);
 
 @implementPriceChangeDocument(userPriceChange, sku);
 @implementPriceChangeDocumentDetailAllPrice(userPriceChange);
 
-percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (userPriceChange);
-percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (userPriceChange);
-toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
-toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS userPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
+percMarkupUserPriceChange 'Процент торговой надбавки'  = DATA NUMERIC[8,3] (UserPriceChange);
+percDiscountUserPriceChange 'Процент скидки от розн. цены'  = DATA NUMERIC[8,3] (UserPriceChange);
+toShowDiscountUserPriceChange (userPriceChange) =  userPriceChange IS UserPriceChange AND NOT percMarkupUserPriceChange(userPriceChange);
+toShowMarkupUserPriceChange (userPriceChange) =  userPriceChange IS UserPriceChange AND NOT percDiscountUserPriceChange(userPriceChange);
 
 newDiscountRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetail) =  [roundM1(X-(X*Y)/100)](
     curRetailPriceUserPriceChangeDetail(userPriceChangeDetail), percDiscountUserPriceChange(userPriceChange));
@@ -54,12 +54,12 @@ newMarkupRetailPriceUserPriceChangeDetail (userPriceChange, userPriceChangeDetai
     curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail),
     percMarkupUserPriceChange(userPriceChange),
     curValueRetailVATUserPriceChangeDetail(userPriceChangeDetail),
-    (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS userPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
+    (UNION OVERRIDE 0.0 IF userPriceChangeDetail IS UserPriceChangeDetail, curWarePriceUserPriceChangeDetail(userPriceChangeDetail)));
 
 
 
 FORM addPercMarkupUserPriceChange 'Изменить наценку товара'
-    OBJECTS u=userPriceChange FIXED PANEL
+    OBJECTS u=UserPriceChange FIXED PANEL
     PROPERTIES (u) percMarkupUserPriceChange
 ;
 
@@ -72,8 +72,8 @@ DESIGN addPercMarkupUserPriceChange FROM DEFAULT {
 }
 
 dialogAddPercMarkupUserPriceChange 'Изменить наценку товара' (userPriceChange) = ACTION (userPriceChange) {
-        FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
-        IF formResult() == formResult.ok THEN {
+        FORM addPercMarkupUserPriceChange OBJECTS u = userPriceChange AS UserPriceChange MODAL;
+        IF formResult() == FormResult.ok THEN {
             FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
                 SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
@@ -87,7 +87,7 @@ dialogAddPercMarkupUserPriceChange 'Изменить наценку товара
 
 
 FORM addPercDiscountUserPriceChange 'Сделать скидку'
-    OBJECTS u=userPriceChange FIXED PANEL
+    OBJECTS u=UserPriceChange FIXED PANEL
     PROPERTIES (u) percDiscountUserPriceChange
 ;
 
@@ -100,8 +100,8 @@ DESIGN addPercDiscountUserPriceChange FROM DEFAULT {
 }
 
 dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceChange) = ACTION (userPriceChange) {
-        FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS userPriceChange MODAL;
-        IF formResult() == formResult.ok THEN {
+        FORM addPercDiscountUserPriceChange OBJECTS u = userPriceChange AS UserPriceChange MODAL;
+        IF formResult() == FormResult.ok THEN {
             FOR userPriceChangeUserPriceChangeDetail(userPriceChangeDetail) == userPriceChange DO {
                 SET importerPriceUserPriceChangeDetail(userPriceChangeDetail) <- curImporterPriceUserPriceChangeDetail(userPriceChangeDetail);
                 SET supplierPriceUserPriceChangeDetail(userPriceChangeDetail) <- curSupplierPriceUserPriceChangeDetail(userPriceChangeDetail);
@@ -118,7 +118,7 @@ dialogAddPercDiscountUserPriceChange 'Сделать скидку' (userPriceCha
 toShowWareUserPriceChange 'Показывать строки с посудой' (userPriceChange) = GROUP SUM 1 IF curWareUserPriceChangeDetail(userPriceChangeDetail) BY userPriceChangeUserPriceChangeDetail(userPriceChangeDetail);
 
 FORM userPriceChange 'Переоценка товаров'
-    OBJECTS u=userPriceChange FIXED PANEL
+    OBJECTS u=UserPriceChange FIXED PANEL
     PROPERTIES (u) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                    dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
@@ -126,7 +126,7 @@ FORM userPriceChange 'Переоценка товаров'
                    noteUserPriceChange, numberDisposalUserPriceChange, namePriceChangeCommitteeUserPriceChange
 //    PROPERTIES()   showWare
 
-    OBJECTS d=userPriceChangeDetail
+    OBJECTS d=UserPriceChangeDetail
     PROPERTIES (d) indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
                    curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                    curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
@@ -149,7 +149,7 @@ FORM userPriceChange 'Переоценка товаров'
     EVENTS
         ON OK prePostUserPriceChange(u)
 
-    EDIT userPriceChange OBJECT u
+    EDIT UserPriceChange OBJECT u
 ;
 
 DESIGN userPriceChange FROM DEFAULT {
@@ -199,7 +199,7 @@ DESIGN userPriceChange FROM DEFAULT {
 
 FORM userPriceChanges 'Переоценки товаров'
 
-    OBJECTS u=userPriceChange
+    OBJECTS u=UserPriceChange
     PROPERTIES (u) READONLY objectClassName, numberObject, seriesObject, dateUserPriceChange, timeUserPriceChange, nameDepartmentStoreUserPriceChange, noteUserPriceChange,
                    diffSupplierISumPriceChangeDocumentDetailPriceChangeDocument, diffMarkupSumPriceChangeDocumentDetailPriceChangeDocument, diffRetailVATISumPriceChangeDocumentDetailPriceChangeDocument,
                    diffWareSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffWareVATSumPriceChangeDocumentDetailPriceChangeDocument SHOWIF showWare(), diffRetailSumPriceChangeDocumentDetailPriceChangeDocument
@@ -210,7 +210,7 @@ FORM userPriceChanges 'Переоценки товаров'
     PROPERTIES (u)          printPriceChange FORCE PANEL,
                             ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS d=userPriceChangeDetail
+    OBJECTS d=UserPriceChangeDetail
     PROPERTIES (d) READONLY indexUserPriceChangeDetail, idBarcodeSkuUserPriceChangeDetail, nameSkuUserPriceChangeDetail, quantityUserPriceChangeDetail,
                             curImporterPriceUserPriceChangeDetail, importerPriceUserPriceChangeDetail,
                             curSupplierPriceUserPriceChangeDetail, supplierPriceUserPriceChangeDetail,
@@ -263,10 +263,10 @@ DESIGN userPriceChanges FROM DEFAULT {
     ADD functions.box;
 }
 
-@Label.implementPriceTransactionDocument(userPriceChange);
+@Label.implementPriceTransactionDocument(UserPriceChange);
 @defineDocumentLabelTransaction(userPriceChange, sku, departmentStore);
 @extendFormDocumentLabelTransaction(userPriceChanges, u, userPriceChange);
 
-@Machinery.implementPriceTransactionDocument(userPriceChange);
+@Machinery.implementPriceTransactionDocument(UserPriceChange);
 @defineDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange);

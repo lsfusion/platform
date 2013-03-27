@@ -7,64 +7,64 @@ REQUIRE System,
         LegalEntity;
 
 // ----------------------------------------- Группы складов ------------------------------ //
-CLASS warehouseGroup 'Группа складов' : stockGroup;
+CLASS WarehouseGroup 'Группа складов' : StockGroup;
 
 @defineHierarchy(warehouseGroup);
 parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //
 
-CLASS warehouse 'Склад' : stock;
+CLASS Warehouse 'Склад' : Stock;
 
-warehouseGroupWarehouse (warehouse) = DATA warehouseGroup (warehouse) AUTOSET;
+warehouseGroupWarehouse (warehouse) = DATA WarehouseGroup (Warehouse) AUTOSET;
 nameWarehouseGroupWarehouse 'Группа складов' (warehouse) = name(warehouseGroupWarehouse(warehouse)) IN base;
 isParentWarehouseGroupWarehouse (warehouseGroup, warehouse) =
     isParentWarehouseGroupWarehouseGroup(warehouseGroupWarehouse(warehouse), warehouseGroup) PERSISTENT;
 stockGroupStock (stock) += warehouseGroupWarehouse (stock);
 
-legalEntityWarehouse (warehouse) = DATA legalEntity (warehouse) NOT NULL;
+legalEntityWarehouse (warehouse) = DATA LegalEntity (Warehouse) NOT NULL;
 nameLegalEntityWarehouse 'Организация' (warehouse) = name(legalEntityWarehouse(warehouse)) IN base;
 legalEntityStock (stock) += legalEntityWarehouse(stock);
 
-userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (legalEntity, warehouse);
+userLegalEntityWarehouse 'Отм.' = DATA BOOLEAN (LegalEntity, Warehouse);
 userLegalEntityStock(legalEntity, stock) += userLegalEntityWarehouse(legalEntity, stock);
 
-addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (warehouse);
+addressWarehouse 'Адрес' (warehouse) = DATA STRING[100] (Warehouse);
 addressStock(stock) += addressWarehouse(stock);
 
-latitudeWarehouse 'Координата X' = DATA NUMERIC[10,5](warehouse);
-longitudeWarehouse 'Координата Y' = DATA NUMERIC[10,5](warehouse);
+latitudeWarehouse 'Координата X' = DATA NUMERIC[10,5](Warehouse);
+longitudeWarehouse 'Координата Y' = DATA NUMERIC[10,5](Warehouse);
 
 latitudePOI (warehouse) += latitudeWarehouse(warehouse);
 longitudePOI (warehouse) += longitudeWarehouse(warehouse);
 
-explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (warehouse);
+explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (Warehouse);
 explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
 
 // -------------------------------------------------- Формы ----------------------------------------- //
 
 FORM warehouseGroup 'Группа складов'
 
-    OBJECTS           w=warehouseGroup FIXED PANEL
+    OBJECTS           w=WarehouseGroup FIXED PANEL
     PROPERTIES(w)     name, nameParentWarehouseGroup
     ORDER BY          name
 
-    EDIT warehouseGroup OBJECT w
+    EDIT WarehouseGroup OBJECT w
 ;
 
 FORM warehouse 'Склад'
 
-    OBJECTS           w=warehouse FIXED PANEL
+    OBJECTS           w=Warehouse FIXED PANEL
     PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
                       explicitBatchLedgerWarehouse, latitudePOI, longitudePOI, showOnMapPOI
     ORDER BY          name
 
-    OBJECTS           e = employee
+    OBJECTS           e = Employee
     PROPERTIES(e)     READONLY firstNameContact, lastNameContact
     PROPERTIES(e)     ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS           inEmployeeDivisionEmployee(w, e)
 
-    EDIT warehouse OBJECT w
+    EDIT Warehouse OBJECT w
 ;
 DESIGN warehouse FROM DEFAULT{
     main {
@@ -74,28 +74,28 @@ DESIGN warehouse FROM DEFAULT{
     }
 }
 
-editWarehouse 'Редактировать' = ACTION EDITFORM warehouse;
+editWarehouse 'Редактировать' = ACTION EDITFORM Warehouse;
 editStock(stock) += editWarehouse(stock);
 
-editSessionWarehouse 'Редактировать' = ACTION EDITFORM SESSION warehouse;
+editSessionWarehouse 'Редактировать' = ACTION EDITFORM SESSION Warehouse;
 editSessionStock(stock) += editSessionWarehouse(stock);
 
 FORM warehouses 'Склады'
 
-    TREE warehouseTree b=STRING[3], wg = warehouseGroup PARENT parentWarehouseGroup
+    TREE warehouseTree b=STRING[3], wg = WarehouseGroup PARENT parentWarehouseGroup
     PROPERTIES READONLY OBJVALUE(b), wgTreeName = name(wg)
     PROPERTIES(wg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
     ORDER BY wgTreeName
     FILTERS stringEqualsAll(b)
 
-    OBJECTS w=warehouse
+    OBJECTS w=Warehouse
     PROPERTIES(w) READONLY name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, latitudePOI, longitudePOI
     PROPERTIES(w) ADDFORM, EDITFORM, delete
     ORDER BY name
-    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS warehouse AND wg IS warehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS warehouse AND NOT wg)
+    FILTERS isParentWarehouseGroupWarehouse(wg, w) OR (w IS Warehouse AND wg IS WarehouseGroup AND NOT warehouseGroupWarehouse(w)) OR (w IS Warehouse AND NOT wg)
 ;
-@extendFormFilterStockAccess(warehouse, w, warehouses);
-@extendFormFilterStockGroupAccess(warehouseGroup, wg, warehouses, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(Warehouse, w, warehouses);
+@extendFormFilterStockGroupAccess(WarehouseGroup, wg, warehouses, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN warehouses FROM DEFAULT{
 
@@ -110,7 +110,7 @@ DESIGN warehouses FROM DEFAULT{
 
 addWarehouseLegalEntity 'Добавить склад' = ACTION (legalEntity) {
 
-    FOR ADDOBJ wr = warehouse DO {
+    FOR ADDOBJ wr = Warehouse DO {
         SET legalEntityWarehouse(wr) <- legalEntity;
         FORM warehouse OBJECTS w = wr DOCKEDMODAL;
     }

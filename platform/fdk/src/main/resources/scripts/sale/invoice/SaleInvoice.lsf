@@ -29,19 +29,19 @@ NAMESPACE Sale;
 
 @defineDocumentInterfaceHeaderTAX(invoice, VAT, 'НДС расч.');
 
-CONSTRAINT taxRange(VATUserInvoice(userInvoice)) != tax.taxVAT OR
+CONSTRAINT taxRange(VATUserInvoice(userInvoice)) != Tax.taxVAT OR
            countryRange(VATUserInvoice(userInvoice)) != countryStock(supplierStockInvoice(userInvoice)) OR
-           rangeTypeRange(VATUserInvoice(userInvoice)) != rangeType.units
+           rangeTypeRange(VATUserInvoice(userInvoice)) != RangeType.units
            CHECKED BY VATUserInvoice
            MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 
-VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(tax.taxVAT, storeDepartmentStore(supplierStockUserInvoice(userInvoice)))
+VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(Tax.taxVAT, storeDepartmentStore(supplierStockUserInvoice(userInvoice)))
         WHEN CHANGED(supplierStockUserInvoice(userInvoice));
 
 @deriveDocumentDetailVATHeader(userInvoice, VAT, supplierStock);
 
 derivedVATSumUserInvoiceDetail (userInvoiceDetail) =
-    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
         THEN roundPriceCurrency(invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail)/100, currencyUserInvoiceDetail(userInvoiceDetail))
         ELSE roundPriceCurrency((sumUserInvoiceDetail(userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail) / 100), currencyUserInvoiceDetail(userInvoiceDetail))
     PERSISTENT;
@@ -51,7 +51,7 @@ VATSumUserInvoiceDetail (userInvoiceDetail) <- derivedVATSumUserInvoiceDetail (u
       OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(currencyUserInvoiceDetail(userInvoiceDetail));
 
 derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail) =
-    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
         THEN invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail)
         ELSE sumUserInvoiceDetail (userInvoiceDetail) (+) VATSumUserInvoiceDetail (userInvoiceDetail)
     PERSISTENT;
@@ -61,7 +61,7 @@ invoiceSumUserInvoiceDetail (userInvoiceDetail) <- derivedInvoiceSumUserInvoiceD
     OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATSumUserInvoiceDetail(userInvoiceDetail));
 
 derivedPriceUserInvoiceDetail (userInvoiceDetail) =
-    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == rangeType.units
+    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
         THEN invoicePriceUserInvoiceDetail(userInvoiceDetail)*(100-valueVATUserInvoiceDetail (userInvoiceDetail))/100
         ELSE invoicePriceUserInvoiceDetail(userInvoiceDetail)*100/(100+valueVATUserInvoiceDetail (userInvoiceDetail))
     PERSISTENT;
@@ -69,7 +69,7 @@ derivedPriceUserInvoiceDetail (userInvoiceDetail) =
 priceUserInvoiceDetail (userInvoiceDetail) <- derivedPriceUserInvoiceDetail (userInvoiceDetail)
     WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATUserInvoiceDetail (userInvoiceDetail));
 
-isDepartmentStoreSupplierStockInvoice (invoice) = supplierStockInvoice(invoice) IS departmentStore;
+isDepartmentStoreSupplierStockInvoice (invoice) = supplierStockInvoice(invoice) IS DepartmentStore;
 
 EXTEND FORM userInvoice
     PROPERTIES(i) numberVATUserInvoice SHOWIF isDepartmentStoreSupplierStockInvoice(i), valueVATUserInvoice SHOWIF isDepartmentStoreSupplierStockInvoice(i);
@@ -77,7 +77,7 @@ EXTEND FORM userInvoice
 
 // ---------------- Проставление партий в инвойсе с использование партий заказа -------- //
 
-useExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += userInvoice IS Sale.userInvoice AND order IS Sale.order;
+useExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += userInvoice IS Sale.UserInvoice AND order IS Sale.Order;
 
 toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoiceOrderDetail
                                                            LIMIT STRICT currentBalanceBatchStock(batch, supplierStockOrderDetail(orderDetail)) AND skuBatch(batch) == skuOrderDetail(orderDetail)
@@ -86,7 +86,7 @@ toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoiceOrde
 
 createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userInvoice, order) {
     FOR orderOrderDetail(orderDetail) == order AND toInvoiceBatchOrderDetail(batch, orderDetail)
-        ADDOBJ d = userInvoiceDetail DO {
+        ADDOBJ d = UserInvoiceDetail DO {
             SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
             SET orderUserInvoiceDetail(d) <- order;
             SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
@@ -116,9 +116,9 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(custom
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 customerUserInvoice(userInvoice) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 
 supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1
@@ -168,7 +168,7 @@ sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(co
 sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
 
 // --------------------------- Проведение по регистру продаж ------------------------------------ //
-@implementSaleLedger(invoice, sku, supplierStock);
+@implementSaleLedger(Invoice, sku, supplierStock);
 quantitySaleLedger (ledger) += quantityInvoiceDetail(ledger);
 VATSaleLedger (ledger) += VATInvoiceDetail(ledger);
 sumSaleLedger (ledger) += invoiceSumInvoiceDetail(ledger);

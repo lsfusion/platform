@@ -21,8 +21,8 @@ REQUIRE System,
 
 PRIORITY Utils, Stock;
 
-CLASS ABSTRACT order 'Заказ' : document;
-CLASS ABSTRACT orderDetail 'Строка заказа' : documentDetail;
+CLASS ABSTRACT Order 'Заказ' : Document;
+CLASS ABSTRACT OrderDetail 'Строка заказа' : DocumentDetail;
 
 @defineDocumentAbstract(order);
 @defineDocumentAbstractNumber(order);
@@ -34,7 +34,7 @@ addressSupplierOrder 'Адрес поставщика' (order) = addressLegalEnt
 @defineDocumentAbstractLegalEntity(order, customer, 'Покупатель');
 addressCustomerOrder 'Адрес покупателя' (order) = addressLegalEntity(customerOrder(order));
 
-toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (order) IN documentPrmGroup PERSISTENT;
+toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
 
 @defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
@@ -62,7 +62,7 @@ toDateOrder 'Дата автоматического закрытия' = ABSTRAC
 @defineDocumentHeaderGrossWeight(order);
 @defineDocumentAbstractHeaderCurrency (order);
 
-operationOrder = ABSTRACT operation (order) PERSISTENT;
+operationOrder = ABSTRACT Operation (Order) PERSISTENT;
 nameOperationOrder 'Операция' (order) = name(operationOrder(order));
 
 quantityFromOrderStock 'Кол-во со склада' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
@@ -77,12 +77,12 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 
 META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
-    CLASS ABSTRACT order 'Заказ'###sign : Order.order;
-    CLASS ABSTRACT orderDetail 'Строка заказа'###sign : Order.orderDetail, named;
+    CLASS ABSTRACT Order 'Заказ'###sign : Order.Order;
+    CLASS ABSTRACT OrderDetail 'Строка заказа'###sign : Order.OrderDetail, Named;
 
-    CLASS userOrder 'Заказ (польз.)'###sign : order, historizable, numeratedObject;
-    CLASS userOrderDetail 'Строка заказа (польз.)'###sign : orderDetail;
-    CLASS userOrderPosted 'Проведенный заказ (польз.)'###sign : userOrder, postedObject;
+    CLASS UserOrder 'Заказ (польз.)'###sign : Order, Historizable, NumeratedObject;
+    CLASS UserOrderDetail 'Строка заказа (польз.)'###sign : OrderDetail;
+    CLASS UserOrderPosted 'Проведенный заказ (польз.)'###sign : UserOrder, PostedObject;
 
     @defineDocumentInterface(order);
     Order.orderOrderDetail (detail) += orderOrderDetail(detail);
@@ -118,8 +118,8 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     Order.isPostedOrder (order) += isPostedOrder(order);
 
     @defineDocumentInterfaceTimeShipment(order, shipment, ' поставки');
-    toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (order) IN documentPrmGroup PERSISTENT;
-    toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (userOrder) IN documentPrmGroup;
+    toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
+    toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (UserOrder) IN documentPrmGroup;
     toDateOrder(order) += toDateUserOrder(order);
     Order.toDateOrder (order) += toDateOrder(order);
 
@@ -187,7 +187,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     @defineAddDetailDialogSkuStock(userOrder, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userOrder, sku);
 
-    noAgreementUserOrder (order) = order IS userOrder AND NOT agreementUserOrder(order);
+    noAgreementUserOrder (order) = order IS UserOrder AND NOT agreementUserOrder(order);
 
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
@@ -213,7 +213,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     Order.editOrder (order) += editOrder(order);
 
     FORM userOrder 'Заказ'###sign
-        OBJECTS o = userOrder FIXED PANEL
+        OBJECTS o = UserOrder FIXED PANEL
         PROPERTIES (o) objectClassName, nameSupplierUserOrder, nameCustomerUserOrder, nameSupplierStockUserOrder, nameCustomerStockUserOrder,
                        nameNumeratorObject, numberObject, seriesObject, dateUserOrder, timeUserOrder,
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
@@ -222,7 +222,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder,
                        quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
 
-        OBJECTS d = userOrderDetail
+        OBJECTS d = UserOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
         PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
                        amountPackUserOrderDetail ON CHANGE changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE changeQuantityPackUserOrderDetail(d)
@@ -246,7 +246,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        priceListTypeUserOrderDetail, currencyUserOrderDetail,
                        priceUserOrderDetail, VATUserOrderDetail, valueVATUserOrderDetail, invoicePriceUserOrderDetail
 
-        EDIT userOrder OBJECT o
+        EDIT UserOrder OBJECT o
     ;
 
     DESIGN userOrder FROM DEFAULT{
@@ -328,15 +328,15 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, legalEntityProp, stockProp);
 
-    addUserOrder 'Добавить' = ACTION ADDFORM userOrder;
-    editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM userOrder;
+    addUserOrder 'Добавить' = ACTION ADDFORM UserOrder;
+    editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM UserOrder;
     editOrder(order) += editUserOrder(order);
 
     isClosedOrder(userOrder) <- TRUE IF toDateUserOrder(userOrder) <= subtractDate(currentDate(), 1) AND isPostedOrder(userOrder)
-        WHEN CHANGED(currentDate() AND userOrder IS userOrder) OR CHANGED(toDateUserOrder(userOrder));
+        WHEN CHANGED(currentDate() AND userOrder IS UserOrder) OR CHANGED(toDateUserOrder(userOrder));
 
     copyOrder 'Копировать' = ACTION (userOrder) NEWSESSION {
-        FOR ADDOBJ o = userOrder DO {
+        FOR ADDOBJ o = UserOrder DO {
             SET supplierUserOrder(o) <- supplierUserOrder(userOrder);
             SET supplierStockUserOrder(o) <- supplierStockUserOrder(userOrder);
             SET customerUserOrder(o) <- customerUserOrder(userOrder);
@@ -348,7 +348,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
             SET toShowProp###userOrder(o) <- toShowProp###userOrder(userOrder);
 
             FOR userOrderUserOrderDetail(userOrderDetail) == userOrder DO {
-                FOR ADDOBJ d=userOrderDetail DO {
+                FOR ADDOBJ d=UserOrderDetail DO {
                     SET userOrderUserOrderDetail(d) <- o;
                     SET skuUserOrderDetail(d) <- skuUserOrderDetail(userOrderDetail);
                     SET quantityOrderDetail(d) <- quantityUserOrderDetail(userOrderDetail);
@@ -362,7 +362,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
 
     FORM orders 'Заказы' TITLE 'Заказы'###sign
-        OBJECTS o = order
+        OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder,
@@ -378,7 +378,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
         PROPERTIES (o) closeOrder SHOWIF isOpenedOrder(o), openOrder SHOWIF isClosedOrder(o)
         PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOrder(o)
 
-        OBJECTS d=orderDetail
+        OBJECTS d=OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
                        amountPackOrderDetail, quantityPackOrderDetail
@@ -387,9 +387,9 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
 
         FILTERS orderOrderDetail(d) == o
-        DIALOG order OBJECT o
+        DIALOG Order OBJECT o
     ;
-    @extendFormFilterAccess(order, o, orders, stockProp);
+    @extendFormFilterAccess(Order, o, orders, stockProp);
 
     DESIGN orders FROM DEFAULT {
         PROPERTY (delete(o)) {
@@ -481,7 +481,7 @@ META defineDocumentPackSkuStockCustom(object, detail, skuProp, stockProp, NS)
             }
         } ELSE {
             IF requestedNumeric() THEN  {
-                FOR ADDOBJ d = detail DO {
+                FOR ADDOBJ d = ###detail DO {
                    SET object###detail(d) <- object;
                    SET data###stockProp###detail (d) <- stock;
                    SET skuProp###detail(d) <- sku;

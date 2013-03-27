@@ -19,12 +19,12 @@ createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoic
     WHEN CHANGED(operationUserInvoice(invoice));
 
 //overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
-//    IF supplierStockUserInvoiceDetail(detail) IS departmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
+//    IF supplierStockUserInvoiceDetail(detail) IS DepartmentStore AND NOT costLedgerDepartmentStore(supplierStockUserInvoiceDetail(detail));
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userInvoiceDetail IS userInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
-    0.0 IF userInvoiceDetail IS userInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
+    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
     supplierPriceUserInvoiceDetail(userInvoiceDetail))
     WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(supplierPriceUserInvoiceDetail(userInvoiceDetail));
 
@@ -33,8 +33,8 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 @deriveDocumentDetailVAT (userInvoice, retail, date, sku, supplierStock);
 @deriveDocumentDetailValueVAT(userInvoice, retail);
 
-skipChangeLedgerPricing(pricing) += pricing IS invoicePricing;
-isReturnPricing(pricing) +=  pricing IS invoicePricing;
+skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
+isReturnPricing(pricing) +=  pricing IS InvoicePricing;
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF createPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i) supplierSumUserInvoiceDetailUserInvoice

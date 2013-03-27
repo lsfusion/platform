@@ -14,9 +14,9 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule, Utils, Store;
 
-CLASS CStoWH 'Расход с СВХ' : historizable, numberedObject;
+CLASS CStoWH 'Расход с СВХ' : Historizable, NumberedObject;
 CLASS CStoWHDetail 'Строка расхода с СВХ';
-CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, postedObject;
+CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, PostedObject;
 
 @defineDocument(CStoWH);
 
@@ -29,7 +29,7 @@ CLASS CStoWHPosted 'Проведенный расход с СВХ' : CStoWH, pos
 
 @defineDocumentDetailNumber(CStoWH);
 
-declarationDetailCStoWHDetail = DATA declarationDetail (CStoWHDetail) NOT NULL;
+declarationDetailCStoWHDetail = DATA DeclarationDetail (CStoWHDetail) NOT NULL;
 skuCStoWHDetail (CStoWHDetail) = skuDeclarationDetail (declarationDetailCStoWHDetail(CStoWHDetail));
 declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declarationDetailCStoWHDetail(CStoWHDetail));
 
@@ -43,7 +43,7 @@ declarationCStoWHDetail (CStoWHDetail) = declarationDeclarationDetail(declaratio
 @defineDocumentHeaderQuantity(CStoWH);
 @defineDocumentHeaderSkuQuantity(CStoWH, sku);
 
-freightUnitCStoWHDetail (CStoWHDetail) = DATA freightUnit(CStoWHDetail);
+freightUnitCStoWHDetail (CStoWHDetail) = DATA FreightUnit(CStoWHDetail);
 barcodeFreightUnitCStoWHDetail 'Штрих-код короба' (CStoWHDetail) = barcode(freightUnitCStoWHDetail(CStoWHDetail));
 destinationCStoWHDetail (CStoWHDetail) = destinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));
 nameDestinationCStoWHDetail 'Пункт назначения' (CStoWHDetail) = nameDestinationFreightUnit(freightUnitCStoWHDetail(CStoWHDetail));
@@ -94,7 +94,7 @@ currentBalanceDeclaration 'Текущий остаток' (declaration) = GROUP 
 
 
 isAvailableDeclarationCStoWH 'Декларация доступна для расхода' (declaration, CStoWH) =
-    declaration IS registeredDeclaration AND
+    declaration IS RegisteredDeclaration AND
     currentBalanceDeclaration (declaration)>0 AND
     dateTimeCStoWH(CStoWH) >= dateTimeDeclaration(declaration) AND
     customStoreCStoWH(CStoWH)==customStoreDeclaration(declaration) AND
@@ -104,7 +104,7 @@ isCustomsDeclarationCStoWH 'Отгрузка с СВХ декларации' (de
     customStoreDeclaration (declaration) == customStoreCStoWH (CStoWH);
 
 inCStoWHDeclaration (CStoWH, declaration) = GROUP SUM 1
-    IF declarationCStoWHDetail(CStoWHDetail) == declaration AS declaration
+    IF declarationCStoWHDetail(CStoWHDetail) == declaration AS Declaration
         AND CStoWHCStoWHDetail (CStoWHDetail) == CStoWH AS CStoWH
     BY CStoWHCStoWHDetail(CStoWHDetail), declarationCStoWHDetail(CStoWHDetail);
 
@@ -117,7 +117,7 @@ declarationsCStoWH 'Декларации' (CStoWH) =
           BY CStoWH
           ORDER declaration IN documentPrmGroup MINCHARWIDTH 10 PREFCHARWIDTH 20;
 
-quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = DATA SESSION NUMERIC[14,3] (freightUnit, declarationDetail);
+quantityInputFreightUnitDeclarationDetail 'Кол-во подобрано' = DATA SESSION NUMERIC[14,3] (FreightUnit, DeclarationDetail);
 
 quantityInputDeclarationFreightUnit 'Кол-во подобрано' (declaration, freightUnit) = GROUP SUM quantityInputFreightUnitDeclarationDetail(freightUnit, declarationDetail)
     BY declarationDeclarationDetail(declarationDetail), freightUnit;
@@ -126,7 +126,7 @@ quantityInputDeclaration 'Кол-во подобрано' (declaration) =  GROUP
     BY declaration;
 
 
-isInputDeclarationDetail 'Вкл' = DATA SESSION BOOLEAN (declarationDetail);
+isInputDeclarationDetail 'Вкл' = DATA SESSION BOOLEAN (DeclarationDetail);
 
 toFillQuantityInputAllDeclarationDetails 'Проставить количество' (declaration) = ACTION (declaration) {
     FOR currentBalanceDeclarationFreightUnit(declaration, freightUnit) AND currentBalanceFreightUnitDeclarationDetail(freightUnit, declarationDetail) DO {
@@ -175,15 +175,15 @@ FORM declarationDetailCStoWHInput 'Подбор строк декларации'
     OBJECTS c=CStoWH FIXED PANEL
     PROPERTIES (c) numberObject, seriesObject
 
-    OBJECTS d=declaration
+    OBJECTS d=Declaration
     PROPERTIES(d) READONLY objectClassName, nameCustomStoreDeclaration, sidDeclaration, currentBalanceDeclaration, quantityInputDeclaration, canonicalBrandDeclaration
     PROPERTIES(d) toFillQuantityInputAllDeclarationDetails
 
-    OBJECTS f=freightUnit
+    OBJECTS f=FreightUnit
     PROPERTIES READONLY barcodeFreightUnit = barcode(f), nameDestinationFreightUnit(f) FORCE GRID, currentBalanceDeclarationFreightUnit(d, f)
     PROPERTIES(d, f)    quantityInputDeclarationFreightUnit READONLY, toFillQuantityInputDetailDeclarationFreightUnit
 
-    OBJECTS dd=declarationDetail
+    OBJECTS dd=DeclarationDetail
     PROPERTIES (dd) READONLY barcodeDeclarationDetail, nameBrandDeclarationDetail, sidArticleDeclarationDetail,
                              sidColorDeclarationDetail, nameCategoryDeclarationDetail, mainCompositionDeclarationDetail,
                              nameCountryDeclarationDetail, sidCustomCategory10DeclarationDetail
@@ -204,7 +204,7 @@ DESIGN declarationDetailCStoWHInput FROM DEFAULT {
 
 inputDeclarationDetailCStoWH 'Подбор строк декларации' = ACTION (CStoWH) {
     FORM declarationDetailCStoWHInput MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             FOR qty == quantityInputFreightUnitDeclarationDetail (freightUnit, declarationDetail) ADDOBJ cd=CStoWHDetail DO {
                 SET CStoWHCStoWHDetail(cd) <- CStoWH;
                 SET declarationDetailCStoWHDetail(cd) <- declarationDetail;
@@ -377,7 +377,7 @@ DESIGN CStoWHs FROM DEFAULT {
 
 @defineDocumentRetailPrice (CStoWH, d);
 
-useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDetail) IS departmentStore
+useRetailPriceCStoWHDetail(CStoWHDetail) = destinationStockCStoWHDetail(CStoWHDetail) IS DepartmentStore
     AND NOT costLedgerDepartmentStore(destinationStockCStoWHDetail(CStoWHDetail));
 @defineDocumentTransferAccount(CStoWH, useRetailPriceCStoWHDetail);
 
@@ -389,7 +389,7 @@ supplierStockConsignment (consignment) += customStoreCStoWH(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockCStoWH(consignment));
 customerStockConsignment (consignment) += destinationStockCStoWH(consignment);
 
-EXTEND CLASS CStoWHDetail : consignmentDetail;
+EXTEND CLASS CStoWHDetail : ConsignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += CStoWHCStoWHDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuCStoWHDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityCStoWHDetail (consignmentDetail);

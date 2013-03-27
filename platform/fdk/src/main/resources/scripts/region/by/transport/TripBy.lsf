@@ -6,10 +6,10 @@ NAMESPACE Trip;
 
 FORM printWaybillBy PRINT
 
-    OBJECTS t=trip FIXED PANEL
+    OBJECTS t=Trip FIXED PANEL
     PROPERTIES(t) dateTrip, seriesNumberObject, sidTruckTrip, nameDriverTrip, nameTruckModelTruckTrip, trailerTruckTrip, sidDriverTrip, typeDriverTrip
 
-    OBJECTS st=stock
+    OBJECTS st=Stock
     PROPERTIES(st) name, addressStock, nameLegalEntityStock
     PROPERTIES(t, st) addressStockPrevTripStock, grossWeightTripToStock
     PROPERTIES (st, t) numberStockTrip

@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class DropColumnActionProperty extends ScriptingActionProperty {
     public DropColumnActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("dropColumn")});
+        super(LM, new ValueClass[]{LM.getClassByName("DropColumn")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

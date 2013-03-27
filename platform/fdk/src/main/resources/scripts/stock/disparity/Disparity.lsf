@@ -13,9 +13,9 @@ REQUIRE System,
 
 //----------------------------------- Пересорт товара -------------------------------------------------------
 
-CLASS disparity 'Изменение сортности' : historizable, numeratedDocument;
-CLASS disparityPosted 'Проведенное изменение сортности' : disparity, postedObject;
-CLASS disparityDetail 'Строка изменения сортности';
+CLASS Disparity 'Изменение сортности' : Historizable, NumeratedDocument;
+CLASS DisparityPosted 'Проведенное изменение сортности' : Disparity, PostedObject;
+CLASS DisparityDetail 'Строка изменения сортности';
 
 @defineDocument(disparity);
 @defineDocumentDataStock (disparity, stock, 'Склад', );
@@ -28,10 +28,10 @@ CLASS disparityDetail 'Строка изменения сортности';
 @defineDocumentDetailSkuPrefix (disparity, sku, input, ' (приход)');
 
 @defineDocumentDetailBatchCustomPrefix(disparityDetail, batch, );
-costBatchDisparityDetail 'Себестоимость партии' = DATA NUMERIC[14,2] (disparityDetail);
+costBatchDisparityDetail 'Себестоимость партии' = DATA NUMERIC[14,2] (DisparityDetail);
 costBatchDisparityDetail(detail) <- prevCostBatch(batchDisparityDetail(detail)) WHEN CHANGED(batchDisparityDetail(detail));
 
-expiryDateBatchDisparityDetail 'Годен до' = DATA DATE (disparityDetail);
+expiryDateBatchDisparityDetail 'Годен до' = DATA DATE (DisparityDetail);
 expiryDateBatchDisparityDetail(detail) <- prevExpiryDateBatch(batchDisparityDetail(detail)) WHEN CHANGED(batchDisparityDetail(detail));
 
 @defineDocumentDetailQuantityPrefix (disparity, , ' (расход)');
@@ -58,15 +58,15 @@ inputPriceDisparityDetail(detail) <- priceDisparityDetail(detail) WHEN CHANGED(p
 @defineAddDetailDialogBarcode(disparity, sku);
 @defineAddDetailDialogTerminal(disparity, sku);
 
-@implementSkuLedgerOutFIFO(disparityDetail, sku, stock);
+@implementSkuLedgerOutFIFO(DisparityDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(disparityDetail, stock);
 sumOutSkuLedger (ledger) += sumDisparityDetail(ledger);
 
 //----------------------------  Изменение остатка пересорт --------------------------------------------//
 
-CLASS inputDisparityDetail 'Приход пересортицы';
-TABLE inputDisparityDetail (inputDisparityDetail);
+CLASS InputDisparityDetail 'Приход пересортицы';
+TABLE inputDisparityDetail (InputDisparityDetail);
 
 needToInputDisparityDetailDetail (disparityDetail) = inputQuantityDisparityDetail(disparityDetail) > 0
     AND isPostedDisparityDetail(disparityDetail);
@@ -85,7 +85,7 @@ costBatchInputDisparityDetail(inputDisparityDetail) = costBatchDisparityDetail(d
 expiryDateBatchInputDisparityDetail (inputDisparityDetail) = expiryDateBatchDisparityDetail(disparityDetailInputDisparityDetail(inputDisparityDetail));
 
 
-@implementBatch(inputDisparityDetail, sku, stock, costBatch);
+@implementBatch(InputDisparityDetail, sku, stock, costBatch);
 quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateBatchInputDisparityDetail(ledger);
 sumInSkuLedger (ledger) += sumInputDisparityDetail(ledger);
@@ -96,13 +96,13 @@ quantityDisparityDetailSkuDisparity 'Кол-во для закачки в обо
 
 FORM disparity 'Изменение сортности'
 
-    OBJECTS dis=disparity FIXED PANEL
+    OBJECTS dis=Disparity FIXED PANEL
 
     PROPERTIES(dis) objectClassName, nameNumeratorObject, numberObject, seriesObject, nameStockDisparity, dateDisparity, timeDisparity,
                     quantityDisparityDetailDisparity, sumDisparityDetailDisparity,
                     inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity
 
-    OBJECTS d = disparityDetail
+    OBJECTS d = DisparityDetail
     PROPERTIES(d)   indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
                     costBatchDisparityDetail, expiryDateBatchDisparityDetail,
@@ -119,7 +119,7 @@ FORM disparity 'Изменение сортности'
     EVENTS
         ON OK prePostDisparity(dis)
 
-    EDIT disparity OBJECT dis
+    EDIT Disparity OBJECT dis
 ;
 
 DESIGN disparity FROM DEFAULT {
@@ -169,7 +169,7 @@ DESIGN disparity FROM DEFAULT {
 
 FORM disparities 'Изменения сортности'
 
-    OBJECTS dis=disparity
+    OBJECTS dis=Disparity
     PROPERTIES(dis)  READONLY objectClassName, numberObject, seriesObject, nameStockDisparity, dateDisparity, timeDisparity,
                               countDisparityDetailDisparity, quantityDisparityDetailDisparity, sumDisparityDetailDisparity,
                               inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity
@@ -178,7 +178,7 @@ FORM disparities 'Изменения сортности'
 
     PROPERTIES (dis) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS d=disparityDetail
+    OBJECTS d=DisparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
                     idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
                     costBatchDisparityDetail, expiryDateBatchDisparityDetail, quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
@@ -187,7 +187,7 @@ FORM disparities 'Изменения сортности'
 
     FILTERS         disparityDisparityDetail(d) == dis
 ;
-@extendFormFilterAccess(disparity, dis, disparities, stock);
+@extendFormFilterAccess(Disparity, dis, disparities, stock);
 
 DESIGN disparities FROM DEFAULT {
     main {

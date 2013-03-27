@@ -2,14 +2,14 @@ MODULE Item;
 
 REQUIRE System;
 
-CLASS item 'Товар';
+CLASS Item 'Товар';
 
-nameItem 'Наименование' (item) = DATA STRING[100](item) IN base;
-barcodeItem 'Штрих-код' (item) = DATA STRING[13](item) IN base;
+nameItem 'Наименование' (item) = DATA STRING[100](Item) IN base;
+barcodeItem 'Штрих-код' (item) = DATA STRING[13](Item) IN base;
 
-salePriceItem 'Оптовая цена' (item) = DATA NUMERIC[17,2](item) IN base;
+salePriceItem 'Оптовая цена' (item) = DATA NUMERIC[17,2](Item) IN base;
 
 FORM items 'Товары'
-	OBJECTS i=item
+	OBJECTS i=Item
 	PROPERTIES(i) nameItem, barcodeItem, salePriceItem, ADDOBJ, delete
 ;

@@ -4,43 +4,43 @@ REQUIRE LegalEntity;
 
 // ---------------- Счет ------------- //
 
-CLASS ABSTRACT account 'Счет';
-TABLE account (account);
-nameAccount 'Имя' = ABSTRACT STRING[30] (account) PERSISTENT;
+CLASS ABSTRACT Account 'Счет';
+TABLE account (Account);
+nameAccount 'Имя' = ABSTRACT STRING[30] (Account) PERSISTENT;
 
-currencyAccount = ABSTRACT currency (account);
+currencyAccount = ABSTRACT Currency (Account);
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
 
-legalEntityAccount = ABSTRACT legalEntity (account);
+legalEntityAccount = ABSTRACT LegalEntity (Account);
 
 // ---------------- Регистр денег ------------- //
 
-CLASS ABSTRACT paymentLedger 'Движение денег';
-TABLE paymentLedger(paymentLedger);
+CLASS ABSTRACT PaymentLedger 'Движение денег';
+TABLE paymentLedger(PaymentLedger);
 
-dateTimePaymentLedger 'Дата/время' = ABSTRACT DATETIME (paymentLedger) PERSISTENT;
+dateTimePaymentLedger 'Дата/время' = ABSTRACT DATETIME (PaymentLedger) PERSISTENT;
 
-legalEntityFromPaymentLedger = ABSTRACT legalEntity (paymentLedger) PERSISTENT;
+legalEntityFromPaymentLedger = ABSTRACT LegalEntity (PaymentLedger) PERSISTENT;
 nameLegalEntityFromPaymentLedger 'Организация-плательщик' = name(legalEntityFromPaymentLedger(ledger));
 
-accountFromPaymentLedger = ABSTRACT account (paymentLedger) PERSISTENT;
+accountFromPaymentLedger = ABSTRACT Account (PaymentLedger) PERSISTENT;
 nameAccountFromPaymentLedger 'Счет (с)' (ledger) = nameAccount(accountFromPaymentLedger(ledger));
 
-legalEntityToPaymentLedger = ABSTRACT legalEntity (paymentLedger) PERSISTENT;
+legalEntityToPaymentLedger = ABSTRACT LegalEntity (PaymentLedger) PERSISTENT;
 nameLegalEntityToPaymentLedger 'Организация-получатель' = name(legalEntityToPaymentLedger(ledger));
 
-accountToPaymentLedger = ABSTRACT account (paymentLedger) PERSISTENT;
+accountToPaymentLedger = ABSTRACT Account (PaymentLedger) PERSISTENT;
 nameAccountToPaymentLedger 'Счет (на)' (ledger) = nameAccount(accountToPaymentLedger(ledger));
 
-sumFromPaymentLedger 'Сумма (с)' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
-sumToPaymentLedger 'Сумма (на)' = ABSTRACT NUMERIC[16,2] (paymentLedger) PERSISTENT;
+sumFromPaymentLedger 'Сумма (с)' = ABSTRACT NUMERIC[16,2] (PaymentLedger) PERSISTENT;
+sumToPaymentLedger 'Сумма (на)' = ABSTRACT NUMERIC[16,2] (PaymentLedger) PERSISTENT;
 
-descriptionPaymentLedger 'Описание' = ABSTRACT STRING[200] (paymentLedger) PERSISTENT;
+descriptionPaymentLedger 'Описание' = ABSTRACT STRING[200] (PaymentLedger) PERSISTENT;
 
-isPostedPaymentLedger 'Проведен' = ABSTRACT BOOLEAN(paymentLedger);
+isPostedPaymentLedger 'Проведен' = ABSTRACT BOOLEAN(PaymentLedger);
 
 FORM paymentLedger 'Движение денег'
-    OBJECTS pl = paymentLedger
+    OBJECTS pl = PaymentLedger
     PROPERTIES(pl) READONLY isPostedPaymentLedger, descriptionPaymentLedger, dateTimePaymentLedger, nameLegalEntityFromPaymentLedger,
                             nameAccountFromPaymentLedger, sumFromPaymentLedger, nameLegalEntityToPaymentLedger, nameAccountToPaymentLedger,
                             sumToPaymentLedger

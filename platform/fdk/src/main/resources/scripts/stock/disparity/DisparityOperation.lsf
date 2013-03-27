@@ -4,7 +4,7 @@ REQUIRE Operation, Disparity;
 
 @defineOperation('(изменение сортности)');
 
-createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (operation) IN createGroup;
+createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation) IN createGroup;
 
 EXTEND FORM operation
     PROPERTIES(o) createRepricingOperation
@@ -27,7 +27,7 @@ NAVIGATOR {
 
 //------------------------------------------ Опеределение операции для disparity ------------------------------------//
 
-operationDisparity = DATA operation (disparity) PERSISTENT;
+operationDisparity = DATA Operation (Disparity) PERSISTENT;
 nameOperationDisparity 'Операция' = name(operationDisparity(disparity));
 
 operationDisparityDetail 'Операция' (disparityDetail) = operationDisparity(disparityDisparityDetail(disparityDetail));

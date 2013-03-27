@@ -2,46 +2,46 @@ MODULE StockDocument;
 
 REQUIRE System, Stock, Employee, Utils;
 
-CLASS ABSTRACT stockDocumentLedger 'Учетный документ';
-TABLE stockDocumentLedger (stockDocumentLedger);
+CLASS ABSTRACT StockDocumentLedger 'Учетный документ';
+TABLE stockDocumentLedger (StockDocumentLedger);
 
-CLASS ABSTRACT incStockDocumentLedger 'Учетный документ (приход)' : stockDocumentLedger;
-CLASS ABSTRACT outStockDocumentLedger 'Учетный документ (расход)' : stockDocumentLedger;
+CLASS ABSTRACT IncStockDocumentLedger 'Учетный документ (приход)' : StockDocumentLedger;
+CLASS ABSTRACT OutStockDocumentLedger 'Учетный документ (расход)' : StockDocumentLedger;
 
-dateTimeStockDocumentLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (stockDocumentLedger) PERSISTENT INDEXED;
+dateTimeStockDocumentLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (StockDocumentLedger) PERSISTENT INDEXED;
 dateStockDocumentLedger 'Дата' (ledger) = toDate(dateTimeStockDocumentLedger(ledger)) PERSISTENT;
 
-isPostedStockDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (stockDocumentLedger) PERSISTENT;
+isPostedStockDocumentLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (StockDocumentLedger) PERSISTENT;
 
-stockStockDocumentLedger (ledger) = ABSTRACT stock (stockDocumentLedger) PERSISTENT;
+stockStockDocumentLedger (ledger) = ABSTRACT Stock (StockDocumentLedger) PERSISTENT;
 nameStockStockDocumentLedger 'Отдел' (ledger) = name(stockStockDocumentLedger(ledger));
 
-descriptionStockDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (stockDocumentLedger) PERSISTENT;
+descriptionStockDocumentLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (StockDocumentLedger) PERSISTENT;
 
 GROUP ledgerGroup 'Суммы (всего)' : public;
-sumIncStockDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerGroup;
-sumOutStockDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerGroup;
+sumIncStockDocumentLedger 'Сумма прихода' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerGroup;
+sumOutStockDocumentLedger 'Сумма расхода' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerGroup;
 sumStockDocumentLedger 'Сумма' (ledger) = UNION EXCLUSIVE sumIncStockDocumentLedger(ledger), -sumOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerItemGroup 'Суммы по товару' : public;
-sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
-sumItemOutStockDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
+sumItemIncStockDocumentLedger 'Сумма прихода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
+sumItemOutStockDocumentLedger 'Сумма расхода, товар' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerItemGroup;
 sumItemStockDocumentLedger 'Сумма, товар' (ledger) = UNION CLASS sumItemIncStockDocumentLedger(ledger), -sumItemOutStockDocumentLedger(ledger) PERSISTENT;
 
 GROUP ledgerContainerGroup 'Суммы по таре' : public;
-sumContainerIncStockDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (incStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
-sumContainerOutStockDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (outStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
+sumContainerIncStockDocumentLedger 'Сумма прихода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (IncStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
+sumContainerOutStockDocumentLedger 'Сумма расхода, тара' (ledger) = ABSTRACT NUMERIC[16,2] (OutStockDocumentLedger) PERSISTENT IN ledgerContainerGroup;
 sumContainerStockDocumentLedger 'Сумма, тара' (ledger) = UNION CLASS sumContainerIncStockDocumentLedger(ledger), -sumContainerOutStockDocumentLedger(ledger) PERSISTENT;
 
 // -------------------------------------- Агрегированные суммы за интервал --------------------------------------------- //
 
 countIncStockDocumentStockDateInterval 'Количество приходных док-ов' (stock, dtFrom, dtTo)=
-    GROUP SUM 1 IF incStockDocumentLedger AS incStockDocumentLedger AND isPostedStockDocumentLedger(incStockDocumentLedger)
+    GROUP SUM 1 IF incStockDocumentLedger AS IncStockDocumentLedger AND isPostedStockDocumentLedger(incStockDocumentLedger)
         AND dateStockDocumentLedger(incStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(incStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(incStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
 countOutStockDocumentStockDateInterval 'Количество расходных док-ов' (stock, dtFrom, dtTo)=
-    GROUP SUM 1 IF outStockDocumentLedger AS outStockDocumentLedger AND isPostedStockDocumentLedger(outStockDocumentLedger)
+    GROUP SUM 1 IF outStockDocumentLedger AS OutStockDocumentLedger AND isPostedStockDocumentLedger(outStockDocumentLedger)
         AND dateStockDocumentLedger(outStockDocumentLedger) >= (dtFrom AS DATE) AND dateStockDocumentLedger(outStockDocumentLedger) <= (dtTo AS DATE)
             BY stockStockDocumentLedger(outStockDocumentLedger), dtFrom, dtTo IN ledgerGroup;
 
@@ -142,7 +142,7 @@ subtotalContainerIncStockDocumentStockDateInterval 'Итого с остатко
 
 // ------------------------------------------- Ответственные лица --------------------------------------------- //
 
-MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA employee (stock);
+MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA Employee (Stock);
 nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
     nameContact (MRPStock(stock)) IN responsibilityGroup;
 namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
@@ -150,14 +150,14 @@ namePositionMRPStock 'Материально ответственное лицо
 CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
     CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
 
-accountantStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA employee (stock);
+accountantStock 'Бухгалтер, принимающий товарный отчет (ИД)' = DATA Employee (Stock);
 nameAccountantStock 'Бухгалтер, принимающий товарный отчет' (stock) = nameContact(accountantStock(stock)) IN responsibilityGroup;
 namePositionAccountantStock 'Бухгалтер, принимающий товарный отчет (должность)' =
     namePositionEmployee(accountantStock(stock));
 CONSTRAINT accountantStock(stock) AND NOT inEmployeeDivisionEmployee(stock, accountantStock(stock))
     CHECKED BY accountantStock MESSAGE 'Бухгалтер не сотрудник отдела';
 
-auditorStock 'Кто проверяет товарный отчет (ИД)' = DATA employee (stock);
+auditorStock 'Кто проверяет товарный отчет (ИД)' = DATA Employee (Stock);
 nameAuditorStock 'Кто проверяет товарный отчет' (stock) = nameContact(auditorStock(stock)) IN responsibilityGroup;
 namePositionAuditorStock 'Кто проверяет товарный отчет (должность)' =
     namePositionEmployee(auditorStock(stock));
@@ -168,7 +168,7 @@ CONSTRAINT auditorStock(stock) AND NOT inEmployeeDivisionEmployee(stock, auditor
 
 FORM sumStockDocumentLedger 'Товарный отчет'
     OBJECTS params = (dtFrom = DATE, dtTo = DATE) FIXED PANEL,
-            ds = stock FIXED PANEL
+            ds = Stock FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dtFrom), objTo = OBJVALUE(dtTo)
     PROPERTIES(ds) SELECTOR name, nameLegalEntityStock
 
@@ -179,7 +179,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
                subtotalItemIncStockDocumentStockDateInterval, subtotalContainerIncStockDocumentStockDateInterval,
                sumItemOutStockDocumentStoreDateInterval, sumContainerOutStockDocumentStockDateInterval
 
-    OBJECTS il = incStockDocumentLedger
+    OBJECTS il = IncStockDocumentLedger
     PROPERTIES(il) SELECTOR iDateTime = dateTimeStockDocumentLedger, iObjName = objectClassName, iDescription = descriptionStockDocumentLedger,
                    sumItemIncStockDocumentLedger, sumContainerIncStockDocumentLedger, sumIncStockDocumentLedger
     FILTERS isPostedStockDocumentLedger(il),
@@ -188,7 +188,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
             dateStockDocumentLedger(il) <= dtTo
     ORDER BY iDateTime
 
-    OBJECTS ol = outStockDocumentLedger
+    OBJECTS ol = OutStockDocumentLedger
     PROPERTIES(ol) SELECTOR oDateTime = dateTimeStockDocumentLedger, oObjName = objectClassName, oDescription = descriptionStockDocumentLedger,
                    sumItemOutStockDocumentLedger, sumContainerOutStockDocumentLedger, sumOutStockDocumentLedger
     FILTERS isPostedStockDocumentLedger(ol),
@@ -197,7 +197,7 @@ FORM sumStockDocumentLedger 'Товарный отчет'
             dateStockDocumentLedger(ol) <= dtTo
     ORDER BY oDateTime
 ;
-@extendFormFilterStockAccess(stock, ds, sumStockDocumentLedger);
+@extendFormFilterStockAccess(Stock, ds, sumStockDocumentLedger);
 
 
 DESIGN sumStockDocumentLedger FROM DEFAULT {
@@ -264,12 +264,12 @@ META implementStockDocumentLedger (concrete, stockProp)
 END
 
 META implementStockDocumentLedgerInc (concrete, stockProp)
-    EXTEND CLASS concrete : incStockDocumentLedger;
+    EXTEND CLASS concrete : IncStockDocumentLedger;
     @implementStockDocumentLedger (concrete, stockProp);
 END
 
 META implementStockDocumentLedgerOut (concrete, stockProp)
-    EXTEND CLASS concrete : outStockDocumentLedger;
+    EXTEND CLASS concrete : OutStockDocumentLedger;
     @implementStockDocumentLedger (concrete, stockProp);
 END
 

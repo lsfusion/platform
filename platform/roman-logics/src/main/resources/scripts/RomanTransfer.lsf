@@ -19,16 +19,16 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Трнансфер ------------------------------------ //
 
-CLASS transferTable 'Трансфер' : historizable, numeratedObject;//, innerDocument, consignment, outStockDocumentLedger;
+CLASS TransferTable 'Трансфер' : Historizable, NumeratedObject;//, innerDocument, consignment, outStockDocumentLedger;
 
 GROUP datesGroup 'Период продаж' : public;
 
-TABLE transferTable (transferTable);
-@defineDocumentHeaderTime(transferTable);
-@defineDocumentHeaderNote(transferTable);
+TABLE transferTable (TransferTable);
+@defineDocumentHeaderTime(TransferTable);
+@defineDocumentHeaderNote(TransferTable);
 @defineDocumentHeaderDescription(transferTable, 'Трансфер');
 
-transferTableInnerOrder= DATA transferTable(innerOrder);
+transferTableInnerOrder= DATA TransferTable(InnerOrder);
 descriptionTransferTableInnerOrder 'Трансфер' (innerOrder) =  descriptionTransferTable(transferTableInnerOrder(innerOrder)) IN documentPrmGroup;
 
 EXTEND FORM innerOrder
@@ -38,20 +38,20 @@ EXTEND FORM innerOrders
     PROPERTIES(o) READONLY descriptionTransferTableInnerOrder
 ;
 
-inTransferTableStock 'Вкл.' = DATA BOOLEAN (transferTable, stock);
+inTransferTableStock 'Вкл.' = DATA BOOLEAN (TransferTable, Stock);
 
-dateFromTransferTable 'С' = DATA DATE (transferTable) IN datesGroup;
-dateToTransferTable 'По' = DATA DATE (transferTable) IN datesGroup;
+dateFromTransferTable 'С' = DATA DATE (TransferTable) IN datesGroup;
+dateToTransferTable 'По' = DATA DATE (TransferTable) IN datesGroup;
 
-dateFromTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS transferTable);
-dateToTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS transferTable);
+dateFromTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS TransferTable);
+dateToTransferTable(transferTable) <- currentDate() WHEN ASSIGNED(transferTable IS TransferTable);
 
 
 quantitySoldSkuStockTransferTable 'Продано за интервал (кол-во)' (sku, stock, transferTable) = GROUP SUM
         quantitySoldSkuStockDate(sku, stock, date) AND date >= dateFromTransferTable(transferTable) AND date <= dateToTransferTable(transferTable)
         BY sku, stock, transferTable;
 
-quantitySkuStockTransferTable (sku, stock, transferTable) = DATA NUMERIC[14,3] (sku, stock, transferTable);
+quantitySkuStockTransferTable (sku, stock, transferTable) = DATA NUMERIC[14,3] (Sku, Stock, TransferTable);
 quantitySkuTransferTable 'Итого по SKU' (sku, transferTable) = GROUP SUM quantitySkuStockTransferTable (sku, stock, transferTable) BY sku, transferTable;
 
 quantityPositiveSkuTransferTable 'Итого по SKU' (sku, transferTable) = GROUP SUM quantitySkuStockTransferTable (sku, stock, transferTable)
@@ -115,32 +115,32 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
         BREAK;
     }
 
-    LOCAL left = NUMERIC[14,3] (sku, stock);
+    LOCAL left = NUMERIC[14,3] (Sku, Stock);
     SET left(sku, stock) <- quantitySkuStockTransferTable(sku, stock, transferTable);
 
     WHILE [GROUP SUM 1 IF left(sku, stock)]() DO {
 
-        LOCAL positionCount = INTEGER (stock, stock);
+        LOCAL positionCount = INTEGER (Stock, Stock);
         SET positionCount(stockFrom, stockTo) <- [GROUP SUM 1 IF left(sku, stockFrom) < 0 AND left(sku, stockTo) > 0 BY stockFrom, stockTo](stockFrom, stockTo);
 
-        LOCAL stockFrom = stock ();
+        LOCAL stockFrom = Stock ();
         SET stockFrom() <- [GROUP MAX STRUCT(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[2];
 
-        LOCAL stockTo = stock ();
+        LOCAL stockTo = Stock ();
         SET stockTo() <- [GROUP MAX STRUCT(positionCount(stockFrom, stockTo), stockFrom, stockTo)]()[3];
 
-        LOCAL quantityTransfer = NUMERIC[14,3] (sku);
+        LOCAL quantityTransfer = NUMERIC[14,3] (Sku);
         SET quantityTransfer(sku) <- min( -left(sku, stockFrom()) IF left(sku, stockFrom()) < 0, left(sku, stockTo()) IF left(sku, stockTo()) > 0);
         IF TRUE AND NOT [GROUP SUM 1 IF quantityTransfer(sku)]() THEN BREAK;
 
-        FOR ADDOBJ o = innerOrder DO {
+        FOR ADDOBJ o = InnerOrder DO {
             SET transferTableInnerOrder(o) <- transferTable;
             SET dateInnerOrder(o) <- dateTransferTable(transferTable);
             SET timeInnerOrder(o) <- timeTransferTable(transferTable);
             SET stockInnerOrder(o) <- stockFrom();
             SET destinationStockInnerOrder(o) <- stockTo();
 
-            FOR quantityTransfer(sku) ADDOBJ d = innerOrderDetail DO {
+            FOR quantityTransfer(sku) ADDOBJ d = InnerOrderDetail DO {
                 SET innerOrderInnerOrderDetail(d) <- o;
                 SET skuInnerOrderDetail(d) <- sku;
                 SET quantityInnerOrderDetail(d) <- quantityTransfer(sku);
@@ -154,7 +154,7 @@ createInnerOrderTransferTable 'Создать внутренние заказы'
 
 deleteInnerOrderTransferTable 'Удалить внутренние заказы' = ACTION (transferTable) {
     FOR transferTableInnerOrder (innerOrder) == transferTable DO {
-        EXEC delete(innerOrder AS innerOrder);
+        EXEC delete(innerOrder AS InnerOrder);
     };
 } CONFIRM;
 
@@ -178,7 +178,7 @@ backgroundOrdersSkuStockTransferTable  'Цвет' (sku, stock, transferTable)=  
 notEqualSkuTransferTable(sku, transferTable) = GROUP SUM 1 IF quantityOrdersSkuStockTransferTable(sku, stock, transferTable) != quantitySkuStockTransferTable(sku, stock, transferTable) BY sku, transferTable;
 
 FORM transferTable 'Трансфер'
-    OBJECTS t = transferTable FIXED PANEL
+    OBJECTS t = TransferTable FIXED PANEL
 
     PROPERTIES (t) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateTransferTable, timeTransferTable,
                    noteTransferTable, createInnerOrderTransferTable, deleteInnerOrderTransferTable SHOWIF toShowTransferTable(t),
@@ -186,20 +186,20 @@ FORM transferTable 'Трансфер'
 
 
 
-    TREE stockTree sg = stockGroup PARENT parentStockGroup, ts = stock
+    TREE stockTree sg = StockGroup PARENT parentStockGroup, ts = Stock
     PROPERTIES READONLY sgTreeName = name(sg), tsTreeName = name(ts)
     FILTERS stockGroupStock(ts) == sg
 
     PROPERTIES inTransferTableStock(t,ts)
 
 
-    OBJECTS st=stock
+    OBJECTS st=Stock
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
     ORDER BY skuTreeName
 
-    OBJECTS s=sku
+    OBJECTS s=Sku
     PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s)
 
     PROPERTIES stringQuantitySkuStockTransferTable(s,st,t) COLUMNS (st) HEADER name (st) ON CHANGE changeQuantitySkuStockTransferTable(s,st,t) BACKGROUND backgroundSkuStockTransferTable(s,st,t)
@@ -215,18 +215,18 @@ FORM transferTable 'Трансфер'
         FILTER 'Отличающиеся' 'F8' notEqualSkuTransferTable(s,t)
     ORDER BY inputName
 
-    OBJECTS o = innerOrder
+    OBJECTS o = InnerOrder
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
         nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder
     PROPERTIES (o) EDITSESSIONFORM
 
     PROPERTIES (o) delete
 
-    OBJECTS d = innerOrderDetail
+    OBJECTS d = InnerOrderDetail
     FILTERS    transferTableInnerOrder(o)==t,
                innerOrderInnerOrderDetail(d) == o
 
-    EDIT transferTable OBJECT t
+    EDIT TransferTable OBJECT t
 ;
 
 DESIGN transferTable FROM DEFAULT {
@@ -293,7 +293,7 @@ DESIGN transferTable FROM DEFAULT {
 }
 
 FORM transferTables 'Трансферы'
-    OBJECTS t = transferTable
+    OBJECTS t = TransferTable
     PROPERTIES (t) READONLY numberObject, seriesObject, dateTransferTable, timeTransferTable,
                             dateFromTransferTable, dateToTransferTable, noteTransferTable
 
@@ -301,15 +301,15 @@ FORM transferTables 'Трансферы'
 
     PROPERTIES (t) ADDFORM, EDITFORM, delete
 
-    OBJECTS s=sku
+    OBJECTS s=Sku
     PROPERTIES READONLY FORCE GRID inputName = nameSku(s), sidArticleSku(s), idBarcodeSku(s), shortNameUOMSku(s), quantitySkuTransferTable(s,t)
 
-    OBJECTS o = innerOrder
+    OBJECTS o = InnerOrder
     PROPERTIES (o) READONLY numberObject, seriesObject, dateInnerOrder, timeInnerOrder,
         nameStockInnerOrder, nameDestinationStockInnerOrder, countInnerOrderDetailInnerOrder, quantityInnerOrderDetailInnerOrder,
         messageInnerOrder
 
-    OBJECTS d = innerOrderDetail
+    OBJECTS d = InnerOrderDetail
 
     FILTERS    transferTableInnerOrder(o)==t,
                innerOrderInnerOrderDetail(d) == o,

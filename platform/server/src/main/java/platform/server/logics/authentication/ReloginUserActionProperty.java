@@ -1,25 +1,20 @@
 package platform.server.logics.authentication;
 
 import platform.interop.action.UserChangedClientAction;
-import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.AuthenticationLogicsModule;
 import platform.server.logics.DataObject;
-import platform.server.logics.SecurityLogicsModule;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.AdminActionProperty;
 import platform.server.logics.scripted.ScriptingActionProperty;
 import platform.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
-import static platform.server.logics.ServerResourceBundle.getString;
-
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, "reloginUser", new ValueClass[]{LM.findClassByCompoundName("customUser")});
+        super(LM, "reloginUser", new ValueClass[]{LM.findClassByCompoundName("CustomUser")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {

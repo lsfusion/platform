@@ -20,15 +20,15 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS invoiceWHOut 'Реализация товара по безналичному расчету' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
-CLASS invoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : invoiceWHOut, postedObject;
-CLASS invoiceWHOutDetail 'Строка реализации товара по безналичному расчету';
+CLASS InvoiceWHOut 'Реализация товара по безналичному расчету' : Historizable, NumberedObject, OutStockDocumentLedger, InnerDocument;
+CLASS InvoiceWHOutPosted 'Проведенная реализация товара по безналичному расчету' : InvoiceWHOut, PostedObject;
+CLASS InvoiceWHOutDetail 'Строка реализации товара по безналичному расчету';
 
 @defineDocument(invoiceWHOut);
 
 @defineDocumentStock(invoiceWHOut, warehouse, 'Склад-отправитель');
 
-customerInvoiceWHOut = DATA customer (invoiceWHOut);
+customerInvoiceWHOut = DATA Customer (InvoiceWHOut);
 nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoiceWHOut(invoice));
 
 @defineDocumentPosted(invoiceWHOut);
@@ -62,10 +62,10 @@ nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoice
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
-skipSkuLedgerInvoiceWHOut 'Не проводить по учету' (invoiceWHOut) = DATA BOOLEAN (invoiceWHOut) IN documentPrmGroup;
+skipSkuLedgerInvoiceWHOut 'Не проводить по учету' (invoiceWHOut) = DATA BOOLEAN (InvoiceWHOut) IN documentPrmGroup;
 skipSkuLedgerInvoiceWHOutDetail 'Не проводить по учету' (invoiceWHOutDetail) = skipSkuLedgerInvoiceWHOut(invoiceWHOutInvoiceWHOutDetail(invoiceWHOutDetail));
 
-supplierPriceInvoiceWHOutDetail 'Отпускная цена' = DATA NUMERIC[14,2] (invoiceWHOutDetail);
+supplierPriceInvoiceWHOutDetail 'Отпускная цена' = DATA NUMERIC[14,2] (InvoiceWHOutDetail);
 //supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuInvoiceWHOutDetail(invoiceWHOutDetail)), dateTimeInvoiceWHOutDetail(invoiceWHOutDetail))
 //    WHEN CHANGED(skuInvoiceWHOutDetail(invoiceWHOutDetail)) OR CHANGED(dateTimeInvoiceWHOutDetail(invoiceWHOutDetail));
 
@@ -75,27 +75,27 @@ supplierPriceInvoiceWHOutDetail (invoiceWHOutDetail) <- priceWholesaleArticleCur
 supplierSumInvoiceWHOutDetail 'Сумма без НДС' = supplierPriceInvoiceWHOutDetail(invoiceWHOutDetail) * quantityInvoiceWHOutDetail(invoiceWHOutDetail);
 
 
-batchAInvoiceWHOutDetail = DATA batchA (invoiceWHOutDetail);
+batchAInvoiceWHOutDetail = DATA BatchA (InvoiceWHOutDetail);
 descriptionBatchInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = descriptionBatch(batchAInvoiceWHOutDetail(invoiceWHOutDetail));
 
 CONSTRAINT skuBatch(batchAInvoiceWHOutDetail(detail)) != skuInvoiceWHOutDetail(detail) CHECKED BY batchAInvoiceWHOutDetail
     MESSAGE 'Товар партии строки должен соответствовать SKU строки';
 
 FORM invoiceWHOut 'Реализация товара по безналичному расчету'
-    OBJECTS t = invoiceWHOut FIXED PANEL
+    OBJECTS t = InvoiceWHOut FIXED PANEL
 
     PROPERTIES (t) numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
                    nameWarehouseInvoiceWHOut, nameCustomerInvoiceWHOut, noteInvoiceWHOut,
                    countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
 
-    OBJECTS d = invoiceWHOutDetail
+    OBJECTS d = InvoiceWHOutDetail
 
     PROPERTIES(t) TODRAW d addDetailDialogSkuStockInvoiceWHOutDetailInvoiceWHOut, addDetailInputBarcodeInvoiceWHOutDetailInvoiceWHOut,
                            deleteInvoiceWHOutDetailInvoiceWHOut
 
     FILTERS invoiceWHOutInvoiceWHOutDetail(d) == t
 
-    EDIT invoiceWHOut OBJECT t
+    EDIT InvoiceWHOut OBJECT t
 ;
 
 DESIGN invoiceWHOut FROM DEFAULT {
@@ -126,7 +126,7 @@ DESIGN invoiceWHOut FROM DEFAULT {
 }
 
 FORM invoiceWHOuts 'Реализации товара по безналичному расчету'
-    OBJECTS t = invoiceWHOut
+    OBJECTS t = InvoiceWHOut
     PROPERTIES (t) READONLY isPostedInvoiceWHOut FORCE GRID, numberObject, seriesObject, dateInvoiceWHOut, timeInvoiceWHOut,
                             nameWarehouseInvoiceWHOut, nameCustomerInvoiceWHOut, noteInvoiceWHOut,
                             countInvoiceWHOutDetailInvoiceWHOut, quantityInvoiceWHOutDetailInvoiceWHOut
@@ -136,7 +136,7 @@ FORM invoiceWHOuts 'Реализации товара по безналично�
     PROPERTIES (t) ADDFORM, EDITFORM SHOWIF isDraftInvoiceWHOut(t), delete FORCE PANEL TOOLBAR SHOWIF isDraftInvoiceWHOut(t),
                    postInvoiceWHOut SHOWIF isDraftInvoiceWHOut(t), unpostInvoiceWHOut SHOWIF isPostedInvoiceWHOut(t)
 
-    OBJECTS d = invoiceWHOutDetail
+    OBJECTS d = InvoiceWHOutDetail
 
     FILTERS invoiceWHOutInvoiceWHOutDetail(d) == t
 ;
@@ -176,7 +176,7 @@ DESIGN invoiceWHOuts FROM DEFAULT {
 @defineDocumentRetailPrice(invoiceWHOut, d);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(invoiceWHOutDetail, sku, warehouse);
+@implementSkuLedgerOutFIFO(InvoiceWHOutDetail, sku, warehouse);
 quantityOutFIFOSkuLedger (ledger) += quantityInvoiceWHOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += IF batchAInvoiceWHOutDetail(ledger) THEN
                                                 quantityInvoiceWHOutDetail (ledger) AND batchAInvoiceWHOutDetail(ledger) == batch
@@ -197,13 +197,13 @@ sumInvoiceInvoiceWHOutDetail 'Сумма с НДС' (invoiceWHOutDetail) = suppl
 
 @defineConsignmentHeader(invoiceWHOut);
 
-@implementConsignmentHeader(invoiceWHOut);
+@implementConsignmentHeader(InvoiceWHOut);
 
 supplierConsignment (consignment) += legalEntityWarehouse(warehouseInvoiceWHOut(consignment));
 supplierStockConsignment (consignment) += warehouseInvoiceWHOut(consignment);
 customerConsignment (consignment) += customerInvoiceWHOut(consignment);
 
-EXTEND CLASS invoiceWHOutDetail : consignmentDetail;
+EXTEND CLASS InvoiceWHOutDetail : ConsignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += invoiceWHOutInvoiceWHOutDetail(consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuInvoiceWHOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityInvoiceWHOutDetail (consignmentDetail);
@@ -235,8 +235,8 @@ currentBalanceInvoiceWHOutDetail 'Текущий остаток' (invoiceWHOutDe
 
 FORM batchADialogForm 'Партия'
 
-    OBJECTS d = invoiceWHOutDetail FIXED PANEL
-    OBJECTS bt = batchA
+    OBJECTS d = InvoiceWHOutDetail FIXED PANEL
+    OBJECTS bt = BatchA
     PROPERTIES (bt) READONLY nameSkuBatch, descriptionBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA,
                    numberSupplierVATBatchA, valueSupplierVATBatchA
     PROPERTIES(bt, d) READONLY currentBalanceBatchInvoiceWHOutDetail
@@ -249,7 +249,7 @@ FORM batchADialogForm 'Партия'
 
 dialogBatchAInvoiceWHOutDetail 'Партия' (invoiceWHOutDetail) = ACTION (invoiceWHOutDetail) {
     FORM batchADialogForm OBJECTS d = invoiceWHOutDetail MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET batchAInvoiceWHOutDetail(invoiceWHOutDetail) <- chosenObject('bt');
     }
 }

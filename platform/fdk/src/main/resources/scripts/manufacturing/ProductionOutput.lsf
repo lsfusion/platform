@@ -5,12 +5,12 @@ NAMESPACE Production;
 
 // ---------------- Производство ------------------- //
 
-CLASS ABSTRACT output 'Производство' : document;
-CLASS ABSTRACT outputDetail 'Строка производства' : named, documentDetail;
+CLASS ABSTRACT Output 'Производство' : Document;
+CLASS ABSTRACT OutputDetail 'Строка производства' : Named, DocumentDetail;
 
-CLASS userOutput 'Производство (польз.)': output, historizable, numeratedObject;
-CLASS userOutputDetail 'Строка производства (польз.)' : outputDetail;
-CLASS userOutputPosted 'Проведенное призводство (польз.)': userOutput, postedObject;
+CLASS UserOutput 'Производство (польз.)': Output, Historizable, NumeratedObject;
+CLASS UserOutputDetail 'Строка производства (польз.)' : OutputDetail;
+CLASS UserOutputPosted 'Проведенное призводство (польз.)': UserOutput, PostedObject;
 
 @defineNumeratedObjectDefault(userOutput, 'Нумератор для производства', 'НП');
 
@@ -38,8 +38,8 @@ priceListTypeUserOutputDetail(detail) <- priceListTypeUserOutput(userOutputUserO
 @deriveDocumentDetailSum(userOutput, quantity);
 
 // сроки годности
-expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (outputDetail);
-expiryDateUserOutputDetail 'Годен до'= DATA DATE (userOutputDetail);
+expiryDateOutputDetail 'Годен до'= ABSTRACT DATE (OutputDetail);
+expiryDateUserOutputDetail 'Годен до'= DATA DATE (UserOutputDetail);
 expiryDateOutputDetail (outputDetail) += expiryDateUserOutputDetail (outputDetail);
 
 // кол-во в шапке документа
@@ -65,8 +65,8 @@ supplierStockDocument(output) += stockOutput(output);
 
 GROUP orderGroup 'Информация о заказе' : public;
 
-productDetailOutputDetail = ABSTRACT productDetail (outputDetail) PERSISTENT;
-productDetailUserOutputDetail = DATA productDetail (userOutputDetail);
+productDetailOutputDetail = ABSTRACT ProductDetail (OutputDetail) PERSISTENT;
+productDetailUserOutputDetail = DATA ProductDetail (UserOutputDetail);
 productDetailOutputDetail(outputDetail) += productDetailUserOutputDetail(outputDetail);
 
 CONSTRAINT stockOutputDetail(detail) != productsStockProductDetail(productDetailUserOutputDetail(detail)) OR
@@ -118,9 +118,9 @@ priceUserOutputDetail(detail) <- IF priceListTypeUserOutputDetail(detail) THEN
 
 FORM outputOrders 'Производственные заказы'
 
-    OBJECTS s = stock FIXED PANEL
+    OBJECTS s = Stock FIXED PANEL
 
-    OBJECTS o = order
+    OBJECTS o = Order
     PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
@@ -128,12 +128,12 @@ FORM outputOrders 'Производственные заказы'
             componentsStockOrder(o) == s,
             toOutputProductDetailOrder(o)
 
-    OBJECTS pd=productDetail
+    OBJECTS pd=ProductDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    calcComponentsPriceProductDetail, componentsPriceProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
-    OBJECTS cd = componentDetail
+    OBJECTS cd = ComponentDetail
     PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, quantityComponentDetail
     PROPERTIES(cd) READONLY toOutputProductDetail
@@ -172,11 +172,11 @@ DESIGN outputOrders FROM DEFAULT {
 fillOrderUserOutput 'Заполнить на основе производственного заказа' =  ACTION (userOutput) {
     FORM outputOrders OBJECTS s = stockUserOutput(userOutput) MODAL;
 
-    IF formResult() == formResult.ok THEN {
-        LOCAL productionOrder = order();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL productionOrder = Order();
         SET productionOrder() <- chosenObject('o');
 
-        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = userOutputDetail DO {
+        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = UserOutputDetail DO {
             SET userOutputUserOutputDetail(d) <- userOutput;
             SET productDetailUserOutputDetail(d) <- productDetail;
             SET skuUserOutputDetail(d) <- skuProductDetail(productDetail);
@@ -188,13 +188,13 @@ fillOrderUserOutput 'Заполнить на основе производств
 
 // Проводим по регистру
 
-@implementBatch(outputDetail, sku, stock, price);
+@implementBatch(OutputDetail, sku, stock, price);
 quantityBatch (ledger) += quantityOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateOutputDetail(ledger);
 sumInSkuLedger (ledger) += sumOutputDetail(ledger);
 
 // Товарный отчет
-@implementStockDocumentLedgerInc(output, stock);
+@implementStockDocumentLedgerInc(Output, stock);
 sumIncStockDocumentLedger (ledger) += sumOutputDetailOutput(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemOutputDetailOutput(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(ledger);
@@ -207,7 +207,7 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerOutputDetailOutput(le
 @defineDocumentDetailQuantityCustomPrefix (productDetail, output, '(произведено)');
 outputQuantityProductDetail(detail) <- quantityProductDetail(detail) WHEN CHANGED(quantityProductDetail(detail));
 
-outputProductsSumProductDetail 'Сумма произведенного изделия' = DATA NUMERIC[16,2] (productDetail);
+outputProductsSumProductDetail 'Сумма произведенного изделия' = DATA NUMERIC[16,2] (ProductDetail);
 outputProductsSumProductDetail(productDetail) <-
     toNumeric16p2(roundPriceCurrency((outputQuantityProductDetail(productDetail) * productsPriceProductDetail(productDetail)), currencyProductDetail(productDetail)))
     WHEN CHANGED (outputQuantityProductDetail(productDetail)) OR
@@ -216,8 +216,8 @@ outputProductsSumProductDetail(productDetail) <-
 
 outputProductsSumProductDetailOrder 'Сумма произведенного изделия'(order) = GROUP SUM outputProductsSumProductDetail(detail) BY orderProductDetail(detail) IN documentSumGroup;
 
-backgroundOutputOrder 'Цвет' (order) = RGB(255, 224, 255) IF order IS order;
-showOutputOrder (order) =  order IS order AND NOT createOutputOrder(order);
+backgroundOutputOrder 'Цвет' (order) = RGB(255, 224, 255) IF order IS Order;
+showOutputOrder (order) =  order IS Order AND NOT createOutputOrder(order);
 
 EXTEND FORM order
     PROPERTIES(o)  BACKGROUND backgroundOutputOrder(o) createOutputOrder
@@ -249,9 +249,9 @@ EXTEND FORM orders
 
 // Создание агрегированного документа
 
-CLASS orderOutput 'Производство на основе заказа' : output;
-CLASS orderOutputPosted 'Проведенное производство на основе заказа': orderOutput, postedObject;
-CLASS orderOutputDetail 'Строка производства на основе заказа' : outputDetail;
+CLASS OrderOutput 'Производство на основе заказа' : Output;
+CLASS OrderOutputPosted 'Проведенное производство на основе заказа': OrderOutput, PostedObject;
+CLASS OrderOutputDetail 'Строка производства на основе заказа' : OutputDetail;
 
 @defineDocumentTables(orderOutput);
 
@@ -303,13 +303,13 @@ editOutput(output) += ACTION EXEC editOrder(orderOrderOutput(output));
 // --------------------------- Формы Списания ---------------------------------
 
 FORM userOutput 'Производство'
-    OBJECTS o = userOutput FIXED PANEL
+    OBJECTS o = UserOutput FIXED PANEL
     PROPERTIES (o) objectClassName, nameStockUserOutput, nameNumeratorObject, numberObject, seriesObject, dateUserOutput, timeUserOutput,
                    nameCurrencyUserOutput, namePriceListTypeUserOutput, noteUserOutput,
                    countUserOutputDetailUserOutput, quantityUserOutputDetailUserOutput, sumUserOutputDetailUserOutput,
                    fillOrderUserOutput, ordersOutput READONLY
 
-    OBJECTS d = userOutputDetail
+    OBJECTS d = UserOutputDetail
     PROPERTIES (d) indexUserOutputDetail, idBarcodeSkuUserOutputDetail, nameSkuUserOutputDetail, shortNameUOMSkuUserOutputDetail,
                    namePriceListTypeUserOutputDetail, expiryDateUserOutputDetail, quantityUserOutputDetail, priceUserOutputDetail, sumUserOutputDetail,
                    descriptionIndexProductDetailUserOutputDetail, ADDOBJ, delete
@@ -324,7 +324,7 @@ FORM userOutput 'Производство'
     HINTTABLE LIST dateTimeUserOutputDetail, skuUserOutputDetail, stockUserOutputDetail,
                    priceListTypeUserOutputDetail, currencyUserOutputDetail, priceUserOutputDetail
 
-    EDIT userOutput OBJECT o
+    EDIT UserOutput OBJECT o
 ;
 
 DESIGN userOutput FROM DEFAULT{
@@ -386,19 +386,19 @@ DESIGN userOutput FROM DEFAULT{
 
 //-- SKU
 
-addUserOutput 'Добавить' = ACTION ADDFORM userOutput;
-editUserOutput 'Редактировать' (userOutput) = ACTION EDITFORM userOutput;
+addUserOutput 'Добавить' = ACTION ADDFORM UserOutput;
+editUserOutput 'Редактировать' (userOutput) = ACTION EDITFORM UserOutput;
 editOutput(output) += editUserOutput(output);
 
 copyOutput 'Копировать' = ACTION (userOutput) NEWSESSION {
-    FOR ADDOBJ o = userOutput DO {
+    FOR ADDOBJ o = UserOutput DO {
         SET stockUserOutput(o) <- stockUserOutput(userOutput);
         SET currencyUserOutput(o) <- currencyUserOutput(userOutput);
         SET priceListTypeUserOutput(o) <- priceListTypeUserOutput(userOutput);
         SET noteUserOutput(o) <- noteUserOutput(userOutput);
 
         FOR userOutputUserOutputDetail(userOutputDetail) == userOutput DO {
-            FOR ADDOBJ d=userOutputDetail DO {
+            FOR ADDOBJ d=UserOutputDetail DO {
                 SET userOutputUserOutputDetail(d) <- o;
                 SET skuUserOutputDetail(d) <- skuUserOutputDetail(userOutputDetail);
                 SET quantityUserOutputDetail(d) <- quantityUserOutputDetail(userOutputDetail);
@@ -412,14 +412,14 @@ copyOutput 'Копировать' = ACTION (userOutput) NEWSESSION {
 
 createShipmentOutput 'Создать поставку для ГП' = ACTION (output)  {
 
-    FOR ADDOBJ sh = Sale.userShipment DO {
+    FOR ADDOBJ sh = Sale.UserShipment DO {
         SET Sale.supplierUserShipment(sh) <- legalEntityStockOutput(output);
         SET Sale.customerUserShipment(sh) <- legalEntityStockOutput(output);
         SET Sale.supplierStockUserShipment(sh) <- stockOutput(output);
         SET createPurchaseUserShipment(sh) <- TRUE;
         SET Sale.noteUserShipment(sh) <- [FORMULA STRING[100] 'CAST($1 AS TEXT)'](descriptionOutput(output));
 
-        FOR outputOutputDetail(outputDetail)== output ADDOBJ d = Sale.userShipmentDetail DO {
+        FOR outputOutputDetail(outputDetail)== output ADDOBJ d = Sale.UserShipmentDetail DO {
             SET Sale.userShipmentUserShipmentDetail(d) <- sh;
             SET Sale.skuUserShipmentDetail(d) <- skuOutputDetail(outputDetail);
             SET Sale.quantityUserShipmentDetail(d) <- quantityOutputDetail(outputDetail);
@@ -427,14 +427,14 @@ createShipmentOutput 'Создать поставку для ГП' = ACTION (out
         }
 
     FORM Sale.userShipment OBJECTS s=sh MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             EXEC apply();
         }
     }
 } TOOLBAR;
 
 FORM outputs 'Производство'
-    OBJECTS o = output
+    OBJECTS o = Output
     PROPERTIES (o) READONLY isPostedOutput FORCE GRID, objectClassName, numberOutput, seriesOutput, dateOutput, timeOutput,
                             nameStockOutput, nameCurrencyOutput, namePriceListTypeOutput, noteOutput,
                             countOutputDetailOutput, quantityOutputDetailOutput, sumOutputDetailOutput
@@ -446,15 +446,15 @@ FORM outputs 'Производство'
     PROPERTIES (o) editOutput, copyOutput
     PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOutput(o)
 
-    OBJECTS d=outputDetail
+    OBJECTS d=OutputDetail
     PROPERTIES (d) READONLY indexOutputDetail, idBarcodeSkuOutputDetail, nameSkuOutputDetail, shortNameUOMSkuOutputDetail
     PROPERTIES (d) READONLY namePriceListTypeOutputDetail, expiryDateOutputDetail, quantityOutputDetail, priceOutputDetail,
                    sumOutputDetail, descriptionIndexProductDetailOutputDetail
 
     FILTERS outputOutputDetail(d) == o
-    DIALOG output OBJECT o
+    DIALOG Output OBJECT o
 ;
-@extendFormFilterAccess(output, o, outputs, stock);
+@extendFormFilterAccess(Output, o, outputs, stock);
 
 DESIGN outputs FROM DEFAULT {
     PROPERTY (delete(o)) {

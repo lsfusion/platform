@@ -20,7 +20,7 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface countryInterface;
 
     public FillDaysOffActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.getClassByName("country"));
+        super(LM, LM.getClassByName("Country"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         countryInterface = i.next();

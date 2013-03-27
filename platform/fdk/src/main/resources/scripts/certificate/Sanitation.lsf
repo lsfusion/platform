@@ -2,16 +2,16 @@ MODULE Sanitation;
 
 REQUIRE Certificate, Shipment;
 
-CLASS sanitation 'ГГР' : certificate, numberedObject;
-TABLE sanitation(sanitation);
+CLASS Sanitation 'ГГР' : Certificate, NumberedObject;
+TABLE sanitation(Sanitation);
 
-@defineDocumentHeaderTimePrefix(sanitation, ,' создания');
-@defineDocumentHeaderTimePrefix(sanitation, to, ' действия');
+@defineDocumentHeaderTimePrefix(Sanitation, ,' создания');
+@defineDocumentHeaderTimePrefix(Sanitation, to, ' действия');
 @implementDocumentHeaderTimePrefix(certificate, , sanitation, );
 @implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
 
-seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS sanitation;
-numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS sanitation;
+seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS Sanitation;
+numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS Sanitation;
 
 descriptionSanitation 'ГГР' (sanitation) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
@@ -20,9 +20,9 @@ descriptionSanitation 'ГГР' (sanitation) =
 @defineCertificateObjectBatch(sanitation, 'ГГР');
 
 FORM sanitation 'ГГР'
-    OBJECTS s = sanitation FIXED PANEL
+    OBJECTS s = Sanitation FIXED PANEL
     PROPERTIES(s) seriesObject, numberObject, dateSanitation, timeSanitation, toDateSanitation, toTimeSanitation
-    EDIT sanitation OBJECT s
+    EDIT Sanitation OBJECT s
 ;
 
 DESIGN sanitation FROM DEFAULT{
@@ -38,16 +38,16 @@ DESIGN sanitation FROM DEFAULT{
 }
 
 FORM sanitations 'ГГР'
-    OBJECTS s = sanitation
+    OBJECTS s = Sanitation
     PROPERTIES(s) READONLY seriesNumberObject, dateTimeSanitation, toDateTimeSanitation
     PROPERTIES(s) ADDFORM, EDITFORM, delete
 ;
 
 FORM sanitationsDialog 'ГГР'
-    OBJECTS s = sanitation
+    OBJECTS s = Sanitation
     PROPERTIES(s) READONLY seriesNumberObject, dateTimeSanitation, toDateTimeSanitation
 
-    DIALOG sanitation OBJECT s
+    DIALOG Sanitation OBJECT s
 ;
 
 NAVIGATOR {

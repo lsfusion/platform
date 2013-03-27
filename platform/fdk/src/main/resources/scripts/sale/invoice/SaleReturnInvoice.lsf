@@ -34,9 +34,9 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(custom
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 customerUserInvoice(userInvoice) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 
 supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1

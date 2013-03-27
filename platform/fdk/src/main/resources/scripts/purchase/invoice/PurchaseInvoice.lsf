@@ -24,25 +24,25 @@ NAMESPACE Purchase;
 
 @defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
 
-//isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(invoice) IN documentPrmGroup;
+//isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(Invoice) IN documentPrmGroup;
 
-//backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS invoice;
+//backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS Invoice;
 
-//customsGroupUserInvoiceDetail = DATA customsGroup(userInvoiceDetail);
+//customsGroupUserInvoiceDetail = DATA CustomsGroup(UserInvoiceDetail);
 //codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (userInvoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10;
 
 // --------------------------- Себестоимость ---------------------------------- //
 
-extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (invoiceDetail) PERSISTENT;
-extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (userInvoiceDetail) PERSISTENT;
+extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+extraCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
 extraCostPriceInvoiceDetail (detail) += extraCostPriceUserInvoiceDetail(detail);
 
-customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2](invoiceDetail) PERSISTENT;
-customCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2](userInvoiceDetail) PERSISTENT;
+customCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2](InvoiceDetail) PERSISTENT;
+customCostPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
 customCostPriceInvoiceDetail(detail) += customCostPriceUserInvoiceDetail(detail);
 
-certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](invoiceDetail) PERSISTENT;
-certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](userInvoiceDetail) PERSISTENT;
+certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](InvoiceDetail) PERSISTENT;
+certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
 certificateCostPriceInvoiceDetail(detail) += certificateCostPriceUserInvoiceDetail(detail);
 
 priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
@@ -69,9 +69,9 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(custome
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserInvoice(userInvoice) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 customerUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS userInvoice);
+    WHEN ASSIGNED(userInvoice IS UserInvoice);
 
 supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1
@@ -123,7 +123,7 @@ sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(
 
 // --------------- Проведение по регистру закупок ------------- //
 
-@implementPurchaseLedger(invoice, sku, customerStock);
+@implementPurchaseLedger(Invoice, sku, customerStock);
 supplierPurchaseLedger (ledger) += supplierInvoiceDetail(ledger);
 quantityPurchaseLedger (ledger) += quantityInvoiceDetail(ledger);
 VATPurchaseLedger (ledger) += VATInvoiceDetail(ledger);
@@ -131,7 +131,7 @@ sumPurchaseLedger (ledger) += sumInvoiceDetail(ledger);
 
 // --------------- Проведение по регистру цен ------------- //
 
-EXTEND CLASS invoiceDetail : priceListLedger;
+EXTEND CLASS InvoiceDetail : PriceListLedger;
 
 fromDateTimePriceListLedger (ledger) += dateTimeInvoiceDetail(ledger);
 
@@ -143,12 +143,12 @@ descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(ledger);
 
 inPriceListLedgerStock (ledger, stock) += customerStockInvoiceDetail(ledger) == stock;
 
-EXTEND CLASS systemLedgerPriceListType { purchaseInvoiceStockPriceListType 'Закупки (последняя по складу)' }
-batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoiceStockPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(ledger) WHEN CLASS(priceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseInvoiceStockPriceListType;
+EXTEND CLASS SystemLedgerPriceListType { purchaseInvoiceStockPriceListType 'Закупки (последняя по складу)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseInvoiceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(ledger) WHEN CLASS(priceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
-CLASS invoicePriceListLedger : priceListLedger;
+CLASS InvoicePriceListLedger : PriceListLedger;
 
 @defineAggregation(invoiceDetail, invoicePriceListLedger, isInvoiceDetail);
 
@@ -162,9 +162,9 @@ descriptionPriceListLedger (ledger) += descriptionInvoiceDetail(invoiceDetailInv
 
 inPriceListLedgerStock (ledger, stock) += isCompanyStock(stock) AND priceStockGroupStock(customerStockInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) == priceStockGroupStock(stock);
 
-EXTEND CLASS systemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя по ценовой группе)' }
-batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseInvoicePriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseInvoicePriceListType;
+EXTEND CLASS SystemLedgerPriceListType { purchaseInvoicePriceListType 'Закупки (последняя по ценовой группе)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseInvoicePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(priceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseInvoicePriceListType;
 
 
 NAVIGATOR {

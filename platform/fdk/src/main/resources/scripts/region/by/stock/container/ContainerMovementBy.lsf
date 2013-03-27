@@ -9,10 +9,10 @@ FORM printContainerMovementBy 'Отчет по таре' PRINT
     OBJECTS params = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES objFrom = OBJVALUE(dFrom), objTo = OBJVALUE(dTo)
 
-    OBJECTS dep = departmentStore  FIXED PANEL
+    OBJECTS dep = DepartmentStore  FIXED PANEL
     PROPERTIES(dep) SELECTOR name, nameStoreDepartmentStore, nameLegalEntityDepartmentStore
 
-    OBJECTS bt=batch
+    OBJECTS bt=Batch
 
     PROPERTIES READONLY costSumContainerStockDateFrom(dep, dFrom), costSumContainerStockDateTo(dep, dTo)
     PROPERTIES(bt) READONLY idBarcodeSkuBatch, nameSkuBatch, costBatch

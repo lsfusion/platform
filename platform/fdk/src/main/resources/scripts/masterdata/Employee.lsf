@@ -3,49 +3,49 @@ MODULE Employee;
 REQUIRE System, Authentication, MasterData, Security, Email, Hierarchy, Utils;
 
 // ------------------------------------- Должности -------------------------------------- //
-CLASS position 'Должность' : named;
-TABLE position(position);
+CLASS Position 'Должность' : Named;
+TABLE position(Position);
 
-positionEmployee(employee) = DATA position (employee);
+positionEmployee(employee) = DATA Position (Employee);
 
 FORM position 'Должность'
-    OBJECTS of=position FIXED PANEL
+    OBJECTS of=Position FIXED PANEL
     PROPERTIES(of) name
-    EDIT position OBJECT of
+    EDIT Position OBJECT of
 ;
 
 // ------------------------------------- Доступ ------------------------------------------ //
 
-CLASS ABSTRACT employeeDivisionGroup 'Группа подразделений' : named;
+CLASS ABSTRACT EmployeeDivisionGroup 'Группа подразделений' : Named;
 @defineHierarchyAbstract(employeeDivisionGroup);
 
-CLASS ABSTRACT employeeDivision 'Подразделение' : named;
-TABLE employeeDivision(employeeDivision);
+CLASS ABSTRACT EmployeeDivision 'Подразделение' : Named;
+TABLE employeeDivision(EmployeeDivision);
 
-employeeDivisionGroupEmployeeDivision = ABSTRACT employeeDivisionGroup (employeeDivision) PERSISTENT;
+employeeDivisionGroupEmployeeDivision = ABSTRACT EmployeeDivisionGroup (EmployeeDivision) PERSISTENT;
 
-TABLE employeeDivisionGroupEmployeeDivision(employeeDivisionGroup, employeeDivision);
+TABLE employeeDivisionGroupEmployeeDivision(EmployeeDivisionGroup, EmployeeDivision);
 isParentEmployeeDivisionGroupEmployeeDivision (employeeDivisionGroup, employeeDivision) = isParentEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroupEmployeeDivision(employeeDivision), employeeDivisionGroup) PERSISTENT;
 
 // ------------------------------------- Сотрудники -------------------------------------- //
 
-CLASS employee 'Сотрудник' : customUser;
-TABLE employee(employee);
+CLASS Employee 'Сотрудник' : CustomUser;
+TABLE employee(Employee);
 
 namePositionEmployee 'Должность сотрудника' (employee) = name(positionEmployee(employee)) IN base MINCHARWIDTH 15 PREFCHARWIDTH 15;
 
 positionNameEmployee 'Должность ФИО' (employee) = [FORMULA STRING[40] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)']
                                                          (namePositionEmployee(employee), nameContact(employee));
 
-limitAccessEmployee 'Ограничить доступ' = DATA BOOLEAN (employee);
+limitAccessEmployee 'Ограничить доступ' = DATA BOOLEAN (Employee);
 
-TABLE employeeDivisionEmployee (employeeDivision, employee);
-inEmployeeDivisionEmployee 'Сотрудник подразделения' = DATA BOOLEAN (employeeDivision, employee);
+TABLE employeeDivisionEmployee (EmployeeDivision, Employee);
+inEmployeeDivisionEmployee 'Сотрудник подразделения' = DATA BOOLEAN (EmployeeDivision, Employee);
 
-dataAccessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivision, employee);
+dataAccessEmployeeDivisionEmployee 'Доступ разрешен' = DATA BOOLEAN (EmployeeDivision, Employee);
 
-TABLE employeeDivisionGroupEmployee(employeeDivisionGroup, employee);
-dataAccessEmployeeDivisionGroupEmployee 'Доступ разрешен' = DATA BOOLEAN (employeeDivisionGroup, employee);
+TABLE employeeDivisionGroupEmployee(EmployeeDivisionGroup, Employee);
+dataAccessEmployeeDivisionGroupEmployee 'Доступ разрешен' = DATA BOOLEAN (EmployeeDivisionGroup, Employee);
 
 levelParentEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) = GROUP MIN levelEmployeeDivisionGroupEmployeeDivisionGroup(employeeDivisionGroup, parent) IF dataAccessEmployeeDivisionGroupEmployee(parent, employee)
                                                                BY employee, employeeDivisionGroup PERSISTENT;
@@ -55,12 +55,12 @@ nearestInEmployeeEmployeeDivisionGroup (employee, employeeDivisionGroup) =
 
 
 accessEmployeeEmployeeDivisionGroup 'Доступ разрешен' (employee, employeeDivisionGroup) =
-    UNION OVERRIDE employee IS employee AND employeeDivisionGroup IS employeeDivisionGroup AND NOT limitAccessEmployee(employee),
+    UNION OVERRIDE employee IS Employee AND employeeDivisionGroup IS EmployeeDivisionGroup AND NOT limitAccessEmployee(employee),
                    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroup),
                    dataAccessEmployeeDivisionGroupEmployee(employeeDivisionGroup, employee); // PERSISTENT;
 
 accessEmployeeEmployeeDivision 'Доступ разрешен' (employee, employeeDivision) =
-    UNION OVERRIDE employee IS employee AND employeeDivision IS employeeDivision AND NOT limitAccessEmployee(employee),
+    UNION OVERRIDE employee IS Employee AND employeeDivision IS EmployeeDivision AND NOT limitAccessEmployee(employee),
                    nearestInEmployeeEmployeeDivisionGroup(employee, employeeDivisionGroupEmployeeDivision(employeeDivision)),
                    dataAccessEmployeeDivisionEmployee(employeeDivision, employee); // PERSISTENT;
 
@@ -70,25 +70,25 @@ countAccessEmployeeEmployeeDivisionGroup 'Кол-во доступных под�
           BY employee, employeeDivisionGroup PERSISTENT;
 
 FORM employee 'Сотрудник'
-    OBJECTS e=employee FIXED PANEL
+    OBJECTS e=Employee FIXED PANEL
     PROPERTIES(e)      firstNameContact, lastNameContact, namePositionEmployee,
                        loginCustomUser, passwordCustomUser, emailContact, nameMainRoleUser, limitAccessEmployee
 
-    TREE treeEmployeeDivision a=STRING[3], dg = employeeDivisionGroup PARENT parentEmployeeDivisionGroup
+    TREE treeEmployeeDivision a=STRING[3], dg = EmployeeDivisionGroup PARENT parentEmployeeDivisionGroup
     PROPERTIES READONLY  OBJVALUE(a), dgTreeName = name(dg)
     FILTERS stringEqualsAll(a)
     PROPERTIES(e, dg) accessEmployeeEmployeeDivisionGroup
 
-    OBJECTS           d=employeeDivision
+    OBJECTS           d=EmployeeDivision
     PROPERTIES(d)     READONLY name
     PROPERTIES(d, e)  inEmployeeDivisionEmployee
     PROPERTIES(e, d)  accessEmployeeEmployeeDivision
 
-    FILTERS (d IS employeeDivision AND NOT dg IS employeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
+    FILTERS (d IS EmployeeDivision AND NOT dg IS EmployeeDivisionGroup) OR isParentEmployeeDivisionGroupEmployeeDivision(dg, d)
 
     FILTERGROUP filters
             FILTER 'Склады с доступом' 'F10' accessEmployeeEmployeeDivision(e, d)
-    EDIT employee OBJECT e
+    EDIT Employee OBJECT e
 ;
 
 DESIGN employee FROM DEFAULT {
@@ -130,15 +130,15 @@ DESIGN employee FROM DEFAULT {
 }
 
 FORM employees 'Сотрудники'
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e) ADDFORM, EDITFORM, delete
 
-    OBJECTS d=employeeDivision
+    OBJECTS d=EmployeeDivision
     PROPERTIES READONLY nameD=name(d)
     FILTERS inEmployeeDivisionEmployee(d, e)
 
-    OBJECTS dd=employeeDivision
+    OBJECTS dd=EmployeeDivision
     PROPERTIES READONLY nameDD=name(dd)
     FILTERS accessEmployeeEmployeeDivision(e,dd)
 
@@ -159,10 +159,10 @@ DESIGN employees FROM DEFAULT {
 }
 
 FORM employeeDialog 'Сотрудники'
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
 
-    DIALOG employee OBJECT e
+    DIALOG Employee OBJECT e
 ;
 
 NAVIGATOR {
@@ -174,7 +174,7 @@ NAVIGATOR {
 // ----------------------------------- Комиссии ---------------------------------------------------------- //
 
 META defineCommitteeEmployee (committee, prefix, caption)
-    prefix##Committee = DATA employee (committee);
+    prefix##Committee = DATA Employee (###committee);
     name###prefix##Committee caption (committee) = nameContact(prefix##Committee(committee)) IN recognize;
     namePosition###prefix##Committee caption (committee) = namePositionEmployee(prefix##Committee(committee));
     CONSTRAINT prefix##Committee(committee) AND NOT countDivisionEmployeeCommittee(prefix##Committee(committee), committee)
@@ -182,21 +182,21 @@ META defineCommitteeEmployee (committee, prefix, caption)
 END
 
 META defineCommitteeEmployeePrefix (committee, prefix, caption)
-    prefix###committee = DATA employee (committee);
+    prefix###committee = DATA Employee (###committee);
     name###prefix###committee caption (committee) = nameContact(prefix###committee(committee)) IN recognize;
     namePosition###prefix###committee caption (committee) = namePositionEmployee(prefix###committee(committee));
     CONSTRAINT prefix###committee(committee) AND NOT countDivisionEmployeeCommittee(prefix###committee(committee), committee)
         CHECKED BY prefix###committee MESSAGE '\''##caption##'\' не входит в выбранные подразделения';
 END
 
-CLASS ABSTRACT committee 'Комиссия' : named;
-TABLE committee (committee);
+CLASS ABSTRACT Committee 'Комиссия' : Named;
+TABLE committee (Committee);
 
-TABLE committeeEmployee (committee, employee);
-inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (committee, employee);
+TABLE committeeEmployee (Committee, Employee);
+inCommitteeEmployee 'Является членом комиссии' (committee, employee) = DATA BOOLEAN (Committee, Employee);
 
-TABLE committeeEmployeeDivision (committee, employeeDivision);
-inCommitteeEmployeeDivision 'Вкл.' (committee, employeeDivision) = DATA BOOLEAN (committee, employeeDivision);
+TABLE committeeEmployeeDivision (Committee, EmployeeDivision);
+inCommitteeEmployeeDivision 'Вкл.' (committee, employeeDivision) = DATA BOOLEAN (Committee, EmployeeDivision);
 
 inEmployeeDivisionEmployeeCommittee(employeeDivision, employee, committee) = inCommitteeEmployeeDivision(committee, employeeDivision) AND inEmployeeDivisionEmployee(employeeDivision, employee);
 

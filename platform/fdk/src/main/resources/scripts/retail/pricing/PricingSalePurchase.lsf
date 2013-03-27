@@ -16,7 +16,7 @@ NAMESPACE Sale;
 @defineDocumentInterfaceDetailMarkupPrefix (invoice, purchaseRetail, ' (закупка)');
 @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, purchaseRetail, ' (закупка)');
 @defineDocumentInterfaceDetailQuantityPrefix (invoice, purchasePricing, ' расценено (закупка)');
-extraPurchasePricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (userInvoiceDetail) PERSISTENT;
+extraPurchasePricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (UserInvoiceDetail) PERSISTENT;
 purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPurchasePricingQuantityUserInvoiceDetail(detail)
     WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPurchasePricingQuantityUserInvoiceDetail(detail));
 
@@ -32,7 +32,7 @@ purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListT
 
 @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail);
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
-    IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS calcPriceListType
+    IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail, currency);
@@ -43,15 +43,15 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 @defineDocumentInterfaceCreate (invoice, createPurchasePricing, 'Создать акт расценки (закупка)');
 
-showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS departmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
+showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS DepartmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);
 toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND createPurchasePricingInvoice(invoice);
 
 
 
-@deriveDocumentDetailPriceOnSessionPriceListType (userInvoiceDetail, purchaseRetail, , customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, , customerStock);
 
-backgroundPurchaseRetailInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS invoice;
+backgroundPurchaseRetailInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS Invoice;
 
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF showCreatePurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingUserInvoice

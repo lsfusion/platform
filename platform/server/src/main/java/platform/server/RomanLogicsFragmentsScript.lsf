@@ -2,20 +2,20 @@ MODULE Roman;
 
 REQUIRE System, RomanLogicsModule;
 
-CLASS supplierAndDocument 'Поставщик и документ' : supplier, document;
-CLASS namedDocument : named, supplierAndDocument;
+CLASS SupplierAndDocument 'Поставщик и документ' : Supplier, Document;
+CLASS NamedDocument : Named, SupplierAndDocument;
 
 GROUP NewGroup '\'Новая группа\'';
 GROUP NewGroup2 'new group 2' : base;
 
 // DProps
-typeInvoiceDataFreightArticle2 = DATA typeInvoice (freight, article) IN idGroup;
-rateExchange2(type, currency, date) = DATA DOUBLE (typeExchange, currency, DATE);
-nameOrigin2 = DATA ISTRING[50] (secondNameClass) IN base;
-quantityPalletShipment2 = DATA INTEGER (shipment) IN base;
-typeExchangeSTX2 =  DATA typeExchange () IN idGroup;
-somePropertyName = DATA supplierAndDocument (namedDocument) IN NewGroup2;
-mainCompositionFreightSku2(freight, sku) = DATA STRING[200] (freight, sku) IN base;
+typeInvoiceDataFreightArticle2 = DATA TypeInvoice (Freight, Article) IN idGroup;
+rateExchange2(type, currency, date) = DATA DOUBLE (TypeExchange, Currency, DATE);
+nameOrigin2 = DATA ISTRING[50] (SecondNameClass) IN base;
+quantityPalletShipment2 = DATA INTEGER (Shipment) IN base;
+typeExchangeSTX2 =  DATA TypeExchange () IN idGroup;
+somePropertyName = DATA SupplierAndDocument (NamedDocument) IN NewGroup2;
+mainCompositionFreightSku2(freight, sku) = DATA STRING[200] (Freight, Sku) IN base;
 
 
 // JProps
@@ -65,19 +65,19 @@ diffCountRelationCustomCategory10Sku2(sku) = countRelationCustomCategory10(custo
 oneShipmentSku2(shipment, sku) = quantityShipmentSku(shipment, sku) == 1.0;
 
 // IS, IF
-isArticle(object) = IS article;
+isArticle(object) = IS Article;
 typeInvoiceCategoryFreightArticle2(freight, article) = typeInvoiceCategoryArticle(article) AND freight IS RomanLogicsModule.freight IN idGroup;
 testProp2 = between(date($1), $2 AS DATE, $3 AS DATE);
 substring10s13 = substring10($1) IF $1 IS STRING[13];
 
 // AND
-testProp3(invoice, sku) = sumDocumentSku(invoice, sku) IF invoice IS directInvoice AND NOT freightShippedDirectInvoice(invoice);
+testProp3(invoice, sku) = sumDocumentSku(invoice, sku) IF invoice IS DirectInvoice AND NOT freightShippedDirectInvoice(invoice);
 invoicedSimpleInvoiceSimpleShipmentStockSku2(invoice, shipment, st, sku) =
     quantityDocumentSku(invoice, sku) IF
         inInvoiceShipment(invoice, shipment) AND
-        invoice IS simpleInvoice AND
-        shipment IS simpleShipment AND
-        st IS stock;
+        invoice IS SimpleInvoice AND
+        shipment IS SimpleShipment AND
+        st IS Stock;
 
 
 // Forms

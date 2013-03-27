@@ -10,7 +10,7 @@ NAMESPACE Inventory;
 
 FORM printListInventoryBy 'Опись' PRINT
 
-    OBJECTS         li=listInventory FIXED PANEL
+    OBJECTS         li=ListInventory FIXED PANEL
     PROPERTIES (li) dateListInventory, nameLegalEntityStockListInventory, nameStockListInventory,
                     nameInventoryListInventory, nameListInventory, noteListInventory, committeeListInventory,
                     nameCommitteeListInventory, nameChairmanCommitteeListInventory, namePositionChairmanListInventory, nameEmployeeListInventory,
@@ -20,21 +20,21 @@ FORM printListInventoryBy 'Опись' PRINT
     OBJECTS t=DATETIME FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    OBJECTS         i=sku
+    OBJECTS         i=Sku
     PROPERTIES (li,i) indexListInventorySku
     PROPERTIES (i)    idBarcodeSku, nameSku
     PROPERTIES (li,i) quantityPageInventoryDetailListInventorySku, pricePageInventoryDetailListInventorySku, sumPageInventoryDetailListInventorySku
     FILTERS           quantityPageInventoryDetailListInventorySku(li,i) > 0
     ORDER BY indexListInventorySku
 
-    OBJECTS         b=batch
+    OBJECTS         b=Batch
     PROPERTIES (li,b) indexListInventoryBatch
     PROPERTIES (b)    idBarcodeSkuBatch, nameSkuBatch, descriptionBatch
     PROPERTIES (li,b) quantityPageInventoryDetailListInventoryBatch, pricePageInventoryDetailListInventoryBatch, sumPageInventoryDetailListInventoryBatch
     FILTERS           quantityPageInventoryDetailListInventoryBatch(li,b) > 0
     ORDER BY indexListInventoryBatch
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY   nameContact, namePositionEmployee
     FILTERS        inListInventoryEmployee(li, e)
 ;
@@ -76,14 +76,14 @@ DESIGN printListInventoryBy FROM DEFAULT {
 }
 
 printListInventoryBy 'Опись' (listInventory) =
-    ACTION FORM printListInventoryBy OBJECTS li=(listInventory AS listInventory), t=currentDateTime()
+    ACTION FORM printListInventoryBy OBJECTS li=(listInventory AS ListInventory), t=currentDateTime()
     IMAGE 'print.png' IN printGroup;
 
 //------------------------------------ Сличительная ведомость ------------------------------------------//
 
 FORM printCollationSheetBy 'Сличительная ведомость' PRINT
 
-    OBJECTS          cs=collationSheet FIXED PANEL
+    OBJECTS          cs=CollationSheet FIXED PANEL
     PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
                               nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,
                               nameTypeOfAdditionCollationSheet, nameStockCollationSheet, dateCollationSheet,
@@ -94,7 +94,7 @@ FORM printCollationSheetBy 'Сличительная ведомость' PRINT
                               sumItemBalanceCollationSheet, sumContainerBalanceCollationSheet,
                               sumItemShortageCollationSheet, sumContainerShortageCollationSheet, isBatchCollationSheet, isSkuCollationSheet
 
-    OBJECTS          i=sku
+    OBJECTS          i=Sku
     PROPERTIES(i)     SELECTOR nameSku, idBarcodeSku
     PROPERTIES(cs, i) SELECTOR quantityPageInventoryDetailCollationSheetSku, quantityBalanceCollationSheetSku, quantityShortageCollationSheetSku
     PROPERTIES(cs, i)          pricePageInventoryDetailCollationSheetSku, priceBalanceCollationSheetSku
@@ -102,7 +102,7 @@ FORM printCollationSheetBy 'Сличительная ведомость' PRINT
     FILTERS                    includeCollationSheetSku(cs, i)
     ORDER BY nameSku
 
-    OBJECTS         b=batch
+    OBJECTS         b=Batch
     PROPERTIES(b)    SELECTOR nameSkuBatch, idBarcodeSkuBatch, descriptionBatch
     PROPERTIES(cs,b) SELECTOR quantityPageInventoryDetailCollationSheetBatch, quantityBalanceCollationSheetBatch, quantityShortageCollationSheetBatch
     PROPERTIES(cs,b) SELECTOR pricePageInventoryDetailCollationSheetBatch, priceBalanceCollationSheetBatch
@@ -119,7 +119,7 @@ printCollationSheetBy 'Сличительная ведомость' (collationSh
 
 FORM printTotalCollationSheetBy 'Сличительная ведомость (итоги)' PRINT
 
-    OBJECTS          cs=collationSheet FIXED PANEL
+    OBJECTS          cs=CollationSheet FIXED PANEL
 
     PROPERTIES (cs)  SELECTOR nameCollationSheet, nameLegalEntityStockCollationSheet, nameCommitteeCollationSheet,
                               nameChairmanCommitteeCollationSheet, namePositionChairmanCollationSheet, nameEmployeeCollationSheet,

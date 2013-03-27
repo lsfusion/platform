@@ -7,4 +7,4 @@ NAMESPACE Item;
 @defineObjectItemAttribute(ware, name, 'Посуда', itemBaseGroup);
 @defineObjectItemAttributeBatch (ware, name, 'Посуда');
 
-inWareItem 'Товар в посуде' (item) = item IS item AND wareItem(item);
+inWareItem 'Товар в посуде' (item) = item IS Item AND wareItem(item);

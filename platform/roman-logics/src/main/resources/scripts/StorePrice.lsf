@@ -5,8 +5,8 @@ REQUIRE System, Historizable, Tax, Stock, Barcode, Store, Ware, PriceList;
 GROUP priceDetailGroup 'Цены' : public;
 
 META defineDocumentDetailInPricePrefix (object, prefix, caption)
-    prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
-    prefix###supplierPrice###object##Detail 'Цена поставщика без НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    prefix###importerPrice###object##Detail 'Цена изготовителя/импортера'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
+    prefix###supplierPrice###object##Detail 'Цена поставщика без НДС'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
 END
 META defineDocumentDetailInPrice (object)
     @defineDocumentDetailInPricePrefix(object,,);
@@ -17,12 +17,12 @@ META defineDocumentDetailInvoicePrice (object, stockProp)
     overSupplierMarkup###object##Detail 'Оптовая надбавка/торговая скидка, %' (detail) =
             UNION OVERRIDE 0 IF detail IS object##Detail, supplierMarkup###object##Detail(detail);
 
-    supplierVAT###object##Detail(detail) = DATA range (object##Detail);
+    supplierVAT###object##Detail(detail) = DATA Range (object##Detail);
     numberSupplierVAT###object##Detail 'НДС поставщика, номер' (detail) = numberRange(supplierVAT###object##Detail(detail)) IN priceDetailGroup;
     valueSupplierVAT###object##Detail 'НДС поставщика,%' (detail) = valueRateRangeDate
         (supplierVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != tax.taxVAT OR
+    CONSTRAINT taxRange(supplierVAT###object##Detail(detail)) != Tax.taxVAT OR
                countryRange(supplierVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
                CHECKED BY supplierVAT###object##Detail
                MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -38,10 +38,10 @@ META defineDocumentDetailWareRange (object)
 END
 
 META defineDocumentDetailWarePrefix (object, prefix, caption)
-    prefix###ware###object##Detail = DATA ware(object##Detail);
+    prefix###ware###object##Detail = DATA Ware(###object##Detail);
     prefix###nameWare###object##Detail 'Посуда'###caption (detail) = name(prefix###ware###object##Detail(detail)) IN priceDetailGroup;
 
-    prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    prefix###warePrice###object##Detail 'Цена посуды с НДС'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
 
     @defineDocumentDetailWareRangePrefix(object, prefix, caption);
 END
@@ -50,19 +50,19 @@ META defineDocumentDetailWare (object)
 END
 
 META defineDocumentDetailRetailPricePrefix (object, prefix, caption)
-    prefix###retailPrice###object##Detail 'Розничная цена'###caption = DATA NUMERIC[14,2] (object##Detail) IN priceDetailGroup;
+    prefix###retailPrice###object##Detail 'Розничная цена'###caption = DATA NUMERIC[14,2] (###object##Detail) IN priceDetailGroup;
 END
 META defineDocumentDetailRetailPrice (object)
     @defineDocumentDetailRetailPricePrefix(object,,);
 END
 
 META defineDocumentDetailOutPricePrefix (object, stockProp, prefix, caption)
-    prefix###retailVAT###object##Detail = DATA range (object##Detail);
+    prefix###retailVAT###object##Detail = DATA Range (###object##Detail);
     prefix###numberRetailVAT###object##Detail 'НДС розничный, номер'###caption (detail) = numberRange(prefix###retailVAT###object##Detail(detail)) IN priceDetailGroup;
     prefix###valueRetailVAT###object##Detail 'НДС розничный, %'###caption (detail) =
        valueRateRangeDate(prefix###retailVAT###object##Detail(detail), date###object##Detail(detail)) IN priceDetailGroup;
 
-    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != tax.taxVAT OR
+    CONSTRAINT taxRange(prefix###retailVAT###object##Detail(detail)) != Tax.taxVAT OR
                countryRange(prefix###retailVAT###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
                CHECKED BY prefix###retailVAT###object##Detail
                MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС';
@@ -101,15 +101,15 @@ META defineDocumentDetailBasePrice (object, stockProp)
 END
 
 META defineDocumentDetailCalcRange (object, stockProp)
-    calcRange###object##Detail = DATA range (object##Detail);
-    calcRange###object##Detail (detail) <- rangeTaxTaxUnit(tax.taxVAT,
+    calcRange###object##Detail = DATA Range (object##Detail);
+    calcRange###object##Detail (detail) <- rangeTaxTaxUnit(Tax.taxVAT,
                                 storeDepartmentStore(departmentStore###object##Detail(detail))) WHEN detail IS object##Detail;
 
     numberCalcRange###object##Detail 'НДС расчетный, номер' (detail) = numberRange(calcRange###object##Detail(detail));
     dataCalcRange###object##Detail 'НДС расчетный, %' (detail) =
        valueRateRangeDate(calcRange###object##Detail(detail), date###object##Detail(detail));
 
-    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != tax.taxVAT OR
+    CONSTRAINT taxRange(calcRange###object##Detail(detail)) != Tax.taxVAT OR
                countryRange(calcRange###object##Detail(detail)) != countryStock(stockProp###object##Detail(detail))
                CHECKED BY calcRange###object##Detail
                MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране склада';
@@ -384,26 +384,26 @@ META implementBaseSkuDepartmentStoreLedger(concrete, skuProp)
     @implementBaseISkuDepartmentStoreLedger(concrete, skuProp);
 END
 
-CLASS ABSTRACT warePriceLedger 'Изменение цены посуды';
-TABLE warePriceLedger (warePriceLedger);
+CLASS ABSTRACT WarePriceLedger 'Изменение цены посуды';
+TABLE warePriceLedger (WarePriceLedger);
 
 @defineSkuDepartmentStoreLedger(warePrice, 'Цена посуды', NUMERIC[14,2]);
-wareWarePriceLedger(ledger) = ABSTRACT ware (warePriceLedger) PERSISTENT;
+wareWarePriceLedger(ledger) = ABSTRACT Ware (WarePriceLedger) PERSISTENT;
 nameWareWarePriceLedger 'Посуда' (ledger) = name(wareWarePriceLedger(ledger));
 currentWareLedger 'Посуда' (sku, departmentStore) = wareWarePriceLedger(currentLedgerWarePriceSkuDepartmentStore(sku, departmentStore));
 wareBSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = wareWarePriceLedger(ledgerBWarePriceSkuDepartmentStoreDateTime(sku, departmentStore, dateTime));
 
-CLASS ABSTRACT importerPriceLedger 'Изменение цены изготовителя/импортера';
-TABLE importerPriceLedger (importerPriceLedger);
+CLASS ABSTRACT ImporterPriceLedger 'Изменение цены изготовителя/импортера';
+TABLE importerPriceLedger (ImporterPriceLedger);
 @defineSkuDepartmentStoreLedger(importerPrice, 'Цена изготовителя', NUMERIC[14,2]);
 
-CLASS ABSTRACT supplierPriceLedger 'Изменение цены поставщика';
-TABLE supplierPriceLedger (supplierPriceLedger);
+CLASS ABSTRACT SupplierPriceLedger 'Изменение цены поставщика';
+TABLE supplierPriceLedger (SupplierPriceLedger);
 @defineSkuDepartmentStoreLedgerPrice(supplierPrice, 'Поставщика', NUMERIC[14,2]);
 
-CLASS ABSTRACT retailVATLedger 'Изменение НДС';
-TABLE retailVATLedger (retailVATLedger);
-@defineSkuDepartmentStoreLedger(retailVAT, 'НДС', range);
+CLASS ABSTRACT RetailVATLedger 'Изменение НДС';
+TABLE retailVATLedger (RetailVATLedger);
+@defineSkuDepartmentStoreLedger(retailVAT, 'НДС', Range);
 valueRetailVATRetailVATLedger 'НДС, %' (ledger) = valueRateRangeDate(retailVATRetailVATLedger(ledger), toDate(dateTimeRetailVATLedger(ledger))) PERSISTENT;
 valueRetailVATBSkuDepartmentStoreDateTime 'НДС, % (до)' (sku, departmentStore, dateTime) =
             valueRateRangeDate(retailVATBSkuDepartmentStoreDateTime(sku, departmentStore, dateTime), toDate(dateTime));
@@ -412,11 +412,11 @@ valueRetailVATASkuDepartmentStoreDateTime 'НДС, % (после)' (sku, departm
 currentValueRetailVATSkuDepartmentStore 'НДС, %' (sku, departmentStore) =
             valueCurrentRateRange(currentRetailVATSkuDepartmentStore(sku, departmentStore));
 
-CLASS ABSTRACT retailPriceLedger 'Изменение розничной цены';
-TABLE retailPriceLedger (retailPriceLedger);
+CLASS ABSTRACT RetailPriceLedger 'Изменение розничной цены';
+TABLE retailPriceLedger (RetailPriceLedger);
 @defineSkuDepartmentStoreLedgerPrice(retailPrice, 'Розничная', NUMERIC[14,2]);
 
-costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (departmentStore) IN bookkeepingGroup;
+costLedgerDepartmentStore 'Учет по себестоимости' = DATA BOOLEAN (DepartmentStore) IN bookkeepingGroup;
 EXTEND FORM departmentStore PROPERTIES(d) costLedgerDepartmentStore;
 
 // ------------------------------------- Заполнение текущих параметров --------------------------------- //
@@ -481,28 +481,28 @@ EXTEND FORM currentBalanceSkuStock
                         currentValueRetailVATSkuDepartmentStore, currentRetailPriceSkuDepartmentStore,
                         currentWarePriceSkuDepartmentStore SHOWIF showWare()
 
-    OBJECTS rpl=retailPriceLedger
+    OBJECTS rpl=RetailPriceLedger
     PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
     ORDER BY dateTimeRetailPriceLedger DESC
 
 
-    OBJECTS ipl=importerPriceLedger
+    OBJECTS ipl=ImporterPriceLedger
     PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
     ORDER BY dateTimeImporterPriceLedger DESC
 
-    OBJECTS spl=supplierPriceLedger
+    OBJECTS spl=SupplierPriceLedger
     PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailVATLedger
+    OBJECTS rvl=RetailVATLedger
     PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
     FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
     ORDER BY dateTimeRetailVATLedger DESC
 
-    OBJECTS wpl=warePriceLedger
+    OBJECTS wpl=WarePriceLedger
     PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC
@@ -523,27 +523,27 @@ EXTEND FORM balanceSkuStock
                                    valueRetailVATASkuDepartmentStoreDateTime,
                                    retailPriceASkuDepartmentStoreDateTime, warePriceASkuDepartmentStoreDateTime SHOWIF showWare()
 
-    OBJECTS rpl=retailPriceLedger
+    OBJECTS rpl=RetailPriceLedger
     PROPERTIES (rpl) READONLY descriptionRetailPriceLedger, dateTimeRetailPriceLedger, retailPriceRetailPriceLedger
     FILTERS isPostedRetailPriceLedger(rpl) AND skuRetailPriceLedger(rpl)==s AND departmentStoreRetailPriceLedger(rpl)==st
     ORDER BY dateTimeRetailPriceLedger DESC
 
-    OBJECTS ipl=importerPriceLedger
+    OBJECTS ipl=ImporterPriceLedger
     PROPERTIES(ipl) READONLY descriptionImporterPriceLedger, dateTimeImporterPriceLedger, importerPriceImporterPriceLedger
     FILTERS isPostedImporterPriceLedger(ipl) AND skuImporterPriceLedger(ipl)==s AND departmentStoreImporterPriceLedger(ipl)==st
     ORDER BY dateTimeImporterPriceLedger DESC
 
-    OBJECTS spl=supplierPriceLedger
+    OBJECTS spl=SupplierPriceLedger
     PROPERTIES(spl) READONLY descriptionSupplierPriceLedger, dateTimeSupplierPriceLedger, supplierPriceSupplierPriceLedger
     FILTERS isPostedSupplierPriceLedger(spl) AND skuSupplierPriceLedger(spl)==s AND departmentStoreSupplierPriceLedger(spl)==st
     ORDER BY dateTimeSupplierPriceLedger DESC
 
-    OBJECTS rvl=retailVATLedger
+    OBJECTS rvl=RetailVATLedger
     PROPERTIES(rvl) READONLY descriptionRetailVATLedger, dateTimeRetailVATLedger, valueRetailVATRetailVATLedger
     FILTERS isPostedRetailVATLedger(rvl) AND skuRetailVATLedger(rvl)==s AND departmentStoreRetailVATLedger(rvl)==st
     ORDER BY dateTimeRetailVATLedger DESC
 
-    OBJECTS wpl= warePriceLedger
+    OBJECTS wpl= WarePriceLedger
     PROPERTIES(wpl) READONLY descriptionWarePriceLedger SHOWIF showWare(), dateTimeWarePriceLedger SHOWIF showWare(), nameWareWarePriceLedger SHOWIF showWare(), warePriceWarePriceLedger SHOWIF showWare()
     FILTERS isPostedWarePriceLedger(wpl) AND skuWarePriceLedger(wpl)==s AND departmentStoreWarePriceLedger(wpl)==st
     ORDER BY dateTimeWarePriceLedger DESC

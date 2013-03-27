@@ -7,22 +7,22 @@ NAMESPACE Item;
 GROUP itemArticleGroup 'Артикул' : public;
 
 // Артикул
-CLASS article 'Артикул' : named;
-TABLE article(article);
+CLASS Article 'Артикул' : Named;
+TABLE article(Article);
 
 @defineObjectItemAttribute(article, name, 'Артикул', itemArticleGroup);
 @defineObjectItemAttributeBatch (article, name, 'Артикул');
 
 // Цвет
-CLASS color 'Цвет товара' : named;
-TABLE color (color);
+CLASS Color 'Цвет товара' : Named;
+TABLE color (Color);
 
 @defineObjectItemAttribute(color, name, 'Цвет', itemArticleGroup);
 @defineObjectItemAttributeBatch (color, name, 'Цвет');
 
 // Размер
-CLASS size 'Размер товара' : doubleNamed;
-TABLE size(size);
+CLASS Size 'Размер товара' : DoubleNamed;
+TABLE size(Size);
 
 @defineObjectItemAttribute(size, name, 'Размер', itemArticleGroup);
 @defineObjectItemAttributeBatch (size, name, 'Размер');

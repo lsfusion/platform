@@ -13,53 +13,53 @@ PRIORITY Stock;
 
 // ------------------------------------- Физические лица -------------------------------------- //
 
-CLASS client 'Покупатель (Ф.Л.)' : contact;
+CLASS Client 'Покупатель (Ф.Л.)' : Contact;
 
 
 FORM client 'Покупатель (Ф.Л.)'
-    OBJECTS c=client FIXED PANEL
+    OBJECTS c=Client FIXED PANEL
     PROPERTIES(c)      firstNameContact, lastNameContact, postAddressContact, phoneContact,
                        emailContact, birthdayContact
 
-    EDIT client OBJECT c
+    EDIT Client OBJECT c
 ;
 
 FORM clients 'Покупатели (Ф.Л.)'
-    OBJECTS c=client
+    OBJECTS c=Client
     PROPERTIES(c)      READONLY firstNameContact, lastNameContact, postAddressContact, phoneContact,
                        emailContact, birthdayContact
     PROPERTIES(c)      ADDFORM, EDITFORM, delete
 ;
 
 //--------------------------------------Дисконтные карточки------------------------------------------------------------------//
-CLASS discountCard 'Дисконтная карта' : numeratedObject;
-TABLE discountCard (discountCard);
+CLASS DiscountCard 'Дисконтная карта' : NumeratedObject;
+TABLE discountCard (DiscountCard);
 
 @defineNumeratedObjectDefault(discountCard, 'Нумератор для дисконтных карт', 'ДС');
 
-CLASS ABSTRACT discountSkuGroup 'Дисконтная группа товаров' : named;
+CLASS ABSTRACT DiscountSkuGroup 'Дисконтная группа товаров' : Named;
 
-discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS discountCard;
-discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS discountCard;
+discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS DiscountCard;
+discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS DiscountCard;
 
-clientDiscountCard (discountCard) = DATA client(discountCard);
+clientDiscountCard (discountCard) = DATA Client(DiscountCard);
 nameClientDiscountCard 'Держатель дисконтной карты' (discountCard) = nameContact(clientDiscountCard(discountCard)) IN recognize;
 
 GROUP discountCardDateGroup 'Срок действия' : base;
-dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;
-dateDiscountCard (discountCard) <- currentDate() WHEN ASSIGNED(discountCard IS discountCard);
+dateDiscountCard 'Дата выдачи' (discountCard) = DATA DATE (DiscountCard) IN discountCardDateGroup;
+dateDiscountCard (discountCard) <- currentDate() WHEN ASSIGNED(discountCard IS DiscountCard);
 
-dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (discountCard) IN discountCardDateGroup;
+dateToDiscountCard 'Дата окончания действия' (discountCard) = DATA DATE (DiscountCard) IN discountCardDateGroup;
 
-TABLE discountSkuGroupSku(discountSkuGroup, sku);
-inDiscountSkuGroupSku 'Вкл' = ABSTRACT BOOLEAN (discountSkuGroup, sku) PERSISTENT;
+TABLE discountSkuGroupSku(DiscountSkuGroup, Sku);
+inDiscountSkuGroupSku 'Вкл' = ABSTRACT BOOLEAN (DiscountSkuGroup, Sku) PERSISTENT;
 
-initialSumDiscountCard 'Начальная сумма' (discountCard) = DATA NUMERIC[16,2] (discountCard);
+initialSumDiscountCard 'Начальная сумма' (discountCard) = DATA NUMERIC[16,2] (DiscountCard);
 
 // накопительная сумма  : потом посчитать ее по карте
 
 FORM generationDiscountCards 'Генерация дисконтных карт'
-    OBJECTS n=numerator  FIXED PANEL
+    OBJECTS n=Numerator  FIXED PANEL
     PROPERTIES(n) SELECTOR name
 
     OBJECTS quantityCards=INTEGER FIXED PANEL
@@ -75,14 +75,14 @@ DESIGN generationDiscountCards FROM DEFAULT {
 
 generateDiscountCards 'Сгенерировать дисконтные карты' = ACTION() {
     FORM generationDiscountCards OBJECTS n=defaultNumeratorDiscountCard() MODAL CHECK;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         LOCAL num = INTEGER();
         SET num() <- 0;
         WHILE num() < (chosenInteger('quantityCards') AS INTEGER) DO {
-            ADDOBJ discountCard;
+            ADDOBJ DiscountCard;
             FOR d == addedObject() DO {
                 // todo : делается влоб, поскольку numerator сейчас не умеет генерировать сразу несколько объектов
-                SET numeratorObject(d) <- chosenObject('n') AS numerator;
+                SET numeratorObject(d) <- chosenObject('n') AS Numerator;
                 SET numberObject(d) <- curStringValueNumerator(numeratorObject(d));
                 SET seriesObject(d) <- seriesNumerator(numeratorObject(d));
                 SET curValueNumerator(numerator) <- curValueNumerator(numerator) + 1 WHERE numerator == numeratorObject(d);
@@ -93,12 +93,12 @@ generateDiscountCards 'Сгенерировать дисконтные карт�
 } TOOLBAR;
 
 FORM discountCard 'Дисконтная карта'
-    OBJECTS d=discountCard FIXED PANEL
+    OBJECTS d=DiscountCard FIXED PANEL
     PROPERTIES(d) nameClientDiscountCard, initialSumDiscountCard,
                   nameNumeratorObject, numberObject, seriesObject,
                   dateDiscountCard, dateToDiscountCard
 
-    EDIT discountCard OBJECT d
+    EDIT DiscountCard OBJECT d
 ;
 
 DESIGN discountCard FROM DEFAULT {
@@ -128,15 +128,15 @@ DESIGN discountCard FROM DEFAULT {
 
 FORM discountCardDialog 'Дисконтные карты'
 
-    OBJECTS d = discountCard
+    OBJECTS d = DiscountCard
     PROPERTIES(d) READONLY nameClientDiscountCard, initialSumDiscountCard, numberObject, seriesObject,
                          dateDiscountCard, dateToDiscountCard
 
-    DIALOG discountCard OBJECT d
+    DIALOG DiscountCard OBJECT d
 ;
 
 FORM discountCards 'Дисконтные карты'
-    OBJECTS d=discountCard
+    OBJECTS d=DiscountCard
     PROPERTIES(d) READONLY numberObject, seriesObject, nameClientDiscountCard, dateDiscountCard, dateToDiscountCard,
                   initialSumDiscountCard
     PROPERTIES(d) ADDFORM, EDITFORM, delete
@@ -150,62 +150,62 @@ FORM discountCards 'Дисконтные карты'
 
 //-------------------------- Группы акций ----------------------------------------//
 
-CLASS promotionGroup 'Группа акций' : named;
-TABLE promotionGroup (promotionGroup);
+CLASS PromotionGroup 'Группа акций' : Named;
+TABLE promotionGroup (PromotionGroup);
 
 //--------------------------Акции----------------------------------------//
 
-CLASS promotion 'Акция' : historizable, numeratedObject, named;
-TABLE promotion (promotion);
+CLASS Promotion 'Акция' : Historizable, NumeratedObject, Named;
+TABLE promotion (Promotion);
 
 @defineNumeratedObjectDefault(promotion, 'Нумератор для акций', 'АК');
 
-promotionGroupPromotion (promotion) = DATA promotionGroup(promotion) AUTOSET NOT NULL;
+promotionGroupPromotion (promotion) = DATA PromotionGroup(Promotion) AUTOSET NOT NULL;
 namePromotionGroupPromotion 'Группа акций' (promotion) = name(promotionGroupPromotion(promotion)) IN base;
 
-userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (promotion);
-orderPromotion 'Порядок' (promotion) = (1 IF promotion IS promotion) OR userOrderPromotion(promotion) PERSISTENT;
+userOrderPromotion 'Порядок' (promotion) = DATA INTEGER (Promotion);
+orderPromotion 'Порядок' (promotion) = (1 IF promotion IS Promotion) OR userOrderPromotion(promotion) PERSISTENT;
 
-userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN (promotion);
+userSetPromotion 'Задается кассиром' (promotion) = DATA BOOLEAN (Promotion);
 // ----------------------------- Условия акций ------------------------ //
 
-CLASS promotionCondition 'Условие акции' : named;
-TABLE promotionCondition (promotionCondition);
+CLASS PromotionCondition 'Условие акции' : Named;
+TABLE promotionCondition (PromotionCondition);
 
 GROUP retailCRMGroup 'Реквизиты' : recognize;
 
-dateFromPromotion 'ОТ:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;
-dateToPromotion 'ДО:' = DATA DATE (promotion) IN retailCRMGroup NOT NULL;
+dateFromPromotion 'ОТ:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
+dateToPromotion 'ДО:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
 
-timeOfFromPromotion 'ОТ:' =  DATA TIME (promotion) IN retailCRMGroup;
-timeOfToPromotion 'ДО:' =  DATA TIME (promotion) IN retailCRMGroup;
+timeOfFromPromotion 'ОТ:' =  DATA TIME (Promotion) IN retailCRMGroup;
+timeOfToPromotion 'ДО:' =  DATA TIME (Promotion) IN retailCRMGroup;
 
-TABLE promotionDOW (promotion, DOW);
-skipPromotionDOW 'Исключить' = DATA BOOLEAN (promotion, DOW);
+TABLE promotionDOW (Promotion, DOW);
+skipPromotionDOW 'Исключить' = DATA BOOLEAN (Promotion, DOW);
 
-inPromotion 'В акции' = DATA BOOLEAN (promotion);
-inPromotion(promotion) <- TRUE WHEN ASSIGNED(promotion IS promotion);
+inPromotion 'В акции' = DATA BOOLEAN (Promotion);
+inPromotion(promotion) <- TRUE WHEN ASSIGNED(promotion IS Promotion);
 
-TABLE promotionChainStores(promotion, chainStores);
-inPromotionChainStores 'В акции' = DATA BOOLEAN (promotion, chainStores);
+TABLE promotionChainStores(Promotion, ChainStores);
+inPromotionChainStores 'В акции' = DATA BOOLEAN (Promotion, ChainStores);
 
-TABLE promotionStoreType(promotion, storeType);
-inPromotionStoreType 'В акции' = DATA BOOLEAN (promotion, storeType);
+TABLE promotionStoreType(Promotion, StoreType);
+inPromotionStoreType 'В акции' = DATA BOOLEAN (Promotion, StoreType);
 
-TABLE promotionStore(promotion, store);
-inPromotionStore 'В акции' = DATA BOOLEAN (promotion, store);
+TABLE promotionStore(Promotion, Store);
+inPromotionStore 'В акции' = DATA BOOLEAN (Promotion, Store);
 
 inPromotionChainStoresOver 'В акции' (promotion, chainStores) =
-    UNION OVERRIDE inPromotion(promotion) AND chainStores IS chainStores,
+    UNION OVERRIDE inPromotion(promotion) AND chainStores IS ChainStores,
                    inPromotionChainStores(promotion, chainStores);
 
 inPromotionStoreTypeOver 'В акции' (promotion, storeType) =
-    UNION OVERRIDE inPromotion(promotion) AND storeType IS storeType,
+    UNION OVERRIDE inPromotion(promotion) AND storeType IS StoreType,
                    inPromotionChainStores(promotion, chainStoresStoreType(storeType)),
                    inPromotionStoreType(promotion, storeType);
 
 inPromotionStoreOver 'В акции' (promotion, store) =
-    UNION OVERRIDE inPromotion(promotion) AND store IS store,
+    UNION OVERRIDE inPromotion(promotion) AND store IS Store,
                    inPromotionChainStores(promotion, chainStoresStore(store)),
                    inPromotionStoreType(promotion, storeTypeStore(store)),
                    inPromotionStore(promotion, store) AND isCompanyStore(store);
@@ -214,75 +214,75 @@ storePromotion 'Магазины' (promotion) = GROUP CONCAT name(store) IF inPr
                                               BY promotion
                                               ORDER store PERSISTENT MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-minSumBillPromotion 'Сумма чека (от)' (promotion) = DATA NUMERIC[14,2] (promotion);
-maxSumBillPromotion 'Сумма чека (до)' (promotion) = DATA NUMERIC[14,2] (promotion);
+minSumBillPromotion 'Сумма чека (от)' (promotion) = DATA NUMERIC[14,2] (Promotion);
+maxSumBillPromotion 'Сумма чека (до)' (promotion) = DATA NUMERIC[14,2] (Promotion);
 
-hasDiscountCardPromotion 'Есть дисконтная карта' = DATA BOOLEAN (promotion);
-allDiscountCardPromotion 'Любая дисконтная карта' = DATA BOOLEAN (promotion);
+hasDiscountCardPromotion 'Есть дисконтная карта' = DATA BOOLEAN (Promotion);
+allDiscountCardPromotion 'Любая дисконтная карта' = DATA BOOLEAN (Promotion);
 
-TABLE promotionDiscountCard (promotion, discountCard);
-inDataPromotionDiscountCard 'В акции' = DATA BOOLEAN (promotion, discountCard);
+TABLE promotionDiscountCard (Promotion, DiscountCard);
+inDataPromotionDiscountCard 'В акции' = DATA BOOLEAN (Promotion, DiscountCard);
 
-inPromotionDiscountCard 'В акции' (promotion, discountCard) = UNION OVERRIDE allDiscountCardPromotion(promotion) AND discountCard IS discountCard,
+inPromotionDiscountCard 'В акции' (promotion, discountCard) = UNION OVERRIDE allDiscountCardPromotion(promotion) AND discountCard IS DiscountCard,
                                                                              inDataPromotionDiscountCard(promotion, discountCard);
 
-minCumulativeSumPromotion 'Накоп. сумма (от)' (promotion) = DATA NUMERIC[14,2] (promotion);
-maxCumulativeSumPromotion 'Накоп. сумма (до)' (promotion) = DATA NUMERIC[14,2] (promotion);
+minCumulativeSumPromotion 'Накоп. сумма (от)' (promotion) = DATA NUMERIC[14,2] (Promotion);
+maxCumulativeSumPromotion 'Накоп. сумма (до)' (promotion) = DATA NUMERIC[14,2] (Promotion);
 
-useCurrentReceiptPromotion 'Учитывать текущий чек' (promotion) = DATA BOOLEAN (promotion);
+useCurrentReceiptPromotion 'Учитывать текущий чек' (promotion) = DATA BOOLEAN (Promotion);
 
 minCumulativeSumPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 maxCumulativeSumPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 allDiscountCardPromotion(promotion) => hasDiscountCardPromotion (promotion) RESOLVE FALSE;
 
-promotionPromotionCondition = DATA promotion (promotionCondition) NOT NULL DELETE;
+promotionPromotionCondition = DATA Promotion (PromotionCondition) NOT NULL DELETE;
 namePromotionPromotionCondition 'Акция' (promotionCondition) = name(promotionPromotionCondition(promotionCondition));
 dateFromPromotionCondition 'Действует (от)' (promotionCondition) = dateFromPromotion(promotionPromotionCondition(promotionCondition));
 dateToPromotionCondition 'Действует (до)' (promotionCondition) = dateToPromotion(promotionPromotionCondition(promotionCondition));
 
 countPromotionConditionPromotion 'Кол-во условий' (promotion) = GROUP SUM 1 IF promotionPromotionCondition(promotionCondition) == promotion BY promotion PERSISTENT;
 
-minQuantityPromotionCondition 'Количество (от)' = DATA NUMERIC[14,3] (promotionCondition);
+minQuantityPromotionCondition 'Количество (от)' = DATA NUMERIC[14,3] (PromotionCondition);
 CONSTRAINT minQuantityPromotionCondition(promotionCondition) <= 0.0 MESSAGE 'Количество в условии акции должно быть строго больше 0';
 
-minSumPromotionCondition 'Сумма (от)' = DATA NUMERIC[16,2] (promotionCondition);
+minSumPromotionCondition 'Сумма (от)' = DATA NUMERIC[16,2] (PromotionCondition);
 CONSTRAINT minSumPromotionCondition(promotionCondition) <= 0.0 MESSAGE 'Сумма в условии акции должна быть строго больше 0';
 
-quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (promotionCondition) NOT NULL;
-percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (promotionCondition);
-resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2] (promotionCondition);
-sumDiscountPromotionCondition 'Сумма скидки' (promotionCondition) = DATA NUMERIC[14,2] (promotionCondition);
-sumReceiptPromotionCondition 'Сумма чека' (promotionCondition) = DATA NUMERIC[14,2] (promotionCondition);
+quantityDiscountPromotionCondition 'Кол-во товаров со скидкой' = DATA NUMERIC[14,3] (PromotionCondition) NOT NULL;
+percentPromotionCondition 'Процент скидки'  = DATA NUMERIC[8,3] (PromotionCondition);
+resultPricePromotionCondition 'Цена со скидкой' = DATA NUMERIC[14,2] (PromotionCondition);
+sumDiscountPromotionCondition 'Сумма скидки' (promotionCondition) = DATA NUMERIC[14,2] (PromotionCondition);
+sumReceiptPromotionCondition 'Сумма чека' (promotionCondition) = DATA NUMERIC[14,2] (PromotionCondition);
 
 userSetPromotionCondition 'Задается кассиром' (promotionCondition) = userSetPromotion(promotionPromotionCondition(promotionCondition));
 
 // discountSkuGroup
-TABLE promotionConditionDiscountSkuGroup (promotionCondition, discountSkuGroup);
-allDiscountSkuGroupPromotionCondition 'Все дисконтные группы товаров' = DATA BOOLEAN (promotionCondition);
-inDataPromotionConditionDiscountSkuGroup 'В условии' = DATA BOOLEAN (promotionCondition, discountSkuGroup);
-inPromotionConditionDiscountSkuGroup 'В условии' = UNION OVERRIDE allDiscountSkuGroupPromotionCondition(promotionCondition) AND discountSkuGroup IS discountSkuGroup,
+TABLE promotionConditionDiscountSkuGroup (PromotionCondition, DiscountSkuGroup);
+allDiscountSkuGroupPromotionCondition 'Все дисконтные группы товаров' = DATA BOOLEAN (PromotionCondition);
+inDataPromotionConditionDiscountSkuGroup 'В условии' = DATA BOOLEAN (PromotionCondition, DiscountSkuGroup);
+inPromotionConditionDiscountSkuGroup 'В условии' = UNION OVERRIDE allDiscountSkuGroupPromotionCondition(promotionCondition) AND discountSkuGroup IS DiscountSkuGroup,
                                                                   inDataPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup) PERSISTENT;
 countPromotionConditionSku 'Кол-во дисконтных групп' = GROUP SUM 1 IF inPromotionConditionDiscountSkuGroup(promotionCondition, discountSkuGroup)
                                                                   AND inDiscountSkuGroupSku(discountSkuGroup, sku) BY promotionCondition, sku;
 
 
 // skuGroup
-TABLE promotionConditionSkuGroup (promotionCondition, skuGroup);
-inDataPromotionConditionSkuGroup 'В условии' = DATA BOOLEAN (promotionCondition, skuGroup);
+TABLE promotionConditionSkuGroup (PromotionCondition, SkuGroup);
+inDataPromotionConditionSkuGroup 'В условии' = DATA BOOLEAN (PromotionCondition, SkuGroup);
 inParentPromotionConditionSkuGroup (promotionCondition, skuGroup) = GROUP SUM 1 IF inDataPromotionConditionSkuGroup(promotionCondition, parent) AND isParentSkuGroupSkuGroup(child, parent)
                                                                           BY promotionCondition, child PERSISTENT;
 inPromotionConditionSkuGroup 'В условии' = (TRUE IF inParentPromotionConditionSkuGroup(promotionCondition, skuGroup)) OR inDataPromotionConditionSkuGroup(promotionCondition, skuGroup);
 
 // sku
-TABLE promotionConditionSku (promotionCondition, sku);
-inDataPromotionConditionSku 'В условии' = DATA BOOLEAN (promotionCondition, sku);
+TABLE promotionConditionSku (PromotionCondition, Sku);
+inDataPromotionConditionSku 'В условии' = DATA BOOLEAN (PromotionCondition, Sku);
 
-inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OVERRIDE ((TRUE IF countPromotionConditionSku(promotionCondition, sku)) OR (allDiscountSkuGroupPromotionCondition(promotionCondition) AND sku IS sku))
+inPromotionConditionSku 'В условии' (promotionCondition, sku) = UNION OVERRIDE ((TRUE IF countPromotionConditionSku(promotionCondition, sku)) OR (allDiscountSkuGroupPromotionCondition(promotionCondition) AND sku IS Sku))
                                                                                     AND inParentPromotionConditionSkuGroup(promotionCondition, skuGroupSku(sku)),
                                                                                inDataPromotionConditionSku(promotionCondition, sku);
 
 FORM promotion 'Акция'
-    OBJECTS sh=promotion   FIXED PANEL
+    OBJECTS sh=Promotion   FIXED PANEL
     PROPERTIES(sh)     name, namePromotionGroupPromotion, userSetPromotion,
                        nameNumeratorObject, numberObject, seriesObject,
                        dateFromPromotion, dateToPromotion, timeOfFromPromotion, timeOfToPromotion,
@@ -295,18 +295,18 @@ FORM promotion 'Акция'
     FILTERGROUP filterDOW
         FILTER 'Только отмеченные' 'F11' skipPromotionDOW(sh, d)
 
-    OBJECTS sg=promotionCondition
+    OBJECTS sg=PromotionCondition
     PROPERTIES(sg)     name, minQuantityPromotionCondition, minSumPromotionCondition, quantityDiscountPromotionCondition, percentPromotionCondition,
                        resultPricePromotionCondition, sumDiscountPromotionCondition, sumReceiptPromotionCondition, ADDOBJ, delete
 
     FILTERS            promotionPromotionCondition(sg)==sh
 
-    TREE skuTree skg = skuGroup PARENT parentSkuGroup
+    TREE skuTree skg = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(skg)
     ORDER BY skuTreeName
     PROPERTIES(sg, skg) inPromotionConditionSkuGroup
 
-    OBJECTS dg=discountSkuGroup
+    OBJECTS dg=DiscountSkuGroup
     PROPERTIES(sg) allDiscountSkuGroupPromotionCondition TODRAW dg FORCE PANEL
     PROPERTIES(dg) READONLY name
     PROPERTIES(sg, dg) inPromotionConditionDiscountSkuGroup
@@ -314,7 +314,7 @@ FORM promotion 'Акция'
     FILTERGROUP filterDiscountSkuGroup
         FILTER 'Только отмеченные' 'F11' inPromotionConditionDiscountSkuGroup(sg, dg)
 
-    OBJECTS sk= sku
+    OBJECTS sk= Sku
     PROPERTIES(sk)    READONLY idBarcodeSku, nameSku
     FILTERS           isParentSkuGroupSku(skg, sk)
     PROPERTIES(sg, sk)   inPromotionConditionSku
@@ -322,13 +322,13 @@ FORM promotion 'Акция'
     FILTERGROUP filterSku
         FILTER 'Только отмеченные' 'F10' inPromotionConditionSku(sg, sk)
 
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType
+    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType
     PROPERTIES READONLY OBJVALUE(a), name(t), name(st)
 
     FILTERS stringEqualsAll(a),
             inChainStoresStoreType (t, st)
 
-    OBJECTS s=store
+    OBJECTS s=Store
     PROPERTIES(s) READONLY name, addressStore, nameLegalEntityStore
 
     FILTERS inChainStoresStoreTypeStore(t, st, s),
@@ -341,13 +341,13 @@ FORM promotion 'Акция'
     FILTERGROUP filterStore
         FILTER 'Только отмеченные' 'F9' inPromotionStoreOver(sh, s)
 
-    OBJECTS dis= discountCard
+    OBJECTS dis= DiscountCard
     PROPERTIES(dis)    READONLY numberObject, seriesObject, nameClientDiscountCard
     PROPERTIES(sh, dis) inPromotionDiscountCard
     FILTERGROUP filterDiscountCard
         FILTER 'Только отмеченные' 'F8' inPromotionDiscountCard(sh, dis)
 
-    EDIT promotion OBJECT sh
+    EDIT Promotion OBJECT sh
 ;
 
 DESIGN promotion FROM DEFAULT {
@@ -447,7 +447,7 @@ DESIGN promotion FROM DEFAULT {
 }
 
 copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
-    FOR ADDOBJ p = promotion DO {
+    FOR ADDOBJ p = Promotion DO {
         SET promotionGroupPromotion(p) <- promotionGroupPromotion(promotion);
         SET dateFromPromotion(p) <- dateFromPromotion(promotion);
         SET dateToPromotion(p) <- dateToPromotion(promotion);
@@ -462,8 +462,8 @@ copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
         SET allDiscountCardPromotion(p) <- allDiscountCardPromotion(promotion);
 
         FOR promotionPromotionCondition(promotionCondition) == promotion DO {
-            FOR ADDOBJ pc = promotionCondition DO {
-                SET promotionPromotionCondition(pc) <- p AS promotion;
+            FOR ADDOBJ pc = PromotionCondition DO {
+                SET promotionPromotionCondition(pc) <- p AS Promotion;
                 SET minQuantityPromotionCondition(pc) <- minQuantityPromotionCondition(promotionCondition);
                 SET minSumPromotionCondition(pc) <- minSumPromotionCondition(promotionCondition);
                 SET quantityDiscountPromotionCondition(pc) <- quantityDiscountPromotionCondition(promotionCondition);
@@ -491,7 +491,7 @@ copyPromotion 'Копировать' = ACTION (promotion) NEWSESSION {
 } TOOLBAR;
 
 FORM promotions 'Акции'
-    OBJECTS sh=promotion
+    OBJECTS sh=Promotion
     PROPERTIES(sh)     READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
                                 hasDiscountCardPromotion, minCumulativeSumPromotion, maxCumulativeSumPromotion,
@@ -503,10 +503,10 @@ FORM promotions 'Акции'
 ;
 
 FORM promotionGroup 'Группа акций'
-    OBJECTS st=promotionGroup FIXED PANEL
+    OBJECTS st=PromotionGroup FIXED PANEL
     PROPERTIES(st)     name
 
-    OBJECTS sh=promotion
+    OBJECTS sh=Promotion
     PROPERTIES(sh)     userOrderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
@@ -517,15 +517,15 @@ FORM promotionGroup 'Группа акций'
 
     FILTERS promotionGroupPromotion(sh)==st
 
-    EDIT promotionGroup OBJECT st
+    EDIT PromotionGroup OBJECT st
 ;
 
 FORM promotionGroups 'Группы акций'
-    OBJECTS st=promotionGroup
+    OBJECTS st=PromotionGroup
     PROPERTIES(st)     READONLY name
     PROPERTIES(st)     ADDFORM, EDITFORM, delete
 
-    OBJECTS sh=promotion
+    OBJECTS sh=Promotion
     PROPERTIES(sh)     READONLY orderPromotion
     PROPERTIES(sh)     READONLY name, seriesObject, numberObject, dateFromPromotion, dateToPromotion, storePromotion,
                                 timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,
@@ -539,7 +539,7 @@ FORM promotionGroups 'Группы акций'
 ;
 
 EXTEND FORM discountCard
-    OBJECTS p=promotion
+    OBJECTS p=Promotion
     PROPERTIES(p, d) inPromotionDiscountCard
     PROPERTIES(p) READONLY name, numberObject, seriesObject, dateFromPromotion, dateToPromotion, storePromotion,
                            timeOfFromPromotion, timeOfToPromotion, minSumBillPromotion, maxSumBillPromotion,

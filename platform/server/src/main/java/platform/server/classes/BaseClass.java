@@ -52,7 +52,7 @@ public class BaseClass extends AbstractCustomClass {
         super(sID, caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
-        named = new AbstractCustomClass("named", ServerResourceBundle.getString("classes.named.object"), this);
+        named = new AbstractCustomClass("Named", ServerResourceBundle.getString("classes.named.object"), this);
     }
 
     @Override

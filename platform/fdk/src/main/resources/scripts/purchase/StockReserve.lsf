@@ -11,8 +11,8 @@ REQUIRE System,
         Purchase;
 
 @defineHistorizable(stockReserveStockSku, 'Страховой запас (кол-во)', NUMERIC[14,3], stock, name, sku, nameSku, base);
-stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (stock, skuGroup);
-stockReserveDaysStockSku 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (stock, sku);
+stockReserveDaysStockSkuGroup 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (Stock, SkuGroup);
+stockReserveDaysStockSku 'Страховой запас (дн.)' = DATA NUMERIC[14,3] (Stock, Sku);
 
 levelParentStockSkuGroup (stock, skuGroup) = GROUP MIN levelSkuGroupSkuGroup(skuGroup, parent) IF stockReserveDaysStockSkuGroup(stock, parent)
                                                                BY stock, skuGroup PERSISTENT;
@@ -37,17 +37,17 @@ fillStockReserveDateDateFromTo 'Проставить кол-во исходя и
 FORM stockReserve 'Страховые запасы'
     OBJECTS dt = DATE FIXED PANEL
     PROPERTIES valDt = OBJVALUE(dt) BACKGROUND dateDiffersCurrent(dt)
-    OBJECTS st = stock FIXED PANEL
+    OBJECTS st = Stock FIXED PANEL
     PROPERTIES SELECTOR nameSt = name(st)
 
     OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
     PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
 
-    TREE skuTree sk = skuGroup PARENT parentSkuGroup
+    TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES skuTreeName = name(sk) READONLY, stockReserveDaysStockSkuGroupOver(st,sk)
     ORDER BY skuTreeName
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s)
     PROPERTIES overStockReserveStockSkuDate(st,s,dt), overDialogStockReserveStockSkuDate(st,s), stockReserveDaysStockSkuOver(st,s), quantitySoldSkuStockDateFromTo(s,st,dFrom,dTo) READONLY, averageSoldInDaySkuStockDateFromTo(s,st,dFrom,dTo) READONLY
     PROPERTIES fillStockReserveDateDateFromTo(st,dt,dFrom,dTo) TODRAW s
@@ -58,7 +58,7 @@ FORM stockReserve 'Страховые запасы'
         FILTER 'Только с реализацией' 'F10' quantitySoldSkuStockDateFromTo(s,st,dFrom,dTo)
 
 ;
-@extendFormFilterStockAccess(stock, st, stockReserve);
+@extendFormFilterStockAccess(Stock, st, stockReserve);
 
 DESIGN stockReserve FROM DEFAULT {
     main {

@@ -4,15 +4,15 @@ REQUIRE System, Historizable, LegalEntity;
 
 // ---------------------------------------- Договора ------------------------------------ //
 
-CLASS ABSTRACT contract 'Договор';
-TABLE contract (contract);
-TABLE contractDate (contract, DATE);
+CLASS ABSTRACT Contract 'Договор';
+TABLE contract (Contract);
+TABLE contractDate (Contract, DATE);
 
 GROUP contractGroup 'Реквизиты' : recognize;
 
-numberContract 'Номер договора' = DATA STRING[30] (contract) IN contractGroup;
-dateFromContract 'Дата начала договора' = DATA DATE (contract) IN contractGroup;
-dateToContract 'Дата окончания договора' = DATA DATE (contract) IN contractGroup;
+numberContract 'Номер договора' = DATA STRING[30] (Contract) IN contractGroup;
+dateFromContract 'Дата начала договора' = DATA DATE (Contract) IN contractGroup;
+dateToContract 'Дата окончания договора' = DATA DATE (Contract) IN contractGroup;
 activeContract 'Действуюший' (contract, date) =
 //    (dateFromContract(contract) < (date AS DATE)) AND (dateToContract(contract) > (date AS DATE));
     (dateFromContract(contract) <= (date AS DATE)) AND NOT (dateToContract(contract) < (date AS DATE));
@@ -20,10 +20,10 @@ activeContract 'Действуюший' (contract, date) =
 
 GROUP partyGroup 'Контрагенты' : recognize;
 
-partyAContract = ABSTRACT legalEntity (contract) PERSISTENT INDEXED;
+partyAContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
 namePartyAContract 'Организация (поставщик)' (contract) = name(partyAContract(contract)) IN partyGroup;
 
-partyBContract = ABSTRACT legalEntity (contract) PERSISTENT INDEXED;
+partyBContract = ABSTRACT LegalEntity (Contract) PERSISTENT INDEXED;
 namePartyBContract 'Организация (покупатель)' (contract) = name(partyBContract(contract)) IN partyGroup;
 
 countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
@@ -31,12 +31,12 @@ countContractPartyAPartyB 'Кол-во договоров' (partyA, partyB) =
 
 GROUP attributeGroup 'Атрибуты' : public;
 
-currencyContract = DATA currency (contract);
+currencyContract = DATA Currency (Contract);
 nameCurrencyContract 'Валюта взаиморасчетов' (contract) = name(currencyContract(contract)) IN attributeGroup;
 shortNameCurrencyContract 'Валюта взаиморасчетов' (contract) = shortNameCurrency(currencyContract(contract)) IN attributeGroup;
 symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContract(contract)) IN attributeGroup;
 
-noteContract 'Примечание' = DATA TEXT (contract) MINCHARWIDTH 50 PREFCHARWIDTH 50 IN attributeGroup;
+noteContract 'Примечание' = DATA TEXT (Contract) MINCHARWIDTH 50 PREFCHARWIDTH 50 IN attributeGroup;
 
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
@@ -45,7 +45,11 @@ META defineContractDefault (contract, partyA, partyB)
 END
 
 META defineContractDefault (contract, partyA, partyB, prefixA, prefixB)
-    data###contract###prefixA###prefixB = DATA contract (partyA, partyB);
+    @defineContractDefaultInner(contract, ###contract, partyA, partyB, prefixA, prefixB);
+END
+
+META defineContractDefaultInner (contract, contractClass, partyA, partyB, prefixA, prefixB)
+    data###contract###prefixA###prefixB = DATA contractClass (###partyA, ###partyB);
 
     CONSTRAINT partyA != prefixA###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
@@ -67,11 +71,15 @@ META defineDocumentContract (object, contractType, prefixA, prefixB, partyAMessa
 END
 
 META defineDocumentContract (object, contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
-    contractType###object = DATA contractType (object);
+    @defineDocumentContractInner (object, contractType, ###contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage);
+END
+
+META defineDocumentContractInner (object, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
+    contractType###object = DATA contractTypeClass (###object);
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
 
-    isCommission###object 'Продажа на комиссию' = DATA BOOLEAN (object) IN documentPrmGroup;
-    isCommission###object(object) <- typeContractSkuDate(contractType###object(object), date###object(object)) == contractSkuType.commission
+    isCommission###object 'Продажа на комиссию' = DATA BOOLEAN (###object) IN documentPrmGroup;
+    isCommission###object(object) <- typeContractSkuDate(contractType###object(object), date###object(object)) == ContractSkuType.commission
         WHEN CHANGED(contractType###object(object)) OR
              CHANGED(date###object(object));
 
@@ -85,12 +93,15 @@ META defineDocumentContract (object, contractType, prefixA, prefixB, singleContr
         CHECKED BY contractType###object MESSAGE partyBMessage;
 END
 
-
 META defineDocumentAbstractContract (object, contractType)
-    contractType###object = ABSTRACT contractType (object) PERSISTENT;
+    @defineDocumentAbstractContractInner(object, contractType, ###contractType);
+END
+
+META defineDocumentAbstractContractInner (object, contractType, contractTypeClass)
+    contractType###object = ABSTRACT contractTypeClass (###object) PERSISTENT;
     number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
 
-    isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (object) PERSISTENT IN documentPrmGroup;
+    isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (###object) PERSISTENT IN documentPrmGroup;
 END
 META defineDocumentInterfaceContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
     @defineDocumentAbstractContract(object, contractType);

@@ -52,7 +52,7 @@ EXTEND FORM stores
 
     PROPERTIES(s) READONLY sidDestination FORCE GRID
 
-    OBJECTS su=supplier
+    OBJECTS su=Supplier
     PROPERTIES(su)    READONLY name
     PROPERTIES(s, su) READONLY sidDestinationSupplier, relationStoreSupplier
     FILTERGROUP filtersDocument
@@ -77,7 +77,7 @@ EXTEND FORM store
 
     PROPERTIES(s) sidDestination
 
-    OBJECTS su=supplier
+    OBJECTS su=Supplier
     PROPERTIES(su)    READONLY name
     PROPERTIES(s, su) sidDestinationSupplier, relationStoreSupplier
     FILTERGROUP filtersDocument

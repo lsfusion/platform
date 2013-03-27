@@ -1524,173 +1524,174 @@ public class RomanLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("multiLanguageNamed");
+        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("MultiLanguageNamed");
         
-        destination = addAbstractClass("destination", "Пункт назначения", baseClass);
+        destination = addAbstractClass("Destination", "Пункт назначения", baseClass);
 
-        store = addConcreteClass("store", "Магазин", destination, (CustomClass) BL.Store.getClassByName("store"));//  baseClass.named
+        store = addConcreteClass("Store", "Магазин", destination, (CustomClass) BL.Store.getClassByName("Store"));//  baseClass.named
 
-        barcodeObject = addAbstractClass("barcodeObject", "Штрихкод", baseClass);
-        sku = addAbstractClass("sku", "SKU", barcodeObject, (CustomClass) BL.Stock.getClassByName("sku"));
+        barcodeObject = addAbstractClass("BarcodeObject", "Штрихкод", baseClass);
+        sku = addAbstractClass("Sku", "SKU", barcodeObject, (CustomClass) BL.Stock.getClassByName("Sku"));
 
-        article = addAbstractClass("article", "Артикул", baseClass);
-        articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
-        articleSingle = addConcreteClass("articleSingle", "Артикул (простой)", sku, article);
+        article = addAbstractClass("Article", "Артикул", baseClass);
+        articleComposite = addConcreteClass("ArticleComposite", "Артикул (составной)", article);
 
-        pricat = addConcreteClass("pricat", "Прикат", baseClass);
+        articleSingle = addConcreteClass("ArticleSingle", "Артикул (простой)", sku, article);
 
-        item = addConcreteClass("item", "Товар", sku);
+        pricat = addConcreteClass("Pricat", "Прикат", baseClass);
 
-        transaction = addAbstractClass("transaction", "Транзакция", baseClass);
-        document = addAbstractClass("document", "Документ", transaction);
-        list = addAbstractClass("list", "Список", baseClass);
+        item = addConcreteClass("Item", "Товар", sku);
 
-        contract = addConcreteClass("contract", "Договор", transaction, (CustomClass) BL.StockContract.getClassByName("contractSku"));
+        transaction = addAbstractClass("Transaction", "Транзакция", baseClass);
+        document = addAbstractClass("Document", "Документ", transaction);
+        list = addAbstractClass("List", "Список", baseClass);
 
-        priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
-        destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
+        contract = addConcreteClass("Contract", "Договор", transaction, (CustomClass) BL.StockContract.getClassByName("ContractSku"));
 
-        order = addConcreteClass("order", "Заказ", priceDocument, destinationDocument, list);
+        priceDocument = addAbstractClass("PriceDocument", "Документ с ценами", document);
+        destinationDocument = addAbstractClass("DestinationDocument", "Документ в пункт назначения", document);
 
-        typeInvoice = addConcreteClass("typeInvoice", "Тип инвойса", baseClass.named);
+        order = addConcreteClass("Order", "Заказ", priceDocument, destinationDocument, list);
 
-        stock = addConcreteClass("stock", "Место хранения", barcodeObject);  //, (CustomClass) BL.Stock.getClassByName("stock")
+        typeInvoice = addConcreteClass("TypeInvoice", "Тип инвойса", baseClass.named);
 
-        freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
+        stock = addConcreteClass("Stock", "Место хранения", barcodeObject);  //, (CustomClass) BL.Stock.getClassByName("stock")
 
-        invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);//, (CustomClass) BL.ContractLedger.getClassByName("contractLedger"), (CustomClass) BL.ContractLedger.getClassByName("contractALedger"), (CustomClass) BL.ContractLedger.getClassByName("inContractLedger"));
-        boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
+        freightUnit = addAbstractClass("FreightUnit", "Машиноместо", baseClass);
 
-        innerInvoice = addAbstractClass("innerInvoice", "Внутренний инвойс", baseClass);
+        invoice = addAbstractClass("Invoice", "Инвойс", priceDocument, destinationDocument);//, (CustomClass) BL.ContractLedger.getClassByName("contractLedger"), (CustomClass) BL.ContractLedger.getClassByName("contractALedger"), (CustomClass) BL.ContractLedger.getClassByName("inContractLedger"));
+        boxInvoice = addConcreteClass("BoxInvoice", "Инвойс по коробам", invoice);
 
-        directInvoice = addAbstractClass("directInvoice", "Инвойс (напрямую)", invoice, innerInvoice);
-        directBoxInvoice = addConcreteClass("directBoxInvoice", "Инвойс по коробам (напрямую)", boxInvoice, directInvoice);
+        innerInvoice = addAbstractClass("InnerInvoice", "Внутренний инвойс", baseClass);
 
-        simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, list);
-        directSimpleInvoice = addConcreteClass("directSimpleInvoice", "Инвойс без коробов (напрямую)", simpleInvoice, directInvoice, freightUnit);
+        directInvoice = addAbstractClass("DirectInvoice", "Инвойс (напрямую)", invoice, innerInvoice);
+        directBoxInvoice = addConcreteClass("DirectBoxInvoice", "Инвойс по коробам (напрямую)", boxInvoice, directInvoice);
 
-        shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
+        simpleInvoice = addConcreteClass("SimpleInvoice", "Инвойс без коробов", invoice, list);
+        directSimpleInvoice = addConcreteClass("DirectSimpleInvoice", "Инвойс без коробов (напрямую)", simpleInvoice, directInvoice, freightUnit);
 
-        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list, shipDimension, barcodeObject, freightUnit);
+        shipDimension = addConcreteClass("ShipDimension", "Разрез поставки", baseClass);
 
-        shipment = addAbstractClass("shipment", "Поставка", document);
-        boxShipment = addConcreteClass("boxShipment", "Поставка по коробам", shipment);
-        simpleShipment = addConcreteClass("simpleShipment", "Поставка без коробов", shipment, shipDimension);
+        supplierBox = addConcreteClass("SupplierBox", "Короб поставщика", list, shipDimension, barcodeObject, freightUnit);
 
-        shipmentDetail = addAbstractClass("shipmentDetail", "Строка поставки", baseClass);
-        boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
-        simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
+        shipment = addAbstractClass("Shipment", "Поставка", document);
+        boxShipment = addConcreteClass("BoxShipment", "Поставка по коробам", shipment);
+        simpleShipment = addConcreteClass("SimpleShipment", "Поставка без коробов", shipment, shipDimension);
 
-        seller = addAbstractClass("seller", "Продавец", baseClass);
-        //buyer = addAbstractClass("buyer", "Покупатель", baseClass.named);
+        shipmentDetail = addAbstractClass("ShipmentDetail", "Строка поставки", baseClass);
+        boxShipmentDetail = addConcreteClass("BoxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
+        simpleShipmentDetail = addConcreteClass("SimpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
+
+        seller = addAbstractClass("Seller", "Продавец", baseClass);
+        //buyer = addAbstractClass("Buyer", "Покупатель", baseClass.named);
 
 
-        supplier = addAbstractClass("supplier", "Поставщик", baseClass.named, seller, (CustomClass) BL.Supplier.getClassByName("supplier"));
+        supplier = addAbstractClass("Supplier", "Поставщик", baseClass.named, seller, (CustomClass) BL.Supplier.getClassByName("Supplier"));
 
-        boxSupplier = addConcreteClass("boxSupplier", "Поставщик по коробам", supplier);
-        simpleSupplier = addConcreteClass("simpleSupplier", "Поставщик без коробов", supplier);
+        boxSupplier = addConcreteClass("BoxSupplier", "Поставщик по коробам", supplier);
+        simpleSupplier = addConcreteClass("SimpleSupplier", "Поставщик без коробов", supplier);
 
-        jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", boxSupplier);
-        teddySupplier = addConcreteClass("teddySupplier", "Teddy", boxSupplier);
-        dieselSupplier = addConcreteClass("dieselSupplier", "Diesel", boxSupplier);
-        steilmannSupplier = addConcreteClass("steilmannSupplier", "Steilmann", boxSupplier);
-        tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", boxSupplier);
-        hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", simpleSupplier);
-        mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", boxSupplier);
-        bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", boxSupplier);
-        sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", simpleSupplier);
-        womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", boxSupplier);
-        babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", simpleSupplier);
-        gerryWeberSupplier = addConcreteClass("gerryWeberSupplier", "Gerry Weber", simpleSupplier);
-        topazSupplier = addConcreteClass("topazSupplier", "Topaz", simpleSupplier);
-        aprioriSupplier = addConcreteClass("aprioriSupplier", "Apriori", simpleSupplier);
+        jennyferSupplier = addConcreteClass("JennyferSupplier", "Jennyfer", boxSupplier);
+        teddySupplier = addConcreteClass("TeddySupplier", "Teddy", boxSupplier);
+        dieselSupplier = addConcreteClass("DieselSupplier", "Diesel", boxSupplier);
+        steilmannSupplier = addConcreteClass("SteilmannSupplier", "Steilmann", boxSupplier);
+        tallyWeijlSupplier = addConcreteClass("TallyWeijlSupplier", "Tally Weijl", boxSupplier);
+        hugoBossSupplier = addConcreteClass("HugoBossSupplier", "Hugo Boss", simpleSupplier);
+        mexxSupplier = addConcreteClass("MexxSupplier", "Mexx", boxSupplier);
+        bestsellerSupplier = addConcreteClass("BestsellerSupplier", "Bestseller", boxSupplier);
+        sOliverSupplier = addConcreteClass("SOliverSupplier", "s.Oliver", simpleSupplier);
+        womenSecretSupplier = addConcreteClass("WomenSecretSupplier", "Women'Secret", boxSupplier);
+        babyPhatSupplier = addConcreteClass("BabyPhatSupplier", "Baby Phat", simpleSupplier);
+        gerryWeberSupplier = addConcreteClass("GerryWeberSupplier", "Gerry Weber", simpleSupplier);
+        topazSupplier = addConcreteClass("TopazSupplier", "Topaz", simpleSupplier);
+        aprioriSupplier = addConcreteClass("AprioriSupplier", "Apriori", simpleSupplier);
 
-        secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
+        secondNameClass = addAbstractClass("SecondNameClass", "Класс со вторым именем", baseClass);
 
-        subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
-        importer = addConcreteClass("importer", "Импортер", subject, (CustomClass) BL.Company.getClassByName("company"));
-        exporter = addConcreteClass("exporter", "Экспортер", subject, seller, (CustomClass) BL.Company.getClassByName("company"), multiLanguageNamed);
+        subject = addAbstractClass("Subject", "Субъект", baseClass.named, secondNameClass);
+        importer = addConcreteClass("Importer", "Импортер", subject, (CustomClass) BL.Company.getClassByName("Company"));
+        exporter = addConcreteClass("Exporter", "Экспортер", subject, seller, (CustomClass) BL.Company.getClassByName("Company"), multiLanguageNamed);
 
-        commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
+        commonSize = addConcreteClass("CommonSize", "Размер", baseClass.named);
 
-        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, multiLanguageNamed);
-        sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
-        gender = addConcreteClass("gender", "Пол", baseClass.named, multiLanguageNamed);
-        genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
-        sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
-        seasonSupplier = addConcreteClass("seasonSupplier", "Сезон поставщика", baseClass);
+        colorSupplier = addConcreteClass("ColorSupplier", "Цвет поставщика", baseClass.named, secondNameClass, multiLanguageNamed);
+        sizeSupplier = addConcreteClass("SizeSupplier", "Размер поставщика", baseClass);
+        gender = addConcreteClass("Gender", "Пол", baseClass.named, multiLanguageNamed);
+        genderSupplier = addConcreteClass("GenderSupplier", "Пол поставщика", baseClass);
+        sizeGroupSupplier = addConcreteClass("SizeGroupSupplier", "Размерная сетка", baseClass.named);
+        seasonSupplier = addConcreteClass("SeasonSupplier", "Сезон поставщика", baseClass);
 
-        typeFabric = addConcreteClass("typeFabric", "Тип одежды", baseClass.named, multiLanguageNamed);
+        typeFabric = addConcreteClass("TypeFabric", "Тип одежды", baseClass.named, multiLanguageNamed);
 
-        freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
+        freightBox = addConcreteClass("FreightBox", "Короб для транспортировки", stock, freightUnit);
 
-        freight = addConcreteClass("freight", "Фрахт", baseClass.named, transaction, (CustomClass) BL.Numerator.getClassByName("numeratedObject"));
-        freightComplete = addConcreteClass("freightComplete", "Скомплектованный фрахт", freight);
-        freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightComplete);
-        freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightChanged);
-        freightShipped = addConcreteClass("freightShipped", "Отгруженный фрахт", freightPriced);
-        freightArrived = addConcreteClass("freightArrived", "Прибывший фрахт", freightShipped);
+        freight = addConcreteClass("Freight", "Фрахт", baseClass.named, transaction, (CustomClass) BL.Numerator.getClassByName("NumeratedObject"));
+        freightComplete = addConcreteClass("FreightComplete", "Скомплектованный фрахт", freight);
+        freightChanged = addConcreteClass("FreightChanged", "Обработанный фрахт", freightComplete);
+        freightPriced = addConcreteClass("FreightPriced", "Расцененный фрахт", freightChanged);
+        freightShipped = addConcreteClass("FreightShipped", "Отгруженный фрахт", freightPriced);
+        freightArrived = addConcreteClass("FreightArrived", "Прибывший фрахт", freightShipped);
 
-        freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
+        freightType = addConcreteClass("FreightType", "Тип машины", baseClass.named);
 
-        pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
+        pallet = addConcreteClass("Pallet", "Паллета", barcodeObject);
 
-        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named, multiLanguageNamed,
-                                                                         (CustomClass) BL.Stock.getClassByName("skuGroup"));
+        category = addConcreteClass("Category", "Номенклатурная группа", secondNameClass, baseClass.named, multiLanguageNamed,
+                                                                         (CustomClass) BL.Stock.getClassByName("SkuGroup"));
 
-        customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
+        customCategory = addAbstractClass("CustomCategory", "Уровень ТН ВЭД", baseClass);
 
-        customCategory4 = addConcreteClass("customCategory4", "Первый уровень", customCategory);
-        customCategory6 = addConcreteClass("customCategory6", "Второй уровень", customCategory);
-        customCategory9 = addConcreteClass("customCategory9", "Третий уровень", customCategory);
-        customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", customCategory);
+        customCategory4 = addConcreteClass("CustomCategory4", "Первый уровень", customCategory);
+        customCategory6 = addConcreteClass("CustomCategory6", "Второй уровень", customCategory);
+        customCategory9 = addConcreteClass("CustomCategory9", "Третий уровень", customCategory);
+        customCategory10 = addConcreteClass("CustomCategory10", "Четвёртый уровень", customCategory);
 
-        customCategoryOrigin = addConcreteClass("customCategoryOrigin", "ЕС уровень", customCategory);
+        customCategoryOrigin = addConcreteClass("CustomCategoryOrigin", "ЕС уровень", customCategory);
 
-        subCategory = addConcreteClass("subCategory", "Дополнительное деление", baseClass);
+        subCategory = addConcreteClass("SubCategory", "Дополнительное деление", baseClass);
 
-        typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
+        typeDuty = addConcreteClass("TypeDuty", "Тип пошлины", baseClass);
 
-        customStore = addConcreteClass("customStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("stock")); //, (CustomClass) BL.LegalEntity.getClassByName("legalEntity")
+        customStore = addConcreteClass("CustomStore", "Склад временного хранения", baseClass.named, (CustomClass) BL.Stock.getClassByName("Stock")); //, (CustomClass) BL.LegalEntity.getClassByName("legalEntity")
 
-        customsZone = addConcreteClass("customsZone", "Таможенная зона", baseClass.named);
+        customsZone = addConcreteClass("CustomsZone", "Таможенная зона", baseClass.named);
 
-        creationSku = addConcreteClass("creationSku", "Операция создания товаров", transaction);
-        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", transaction);
-        creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", transaction);
-        creationStamp = addConcreteClass("creationStamp", "Операция создания марок", transaction);
+        creationSku = addConcreteClass("CreationSku", "Операция создания товаров", transaction);
+        creationFreightBox = addConcreteClass("CreationFreightBox", "Операция создания коробов", transaction);
+        creationPallet = addConcreteClass("CreationPallet", "Операция создания паллет", transaction);
+        creationStamp = addConcreteClass("CreationStamp", "Операция создания марок", transaction);
 
-        transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
+        transfer = addConcreteClass("Transfer", "Внутреннее перемещение", baseClass);
 
-        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("UOM"));
+        unitOfMeasure = addConcreteClass("UnitOfMeasure", "Единица измерения", secondNameClass, baseClass.named, (CustomClass) BL.Stock.getClassByName("UOM"));
 
-        brandSupplier = addConcreteClass("brandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("discountSkuGroup"), (CustomClass) BL.PriceRound.getClassByName("roundGroup"));  //baseClass.named,
+        brandSupplier = addConcreteClass("BrandSupplier", "Бренд поставщика", (CustomClass) BL.RetailCRM.getClassByName("DiscountSkuGroup"), (CustomClass) BL.PriceRound.getClassByName("RoundGroup"));  //baseClass.named,
 
-        themeSupplier = addConcreteClass("themeSupplier", "Тема поставщика", baseClass.named);
+        themeSupplier = addConcreteClass("ThemeSupplier", "Тема поставщика", baseClass.named);
 
-        countrySupplier = addConcreteClass("countrySupplier", "Страна поставщика", baseClass.named);
+        countrySupplier = addConcreteClass("CountrySupplier", "Страна поставщика", baseClass.named);
 
-        season = addConcreteClass("season", "Сезон", new String[]{"winter", "summer"}, new String[]{"Зима", "Лето"}, baseClass.named);
+        season = addConcreteClass("Season", "Сезон", new String[]{"winter", "summer"}, new String[]{"Зима", "Лето"}, baseClass.named);
 
-        seasonYear = addConcreteClass("seasonYear", "Сезон", baseClass);
+        seasonYear = addConcreteClass("SeasonYear", "Сезон", baseClass);
 
-        collectionSupplier = addConcreteClass("collectionSupplier", "Коллекция", baseClass.named);
+        collectionSupplier = addConcreteClass("CollectionSupplier", "Коллекция", baseClass.named);
 
-        categorySupplier = addConcreteClass("categorySupplier", "Группа", baseClass.named);
+        categorySupplier = addConcreteClass("CategorySupplier", "Группа", baseClass.named);
 
-        subCategorySupplier = addConcreteClass("subCategorySupplier", "Подгруппа", baseClass.named);
+        subCategorySupplier = addConcreteClass("SubCategorySupplier", "Подгруппа", baseClass.named);
 
-        route = addConcreteClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"}, baseClass.named);
+        route = addConcreteClass("Route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"}, baseClass.named);
 
-        typeTransit = addConcreteClass("typeTransit", "Тип транзита", new String[]{"ex", "t1"}, new String[]{"EX", "T1"}, baseClass.named);
+        typeTransit = addConcreteClass("TypeTransit", "Тип транзита", new String[]{"ex", "t1"}, new String[]{"EX", "T1"}, baseClass.named);
 
-        stamp = addConcreteClass("stamp", "Контрольная марка", baseClass);
+        stamp = addConcreteClass("Stamp", "Контрольная марка", baseClass);
 
-        transitDocument = addConcreteClass("transitDocument", "Транзитный документ", baseClass);
+        transitDocument = addConcreteClass("TransitDocument", "Транзитный документ", baseClass);
 
-        typeLabel = addConcreteClass("typeLabel", "Тип этикетки", baseClass.named);
+        typeLabel = addConcreteClass("TypeLabel", "Тип этикетки", baseClass.named);
 
-        typeContainer = addConcreteClass("typeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"}, baseClass.named);
+        typeContainer = addConcreteClass("TypeContainer", "Вид грузового места", new String[]{"palleta", "box"}, new String[]{"Поддон", "Короб"}, baseClass.named);
     }
 
     @Override
@@ -1856,7 +1857,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameSeasonYear = addJProp("nameSeasonYear", "Наименование", baseLM.istring2SP, nameSeasonSeasonYear, 1, yearSeasonYear, 1);
 
-        legalEntityCustomStore = addDProp(idGroup, "legalEntityCustomStore", "Юрлицо", BL.LegalEntity.getClassByName("legalEntity"), customStore);
+        legalEntityCustomStore = addDProp(idGroup, "legalEntityCustomStore", "Юрлицо", BL.LegalEntity.getClassByName("LegalEntity"), customStore);
 
         // rate
         typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", getTypeExchangeClass());
@@ -1898,10 +1899,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", getSidOrigin2Country());
 
-        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", BL.I18n.getClassByName("dictionary"));
+        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", BL.I18n.getClassByName("Dictionary"));
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
 
-        dictionaryName = addDProp(idGroup, "dictionaryName", "Словарь для названий (ИД)", BL.I18n.getClassByName("dictionary"));
+        dictionaryName = addDProp(idGroup, "dictionaryName", "Словарь для названий (ИД)", BL.I18n.getClassByName("Dictionary"));
         nameDictionaryName = addJProp(baseGroup, "nameDictionaryName", "Словарь для названий", baseLM.name, dictionaryName);
 
 
@@ -2335,8 +2336,8 @@ public class RomanLogicsModule extends LogicsModule {
         translateNameArticle = addDProp(supplierAttributeGroup, "translateNameArticle", "Наименование", InsensitiveStringClass.get(50), article);
         translateNameArticleSku = addJProp(supplierAttributeGroup, true, "translateNameArticleSku", "Наименование", translateNameArticle, articleSku, 1);
 
-        originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
-        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("language"));
+        originalNameArticleSkuLanguage = addJProp(baseLM.and1, originalNameArticleSku, 1, is((CustomClass) BL.I18n.getClassByName("Language")), 2);
+        translateNameSkuLanguage = addDProp(supplierAttributeGroup, "translateNameSkuLanguage", "Наименование", InsensitiveStringClass.get(50), sku, (CustomClass) BL.I18n.getClassByName("Language"));
 
         translationNameSku = addJoinAProp(actionGroup, "translationNameSku", "Перевести", addTAProp(originalNameArticleSku, translateNameArticleSku), dictionaryName, 1);
         translationNameSku.addToContextMenuFor(translateNameArticleSku);
@@ -2731,11 +2732,11 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
 
-        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
-        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("language"));
+        mainCompositionSkuLanguage = addDProp("mainCompositionSkuLanguage", "Состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("Language"));
+        additionalCompositionSkuLanguage = addDProp ("additionalCompositionSkuLanguage" , "Доп. состав (укр.)", COMPOSITION_CLASS, sku, (CustomClass) BL.I18n.getClassByName("Language"));
 
-        mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
-        additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("language")), 2);
+        mainCompositionOriginSkuLanguage = addJProp(baseLM.and1, mainCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("Language")), 2);
+        additionalCompositionOriginSkuLanguage = addJProp(baseLM.and1, additionalCompositionOriginSku, 1, is((CustomClass) BL.I18n.getClassByName("Language")), 2);
 
         translationMainCompositionSkuLanguage = addJoinAProp(actionGroup, "translationMainCompositionSkuLanguage", "Перевод состава", addTAProp(mainCompositionOriginSkuLanguage, mainCompositionSkuLanguage), BL.RomanI18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
         translationAdditionalCompositionSkuLanguage = addJoinAProp(actionGroup, "translationAdditionalCompositionSkuLanguage", "Перевод доп. состава", addTAProp(additionalCompositionOriginSkuLanguage, additionalCompositionSkuLanguage), BL.RomanI18n.getLCPByName("dictionaryCompositionLanguage"), 2, 1, 2);
@@ -4344,15 +4345,15 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
     public ConcreteCustomClass getCountryClass() {
-        return (ConcreteCustomClass) BL.getModule("Country").getClassByName("country");
+        return (ConcreteCustomClass) BL.getModule("Country").getClassByName("Country");
     }
 
     public ConcreteCustomClass getCurrencyClass() {
-        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("Currency");
     }
 
     public ConcreteCustomClass getTypeExchangeClass() {
-        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("typeExchange");
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("TypeExchange");
     }
 
     public LCP getSidOrigin2Country() {
@@ -6968,7 +6969,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("Country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7157,7 +7158,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("Country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7255,7 +7256,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("Country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -7341,7 +7342,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("country"), "Страна");
+            objCountry = new ObjectEntity(7, "country", BL.getModule("Country").getClassByName("Country"), "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -8842,6 +8843,6 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
     protected LAP addTAProp(LCP sourceProperty, LCP targetProperty) {
-        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", BL.I18n.getLCPByName("translationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveTranslationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveDictionary"), sourceProperty, targetProperty, BL.I18n.getClassByName("dictionary"))));
+        return addProperty(null, new LAP(new TranslateActionProperty(genSID(), "translate", BL.I18n.getLCPByName("translationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveTranslationDictionaryEntryDictionaryTerm"), BL.I18n.getLCPByName("insensitiveDictionary"), sourceProperty, targetProperty, BL.I18n.getClassByName("Dictionary"))));
     }
 }

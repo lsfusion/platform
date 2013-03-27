@@ -8,10 +8,10 @@ PRIORITY RomanLogicsModule, Stock;
 
 //---------------------------------------------- Договоры для инвойсов ----------------------------------------------//
 
-userContractInvoice 'Договор инвойса' = DATA contractSku (invoice);
+userContractInvoice 'Договор инвойса' = DATA ContractSku (Invoice);
 numberUserContractInvoice 'Номер договора инвойса' (invoice) = numberContract(userContractInvoice(invoice));
 
-contractDirectInvoice 'Договор инвойса напрямую' = DATA contractSku (directInvoice);
+contractDirectInvoice 'Договор инвойса напрямую' = DATA ContractSku (DirectInvoice);
 numberContractDirectInvoice 'Номер договора инвойса напрямую' (directInvoice) = numberContract(contractDirectInvoice(directInvoice));
 
 contractInvoice 'Договор' (invoice) = UNION OVERRIDE userContractInvoice(invoice), contractDirectInvoice(invoice);
@@ -41,16 +41,16 @@ EXTEND FORM simpleInvoiceForm
 
 //---------------------------------------------- Коммерческие инвойсы ------------------------------------------------//
 
-CLASS commercialInvoice 'Коммерческий инвойс' : numeratedObject, contractLedger, contractALedger, inContractLedger;
+CLASS CommercialInvoice 'Коммерческий инвойс' : NumeratedObject, ContractLedger, ContractALedger, InContractLedger;
 
-isPostedCommercialInvoice(commercialInvoice) = commercialInvoice IS commercialInvoice;
+isPostedCommercialInvoice(commercialInvoice) = commercialInvoice IS CommercialInvoice;
 
-dateCommercialInvoice 'Дата' = DATA DATE (commercialInvoice);
-currencyCommercialInvoice = DATA currency (commercialInvoice);
+dateCommercialInvoice 'Дата' = DATA DATE (CommercialInvoice);
+currencyCommercialInvoice = DATA Currency (CommercialInvoice);
 nameCurrencyCommercialInvoice 'Валюта'(commercialInvoice) = name(currencyCommercialInvoice(commercialInvoice));
-sumCommercialInvoice 'Сумма инвойса' = DATA NUMERIC[16,2] (commercialInvoice);
+sumCommercialInvoice 'Сумма инвойса' = DATA NUMERIC[16,2] (CommercialInvoice);
 
-contractCommercialInvoice 'Договор коммерческого инвойса' = DATA contractSku (commercialInvoice);
+contractCommercialInvoice 'Договор коммерческого инвойса' = DATA ContractSku (CommercialInvoice);
 numberContractCommercialInvoice 'Номер договора коммерческого инвойса' = numberContract(contractCommercialInvoice(commercialInvoice));
 
 supplierCommercialInvoice (commercialInvoice) = partyAContract(contractCommercialInvoice(commercialInvoice));
@@ -60,17 +60,17 @@ nameCompanyCommercialInvoice 'Поставщик' (commercialInvoice) = name(com
 
 @defineNumeratedObjectDefault(commercialInvoice, 'Нумератор для коммерческих инвойсов', 'КИ');
 
-invoiceCommercialInvoice 'Инвойс-основание' = DATA invoice (commercialInvoice);
+invoiceCommercialInvoice 'Инвойс-основание' = DATA Invoice (CommercialInvoice);
 descriptionInvoiceCommercialInvoice 'Основание' (commercialInvoice) =
     [FORMULA STRING[200] '\'Инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     sidDocument(invoiceCommercialInvoice(commercialInvoice)), date(invoiceCommercialInvoice(commercialInvoice)),
-    name(supplierDocument(invoiceCommercialInvoice(commercialInvoice)))) AND commercialInvoice IS commercialInvoice;
+    name(supplierDocument(invoiceCommercialInvoice(commercialInvoice)))) AND commercialInvoice IS CommercialInvoice;
 
-commercialInvoiceInvoice 'Инвойс-основание' = DATA commercialInvoice (invoice);
+commercialInvoiceInvoice 'Инвойс-основание' = DATA CommercialInvoice (Invoice);
 descriptionCommercialInvoiceInvoice 'Коммерческий инвойс' (invoice) =
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoiceInvoice(invoice)), dateCommercialInvoice(commercialInvoiceInvoice(invoice)),
-    nameSupplierCommercialInvoice(commercialInvoiceInvoice(invoice))) AND invoice IS invoice;
+    nameSupplierCommercialInvoice(commercialInvoiceInvoice(invoice))) AND invoice IS Invoice;
 
 dateCommercialInvoice (commercialInvoice) <- date(invoiceCommercialInvoice(commercialInvoice))
     WHEN CHANGED(date(invoiceCommercialInvoice(commercialInvoice))) OR
@@ -90,18 +90,18 @@ sumCommercialInvoice (commercialInvoice) <- sumDocument(invoiceCommercialInvoice
 
 createCommercialInvoice 'Создать коммерческий инвойс' = [ACTION (invoice) NEWSESSION{
 
-    ADDOBJ commercialInvoice;
+    ADDOBJ CommercialInvoice;
     FOR c == addedObject() DO {
-        SET invoiceCommercialInvoice(c) <- invoice AS invoice;
-        SET commercialInvoiceInvoice(invoice) <- c AS commercialInvoice;
+        SET invoiceCommercialInvoice(c) <- invoice AS Invoice;
+        SET commercialInvoiceInvoice(invoice) <- c AS CommercialInvoice;
         SET numberObject(c) <- sidDocument(invoice);
-        SET seriesObject(c) <- 'КИ' AND invoice IS invoice;
+        SET seriesObject(c) <- 'КИ' AND invoice IS Invoice;
         SET dateCommercialInvoice(c) <- date(invoice);
         SET contractCommercialInvoice(c) <- contractInvoice(invoice);
         SET currencyCommercialInvoice(c) <- currencyDocument(invoice);
         SET sumCommercialInvoice(c) <- sumDocument(invoice);
         SET supplierCommercialInvoice(c) <- supplierDocument(invoice);
-        IF invoice IS directInvoice THEN{
+        IF invoice IS DirectInvoice THEN{
             SET companyCommercialInvoice(c) <- importerDirectInvoice(invoice);
         } ELSE SET companyCommercialInvoice(c) <- exporterInvoice(invoice);
     }
@@ -112,11 +112,11 @@ createCommercialInvoice 'Создать коммерческий инвойс' =
 
 FORM commercialInvoice 'Коммерческий инвойс'
 
-    OBJECTS c = commercialInvoice FIXED PANEL
+    OBJECTS c = CommercialInvoice FIXED PANEL
     PROPERTIES(c) nameNumeratorObject, numberObject, seriesObject, dateCommercialInvoice, numberContractCommercialInvoice,
                   nameSupplierCommercialInvoice, nameCompanyCommercialInvoice, nameCurrencyCommercialInvoice, sumCommercialInvoice
 
-    EDIT commercialInvoice OBJECT c
+    EDIT CommercialInvoice OBJECT c
 ;
 
 DESIGN commercialInvoice FROM DEFAULT{
@@ -146,7 +146,7 @@ FORM commercialInvoices 'Коммерческие инвойсы'
 
     PROPERTIES() namePartyA, namePartyB
 
-    OBJECTS c = commercialInvoice
+    OBJECTS c = CommercialInvoice
     PROPERTIES(c) READONLY numberObject BACKGROUND backgroundInContractLedgerDate(c, d),
                            seriesObject BACKGROUND backgroundInContractLedgerDate(c, d),
                            dateCommercialInvoice BACKGROUND backgroundInContractLedgerDate(c, d),
@@ -159,8 +159,8 @@ FORM commercialInvoices 'Коммерческие инвойсы'
 
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 
-    FILTERS companyCommercialInvoice(c) == partyB() OR (c IS commercialInvoice AND NOT partyB()),
-            supplierCommercialInvoice(c) == partyA() OR (c IS commercialInvoice AND NOT partyA())
+    FILTERS companyCommercialInvoice(c) == partyB() OR (c IS CommercialInvoice AND NOT partyB()),
+            supplierCommercialInvoice(c) == partyA() OR (c IS CommercialInvoice AND NOT partyA())
 ;
 
 DESIGN commercialInvoices FROM DEFAULT {
@@ -195,7 +195,7 @@ dateTimeCommercialInvoice 'Дата/время' (commercialInvoice) = toDateTime
 descriptionCommercialInvoice 'Название документа' (commercialInvoice) =
     [FORMULA STRING[200] '\'Коммерческий инвойс \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT) || \' \' || CAST($3 AS TEXT)'](
     seriesNumberObject(commercialInvoice), dateCommercialInvoice(commercialInvoice),
-    nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS commercialInvoice;
+    nameSupplierCommercialInvoice(commercialInvoice)) AND commercialInvoice IS CommercialInvoice;
 @implementContractLedger(a, commercialInvoice, contract);
 sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 

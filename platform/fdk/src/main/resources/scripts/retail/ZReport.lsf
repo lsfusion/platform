@@ -19,23 +19,23 @@ REQUIRE System,
 
 // ------------------------------------- Объявление Z-отчета ---------------------------------------- //
 
-CLASS zReport 'Z-отчет (открытый)' : incomeCashOrder, historizable, numberedObject, paymentLedger;
-CLASS zReportPosted 'Z-отчет (проведенный)' : zReport, postedObject;
+CLASS ZReport 'Z-отчет (открытый)' : IncomeCashOrder, Historizable, NumberedObject, PaymentLedger;
+CLASS ZReportPosted 'Z-отчет (проведенный)' : ZReport, PostedObject;
 
-TABLE zReport (zReport);
+TABLE zReport (ZReport);
 
 @defineDocumentHeaderPosted(zReport);
-@defineDocumentHeaderTime(zReport);
+@defineDocumentHeaderTime(ZReport);
 @defineDocumentHeaderDepartmentStore(zReport);
 
 castBasisZReport =
     FORMULA STRING[100] '\'Z-отчет №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
 
-numberZReport 'Номер Z-отчета' (zReport) = DATA STRING[21](zReport) IN documentPrmGroup;
-cashRegisterZReport (zReport) = DATA cashRegister(zReport);
+numberZReport 'Номер Z-отчета' (zReport) = DATA STRING[21](ZReport) IN documentPrmGroup;
+cashRegisterZReport (zReport) = DATA CashRegister(ZReport);
 numberCashRegisterZReport 'Касса Z-отчета' (zReport) = numberCashRegister(cashRegisterZReport(zReport)) IN documentPrmGroup;
-numberNumberCashRegisterToZReport (numberZReport, numberCashRegister) = GROUP UNIQUE zReport BY numberZReport (zReport), numberCashRegisterZReport (zReport) WHERE zReport IS zReport;
-numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS zReportPosted;
+numberNumberCashRegisterToZReport (numberZReport, numberCashRegister) = GROUP UNIQUE zReport BY numberZReport (zReport), numberCashRegisterZReport (zReport) WHERE zReport IS ZReport;
+numberNumberCashRegisterToZReportPosted (numberZReport, numberCashRegister) = GROUP UNIQUE zReportPosted BY numberZReport (zReportPosted), numberCashRegisterZReport (zReportPosted) WHERE zReportPosted IS ZReportPosted;
 maxNumberZReport(cashRegister) = GROUP MAX numberZReport(zReport)  BY cashRegisterZReport (zReport);
 basisZReport 'Основание' (zReport) = castBasisZReport(numberZReport(zReport), numberCashRegisterZReport(zReport), dateZReport(zReport)) IN documentPrmGroup;
 
@@ -59,16 +59,16 @@ importReceiptsZReport 'Импортировать чеки' = ACTION CUSTOM 'fdk
 
 //----------------------------------------------- Чеки ---------------------------------------------------//
 
-CLASS receipt 'Чек' : historizable;
+CLASS Receipt 'Чек' : Historizable;
 
-CLASS ABSTRACT receiptDetail 'Строка чека';
-CLASS receiptSaleDetail 'Строка продажи' : receiptDetail;
-CLASS receiptReturnDetail 'Строка возврата' : receiptDetail;
+CLASS ABSTRACT ReceiptDetail 'Строка чека';
+CLASS ReceiptSaleDetail 'Строка продажи' : ReceiptDetail;
+CLASS ReceiptReturnDetail 'Строка возврата' : ReceiptDetail;
 
-TABLE receipt (receipt);
-TABLE receiptDetail (receiptDetail);
-TABLE receiptSaleDetail (receiptSaleDetail);
-TABLE receiptReturnDetail (receiptReturnDetail);
+TABLE receipt (Receipt);
+TABLE receiptDetail (ReceiptDetail);
+TABLE receiptSaleDetail (ReceiptSaleDetail);
+TABLE receiptReturnDetail (ReceiptReturnDetail);
 
 @defineDocumentRelation(zReport, receipt);
 cashRegisterReceipt (receipt) = cashRegisterZReport(zReportReceipt(receipt));
@@ -81,11 +81,11 @@ sidCashRegisterModelReceipt 'Код модели' (receipt) = sidModel(cashRegis
 
 numberZReportReceipt 'Номер Z-отчета' (receipt) = numberZReport(zReportReceipt(receipt)) IN recognize;
 
-userReceipt = DATA customUser(receipt);
+userReceipt = DATA CustomUser(Receipt);
 nameUserReceipt 'Кассир' (receipt) = nameContact(userReceipt(receipt));
-userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS receipt);
+userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS Receipt);
 
-@defineDocumentHeaderTime(receipt);
+@defineDocumentHeaderTime(Receipt);
 
 @defineDocumentDetailDepartmentStoreCustom(zReport, receipt);
 @defineDocumentDetailPosted(zReport, receipt);
@@ -104,7 +104,7 @@ receiptReceiptDetail (receiptDetail) = UNION CLASS receiptReceiptReturnDetail(re
 zReportReceiptDetail (receiptDetail) = zReportReceipt(receiptReceiptDetail(receiptDetail));
 sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCashRegisterModelReceipt(receiptReceiptDetail(receiptDetail));
 
-typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' AND receiptDetail IS receiptSaleDetail, 'Возврат' AND receiptDetail IS receiptReturnDetail FIXEDCHARWIDTH 8;
+typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' AND receiptDetail IS ReceiptSaleDetail, 'Возврат' AND receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
 
 @defineDocumentDetailIndex(receipt, receiptDetail);
 
@@ -126,16 +126,16 @@ departmentStoreReceiptDetail (receiptDetail) = UNION CLASS departmentStoreReceip
 skuReceiptDetail (receiptDetail) = skuReceiptReturnDetail(receiptDetail) OR skuReceiptSaleDetail(receiptDetail);
 nameSkuReceiptDetail 'Товар' (receiptDetail) = nameSkuStock(skuReceiptDetail(receiptDetail), departmentStoreReceiptDetail(receiptDetail)) IN recognize;
 
-numberReceipt 'Номер чека' (receipt) = DATA INTEGER (receipt) IN documentHeaderGroup;
+numberReceipt 'Номер чека' (receipt) = DATA INTEGER (Receipt) IN documentHeaderGroup;
 numberReceiptReceiptDetail 'Номер чека' (receiptDetail) = numberReceipt(receiptReceiptDetail(receiptDetail));
 
 maxNumberReceiptZReport 'Максимальный номер чека' (zReport) = GROUP MAX numberReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT;
 
-zReportReceiptToReceipt (zReport, receipt, cashRegister) = GROUP UNIQUE receipt BY numberZReport(zReportReceipt(receipt)), numberReceipt(receipt), numberCashRegister(cashRegisterZReport(zReportReceipt(receipt))) WHERE receipt IS receipt;
+zReportReceiptToReceipt (zReport, receipt, cashRegister) = GROUP UNIQUE receipt BY numberZReport(zReportReceipt(receipt)), numberReceipt(receipt), numberCashRegister(cashRegisterZReport(zReportReceipt(receipt))) WHERE receipt IS Receipt;
 
 GROUP receiptDiscountGroup 'Дисконтная карта' : public;
 
-discountCardReceipt (receipt) = DATA discountCard (receipt);
+discountCardReceipt (receipt) = DATA DiscountCard (Receipt);
 
 CONSTRAINT dateToDiscountCard(discountCardReceipt(receipt)) < dateReceipt(receipt) CHECKED BY discountCardReceipt MESSAGE 'Закончился срок действия карты';
 
@@ -144,13 +144,13 @@ nameClientDiscountCardReceipt 'Держатель дисконтной карт�
 numberDiscountCardReceiptDetail 'Номер дисконтной карты' (receiptDetail) = numberDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 nameClientDiscountCardReceiptDetail 'Держатель дисконтной карты' (receiptDetail) = nameClientDiscountCardReceipt(receiptReceiptDetail(receiptDetail));
 
-idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (receiptDetail) FIXEDCHARWIDTH 14 INDEXED;
+idBarcodeReceiptDetail 'Штрих-код' (receiptDetail) = DATA STRING[14] (ReceiptDetail) FIXEDCHARWIDTH 14 INDEXED;
 
-exportReceipt 'Экспортировать' (receipt) = DATA SESSION BOOLEAN (receipt);
+exportReceipt 'Экспортировать' (receipt) = DATA SESSION BOOLEAN (Receipt);
 
 // Возвраты
 
-receiptSaleDetailReceiptReturnDetail = DATA receiptSaleDetail (receiptReturnDetail);
+receiptSaleDetailReceiptReturnDetail = DATA ReceiptSaleDetail (ReceiptReturnDetail);
 receiptSaleReceiptReturnDetail (returnDetail) = receiptReceiptSaleDetail(receiptSaleDetailReceiptReturnDetail(returnDetail));
 
 descriptionSaleReceiptReturnDetail 'Чек продажи' (returnDetail) =
@@ -159,12 +159,12 @@ descriptionSaleReceiptReturnDetail 'Чек продажи' (returnDetail) =
 
 // Количества и суммы
 
-quantityReceiptSaleDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptSaleDetail);
-priceReceiptSaleDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptSaleDetail);
-sumReceiptSaleDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (receiptSaleDetail);
-discountPercentReceiptSaleDetail 'Процент скидки' (receiptDetail) = DATA NUMERIC[6,2] (receiptSaleDetail);
+quantityReceiptSaleDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (ReceiptSaleDetail);
+priceReceiptSaleDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (ReceiptSaleDetail);
+sumReceiptSaleDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (ReceiptSaleDetail);
+discountPercentReceiptSaleDetail 'Процент скидки' (receiptDetail) = DATA NUMERIC[6,2] (ReceiptSaleDetail);
 discountPercentReceipt (receipt)= GROUP SUM 1 IF discountPercentReceiptSaleDetail(detail) BY receiptReceiptDetail(detail);
-discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (receiptSaleDetail);
+discountSumReceiptSaleDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (ReceiptSaleDetail);
 
 priceSumReceiptSaleDetail 'Сумма без скидки' = round(quantityReceiptSaleDetail(detail) * priceReceiptSaleDetail(detail), priceRoundCurrency(currencyReceiptSaleDetail (detail)));
 
@@ -184,10 +184,10 @@ sumReceiptSaleDetail (detail) <- round(calcSumReceiptSaleDetail(detail), priceRo
          CHANGED (discountPercentReceiptSaleDetail(detail)) OR
          CHANGED (currencyReceiptSaleDetail(detail));
 
-quantityReceiptReturnDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (receiptReturnDetail);
-priceReceiptReturnDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (receiptReturnDetail);
-sumReceiptReturnDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (receiptReturnDetail);
-discountSumReceiptReturnDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (receiptReturnDetail);
+quantityReceiptReturnDetail 'Количество' (receiptDetail) = DATA NUMERIC[14,3] (ReceiptReturnDetail);
+priceReceiptReturnDetail 'Цена' (receiptDetail) = DATA NUMERIC[14,2] (ReceiptReturnDetail);
+sumReceiptReturnDetail 'Сумма' (receiptDetail) = DATA NUMERIC[16,2] (ReceiptReturnDetail);
+discountSumReceiptReturnDetail 'Сумма скидки' (receiptDetail) = DATA NUMERIC[16,2] (ReceiptReturnDetail);
 
 quantityReturnedReceiptSaleDetail 'Возвращено' (saleDetail) = GROUP SUM quantityReceiptReturnDetail(returnDetail) BY receiptSaleDetailReceiptReturnDetail(returnDetail) PERSISTENT;
 CONSTRAINT quantityReturnedReceiptSaleDetail(detail) > quantityReceiptSaleDetail (detail) MESSAGE 'Количество возвратов по строке чека превышает проданное количество';
@@ -221,11 +221,11 @@ sumReceiptDetailReceiptDetail 'Сумма чека' (receiptDetail) = sumReceipt
 
 discountSumSaleReceiptDetailSaleReceipt 'Сумма скидки (продажи)' (receipt) = GROUP SUM discountSumReceiptSaleDetail(receiptDetail)
     BY receiptReceiptSaleDetail (receiptDetail) IN documentSumGroup;
-discountSumSaleReceipt 'Сумма скидки (продажи) по чеку' (receipt) = DATA NUMERIC[16,2] (receipt);
+discountSumSaleReceipt 'Сумма скидки (продажи) по чеку' (receipt) = DATA NUMERIC[16,2] (Receipt);
 
 discountSumReturnReceiptDetailReturnReceipt 'Сумма скидки (возврат)' (receipt) = GROUP SUM discountSumReceiptReturnDetail(receiptDetail)
     BY receiptReceiptReturnDetail (receiptDetail) IN documentSumGroup;
-discountSumReturnReceipt 'Сумма скидки (возврат) по чеку' (receipt) = DATA NUMERIC[16,2] (receipt);
+discountSumReturnReceipt 'Сумма скидки (возврат) по чеку' (receipt) = DATA NUMERIC[16,2] (Receipt);
 
 calcDiscountSumReceiptDetailReceipt (receipt) = discountSumSaleReceiptDetailSaleReceipt(receipt) (-) discountSumReturnReceiptDetailReturnReceipt(receipt) PERSISTENT;
 discountSumReceiptDetailReceipt 'Сумма скидки' (receipt) = roundPriceRoundCondition(calcDiscountSumReceiptDetailReceipt(receipt), roundConditionDepartmentStore(departmentStoreReceipt(receipt)));
@@ -239,33 +239,33 @@ discountSumReceipt 'Сумма скидки по чеку' (receipt) = discountS
 
 // -------------------------------------------------- НДС ------------------------------------------------ //
 
-overVATRetailSkuDepartmentStoreDateTime = ABSTRACT range (sku, departmentStore, DATETIME);
-VATRetailSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = VATSkuCountryDate(sku, countryStock(departmentStore AS departmentStore), toDate(dateTime)) OR
+overVATRetailSkuDepartmentStoreDateTime = ABSTRACT Range (Sku, DepartmentStore, DATETIME);
+VATRetailSkuDepartmentStoreDateTime (sku, departmentStore, dateTime) = VATSkuCountryDate(sku, countryStock(departmentStore AS DepartmentStore), toDate(dateTime)) OR
                                                                        overVATRetailSkuDepartmentStoreDateTime(sku, departmentStore, dateTime);
 
-VATReceiptSaleDetail = DATA range (receiptSaleDetail);
-CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != tax.taxVAT OR
+VATReceiptSaleDetail = DATA Range (ReceiptSaleDetail);
+CONSTRAINT taxRange(VATReceiptSaleDetail(detail)) != Tax.taxVAT OR
            countryRange(VATReceiptSaleDetail(detail)) != countryStock(departmentStoreReceiptSaleDetail(detail))
            CHECKED BY VATReceiptSaleDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
-VATSumSaleZReport 'Сумма НДС по продажам' (zReport) = DATA NUMERIC[16,2] (zReport);
+VATSumSaleZReport 'Сумма НДС по продажам' (zReport) = DATA NUMERIC[16,2] (ZReport);
 
-VATReceiptReturnDetail = DATA range (receiptReturnDetail);
-CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != tax.taxVAT OR
+VATReceiptReturnDetail = DATA Range (ReceiptReturnDetail);
+CONSTRAINT taxRange(VATReceiptReturnDetail(detail)) != Tax.taxVAT OR
            countryRange(VATReceiptReturnDetail(detail)) != countryStock(departmentStoreReceiptReturnDetail(detail))
            CHECKED BY VATReceiptReturnDetail
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране магазина';
 
-VATSumReturnZReport 'Сумма НДС по возвратам' (zReport) = DATA NUMERIC[16,2] (zReport);
+VATSumReturnZReport 'Сумма НДС по возвратам' (zReport) = DATA NUMERIC[16,2] (ZReport);
 
 VATReceiptDetail (receiptDetail) = UNION CLASS VATReceiptReturnDetail(receiptDetail), VATReceiptSaleDetail(receiptDetail) PERSISTENT;
 numberVATReceiptDetail 'НДС, номер' (receiptDetail) = numberRange(VATReceiptDetail(receiptDetail));
 valueVATReceiptDetail 'НДС, %' (receiptDetail) = valueRateRangeDate(VATReceiptDetail(receiptDetail), dateReceiptDetail(receiptDetail));
 
 // используется только для приема реализации из внешних касс
-numberReceiptDetail 'Номер позиции чека' = DATA INTEGER (receiptDetail);
-zReportReceiptReceiptDetailToReceiptDetail (zReport, receipt, receiptDetail, cashRegister) = GROUP UNIQUE receiptDetail BY numberZReport(zReportReceiptDetail(receiptDetail)), numberReceipt(receiptReceiptDetail(receiptDetail)), numberReceiptDetail(receiptDetail), numberCashRegister(cashRegisterZReport(zReportReceiptDetail(receiptDetail))) WHERE receiptDetail IS receiptDetail;
+numberReceiptDetail 'Номер позиции чека' = DATA INTEGER (ReceiptDetail);
+zReportReceiptReceiptDetailToReceiptDetail (zReport, receipt, receiptDetail, cashRegister) = GROUP UNIQUE receiptDetail BY numberZReport(zReportReceiptDetail(receiptDetail)), numberReceipt(receiptReceiptDetail(receiptDetail)), numberReceiptDetail(receiptDetail), numberCashRegister(cashRegisterZReport(zReportReceiptDetail(receiptDetail))) WHERE receiptDetail IS ReceiptDetail;
 //
 
 descriptionReceipt 'Название документа' (receipt) = [FORMULA STRING[200] '\'Чек № \' || CAST($1 AS TEXT) || \' от \' || CAST($2 AS TEXT) '](
@@ -284,69 +284,70 @@ descriptionReceiptDetail (receiptDetail) = descriptionReceiptReturnDetail(receip
 
 // -------------------------------------------- Проведение по регистрам --------------------------------------- //
 
-@implementSkuLedgerOutFIFO(receiptSaleDetail, sku, departmentStore);
+@implementSkuLedgerOutFIFO(ReceiptSaleDetail, sku, departmentStore);
 quantityOutFIFOSkuLedger (ledger) += quantityReceiptSaleDetail(ledger);
 @implementSkuLedgerOutFIFOBalance(receiptSaleDetail, departmentStore);
 sumOutSkuLedger (ledger) += sumReceiptSaleDetail(ledger);
 
-@implementSkuLedgerInLIFO(receiptReturnDetail, sku, departmentStore);
+@implementSkuLedgerInLIFO(ReceiptReturnDetail, sku, departmentStore);
 quantityInLIFOSkuLedger (ledger) += quantityReceiptReturnDetail(ledger);
 @implementSkuLedgerInLIFOBalance(receiptReturnDetail, departmentStore);
 sumInSkuLedger (ledger) += sumReceiptReturnDetail(ledger);
 
-@implementSaleLedger(receiptSale, sku, departmentStore);
+@implementSaleLedger(ReceiptSale, sku, departmentStore);
 quantitySaleLedger (ledger) += quantityReceiptSaleDetail(ledger);
 VATSaleLedger (ledger) += VATReceiptSaleDetail(ledger);
 sumSaleLedger (ledger) += sumReceiptSaleDetail(ledger);
-costSumSaleLedger (ledger) += costSumSkuLedger(ledger) AND ledger IS receiptSaleDetail;
+costSumSaleLedger (ledger) += costSumSkuLedger(ledger) AND ledger IS ReceiptSaleDetail;
 
 // ----------------- Оплаты по чеку ------------------------------
 
-CLASS payment 'Оплата по чеку';
-TABLE payment (payment);
+CLASS Payment 'Оплата по чеку';
+TABLE payment (Payment);
 
-CLASS paymentMeans 'Форма оплаты'{
+CLASS PaymentMeans 'Форма оплаты'{
     paymentMeansCash 'Наличные',
     paymentMeansCard 'Карточка'
-} : named;
-CLASS paymentType 'Тип платежа' : named;
-TABLE paymentType (paymentType);
+} : Named;
+CLASS PaymentType 'Тип платежа' : Named;
+TABLE paymentType (PaymentType);
 
-paymentMeansPaymentType (paymentType) = DATA paymentMeans (paymentType);
+
+paymentMeansPaymentType (paymentType) = DATA PaymentMeans (PaymentType);
 namePaymentMeansPaymentType 'Форма оплаты' (paymentType) = name(paymentMeansPaymentType(paymentType)) IN base;
 
-sidPaymentType 'Идентификатор' = DATA STRING[10] (paymentType) IN base;
-sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS paymentType;
+sidPaymentType 'Идентификатор' = DATA STRING[10] (PaymentType) IN base;
+sidToTypePayment (tp) = GROUP UNIQUE paymentType BY sidPaymentType(paymentType) WHERE paymentType IS PaymentType;
 
-receiptPayment (payment) = DATA receipt (payment) NOT NULL DELETE;
+receiptPayment (payment) = DATA Receipt (Payment) NOT NULL DELETE;
 
 countPaymentReceipt 'Кол-во типов платежей' (receipt) = GROUP SUM 1 IF receiptPayment(payment) == receipt BY receipt;
 
-paymentTypePayment (payment) = DATA paymentType(payment);
+paymentTypePayment (payment) = DATA PaymentType(Payment);
 namePaymentTypePayment 'Тип платежа' (payment) = name(paymentTypePayment(payment));
 sidPaymentTypePayment 'ID Типа платежа' (payment) = sidPaymentType(paymentTypePayment(payment));
 
-minCashPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == paymentMeans.paymentMeansCash;
-minCardPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == paymentMeans.paymentMeansCard;
+minCashPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == PaymentMeans.paymentMeansCash;
+minCardPaymentType () = GROUP MIN paymentType IF paymentMeansPaymentType(paymentType) == PaymentMeans.paymentMeansCard;
 
 paymentMeansPayment (payment) = paymentMeansPaymentType(paymentTypePayment(payment));
 namePaymentMeansPayment 'Форма оплаты' (payment) = name(paymentMeansPayment(payment));
 
-numberPayment 'Номер платежа' (payment) = DATA INTEGER (payment);
-zReportReceiptPaymentToPayment (zReport, receipt, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportReceipt(receiptPayment(payment))), numberReceipt(receiptPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportReceipt(receiptPayment(payment)))) WHERE payment IS payment;
+numberPayment 'Номер платежа' (payment) = DATA INTEGER (Payment);
+zReportReceiptPaymentToPayment (zReport, receipt, number, cashRegister) = GROUP UNIQUE payment BY numberZReport(zReportReceipt(receiptPayment(payment))), numberReceipt(receiptPayment(payment)), numberPayment(payment), numberCashRegister(cashRegisterZReport(zReportReceipt(receiptPayment(payment)))) WHERE payment IS Payment;
 
-sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (payment);
+sumPayment 'Сумма платежа' (payment) = DATA NUMERIC[16,2] (Payment);
 
 sumPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) BY receiptPayment(payment);
 
-sumInCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment) == paymentMeans.paymentMeansCash  BY receiptPayment(payment);
+sumInCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash  BY receiptPayment(payment);
 
 changePaymentReceipt 'Сдача' (receipt) = sumPaymentReceipt(receipt) - sumReceiptDetailReceipt(receipt);
 
 sumCashPaymentReceipt (receipt) = sumInCashPaymentReceipt(receipt) - changePaymentReceipt(receipt);
-sumNotCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND NOT paymentMeansPayment(payment) == paymentMeans.paymentMeansCash BY receiptPayment(payment);
+sumNotCashPaymentReceipt (receipt) = GROUP SUM sumPayment(payment) AND NOT paymentMeansPayment(payment) == PaymentMeans.paymentMeansCash BY receiptPayment(payment);
 
-CONSTRAINT receipt IS receipt AND NOT sumPaymentReceipt(receipt) MESSAGE 'По чеку не указаны платежи';
+CONSTRAINT receipt IS Receipt AND NOT sumPaymentReceipt(receipt) MESSAGE 'По чеку не указаны платежи';
 CONSTRAINT sumReceiptDetailReceipt(receipt) > sumPaymentReceipt(receipt) MESSAGE 'Сумма платежей по чеку меньше суммы чека';
 CONSTRAINT sumReceiptDetailReceipt(receipt) < sumNotCashPaymentReceipt(receipt) MESSAGE 'Сумма платежей по безналичному расчету больше суммы чека';
 
@@ -362,7 +363,7 @@ discountSumReceiptDetailZReport 'Сумма скидок Z-отчета' (zRepor
 discountSumReceiptZReport 'Сумма скидок по чекам Z-отчета' (zReport) = GROUP SUM discountSumReceipt(receipt) BY zReportReceipt(receipt) PERSISTENT IN documentSumGroup;
 discountSumZReport 'Сумма скидок Z-отчета' (zReport) = discountSumReceiptDetailZReport(zReport) (+) discountSumReceiptZReport(zReport);
 
-sumCardDepartmentStoreDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==paymentMeans.paymentMeansCard
+sumCardDepartmentStoreDateFromTo 'Продано с использованием банк. карточек' (departmentStore, dateFrom, dateTo) = GROUP SUM sumPayment(payment) AND paymentMeansPayment(payment)==PaymentMeans.paymentMeansCard
     AND dateReceipt(receiptPayment(payment)) >= (dateFrom AS DATE) AND dateReceipt(receiptPayment(payment)) <= (dateTo AS DATE) AND isPostedReceipt(receiptPayment(payment))
         BY departmentStoreReceipt(receiptPayment(payment)), dateFrom, dateTo;
 
@@ -372,7 +373,7 @@ sumSaleDepartmentStoreDateFromTo 'Продано по кассе' (departmentSto
 
 // Aggregation zReport
 
-CLASS zReportCard : paymentLedger;
+CLASS ZReportCard : PaymentLedger;
 
 @defineAggregation(zReport, zReportCard, sumMeansCardZReport);
 
@@ -387,20 +388,20 @@ sumToPaymentLedger(zReportCard) += sumMeansCardZReport(zReportZReportCard(zRepor
 
 // ----------------------------------- Проведение по товарному отчету -------------------------- //
 
-@implementStockDocumentLedgerOut(zReport, departmentStore);
+@implementStockDocumentLedgerOut(ZReport, departmentStore);
 sumOutStockDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumReceiptDetailZReport(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReport;
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS ZReport;
 
 //----------------------------------- Формы -------------------------------------------------//
 
 FORM zReport 'Z-отчет'
-    OBJECTS z=zReport FIXED PANEL
+    OBJECTS z=ZReport FIXED PANEL
     PROPERTIES (z) numberCashRegisterZReport, nameDepartmentStoreZReport READONLY, dateZReport, timeZReport, numberZReport,
                    basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport, sumReceiptDetailZReport,
                    discountSumReceiptDetailZReport, VATSumSaleZReport, VATSumReturnZReport
 
-    OBJECTS b=receipt, d=receiptDetail
+    OBJECTS b=Receipt, d=ReceiptDetail
     PROPERTIES(b) numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                   numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                   discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt, exportReceipt, ADDOBJ, delete
@@ -414,12 +415,12 @@ FORM zReport 'Z-отчет'
 
     FILTERS receiptReceiptDetail(d)==b
 
-    OBJECTS p=payment
+    OBJECTS p=Payment
     PROPERTIES(p) namePaymentTypePayment, namePaymentMeansPayment, sumPayment, ADDOBJ, delete
 
     FILTERS receiptPayment(p)==b
 
-    EDIT zReport OBJECT z
+    EDIT ZReport OBJECT z
 ;
 
 DESIGN zReport FROM DEFAULT{
@@ -454,7 +455,7 @@ DESIGN zReport FROM DEFAULT{
 }
 
 FORM zReports 'Z-отчеты'
-    OBJECTS z=zReport
+    OBJECTS z=ZReport
     PROPERTIES (z) READONLY objectClassName, numberCashRegisterZReport, nameDepartmentStoreZReport, dateZReport, timeZReport,
                             numberZReport, basisZReport, countReceiptZReport, quantityReceiptDetailZReport, sumCashZReport,
                             sumReceiptDetailZReport, discountSumReceiptDetailZReport, VATSumSaleZReport, VATSumReturnZReport
@@ -462,7 +463,7 @@ FORM zReports 'Z-отчеты'
                             exportReceiptsZReport FORCE PANEL TOOLBAR, importReceiptsZReport FORCE PANEL TOOLBAR,
                             postZReport SHOWIF isDraftZReport(z), unpostZReport SHOWIF isPostedZReport(z)
 
-    OBJECTS b=receipt
+    OBJECTS b=Receipt
     PROPERTIES(b) READONLY  numberReceipt, dateReceipt, timeReceipt, nameUserReceipt,
                             numberDiscountCardReceipt, nameClientDiscountCardReceipt, sumReceiptDetailReceipt, discountSumReceiptDetailReceipt,
                             discountSumReceipt, countReceiptDetailReceipt, quantityReceiptDetailReceipt
@@ -471,18 +472,18 @@ FORM zReports 'Z-отчеты'
     FILTERS zReportReceipt(b)==z
     ORDER BY                numberReceipt
 
-    OBJECTS d=receiptDetail
+    OBJECTS d=ReceiptDetail
     PROPERTIES(d) READONLY  typeReceiptDetail, idBarcodeReceiptDetail, nameSkuReceiptDetail, quantityReceiptDetail, quantityReturnedReceiptSaleDetail FORCE GRID, priceReceiptDetail,
                             costSumSkuLedger, sumReceiptDetail, discountPercentReceiptSaleDetail FORCE GRID, discountSumReceiptDetail, descriptionSaleReceiptReturnDetail
 
     FILTERS receiptReceiptDetail(d)==b
 
-    OBJECTS p=payment
+    OBJECTS p=Payment
     PROPERTIES(p) READONLY  namePaymentTypePayment, namePaymentMeansPayment, sumPayment
 
     FILTERS receiptPayment(p)==b
 ;
-@extendFormFilterAccess(zReport, z, zReports, departmentStore);
+@extendFormFilterAccess(ZReport, z, zReports, departmentStore);
 
 DESIGN zReports FROM DEFAULT{
 
@@ -525,17 +526,17 @@ DESIGN zReports FROM DEFAULT{
 // ----------------------------------------------- Стандартные значения ------------------------------------- //
 
 loadDefaultPaymentType 'Добавить тип оплаты' = ACTION(string, paymentMeans, sid) {
-    ADDOBJ paymentType;
+    ADDOBJ PaymentType;
     FOR p == addedObject() DO {
         SET name(p) <- string AS STRING[110];
-        SET paymentMeansPaymentType(p) <- paymentMeans AS paymentMeans;
+        SET paymentMeansPaymentType(p) <- paymentMeans AS PaymentMeans;
         SET sidPaymentType(p) <- sid AS STRING[10];
     }
 }
 
 loadDefaultPaymentTypes 'Загрузить стандартные типы оплаты' = ACTION(){
-    EXEC loadDefaultPaymentType('Наличные', paymentMeans.paymentMeansCash, 'cash');
-    EXEC loadDefaultPaymentType('Карточка', paymentMeans.paymentMeansCard, 'card');
+    EXEC loadDefaultPaymentType('Наличные', PaymentMeans.paymentMeansCash, 'cash');
+    EXEC loadDefaultPaymentType('Карточка', PaymentMeans.paymentMeansCard, 'card');
 } IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultPaymentTypes);

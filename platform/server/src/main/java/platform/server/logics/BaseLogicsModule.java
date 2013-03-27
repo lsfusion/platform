@@ -212,9 +212,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initClasses() {
-        baseClass = addBaseClass("object", getString("logics.object"));
+        baseClass = addBaseClass("Object", getString("logics.object"));
 
-        month = addConcreteClass("month", getString("logics.month"),
+        month = addConcreteClass("Month", getString("logics.month"),
                 new String[]{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"},
                 new String[]{getString("logics.month.january"), getString("logics.month.february"), getString("logics.month.march"), getString("logics.month.april"), getString("logics.month.may"), getString("logics.month.june"), getString("logics.month.july"), getString("logics.month.august"), getString("logics.month.september"), getString("logics.month.october"), getString("logics.month.november"), getString("logics.month.december")},
                 baseClass.named);
@@ -222,7 +222,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 new String[]{"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"},
                 new String[]{getString("logics.days.sunday"), getString("logics.days.monday"), getString("logics.days.tuesday"), getString("logics.days.wednesday"), getString("logics.days.thursday"), getString("logics.days.friday"), getString("logics.days.saturday")},
                 baseClass.named);
-        formResult = addConcreteClass("formResult", "Результат вызова формы",
+        formResult = addConcreteClass("FormResult", "Результат вызова формы",
                 new String[]{"drop", "ok", "close"},
                 new String[]{"Сбросить", "Принять", "Закрыть"},
                 baseClass.named);

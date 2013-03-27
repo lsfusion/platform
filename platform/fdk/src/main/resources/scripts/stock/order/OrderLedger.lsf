@@ -2,30 +2,30 @@ MODULE OrderLedger;
 
 REQUIRE System, Stock;
 
-CLASS ABSTRACT orderLedger 'Резерв товара';
-TABLE orderLedger(orderLedger);
+CLASS ABSTRACT OrderLedger 'Резерв товара';
+TABLE orderLedger(OrderLedger);
 
-dateTimeOrderLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (orderLedger) PERSISTENT INDEXED;
+dateTimeOrderLedger 'Дата/время' (ledger) = ABSTRACT DATETIME (OrderLedger) PERSISTENT INDEXED;
 dateOrderLedger 'Дата' (ledger) = toDate(dateTimeOrderLedger(ledger)) PERSISTENT INDEXED;
 
-isPostedOrderLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (orderLedger) PERSISTENT;
-isClosedOrderLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (orderLedger) PERSISTENT;
+isPostedOrderLedger 'Проведен' (ledger) = ABSTRACT BOOLEAN (OrderLedger) PERSISTENT;
+isClosedOrderLedger 'Закрыт' (ledger) = ABSTRACT BOOLEAN (OrderLedger) PERSISTENT;
 
-skuOrderLedger (ledger) = ABSTRACT sku (orderLedger) PERSISTENT INDEXED;
+skuOrderLedger (ledger) = ABSTRACT Sku (OrderLedger) PERSISTENT INDEXED;
 nameSkuOrderLedger 'SKU' (ledger) = nameSku(skuOrderLedger(ledger));
 
-stockOrderLedger (ledger) = ABSTRACT stock (orderLedger) PERSISTENT INDEXED;
+stockOrderLedger (ledger) = ABSTRACT Stock (OrderLedger) PERSISTENT INDEXED;
 nameStockOrderLedger 'Склад' (ledger) = name(stockOrderLedger(ledger));
 
-descriptionOrderLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (orderLedger) PERSISTENT;
+descriptionOrderLedger 'Название документа' (ledger) = ABSTRACT STRING[200] (OrderLedger) PERSISTENT;
 
-quantityOrderLedger 'Кол-во (заказано)' (ledger) = ABSTRACT NUMERIC[14,3] (orderLedger) PERSISTENT;
-toShipQuantityOrderLedger 'Кол-во (невыполнено)' (ledger) = ABSTRACT NUMERIC[14,3] (orderLedger) PERSISTENT;
+quantityOrderLedger 'Кол-во (заказано)' (ledger) = ABSTRACT NUMERIC[14,3] (OrderLedger) PERSISTENT;
+toShipQuantityOrderLedger 'Кол-во (невыполнено)' (ledger) = ABSTRACT NUMERIC[14,3] (OrderLedger) PERSISTENT;
 
-isPurchaseOrderLedger 'Закупка' (ledger) = ABSTRACT BOOLEAN (orderLedger) PERSISTENT;
+isPurchaseOrderLedger 'Закупка' (ledger) = ABSTRACT BOOLEAN (OrderLedger) PERSISTENT;
 
 
-contactOrderLedger (ledger) = ABSTRACT legalEntity (orderLedger) PERSISTENT INDEXED;
+contactOrderLedger (ledger) = ABSTRACT LegalEntity (OrderLedger) PERSISTENT INDEXED;
 nameContactOrderLedger 'Контрагент' (ledger) = name(contactOrderLedger(ledger));
 
 inContactSku 'Связь' (legalEntity, sku)= GROUP SUM toShipQuantityOrderLedger(ledger) IF isPostedOrderLedger(ledger) AND NOT isClosedOrderLedger(ledger)
@@ -99,13 +99,13 @@ FORM orderLedger 'Резерв по позициям'
     OBJECTS t = DATETIME FIXED PANEL
     PROPERTIES  dVal=OBJVALUE(t)
 
-    OBJECTS st = stock FIXED PANEL
+    OBJECTS st = Stock FIXED PANEL
     PROPERTIES  SELECTOR name(st)
 
-    OBJECTS sk = sku FIXED PANEL
+    OBJECTS sk = Sku FIXED PANEL
     PROPERTIES  SELECTOR nameSku(sk)
 
-    OBJECTS s = orderLedger
+    OBJECTS s = OrderLedger
     PROPERTIES(s) READONLY BACKGROUND backgroundOrderLedgerDateTime(s,t)  dateOrderLedger, dateTimeOrderLedger, nameContactOrderLedger, descriptionOrderLedger,
                            quantityOrderLedger, toShipQuantityOrderLedger
     FILTERS stockOrderLedger(s)==st,
@@ -150,7 +150,7 @@ META implementSaleOrderLedgerCustom(concrete, skuProp, dateTimeProp, stockProp, 
     contactOrderLedger (ledger) += contactProp###concrete##Detail(ledger);
 END
 META implementSaleOrderLedger(concrete, skuProp, dateTimeProp, stockProp, contactProp)
-    EXTEND CLASS concrete##Detail : orderLedger;
+    EXTEND CLASS concrete##Detail : OrderLedger;
     @implementSaleOrderLedgerCustom(concrete, skuProp, dateTimeProp, stockProp, contactProp);
 END
 
@@ -168,7 +168,7 @@ META implementPurchaseOrderLedgerCustom(concrete, skuProp, dateTimeProp, stockPr
     contactOrderLedger (ledger) += contactProp###concrete##Detail(ledger);
 END
 META implementPurchaseOrderLedger(concrete, skuProp, dateTimeProp, stockProp, contactProp)
-    EXTEND CLASS concrete##Detail : orderLedger;
+    EXTEND CLASS concrete##Detail : OrderLedger;
     @implementPurchaseOrderLedgerCustom(concrete, skuProp, dateTimeProp, stockProp, contactProp);
 END
 
@@ -188,7 +188,7 @@ END
 EXTEND FORM currentBalanceSkuStock
     PROPERTIES(s, st) currentReserveSkuStock READONLY AFTER currentBalanceSkuStock(s,st)
 
-    OBJECTS l = orderLedger
+    OBJECTS l = OrderLedger
     PROPERTIES(l) READONLY dateOrderLedger, dateTimeOrderLedger, nameContactOrderLedger, descriptionOrderLedger,
                   quantityOrderLedger, toShipQuantityOrderLedger
 
@@ -197,7 +197,7 @@ EXTEND FORM currentBalanceSkuStock
 
     FILTERS isPostedOrderLedger(l) AND NOT isClosedOrderLedger(l) AND isPurchaseOrderLedger(l)
 
-    OBJECTS ll = orderLedger
+    OBJECTS ll = OrderLedger
     PROPERTIES(ll) READONLY dateOrderLedger, dateTimeOrderLedger, nameContactOrderLedger, descriptionOrderLedger,
                    quantityOrderLedger, toShipQuantityOrderLedger
 

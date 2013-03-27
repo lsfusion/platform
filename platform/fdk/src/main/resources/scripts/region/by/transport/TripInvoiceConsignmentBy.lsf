@@ -13,29 +13,29 @@ META setTripPropTrip(prop)
     WHEN CHANGED(prop##Trip(tripInvoice(invoice))) DO EXEC setTrip###prop##Trip(invoice);
 END
 
-issuanceAllowedTrip = DATA employee(trip);
+issuanceAllowedTrip = DATA Employee(Trip);
 nameIssuanceAllowedTrip 'Отпуск разрешил' (trip) = nameContact(issuanceAllowedTrip(trip));
 @setTripPropTrip(issuanceAllowed);
 
-issuanceExecutedTrip = DATA employee(trip);
+issuanceExecutedTrip = DATA Employee(Trip);
 nameIssuanceExecutedTrip 'Отпуск произвел' (trip) = nameContact(issuanceExecutedTrip(trip));
 @setTripPropTrip(issuanceExecuted);
 
-forwarderTrip 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы'= DATA STRING[40](trip);
+forwarderTrip 'Товар к перевозке принял (экспедитор), должность, фамилия, инициалы'= DATA STRING[40](Trip);
 @setTripPropTrip(forwarder);
 
-loadingExecuterTrip = DATA employee(trip);
+loadingExecuterTrip = DATA Employee(Trip);
 nameLoadingExecuterTrip 'Исполнитель ПРР' (trip) = nameContact(loadingExecuterTrip(trip));
 @setTripPropTrip(loadingExecuter);
 
-wayOfLoadingTrip = DATA wayOfLoading(trip);
+wayOfLoadingTrip = DATA WayOfLoading(Trip);
 nameWayOfLoadingTrip 'Способ ПРР' (trip) = name(wayOfLoadingTrip(trip));
 @setTripPropTrip(wayOfLoading);
 
-codeLoadingTrip 'Код ПРР' = DATA STRING[3] (trip);
+codeLoadingTrip 'Код ПРР' = DATA STRING[3] (Trip);
 @setTripPropTrip(codeLoading);
 
-currencyTrip 'Валюта (ИД)' = DATA currency(trip);
+currencyTrip 'Валюта (ИД)' = DATA Currency(Trip);
 shortNameCurrencyTrip 'Валюта' (trip) = shortNameCurrency(currencyTrip(trip));
 documentNameCurrencyTrip 'Валюта в накладной сокр.' (trip) = documentNameCurrency(currencyTrip(trip));
 @setTripPropTrip(currency);

@@ -7,8 +7,8 @@ REQUIRE System,
         Store;
 
 // документ скидок для товарного отчета
-CLASS zReportRepricing 'Скидка по продаже через кассы';
-TABLE zReportRepricing (zReportRepricing);
+CLASS ZReportRepricing 'Скидка по продаже через кассы';
+TABLE zReportRepricing (ZReportRepricing);
 
 @defineAggregation(zReport, zReportRepricing, discountSumReceiptDetailZReport);
 @defineDocumentAggregationHeaderTime(zReport, zReportRepricing);
@@ -23,7 +23,7 @@ descriptionZReportRepricing (zReportRepricing) =
     [FORMULA STRING[200] '\'Скидка по кассе \' || CAST($1 AS TEXT) || \' отдела \' || CAST($2 AS TEXT) ||  \' от \' || CAST($3 AS TEXT)'](
     numberCashRegisterZReportRepricing(zReportRepricing), nameDepartmentStoreZReportRepricing(zReportRepricing), dateZReportRepricing(zReportRepricing));
 
-@implementStockDocumentLedgerOut(zReportRepricing, departmentStore);
+@implementStockDocumentLedgerOut(ZReportRepricing, departmentStore);
 sumOutStockDocumentLedger (ledger) += discountZReportRepricing(ledger);
 sumItemOutStockDocumentLedger (ledger) += discountZReportRepricing(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS zReportRepricing;
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS ZReportRepricing;

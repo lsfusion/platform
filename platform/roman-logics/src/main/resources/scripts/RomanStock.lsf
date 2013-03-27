@@ -37,7 +37,7 @@ EXTEND FORM UOMs
 
 // объявляем группы sku
 parentSkuGroup (skuGroup) += parentCategory(skuGroup);
-nameSkuGroupLanguage(skuGroup, language) += languageName(skuGroup, language) IF skuGroup IS category;
+nameSkuGroupLanguage(skuGroup, language) += languageName(skuGroup, language) IF skuGroup IS Category;
 
 skuGroupSku (sku) += categoryArticleSku(sku);
 
@@ -55,9 +55,9 @@ EXTEND FORM currentBalanceBatchStock
     PROPERTIES(bt, st) READONLY currentBalanceABatchStock AFTER currentBalanceBatchStock
 ;
 
-TABLE articleStock (article, stock);
-TABLE articleStockDate(article, stock, DATE);
-TABLE articleDate(article, DATE);
+TABLE articleStock (Article, Stock);
+TABLE articleStockDate(Article, Stock, DATE);
+TABLE articleDate(Article, DATE);
 
 currentBalanceArticleStock 'Тек. остаток' = GROUP SUM currentBalanceSkuStock(sku, stock) BY articleSku(sku), stock PERSISTENT;
 currentBalanceArticle 'Тек. остаток' = GROUP SUM currentBalanceArticleStock(article, stock) BY article PERSISTENT;
@@ -69,12 +69,12 @@ balanceAArticleDate 'Остаток на конец дня' (article, date) = GR
 //CLASS batchType {
 //    batchTypeA 'Бухгалтерская',
 //    batchTypeB 'Управленческая'
-//} : named;
+//} : Named;
 
-//orderABatchType (type) = IF type == batchType.batchTypeA THEN 0 IF type == batchType.batchTypeA ELSE 1 IF type IS batchType PERSISTENT;
-//orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS batchType PERSISTENT;
+//orderABatchType (type) = IF type == batchType.batchTypeA THEN 0 IF type == batchType.batchTypeA ELSE 1 IF type IS BatchType PERSISTENT;
+//orderBBatchType (type) = IF type == batchType.batchTypeB THEN 0 IF type == batchType.batchTypeB ELSE 1 IF type IS BatchType PERSISTENT;
 //
-//batchTypeBatch = ABSTRACT batchType (batch) PERSISTENT;
+//batchTypeBatch = ABSTRACT BatchType (Batch) PERSISTENT;
 //nameBatchTypeBatch 'Тип партии' (batch) = name(batchTypeBatch(batch)) IN base;
 
 //orderABatch (batch) = orderABatchType(batchTypeBatch(batch)) PERSISTENT;
@@ -82,22 +82,22 @@ balanceAArticleDate 'Остаток на конец дня' (article, date) = GR
 
 //META implementABatch (concrete, skuProp)
 //    @implementBatch(concrete, skuProp);
-//    batchTypeBatch (batch) += batchType.batchTypeA IF batch IS concrete##Detail;
+//    batchTypeBatch (batch) += batchType.batchTypeA IF batch IS Concrete##Detail;
 //END
 //
 //META implementBBatch (concrete, skuProp)
 //    @implementBatch(concrete, skuProp);
-//    batchTypeBatch (batch) += batchType.batchTypeB IF batch IS concrete##Detail;
+//    batchTypeBatch (batch) += batchType.batchTypeB IF batch IS Concrete##Detail;
 //END
 
-CLASS ABSTRACT batchA 'Бухгалтерская партия' : batch;
-CLASS ABSTRACT batchB 'Управленческая партия' : batch;
+CLASS ABSTRACT BatchA 'Бухгалтерская партия' : Batch;
+CLASS ABSTRACT BatchB 'Управленческая партия' : Batch;
 
-typeBatch 'Тип партии' (batch) = IF batch IS batchA THEN 'А' AND batch IS batchA
-                                                    ELSE 'Б' AND batch IS batchB FIXEDCHARWIDTH 2;
+typeBatch 'Тип партии' (batch) = IF batch IS BatchA THEN 'А' AND batch IS BatchA
+                                                    ELSE 'Б' AND batch IS BatchB FIXEDCHARWIDTH 2;
 
-orderABatch (batch) = IF batch IS batchA THEN 0 IF batch IS batchA ELSE 1 IF batch IS batchB PERSISTENT;
-orderBBatch (batch) = IF batch IS batchB THEN 0 IF batch IS batchB ELSE 1 IF batch IS batchA PERSISTENT;
+orderABatch (batch) = IF batch IS BatchA THEN 0 IF batch IS BatchA ELSE 1 IF batch IS BatchB PERSISTENT;
+orderBBatch (batch) = IF batch IS BatchB THEN 0 IF batch IS BatchB ELSE 1 IF batch IS BatchA PERSISTENT;
 
 META implementSkuLedgerOutFIFOBalanceA (object, stockProp)
     @implementSkuLedgerOutFIFOBalance (object, stockProp);
@@ -110,23 +110,23 @@ META implementSkuLedgerOutFIFOBalanceB (object, stockProp)
 END
 
 // ------------------------------------------------- Внутренние партии ----------------------------------------- //
-ownerBatchA = ABSTRACT legalEntity(batchA) PERSISTENT;
+ownerBatchA = ABSTRACT LegalEntity(BatchA) PERSISTENT;
 nameOwnerBatchA 'Собственник' (batch) = name(ownerBatchA(batch)) IN base;
 
-commissionContractSkuBatchA = ABSTRACT contractSku (batchA) PERSISTENT INDEXED;
+commissionContractSkuBatchA = ABSTRACT ContractSku (BatchA) PERSISTENT INDEXED;
 numberCommissionContractSkuBatchA 'Номер договора комиссии' (batch) = numberContract(commissionContractSkuBatchA(batch)) IN base;
 
-importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+importerPriceBatchA 'Цена импортера' (batchA) = ABSTRACT NUMERIC[14,2] (BatchA) PERSISTENT;
 
-supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (batchA) PERSISTENT;
+supplierPriceBatchA 'Цена поставщика' (batchA) = ABSTRACT NUMERIC[14,2] (BatchA) PERSISTENT;
 supplierSumSkuLedger 'Сумма поставщика' (ledger) = GROUP SUM costSkuLedgerBatch(ledger, batch) * supplierPriceBatchA(batch) BY ledger;
 
-rangeVATBatchA (batchA) = ABSTRACT range (batchA) PERSISTENT;
+rangeVATBatchA (batchA) = ABSTRACT Range (BatchA) PERSISTENT;
 numberSupplierVATBatchA 'НДС, номер' (batchA) = numberRange(rangeVATBatchA(batchA));
 valueSupplierVATBatchA 'НДС,%' (batchA) = valueRateRangeDate
     (rangeVATBatchA(batchA), dateBatch(batchA));
 
-CONSTRAINT taxRange(rangeVATBatchA(batchA)) != tax.taxVAT OR
+CONSTRAINT taxRange(rangeVATBatchA(batchA)) != Tax.taxVAT OR
            countryRange(rangeVATBatchA(batchA)) != countryLegalEntity(ownerBatchA(batchA))
            CHECKED BY rangeVATBatchA
            MESSAGE 'ошибка: Шкала должна соответствовать шкале НДС и стране собственника партии';
@@ -175,19 +175,19 @@ META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
     @defineDocumentInterfaceDetailQuantityPackPrefix(object, skuProp, , );
 END
 
-quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (sku);
+quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (Sku);
 Stock.netWeightSku(sku) += RomanLogicsModule.netWeightSku(sku);
 
 FORM batchADialogForm 'Партия'
-    OBJECTS ba = batchA
+    OBJECTS ba = BatchA
     PROPERTIES (ba) READONLY nameSkuBatch, descriptionBatch, nameOwnerBatchA, importerPriceBatchA, supplierPriceBatchA,
                    numberSupplierVATBatchA, valueSupplierVATBatchA, currentBalanceBatch
 
-    DIALOG batchA OBJECT ba
+    DIALOG BatchA OBJECT ba
 ;
 
-priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (sku, stock, DATETIME);
-priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (batch, stock, DATETIME);
+priceSkuStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (Sku, Stock, DATETIME);
+priceBatchStockDateTime 'Цена' = ABSTRACT NUMERIC[14,2] (Batch, Stock, DATETIME);
 
-priceBatchStockDateTime(batch, stock, dateTime) += supplierPriceBatchA(batch) IF stock IS warehouse AND dateTime IS DATETIME;
-//priceSkuStockDateTime(sku, stock, dateTime) += 155.2 IF sku IS sku IF stock IS warehouse AND dateTime IS DATETIME;
+priceBatchStockDateTime(batch, stock, dateTime) += supplierPriceBatchA(batch) IF stock IS Warehouse AND dateTime IS DATETIME;
+//priceSkuStockDateTime(sku, stock, dateTime) += 155.2 IF sku IS Sku IF stock IS Warehouse AND dateTime IS DATETIME;

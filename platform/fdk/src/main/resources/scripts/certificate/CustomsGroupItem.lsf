@@ -2,7 +2,7 @@ MODULE CustomsGroupItem;
 
 REQUIRE CustomsGroup, Item;
 
-customsGroupCountryItem = DATA customsGroup(country, item);
+customsGroupCountryItem = DATA CustomsGroup(Country, Item);
 codeCustomsGroupCountryItem 'ТН ВЭД' (country, item) = codeCustomsGroup(customsGroupCountryItem(country, item));
 
 customsGroupCountrySku(country, sku) += customsGroupCountryItem(country, sku);

@@ -8,13 +8,13 @@ PRIORITY Sale;
 
 GROUP orderSaleGroup 'Информация о заказе' : public;
 
-createPurchaseOrder 'Создать заказ (закупка)' = ABSTRACT BOOLEAN (order) PERSISTENT;
-createPurchaseUserOrder 'Создать заказ (закупка)' = DATA BOOLEAN (userOrder) PERSISTENT;
+createPurchaseOrder 'Создать заказ (закупка)' = ABSTRACT BOOLEAN (Order) PERSISTENT;
+createPurchaseUserOrder 'Создать заказ (закупка)' = DATA BOOLEAN (UserOrder) PERSISTENT;
 createPurchaseOrder(order) += createPurchaseUserOrder(order);
 
 createPurchaseOrderDetail 'Создать заказ (закупка)' (orderDetail) = createPurchaseOrder(orderOrderDetail(orderDetail))PERSISTENT;
 createPurchaseUserOrderDetail 'Создать заказ (закупка)' (userOrderDetail) = createPurchaseUserOrder(userOrderUserOrderDetail(userOrderDetail));
-backgroundPurchaseOrder 'Цвет' (order) = RGB(255, 214, 214) IF order IS order;
+backgroundPurchaseOrder 'Цвет' (order) = RGB(255, 214, 214) IF order IS Order;
 EXTEND FORM userOrder
     PROPERTIES(o) BACKGROUND backgroundPurchaseOrder(o) createPurchaseUserOrder
 ;
@@ -32,9 +32,9 @@ EXTEND FORM orders
     PROPERTIES(o) READONLY BACKGROUND backgroundPurchaseOrder(o) createPurchaseOrder
 ;
 
-CLASS purchaseOrder 'Заказ на основе заказа': Purchase.order;
-CLASS purchaseOrderPosted 'Проведенный заказ на основе заказа' : purchaseOrder, postedObject;
-CLASS purchaseOrderDetail 'Строка заказа на основе заказа' : Purchase.orderDetail;
+CLASS PurchaseOrder 'Заказ на основе заказа': Purchase.Order;
+CLASS PurchaseOrderPosted 'Проведенный заказ на основе заказа' : PurchaseOrder, PostedObject;
+CLASS PurchaseOrderDetail 'Строка заказа на основе заказа' : Purchase.OrderDetail;
 
 @defineDocumentTables(purchaseOrder);
 

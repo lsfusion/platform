@@ -28,9 +28,9 @@ valueRetailVATUserOutputDetail(detail) <- valueVATProductDetail(productDetailUse
 
 @defineDocumentInterfaceDetailMarkupPrefix (output, retail, );
 retailMarkupUserOutputDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
-                                        0.0 IF detail IS userOutputDetail OR retailPriceUserOutputDetail(detail),
+                                        0.0 IF detail IS UserOutputDetail OR retailPriceUserOutputDetail(detail),
                                         supplierPriceUserOutputDetail(detail),
-                                        0.0 IF detail IS userOutputDetail OR valueRetailVATUserOutputDetail(detail))
+                                        0.0 IF detail IS UserOutputDetail OR valueRetailVATUserOutputDetail(detail))
         WHEN CHANGED(retailPriceUserOutputDetail(detail)) OR
              CHANGED(supplierPriceUserOutputDetail(detail)) OR
              CHANGED(retailPriceUserOutputDetail(detail))
@@ -65,7 +65,7 @@ retailMarkupUserOutputDetail(userOutputDetail) <-[round2(X*100/Y)](retailMarkupS
 
 //-- аггр.расценка на основе заказа
 @defineDocumentHeaderCreate (order, createPricing, 'Создать акт расценки');
-backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS order;
+backgroundRetailOrder 'Цвет' (order) = RGB(224, 255, 255) IF order IS Order;
 
 @defineDocumentHeaderPricingCommittee(order, productsStock, );
 
@@ -116,7 +116,7 @@ EXTEND FORM orders
 
 //-- аггр.расценка на основе производства
 
-backgroundRetailOutput 'Цвет' (output) = RGB(224, 255, 255) IF output IS output;
+backgroundRetailOutput 'Цвет' (output) = RGB(224, 255, 255) IF output IS Output;
 
 EXTEND FORM userOutput
     PROPERTIES(o)  BACKGROUND backgroundRetailOutput(o) createPricingUserOutput, namePricingCommitteeUserOutput SHOWIF createPricingUserOutput(o)
@@ -141,9 +141,9 @@ EXTEND FORM outputs
                    valueRetailVATOutputDetail, retailVATSumOutputDetail, retailPriceOutputDetail, retailSumOutputDetail
 ;
 
-CLASS outputPricing 'Акт расценки на основе производства' : pricing;
-CLASS outputPricingPosted 'Проведенный акт расценки на основе производства': outputPricing, postedObject;
-CLASS outputPricingDetail 'Строка акта расценки на основе производства' : pricingDetail;
+CLASS OutputPricing 'Акт расценки на основе производства' : Pricing;
+CLASS OutputPricingPosted 'Проведенный акт расценки на основе производства': OutputPricing, PostedObject;
+CLASS OutputPricingDetail 'Строка акта расценки на основе производства' : PricingDetail;
 
 @defineDocumentTables(outputPricing);
 
@@ -162,9 +162,9 @@ datePricing(pricing) += dateOutputPricing(pricing);
 timePricing(pricing) += timeOutputPricing(pricing);
 
 
-departmentStorePricing(pricing) += stockOutput(outputOutputPricing(pricing)) IF stockOutput(outputOutputPricing(pricing)) IS departmentStore;
+departmentStorePricing(pricing) += stockOutput(outputOutputPricing(pricing)) IF stockOutput(outputOutputPricing(pricing)) IS DepartmentStore;
 dataDepartmentStorePricingDetail(pricingDetail) += stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail)))
-                                                   IF stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail))) IS departmentStore;
+                                                   IF stockOutput(outputOutputPricing(outputPricingOutputPricingDetail(pricingDetail))) IS DepartmentStore;
 
 supplierPricing(pricing) += legalEntityStockOutput(outputOutputPricing(pricing));
 

@@ -558,7 +558,7 @@ public class BudgetLogicsModule extends LogicsModule {
     }
 
     public ConcreteCustomClass getCurrencyClass() {
-        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("Currency");
     }
     
     private class RecordFormEntity extends FormEntity {

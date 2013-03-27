@@ -1,13 +1,11 @@
 package platform.server.logics;
 
 import org.antlr.runtime.RecognitionException;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
-
-import static platform.server.logics.ServerResourceBundle.getString;
 
 public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
@@ -40,9 +38,9 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        scheduledTask = (ConcreteCustomClass) getClassByName("scheduledTask");
-        scheduledTaskLog = (ConcreteCustomClass) getClassByName("scheduledTaskLog");
-        scheduledClientTaskLog = (ConcreteCustomClass) getClassByName("scheduledClientTaskLog");
+        scheduledTask = (ConcreteCustomClass) getClassByName("ScheduledTask");
+        scheduledTaskLog = (ConcreteCustomClass) getClassByName("ScheduledTaskLog");
+        scheduledClientTaskLog = (ConcreteCustomClass) getClassByName("ScheduledClientTaskLog");
     }
 
     @Override

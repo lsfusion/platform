@@ -5,12 +5,12 @@ NAMESPACE Production;
 
 // ---------------- Списание матириалов, производство ------------------- //
 
-CLASS ABSTRACT consumption 'Списание сырья' : document;
-CLASS ABSTRACT consumptionDetail 'Строка списания сырья' : named, documentDetail;
+CLASS ABSTRACT Consumption 'Списание сырья' : Document;
+CLASS ABSTRACT ConsumptionDetail 'Строка списания сырья' : Named, DocumentDetail;
 
-CLASS userConsumption 'Списание сырья (польз.)': consumption, historizable, numeratedObject;
-CLASS userConsumptionDetail 'Строка списания сырья (польз.)' : consumptionDetail;
-CLASS userConsumptionPosted 'Проведенное списание сырья (польз.)': userConsumption, postedObject;
+CLASS UserConsumption 'Списание сырья (польз.)': Consumption, Historizable, NumeratedObject;
+CLASS UserConsumptionDetail 'Строка списания сырья (польз.)' : ConsumptionDetail;
+CLASS UserConsumptionPosted 'Проведенное списание сырья (польз.)': UserConsumption, PostedObject;
 
 @defineNumeratedObjectDefault(userConsumption, 'Нумератор для списания сырья', 'СС');
 
@@ -60,8 +60,8 @@ supplierStockDocument(consumption) += stockConsumption(consumption);
 
 //GROUP orderGroup 'Информация о заказе' : public;
 
-componentDetailConsumptionDetail = ABSTRACT componentDetail (consumptionDetail) PERSISTENT;
-componentDetailUserConsumptionDetail = DATA componentDetail (userConsumptionDetail);
+componentDetailConsumptionDetail = ABSTRACT ComponentDetail (ConsumptionDetail) PERSISTENT;
+componentDetailUserConsumptionDetail = DATA ComponentDetail (UserConsumptionDetail);
 componentDetailConsumptionDetail(consumptionDetail) += componentDetailUserConsumptionDetail(consumptionDetail);
 
 CONSTRAINT stockConsumptionDetail(detail) != componentsStockComponentDetail(componentDetailUserConsumptionDetail(detail)) OR
@@ -114,7 +114,7 @@ createOutputComponentOrder 'Заполнить кол-во компоненто�
     }
 } TOOLBAR;
 
-backgroundConsumptionOrder 'Цвет' (order) = RGB(212, 255, 212) IF order IS order;
+backgroundConsumptionOrder 'Цвет' (order) = RGB(212, 255, 212) IF order IS Order;
 
 EXTEND FORM componentDetails
     PROPERTIES(d) READONLY toConsumeComponentDetail
@@ -129,10 +129,10 @@ EXTEND DESIGN componentDetails {
 
 FORM consumptionOrders 'Производственные заказы'
 
-    OBJECTS s = stock FIXED PANEL
+    OBJECTS s = Stock FIXED PANEL
 //    PROPERTIES (s) READONLY name
 
-    OBJECTS o = order
+    OBJECTS o = Order
     PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
@@ -140,12 +140,12 @@ FORM consumptionOrders 'Производственные заказы'
             componentsStockOrder(o) == s,
             toConsumeComponentDetailOrder(o)
 
-    OBJECTS pd=productDetail
+    OBJECTS pd=ProductDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    calcComponentsPriceProductDetail, componentsPriceProductDetail, markupProductDetail, productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
 
-    OBJECTS cd = componentDetail
+    OBJECTS cd = ComponentDetail
     PROPERTIES(cd) READONLY indexComponentDetail, nameSkuComponentDetail, nameComponentComponentDetail,
                    shortNameUOMComponentDetail, quantityComponentDetail
 
@@ -187,11 +187,11 @@ DESIGN consumptionOrders FROM DEFAULT {
 fillOrderUserConsumption 'Заполнить на основе производственного заказа' =  ACTION (userConsumption) {
     FORM consumptionOrders OBJECTS s = stockUserConsumption(userConsumption) MODAL;
 
-    IF formResult() == formResult.ok THEN {
-        LOCAL productionOrder = order();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL productionOrder = Order();
         SET productionOrder() <- chosenObject('o');
 
-        FOR orderComponentDetail(componentDetail) == productionOrder() ADDOBJ d = userConsumptionDetail DO {
+        FOR orderComponentDetail(componentDetail) == productionOrder() ADDOBJ d = UserConsumptionDetail DO {
             SET userConsumptionUserConsumptionDetail(d) <- userConsumption;
             SET componentDetailUserConsumptionDetail(d) <- componentDetail;
             SET skuUserConsumptionDetail(d) <- skuComponentDetail(componentDetail);
@@ -202,13 +202,13 @@ fillOrderUserConsumption 'Заполнить на основе производ�
 
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(consumptionDetail, sku, stock);
+@implementSkuLedgerOutFIFO(ConsumptionDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityConsumptionDetail(ledger);
 @implementSkuLedgerOutFIFOBalance (consumptionDetail, stock);
 sumOutSkuLedger (ledger) += sumConsumptionDetail(ledger);
 
 // Товарный отчет
-@implementStockDocumentLedgerOut(consumption, stock);
+@implementStockDocumentLedgerOut(Consumption, stock);
 sumOutStockDocumentLedger (ledger) += sumConsumptionDetailConsumption(ledger);
 sumItemOutStockDocumentLedger (ledger) += sumItemConsumptionDetailConsumption(ledger);
 sumContainerOutStockDocumentLedger (ledger) += sumContainerConsumptionDetailConsumption(ledger);
@@ -238,9 +238,9 @@ EXTEND FORM orders
                            consumedSumComponentDetail
 ;
 
-CLASS orderConsumption 'Списание сырья на основе заказа' : consumption;
-CLASS orderConsumptionPosted 'Проведенное списание сырья на основе заказа': orderConsumption, postedObject;
-CLASS orderConsumptionDetail 'Строка списания сырья на основе заказа' : consumptionDetail;
+CLASS OrderConsumption 'Списание сырья на основе заказа' : Consumption;
+CLASS OrderConsumptionPosted 'Проведенное списание сырья на основе заказа': OrderConsumption, PostedObject;
+CLASS OrderConsumptionDetail 'Строка списания сырья на основе заказа' : ConsumptionDetail;
 
 @defineDocumentTables(orderConsumption);
 
@@ -290,13 +290,13 @@ editConsumption(consumption) += ACTION EXEC editOrder(orderOrderConsumption(cons
 // --------------------------- Формы Списания ---------------------------------
 
 FORM userConsumption 'Списание сырья'
-    OBJECTS o = userConsumption FIXED PANEL
+    OBJECTS o = UserConsumption FIXED PANEL
     PROPERTIES (o) objectClassName, nameStockUserConsumption, nameNumeratorObject, numberObject, seriesObject, dateUserConsumption, timeUserConsumption,
                    nameCurrencyUserConsumption, namePriceListTypeUserConsumption, noteUserConsumption,
                    countUserConsumptionDetailUserConsumption, quantityUserConsumptionDetailUserConsumption, sumUserConsumptionDetailUserConsumption,
                    fillOrderUserConsumption, ordersConsumption READONLY
 
-    OBJECTS d = userConsumptionDetail
+    OBJECTS d = UserConsumptionDetail
     PROPERTIES (d) indexUserConsumptionDetail, idBarcodeSkuUserConsumptionDetail, nameSkuUserConsumptionDetail, shortNameUOMSkuUserConsumptionDetail,
                    namePriceListTypeUserConsumptionDetail, quantityUserConsumptionDetail, priceUserConsumptionDetail, sumUserConsumptionDetail,
                    descriptionIndexComponentDetailUserConsumptionDetail, ADDOBJ, delete
@@ -311,7 +311,7 @@ FORM userConsumption 'Списание сырья'
     HINTTABLE LIST dateTimeUserConsumptionDetail, skuUserConsumptionDetail, stockUserConsumptionDetail,
                    priceListTypeUserConsumptionDetail, currencyUserConsumptionDetail, priceUserConsumptionDetail
 
-    EDIT userConsumption OBJECT o
+    EDIT UserConsumption OBJECT o
 ;
 
 DESIGN userConsumption FROM DEFAULT{
@@ -367,19 +367,19 @@ DESIGN userConsumption FROM DEFAULT{
 
 //-- SKU
 
-addUserConsumption 'Добавить' = ACTION ADDFORM userConsumption;
-editUserConsumption 'Редактировать' (userConsumption) = ACTION EDITFORM userConsumption;
+addUserConsumption 'Добавить' = ACTION ADDFORM UserConsumption;
+editUserConsumption 'Редактировать' (userConsumption) = ACTION EDITFORM UserConsumption;
 editConsumption(consumption) += editUserConsumption(consumption);
 
 copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
-    FOR ADDOBJ o = userConsumption DO {
+    FOR ADDOBJ o = UserConsumption DO {
         SET stockUserConsumption(o) <- stockUserConsumption(userConsumption);
         SET currencyUserConsumption(o) <- currencyUserConsumption(userConsumption);
         SET priceListTypeUserConsumption(o) <- priceListTypeUserConsumption(userConsumption);
         SET noteUserConsumption(o) <- noteUserConsumption(userConsumption);
 
         FOR userConsumptionUserConsumptionDetail(userConsumptionDetail) == userConsumption DO {
-            FOR ADDOBJ d=userConsumptionDetail DO {
+            FOR ADDOBJ d=UserConsumptionDetail DO {
                 SET userConsumptionUserConsumptionDetail(d) <- o;
                 SET skuUserConsumptionDetail(d) <- skuUserConsumptionDetail(userConsumptionDetail);
                 SET quantityUserConsumptionDetail(d) <- quantityUserConsumptionDetail(userConsumptionDetail);
@@ -395,14 +395,14 @@ copyConsumption 'Копировать' = ACTION (userConsumption) NEWSESSION {
 
 createShipmentConsumption 'Создать поставку для Сырья' = ACTION (consumption)  {
 
-    FOR ADDOBJ sh = Sale.userShipment DO {
+    FOR ADDOBJ sh = Sale.UserShipment DO {
         SET Sale.supplierUserShipment(sh) <- legalEntityStockConsumption(consumption);
         SET Sale.customerUserShipment(sh) <- legalEntityStockConsumption(consumption);
         SET Sale.customerStockUserShipment(sh) <- stockConsumption(consumption);
         SET createPurchaseUserShipment(sh) <- TRUE;
         SET Sale.noteUserShipment(sh) <- [FORMULA STRING[100] 'CAST($1 AS TEXT)'](descriptionConsumption(consumption));
 
-        FOR consumptionConsumptionDetail(consumptionDetail)== consumption ADDOBJ d = Sale.userShipmentDetail DO {
+        FOR consumptionConsumptionDetail(consumptionDetail)== consumption ADDOBJ d = Sale.UserShipmentDetail DO {
             SET Sale.userShipmentUserShipmentDetail(d) <- sh;
             SET Sale.skuUserShipmentDetail(d) <- skuConsumptionDetail(consumptionDetail);
             SET Sale.quantityUserShipmentDetail(d) <- quantityConsumptionDetail(consumptionDetail);
@@ -410,7 +410,7 @@ createShipmentConsumption 'Создать поставку для Сырья' = 
         }
 
     FORM Sale.userShipment OBJECTS s=sh MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             EXEC apply();
         }
     }
@@ -419,7 +419,7 @@ createShipmentConsumption 'Создать поставку для Сырья' = 
 
 
 FORM consumptions 'Списания сырья'
-    OBJECTS o = consumption
+    OBJECTS o = Consumption
     PROPERTIES (o) READONLY isPostedConsumption FORCE GRID, objectClassName, numberConsumption, seriesConsumption, dateConsumption, timeConsumption,
                             nameStockConsumption, nameCurrencyConsumption, namePriceListTypeConsumption, noteConsumption,
                             countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption, ordersConsumption
@@ -431,15 +431,15 @@ FORM consumptions 'Списания сырья'
     PROPERTIES (o) editConsumption, copyConsumption
     PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserConsumption(o)
 
-    OBJECTS d=consumptionDetail
+    OBJECTS d=ConsumptionDetail
     PROPERTIES (d) READONLY indexConsumptionDetail, idBarcodeSkuConsumptionDetail, nameSkuConsumptionDetail, shortNameUOMSkuConsumptionDetail
     PROPERTIES (d) READONLY namePriceListTypeConsumptionDetail, quantityConsumptionDetail, priceConsumptionDetail, sumConsumptionDetail,
                    descriptionIndexComponentDetailConsumptionDetail
 
     FILTERS consumptionConsumptionDetail(d) == o
-    DIALOG consumption OBJECT o
+    DIALOG Consumption OBJECT o
 ;
-@extendFormFilterAccess(consumption, o, consumptions, stock);
+@extendFormFilterAccess(Consumption, o, consumptions, stock);
 
 DESIGN consumptions FROM DEFAULT {
     PROPERTY (delete(o)) {

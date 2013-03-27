@@ -28,7 +28,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface termInterface;
 
     public TranslateDictionaryActionProperty(ScriptingLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClassByName("dictionary"), StringClass.get(50)});
+        super(LM, new ValueClass[]{LM.getClassByName("Dictionary"), StringClass.get(50)});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         dictionaryInterface = i.next();

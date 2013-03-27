@@ -6,7 +6,7 @@ NAMESPACE POS;
 
 // ------------------------------------------------ Проведение по регистру ------------------------------------- //
 
-userSkipAReceiptDetail (receiptDetail) = DATA BOOLEAN (receiptDetail);
+userSkipAReceiptDetail (receiptDetail) = DATA BOOLEAN (ReceiptDetail);
 
 diffCompanyReceipt (receipt) = legalEntityCashRegister (cashRegisterZReport(zReportReceipt(receipt))) != legalEntityDepartmentStore (departmentStoreReceipt (receipt));
 
@@ -50,7 +50,7 @@ selectSkipAReceiptDetailZReport 'Подобрать строки' = ACTION (zRep
 
 selectDialogSkipAReceiptDetailZReport 'Подобрать строки' = ACTION (zReport) {
     FORM dialogNumeric MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         EXEC selectSkipAReceiptDetailZReport(zReport, chosenNumeric('n'));
     }
 } TOOLBAR;

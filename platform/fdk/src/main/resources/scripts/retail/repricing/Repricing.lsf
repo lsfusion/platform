@@ -4,11 +4,11 @@ REQUIRE Employee, Store, Pricing, StockDocument, PriceList;
 
 // ----------------------------------- Комиссия ------------------------------------------ //
 
-CLASS repricingCommittee 'Комиссия переоценки' : committee;
+CLASS RepricingCommittee 'Комиссия переоценки' : Committee;
 
 // ----------------------------------- Комиссия по умолчанию для отдела ------------------------------------------ //
 
-repricingCommitteeDepartmentStore = DATA repricingCommittee (departmentStore);
+repricingCommitteeDepartmentStore = DATA RepricingCommittee (DepartmentStore);
 nameRepricingCommitteeDepartmentStore 'Комиссия переоценки' (departmentStore) = name(repricingCommitteeDepartmentStore(departmentStore)) IN committeeGroup;
 isDefaultRepricingCommitteeDepartmentStore 'По умолчанию' (repricingCommittee, departmentStore) = repricingCommitteeDepartmentStore(departmentStore) == repricingCommittee;
 CONSTRAINT repricingCommitteeDepartmentStore(departmentStore) AND NOT inCommitteeEmployeeDivision(repricingCommitteeDepartmentStore(departmentStore), departmentStore)
@@ -19,20 +19,20 @@ EXTEND FORM departmentStore PROPERTIES nameRepricingCommitteeDepartmentStore(d);
 // ----------------------------------- Формы для комиссий переоценки ------------------------------------------ //
 
 FORM repricingCommittee 'Комиссия переоценки'
-    OBJECTS c=repricingCommittee FIXED PANEL
+    OBJECTS c=RepricingCommittee FIXED PANEL
     PROPERTIES(c)      name, nameChairmanCommittee
 
-    TREE treeStore a=STRING[3], t=chainStores, st=storeType, s=store
+    TREE treeStore a=STRING[3], t=ChainStores, st=StoreType, s=Store
     PROPERTIES         READONLY OBJVALUE(a), name(t), name(st), name(s)
     FILTERS            stringEqualsAll(a), inChainStoresStoreType (t, st), inStoreTypeStore(st, s)
 
-    OBJECTS dep=departmentStore
+    OBJECTS dep=DepartmentStore
     PROPERTIES(dep)    READONLY depName = name
     PROPERTIES(c, dep) inCommitteeEmployeeDivision, isDefaultRepricingCommitteeDepartmentStore
     FILTERS            inChainStoresStoreTypeStoreDepartmentStore(t, st, s, dep)
     ORDER BY depName
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e)      READONLY name, firstNameContact, lastNameContact, namePositionEmployee
     PROPERTIES(e)      ADDSESSIONFORM, EDITSESSIONFORM, delete
 
@@ -44,12 +44,12 @@ FORM repricingCommittee 'Комиссия переоценки'
     FILTERGROUP filters5
         FILTER 'Показывать отделы только для данной комиссии' 'F9' inCommitteeEmployeeDivision(c, dep)
 
-    EDIT repricingCommittee OBJECT c
+    EDIT RepricingCommittee OBJECT c
 ;
-@extendFormFilterStockAccess(departmentStore, dep, repricingCommittee);
-@extendFormFilterStockGroupAccess(chainStores, t, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(storeType, st, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
-@extendFormFilterStockGroupAccess(store, s, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockAccess(DepartmentStore, dep, repricingCommittee);
+@extendFormFilterStockGroupAccess(ChainStores, t, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(StoreType, st, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
+@extendFormFilterStockGroupAccess(Store, s, repricingCommittee, countAccessEmployeeEmployeeDivisionGroup);
 
 DESIGN repricingCommittee FROM DEFAULT {
     main {
@@ -75,20 +75,20 @@ DESIGN repricingCommittee FROM DEFAULT {
 }
 
 FORM repricingCommitteeDialog 'Комиссии переоценки'
-    OBJECTS rc=repricingCommittee
+    OBJECTS rc=RepricingCommittee
     PROPERTIES(rc)      READONLY name, nameEmployeeDivisionCommittee, nameEmployeeCommittee, nameChairmanCommittee
     PROPERTIES(rc)      ADDFORM, EDITFORM
 
-    DIALOG repricingCommittee OBJECT rc
+    DIALOG RepricingCommittee OBJECT rc
 ;
 
 // ----------------------------------- Макрос для задания комиссии для документов ------------------------------------------ //
 
 
 META defineDocumentHeaderRepricingCommittee(object, stockProp)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (object) IN documentPrmGroup;
+    numberDisposal###object '№ распоряжения на переоценку' (object) = DATA STRING[30] (###object) IN documentPrmGroup;
 
-    repricingCommittee###object (object) = DATA repricingCommittee(object);
+    repricingCommittee###object (object) = DATA RepricingCommittee(###object);
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
     repricingCommittee###object (object) <- repricingCommitteeDepartmentStore(stockProp###object(object))
         WHEN CHANGED(stockProp###object(object));
@@ -104,8 +104,8 @@ META defineDocumentHeaderRepricingCommittee(object, stockProp)
 
 END
 META defineDocumentHeaderAbstractRepricingCommittee(object)
-    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (object) PERSISTENT IN documentPrmGroup;
-    repricingCommittee###object (object) = ABSTRACT repricingCommittee(object) PERSISTENT;
+    numberDisposal###object '№ распоряжения на переоценку' (object) = ABSTRACT STRING[30] (###object) PERSISTENT IN documentPrmGroup;
+    repricingCommittee###object (object) = ABSTRACT RepricingCommittee(###object) PERSISTENT;
     nameRepricingCommittee###object 'Комиссия переоценки' (object) = name(repricingCommittee###object(object)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     inCommittee###object##Employee (object, employee) = inCommitteeEmployee(repricingCommittee###object (object), employee);
@@ -123,12 +123,12 @@ END
 
 //----------------------------------------------- Переоценка ---------------------------------------------------//
 
-CLASS ABSTRACT repricing 'Акт переоценки';
-CLASS ABSTRACT repricingDetail 'Строка акта переоценки': inLIFOSkuLedger;
+CLASS ABSTRACT Repricing 'Акт переоценки';
+CLASS ABSTRACT RepricingDetail 'Строка акта переоценки': InLIFOSkuLedger;
 
-CLASS userRepricing 'Акт переоценки (польз.)' : repricing, historizable, numeratedDocument;
-CLASS userRepricingDetail 'Строка акта переоценки (польз.)' : repricingDetail;
-CLASS userRepricingPosted 'Проведенный акт переоценки (польз.)' : userRepricing, postedObject;
+CLASS UserRepricing 'Акт переоценки (польз.)' : Repricing, Historizable, NumeratedDocument;
+CLASS UserRepricingDetail 'Строка акта переоценки (польз.)' : RepricingDetail;
+CLASS UserRepricingPosted 'Проведенный акт переоценки (польз.)' : UserRepricing, PostedObject;
 
 @defineDocumentInterface(repricing);
 
@@ -177,14 +177,14 @@ CLASS userRepricingPosted 'Проведенный акт переоценки (�
 
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
 curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userRepricingDetail IS userRepricingDetail OR curRetailPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS userRepricingDetail OR valueCurVATUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR curRetailPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR valueCurVATUserRepricingDetail(userRepricingDetail),
     curPriceUserRepricingDetail(userRepricingDetail))
     WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curPriceUserRepricingDetail(userRepricingDetail));
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
 markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userRepricingDetail IS userRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS userRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
     priceUserRepricingDetail(userRepricingDetail))
     WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(priceUserRepricingDetail(userRepricingDetail));
 
@@ -250,15 +250,15 @@ roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmen
 sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 //--
 
-CLASS changePriceType 'Тип изменения цены' {
+CLASS ChangePriceType 'Тип изменения цены' {
     markupChange 'Процент торговой надбавки',
     discountChange 'Процент к розничной цене'
-} : named;
+} : Named;
 
-changePriceTypeUserRepricing = DATA changePriceType (userRepricing);
+changePriceTypeUserRepricing = DATA ChangePriceType (UserRepricing);
 nameChangePriceTypeUserRepricing 'Тип изменения цены' (userRepricing) = name(changePriceTypeUserRepricing(userRepricing)) MINCHARWIDTH 20 PREFCHARWIDTH 20 MAXCHARWIDTH 20;
 
-percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](userRepricing);
+percentUserRepricing 'Процент' (userRepricing)= DATA NUMERIC[8,3](UserRepricing);
 
 CONSTRAINT changePriceTypeUserRepricing(userRepricing) AND NOT percentUserRepricing(userRepricing) //CHECKED BY changePriceTypeUserRepricing
         MESSAGE 'Не задан процент для изменения цены';
@@ -268,13 +268,13 @@ newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundPriceCur
     percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail))), currencyUserRepricingDetail(userRepricingDetail));
 
 newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
-    0.0 IF userRepricingDetail IS userRepricingDetail OR curPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS userRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR curPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
     valueCurVATUserRepricingDetail(userRepricingDetail)), currencyUserRepricingDetail(userRepricingDetail));
 
 
 FORM addPercentUserRepricing 'Изменение цены'
-    OBJECTS u=userRepricing FIXED PANEL
+    OBJECTS u=UserRepricing FIXED PANEL
     PROPERTIES (u) nameChangePriceTypeUserRepricing, percentUserRepricing
 
 ;
@@ -297,15 +297,15 @@ DESIGN addPercentUserRepricing FROM DEFAULT {
 
 changePriceUserRepricing 'Изменить цену' (userRepricing) = ACTION (userRepricing) {
         FORM addPercentUserRepricing OBJECTS u = userRepricing MODAL;
-        IF formResult() == formResult.ok AND changePriceTypeUserRepricing(userRepricing) AND percentUserRepricing(userRepricing) THEN  {
+        IF formResult() == FormResult.ok AND changePriceTypeUserRepricing(userRepricing) AND percentUserRepricing(userRepricing) THEN  {
             FOR userRepricingUserRepricingDetail(userRepricingDetail) == userRepricing DO {
                 SET priceUserRepricingDetail(userRepricingDetail) <- curPriceUserRepricingDetail(userRepricingDetail);
                 SET VATUserRepricingDetail(userRepricingDetail) <- curVATUserRepricingDetail(userRepricingDetail);
                 SET valueVATUserRepricingDetail(userRepricingDetail) <- valueCurVATUserRepricingDetail(userRepricingDetail);
-                IF changePriceTypeUserRepricing(userRepricing) == changePriceType.markupChange THEN {
+                IF changePriceTypeUserRepricing(userRepricing) == ChangePriceType.markupChange THEN {
                     SET retailPriceUserRepricingDetail(userRepricingDetail) <- newMarkupRetailPriceUserRepricingDetail(userRepricingDetail);
                 } ELSE {
-                    IF changePriceTypeUserRepricing(userRepricing)== changePriceType.discountChange THEN {
+                    IF changePriceTypeUserRepricing(userRepricing)== ChangePriceType.discountChange THEN {
                         SET retailPriceUserRepricingDetail(userRepricingDetail) <- newDiscountRetailPriceUserRepricingDetail(userRepricingDetail);
                     }
                 }
@@ -319,7 +319,7 @@ nameStoreRepricing 'Магазин' (repricing) = nameStoreDepartmentStore(depar
 
 FORM repricing 'Акт переоценки (печать)' PRINT
 
-    OBJECTS p = repricing FIXED PANEL
+    OBJECTS p = Repricing FIXED PANEL
     PROPERTIES (p)  SELECTOR objectClassName
 
     PROPERTIES (p) numberRepricing, seriesRepricing, dateRepricing, timeRepricing, nameStoreRepricing,
@@ -334,7 +334,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
                nameChairmanRepricing, namePositionChairmanRepricing, nameEmployeeCommitteeRepricing
 
 
-    OBJECTS d = repricingDetail
+    OBJECTS d = RepricingDetail
     PROPERTIES (d)  indexRepricingDetail, idBarcodeSkuRepricingDetail, nameSkuRepricingDetail, shortNameUOMSkuRepricingDetail, quantityRepricingDetail,
                curPriceRepricingDetail, curSumRepricingDetail,
                curMarkupRepricingDetail, curMarkupSumRepricingDetail,
@@ -347,7 +347,7 @@ FORM repricing 'Акт переоценки (печать)' PRINT
                diffSumRepricingDetail, diffMarkupSumRepricingDetail, diffVATSumRepricingDetail,
                diffRetailSumRepricingDetail
 
-    OBJECTS e=employee
+    OBJECTS e=Employee
     PROPERTIES(e) READONLY   nameContact, namePositionEmployee
 
     FILTERS    repricingRepricingDetail(d) == p,
@@ -360,14 +360,14 @@ printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing
 // --------------------------- Формы --------------------------------- //
 
 FORM userRepricing 'Акт переоценки'
-    OBJECTS p=userRepricing FIXED PANEL
+    OBJECTS p=UserRepricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
                    dateUserRepricing, timeUserRepricing, dateBeforeUserRepricing, nameDepartmentStoreUserRepricing,
                    diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
                    diffRetailSumUserRepricingDetailUserRepricing,
                    noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing, skipChangeLedgerUserRepricing
 
-    OBJECTS d=userRepricingDetail
+    OBJECTS d=UserRepricingDetail
     PROPERTIES (d) indexUserRepricingDetail, idBarcodeSkuUserRepricingDetail, nameSkuUserRepricingDetail, shortNameUOMSkuUserRepricingDetail, quantityUserRepricingDetail,
 
                    curPriceUserRepricingDetail, curSumUserRepricingDetail,                    
@@ -390,7 +390,7 @@ FORM userRepricing 'Акт переоценки'
     EVENTS
         ON OK prePostUserRepricing(p)
 
-    EDIT userRepricing OBJECT p
+    EDIT UserRepricing OBJECT p
 ;
 
 DESIGN userRepricing FROM DEFAULT {
@@ -458,7 +458,7 @@ EXTEND FORM userRepricing
         FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(s, p)
 ;
 
-allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (sku, userRepricing);
+allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (Sku, UserRepricing);
 
 overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
     REQUEST BOOLEAN INPUT;
@@ -483,11 +483,11 @@ EXTEND FORM userRepricing
     PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
 ;
 
-addUserRepricing 'Добавить' = ACTION ADDFORM userRepricing;
-editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM userRepricing;
+addUserRepricing 'Добавить' = ACTION ADDFORM UserRepricing;
+editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM UserRepricing;
 
 FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
-    OBJECTS p = repricing
+    OBJECTS p = Repricing
     PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, dateBeforeRepricing,
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
@@ -502,7 +502,7 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
     PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserRepricing(p)
     PROPERTIES (p) printRepricing FORCE PANEL
 
-    OBJECTS d = repricingDetail
+    OBJECTS d = RepricingDetail
     PROPERTIES (d) READONLY indexRepricingDetail, idBarcodeSkuRepricingDetail, nameSkuRepricingDetail, shortNameUOMSkuRepricingDetail, quantityRepricingDetail,
 
                curPriceRepricingDetail, curSumRepricingDetail,
@@ -517,9 +517,9 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
 
     FILTERS repricingRepricingDetail(d) == p
 
-    DIALOG repricing OBJECT p
+    DIALOG Repricing OBJECT p
 ;
-@extendFormFilterAccess(repricing, p, repricings, departmentStore);
+@extendFormFilterAccess(Repricing, p, repricings, departmentStore);
 
 DESIGN repricings FROM DEFAULT {
     PROPERTY (delete(p)) {
@@ -565,7 +565,7 @@ NAVIGATOR {
 
 // ---------------------------- Создание PriceList ----------------------------------- //
 
-EXTEND CLASS repricingDetail : priceListLedger;
+EXTEND CLASS RepricingDetail : PriceListLedger;
 
 fromDateTimePriceListLedger (ledger) += dateTimeRepricingDetail(ledger);
 
@@ -576,20 +576,20 @@ skuPriceListLedger (ledger) += skuRepricingDetail(ledger);
 
 descriptionPriceListLedger (ledger) += descriptionRepricingDetail(ledger);
 
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceRepricingDetail(ledger) WHEN CLASS(priceRepricingDetail(ledger)) AND type == systemLedgerPriceListType.supplierPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) WHEN CLASS(retailPriceRepricingDetail(ledger)) AND type == systemLedgerPriceListType.retailPricingPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) WHEN CLASS(retailPriceRepricingDetail(ledger)) AND type == systemLedgerPriceListType.accountPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += priceRepricingDetail(ledger) WHEN CLASS(priceRepricingDetail(ledger)) AND type == SystemLedgerPriceListType.supplierPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) WHEN CLASS(retailPriceRepricingDetail(ledger)) AND type == SystemLedgerPriceListType.retailPricingPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += retailPriceRepricingDetail(ledger) WHEN CLASS(retailPriceRepricingDetail(ledger)) AND type == SystemLedgerPriceListType.accountPriceListType;
 inPriceListLedgerStock (ledger, stock) += departmentStoreRepricingDetail(ledger) == stock;
 
 // ------------------------------------- Загрузка в оборудование ------------------------------ //
 
-@Machinery.implementPriceTransactionDocument(repricing);
+@Machinery.implementPriceTransactionDocument(Repricing);
 Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
 
 @defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
 @extendFormDocumentMachineryPriceTransaction(repricings, p, repricing);
 
-@implementStockDocumentLedgerInc(repricing, departmentStore);
+@implementStockDocumentLedgerInc(Repricing, departmentStore);
 sumIncStockDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);
 sumItemIncStockDocumentLedger (ledger) += sumItemRepricingDetailRepricing(ledger);
 sumContainerIncStockDocumentLedger (ledger) += sumContainerRepricingDetailRepricing(ledger);
@@ -615,8 +615,8 @@ META defineRepricing(sign, stockProp)
 
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
     curMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-        0.0 IF userInvoiceDetail IS userInvoiceDetail OR curRetailPriceUserInvoiceDetail(userInvoiceDetail),
-        0.0 IF userInvoiceDetail IS userInvoiceDetail OR valueCurVATUserInvoiceDetail(userInvoiceDetail),
+        0.0 IF userInvoiceDetail IS UserInvoiceDetail OR curRetailPriceUserInvoiceDetail(userInvoiceDetail),
+        0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueCurVATUserInvoiceDetail(userInvoiceDetail),
         curPriceUserInvoiceDetail(userInvoiceDetail))
         WHEN CHANGED(curRetailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (curVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(curPriceUserInvoiceDetail(userInvoiceDetail));
 
@@ -659,7 +659,7 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceCreate (invoice, createRepricing, 'Создать акт дооценки');
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
-                                                   AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS departmentStore
+                                                   AND balanceBSkuInvoiceDetail(invoiceDetail) != 0 AND stockProp###InvoiceDetail(invoiceDetail) IS DepartmentStore
                                                    AND NOT costLedgerDepartmentStore(stockProp###InvoiceDetail(invoiceDetail))
                                                    AND createRepricingInvoiceDetail(invoiceDetail)
                                                    AND isStockSkuInvoiceDetail(invoiceDetail) PERSISTENT;// AND isPostedInvoiceDetail(invoiceDetail) ;
@@ -669,9 +669,9 @@ META defineRepricing(sign, stockProp)
 
     @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stockProp);
 
-    CLASS invoiceRepricing 'Акт дооценки на основе инвойса'###sign : repricing;
-    CLASS invoiceRepricingPosted 'Проведенный акт дооценки на основе инвойса'###sign : invoiceRepricing, postedObject;
-    CLASS invoiceRepricingDetail 'Строка акта дооценки на основе инвойса'###sign : repricingDetail;
+    CLASS InvoiceRepricing 'Акт дооценки на основе инвойса'###sign : Repricing;
+    CLASS InvoiceRepricingPosted 'Проведенный акт дооценки на основе инвойса'###sign : InvoiceRepricing, PostedObject;
+    CLASS InvoiceRepricingDetail 'Строка акта дооценки на основе инвойса'###sign : RepricingDetail;
 
     @defineDocumentTables(invoiceRepricing);
 
@@ -691,9 +691,9 @@ META defineRepricing(sign, stockProp)
     timeBeforeRepricing(repricing) += timeBeforeInvoiceRepricing(repricing);
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
-    departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS departmentStore;
+    departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS DepartmentStore;
     dataDepartmentStoreRepricingDetail(repricingDetail) += data###stockProp###InvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail))
-                                                           IF data###stockProp###InvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail)) IS departmentStore;
+                                                           IF data###stockProp###InvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail)) IS DepartmentStore;
 
     @defineDocumentAggregationPosted(invoice, invoiceRepricing);
     isPostedRepricing(repricing) += isPostedInvoiceRepricing(repricing);
@@ -717,17 +717,17 @@ META defineRepricing(sign, stockProp)
     @defineDocumentDescription(invoiceRepricing, invoiceRepricingDetail, seriesNumberInvoiceRepricing, 'Акт дооценки на основе инвойса');
     descriptionRepricing (repricing) += descriptionInvoiceRepricing(repricing);
 
-    skipChangeLedgerRepricing(repricing) += repricing IS invoiceRepricing;
+    skipChangeLedgerRepricing(repricing) += repricing IS InvoiceRepricing;
 
     @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
     skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
 
     @implementSkuLedger(invoiceRepricingDetail, sku, stockProp);
 
-    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS invoice;
-    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS invoice;
+    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS Invoice;
+    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS Invoice;
 
-    showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS departmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
+    showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
 
     overCopyInvoice(s, d) += ACTION (s, d) {
         SET createRepricingUserInvoice(d) <- createRepricingUserInvoice(s);

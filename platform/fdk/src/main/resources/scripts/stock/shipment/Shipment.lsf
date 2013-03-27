@@ -2,8 +2,8 @@ MODULE Shipment;
 
 REQUIRE Order, Invoice, StockDocument;
 
-CLASS ABSTRACT shipment 'Поставка' : document;
-CLASS ABSTRACT shipmentDetail 'Строка поставки' : documentDetail;
+CLASS ABSTRACT Shipment 'Поставка' : Document;
+CLASS ABSTRACT ShipmentDetail 'Строка поставки' : DocumentDetail;
 
 @defineDocumentAbstract(shipment);
 @defineDocumentAbstractNumber(shipment);
@@ -28,17 +28,17 @@ CLASS ABSTRACT shipmentDetail 'Строка поставки' : documentDetail;
 
 @defineDocumentHeaderGrossWeight(shipment);
 
-quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,3] (order, shipment);
+quantityShipmentDetailOrderShipment = ABSTRACT NUMERIC[14,3] (Order, Shipment);
 
 editShipment 'Редактировать' = ABSTRACT ACTION (shipment) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 // ----------------------------------- Создавать поставку по умолчанию для склада ------------------------------------------ //
 
 META defineDocumentHeaderCreateShipment(object)
-    createShipment###object 'Создать поставку' (object) = DATA BOOLEAN(object) IN documentPrmGroup;
+    createShipment###object 'Создать поставку' (object) = DATA BOOLEAN(###object) IN documentPrmGroup;
 END
 META defineDocumentAbstractHeaderCreateShipment(object)
-    createShipment###object 'Создать поставку' (object) = ABSTRACT BOOLEAN(object);
+    createShipment###object 'Создать поставку' (object) = ABSTRACT BOOLEAN(###object);
 END
 
 META defineDocumentInterfaceHeaderCreateShipment (object)
@@ -51,12 +51,12 @@ END
 
 META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 
-    CLASS ABSTRACT shipment 'Поставка'###sign : Shipment.shipment;
-    CLASS ABSTRACT shipmentDetail 'Строка поставки'###sign : Shipment.shipmentDetail;
+    CLASS ABSTRACT Shipment 'Поставка'###sign : Shipment.Shipment;
+    CLASS ABSTRACT ShipmentDetail 'Строка поставки'###sign : Shipment.ShipmentDetail;
 
-    CLASS userShipment 'Поставка (польз.)'###sign : shipment, historizable, numeratedDocument;
-    CLASS userShipmentDetail 'Строка поставки (польз.)'###sign : shipmentDetail;
-    CLASS userShipmentPosted 'Проведенная поставка (польз.)'###sign : userShipment, postedObject;
+    CLASS UserShipment 'Поставка (польз.)'###sign : Shipment, Historizable, NumeratedDocument;
+    CLASS UserShipmentDetail 'Строка поставки (польз.)'###sign : ShipmentDetail;
+    CLASS UserShipmentPosted 'Проведенная поставка (польз.)'###sign : UserShipment, PostedObject;
 
     @defineDocumentInterface(shipment);
     Shipment.shipmentShipmentDetail (detail) += shipmentShipmentDetail(detail);
@@ -138,13 +138,13 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     Shipment.editShipment (shipment) += editShipment(shipment);
 
     FORM userShipment 'Поставка'###sign
-        OBJECTS s = userShipment FIXED PANEL
+        OBJECTS s = UserShipment FIXED PANEL
         PROPERTIES (s) objectClassName, nameSupplierUserShipment, nameCustomerUserShipment, nameSupplierStockUserShipment, nameCustomerStockUserShipment,
                        nameNumeratorObject, numberObject, seriesObject, dateUserShipment, timeUserShipment,
                        nameCurrencyUserShipment, noteUserShipment, countUserShipmentDetailUserShipment, quantityUserShipmentDetailUserShipment,
                        sumUserShipmentDetailUserShipment, toShowProp###userShipment
 
-        OBJECTS d = userShipmentDetail
+        OBJECTS d = UserShipmentDetail
         PROPERTIES (d) indexUserShipmentDetail, idBarcodeSkuUserShipmentDetail, nameSkuUserShipmentDetail, shortNameUOMSkuUserShipmentDetail
         PROPERTIES (d) SHOWIF toShowProp###userShipment(s) idBarcodePackUserShipmentDetail, shortNameUOMPackUserShipmentDetail,
                        amountPackUserShipmentDetail ON CHANGE changeAmountPackUserShipmentDetail(d),
@@ -159,7 +159,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         EVENTS
             ON OK prePostUserShipment(s)
 
-        EDIT userShipment OBJECT s
+        EDIT UserShipment OBJECT s
     ;
 
     DESIGN userShipment FROM DEFAULT{
@@ -225,12 +225,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         }
     }
 
-    addUserShipment 'Добавить' = ACTION ADDFORM userShipment;
-    editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM userShipment;
+    addUserShipment 'Добавить' = ACTION ADDFORM UserShipment;
+    editUserShipment 'Редактировать' (userShipment) = ACTION EDITFORM UserShipment;
     editShipment (shipment) += editUserShipment(shipment);
 
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
-        OBJECTS s = shipment
+        OBJECTS s = Shipment
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
@@ -242,16 +242,16 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (s) editShipment
         PROPERTIES (s) delete FORCE PANEL TOOLBAR SHOWIF isUserShipment(s)
 
-        OBJECTS d = shipmentDetail
+        OBJECTS d = ShipmentDetail
         PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###shipment(s) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail,
                        amountPackShipmentDetail, quantityPackShipmentDetail
         PROPERTIES (d) READONLY quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail, name###stockProp###shipmentDetail
         FILTERS shipmentShipmentDetail(d) == s
 
-        DIALOG shipment OBJECT s
+        DIALOG Shipment OBJECT s
     ;
-    @extendFormFilterAccess(shipment, s, shipments, stockProp);
+    @extendFormFilterAccess(Shipment, s, shipments, stockProp);
 
     DESIGN shipments FROM DEFAULT {
         PROPERTY (delete(s)) {
@@ -288,8 +288,8 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     }
 
 //--  Связь заказа и поставки
-    orderShipmentDetail = ABSTRACT order (shipmentDetail) PERSISTENT;
-    orderUserShipmentDetail = DATA order (userShipmentDetail);
+    orderShipmentDetail = ABSTRACT Order (ShipmentDetail) PERSISTENT;
+    orderUserShipmentDetail = DATA Order (UserShipmentDetail);
     orderShipmentDetail(shipmentDetail) += orderUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT supplierShipmentDetail(shipmentDetail) != supplierOrder(orderUserShipmentDetail(shipmentDetail)) OR
@@ -325,17 +325,17 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 
     // Создание поставки на основе заказа //
     FORM shipmentOrders 'Заказы'###sign
-        OBJECTS s = legalEntity FIXED PANEL
+        OBJECTS s = LegalEntity FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS ss = stock FIXED PANEL
+        OBJECTS ss = Stock FIXED PANEL
         PROPERTIES (ss) READONLY name
 
-        OBJECTS c = legalEntity FIXED PANEL
+        OBJECTS c = LegalEntity FIXED PANEL
         PROPERTIES (c) READONLY name
-        OBJECTS cs = stock FIXED PANEL
+        OBJECTS cs = Stock FIXED PANEL
         PROPERTIES (cs) READONLY name
 
-        OBJECTS o = order
+        OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder, toShowProp###userOrder
@@ -347,7 +347,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 //            FILTER 'Заказы с непоставленными товарами со склада' 'F10' toShipOrderDetailStockOrder(s, o) DEFAULT
 //            FILTER 'Заказы со склада' 'F9' countOrderDetailStockOrder(s, o)
 
-        OBJECTS d = orderDetail
+        OBJECTS d = OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
                        amountPackOrderDetail, quantityPackOrderDetail
@@ -405,21 +405,21 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     }
 
     inOrderDetailUserShipment (orderDetail, userShipment) = IF differentStocksInDetailsStock(customerStockOrderDetail(orderDetail))
-        THEN TRUE AND orderDetail IS orderDetail AND userShipment IS userShipment
+        THEN TRUE AND orderDetail IS OrderDetail AND userShipment IS UserShipment
         ELSE TRUE AND supplierStockOrderDetail(orderDetail)==supplierStockUserShipment(userShipment);
 
     fillOrderUserShipment 'Заполнить на основе заказа' =  ACTION (userShipment) {
         FORM shipmentOrders OBJECTS s = supplierUserShipment(userShipment), ss = supplierStockUserShipment(userShipment),
                                     c = customerUserShipment(userShipment), cs = customerStockUserShipment(userShipment) MODAL;
-        IF formResult() == formResult.ok THEN {
-            LOCAL saleOrder = order();
+        IF formResult() == FormResult.ok THEN {
+            LOCAL saleOrder = Order();
             SET saleOrder() <- chosenObject('o');
 
             FOR orderOrderDetail(orderDetail) == saleOrder() AND
 //                stockProp###OrderDetail(orderDetail) == stockProp###UserShipment(userShipment) AND
                 toShipOrderDetail(orderDetail) > 0
                 AND inOrderDetailUserShipment(orderDetail, userShipment)
-                ADDOBJ d = userShipmentDetail DO {
+                ADDOBJ d = UserShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
                     SET orderUserShipmentDetail(d) <- saleOrder();
                     SET skuUserShipmentDetail(d) <- skuOrderDetail(orderDetail);
@@ -454,8 +454,8 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     toShipQuantityOrderLedger (ledger) += toShipOrderDetail(ledger);
 
 //--  Связь накладной и поставки
-    invoiceDetailShipmentDetail = ABSTRACT invoiceDetail (shipmentDetail) PERSISTENT;
-    invoiceDetailUserShipmentDetail = DATA invoiceDetail (userShipmentDetail);
+    invoiceDetailShipmentDetail = ABSTRACT InvoiceDetail (ShipmentDetail) PERSISTENT;
+    invoiceDetailUserShipmentDetail = DATA InvoiceDetail (UserShipmentDetail);
     invoiceDetailShipmentDetail(shipmentDetail) += invoiceDetailUserShipmentDetail(shipmentDetail);
 
     CONSTRAINT supplierShipmentDetail(detail) != supplierInvoiceDetail(invoiceDetailUserShipmentDetail(detail)) OR
@@ -477,7 +477,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     shippedInvoiceDetail 'Кол-во (поставлено)' (invoiceDetail) = GROUP SUM quantityShipmentDetail(shipmentDetail) IF isPostedShipmentDetail(shipmentDetail)
                                                                        BY invoiceDetailShipmentDetail(shipmentDetail) PERSISTENT;
 
-    costShipmentDetailBatch = ABSTRACT NUMERIC[14,3] (shipmentDetail, batch);
+    costShipmentDetailBatch = ABSTRACT NUMERIC[14,3] (ShipmentDetail, Batch);
     costInvoiceDetailBatch (invoiceDetail, batch) = GROUP SUM costShipmentDetailBatch(shipmentDetail, batch) BY invoiceDetailShipmentDetail(shipmentDetail), batch;
     countBatchInvoiceDetail 'Кол-во партий' (invoiceDetail) = GROUP SUM 1 IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail PERSISTENT;
     maxBatchInvoiceDetail (invoiceDetail) = GROUP MAX batch IF costInvoiceDetailBatch(invoiceDetail, batch) BY invoiceDetail;
@@ -491,12 +491,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     // Создание поставки на основе инвойса //
 
     FORM shipmentInvoices 'Накладные'###sign
-        OBJECTS s = legalEntity FIXED PANEL
+        OBJECTS s = LegalEntity FIXED PANEL
         PROPERTIES (s) READONLY name
-        OBJECTS c = legalEntity FIXED PANEL
+        OBJECTS c = LegalEntity FIXED PANEL
         PROPERTIES (c) READONLY name
 
-        OBJECTS i = invoice
+        OBJECTS i = Invoice
         PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
                                 nameCurrencyInvoice, noteInvoice,
@@ -510,7 +510,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 //            FILTER 'Накладные с непоставленными товарами со склада' 'F10' toShipInvoiceDetailStockInvoice(s,i) DEFAULT
 //            FILTER 'Накладные со склада' 'F9' countInvoiceDetailStockInvoice(s,i)
 
-        OBJECTS d = invoiceDetail
+        OBJECTS d = InvoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
         PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
                        amountPackInvoiceDetail, quantityPackInvoiceDetail
@@ -522,7 +522,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 //            FILTER 'Строки с непоставленными товарами со склада' 'F10' stockInvoiceDetail(d) == s AND toShipInvoiceDetail(d) > 0 DEFAULT
 //            FILTER 'Строки со склада' 'F9' stockInvoiceDetail(d) == s
 
-        DIALOG invoice OBJECT i
+        DIALOG Invoice OBJECT i
     ;
 
     DESIGN shipmentInvoices FROM DEFAULT {
@@ -561,14 +561,14 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 
     fillInvoiceUserShipment 'Заполнить на основе накладной' =  ACTION (userShipment) {
         FORM shipmentInvoices OBJECTS s = supplierUserShipment(userShipment), c = customerUserShipment(userShipment) MODAL;
-        IF formResult() == formResult.ok THEN {
-            LOCAL saleInvoice = invoice();
+        IF formResult() == FormResult.ok THEN {
+            LOCAL saleInvoice = Invoice();
             SET saleInvoice() <- chosenObject('i');
 
             FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() AND
 //                stockProp###invoiceDetail(invoiceDetail) == stockProp###userShipment(userShipment) AND
                 toShipInvoiceDetail(invoiceDetail) > 0
-                ADDOBJ d = userShipmentDetail DO {
+                ADDOBJ d = UserShipmentDetail DO {
                     SET userShipmentUserShipmentDetail(d) <- userShipment;
                     SET invoiceDetailUserShipmentDetail(d) <- invoiceDetail;
                     SET orderUserShipmentDetail(d) <- orderInvoiceDetail(invoiceDetail);
@@ -612,7 +612,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         SET createShipmentUserInvoice(d) <- createShipmentUserInvoice(s);
     }
 
-    skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (invoiceDetail) PERSISTENT;
+    skipCreateShipmentInvoiceDetail = ABSTRACT BOOLEAN (InvoiceDetail) PERSISTENT;
     createShipmentInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentInvoice(invoiceInvoiceDetail(invoiceDetail)) AND
                                                                      isStockSkuInvoiceDetail(invoiceDetail) AND
                                                                      NOT skipCreateShipmentInvoiceDetail(invoiceDetail) PERSISTENT;
@@ -620,9 +620,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     createShipmentUserInvoiceDetail 'Создать поставку' (invoiceDetail) = createShipmentUserInvoice(userInvoiceUserInvoiceDetail(invoiceDetail)) AND
                                                                          isStockSkuUserInvoiceDetail(invoiceDetail);
 
-    showShipmentInvoice (invoice) =  invoice IS invoice AND NOT createShipmentInvoice(invoice);
+    showShipmentInvoice (invoice) =  invoice IS Invoice AND NOT createShipmentInvoice(invoice);
 
-    backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS invoice;
+    backgroundShippedInvoice 'Цвет' (invoice) = RGB(255, 224, 255) IF invoice IS Invoice;
     EXTEND FORM userInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) createShipmentUserInvoice
         PROPERTIES(i) BACKGROUND backgroundShippedInvoice(i) SHOWIF createShipmentUserInvoice(i) shipmentSumUserInvoiceDetailUserInvoice
@@ -652,9 +652,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (d) READONLY BACKGROUND backgroundShippedInvoice(i)  toShipInvoiceDetail, shipmentPriceInvoiceDetail
     ;
 
-    CLASS invoiceShipment 'Поставка на основе инвойса'###sign : shipment;
-    CLASS invoiceShipmentPosted 'Проведенная поставка на основе инвойса'###sign : invoiceShipment, postedObject;
-    CLASS invoiceShipmentDetail 'Строка поставки на основе инвойса'###sign : shipmentDetail;
+    CLASS InvoiceShipment 'Поставка на основе инвойса'###sign : Shipment;
+    CLASS InvoiceShipmentPosted 'Проведенная поставка на основе инвойса'###sign : InvoiceShipment, PostedObject;
+    CLASS InvoiceShipmentDetail 'Строка поставки на основе инвойса'###sign : ShipmentDetail;
 
     @defineDocumentTables(invoiceShipment);
 
@@ -731,9 +731,9 @@ META defineShipmentBatch(stockProp)
                                  t = dateTimeUserShipmentDetail(userShipmentDetail),
                                  sk = skuUserShipmentDetail(userShipmentDetail) MODAL SHOWDROP;
 
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             SET batchUserShipmentDetail(userShipmentDetail) <- chosenObject('bt');
-        } ELSE IF formResult() == formResult.drop THEN {
+        } ELSE IF formResult() == FormResult.drop THEN {
             SET batchUserShipmentDetail(userShipmentDetail) <- NULL;
         }
     }

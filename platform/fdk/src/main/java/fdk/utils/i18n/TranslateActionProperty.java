@@ -23,7 +23,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageToInterface;
 
     public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{TextClass.instance, LM.getClassByName("language"), LM.getClassByName("language")});
+        super(LM, new ValueClass[]{TextClass.instance, LM.getClassByName("Language"), LM.getClassByName("Language")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         translationInterface = i.next();

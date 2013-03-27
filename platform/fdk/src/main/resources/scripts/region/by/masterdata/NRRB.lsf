@@ -9,7 +9,7 @@ REQUIRE System,
 importNBRBExchangeRateAction 'Импортировать курс НБРБ' = ACTION CUSTOM 'fdk.region.by.masterdata.ImportNBRBExchangeRateActionProperty' IN nbrbGroup;
 
 importNBRBExchangeRate 'Импортировать курсы НБРБ' = ACTION () {
-    FOR c IS currency DO {
+    FOR c IS Currency DO {
         EXEC importNBRBExchangeRateAction(c);
     }
     EXEC apply();

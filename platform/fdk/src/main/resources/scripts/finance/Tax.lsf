@@ -4,78 +4,78 @@ REQUIRE System, Utils, Historizable, Hierarchy, Country, Finance;
 
 // ---------------------------------- Налог --------------------------------------- //
 
-CLASS tax 'Налоги'
+CLASS Tax 'Налоги'
 {
     taxVAT 'НДС',
     taxNP 'Налог с продаж'
-} : named;
+} : Named;
 
 // ---------------------------------- Шкала налога --------------------------------------- //
 
-CLASS range 'Шкала';
-TABLE range(range);
-numberRange 'Шкала' = DATA INTEGER (range) AGGPROP IN recognize;
+CLASS Range 'Шкала';
+TABLE range(Range);
+numberRange 'Шкала' = DATA INTEGER (Range) AGGPROP IN recognize;
 
-taxRange = DATA tax (range) NOT NULL;
+taxRange = DATA Tax (Range) NOT NULL;
 nameTaxRange 'Налог' (range) = name(taxRange(range)) IN recognize;
 
-countryRange = DATA country (range) NOT NULL AUTOSET;
+countryRange = DATA Country (Range) NOT NULL AUTOSET;
 nameCountryRange 'Страна' (range) = name(countryRange(range)) IN recognize;
 
-countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF range IS range BY taxRange(range), countryRange(range);
+countRangeTaxCountry 'Кол-во шкал' (tax, country) = GROUP SUM 1 IF range IS Range BY taxRange(range), countryRange(range);
 
-maxDataRangeTax(tax, country) = UNION OVERRIDE 0 IF tax IS tax AND country IS country, [GROUP MAX numberRange(range) BY taxRange(range), countryRange(range)](tax, country);
+maxDataRangeTax(tax, country) = UNION OVERRIDE 0 IF tax IS Tax AND country IS Country, [GROUP MAX numberRange(range) BY taxRange(range), countryRange(range)](tax, country);
 addNewRange 'Добавить шкалу' = ACTION (tax, country) {
-    ADDOBJ range;
+    ADDOBJ Range;
     SET numberRange(r) <- maxDataRangeTax(tax, country) + 1 WHERE r == addedObject();
-    SET countryRange(r) <- country AS country WHERE r == addedObject();
-    SET taxRange(r) <- tax AS tax WHERE r == addedObject();
+    SET countryRange(r) <- country AS Country WHERE r == addedObject();
+    SET taxRange(r) <- tax AS Tax WHERE r == addedObject();
 } TOOLBAR IMAGE 'add.png';
 
-CLASS rangeType 'Для каких подразделений действует шкала'
+CLASS RangeType 'Для каких подразделений действует шкала'
 {
     common 'Общий',
     units 'Для подразделений'
-} : named;
-rangeTypeRange = DATA rangeType (range) NOT NULL;
+} : Named;
+rangeTypeRange = DATA RangeType (Range) NOT NULL;
 nameRangeTypeRange 'Тип шкалы' = name(rangeTypeRange(range)) IN base;
 
-isUnitsTypeRange(range) = rangeTypeRange(range) == rangeType.units;
+isUnitsTypeRange(range) = rangeTypeRange(range) == RangeType.units;
 
-rangeTypeRange(range) <- rangeType.common WHEN ASSIGNED(range IS range);     /// потом согласовать, какое значение должно быть по-умолчанию ///
+rangeTypeRange(range) <- RangeType.common WHEN ASSIGNED(range IS Range);     /// потом согласовать, какое значение должно быть по-умолчанию ///
 
 // ----------------------------- Разбиение шкалы для подразделений ------------------------------------- //
 
-CLASS ABSTRACT taxUnitGroup 'Группа налогового субъекта' : named;
+CLASS ABSTRACT TaxUnitGroup 'Группа налогового субъекта' : Named;
 @defineHierarchyAbstract(taxUnitGroup);
 
-CLASS ABSTRACT taxUnit 'Налоговый субъект';
-TABLE taxUnit(taxUnit);
+CLASS ABSTRACT TaxUnit 'Налоговый субъект';
+TABLE taxUnit(TaxUnit);
 
-taxUnitGroupTaxUnit = ABSTRACT taxUnitGroup (taxUnit) PERSISTENT;
-descriptionTaxUnit 'Название налогового субъекта' = ABSTRACT STRING[255] (taxUnit) PERSISTENT;
+taxUnitGroupTaxUnit = ABSTRACT TaxUnitGroup (TaxUnit) PERSISTENT;
+descriptionTaxUnit 'Название налогового субъекта' = ABSTRACT STRING[255] (TaxUnit) PERSISTENT;
 
-TABLE rangeTaxUnit (range, taxUnit);
-inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (range, taxUnit);
+TABLE rangeTaxUnit (Range, TaxUnit);
+inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (Range, TaxUnit);
 inRangeTaxUnit (range, taxUnit) => isUnitsTypeRange(range) RESOLVE FALSE;
 
 rangeTaxTaxUnit 'Шкала по налогу и субъекту' (tax, taxUnit) = GROUP UNIQUE range BY taxRange(range), taxUnit
-                                                                       WHERE inRangeTaxUnit(range, taxUnit) AND tax.taxVAT == taxRange(range);
+                                                                       WHERE inRangeTaxUnit(range, taxUnit) AND Tax.taxVAT == taxRange(range);
 
-rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (tax.taxVAT, taxUnit);
+rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (Tax.taxVAT, taxUnit);
 
 
 // ---------------------------------- История изменений шкалы --------------------------------------- //
 
-CLASS rate 'История изменений шкалы' : historizable;
-TABLE rate(rate);
+CLASS Rate 'История изменений шкалы' : Historizable;
+TABLE rate(Rate);
 
-rangeRate = DATA range (rate);
+rangeRate = DATA Range (Rate);
 quantityRateRange 'Количество историй' (range) = GROUP SUM 1 IF rate BY rangeRate(rate);
 
-valueRate 'Значение ставки' = DATA NUMERIC[10,5] (rate) IN recognize NOT NULL;
-dateFromRate 'Действует с' = DATA DATE (rate) IN base;
-dateToRate 'Действует по' = DATA DATE (rate) IN base;
+valueRate 'Значение ставки' = DATA NUMERIC[10,5] (Rate) IN recognize NOT NULL;
+dateFromRate 'Действует с' = DATA DATE (Rate) IN base;
+dateToRate 'Действует по' = DATA DATE (Rate) IN base;
 
 rateRangeDate(range, date) = GROUP MAX rate IF dateFromRate(rate) <= date AND NOT dateToRate(rate) < date AND date AS DATE
                                          BY rangeRate(rate), date;
@@ -95,41 +95,41 @@ valueCurrentVATCountryValue 'Шкала НДС по значению' (country, 
 
 valueCurrentVATDefaultValue 'Шкала по значению' (doubleValue) = valueCurrentVATCountryValue(defaultCountry(), doubleValue);
 
-valueVATUnitDate 'НДС, %' (taxUnit, date) = valueRateRangeDate(rangeTaxTaxUnit(tax.taxVAT, taxUnit), date);
-currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(tax.taxVAT, taxUnit), currentDate());
+valueVATUnitDate 'НДС, %' (taxUnit, date) = valueRateRangeDate(rangeTaxTaxUnit(Tax.taxVAT, taxUnit), date);
+currentVATUnitDate 'НДС, %' (taxUnit) = valueRateRangeDate(rangeTaxTaxUnit(Tax.taxVAT, taxUnit), currentDate());
 // --------------------------------------- Формы ------------------------------------- //
 
 FORM tax 'Налог'
-    OBJECTS           t = tax FIXED PANEL
+    OBJECTS           t = Tax FIXED PANEL
     PROPERTIES(t)     name
 
-    OBJECTS c = country FIXED PANEL
+    OBJECTS c = Country FIXED PANEL
     PROPERTIES(c) SELECTOR    name
 
-    OBJECTS           ra = range
+    OBJECTS           ra = Range
     PROPERTIES(ra)    numberRange, nameRangeTypeRange, delete
     PROPERTIES(ra)    READONLY valueCurrentRateRange, dateFromActingRateRange, dateToActingRateRange
     PROPERTIES(t, c)  addNewRange TODRAW ra
     FILTERS           taxRange(ra) == t
     FILTERS           countryRange(ra) == c
 
-    OBJECTS           rt=rate
+    OBJECTS           rt=Rate
     PROPERTIES(rt)    valueRate, dateFromRate, dateToRate, timeCreatedHistorizable, nameUserCreatedHistorizable, ADDOBJ, delete
     FILTERS           rangeRate(rt) == ra
 
-    TREE treeTaxUnit  a=STRING[3], ug = taxUnitGroup PARENT parentTaxUnitGroup
+    TREE treeTaxUnit  a=STRING[3], ug = TaxUnitGroup PARENT parentTaxUnitGroup
     PROPERTIES READONLY OBJVALUE(a), name(ug)
     FILTERS           stringEqualsAll(a)
 
-    OBJECTS           u=taxUnit
+    OBJECTS           u=TaxUnit
     PROPERTIES(u) READONLY objectClassName, descriptionTaxUnit
     PROPERTIES(ra, u)      inRangeTaxUnit SHOWIF isUnitsTypeRange(ra)
-    FILTERS           taxUnitGroupTaxUnit(u) == ug OR u IS taxUnit AND NOT ug
+    FILTERS           taxUnitGroupTaxUnit(u) == ug OR u IS TaxUnit AND NOT ug
 
     FILTERGROUP filters
         FILTER 'Показывать магазины только для данного налога' 'F10' inRangeTaxUnit(ra, u)
 
-    EDIT tax OBJECT t
+    EDIT Tax OBJECT t
 ;
 
 DESIGN tax FROM DEFAULT {
@@ -164,20 +164,20 @@ DESIGN tax FROM DEFAULT {
 }
 
 FORM taxes 'Налоги'
-    OBJECTS           t=tax
+    OBJECTS           t=Tax
     PROPERTIES(t)     READONLY name
     PROPERTIES(t)     EDITFORM, delete
 
-    OBJECTS           c=country
+    OBJECTS           c=Country
     PROPERTIES(c)     name
     FILTERS           countRangeTaxCountry(t, c)
 
-    OBJECTS ra=range
+    OBJECTS ra=Range
     PROPERTIES(ra) READONLY numberRange, valueCurrentRateRange, dateFromActingRateRange, dateToActingRateRange, nameUserCreatedActingRateRange, nameRangeTypeRange, quantityRateRange
     FILTERS                 taxRange(ra) == t,
                             countryRange(ra) == c
 
-    OBJECTS u=taxUnit
+    OBJECTS u=TaxUnit
     PROPERTIES(u)     READONLY descriptionTaxUnit
     FILTERS                    inRangeTaxUnit(ra, u)
 ;
@@ -208,16 +208,16 @@ DESIGN taxes FROM DEFAULT {
 }
 
 FORM range 'Шкала'
-    OBJECTS r=range
+    OBJECTS r=Range
     PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
                   dateToActingRateRange
     PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL TOOLBAR
-    DIALOG range OBJECT r
+    DIALOG Range OBJECT r
 ;
 
 FORM rangeDialog 'Шкала'
-    OBJECTS c = country FIXED PANEL
-    OBJECTS r=range
+    OBJECTS c = Country FIXED PANEL
+    OBJECTS r=Range
     PROPERTIES(r) READONLY numberRange, nameTaxRange, nameCountryRange, nameRangeTypeRange, valueCurrentRateRange, dateFromActingRateRange,
                   dateToActingRateRange
     PROPERTIES(r) ADDFORM, EDITFORM FORCE PANEL TOOLBAR
@@ -235,20 +235,20 @@ NAVIGATOR {
 
 // ---------- с префиксом
 META defineDocumentDetailVATCustom(detail, countryProp, prefix, caption)
-    prefix###VAT###detail(detail) = DATA range (detail);
+    prefix###VAT###detail(detail) = DATA Range (###detail);
     number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix##VAT###detail(detail));
-    value###prefix###VAT###detail 'НДС, %'###caption (detail) = DATA NUMERIC[10,5] (detail);
+    value###prefix###VAT###detail 'НДС, %'###caption (detail) = DATA NUMERIC[10,5] (###detail);
 
-    CONSTRAINT taxRange(prefix###VAT###detail(detail)) != tax.taxVAT OR
+    CONSTRAINT taxRange(prefix###VAT###detail(detail)) != Tax.taxVAT OR
                countryRange(prefix###VAT###detail(detail)) != countryProp###detail(detail)
                CHECKED BY prefix###VAT###detail
                MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
 END
 
 META defineDocumentAbstractDetailVATCustom(detail, prefix, caption)
-    prefix###VAT###detail(detail) = ABSTRACT range (detail) PERSISTENT;
+    prefix###VAT###detail(detail) = ABSTRACT Range (###detail) PERSISTENT;
     number###prefix###VAT###detail 'НДС, номер'###caption (detail) = numberRange(prefix###VAT###detail(detail));
-    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (detail) PERSISTENT;
+    value###prefix###VAT###detail 'НДС, %'###caption (detail) = ABSTRACT NUMERIC[10,5] (###detail) PERSISTENT;
 END
 
 META defineDocumentInterfaceDetailVATCustom(detail, countryProp, prefix, caption)
@@ -329,12 +329,12 @@ END
 
 //-- Сумма НДС в detail
 META defineDocumentDetailVATDataSumCustom (detail, prefix)
-    VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (detail);
-    prefix###sum###detail 'Сумма с НДС' (detail) = DATA NUMERIC[16,2] (detail);
+    VATSum###detail 'Сумма НДС' (detail) = DATA NUMERIC[16,2] (###detail);
+    prefix###sum###detail 'Сумма с НДС' (detail) = DATA NUMERIC[16,2] (###detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustom (detail, prefix)
-    VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
-    prefix###sum###detail 'Сумма с НДС' (detail) = ABSTRACT NUMERIC[16,2] (detail) PERSISTENT;
+    VATSum###detail 'Сумма НДС' (detail) = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
+    prefix###sum###detail 'Сумма с НДС' (detail) = ABSTRACT NUMERIC[16,2] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATDataSumCustom (detail, prefix)
     @defineDocumentAbstractDetailVATDataSumCustom(detail, prefix);
@@ -380,10 +380,10 @@ END
 //-- НДС - Розничный
 
 META defineDocumentDetailVATDataSumCustomPrefix (detail, prefix, caption)
-    prefix###VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[14,3] (detail);
+    prefix###VATSum###detail 'Сумма НДС'###caption = DATA NUMERIC[14,3] (###detail);
 END
 META defineDocumentAbstractDetailVATDataSumCustomPrefix (detail, prefix, caption)
-    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (detail) PERSISTENT;
+    prefix###VATSum###detail 'Сумма НДС'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailVATDataSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailVATDataSumCustomPrefix(detail, prefix, caption);
@@ -425,15 +425,15 @@ END
 // ------------------------------------------------------- Стандартные данные ----------------------------------- //
 
 loadDefaultVAT 'Добавить значение НДС' = ACTION (idCountry, number, value) {
-    ADDOBJ range;
+    ADDOBJ Range;
     FOR rn == addedObject() DO {
-       SET rangeTypeRange(rn) <- rangeType.common;
-       SET taxRange(rn) <- tax.taxVAT;
+       SET rangeTypeRange(rn) <- RangeType.common;
+       SET taxRange(rn) <- Tax.taxVAT;
        SET countryRange(rn) <- countrySID(idCountry);
        SET numberRange(rn) <- number AS INTEGER;
-       ADDOBJ rate;
+       ADDOBJ Rate;
        FOR ra == addedObject() DO {
-          SET rangeRate(ra) <- rn AS range;
+          SET rangeRate(ra) <- rn AS Range;
           SET valueRate(ra) <- value AS NUMERIC[10,5];
           SET dateFromRate(ra) <- 2001_01_01;
        };

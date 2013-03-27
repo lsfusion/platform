@@ -4,7 +4,7 @@ REQUIRE PriceRound, Store;
 
 //------------------------- Расширяем форму Отдела -------------------------//
 
-roundConditionDepartmentStore = DATA roundCondition (departmentStore);
+roundConditionDepartmentStore = DATA RoundCondition (DepartmentStore);
 nameRoundConditionDepartmentStore 'Условие округления розничной цены' (departmentStore)= name(roundConditionDepartmentStore(departmentStore)) IN bookkeepingGroup;
 
 CONSTRAINT currencyStock(departmentStore) != currencyRoundCondition(roundConditionDepartmentStore(departmentStore))

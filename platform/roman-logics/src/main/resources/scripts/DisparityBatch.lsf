@@ -14,15 +14,15 @@ REQUIRE System,
 PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Пересорт внутри между партиями внутри одного Sku ------------------------------------ //
-CLASS disparityBatch 'Пересорт м/у партиями': historizable, numeratedObject;
-TABLE disparityBatch(disparityBatch);
-CLASS disparityBatchPosted 'Проведенный пересорт м/у партиями' : disparityBatch, postedObject;
+CLASS DisparityBatch 'Пересорт м/у партиями': Historizable, NumeratedObject;
+TABLE disparityBatch(DisparityBatch);
+CLASS DisparityBatchPosted 'Проведенный пересорт м/у партиями' : DisparityBatch, PostedObject;
 
-CLASS disparityInBatchDetail 'Строка пересорта м/у партиями (In)';
-TABLE disparityInBatchDetail(disparityInBatchDetail);
+CLASS DisparityInBatchDetail 'Строка пересорта м/у партиями (In)';
+TABLE disparityInBatchDetail(DisparityInBatchDetail);
 
-CLASS disparityOutBatchDetail 'Строка пересорта м/у партиями (Out)';
-TABLE disparityOutBatchDetail(disparityOutBatchDetail);
+CLASS DisparityOutBatchDetail 'Строка пересорта м/у партиями (Out)';
+TABLE disparityOutBatchDetail(DisparityOutBatchDetail);
 
 @defineNumeratedObjectDefault(disparityBatch, 'Нумератор для пересорта', 'ПР');
 
@@ -32,14 +32,14 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 @defineDocumentDetailIndex(disparityBatch, disparityInBatchDetail);
 @defineDocumentDetailIndex(disparityBatch, disparityOutBatchDetail);
 
-@defineDocumentHeaderTime(disparityBatch);
+@defineDocumentHeaderTime(DisparityBatch);
 @defineDocumentDetailTime(disparityBatch, disparityInBatchDetail);
 @defineDocumentDetailTime(disparityBatch, disparityOutBatchDetail);
 
-@defineDocumentHeaderNote(disparityBatch);
+@defineDocumentHeaderNote(DisparityBatch);
 
-@defineDocumentDetailActionsCustom(disparityBatch, disparityInBatchDetail);
-@defineDocumentDetailActionsCustom(disparityBatch, disparityOutBatchDetail);
+@defineDocumentDetailActionsCustom(disparityBatch, DisparityInBatchDetail);
+@defineDocumentDetailActionsCustom(disparityBatch, DisparityOutBatchDetail);
 
 @defineDocumentHeaderStock(disparityBatch, stock, 'Склад');
 @defineDocumentDetailStock (disparityBatch, disparityInBatchDetail, stock, 'Склад');
@@ -78,7 +78,7 @@ TABLE disparityOutBatchDetail(disparityOutBatchDetail);
 @defineDocumentDetailBatchCustom(disparityOutBatchDetail, batch);
 
 
-CONSTRAINT disparityBatch IS disparityBatch AND  isPostedDisparityBatch(disparityBatch)
+CONSTRAINT disparityBatch IS DisparityBatch AND  isPostedDisparityBatch(disparityBatch)
     AND quantityDisparityInBatchDetailSkuDisparityBatch(sku, disparityBatch) != quantityDisparityOutBatchDetailSkuDisparityBatch(sku, disparityBatch)
     MESSAGE 'Количество для SKU и документа по (In) и (Out) должны быть равны';
 
@@ -112,14 +112,14 @@ disparityBatchStock (stock) = GROUP MAX disparityBatch BY stockDisparityBatch(di
 
 
 FORM disparityBatch 'Пересорт м/у партиями'
-    OBJECTS o = disparityBatch FIXED PANEL
+    OBJECTS o = DisparityBatch FIXED PANEL
 
     PROPERTIES (o) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, noteDisparityBatch, //nameStockDisparityBatch
                    countDisparityInBatchDetailDisparityBatch, quantityDisparityInBatchDetailDisparityBatch,
                    countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch, diffBalanceDisparityBatch
 
-    OBJECTS di = disparityInBatchDetail
-    OBJECTS do = disparityOutBatchDetail
+    OBJECTS di = DisparityInBatchDetail
+    OBJECTS do = DisparityOutBatchDetail
 
     PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchDetailDisparityBatch, addDetailInputBarcodeDisparityInBatchDetailDisparityBatch,
                             deleteDisparityInBatchDetailDisparityBatch
@@ -133,7 +133,7 @@ FORM disparityBatch 'Пересорт м/у партиями'
     EVENTS
         ON OK prePostDisparityBatch(o)
 
-    EDIT disparityBatch OBJECT o
+    EDIT DisparityBatch OBJECT o
 ;
 
 DESIGN disparityBatch FROM DEFAULT {
@@ -170,7 +170,7 @@ DESIGN disparityBatch FROM DEFAULT {
 }
 
 FORM disparityBatches 'Пересорты м/у партиями'
-    OBJECTS o = disparityBatch
+    OBJECTS o = DisparityBatch
     PROPERTIES (o) READONLY isPostedDisparityBatch FORCE GRID, numberObject, seriesObject, dateDisparityBatch, timeDisparityBatch, nameStockDisparityBatch, noteDisparityBatch,
                    countDisparityInBatchDetailDisparityBatch, quantityDisparityInBatchDetailDisparityBatch,
                    countDisparityOutBatchDetailDisparityBatch, quantityDisparityOutBatchDetailDisparityBatch
@@ -179,8 +179,8 @@ FORM disparityBatches 'Пересорты м/у партиями'
 
     PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS di = disparityInBatchDetail
-    OBJECTS do = disparityOutBatchDetail
+    OBJECTS di = DisparityInBatchDetail
+    OBJECTS do = DisparityOutBatchDetail
 
     FILTERS disparityBatchDisparityInBatchDetail(di) == o,
             disparityBatchDisparityOutBatchDetail(do) == o
@@ -229,7 +229,7 @@ DESIGN disparityBatches FROM DEFAULT {
 createMixDisparityBatch 'Сделать подборку строк пересорта' = ACTION (disparityBatch) {
 
     FOR quantityNegativeDisparityBatchStock(batch, stockDisparityBatch(disparityBatch)) DO {
-        ADDOBJ disparityOutBatchDetail;
+        ADDOBJ DisparityOutBatchDetail;
         FOR d == addedObject() DO {
             SET disparityBatchDisparityOutBatchDetail(d) <- disparityBatch;
             SET skuDisparityOutBatchDetail(d) <- skuBatch(batch);
@@ -239,7 +239,7 @@ createMixDisparityBatch 'Сделать подборку строк пересо
     }
 
     FOR quantityPositiveDisparityBatchStock(batch, stockDisparityBatch(disparityBatch)) DO {
-        ADDOBJ disparityInBatchDetail;
+        ADDOBJ DisparityInBatchDetail;
         FOR d == addedObject() DO {
             SET disparityBatchDisparityInBatchDetail(d) <- disparityBatch;
             SET skuDisparityInBatchDetail(d) <- skuBatch(batch);
@@ -249,28 +249,28 @@ createMixDisparityBatch 'Сделать подборку строк пересо
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerOutFIFO(disparityOutBatchDetail, sku, stock);
+@implementSkuLedgerOutFIFO(DisparityOutBatchDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchDetail(ledger) AND batchDisparityOutBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityOutBatchDetail(ledger));
-sumOutSkuLedger(ledger) += 0.0 IF ledger IS disparityOutBatchDetail;
-skipASkuLedger (ledger) += ledger IS disparityOutBatchDetail;
+sumOutSkuLedger(ledger) += 0.0 IF ledger IS DisparityOutBatchDetail;
+skipASkuLedger (ledger) += ledger IS DisparityOutBatchDetail;
 
-@implementSkuLedgerInLIFO(disparityInBatchDetail, sku, stock);
+@implementSkuLedgerInLIFO(DisparityInBatchDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchDetail(ledger) AND batchDisparityInBatchDetail(ledger) == batch;
 changedDataSkuLedger(ledger) += CHANGED(batchDisparityInBatchDetail(ledger));
-sumInSkuLedger(ledger) += 0.0 IF ledger IS disparityInBatchDetail;
-skipASkuLedger (ledger) += ledger IS disparityInBatchDetail;
+sumInSkuLedger(ledger) += 0.0 IF ledger IS DisparityInBatchDetail;
+skipASkuLedger (ledger) += ledger IS DisparityInBatchDetail;
 
 FORM stockDisparity 'Склады'
 
-    OBJECTS o = disparityBatch FIXED PANEL
+    OBJECTS o = DisparityBatch FIXED PANEL
 
-    TREE stockTree  sg = stockGroup PARENT parentStockGroup
+    TREE stockTree  sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY sgTreeName = name(sg)
 
-    OBJECTS ts = stock
+    OBJECTS ts = Stock
     PROPERTIES READONLY tsTreeName = name(ts), diffBalanceStock(ts)
     FILTERS isParentStockGroupStock(sg, ts)
     FILTERGROUP filters2
@@ -296,12 +296,12 @@ DESIGN stockDisparity FROM DEFAULT {
     }
 }
 
-showActionDisparityBatch (disparityBatch)= disparityBatch IS disparityBatch AND NOT quantityDisparityInBatchDetailDisparityBatch(disparityBatch)
+showActionDisparityBatch (disparityBatch)= disparityBatch IS DisparityBatch AND NOT quantityDisparityInBatchDetailDisparityBatch(disparityBatch)
     AND NOT quantityDisparityOutBatchDetailDisparityBatch(disparityBatch);
 
 stockForDisparityBatch 'Склад' (disparityBatch) = ACTION (disparityBatch) {
     FORM stockDisparity OBJECTS o = disparityBatch MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET stockDisparityBatch(disparityBatch) <- chosenObject('ts');
     }
 }
@@ -326,15 +326,15 @@ EXTEND FORM disparityBatches
 
 // ---------------------------------------- Пересорт на складе ------------------------------------ //
 
-CLASS disparityBatchA 'Пересорт м/у партиями (бухг.)': historizable, numeratedObject;
-TABLE disparityBatchA(disparityBatchA);
-CLASS disparityBatchAPosted 'Проведенный пересорт м/у партиями (бухг.)' : disparityBatchA, postedObject;
+CLASS DisparityBatchA 'Пересорт м/у партиями (бухг.)': Historizable, NumeratedObject;
+TABLE disparityBatchA(DisparityBatchA);
+CLASS DisparityBatchAPosted 'Проведенный пересорт м/у партиями (бухг.)' : DisparityBatchA, PostedObject;
 
-CLASS disparityInBatchADetail 'Строка пересорта м/у партиями (бухг.) (In)';
-TABLE disparityInBatchADetail(disparityInBatchADetail);
+CLASS DisparityInBatchADetail 'Строка пересорта м/у партиями (бухг.) (In)';
+TABLE disparityInBatchADetail(DisparityInBatchADetail);
 
-CLASS disparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)';
-TABLE disparityOutBatchADetail(disparityOutBatchADetail);
+CLASS DisparityOutBatchADetail 'Строка пересорта м/у партиями (бухг.) (Out)';
+TABLE disparityOutBatchADetail(DisparityOutBatchADetail);
 
 @defineNumeratedObjectDefault(disparityBatchA, 'Нумератор для пересорта м/у партиями (бухг.)', 'ПБ');
 
@@ -344,14 +344,14 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 @defineDocumentDetailIndex(disparityBatchA, disparityInBatchADetail);
 @defineDocumentDetailIndex(disparityBatchA, disparityOutBatchADetail);
 
-@defineDocumentHeaderTime(disparityBatchA);
+@defineDocumentHeaderTime(DisparityBatchA);
 @defineDocumentDetailTime(disparityBatchA, disparityInBatchADetail);
 @defineDocumentDetailTime(disparityBatchA, disparityOutBatchADetail);
 
-@defineDocumentHeaderNote(disparityBatchA);
+@defineDocumentHeaderNote(DisparityBatchA);
 
-@defineDocumentDetailActionsCustom(disparityBatchA, disparityInBatchADetail);
-@defineDocumentDetailActionsCustom(disparityBatchA, disparityOutBatchADetail);
+@defineDocumentDetailActionsCustom(disparityBatchA, DisparityInBatchADetail);
+@defineDocumentDetailActionsCustom(disparityBatchA, DisparityOutBatchADetail);
 
 @defineDocumentHeaderStock(disparityBatchA, stock, 'Склад');
 @defineDocumentDetailStock (disparityBatchA, disparityInBatchADetail, stock, 'Склад');
@@ -398,7 +398,7 @@ TABLE disparityOutBatchADetail(disparityOutBatchADetail);
 @defineDocumentHeaderAndDetailSumCustomCaption (disparityBatchA, disparityOutBatchADetail, ' (всего) (Out)', );
 
 
-CONSTRAINT disparityBatchA IS disparityBatchA AND isPostedDisparityBatchA(disparityBatchA)
+CONSTRAINT disparityBatchA IS DisparityBatchA AND isPostedDisparityBatchA(disparityBatchA)
     AND sumDisparityInBatchADetailDisparityBatchA(disparityBatchA) != sumDisparityOutBatchADetailDisparityBatchA(disparityBatchA)
     MESSAGE 'Суммы для документа по (In) и (Out) должны быть равны';
 
@@ -440,15 +440,15 @@ sumDiffDisparityBatchADetailDisparityBatchA 'Разница суммы всег�
     sumDisparityOutBatchADetailDisparityBatchA(disparityBatchA) IN documentSumGroup;
 
 FORM disparityBatchA 'Пересорт м/у партиями (бухг.)'
-    OBJECTS o = disparityBatchA FIXED PANEL
+    OBJECTS o = DisparityBatchA FIXED PANEL
 
     PROPERTIES (o) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDisparityBatchA, timeDisparityBatchA, noteDisparityBatchA, //nameStockDisparityBatchA
                    countDisparityInBatchADetailDisparityBatchA, quantityDisparityInBatchADetailDisparityBatchA, sumDisparityInBatchADetailDisparityBatchA,
                    countDisparityOutBatchADetailDisparityBatchA, quantityDisparityOutBatchADetailDisparityBatchA, sumDisparityOutBatchADetailDisparityBatchA,
                    sumDiffDisparityBatchADetailDisparityBatchA
 
-    OBJECTS di = disparityInBatchADetail
-    OBJECTS do = disparityOutBatchADetail
+    OBJECTS di = DisparityInBatchADetail
+    OBJECTS do = DisparityOutBatchADetail
 
     PROPERTIES(o) TODRAW di addDetailDialogSkuStockDisparityInBatchADetailDisparityBatchA, addDetailInputBarcodeDisparityInBatchADetailDisparityBatchA,
                             deleteDisparityInBatchADetailDisparityBatchA
@@ -462,7 +462,7 @@ FORM disparityBatchA 'Пересорт м/у партиями (бухг.)'
     EVENTS
         ON OK prePostDisparityBatchA(o)
 
-    EDIT disparityBatchA OBJECT o
+    EDIT DisparityBatchA OBJECT o
 ;
 
 DESIGN disparityBatchA FROM DEFAULT {
@@ -522,7 +522,7 @@ DESIGN disparityBatchA FROM DEFAULT {
 }
 
 FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
-    OBJECTS o = disparityBatchA
+    OBJECTS o = DisparityBatchA
     PROPERTIES (o) READONLY isPostedDisparityBatchA FORCE GRID, numberObject, seriesObject, dateDisparityBatchA, timeDisparityBatchA, nameStockDisparityBatchA, noteDisparityBatchA,
                    countDisparityInBatchADetailDisparityBatchA, quantityDisparityInBatchADetailDisparityBatchA, sumDisparityInBatchADetailDisparityBatchA,
                    countDisparityOutBatchADetailDisparityBatchA, quantityDisparityOutBatchADetailDisparityBatchA, sumDisparityOutBatchADetailDisparityBatchA
@@ -531,8 +531,8 @@ FORM disparityBatchAs 'Пересорты м/у партиями (бухг.)'
 
     PROPERTIES (o)    ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    OBJECTS di = disparityInBatchADetail
-    OBJECTS do = disparityOutBatchADetail
+    OBJECTS di = DisparityInBatchADetail
+    OBJECTS do = DisparityOutBatchADetail
 
     FILTERS disparityBatchADisparityInBatchADetail(di) == o,
             disparityBatchADisparityOutBatchADetail(do) == o
@@ -581,7 +581,7 @@ DESIGN disparityBatchAs FROM DEFAULT {
 createMixDisparityBatchA 'Сделать подборку строк пересорта' = ACTION (disparityBatchA) {
 
     FOR integerQuantityNegativeBatchDisparityBatchA(batch, disparityBatchA) DO {
-        ADDOBJ disparityOutBatchADetail;
+        ADDOBJ DisparityOutBatchADetail;
         FOR d == addedObject() DO {
             SET disparityBatchADisparityOutBatchADetail(d) <- disparityBatchA;
             SET skuDisparityOutBatchADetail(d) <- skuBatch(batch);
@@ -592,7 +592,7 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
     }
 
     FOR integerQuantityPositiveBatchDisparityBatchA(batch, disparityBatchA) DO {
-        ADDOBJ disparityInBatchADetail;
+        ADDOBJ DisparityInBatchADetail;
         FOR d == addedObject() DO {
             SET disparityBatchADisparityInBatchADetail(d) <- disparityBatchA;
             SET skuDisparityInBatchADetail(d) <- skuBatch(batch);
@@ -603,12 +603,12 @@ createMixDisparityBatchA 'Сделать подборку строк перес�
     }
 } IN documentPrmGroup CONFIRM;
 
-@implementSkuLedgerOutFIFO(disparityOutBatchADetail, sku, stock);
+@implementSkuLedgerOutFIFO(DisparityOutBatchADetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityDisparityOutBatchADetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityDisparityOutBatchADetail(ledger) AND batchDisparityOutBatchADetail(ledger) == batch;
 sumOutSkuLedger(ledger) += sumDisparityOutBatchADetail(ledger);
 
-@implementSkuLedgerInLIFO(disparityInBatchADetail, sku, stock);
+@implementSkuLedgerInLIFO(DisparityInBatchADetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityDisparityInBatchADetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityDisparityInBatchADetail(ledger) AND batchDisparityInBatchADetail(ledger) == batch;
 sumInSkuLedger(ledger) += sumDisparityInBatchADetail(ledger);

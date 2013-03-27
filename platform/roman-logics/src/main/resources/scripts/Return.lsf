@@ -15,9 +15,9 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Возврат ------------------------------------ //
 
-CLASS returnOut 'Возврат товаров по накладным' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
-CLASS returnOutPosted 'Проведенный возврат товаров по накладным' : returnOut, postedObject;
-CLASS returnOutDetail 'Строка возврата товаров по накладным';
+CLASS ReturnOut 'Возврат товаров по накладным' : Historizable, NumberedObject, OutStockDocumentLedger, InnerDocument;
+CLASS ReturnOutPosted 'Проведенный возврат товаров по накладным' : ReturnOut, PostedObject;
+CLASS ReturnOutDetail 'Строка возврата товаров по накладным';
 
 @defineDocumentTransferOut(return, 'Возврат товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(return, 'Возврат товаров по накладным');
@@ -44,7 +44,7 @@ EXTEND FORM returnOuts
     PROPERTIES(t) isCommissionReturnOut
 ;
 
-saleInBatchDetailReturnOutDetail = DATA saleInBatchDetail (returnOutDetail);
+saleInBatchDetailReturnOutDetail = DATA SaleInBatchDetail (ReturnOutDetail);
 descriptionBatchReturnOutDetail 'Партия' (returnOutDetail) = descriptionBatch(saleInBatchDetailReturnOutDetail(returnOutDetail));
 
 CONSTRAINT skuBatch(saleInBatchDetailReturnOutDetail(detail)) != skuReturnOutDetail(detail) CHECKED BY saleInBatchDetailReturnOutDetail
@@ -58,9 +58,9 @@ currentBalanceReturnOutDetail 'Текущий остаток' (returnOutDetail) 
 
 FORM saleInBatchDetailDialog 'Партия'
 
-    OBJECTS rd = returnOutDetail FIXED PANEL
+    OBJECTS rd = ReturnOutDetail FIXED PANEL
 
-    OBJECTS bt = saleInBatchDetail
+    OBJECTS bt = SaleInBatchDetail
     PROPERTIES (bt) READONLY nameSkuBatch, nameStockBatch, descriptionBatch, nameOwnerBatchA, numberCommissionContractSkuBatchA,
                             importerPriceBatchA, supplierPriceBatchA, numberSupplierVATBatchA, valueSupplierVATBatchA
 
@@ -74,7 +74,7 @@ FORM saleInBatchDetailDialog 'Партия'
 
 dialogBatchReturnOutDetail 'Партия' (returnOutDetail) = ACTION (returnOutDetail) {
     FORM saleInBatchDetailDialog OBJECTS rd = returnOutDetail MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET saleInBatchDetailReturnOutDetail(returnOutDetail) <- chosenObject('bt');
     }
 }
@@ -92,7 +92,7 @@ EXTEND FORM returnOuts
 
 isCommissionReturnOutDetail(detail) = isCommissionReturnOut(returnOutReturnOutDetail(detail));
 
-useRetailPriceReturnOutDetail(detail) = [stockReturnOutDetail(detail) IS departmentStore
+useRetailPriceReturnOutDetail(detail) = [stockReturnOutDetail(detail) IS DepartmentStore
     AND NOT costLedgerDepartmentStore(stockReturnOutDetail(detail))](detail)
     OR isCommissionReturnOutDetail(detail);
 @defineDocumentTransferAccount(returnOut, useRetailPriceReturnOutDetail);
@@ -102,7 +102,7 @@ useRetailPriceReturnOutDetail(detail) = [stockReturnOutDetail(detail) IS departm
 @extendFormDocumentSkipSkuLedgerCustomReadonly(returnOuts, t, returnOut);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(returnOutDetail, sku, stock);
+@implementSkuLedgerOutFIFO(ReturnOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += quantityReturnOutDetail(ledger) IF batch == saleInBatchDetailReturnOutDetail(ledger);
 changedDataSkuLedger(ledger) += CHANGED(saleInBatchDetailReturnOutDetail(ledger));
@@ -114,14 +114,14 @@ skipSkuLedger (ledger) += skipSkuLedgerReturnOutDetail(ledger);
 // Товарные накладные
 
 @defineConsignmentHeader(returnOut);
-@implementConsignmentHeader(returnOut);
+@implementConsignmentHeader(ReturnOut);
 
 supplierConsignment (consignment) += legalEntityStockReturnOut(consignment);
 supplierStockConsignment (consignment) += stockReturnOut(consignment);
 customerConsignment (consignment) += destinationLegalEntityStockReturnOut(consignment);
 customerStockConsignment (consignment) += destinationStockReturnOut(consignment);
 
-EXTEND CLASS returnOutDetail : consignmentDetail;
+EXTEND CLASS ReturnOutDetail : ConsignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += returnOutReturnOutDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuReturnOutDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantityReturnOutDetail (consignmentDetail);
@@ -165,8 +165,8 @@ EXTEND FORM returnOuts
 
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS returnIn 'Получение товаров по накладным' : historizable, incStockDocumentLedger;
-CLASS returnInDetail 'Строка получения товаров по накладным';
+CLASS ReturnIn 'Получение товаров по накладным' : Historizable, IncStockDocumentLedger;
+CLASS ReturnInDetail 'Строка получения товаров по накладным';
 
 @defineDocumentTransferIn(return, 'Получение товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(return, 'Получение товаров по накладным');
@@ -191,14 +191,14 @@ skipSkuLedgerReturnInDetail (detail) = skipSkuLedgerReturnOutDetail(returnOutDet
 
 isCommissionReturnInDetail(detail) = isCommissionReturnOutDetail(returnOutDetailReturnInDetail(detail));
 
-useRetailPriceReturnInDetail(detail) = [stockReturnInDetail(detail) IS departmentStore
+useRetailPriceReturnInDetail(detail) = [stockReturnInDetail(detail) IS DepartmentStore
     AND NOT costLedgerDepartmentStore(stockReturnInDetail(detail))](detail)
     OR isCommissionReturnInDetail(detail);
 @defineDocumentTransferAccount(returnIn, useRetailPriceReturnInDetail);
 @extendFormDocumentSkipSkuLedgerCustomReadonly(returnIns, t, returnIn);
 
 
-@implementSkuLedgerInLIFO(returnInDetail, sku, stock);
+@implementSkuLedgerInLIFO(ReturnInDetail, sku, stock);
 quantityInLIFOSkuLedger (ledger) += quantityReturnInDetail(ledger);
 limitInLIFOSkuLedgerBatch (ledger, batch) += quantityReturnInDetail(ledger) AND batch == batchReturnInDetail(ledger);
 sumInSkuLedger(ledger) += accountSumReturnInDetail(ledger);
@@ -208,10 +208,10 @@ nameCurrencyReturnIn 'Валюта' (returnIn) = nameCurrencyReturnOut(returnOut
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS returnRec 'Приемка товаров по накладной (возврат)' : historizable;
-CLASS returnRecPosted 'Проведенная приемка товаров по накладной (возврат)' : returnRec, postedObject;
+CLASS ReturnRec 'Приемка товаров по накладной (возврат)' : Historizable;
+CLASS ReturnRecPosted 'Проведенная приемка товаров по накладной (возврат)' : ReturnRec, PostedObject;
 
-CLASS returnRecDetail 'Строка приемки товаров по накладной (возврат)';
+CLASS ReturnRecDetail 'Строка приемки товаров по накладной (возврат)';
 
 @defineDocumentTransferRec(return, 'Приемка товаров по накладным (возврат)', sku, stock);
 @defineDocumentFormTransferRec(return, 'Приемка товаров по накладным (возврат)');
@@ -222,11 +222,11 @@ CLASS returnRecDetail 'Строка приемки товаров по накл�
 @extendFormDocumentDetailSkuArticleReadonly(returnIns, r, returnRec);
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
-CLASS returnDiff 'Акт расхождений приемки товаров по накладной (возврат)' : historizable;
+CLASS ReturnDiff 'Акт расхождений приемки товаров по накладной (возврат)' : Historizable;
 
-CLASS ABSTRACT returnDiffDetail 'Строка расхождений акта приемки товаров по накладной (возврат)';
-CLASS returnDiffEDetail 'Строка расхождений акта приемки товаров по накладной (возврат, излишек)' : returnDiffDetail;
-CLASS returnDiffSDetail 'Строка расхождений акта приемки товаров по накладной (возврат, недостача)' : returnDiffDetail;
+CLASS ABSTRACT ReturnDiffDetail 'Строка расхождений акта приемки товаров по накладной (возврат)';
+CLASS ReturnDiffEDetail 'Строка расхождений акта приемки товаров по накладной (возврат, излишек)' : ReturnDiffDetail;
+CLASS ReturnDiffSDetail 'Строка расхождений акта приемки товаров по накладной (возврат, недостача)' : ReturnDiffDetail;
 
 @defineDocumentTransferDiff(return, 'Акт расхождений приемки товаров по накладной (возврат)', sku, stock);
 @defineDocumentFormTransferDiff(return);
@@ -234,23 +234,23 @@ CLASS returnDiffSDetail 'Строка расхождений акта прием
 @defineDocumentDetailSkuArticle(returnDiff);
 @extendFormDocumentDetailSkuArticleReadonlyQuantity(returnIns, f, returnDiff, signedQuantityReturnDiffDetail);
 
-costReturnDiffEDetail(detail) = 0.0 IF detail IS returnDiffEDetail;
+costReturnDiffEDetail(detail) = 0.0 IF detail IS ReturnDiffEDetail;
 
-EXTEND CLASS returnDiffEDetail : batchB;
+EXTEND CLASS ReturnDiffEDetail : BatchB;
 @implementBatchCustom(returnDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantityReturnDiffEDetail(batch);
-skipASkuLedger (ledger) += ledger IS returnDiffEDetail;
+skipASkuLedger (ledger) += ledger IS ReturnDiffEDetail;
 
-@implementSkuLedgerOutFIFO(returnDiffSDetail, sku, stock);
+@implementSkuLedgerOutFIFO(ReturnDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantityReturnDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costReturnInBatch(returnInReturnDiffSDetail(ledger), batch);
-orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS returnDiffSDetail;
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS ReturnDiffSDetail;
 
 accountPriceReturnRecBatchA (returnRec, batchA) = GROUP MAX accountPriceReturnInDetailBatchA(detail, batchA) BY returnRecReturnInDetail(detail), batchA;
 accountSumReturnDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceReturnRecBatchA(returnRecReturnDiffSDetail(detail), batch) BY detail PERSISTENT;
 sumOutSkuLedger(ledger) += accountSumReturnDiffSDetail(ledger);
 
-skipASkuLedger (ledger) += ledger IS returnDiffSDetail;
+skipASkuLedger (ledger) += ledger IS ReturnDiffSDetail;
 
 EXTEND FORM returnIns
     PROPERTIES(t) READONLY nameCurrencyReturnIn
@@ -266,7 +266,7 @@ descriptionStockDocumentLedger (ledger) += descriptionReturnOut(ledger);
 
 sumOutStockDocumentLedger (ledger) += accountSumReturnOut(ledger);
 sumItemOutStockDocumentLedger (ledger) += accountSumReturnOut(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS returnOut;
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS ReturnOut;
 
 // приход
 dateTimeStockDocumentLedger (ledger) += dateTimeReturnIn(ledger);
@@ -276,4 +276,4 @@ descriptionStockDocumentLedger (ledger) += descriptionReturnIn(ledger);
 
 sumIncStockDocumentLedger (ledger) += accountSumReturnIn(ledger);
 sumItemIncStockDocumentLedger (ledger) += accountSumReturnIn(ledger);
-sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS returnIn;
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS ReturnIn;

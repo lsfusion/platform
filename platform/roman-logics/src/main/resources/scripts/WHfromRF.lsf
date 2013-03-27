@@ -17,8 +17,8 @@ REQUIRE System,
 
 PRIORITY Stock, RomanLogicsModule;
 
-CLASS WHfromRF 'Приход из РФ' : historizable, numeratedObject;
-CLASS WHfromRFPosted 'Проведенный приход из РФ' : WHfromRF, postedObject;
+CLASS WHfromRF 'Приход из РФ' : Historizable, NumeratedObject;
+CLASS WHfromRFPosted 'Проведенный приход из РФ' : WHfromRF, PostedObject;
 CLASS WHfromRFDetail 'Строка прихода из РФ';
 
 GROUP exchangeGroup 'Курсы обмена' : public;
@@ -28,37 +28,37 @@ GROUP exchangeGroup 'Курсы обмена' : public;
 @defineNumeratedObjectDefault(WHfromRF, 'Нумератор для прихода из РФ', 'РФ');
 
 // расходы для фрахтов РФ
-currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == route.rf;
-typeExchangePayFreight 'Тип обмена (ИД)' (freight) = typeExchangeSTX() IF routeFreight(freight) == route.rf;
+currencyPayFreight 'Валюта платежей за РФ (ИД)' (freight) = currencyPayFreights() IF routeFreight(freight) == Route.rf;
+typeExchangePayFreight 'Тип обмена (ИД)' (freight) = typeExchangeSTX() IF routeFreight(freight) == Route.rf;
 
 @defineNearestRateExchangeObject(freight, pay, pay, dateArrivalFreight, base);
 
-tariffVolumeFreight 'Тариф для перевозок (м3)' = DATA NUMERIC[14,2](freight);
-percentCostFreight 'Процент расходов за оформление' = DATA NUMERIC[14,2](freight);
-rateExchangeDataPayFreight 'Курс обмена' = DATA NUMERIC[14,2](freight);
+tariffVolumeFreight 'Тариф для перевозок (м3)' = DATA NUMERIC[14,2](Freight);
+percentCostFreight 'Процент расходов за оформление' = DATA NUMERIC[14,2](Freight);
+rateExchangeDataPayFreight 'Курс обмена' = DATA NUMERIC[14,2](Freight);
 
-tariffVolumeFreight(freight) <- tariffVolumeFreights() WHEN freight IS freight;
-percentCostFreight(freight) <- percentCostFreights() WHEN freight IS freight;
+tariffVolumeFreight(freight) <- tariffVolumeFreights() WHEN freight IS Freight;
+percentCostFreight(freight) <- percentCostFreights() WHEN freight IS Freight;
 rateExchangeDataPayFreight(freight) <- rateExchangePayPayFreight(freight) WHEN CHANGED (dateArrivalFreight(freight));
 
-isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == route.rf AND freight IS freightArrived);
+isWHfromRFFreight(freight) = TRUE IF (routeFreight(freight) == Route.rf AND freight IS FreightArrived);
 
-sumRateRegistrationFreightSku 'Затраты на оформление' (freight, sku) = (priceInFullFreightSku(freight, sku) * percentCostFreight(freight))/100 IF routeFreight(freight) == route.rf;
+sumRateRegistrationFreightSku 'Затраты на оформление' (freight, sku) = (priceInFullFreightSku(freight, sku) * percentCostFreight(freight))/100 IF routeFreight(freight) == Route.rf;
 sumRegistrationFreightSku 'Затраты на оформление' (freight, sku) = sumRateRegistrationFreightSku(freight, sku)/rateExchangeDataPayFreight(freight);
 
-sumDeliveryFreight 'Затраты на доставку' (freight) = volumeDataFreight(freight) * tariffVolumeFreight(freight) IF routeFreight(freight) == route.rf;
+sumDeliveryFreight 'Затраты на доставку' (freight) = volumeDataFreight(freight) * tariffVolumeFreight(freight) IF routeFreight(freight) == Route.rf;
 sumRateDeliveryFreight 'Затраты на доставку (конверт.)' (freight) = sumDeliveryFreight(freight) * rateExchangeDataPayFreight(freight);
 
 sumDeliveryFreightSku 'Затраты на доставку' (freight, sku) = (sumRateDeliveryFreight(freight) * sumGrossWeightFreightSku(freight, sku))/grossWeightFreight(freight);
 
-priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku) IF routeFreight(freight) == route.rf;
+priceRFFreightSku 'Себестоимость' (freight, sku) = UNION SUM priceInFullFreightSku(freight, sku), sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku) IF routeFreight(freight) == Route.rf;
 
 EXTEND FORM freightInvoiceForm
     PROPERTIES tariffVolumeFreight(freight), percentCostFreight(freight), rateExchangeDataPayFreight(freight)
     PROPERTIES FORCE GRID sumRateRegistrationFreightSku(freight, sku), sumDeliveryFreightSku(freight, sku), priceRFFreightSku(freight, sku)
 ;
 
-freightWHfromRF (WHfromRF) = DATA freightArrived (WHfromRF);
+freightWHfromRF (WHfromRF) = DATA FreightArrived (WHfromRF);
 nameFreightWHfromRF 'Фрахт' (WHfromRF) =  name(freightWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 castFreightWHfromRF = FORMULA STRING[100] '\'Фрахт от \' || CAST($1 AS TEXT) || \' (\' || CAST($2 AS TEXT) || \')\'';
 descriptionFreightWHfromRF 'Фрахт' (WHfromRF) = castFreightWHfromRF(dateArrivalFreight(freightWHfromRF(WHfromRF)), nameExporterFreight(freightWHfromRF(WHfromRF)));
@@ -82,10 +82,10 @@ shortNameCurrencyWHfromRF 'Валюта фрахта' (WHfromRF) = shortNameCurr
 
 @defineDocumentDetailSkuArticle(WHfromRF);
 
-companyDataWHfromRF 'Импортёр (ИД)' = DATA company(WHfromRF);
+companyDataWHfromRF 'Импортёр (ИД)' = DATA Company(WHfromRF);
 nameCompanyDataWHfromRF 'Импортёр' = name(companyDataWHfromRF(WHfromRF)) IN documentPrmGroup MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
-overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS company,
+overCompanyWHfromRF 'Импортёр (ИД)' (WHfromRF) = UNION OVERRIDE legalEntityStockWHfromRF(WHfromRF) IF legalEntityStockWHfromRF(WHfromRF) IS Company,
                                                                 companyDataWHfromRF(WHfromRF);
 
 costWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreightSku(freightWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)), skuWHfromRFDetail(WHfromRFDetail));
@@ -93,7 +93,7 @@ costWHfromRFDetail 'Себестоимость' (WHfromRFDetail) = priceRFFreigh
 currencyWHfromRF (WHfromRF)= currencyStock(stockWHfromRF(WHfromRF));
 
 rateExchangeDataWHfromRF 'Курс' = DATA NUMERIC[14,3] (WHfromRF) IN exchangeGroup;
-typeExchangeWHfromRF 'Тип обмена (ИД)' = DATA typeExchange(WHfromRF);
+typeExchangeWHfromRF 'Тип обмена (ИД)' = DATA TypeExchange(WHfromRF);
 nameTypeExchangeWHfromRF 'Тип обмена' (WHfromRF) = name(typeExchangeWHfromRF(WHfromRF)) IN exchangeGroup;
 @defineNearestRateExchangeObject(WHfromRF, , , dateWHfromRF, exchangeGroup);
 
@@ -103,7 +103,7 @@ rateExchangeDataWHfromRF(WHfromRF) <- rateExchangeWHfromRF(WHfromRF)
 rateExchangeDataWHfromRFDetail (WHfromRFDetail) = rateExchangeDataWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail));
 
 //для учета по коробам
-freightUnitWHfromRFDetail 'Короб (ИД)' (WHfromRFDetail) = DATA freightUnit(WHfromRFDetail);
+freightUnitWHfromRFDetail 'Короб (ИД)' (WHfromRFDetail) = DATA FreightUnit(WHfromRFDetail);
 barcodeFreightUnitWHfromRFDetail 'Короб' (WHfromRFDetail) = barcode (freightUnitWHfromRFDetail(WHfromRFDetail));
 
 quantitySkuFreightUnitFreight(sku, freightUnit, freight) = quantityFreightUnitSku(freightUnit, sku) IF freightFreightUnit(freightUnit) == freight;
@@ -116,10 +116,10 @@ isNotShippedSkuFreightUnitWHfromRF (sku, freightUnit, WHfromRF) = quantitySkuFre
     AND NOT quantityWHfromRFDetailsSkuFreightUnit(sku, freightUnit, WHfromRF);
 
 //приемка по коробам
-currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = DATA SESSION freightUnit (WHfromRF);
+currentFreightUnit 'Тек. короб (ИД)' (WHfromRF) = DATA SESSION FreightUnit (WHfromRF);
 barcodeCurrentFreightUnit 'Тек. короб (штрих-код)' (WHfromRF) = barcode(currentFreightUnit(WHfromRF));
 
-withOutBarcodeSku (sku) = sku IS RomanLogicsModule.item AND NOT barcode(sku);
+withOutBarcodeSku (sku) = sku IS RomanLogicsModule.Item AND NOT barcode(sku);
 
 quantityOriginCurrentBoxWHfromRFSku 'Ожидаемое к-во (тек. короб)' (WHfromRF, sku) = quantitySkuFreightUnitFreight(sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
 quantityWHfromRFSku 'Принятое к-во (тек. короб)' (WHfromRF, sku) = quantityWHfromRFDetailsSkuFreightUnit(sku, currentFreightUnit(WHfromRF), WHfromRF);
@@ -137,10 +137,10 @@ FORM addBarcodeWHfromRFFreightUnitSku 'Поиск товара(с коробам
 
     OBJECTS w = WHfromRF
 
-    OBJECTS f = freightUnit FIXED PANEL
+    OBJECTS f = FreightUnit FIXED PANEL
     PROPERTIES(f) READONLY sidSupplierBox, barcode
 
-    OBJECTS s = RomanLogicsModule.item
+    OBJECTS s = RomanLogicsModule.Item
     PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
 
     FILTERS quantityFreightSku(freightWHfromRF(w), s) > 0
@@ -164,7 +164,7 @@ FORM addBarcodeWHfromRFSku 'Поиск товара(с выбором шрих-�
 
     OBJECTS w = WHfromRF
 
-    OBJECTS s = RomanLogicsModule.item
+    OBJECTS s = RomanLogicsModule.Item
     PROPERTIES(s) READONLY sidArticleSku, barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
 
     FILTERS quantityFreightSku(freightWHfromRF(w), s) > 0
@@ -176,7 +176,7 @@ FORM addBarcodeWHfromRFSku 'Поиск товара(с выбором шрих-�
 
 FORM addSkuWHfromRF 'Ввод товара'
 
-    OBJECTS i = RomanLogicsModule.item FIXED PANEL
+    OBJECTS i = RomanLogicsModule.Item FIXED PANEL
     PROPERTIES(i) READONLY barcode
     PROPERTIES(i) sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem
 
@@ -196,11 +196,11 @@ DESIGN addSkuWHfromRF FROM DEFAULT {
 
 createSkuWHfromRF = ACTION (barcode) NEWSESSION {
 
-    ADDOBJ RomanLogicsModule.item;
+    ADDOBJ RomanLogicsModule.Item;
     FOR s == addedObject() DO {
         SET barcode(s) <- (barcode AS STRING[14]);
         FORM addSkuWHfromRF OBJECTS i = s MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             EXEC apply();
         }
     }
@@ -211,25 +211,25 @@ detailWHfromRFFreightUnitSku (WHfromRF, freightUnit, sku) = GROUP MAX WHfromRFDe
 
 addDialogSkuFreightUnitWHfromRFBarcode 'Ввод штрих-кода' = ACTION (WHfromRF, barcode) {
 
-    LOCAL dialogBarcodeSku = sku();
+    LOCAL dialogBarcodeSku = Sku();
     LOCAL dialogBarcodeDetail = WHfromRFDetail();
 
 
-    IF barcodeToObject(barcode) IS freightUnit THEN {
+    IF barcodeToObject(barcode) IS FreightUnit THEN {
         SET currentFreightUnit (WHfromRF) <- barcodeToObject(barcode);
     } ELSE {
 
         SET dialogBarcodeSku() <- skuBarcodeIdDate(barcode, dateWHfromRF (WHfromRF));
         SET dialogBarcodeDetail() <- detailWHfromRFFreightUnitSku(WHfromRF, currentFreightUnit(WHfromRF), dialogBarcodeSku());
 
-        IF barcode IS STRING[14] AND NOT dialogBarcodeSku() IS sku THEN {
+        IF barcode IS STRING[14] AND NOT dialogBarcodeSku() IS Sku THEN {
 
             IF currentFreightUnit(WHfromRF) THEN {
                 FORM addBarcodeWHfromRFFreightUnitSku OBJECTS f = currentFreightUnit(WHfromRF), w = WHfromRF MODAL;
             } ELSE {
                 FORM addBarcodeWHfromRFSku OBJECTS w = WHfromRF MODAL;
             }
-            IF formResult() == formResult.ok THEN {
+            IF formResult() == FormResult.ok THEN {
                 SET barcode(sku) <- barcode WHERE sku == chosenObject('s');
                 SET dialogBarcodeSku() <- chosenObject('s');
             } ELSE {
@@ -238,7 +238,7 @@ addDialogSkuFreightUnitWHfromRFBarcode 'Ввод штрих-кода' = ACTION (
             }
         }
 
-        IF dialogBarcodeSku() IS sku THEN {
+        IF dialogBarcodeSku() IS Sku THEN {
 
             IF dialogBarcodeDetail() IS WHfromRFDetail THEN {
                 SET quantityWHfromRFDetail(detail) <-
@@ -266,12 +266,12 @@ addDetailInputBarcodeWHfromRFDetailWHfromRF 'Ввод штрих-кода :' (WH
                                                                         ON CHANGE changeAddDetailInputBarcodeWHfromRFDetailWHfromRF(WHfromRF) EVENTID 'SCANNER';
 
 fillWHfromRFDetailsSkuFreightUnit 'Заполнить строки из короба' (WHfromRF) = ACTION (WHfromRF) {
-    FOR isNotShippedSkuFreightUnitWHfromRF (sku AS sku, currentFreightUnit(WHfromRF), WHfromRF AS WHfromRF) DO {
+    FOR isNotShippedSkuFreightUnitWHfromRF (sku AS Sku, currentFreightUnit(WHfromRF), WHfromRF AS WHfromRF) DO {
         ADDOBJ WHfromRFDetail;
         FOR w == addedObject() DO {
             SET WHfromRFWHfromRFDetail(w) <- WHfromRF AS WHfromRF;
-            SET skuWHfromRFDetail (w) <- sku AS sku;
-            SET quantityWHfromRFDetail (w) <- quantitySkuFreightUnitFreight (sku AS sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
+            SET skuWHfromRFDetail (w) <- sku AS Sku;
+            SET quantityWHfromRFDetail (w) <- quantitySkuFreightUnitFreight (sku AS Sku, currentFreightUnit(WHfromRF), freightWHfromRF(WHfromRF));
             SET freightUnitWHfromRFDetail(w) <- currentFreightUnit(WHfromRF);
         }
     }
@@ -305,7 +305,7 @@ quantityRemainedSkuWHfromRF 'Кол-во оставшегося товара в 
 quantitySkuInWHfromRF 'Кол-во товара' (WHfromRF, sku) = GROUP SUM quantityWHfromRFDetail(WHfromRFDetail)
     BY WHfromRFWHfromRFDetail(WHfromRFDetail), skuWHfromRFDetail(WHfromRFDetail);
 
-CONSTRAINT currentFreightUnit(WHfromRF) IS freightUnit AND NOT quantitySkuInFreightUnitWHfromRF(WHfromRF) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
+CONSTRAINT currentFreightUnit(WHfromRF) IS FreightUnit AND NOT quantitySkuInFreightUnitWHfromRF(WHfromRF) CHECKED BY currentFreightUnit MESSAGE 'Короб должен быть из текущей поставки';
 
 CONSTRAINT WHfromRF IS WHfromRF AND NOT isWHfromRFFreight(freightWHfromRF(WHfromRF)) CHECKED BY freightWHfromRF MESSAGE 'Фрахт должен быть прибывшим из РФ';
 
@@ -361,7 +361,7 @@ languageWHfromRFDetail (WHfromRFDetail) = languageWHfromRF(WHfromRFWHfromRFDetai
 sidGenderArticleSkuWHfromRFDetail 'Пол товара' (WHfromRFDetail) = sidGenderArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT g FORM gendersDialog MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET genderArticle(article) <- chosenObject('g') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
@@ -369,7 +369,7 @@ changeGenderArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 nameCategoryArticleSkuWHfromRFDetail 'Номенклатурная группа' (WHfromRFDetail) = nameCategoryArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM categories MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET categoryArticle(article) <- chosenObject('c') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
@@ -377,7 +377,7 @@ changeCategoryArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 nameTypeFabricArticleSkuWHfromRFDetail 'Тип одежды' (WHfromRFDetail) = nameTypeFabricArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT t FORM typeFabrics MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET typeFabricArticle(article) <- chosenObject('t') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
@@ -385,7 +385,7 @@ changeTypeFabricArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 nameUnitOfMeasureArticleSkuWHfromRFDetail 'Ед. измерения товара' (WHfromRFDetail) = nameUnitOfMeasureArticleSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 15 MINCHARWIDTH 10;
 changeUnitOfMeasureArticleSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT u FORM unitOfMeasures MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET unitOfMeasureArticle(article) <- chosenObject('u') WHERE article == articleSku(skuWHfromRFDetail(WHfromRFDetail));
     }
 }
@@ -399,7 +399,7 @@ changeNetWeightSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
 nameCountryOfOriginSkuWHfromRFDetail 'Страна происхождения' (WHfromRFDetail) = nameCountryOfOriginSku(skuWHfromRFDetail(WHfromRFDetail)) PREFCHARWIDTH 30 MINCHARWIDTH 20;
 changeCountryOfOriginSkuWHfromRFDetail = ACTION (WHfromRFDetail) {
     REQUEST OBJECT c FORM countries MODAL;
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET countryOfOriginSku(sku) <- chosenObject('c') WHERE sku == skuWHfromRFDetail(WHfromRFDetail);
     }
 }
@@ -480,7 +480,7 @@ retailPriceWHfromRFDetail(WHfromRFDetail) <- priceAPriceSetDocumentSkuCurrencyDa
 
 costSumWHfromRFDetail (WHfromRFDetail) = roundPriceCurrency(costWHfromRFDetail(WHfromRFDetail) * quantityWHfromRFDetail(WHfromRFDetail) * rateExchangeDataWHfromRFDetail(WHfromRFDetail), currencyWHfromRFDetail(WHfromRFDetail));
 
-accountSumWHfromRFDetail 'Сумма учетная' (WHfromRFDetail) = IF stockWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)) IS departmentStore  THEN retailSumWHfromRFDetail(WHfromRFDetail)
+accountSumWHfromRFDetail 'Сумма учетная' (WHfromRFDetail) = IF stockWHfromRF(WHfromRFWHfromRFDetail(WHfromRFDetail)) IS DepartmentStore  THEN retailSumWHfromRFDetail(WHfromRFDetail)
                                                             ELSE costSumWHfromRFDetail(WHfromRFDetail);
 
 
@@ -488,7 +488,7 @@ accountSumWHfromRF 'Сумма учетная' (WHfromRF) = GROUP SUM accountSum
 
 // Проводим по регистру
 
-EXTEND CLASS WHfromRFDetail : batchB;
+EXTEND CLASS WHfromRFDetail : BatchB;
 @implementBatchCustom(WHfromRFDetail, sku, stock, cost);
 quantityBatch (batch) += quantityWHfromRFDetail(batch);
 sumInSkuLedger(batch) += accountSumWHfromRFDetail(batch);
@@ -539,7 +539,7 @@ FORM WHfromRF 'Приход товара из РФ'
 
     PROPERTIES(d) FORCE PANEL SHOWIF languageWHfromRF(w) BACKGROUND backgroundArticleColorWHfromRFDetail(d) mainCompositionWHfromRFDetail, additionalCompositionWHfromRFDetail
 
-    OBJECTS s = sku
+    OBJECTS s = Sku
     PROPERTIES(s) READONLY barcode, nameCategoryArticleSku, nameBrandSupplierArticleSku, sidArticleSku,
                            sidSizeSupplierItem FORCE GRID, sidColorSupplierItem FORCE GRID, nameColorSupplierItem FORCE GRID, shortNameUOMSku
     PROPERTIES(w, s) quantityWHfromRFSku, quantityOriginCurrentBoxWHfromRFSku, diffQuantityWHfromRFSku

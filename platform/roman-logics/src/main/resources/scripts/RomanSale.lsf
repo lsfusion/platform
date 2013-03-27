@@ -18,10 +18,10 @@ PRIORITY Stock, RomanLogicsModule;
 
 // ---------------------------------------- Перемещение ------------------------------------ //
 
-CLASS saleOut 'Продажа товаров по накладным' : historizable, numberedObject, outStockDocumentLedger, innerDocument;
-CLASS saleOutPosted 'Проведенная продажа товаров по накладным' : saleOut, postedObject;
-CLASS saleOutDetail 'Строка продажи товаров по накладным';
-CLASS saleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)';
+CLASS SaleOut 'Продажа товаров по накладным' : Historizable, NumberedObject, OutStockDocumentLedger, InnerDocument;
+CLASS SaleOutPosted 'Проведенная продажа товаров по накладным' : SaleOut, PostedObject;
+CLASS SaleOutDetail 'Строка продажи товаров по накладным';
+CLASS SaleOutBatchDetail 'Строка продажи товаров по накладным (по партиям)';
 
 @defineDocumentTransferOut(sale, 'Продажа товаров по накладным', sku, stock);
 @defineDocumentFormTransferOut(sale, 'Продажа товаров по накладным');
@@ -51,7 +51,7 @@ CONSTRAINT legalEntityStockSaleOut(saleOut) == destinationLegalEntityStockSaleOu
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
-supplierPriceSaleOutDetail 'Цена оптовая' = DATA NUMERIC[14,2] (saleOutDetail);
+supplierPriceSaleOutDetail 'Цена оптовая' = DATA NUMERIC[14,2] (SaleOutDetail);
 //supplierPriceSaleOutDetail (saleOutDetail) <- priceWholesaleArticleDateTime(articleSku(skuSaleOutDetail(saleOutDetail)), dateTimeSaleOutDetail(saleOutDetail))
 //    WHEN CHANGED(skuSaleOutDetail(saleOutDetail)) OR CHANGED(dateTimeSaleOutDetail(saleOutDetail));
 
@@ -72,7 +72,7 @@ EXTEND FORM saleOuts
 
 isCommissionSaleOutDetail(detail) = isCommissionSaleOut(saleOutSaleOutDetail(detail));
 
-useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS departmentStore
+useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS DepartmentStore
     AND NOT costLedgerDepartmentStore(stockSaleOutDetail(detail))](detail)
     OR isCommissionSaleOutDetail(detail);
 @defineDocumentTransferAccount(saleOut, useRetailPriceSaleOutDetail);
@@ -82,10 +82,10 @@ useRetailPriceSaleOutDetail(detail) = [stockSaleOutDetail(detail) IS departmentS
 @extendFormDocumentSkipSkuLedgerCustomReadonly(saleOuts, t, saleOut);
 
 // Проводим по регистру
-@implementSkuLedgerOutFIFO(saleOutDetail, sku, stock);
+@implementSkuLedgerOutFIFO(SaleOutDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleOutDetail (ledger);
 limitOutFIFOSkuLedgerBatch(ledger, batch) += currentBalanceABatchStock(batch, stockSaleOutDetail(ledger)) AND NOT commissionContractSkuBatchA(batch)
-                                             AND batch IS batchA;
+                                             AND batch IS BatchA;
 sumOutSkuLedger(ledger) += accountSumSaleOutDetail(ledger);
 skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 
@@ -98,14 +98,14 @@ skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 @defineConsignmentHeader(saleOut);
 isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBatchDetail) = isCommissionSaleOut(saleOutSaleOutBatchDetail(saleOutBatchDetail));
 
-@implementConsignmentHeader(saleOut);
+@implementConsignmentHeader(SaleOut);
 
 supplierConsignment (consignment) += legalEntityStock(stockSaleOut(consignment));
 supplierStockConsignment (consignment) += stockSaleOut(consignment);
 customerConsignment (consignment) += legalEntityStock(destinationStockSaleOut(consignment));
 customerStockConsignment (consignment) += destinationStockSaleOut(consignment);
 
-EXTEND CLASS saleOutBatchDetail : consignmentDetail;
+EXTEND CLASS SaleOutBatchDetail : ConsignmentDetail;
 consignmentConsignmentDetail (consignmentDetail) += saleOutSaleOutBatchDetail (consignmentDetail);
 skuConsignmentDetail (consignmentDetail) += skuSaleOutBatchDetail (consignmentDetail);
 quantityConsignmentDetail (consignmentDetail) += quantitySaleOutBatchDetail (consignmentDetail);
@@ -159,9 +159,9 @@ EXTEND FORM saleOuts
 ;
 // ---------------------------------------- Поступление ------------------------------------ //
 
-CLASS saleIn 'Покупка товаров по накладным' : historizable, incStockDocumentLedger;
-CLASS saleInDetail 'Строка покупки товаров по накладным';
-CLASS saleInBatchDetail 'Строка покупки товаров по накладным (по партиям)';
+CLASS SaleIn 'Покупка товаров по накладным' : Historizable, IncStockDocumentLedger;
+CLASS SaleInDetail 'Строка покупки товаров по накладным';
+CLASS SaleInBatchDetail 'Строка покупки товаров по накладным (по партиям)';
 
 @defineDocumentTransferIn(sale, 'Покупка товаров по накладным', sku, stock);
 @defineDocumentFormTransferIn(sale, 'Покупка товаров по накладным');
@@ -169,7 +169,7 @@ CLASS saleInBatchDetail 'Строка покупки товаров по нак�
 @defineDocumentDetailSkuArticle(saleIn);
 @extendFormDocumentDetailSkuArticleReadonly(saleIns, d, saleIn);
 
-TABLE saleInBatchDetail(saleInBatchDetail);
+TABLE saleInBatchDetail(SaleInBatchDetail);
 
 @defineAggregation(saleOutDetail, batch, saleInBatchDetail, costSaleOutDetailBatch);
 
@@ -195,18 +195,18 @@ isCommissionSaleInBatchDetail 'Продажа на комиссию' (detail) = 
 
 isCommissionSaleIn 'Продажа на комиссию' (saleIn) = isCommissionSaleOut(saleOutSaleIn(saleIn));
 
-costSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
+costSaleInBatchDetail = DATA NUMERIC[14,2] (SaleInBatchDetail);
 costSaleInBatchDetail (detail) <- [prevCostBatch(batch)](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
-importerPriceSaleInBatchDetail = DATA NUMERIC[14,2] (saleInBatchDetail);
-importerPriceSaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS saleInBatchDetail THEN
+importerPriceSaleInBatchDetail = DATA NUMERIC[14,2] (SaleInBatchDetail);
+importerPriceSaleInBatchDetail (detail) <- IF batchSaleInBatchDetail(detail) IS SaleInBatchDetail THEN
                                                 [PREV(importerPriceBatchA(batch))](batchSaleInBatchDetail(detail)) ELSE
                                                 supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
                                             WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
 supplierPriceSaleInBatchDetail (detail) = supplierPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-rangeVATSaleInBatchDetail (detail) = DATA range (saleInBatchDetail);
+rangeVATSaleInBatchDetail (detail) = DATA Range (SaleInBatchDetail);
 rangeVATSaleInBatchDetail (detail) <- [PREV(rangeVATBatchA(batch))](batchSaleInBatchDetail(detail)) WHEN ASSIGNED(isPostedSaleInBatchDetail(detail));
 
 accountPriceSaleInBatchDetail (detail) = IF isCommissionSaleInBatchDetail(detail) THEN retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail))
@@ -216,7 +216,7 @@ costSaleInBatch (saleIn, batch) = quantitySaleInBatchDetail(batch) AND saleIn ==
 
 EXTEND FORM saleIns
     PROPERTIES(t) READONLY isCommissionSaleIn BEFORE countSaleInDetailSaleIn, skipSkuLedgerSaleIn
-    OBJECTS b = saleInBatchDetail
+    OBJECTS b = SaleInBatchDetail
     FILTERS saleInSaleInBatchDetail(b) == t
 ;
 
@@ -238,12 +238,12 @@ EXTEND FORM saleIns
 retailPriceSaleInBatchDetail 'Цена розничная' (detail) = retailPriceSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 retailSumSaleInBatchDetail 'Сумма розничная' (detail) = quantitySaleInBatchDetail(detail) * retailPriceSaleInBatchDetail(detail);
 
-useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS departmentStore
+useRetailPriceSaleInBatchDetail(detail) = [stockSaleInBatchDetail(detail) IS DepartmentStore
     AND NOT costLedgerDepartmentStore(stockSaleInBatchDetail(detail))](detail)
     OR isCommissionSaleInBatchDetail(detail);
 @defineDocumentTransferAccountCustom(saleIn, useRetailPriceSaleInBatchDetail, saleInBatchDetail, b);
 
-EXTEND CLASS saleInBatchDetail : batchA;
+EXTEND CLASS SaleInBatchDetail : BatchA;
 @implementBatchCustom(saleInBatchDetail, sku, stock, cost);
 quantityBatch(batch) += quantitySaleInBatchDetail(batch);
 ownerBatchA (batch) += IF isCommissionSaleInBatchDetail(batch) THEN legalEntityStock(destinationStockSaleInBatchDetail(batch)) ELSE legalEntityStock(stockSaleInBatchDetail(batch));
@@ -258,10 +258,10 @@ nameCurrencySaleIn 'Валюта' (saleIn) = nameCurrencySaleOut(saleOutSaleIn(s
 
 // ---------------------------------------- Приемка ------------------------------------ //
 
-CLASS saleRec 'Приемка товаров по накладной (продажа)' : historizable;
-CLASS saleRecPosted 'Проведенная приемка товаров по накладной (продажа)' : saleRec, postedObject;
+CLASS SaleRec 'Приемка товаров по накладной (продажа)' : Historizable;
+CLASS SaleRecPosted 'Проведенная приемка товаров по накладной (продажа)' : SaleRec, PostedObject;
 
-CLASS saleRecDetail 'Строка приемки товаров по накладной (продажа)';
+CLASS SaleRecDetail 'Строка приемки товаров по накладной (продажа)';
 
 @defineDocumentTransferRec(sale, 'Приемка товаров по накладным (продажа)', sku, stock);
 @defineDocumentFormTransferRec(sale, 'Приемка товаров по накладным (продажа)');
@@ -274,11 +274,11 @@ CLASS saleRecDetail 'Строка приемки товаров по накла�
 saleRecSaleInBatchDetail (detail) = saleRecSaleIn(saleInSaleInBatchDetail(detail));
 
 // ---------------------------------------- Акт расхождений ------------------------------------ //
-CLASS saleDiff 'Акт расхождений приемки товаров по накладной (продажа)' : historizable;
+CLASS SaleDiff 'Акт расхождений приемки товаров по накладной (продажа)' : Historizable;
 
-CLASS ABSTRACT saleDiffDetail 'Строка расхождений акта приемки товаров по накладной (продажа)';
-CLASS saleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : saleDiffDetail;
-CLASS saleDiffSDetail 'Строка расхождений акта приемки товаров по накладной (продажа, недостача)' : saleDiffDetail;
+CLASS ABSTRACT SaleDiffDetail 'Строка расхождений акта приемки товаров по накладной (продажа)';
+CLASS SaleDiffEDetail 'Строка расхождений акта приемки товаров по накладной (продажа, излишек)' : SaleDiffDetail;
+CLASS SaleDiffSDetail 'Строка расхождений акта приемки товаров по накладной (продажа, недостача)' : SaleDiffDetail;
 
 @defineDocumentTransferDiff(sale, 'Акт расхождений приемки товаров по накладной (продажа)', sku, stock);
 @defineDocumentFormTransferDiff(sale);
@@ -286,30 +286,30 @@ CLASS saleDiffSDetail 'Строка расхождений акта приемк
 @defineDocumentDetailSkuArticle(saleDiff);
 @extendFormDocumentDetailSkuArticleReadonlyQuantity(saleIns, f, saleDiff, signedQuantitySaleDiffDetail);
 
-costSaleDiffEDetail(detail) = 0.0 IF detail IS saleDiffEDetail;
-EXTEND CLASS saleDiffEDetail : batchB;
+costSaleDiffEDetail(detail) = 0.0 IF detail IS SaleDiffEDetail;
+EXTEND CLASS SaleDiffEDetail : BatchB;
 @implementBatchCustom(saleDiffEDetail, sku, stock, cost);
 quantityBatch (batch) += quantitySaleDiffEDetail(batch);
-skipASkuLedger (ledger) += ledger IS saleDiffEDetail;
+skipASkuLedger (ledger) += ledger IS SaleDiffEDetail;
 
-@implementSkuLedgerOutFIFO(saleDiffSDetail, sku, stock);
+@implementSkuLedgerOutFIFO(SaleDiffSDetail, sku, stock);
 quantityOutFIFOSkuLedger (ledger) += quantitySaleDiffSDetail(ledger);
 limitOutFIFOSkuLedgerBatch (ledger, batch) += costSaleInBatch(saleInSaleDiffSDetail(ledger), batch);
-orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS saleDiffSDetail;
+orderOutFIFOSkuLedgerBatch (ledger, batch) += orderBBatch(batch) IF ledger IS SaleDiffSDetail;
 
 accountPriceSaleRecBatchA (saleRec, batchA) = GROUP MAX accountPriceSaleInBatchDetailBatchA(detail, batchA) BY saleRecSaleInBatchDetail(detail), batchA;
 accountSumSaleDiffSDetail (detail) = GROUP SUM costDataSkuLedgerBatch(detail, batch) * accountPriceSaleRecBatchA(saleRecSaleDiffSDetail(detail), batch) BY detail PERSISTENT;
 sumOutSkuLedger(ledger) += accountSumSaleDiffSDetail(ledger);
 
-skipASkuLedger (ledger) += ledger IS saleDiffSDetail;
+skipASkuLedger (ledger) += ledger IS SaleDiffSDetail;
 
 // ---------------------------------------- Акт расценки ------------------------------------ //
-CLASS transferPriceActSale 'Акт расценки (поставка)' : transferPriceAct;
-CLASS transferPriceActSaleDetail 'Строка акта расценки': transferPriceActDetail;
+CLASS TransferPriceActSale 'Акт расценки (поставка)' : TransferPriceAct;
+CLASS TransferPriceActSaleDetail 'Строка акта расценки': TransferPriceActDetail;
 
-prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS batch;
-prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS batch;
-prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS batch;
+prevImporterPriceBatch (batch) = PREV(importerPriceBatchA(batch)) AND batch IS Batch;
+prevSupplierPriceBatch (batch) = PREV(supplierPriceBatchA(batch)) AND batch IS Batch;
+prevRangeVATBatch (batch) = PREV(rangeVATBatchA(batch)) AND batch IS Batch;
 
 @defineDocumentTransferPriceAct (sale, 'Акт расценки (продажа)', 'Строка акта расценки (продажа)', sku, stock, prevImporterPriceBatch, prevSupplierPriceBatch, prevRangeVATBatch);
 @defineDocumentTransferPriceActExtra (sale, prevRangeVATBatch);
@@ -319,7 +319,7 @@ contractSkuTransferPriceActSale(transferPriceActSale) = contractSkuSaleOut(saleO
 
 dataFromContractListRegister (listRegister) += dateFromContract(contractSkuTransferPriceActSale (listRegister));
 numberContractListRegister (listRegister) += numberContract(contractSkuTransferPriceActSale (listRegister));
-fullInputListRegister (inputListRegister) +=  inputListRegister IS transferPriceActSale;
+fullInputListRegister (inputListRegister) +=  inputListRegister IS TransferPriceActSale;
 
 printInputListRegisterSaleIn 'Реестр цен' (saleIn) = printListRegister(transferPriceActSaleSaleOut(saleOutSaleIn(saleIn))) TOOLBAR;
 
@@ -337,7 +337,7 @@ descriptionStockDocumentLedger (ledger) += descriptionSaleOut(ledger);
 
 sumOutStockDocumentLedger (ledger) += accountSumSaleOut(ledger);
 sumItemOutStockDocumentLedger (ledger) += accountSumSaleOut(ledger);
-sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS saleOut;
+sumContainerOutStockDocumentLedger (ledger) += 0.0 IF ledger IS SaleOut;
 
 // приход
 dateTimeStockDocumentLedger (ledger) += dateTimeSaleIn(ledger);
@@ -347,4 +347,4 @@ descriptionStockDocumentLedger (ledger) += descriptionSaleIn(ledger);
 
 sumIncStockDocumentLedger (ledger) += accountSumSaleIn(ledger);
 sumItemIncStockDocumentLedger (ledger) += accountSumSaleIn(ledger);
-sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS saleIn;
+sumContainerIncStockDocumentLedger (ledger) += 0.0 IF ledger IS SaleIn;

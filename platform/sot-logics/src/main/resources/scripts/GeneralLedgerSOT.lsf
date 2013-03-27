@@ -6,12 +6,12 @@ NAMESPACE Sale;
 
 //-- Tара
 @defineGeneralLedgerAggregation (invoice, supplierContainer, sumContainerInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.1', '1');
-debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
-creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 //-- Товар
 @defineGeneralLedgerAggregation (invoice, supplierItem, sumItemInvoiceDetailInvoice, date, descriptionInvoice, '90.1', '41.1', '1');
-debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
-creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
 
 //-- НДС
 
@@ -20,5 +20,5 @@ descriptionInvoiceRange (invoice, range) = [FORMULA STRING[255]  ' CAST($1 AS TE
     descriptionInvoice(invoice), numberRange(range), valueCurrentRateRange(range));
 
 @defineGeneralLedgerAggregation (invoice, range, VAT, VATSumInvoiceRange, date, descriptionInvoiceRange, '90.1', '68.2', '1');
-debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
-creditGeneralLedgerDimensionType(generalLedger,dimensionType) += rangeVATGeneralLedger(generalLedger) AND dimensionType == dimensionType.range;
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += rangeVATGeneralLedger(generalLedger) AND dimensionType == DimensionType.range;

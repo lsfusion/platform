@@ -2,24 +2,24 @@ MODULE Historizable;
 
 REQUIRE System, Authentication;
 
-CLASS historizable 'Объект с историей создания' ;
-TABLE historizable (historizable);
+CLASS Historizable 'Объект с историей создания' ;
+TABLE historizable (Historizable);
 
 GROUP historyGroup 'История' : public;
 
-timeCreatedHistorizable 'Время создания'= DATA DATETIME (historizable) IN historyGroup;
-timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS historizable);
+timeCreatedHistorizable 'Время создания'= DATA DATETIME (Historizable) IN historyGroup;
+timeCreatedHistorizable (object) <- currentDateTime() WHEN ASSIGNED(object IS Historizable);
 
-userCreatedHistorizable = DATA customUser (historizable);
+userCreatedHistorizable = DATA CustomUser (Historizable);
 nameUserCreatedHistorizable 'Пользователь' (historizable) = nameContact (userCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS historizable);
+userCreatedHistorizable (object) <- currentUser() WHEN ASSIGNED(object IS Historizable);
 
-computerCreatedHistorizable = DATA computer (historizable);
+computerCreatedHistorizable = DATA Computer (Historizable);
 hostnameComputerCreatedHistorizable 'Компьютер' (historizable) = hostnameComputer (computerCreatedHistorizable(historizable)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN historyGroup;
-computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object IS historizable);
+computerCreatedHistorizable (object) <- currentComputer() WHEN ASSIGNED(object IS Historizable);
 
 META defineHistorizable(property, caption, type, object, objectIdentity, group)
-    data###property##Date caption = DATA type (object, DATE) IN group;
+    data###property##Date caption = DATA type (###object, DATE) IN group;
 
     date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
 
@@ -29,7 +29,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
     property caption (object) = property##Date(object, currentDate()) IN group;
 
     FORM add###property caption
-        OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
+        OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###property##Date(a, d)
     ;
     DESIGN add###property FROM DEFAULT {
@@ -39,7 +39,7 @@ META defineHistorizable(property, caption, type, object, objectIdentity, group)
     add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-        OBJECTS a=object FIXED PANEL, d=DATE
+        OBJECTS a=###object FIXED PANEL, d=DATE
         PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, d)
         FILTERS data###property##Date(a, d)
     ;
@@ -53,7 +53,7 @@ END
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, object, objectIdentity, group)
-    data###property##Date caption = DATA type (object, DATE);
+    data###property##Date caption = DATA type (###object, DATE);
     data###typeIdentity###property##Date caption (object, date) = typeIdentity(data###property##Date(object, date)) IN group;
 
     date###property##Date (object, date) = GROUP MAX dateIn AND data###property##Date(object, dateIn) AND dateIn <= (date AS DATE) BY object, date;
@@ -64,7 +64,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
     typeIdentity###property caption (object) = typeIdentity(property(object)) IN group;
 
     FORM add###property caption
-        OBJECTS a=object FIXED PANEL, d=DATE FIXED PANEL
+        OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, d)
     ;
     DESIGN add###property FROM DEFAULT {
@@ -74,7 +74,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, object, obj
     add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-        OBJECTS a=object FIXED PANEL, d=DATE
+        OBJECTS a=###object FIXED PANEL, d=DATE
         PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, d)
         FILTERS data###property##Date(a, d)
     ;
@@ -87,7 +87,7 @@ END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
-    data###property##Date caption = DATA type (object1, object2, DATE) IN group;
+    data###property##Date caption = DATA type (###object1, ###object2, DATE) IN group;
 
     date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
 
@@ -97,7 +97,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     property caption (object1, object2) = property##Date(object1, object2, currentDate()) IN group;
 
     FORM add###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###property##Date(a, b, d)
     ;
     DESIGN add###property FROM DEFAULT {
@@ -108,7 +108,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, b, d)
         FILTERS data###property##Date(a, b, d)
     ;
@@ -123,7 +123,7 @@ END
 // ----------------------------------- Свойство объект1-объект2-дата ------------------------------------------ //
 
 META defineHistorizableHeader(property, caption, type, typeIdentity, typeName, object1, object2, fixedCharWidth, group)
-    data###property##Date caption = DATA type (object1, object2, DATE);
+    data###property##Date caption = DATA type (###object1, ###object2, DATE);
     data###typeName###property##Date caption (object1, object2, date) = typeIdentity(data###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     date###property##Date (object1, object2, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, date;
@@ -140,7 +140,7 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
     typeName###property caption (object1, object2) = typeIdentity(property(object1, object2)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     FORM add###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE FIXED PANEL
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###typeName###property##Date(a, b, d)
     ;
     DESIGN add###property FROM DEFAULT {
@@ -151,7 +151,7 @@ META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1
     add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, d=DATE
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeName###property##Date(a, b, d)
         FILTERS data###property##Date(a, b, d)
     ;
@@ -182,7 +182,7 @@ END
 
 // ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    data###property##Date caption = DATA type (object1, object2, object3, DATE) IN group;
+    data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE) IN group;
 
     date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
 
@@ -192,7 +192,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate()) IN group;
 
     FORM add###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3  FIXED PANEL, d=DATE FIXED PANEL
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3  FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###property##Date(a, b, c, d)
     ;
     DESIGN add###property FROM DEFAULT {
@@ -204,7 +204,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-        OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
+        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, b, c, d)
         FILTERS data###property##Date(a, b, c, d)
     ;
@@ -220,7 +220,7 @@ END
 // -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
 
 META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
-    data###property##Date caption = DATA type (object1, object2, object3, DATE);
+    data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE);
     data###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(data###property##Date(object1, object2, object3, date)) IN group;
 
     date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn AND data###property##Date(object1, object2, object3, dateIn) AND dateIn <= (date AS DATE) BY object1, object2, object3, date;
@@ -234,7 +234,7 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
     typeIdentity###property caption (object1, object2, object3) = typeIdentity(property(object1, object2, object3)) FIXEDCHARWIDTH fixedCharWidth IN group;
 
     FORM add###property caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE FIXED PANEL
+    OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE FIXED PANEL
     PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, b, c, d);
     DESIGN add###property FROM DEFAULT {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
@@ -245,7 +245,7 @@ META defineHistorizableCustomDefault(property, defaultProperty, caption, type, t
     add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property caption
-    OBJECTS a=object1 FIXED PANEL, b=object2 FIXED PANEL, c=object3 FIXED PANEL, d=DATE
+    OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE
     PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, b, c, d)
     FILTERS data###property##Date(a, b, c, d);
     DESIGN dialog###property FROM DEFAULT {
@@ -261,21 +261,25 @@ END
 // ----------------------------------- Historizable Ledger -------------------------------------- //
 
 META defineHistorizableLedger(property, caption, type, key0, key1)
-    dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (property##Ledger) PERSISTENT INDEXED;
+    @defineHistorizableLedgerInner(property, caption, type, key0, ###key0, key1, ###key1);
+END
+
+META defineHistorizableLedgerInner(property, caption, type, key0, key0Class, key1, key1Class)
+    dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (###property##Ledger) PERSISTENT INDEXED;
     date###property##Ledger 'Дата' (ledger) = toDate(dateTime###property##Ledger(ledger)) PERSISTENT;
 
-    isPosted###property##Ledger 'Проведен' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
-    skip###property##Ledger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (property##Ledger) PERSISTENT;
+    isPosted###property##Ledger 'Проведен' (ledger) = ABSTRACT BOOLEAN (###property##Ledger) PERSISTENT;
+    skip###property##Ledger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (###property##Ledger) PERSISTENT;
 
     active###property##Ledger 'Активен' (ledger) = isPosted###property##Ledger(ledger) AND NOT skip###property##Ledger(ledger) PERSISTENT;
 
-    key0###property##Ledger (ledger) = ABSTRACT key0 (property##Ledger) PERSISTENT INDEXED;
+    key0###property##Ledger (ledger) = ABSTRACT key0Class (###property##Ledger) PERSISTENT INDEXED;
 
-    key1###property##Ledger (ledger) = ABSTRACT key1 (property##Ledger) PERSISTENT INDEXED;
+    key1###property##Ledger (ledger) = ABSTRACT key1Class (###property##Ledger) PERSISTENT INDEXED;
 
-    description###property##Ledger 'Описание' (ledger) = ABSTRACT STRING[200] (property##Ledger) PERSISTENT;
+    description###property##Ledger 'Описание' (ledger) = ABSTRACT STRING[200] (###property##Ledger) PERSISTENT;
 
-    property###property##Ledger caption (ledger) = ABSTRACT type (property##Ledger) PERSISTENT;
+    property###property##Ledger caption (ledger) = ABSTRACT type (###property##Ledger) PERSISTENT;
 
     orderT###property##Ledger = STRUCT(dateTime###property##Ledger(ledger), ledger) AND active###property##Ledger(ledger) PERSISTENT INDEXED;
 
@@ -316,7 +320,7 @@ META defineHistorizableLedger(property, caption, type, key0, key1)
 END
 
 META implementHistorizableLedger(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
-    EXTEND CLASS concrete##Detail : property##Ledger;
+    EXTEND CLASS concrete##Detail : ###property##Ledger;
     dateTime###property##Ledger (ledger) += dateTime###concrete##Detail(ledger);
     isPosted###property##Ledger (ledger) += isPosted###concrete##Detail(ledger);
     key0###property##Ledger (ledger) += key0Prop###concrete##Detail(ledger);

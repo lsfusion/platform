@@ -9,20 +9,20 @@ PRIORITY Sale;
 // Создание накладной на основе накладной //
 
 FORM invoiceInvoices 'Накладные'
-    OBJECTS s = legalEntity FIXED PANEL
+    OBJECTS s = LegalEntity FIXED PANEL
     PROPERTIES (s) READONLY name
-    OBJECTS c = legalEntity FIXED PANEL
+    OBJECTS c = LegalEntity FIXED PANEL
     PROPERTIES (c) READONLY name
 
-    OBJECTS ss = stock FIXED PANEL
+    OBJECTS ss = Stock FIXED PANEL
     PROPERTIES (ss) READONLY name
-    OBJECTS cs = stock FIXED PANEL
+    OBJECTS cs = Stock FIXED PANEL
     PROPERTIES (cs) READONLY name
 
     OBJECTS t=DATE FIXED PANEL
     PROPERTIES(t) OBJVALUE
 
-    OBJECTS o = invoice
+    OBJECTS o = Invoice
     PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                             nameCurrencyInvoice, noteInvoice,
                             countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, showSalePackInvoice
@@ -35,7 +35,7 @@ FORM invoiceInvoices 'Накладные'
     FILTERGROUP filters1
         FILTER 'Только этой даты' 'F11' dateInvoice(o) == t DEFAULT
 
-    OBJECTS d = invoiceDetail
+    OBJECTS d = InvoiceDetail
 
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
     PROPERTIES (d) READONLY SHOWIF showSalePackInvoice(o) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail, amountPackInvoiceDetail, quantityPackInvoiceDetail
@@ -95,11 +95,11 @@ fillInvoiceUserInvoice 'Заполнить на основе накладной'
     FORM invoiceInvoices OBJECTS s = Purchase.supplierUserInvoice(userInvoice), c = Purchase.customerUserInvoice(userInvoice),
                                    ss = Purchase.supplierStockUserInvoice(userInvoice), cs = Purchase.customerStockUserInvoice(userInvoice),
                                    t = Purchase.dateUserInvoice(userInvoice) MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL saleInvoice = invoice();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL saleInvoice = Invoice();
         SET saleInvoice() <- chosenObject('o');
 
-        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = Purchase.userInvoiceDetail DO {
+        FOR invoiceInvoiceDetail(invoiceDetail) == saleInvoice() ADDOBJ d = Purchase.UserInvoiceDetail DO {
             SET Purchase.userInvoiceUserInvoiceDetail(d) <- userInvoice;
             SET Purchase.skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
             SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(invoiceDetail);
@@ -131,13 +131,13 @@ EXTEND DESIGN Purchase.userInvoice {
 
 GROUP invoiceGroup 'Информация о накладной' : base;
 
-createPurchaseInvoiceInvoice 'Создать накладную (закупка)' = ABSTRACT BOOLEAN (invoice) PERSISTENT;
-createPurchaseInvoiceUserInvoice 'Создать накладную (закупка)' = DATA BOOLEAN (userInvoice) PERSISTENT;
+createPurchaseInvoiceInvoice 'Создать накладную (закупка)' = ABSTRACT BOOLEAN (Invoice) PERSISTENT;
+createPurchaseInvoiceUserInvoice 'Создать накладную (закупка)' = DATA BOOLEAN (UserInvoice) PERSISTENT;
 createPurchaseInvoiceInvoice(invoice) += createPurchaseInvoiceUserInvoice(invoice);
 
 createPurchaseInvoiceInvoiceDetail 'Создать накладную (закупка)' (invoiceDetail) = createPurchaseInvoiceInvoice(invoiceInvoiceDetail(invoiceDetail))PERSISTENT;
 createPurchaseInvoiceUserInvoiceDetail 'Создать накладную (закупка)' (userInvoiceDetail) = createPurchaseInvoiceUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail));
-backgroundPurchaseInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS invoice;
+backgroundPurchaseInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS Invoice;
 
 isCompanyCustomerUserInvoice (userInvoice) =  isCompanyLegalEntity(customerUserInvoice(userInvoice));
 EXTEND FORM userInvoice
@@ -157,8 +157,8 @@ EXTEND FORM invoices
 ;
 //--  Связь поставки с поставкой
 
-invoiceDetailInvoiceDetail = ABSTRACT invoiceDetail (Purchase.invoiceDetail) PERSISTENT;
-invoiceDetailUserInvoiceDetail = DATA invoiceDetail (Purchase.userInvoiceDetail);
+invoiceDetailInvoiceDetail = ABSTRACT InvoiceDetail (Purchase.InvoiceDetail) PERSISTENT;
+invoiceDetailUserInvoiceDetail = DATA InvoiceDetail (Purchase.UserInvoiceDetail);
 invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailUserInvoiceDetail(invoiceDetail);
 
 CONSTRAINT Purchase.supplierInvoiceDetail(detail) != supplierInvoiceDetail(invoiceDetailUserInvoiceDetail(detail)) OR
@@ -186,9 +186,9 @@ invoicedInvoiceDetail 'Кол-во (выписано)' (invoiceDetail) = GROUP S
 
 toInvoicedInvoiceDetail 'Не выписано' (invoiceDetail) = quantityInvoiceDetail (invoiceDetail) (-) invoicedInvoiceDetail(invoiceDetail);
 
-CLASS purchaseInvoice 'Накладная на основе накладной': Purchase.invoice;
-CLASS purchaseInvoicePosted 'Проведенная накладная на основе накладной' : purchaseInvoice, postedObject;
-CLASS purchaseInvoiceDetail 'Строка накладной на основе накладной' : Purchase.invoiceDetail;
+CLASS PurchaseInvoice 'Накладная на основе накладной': Purchase.Invoice;
+CLASS PurchaseInvoicePosted 'Проведенная накладная на основе накладной' : PurchaseInvoice, PostedObject;
+CLASS PurchaseInvoiceDetail 'Строка накладной на основе накладной' : Purchase.InvoiceDetail;
 
 @defineDocumentTables(purchaseInvoice);
 

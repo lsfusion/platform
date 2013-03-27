@@ -4,40 +4,40 @@ REQUIRE PaymentLedger;
 
 // ----------------------------------- Кассовый счет ------------------------------------------ //
 
-CLASS account 'Касса';
-TABLE account (account);
+CLASS Account 'Касса';
+TABLE account (Account);
 
-currencyAccount = DATA currency (account);
+currencyAccount = DATA Currency (Account);
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
 
-numberAccount 'Номер кассового счета'  = DATA STRING[13] (account) FIXEDCHARWIDTH 13;
+numberAccount 'Номер кассового счета'  = DATA STRING[13] (Account) FIXEDCHARWIDTH 13;
 
-legalEntityAccount = DATA legalEntity (account);
+legalEntityAccount = DATA LegalEntity (Account);
 nameLegalEntityAccount 'Организация' = name(legalEntityAccount(account));
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
 
-EXTEND CLASS account : PaymentLedger.account;
+EXTEND CLASS Account : PaymentLedger.Account;
 PaymentLedger.nameAccount(account) += numberAccount(account);
 PaymentLedger.currencyAccount(account) += currencyAccount(account);
 PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 
 FORM account 'Счет'
-    OBJECTS a = Cash.account FIXED PANEL
+    OBJECTS a = Cash.Account FIXED PANEL
     PROPERTIES(a) numberAccount, nameCurrencyAccount, nameLegalEntityAccount
 
-    EDIT Cash.account OBJECT a
+    EDIT Cash.Account OBJECT a
 ;
 
 FORM accounts 'Счета'
-    OBJECTS a = Cash.account
+    OBJECTS a = Cash.Account
     PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount
     PROPERTIES(a) ADDFORM, EDITFORM, delete
 
-    DIALOG Cash.account OBJECT a
+    DIALOG Cash.Account OBJECT a
 ;
 
 EXTEND FORM legalEntity
-    OBJECTS ca=account
+    OBJECTS ca=Account
     PROPERTIES(ca)  numberAccount, nameCurrencyAccount, ADDOBJ, delete
     FILTERS legalEntityAccount(ca) == l
 ;

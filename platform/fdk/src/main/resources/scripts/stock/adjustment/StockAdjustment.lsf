@@ -13,12 +13,12 @@ REQUIRE System,
 
 NAMESPACE Stock;
 
-CLASS ABSTRACT adjustment 'Изменение остатков' : document;
-CLASS ABSTRACT adjustmentDetail 'Строка изменения остатков' : named, documentDetail;
+CLASS ABSTRACT Adjustment 'Изменение остатков' : Document;
+CLASS ABSTRACT AdjustmentDetail 'Строка изменения остатков' : Named, DocumentDetail;
 
-CLASS userAdjustment 'Изменение остатков (польз.)' : adjustment, historizable, numeratedObject;
-CLASS userAdjustmentDetail 'Строка изменения остатков (польз.)' : adjustmentDetail;
-CLASS userAdjustmentPosted 'Проведенное изменение остатков (польз.)' : userAdjustment, postedObject;
+CLASS UserAdjustment 'Изменение остатков (польз.)' : Adjustment, Historizable, NumeratedObject;
+CLASS UserAdjustmentDetail 'Строка изменения остатков (польз.)' : AdjustmentDetail;
+CLASS UserAdjustmentPosted 'Проведенное изменение остатков (польз.)' : UserAdjustment, PostedObject;
 
 @defineDocumentInterface(adjustment);
 @defineDocumentInterfaceNumber(adjustment);
@@ -37,8 +37,8 @@ CLASS userAdjustmentPosted 'Проведенное изменение остат
 @defineDocumentInterfaceDetailQuantity(adjustment);
 @defineDocumentInterfaceDetailPrice(adjustment);
 priceUserAdjustmentDetail (detail)  <- IF batchUserAdjustmentDetail(detail)
-                THEN priceLedgerPriceListTypeBatchStockDateTime(systemLedgerPriceListType.accountPriceListType, batchUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
-                ELSE priceLedgerPriceListTypeSkuStockDateTime(systemLedgerPriceListType.accountPriceListType, skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                THEN priceLedgerPriceListTypeBatchStockDateTime(SystemLedgerPriceListType.accountPriceListType, batchUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
+                ELSE priceLedgerPriceListTypeSkuStockDateTime(SystemLedgerPriceListType.accountPriceListType, skuUserAdjustmentDetail(detail), stockUserAdjustmentDetail(detail), dateTimeUserAdjustmentDetail(detail))
                 WHEN CHANGED(skuUserAdjustmentDetail(detail)) OR CHANGED(batchUserAdjustmentDetail(detail)) OR CHANGED(stockUserAdjustmentDetail(detail)) OR CHANGED (dateTimeUserAdjustmentDetail(detail));
 
 skuUserAdjustmentDetail (detail)  <- skuBatch( batchUserAdjustmentDetail(detail)) AND batchUserAdjustmentDetail(detail)
@@ -64,7 +64,7 @@ batchDialogUserAdjustmentDetail = ACTION (userAdjustmentDetail) {
     FORM dialogBatch OBJECTS st = stockUserAdjustmentDetail(userAdjustmentDetail), t = dateTimeUserAdjustmentDetail(userAdjustmentDetail),
     sk = skuUserAdjustmentDetail(userAdjustmentDetail) MODAL;
 
-    IF formResult() == formResult.ok THEN {
+    IF formResult() == FormResult.ok THEN {
         SET batchUserAdjustmentDetail(userAdjustmentDetail) <- chosenObject('bt');
     }
 };
@@ -73,13 +73,13 @@ editAdjustment 'Редактировать' = ABSTRACT ACTION (adjustment) IMAGE
 
 
 FORM userAdjustment 'Изменение остатков'
-    OBJECTS i = userAdjustment FIXED PANEL
+    OBJECTS i = UserAdjustment FIXED PANEL
     PROPERTIES (i) objectClassName, nameStockUserAdjustment,
                    nameNumeratorObject, numberObject, seriesObject, dateUserAdjustment, timeUserAdjustment,
                    nameCurrencyUserAdjustment,  noteUserAdjustment,
                    countUserAdjustmentDetailUserAdjustment, quantityUserAdjustmentDetailUserAdjustment, sumUserAdjustmentDetailUserAdjustment
 
-    OBJECTS d = userAdjustmentDetail
+    OBJECTS d = UserAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
                    descriptionBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
 
@@ -90,7 +90,7 @@ FORM userAdjustment 'Изменение остатков'
     EVENTS
         ON OK prePostUserAdjustment(i)
 
-    EDIT userAdjustment OBJECT i
+    EDIT UserAdjustment OBJECT i
 ;
 
 DESIGN userAdjustment FROM DEFAULT{
@@ -148,15 +148,15 @@ EXTEND FORM userAdjustment
         FILTER 'В документе ' 'F9' quantityUserAdjustmentDetailSkuUserAdjustment(s, i)
 ;
 
-addUserAdjustment 'Добавить' = ACTION ADDFORM userAdjustment;
-editUserAdjustment 'Редактировать' (userAdjustment) = ACTION EDITFORM userAdjustment;
+addUserAdjustment 'Добавить' = ACTION ADDFORM UserAdjustment;
+editUserAdjustment 'Редактировать' (userAdjustment) = ACTION EDITFORM UserAdjustment;
 editAdjustment (adjustment) += editUserAdjustment(adjustment);
 
 actualBalanceSkuUserAdjustment 'Остаток фактический' = currentBalanceSkuUserAdjustment(sku, userAdjustment) (+) quantityUserAdjustmentDetailSkuUserAdjustment(sku, userAdjustment);
 
 changeActualQuantitySkuUserAdjustment = ACTION (sku, userAdjustment) {
     REQUEST NUMERIC[14,3] INPUT;
-    SET requestedNumeric() <- (requestedNumeric() IF sku IS sku AND userAdjustment IS userAdjustment) (-) currentBalanceSkuUserAdjustment(sku, userAdjustment);
+    SET requestedNumeric() <- (requestedNumeric() IF sku IS Sku AND userAdjustment IS UserAdjustment) (-) currentBalanceSkuUserAdjustment(sku, userAdjustment);
 
     EXEC changeQuantityValueSkuUserAdjustment(sku, userAdjustment);
 }
@@ -166,7 +166,7 @@ EXTEND FORM userAdjustment
 ;
 
 FORM adjustments 'Изменения остатков'
-    OBJECTS i = adjustment
+    OBJECTS i = Adjustment
     PROPERTIES (i) READONLY isPostedAdjustment FORCE GRID, objectClassName, numberAdjustment, seriesAdjustment, dateAdjustment, timeAdjustment,
                             nameStockAdjustment, nameCurrencyAdjustment, noteAdjustment,
                             countAdjustmentDetailAdjustment, quantityAdjustmentDetailAdjustment, sumAdjustmentDetailAdjustment
@@ -177,15 +177,15 @@ FORM adjustments 'Изменения остатков'
     PROPERTIES (i) editAdjustment
     PROPERTIES (i) delete FORCE PANEL TOOLBAR  SHOWIF isUserAdjustment(i)
 
-    OBJECTS d = adjustmentDetail
+    OBJECTS d = AdjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
                    descriptionBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
 
     FILTERS adjustmentAdjustmentDetail(d) == i
 
-    DIALOG adjustment OBJECT i
+    DIALOG Adjustment OBJECT i
 ;
-@extendFormFilterAccess(adjustment, i, adjustments, stock);
+@extendFormFilterAccess(Adjustment, i, adjustments, stock);
 
 DESIGN adjustments FROM DEFAULT {
     main {
@@ -235,11 +235,11 @@ NAVIGATOR {
 
 //---------------------------- Изменение остатка инвентаризации sku----------------------------//
 
-CLASS ABSTRACT adjustmentSkuDetail 'Изменение остатка ' : skuLedger;
-TABLE adjustmentSkuDetail (adjustmentSkuDetail);
+CLASS ABSTRACT AdjustmentSkuDetail 'Изменение остатка ' : SkuLedger;
+TABLE adjustmentSkuDetail (AdjustmentSkuDetail);
 
-CLASS outAdjustmentSkuDetail 'Изменение остатка (-)' : adjustmentSkuDetail;
-CLASS inAdjustmentSkuDetail 'Изменение остатка (+)' : adjustmentSkuDetail;
+CLASS OutAdjustmentSkuDetail 'Изменение остатка (-)' : AdjustmentSkuDetail;
+CLASS InAdjustmentSkuDetail 'Изменение остатка (+)' : AdjustmentSkuDetail;
 
 needToOutLedgerAdjustmentDetail (adjustmentDetail) = quantityAdjustmentDetail(adjustmentDetail) < 0
     AND isPostedAdjustmentDetail(adjustmentDetail);
@@ -294,12 +294,12 @@ descriptionAdjustmentSkuDetail 'Название документа' (adjustment
 
 @implementSkuLedger(adjustmentSkuDetail, sku, stock);
 
-EXTEND CLASS outAdjustmentSkuDetail : outFIFOSkuLedger;
+EXTEND CLASS OutAdjustmentSkuDetail : OutFIFOSkuLedger;
 quantityOutFIFOSkuLedger (ledger) += -quantityOutAdjustmentSkuDetail(ledger);
 @implementSkuLedgerOutFIFOBatchBalance(outAdjustmentSkuDetail, stock);
 sumOutSkuLedger (ledger) += -sumOutAdjustmentSkuDetail(ledger);
 
-EXTEND CLASS inAdjustmentSkuDetail : inLIFOSkuLedger;
+EXTEND CLASS InAdjustmentSkuDetail : InLIFOSkuLedger;
 quantityInLIFOSkuLedger (ledger) += quantityInAdjustmentSkuDetail(ledger);
 @implementSkuLedgerInLIFOBatchBalance(inAdjustmentSkuDetail, stock);
 sumInSkuLedger (ledger) += sumInAdjustmentSkuDetail(ledger);

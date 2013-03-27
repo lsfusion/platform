@@ -7,39 +7,39 @@ REQUIRE System,
 
 PRIORITY RomanLogicsModule, RB;
 
-CLASS wholesalePriceDocument 'Оптовый прайс' : numeratedObject;
+CLASS WholesalePriceDocument 'Оптовый прайс' : NumeratedObject;
 
-TABLE wholesalePriceDocument (wholesalePriceDocument);
-TABLE wholesalePriceDocumentArticle (wholesalePriceDocument, article);
+TABLE wholesalePriceDocument (WholesalePriceDocument);
+TABLE wholesalePriceDocumentArticle (WholesalePriceDocument, Article);
 
 @defineNumeratedObjectDefault(wholesalePriceDocument, 'Нумератор для оптовых прайсов', 'ОП');
-@defineDocumentHeaderTime(wholesalePriceDocument);
+@defineDocumentHeaderTime(WholesalePriceDocument);
 @defineDocumentHeaderCurrency(wholesalePriceDocument);
 
-declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA declaration(wholesalePriceDocument);
+declarationWholesalePriceDocument 'Декларация оптового прайса (ИД)' = DATA Declaration(WholesalePriceDocument);
 
 quantityWholesalePriceSetDocumentDeclaration (declaration) = GROUP SUM 1 IF declarationWholesalePriceDocument(wholesalePriceDocument)
                                                            BY declarationWholesalePriceDocument(wholesalePriceDocument);
-isWholesalePriceSetDocumentDeclaration (declaration) = declaration IS declaration IF NOT quantityWholesalePriceSetDocumentDeclaration(declaration);
+isWholesalePriceSetDocumentDeclaration (declaration) = declaration IS Declaration IF NOT quantityWholesalePriceSetDocumentDeclaration(declaration);
 
 isPriceSetDeclaration 'Статус' (declaration) = IF isWholesalePriceSetDocumentDeclaration(declaration)
-                                     THEN 'Не расцененная' AND declaration IS declaration
-                                     ELSE 'Расцененная' AND declaration IS declaration MINCHARWIDTH 14;
+                                     THEN 'Не расцененная' AND declaration IS Declaration
+                                     ELSE 'Расцененная' AND declaration IS Declaration MINCHARWIDTH 14;
 
 backgroundWholesalePriceSetDocument 'Цвет' (declaration) = RGB(212,255,212) IF isWholesalePriceSetDocumentDeclaration(declaration);
 
-inWholesalePriceDocumentArticle 'Товар в документе' = DATA BOOLEAN(wholesalePriceDocument, article);
+inWholesalePriceDocumentArticle 'Товар в документе' = DATA BOOLEAN(WholesalePriceDocument, Article);
 
-priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
+priceCustomWholesalePriceDocumentArticle 'Себестоимость (БУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](WholesalePriceDocument, Article) IN base;
 
-priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
+priceManagerialWholesalePriceDocumentArticle 'Себестоимость (УУ)' (wholesalePriceDocument, article) = DATA NUMERIC[14,2](WholesalePriceDocument, Article) IN base;
 
-markupWholesalePriceDocumentArticle 'Оптовая надбавка' = DATA NUMERIC[8,3] (wholesalePriceDocument, article);
+markupWholesalePriceDocumentArticle 'Оптовая надбавка' = DATA NUMERIC[8,3] (WholesalePriceDocument, Article);
 
-markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF (wholesalePriceDocument IS wholesalePriceDocument AND article IS article)
+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article) <- 0.0 //IF (wholesalePriceDocument IS WholesalePriceDocument AND article IS Article)
     WHEN ASSIGNED (inWholesalePriceDocumentArticle(wholesalePriceDocument, article));
 
-priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](wholesalePriceDocument, article) IN base;
+priceWholesalePriceDocumentArticle 'Оптовая цена' = DATA NUMERIC[14,2](WholesalePriceDocument, Article) IN base;
 
 priceWholesalePriceDocumentArticle(wholesalePriceDocument, article) <-
     round0(priceCustomWholesalePriceDocumentArticle(wholesalePriceDocument, article)*(1+markupWholesalePriceDocumentArticle(wholesalePriceDocument, article)/100))
@@ -92,22 +92,22 @@ priceManagerialWholesalePriceDocumentArticle (wholesalePriceDocument, article) <
 
 FORM wholesalePriceDocument 'Оптовый прайс'
 
-    OBJECTS w=wholesalePriceDocument FIXED PANEL
+    OBJECTS w=WholesalePriceDocument FIXED PANEL
     PROPERTIES(w) nameNumeratorObject, numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument, nameCurrencyWholesalePriceDocument
 
-    TREE treeSupplierBrand v=STRING[3], s=supplier, b=brandSupplier
+    TREE treeSupplierBrand v=STRING[3], s=Supplier, b=BrandSupplier
     PROPERTIES READONLY OBJVALUE(v), name(s), name(b)
 
-    TREE treeCategory vv=STRING[3], c=category
+    TREE treeCategory vv=STRING[3], c=Category
     PROPERTIES READONLY OBJVALUE(vv), name(c)
 
-    OBJECTS aa=article
+    OBJECTS aa=Article
     PROPERTIES (aa) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle, currentBalanceArticle
     PROPERTIES (w, aa) inWholesalePriceDocumentArticle
 
     FILTERS stringEqualsAll(v), inBrandSupplier(s, b), inSupplierBrandArticle(s, b, aa), stringEqualsAll(vv), inArticleCategory(c, aa)
 
-    OBJECTS a=article
+    OBJECTS a=Article
     PROPERTIES (w, a) inWholesalePriceDocumentArticle
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (w, a) priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
@@ -123,7 +123,7 @@ FORM wholesalePriceDocument 'Оптовый прайс'
     FILTERGROUP filtersBrand
         FILTER 'Показывать артикулы бренда' 'F11' inArticleBrand(b, a)
 
-    EDIT wholesalePriceDocument OBJECT w
+    EDIT WholesalePriceDocument OBJECT w
 ;
 
 
@@ -190,11 +190,11 @@ DESIGN wholesalePriceDocument FROM DEFAULT {
 
 FORM wholesalePriceDocuments 'Оптовые прайсы'
 
-    OBJECTS w=wholesalePriceDocument
+    OBJECTS w=WholesalePriceDocument
     PROPERTIES(w) READONLY numberObject, seriesObject, dateWholesalePriceDocument, timeWholesalePriceDocument
     PROPERTIES(w) ADDFORM, EDITFORM, delete
 
-    OBJECTS a=article
+    OBJECTS a=Article
     PROPERTIES(a) READONLY sidArticle, nameCategoryArticle, nameBrandSupplierArticle
     PROPERTIES (w, a) READONLY priceCustomWholesalePriceDocumentArticle, priceManagerialWholesalePriceDocumentArticle,
                                markupWholesalePriceDocumentArticle, priceWholesalePriceDocumentArticle
@@ -204,23 +204,23 @@ FORM wholesalePriceDocuments 'Оптовые прайсы'
 
 
 toCreateWholesalePriceDocument 'Расценить' =  ACTION (declaration) NEWSESSION {
-    ADDOBJ wholesalePriceDocument;
+    ADDOBJ WholesalePriceDocument;
     FOR w == addedObject() DO {
-        SET declarationWholesalePriceDocument(w) <- declaration AS declaration;
+        SET declarationWholesalePriceDocument(w) <- declaration AS Declaration;
         SET priceCustomWholesalePriceDocumentArticle(w, article) <- priceCustomDeclarationArticle(declaration, article);
         SET priceManagerialWholesalePriceDocumentArticle(w, article) <- priceManagerialDeclarationArticle(declaration, article);
         SET inWholesalePriceDocumentArticle(w, article) <- inDeclarationArticle(declaration, article);
         SET currencyWholesalePriceDocument(w) <- currencyToDeclaration(declaration);
 
         FORM wholesalePriceDocument OBJECTS w=addedObject() MODAL;
-        IF formResult() == formResult.ok THEN {
+        IF formResult() == FormResult.ok THEN {
             EXEC apply();
         };
     };
 } TOOLBAR;
 
 FORM priceDeclaration 'Расценка деклараций'
-    OBJECTS d = registeredDeclaration
+    OBJECTS d = RegisteredDeclaration
     PROPERTIES(d) READONLY isPriceSetDeclaration BACKGROUND backgroundWholesalePriceSetDocument(d),
                            sidDeclaration, dateTimeDeclaration, nameCustomStoreDeclaration, nameImporterDeclaration,
                            canonicalBrandDeclaration

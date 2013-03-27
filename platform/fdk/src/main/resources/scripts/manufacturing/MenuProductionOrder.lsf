@@ -8,13 +8,13 @@ REQUIRE Menu,
 
 FORM menuOrders 'Производственные заказы'
 
-    OBJECTS o = order
+    OBJECTS o = Order
     PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
                   dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
                   nameCalcPriceListTypeOrder, namePriceListTypeOrder
     FILTERS isPostedOrder(o)
 
-    OBJECTS pd=productDetail
+    OBJECTS pd=ProductDetail
     PROPERTIES(pd) READONLY indexProductDetail, nameSkuProductDetail, nameProductProductDetail, shortNameUOMProductDetail, quantityProductDetail,
                    productsPriceProductDetail, productsSumProductDetail
     FILTERS orderProductDetail(pd)==o
@@ -36,12 +36,12 @@ DESIGN menuOrders FROM DEFAULT {
 
 fillOrderUserMenu 'Заполнить на основе производственного заказа' =  ACTION (userMenu) {
     FORM menuOrders MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL productionOrder = order();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL productionOrder = Order();
         SET productionOrder() <- chosenObject('o');
         SET noteUserMenu(userMenu) <- [FORMULA STRING[100]  ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT) '](
                                              'Основание:', descriptionOrder(productionOrder()));
-        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = userMenuDetail DO {
+        FOR orderProductDetail(productDetail) == productionOrder() ADDOBJ d = UserMenuDetail DO {
             SET userMenuUserMenuDetail(d) <- userMenu;
             SET priceUserMenuDetail(d) <- productsPriceProductDetail(productDetail);
             SET skuUserMenuDetail(d) <- skuProductDetail(productDetail);

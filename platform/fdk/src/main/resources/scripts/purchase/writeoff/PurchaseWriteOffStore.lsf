@@ -2,4 +2,4 @@ MODULE PurchaseWriteOffStore;
 
 REQUIRE PurchaseWriteOff, Store;
 
-toShowCreatePurchaseWriteOffInvoice (invoice) += customerStockUserInvoice(invoice) IS departmentStore;
+toShowCreatePurchaseWriteOffInvoice (invoice) += customerStockUserInvoice(invoice) IS DepartmentStore;

@@ -127,18 +127,18 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        abstractGroup = (ConcreteCustomClass) getClassByName("abstractGroup");
-        navigatorElement = (ConcreteCustomClass) getClassByName("navigatorElement");
-        navigatorAction = (ConcreteCustomClass) getClassByName("navigatorAction");
-        form = (ConcreteCustomClass) getClassByName("form");
-        propertyDraw = (ConcreteCustomClass) getClassByName("propertyDraw");
-        propertyDrawShowStatus = (ConcreteCustomClass) getClassByName("propertyDrawShowStatus");
-        table = (ConcreteCustomClass) getClassByName("table");
-        tableKey = (ConcreteCustomClass) getClassByName("tableKey");
-        tableColumn = (ConcreteCustomClass) getClassByName("tableColumn");
-        dropColumn = (ConcreteCustomClass) getClassByName("dropColumn");
-        property = (ConcreteCustomClass) getClassByName("property");
-        groupObject = (ConcreteCustomClass) getClassByName("groupObject");
+        abstractGroup = (ConcreteCustomClass) getClassByName("AbstractGroup");
+        navigatorElement = (ConcreteCustomClass) getClassByName("NavigatorElement");
+        navigatorAction = (ConcreteCustomClass) getClassByName("NavigatorAction");
+        form = (ConcreteCustomClass) getClassByName("Form");
+        propertyDraw = (ConcreteCustomClass) getClassByName("PropertyDraw");
+        propertyDrawShowStatus = (ConcreteCustomClass) getClassByName("PropertyDrawShowStatus");
+        table = (ConcreteCustomClass) getClassByName("Table");
+        tableKey = (ConcreteCustomClass) getClassByName("TableKey");
+        tableColumn = (ConcreteCustomClass) getClassByName("TableColumn");
+        dropColumn = (ConcreteCustomClass) getClassByName("DropColumn");
+        property = (ConcreteCustomClass) getClassByName("Property");
+        groupObject = (ConcreteCustomClass) getClassByName("GroupObject");
     }
 
     @Override

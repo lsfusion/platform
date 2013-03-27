@@ -8,13 +8,13 @@ PRIORITY Sale;
 
 GROUP shipmentGroup 'Информация о поставке' : base;
 
-createPurchaseShipment 'Создать поставку (закупка)' = ABSTRACT BOOLEAN (shipment) PERSISTENT;
-createPurchaseUserShipment 'Создать поставку (закупка)' = DATA BOOLEAN (userShipment) PERSISTENT;
+createPurchaseShipment 'Создать поставку (закупка)' = ABSTRACT BOOLEAN (Shipment) PERSISTENT;
+createPurchaseUserShipment 'Создать поставку (закупка)' = DATA BOOLEAN (UserShipment) PERSISTENT;
 createPurchaseShipment(shipment) += createPurchaseUserShipment(shipment);
 
 createPurchaseShipmentDetail 'Создать поставку (закупка)' (shipmentDetail) = createPurchaseShipment(shipmentShipmentDetail(shipmentDetail))PERSISTENT;
 createPurchaseUserShipmentDetail 'Создать поставку (закупка)' (userShipmentDetail) = createPurchaseUserShipment(userShipmentUserShipmentDetail(userShipmentDetail));
-backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipment IS shipment;
+backgroundPurchaseShipment 'Цвет' (shipment) = RGB(255, 224, 255) IF shipment IS Shipment;
 EXTEND FORM userShipment
     PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment
 ;
@@ -33,8 +33,8 @@ EXTEND FORM shipments
 ;
 //--  Связь поставки с поставкой
 
-shipmentDetailShipmentDetail = ABSTRACT shipmentDetail (Purchase.shipmentDetail) PERSISTENT;
-shipmentDetailUserShipmentDetail = DATA shipmentDetail (Purchase.userShipmentDetail);
+shipmentDetailShipmentDetail = ABSTRACT ShipmentDetail (Purchase.ShipmentDetail) PERSISTENT;
+shipmentDetailUserShipmentDetail = DATA ShipmentDetail (Purchase.UserShipmentDetail);
 shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailUserShipmentDetail(shipmentDetail);
 
 CONSTRAINT Purchase.supplierShipmentDetail(detail) != supplierShipmentDetail(shipmentDetailUserShipmentDetail(detail)) OR
@@ -62,9 +62,9 @@ shippedShipmentDetail 'Кол-во (поставлено)' (shipmentDetail) = GR
 
 toShipShipmentDetail 'Не поставлено' (shipmentDetail) = quantityShipmentDetail (shipmentDetail) (-) shippedShipmentDetail(shipmentDetail);
 
-CLASS purchaseShipment 'Поставка на основе поставки': Purchase.shipment;
-CLASS purchaseShipmentPosted 'Проведенная поставка на основе поставки' : purchaseShipment, postedObject;
-CLASS purchaseShipmentDetail 'Строка поставки на основе поставки' : Purchase.shipmentDetail;
+CLASS PurchaseShipment 'Поставка на основе поставки': Purchase.Shipment;
+CLASS PurchaseShipmentPosted 'Проведенная поставка на основе поставки' : PurchaseShipment, PostedObject;
+CLASS PurchaseShipmentDetail 'Строка поставки на основе поставки' : Purchase.ShipmentDetail;
 
 @defineDocumentTables(purchaseShipment);
 
@@ -128,17 +128,17 @@ shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailPurchaseShipmentDe
 // Создание поставки на основе поставки //
 
 FORM shipmentShipments 'Поставки'
-    OBJECTS s = legalEntity FIXED PANEL
+    OBJECTS s = LegalEntity FIXED PANEL
     PROPERTIES (s) READONLY name
-    OBJECTS c = legalEntity FIXED PANEL
+    OBJECTS c = LegalEntity FIXED PANEL
     PROPERTIES (c) READONLY name
 
-    OBJECTS ss = stock FIXED PANEL
+    OBJECTS ss = Stock FIXED PANEL
     PROPERTIES (ss) READONLY name
-    OBJECTS cs = stock FIXED PANEL
+    OBJECTS cs = Stock FIXED PANEL
     PROPERTIES (cs) READONLY name
 
-    OBJECTS o = shipment
+    OBJECTS o = Shipment
     PROPERTIES (o) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
                             nameCurrencyShipment, noteShipment,
                             countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment, showSalePackShipment
@@ -148,7 +148,7 @@ FORM shipmentShipments 'Поставки'
             customerStockShipment(o) == cs,
             isPostedShipment(o) AND NOT createPurchaseShipment(o)
 
-    OBJECTS d = shipmentDetail
+    OBJECTS d = ShipmentDetail
 
     PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                             quantityShipmentDetail
@@ -203,11 +203,11 @@ DESIGN shipmentShipments FROM DEFAULT {
 fillShipmentUserShipment 'Заполнить на основе поставки' =  ACTION (userShipment) {       // подставляем все количество ???
     FORM shipmentShipments OBJECTS s = Purchase.supplierUserShipment(userShipment), c = Purchase.customerUserShipment(userShipment),
                                    ss = Purchase.supplierStockUserShipment(userShipment), cs = Purchase.customerStockUserShipment(userShipment) MODAL;
-    IF formResult() == formResult.ok THEN {
-        LOCAL saleShipment = shipment();
+    IF formResult() == FormResult.ok THEN {
+        LOCAL saleShipment = Shipment();
         SET saleShipment() <- chosenObject('o');
 
-        FOR shipmentShipmentDetail(shipmentDetail) == saleShipment() ADDOBJ d = Purchase.userShipmentDetail DO {
+        FOR shipmentShipmentDetail(shipmentDetail) == saleShipment() ADDOBJ d = Purchase.UserShipmentDetail DO {
             SET Purchase.userShipmentUserShipmentDetail(d) <- userShipment;
             SET shipmentDetailUserShipmentDetail(d) <- shipmentDetail;
 

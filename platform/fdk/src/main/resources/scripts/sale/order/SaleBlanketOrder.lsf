@@ -12,7 +12,7 @@ numeratorBlanketOrderStock(order, stock) <- saleDefaultNumeratorUserOrder() WHEN
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
-operationBlanketOrder = DATA operation (blanketOrder);
+operationBlanketOrder = DATA Operation (BlanketOrder);
 nameOperationBlanketOrder 'Операция' = name(operationBlanketOrder(blanketOrder));
 
 operationOrder(order) += operationBlanketOrder(blanketOrderBlanketOrderOrder(order));
@@ -59,7 +59,7 @@ CONSTRAINT customerBlanketOrder(blanketOrder) AND NOT isCustomerLegalEntity(cust
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierBlanketOrder(blanketOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(blanketOrder IS blanketOrder);
+    WHEN ASSIGNED(blanketOrder IS BlanketOrder);
 
 supplierStockBlanketOrder(blanketOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierBlanketOrder(blanketOrder))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierBlanketOrder(blanketOrder)) == 1

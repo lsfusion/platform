@@ -32,9 +32,9 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
 supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
+    WHEN ASSIGNED(userOrder IS UserOrder);
 customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS userOrder);
+    WHEN ASSIGNED(userOrder IS UserOrder);
 
 supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
     IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
@@ -74,7 +74,7 @@ EXTEND FORM userOrder
 @extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
 
 //--------------------- Проводим по регистру резерва ------------------//
-@implementSaleOrderLedger(order, sku, shipmentDateTime, supplierStock, customer);
+@implementSaleOrderLedger(Order, sku, shipmentDateTime, supplierStock, customer);
 
 
 NAVIGATOR {

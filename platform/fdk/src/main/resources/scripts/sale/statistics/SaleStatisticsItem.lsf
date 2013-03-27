@@ -4,7 +4,7 @@ REQUIRE SaleStatistics, Item;
 
 NAMESPACE Sale;
 
-statisticGroupCountryItem 'Статистическая группа' = DATA statisticGroup (country, item);
+statisticGroupCountryItem 'Статистическая группа' = DATA StatisticGroup (Country, Item);
 nameStatisticGroupCountryItem 'Статистическая группа' = name(statisticGroupCountryItem(country, item));
 
 CONSTRAINT countryStatisticGroup(statisticGroupCountryItem(country, item)) != country
@@ -13,7 +13,7 @@ CONSTRAINT countryStatisticGroup(statisticGroupCountryItem(country, item)) != co
 statisticGroupCountrySku (country, sku) += statisticGroupCountryItem (country, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET statisticGroupCountryItem(country, d) <- statisticGroupCountryItem(country, s) IF country IS country AND s IS item AND d IS item;
+    SET statisticGroupCountryItem(country, d) <- statisticGroupCountryItem(country, s) IF country IS Country AND s IS Item AND d IS Item;
 }
 
 EXTEND FORM item

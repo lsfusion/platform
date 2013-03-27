@@ -28,8 +28,8 @@ createRepricingDisparity (disparity) <- createRepricingOperation(operationDispar
 
 @defineDocumentDetailMarkupPrefix (disparity, curInput, ' до');
 curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF disparityDetail IS disparityDetail OR curInputRetailPriceDisparityDetail(disparityDetail),
-    0.0 IF disparityDetail IS disparityDetail OR valueCurInputVATDisparityDetail(disparityDetail),
+    0.0 IF disparityDetail IS DisparityDetail OR curInputRetailPriceDisparityDetail(disparityDetail),
+    0.0 IF disparityDetail IS DisparityDetail OR valueCurInputVATDisparityDetail(disparityDetail),
     curInputPriceDisparityDetail(disparityDetail))
     WHEN CHANGED(curInputRetailPriceDisparityDetail(disparityDetail)) OR CHANGED (valueCurInputVATDisparityDetail(disparityDetail)) OR CHANGED(curInputPriceDisparityDetail(disparityDetail));
 
@@ -62,8 +62,8 @@ roundConditionDisparityDetail(disparityDetail) = roundConditionDepartmentStore(s
 @deriveDocumentDetailReverseVATSumPrefix(disparity, afterInput, afterInputRetail);
 @defineDocumentDetailMarkupPrefix (disparity, afterInput, ' после');
 afterInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF disparityDetail IS disparityDetail OR afterInputRetailPriceDisparityDetail(disparityDetail),
-    0.0 IF disparityDetail IS disparityDetail OR valueAfterInputVATDisparityDetail(disparityDetail),
+    0.0 IF disparityDetail IS DisparityDetail OR afterInputRetailPriceDisparityDetail(disparityDetail),
+    0.0 IF disparityDetail IS DisparityDetail OR valueAfterInputVATDisparityDetail(disparityDetail),
     afterInputPriceDisparityDetail(disparityDetail))
     WHEN CHANGED(afterInputPriceDisparityDetail(disparityDetail)) OR CHANGED (valueAfterInputVATDisparityDetail(disparityDetail)) OR CHANGED(afterInputRetailPriceDisparityDetail(disparityDetail));
 
@@ -81,7 +81,7 @@ afterInputRetailPriceDisparityDetail(detail) <- curInputRetailPriceDisparityDeta
 @defineDocumentHeaderSumPrefix(disparity, diffRetail, ' переоценки');
 
 needToRepricingDisparityDetail (disparityDetail) = curInputRetailPriceDisparityDetail(disparityDetail) != afterInputRetailPriceDisparityDetail(disparityDetail)
-                                               AND inputQuantityDisparityDetail(disparityDetail) != 0 AND stockDisparityDetail(disparityDetail) IS departmentStore
+                                               AND inputQuantityDisparityDetail(disparityDetail) != 0 AND stockDisparityDetail(disparityDetail) IS DepartmentStore
                                                AND NOT costLedgerDepartmentStore(stockDisparityDetail(disparityDetail))
                                                AND createRepricingDisparityDetail(disparityDetail) PERSISTENT;// AND isPostedDisparityDetail(disparityDetail) ;
 
@@ -90,9 +90,9 @@ needToRepricingDisparity (disparity)= GROUP SUM 1 IF needToRepricingDisparityDet
 
 @defineDocumentHeaderRepricingCommittee(disparity, stock);
 
-CLASS disparityRepricing 'Акт переоценки (сортность)': repricing;
-CLASS disparityRepricingPosted 'Проведенный акт дооценки на основе инвойса': disparityRepricing, postedObject;
-CLASS disparityRepricingDetail 'Строка акта дооценки на основе инвойса': repricingDetail;
+CLASS DisparityRepricing 'Акт переоценки (сортность)': Repricing;
+CLASS DisparityRepricingPosted 'Проведенный акт дооценки на основе инвойса': DisparityRepricing, PostedObject;
+CLASS DisparityRepricingDetail 'Строка акта дооценки на основе инвойса': RepricingDetail;
 
 @defineDocumentTables(disparityRepricing);
 
@@ -111,7 +111,7 @@ dateBeforeRepricing(repricing) += dateBeforeDisparityRepricing(repricing);
 timeBeforeRepricing(repricing) += timeBeforeDisparityRepricing(repricing);
 
 @defineDocumentAggregationStockPrefix(disparity, disparityRepricing, stock, 'Склад', , );
-departmentStoreRepricing(repricing) += stockDisparityRepricing(repricing) IF stockDisparityRepricing(repricing) IS departmentStore;
+departmentStoreRepricing(repricing) += stockDisparityRepricing(repricing) IF stockDisparityRepricing(repricing) IS DepartmentStore;
 
 @defineDocumentAggregationPosted(disparity, disparityRepricing);
 isPostedRepricing(repricing) += isPostedDisparityRepricing(repricing);
@@ -135,7 +135,7 @@ numberDisposalRepricing(repricing) += numberDisposalDisparity(disparityDisparity
 @defineDocumentDescription(disparityRepricing, disparityRepricingDetail, seriesNumberDisparityRepricing, 'Акт переоценки (сортность)');
 descriptionRepricing (repricing) += descriptionDisparityRepricing(repricing);
 
-//skipChangeLedgerRepricing(repricing) += repricing IS disparityRepricing;
+//skipChangeLedgerRepricing(repricing) += repricing IS DisparityRepricing;
 skuDisparityRepricingDetail (repricingDetail) = inputSkuDisparityDetail(disparityDetailDisparityRepricingDetail(repricingDetail));
 
 skuRepricingDetail(repricingDetail) +=  skuDisparityRepricingDetail(repricingDetail);
@@ -143,10 +143,10 @@ skuRepricingDetail(repricingDetail) +=  skuDisparityRepricingDetail(repricingDet
 @implementSkuLedger(disparityRepricingDetail, sku, stock);
 //sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
 
-backgroundCurDisparity 'Цвет' (disparity) = RGB(255, 255, 224) IF disparity IS disparity;
-backgroundAfterDisparity 'Цвет' (disparity) = RGB(255, 255, 200) IF disparity IS disparity;
+backgroundCurDisparity 'Цвет' (disparity) = RGB(255, 255, 224) IF disparity IS Disparity;
+backgroundAfterDisparity 'Цвет' (disparity) = RGB(255, 255, 200) IF disparity IS Disparity;
 
-showCreateRepricingDisparity (disparity) = stockDisparity(disparity) IS departmentStore AND NOT costLedgerDepartmentStore(stockDisparity(disparity));
+showCreateRepricingDisparity (disparity) = stockDisparity(disparity) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockDisparity(disparity));
 
 EXTEND FORM disparity
     PROPERTIES(dis)   SHOWIF showCreateRepricingDisparity(dis) BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity

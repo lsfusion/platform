@@ -3,9 +3,9 @@ MODULE WareInvoice;
 REQUIRE Item, WareItem, Invoice, Shipment;
 
 META defineInvoiceWare(NS)
-    skipCreateWareUserInvoiceDetail = DATA BOOLEAN (NS.userInvoiceDetail);
+    skipCreateWareUserInvoiceDetail = DATA BOOLEAN (NS.UserInvoiceDetail);
 
-    wareUserInvoiceDetailUserInvoiceDetail = DATA NS.userInvoiceDetail(NS.userInvoiceDetail);
+    wareUserInvoiceDetailUserInvoiceDetail = DATA NS.UserInvoiceDetail(NS.UserInvoiceDetail);
     itemWareUserInvoiceDetailUserInvoiceDetail (userInvoiceDetail) =
         GROUP UNIQUE userInvoiceDetail BY wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) PERSISTENT;
 
@@ -13,7 +13,7 @@ META defineInvoiceWare(NS)
         IF wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail) THEN {
             SET NS.quantityUserInvoiceDetail(d) <- NS.quantityUserInvoiceDetail(userInvoiceDetail) WHERE d == wareUserInvoiceDetailUserInvoiceDetail(userInvoiceDetail);
         } ELSE
-            FOR ADDOBJ d = userInvoiceDetail DO {
+            FOR ADDOBJ d = UserInvoiceDetail DO {
                 SET NS.userInvoiceUserInvoiceDetail(d) <- NS.userInvoiceUserInvoiceDetail(userInvoiceDetail);
                 SET NS.skuUserInvoiceDetail(d) <- wareItem(skuUserInvoiceDetail(userInvoiceDetail));
                 SET NS.quantityUserInvoiceDetail(d) <- NS.quantityUserInvoiceDetail(userInvoiceDetail);

@@ -49,10 +49,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        computer = (ConcreteCustomClass) getClassByName("computer");
-        user = (AbstractCustomClass) getClassByName("user");
-        systemUser = (ConcreteCustomClass) getClassByName("systemUser");
-        customUser = (ConcreteCustomClass) getClassByName("customUser");
+        computer = (ConcreteCustomClass) getClassByName("Computer");
+        user = (AbstractCustomClass) getClassByName("User");
+        systemUser = (ConcreteCustomClass) getClassByName("SystemUser");
+        customUser = (ConcreteCustomClass) getClassByName("CustomUser");
     }
 
     @Override

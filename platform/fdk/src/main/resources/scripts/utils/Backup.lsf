@@ -6,20 +6,20 @@ makeBackup 'Сделать резервное копирование'= ACTION CU
 makeClientBackup 'Скачать резервную копию'= ACTION CUSTOM 'fdk.utils.backup.ClientBackupActionProperty' TOOLBAR;
 deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'fdk.utils.backup.DeleteBackupActionProperty' CONFIRM;
 
-CLASS backup 'Резервная копия';
-TABLE backup(backup);
+CLASS Backup 'Резервная копия';
+TABLE backup(Backup);
 
-dateBackup 'Дата' = DATA DATE (backup);
-timeBackup 'Время' = DATA TIME (backup);
-fileBackup 'Адрес файла' = DATA STRING[200] (backup);
-fileLogBackup 'Адрес лога файла' = DATA STRING[200] (backup);
-fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (backup);
-logBackup 'Лог' = DATA TEXT (backup);
+dateBackup 'Дата' = DATA DATE (Backup);
+timeBackup 'Время' = DATA TIME (Backup);
+fileBackup 'Адрес файла' = DATA STRING[200] (Backup);
+fileLogBackup 'Адрес лога файла' = DATA STRING[200] (Backup);
+fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (Backup);
+logBackup 'Лог' = DATA TEXT (Backup);
 
 fileNameBackup 'Файл резервной копии' = DATA SESSION STRING[200]();
 
 FORM backup 'Резервное копирование'
-    OBJECTS b = backup
+    OBJECTS b = Backup
     PROPERTIES() makeBackup TODRAW b FORCE PANEL, makeClientBackup TODRAW b FORCE PANEL
     PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
     PROPERTIES(b) deleteBackup

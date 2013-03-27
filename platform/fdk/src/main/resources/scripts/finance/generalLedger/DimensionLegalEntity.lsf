@@ -2,10 +2,10 @@ MODULE DimensionLegalEntity;
 
 REQUIRE Dimension, LegalEntity;
 
-EXTEND CLASS legalEntity : dimension;
-EXTEND CLASS dimensionType {
+EXTEND CLASS LegalEntity : Dimension;
+EXTEND CLASS DimensionType {
     organization 'Организация'
 }
-nameDimension (dimension) += name(dimension) IF dimension IS legalEntity;
-dimensionTypeDimension (dimension) += dimensionType.organization WHEN dimension IS legalEntity;
+nameDimension (dimension) += name(dimension) IF dimension IS LegalEntity;
+dimensionTypeDimension (dimension) += DimensionType.organization WHEN dimension IS LegalEntity;
 

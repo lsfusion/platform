@@ -2,9 +2,9 @@ MODULE DimensionStock;
 
 REQUIRE Dimension, Stock;
 
-EXTEND CLASS sku : dimension;
-EXTEND CLASS dimensionType {
+EXTEND CLASS Sku : Dimension;
+EXTEND CLASS DimensionType {
     sku 'Товар'
 }
 nameDimension (dimension) += nameSku(dimension);
-dimensionTypeDimension (dimension) += dimensionType.sku WHEN dimension IS sku;
+dimensionTypeDimension (dimension) += DimensionType.sku WHEN dimension IS Sku;

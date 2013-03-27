@@ -16,7 +16,7 @@ public class FiscalDatecsServiceInOutActionProperty extends ScriptingActionPrope
     private final ClassPropertyInterface cashOperationInterface;
 
     public FiscalDatecsServiceInOutActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("cashOperation")});
+        super(LM, new ValueClass[]{LM.findClassByCompoundName("CashOperation")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         cashOperationInterface = i.next();

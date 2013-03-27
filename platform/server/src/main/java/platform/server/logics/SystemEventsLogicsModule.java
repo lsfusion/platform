@@ -69,12 +69,12 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        clientException = (ConcreteCustomClass) getClassByName("clientException");
-        serverException = (ConcreteCustomClass) getClassByName("serverException");
-        launch = (ConcreteCustomClass) getClassByName("launch");
-        connection = (ConcreteCustomClass) getClassByName("connection");
-        connectionStatus = (ConcreteCustomClass) getClassByName("connectionStatus");
-        session = (ConcreteCustomClass) getClassByName("session");
+        clientException = (ConcreteCustomClass) getClassByName("ClientException");
+        serverException = (ConcreteCustomClass) getClassByName("ServerException");
+        launch = (ConcreteCustomClass) getClassByName("Launch");
+        connection = (ConcreteCustomClass) getClassByName("Connection");
+        connectionStatus = (ConcreteCustomClass) getClassByName("ConnectionStatus");
+        session = (ConcreteCustomClass) getClassByName("Session");
     }
 
     @Override

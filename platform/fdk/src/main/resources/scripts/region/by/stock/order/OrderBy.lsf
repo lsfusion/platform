@@ -14,7 +14,7 @@ NAMESPACE Order;
 @defineDocumentPhone(order, customer, ' покупателя');
 
 FORM printOrderBy 'Счет-фактура (печать)' PRINT
-    OBJECTS o = order FIXED PANEL
+    OBJECTS o = Order FIXED PANEL
     PROPERTIES (o) READONLY nameSupplierOrder, nameSupplierStockOrder, addressSupplierOrder, UNPSupplierOrder,
                    numberAccountSupplierOrder, nameBankSupplierOrder, addressBankSupplierOrder,
                    departmentBankSupplierOrder, CBUBankSupplierOrder, MFOBankSupplierOrder, phoneSupplierOrder,
@@ -25,7 +25,7 @@ FORM printOrderBy 'Счет-фактура (печать)' PRINT
                    nameCurrencyOrder, noteOrder, countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                    VATSumOrderDetailOrder, invoiceSumOrderDetailOrder
 
-    OBJECTS d = orderDetail
+    OBJECTS d = OrderDetail
     PROPERTIES (d) READONLY indexOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail,
                    quantityOrderDetail,
                    priceOrderDetail, sumOrderDetail, numberVATOrderDetail,

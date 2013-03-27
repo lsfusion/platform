@@ -4,14 +4,14 @@ REQUIRE System, CashOperation, RomanPOS;
 
 NAMESPACE CashOperation;
 
-CLASS accountCollection 'Изъятие (упр.)' : outcomeCashOrder, historizable, numeratedObject;
-TABLE accountCollection (accountCollection);
+CLASS AccountCollection 'Изъятие (упр.)' : OutcomeCashOrder, Historizable, NumeratedObject;
+TABLE accountCollection (AccountCollection);
 
 @defineNumeratedObjectDefault(accountCollection, 'Нумератор для изъятий', 'ИЗ');
 
-@defineDocumentHeaderTime(accountCollection);
+@defineDocumentHeaderTime(AccountCollection);
 
-zReportAccountCollection 'Z-отчет (ИД)' (accountCollection) = DATA zReport (accountCollection);
+zReportAccountCollection 'Z-отчет (ИД)' (accountCollection) = DATA ZReport (AccountCollection);
 
 cashRegisterAccountCollection (accountCollection) = cashRegisterZReport(zReportAccountCollection(accountCollection));
 numberCashRegisterAccountCollection 'Касса инкассации' (accountCollection) =
@@ -20,7 +20,7 @@ numberCashRegisterAccountCollection 'Касса инкассации' (accountCo
 departmentStoreAccountCollection (accountCollection) = departmentStoreZReport(zReportAccountCollection(accountCollection));
 nameDepartmentStoreAccountCollection 'Отдел' (accountCollection) = name(departmentStoreAccountCollection (accountCollection));
 
-sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (accountCollection) IN documentSumGroup;
+sumCashAccountCollection 'Сумма изъятия' = DATA NUMERIC[16,2] (AccountCollection) IN documentSumGroup;
 
 castBasisAccountCollection =
     FORMULA STRING[100] '\'Изъятие №\' || CAST($1 AS TEXT) || \' с кассы \' || CAST($2 AS TEXT) || \' от \' || CAST($3 AS TEXT)';
@@ -29,18 +29,18 @@ basisAccountCollection 'Основание' (accountCollection) =
 
 dateCashDocument(accountCollection) += dateAccountCollection(accountCollection);
 timeCashDocument(accountCollection) += timeAccountCollection(accountCollection);
-numberCashDocument(accountCollection) += seriesNumberObject(accountCollection) AND accountCollection IS accountCollection;
+numberCashDocument(accountCollection) += seriesNumberObject(accountCollection) AND accountCollection IS AccountCollection;
 departmentStoreCashDocument(accountCollection) += departmentStoreAccountCollection(accountCollection);
 cashRegisterCashDocument(accountCollection) += cashRegisterAccountCollection(accountCollection);
 sumCashOutcomeCashOrder(accountCollection) += sumCashAccountCollection(accountCollection);
 basisCashDocument(accountCollection) += basisAccountCollection(accountCollection);
-isPostedCashDocument(accountCollection) += TRUE AND accountCollection IS accountCollection;
+isPostedCashDocument(accountCollection) += TRUE AND accountCollection IS AccountCollection;
 
 //sumCashIncomeCashOrder(zReport) += sumCashZReport(zReport) (-) sumSkipAReceiptSaleDetailZReport(zReport);
 
 createAccountCollectionZReport 'Изъять сумму' (zReport) = ACTION (zReport) {
     EXEC selectDialogSkipAReceiptDetailZReport (zReport);
-    ADDOBJ accountCollection;
+    ADDOBJ AccountCollection;
     FOR a == addedObject() DO {
         SET zReportAccountCollection (a) <- zReport;
         SET dateCashDocument (a) <- currentDate();

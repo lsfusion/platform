@@ -27,21 +27,21 @@ GROUP sampleGroup : System.base; // явная квалификация имен
 // }]
 // [: baseClass1 [, baseClass2, ..., baseClassN]];
 
-CLASS ABSTRACT namedClass : named;
-CLASS emptyClass;
-CLASS article 'Товар' : namedClass;
-CLASS store 'Склад' : namedClass;
-CLASS ABSTRACT document 'Документ';
-CLASS incomeDocument 'Приход' : document;
-CLASS outcomeDocument 'Расход' : document, emptyClass;
+CLASS ABSTRACT NamedClass : Named;
+CLASS EmptyClass;
+CLASS Article 'Товар' : NamedClass;
+CLASS Store 'Склад' : NamedClass;
+CLASS ABSTRACT Document 'Документ';
+CLASS IncomeDocument 'Приход' : Document;
+CLASS OutcomeDocument 'Расход' : Document, EmptyClass;
 
-date(doc) = DATA DATE (document);
+date(doc) = DATA DATE (Document);
 
-CLASS emptyInst;
+CLASS EmptyInst;
 
-CLASS storeSize 'Размер склада' {} : named;
+CLASS StoreSize 'Размер склада' {} : Named;
 
-EXTEND CLASS storeSize
+EXTEND CLASS StoreSize
 {
     huge 'огромный',
     big 'большой'
@@ -56,9 +56,9 @@ EXTEND CLASS storeSize
 //      instanceNameN ['instanceCaptionN']
 // }]
 // [: baseClass1 [, baseClass2, ..., baseClassN];]
-EXTEND CLASS incomeDocument : emptyClass;
+EXTEND CLASS IncomeDocument : EmptyClass;
 
-EXTEND CLASS Features.storeSize
+EXTEND CLASS Features.StoreSize
 {
     medium 'средний',
     small 'маленький'
@@ -88,9 +88,9 @@ EXTEND CLASS Features.storeSize
 // DATA [SESSION] returnClass ( [paramClass1, ..., paramClassN] )
 // If SESSION modifier is specified, than session data property will be created.
 // Built-in types: INTEGER, LONG, DOUBLE, BOOLEAN, DATE, DATETIME, TEXT, STRING, ISTRING, TIME, WORDFILE, IMAGEFILE, PDFFILE, CUSTOMFILE, EXCELFILE, NUMERIC, COLOR
-store(document) = DATA store (document) IN base;
-quantity(document, article) = DATA DOUBLE (document, article) IN base;
-storeSize(store) = DATA storeSize (store) IN base;
+store(document) = DATA Store (Document) IN base;
+quantity(document, article) = DATA DOUBLE (Document, Article) IN base;
+storeSize(store) = DATA StoreSize (Store) IN base;
 
 sessionObj() = DATA SESSION object ();
 
@@ -99,20 +99,20 @@ sessionObj() = DATA SESSION object ();
 // [JOIN] (name | '[' propertyDefinition ']') (param1, ..., paramN)
 storeName 'Склад' (document) = JOIN name(store(document)) IN base;
 storeSizeName = name(storeSize(store)) IN base; // можем не указывать именованные параметры слева от '=', но все равно пользоваться ими
-objectIsStore = [IS store](object);             // аналог: object IS store
+objectIsStore = [IS Store](object);             // аналог: object IS Store
 
 // IS, AS
 // Expression syntax:
 // propertyExpression (AS | IS) className
 // IS - is(), AS - object()
-isIncomeDocument(document) = document IS incomeDocument;
+isIncomeDocument(document) = document IS IncomeDocument;
 
 
 // AND, IF (идентичны по действию)
 // Expression syntax:
 // propertyExpression (AND | IF) [NOT] propertyExpression
 inQuantity(document, article) = quantity(document, article) IF isIncomeDocument(document);
-outQuantity(document, article) = quantity($1, $2) IF $1 IS outcomeDocument;  // указание номеров параметров вместо имен
+outQuantity(document, article) = quantity($1, $2) IF $1 IS OutcomeDocument;  // указание номеров параметров вместо имен
 
 // Group property
 // SUM, MAX, MIN, EQUAL group property
@@ -121,12 +121,12 @@ outQuantity(document, article) = quantity($1, $2) IF $1 IS outcomeDocument;  // 
 incomeQuantity(store, article) = GROUP SUM inQuantity(document, article) BY store(document), article;
 outcomeQuantity(store, article) = GROUP SUM outQuantity(doc, art) BY store(doc), art;
 
-incomeQuantity2(store, article) = GROUP SUM quantity(document, article) IF document IS incomeDocument BY store(document), article;
-outcomeQuantity2(store, article) = GROUP SUM quantity(doc, art) IF doc IS outcomeDocument BY store(doc), art;
+incomeQuantity2(store, article) = GROUP SUM quantity(document, article) IF document IS IncomeDocument BY store(document), article;
+outcomeQuantity2(store, article) = GROUP SUM quantity(doc, art) IF doc IS OutcomeDocument BY store(doc), art;
 
 // CONCAT group property
 // GROUP CONCAT propertyExpr, separatorPropertyExpr [BY propertyExpr1, ..., propertyExprN] [ORDER [DESC] orderPropertyExpr1, ..., orderPropertyExprK]
-allNames() = GROUP CONCAT name(obj) IF obj IS named, ', ' ORDER DESC name(obj);
+allNames() = GROUP CONCAT name(obj) IF obj IS Named, ', ' ORDER DESC name(obj);
 
 // UNIQUE group property
 // GROUP UNIQUE propertyExpression [BY propertyExpression1, ..., propertyExpressionN] [WHERE propertyExpression]
@@ -151,7 +151,7 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 // IF THEN ELSE property
 // Expression syntax:
 // IF propertyExpression0 THEN propertyExpression1 ELSE propertyExpression2
-documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument) THEN ('Приход' IF doc IS incomeDocument) ELSE ('Расход' IF doc IS outcomeDocument);
+documentTypeString 'Тип документа' (doc) = IF (doc IS IncomeDocument) THEN ('Приход' IF doc IS IncomeDocument) ELSE ('Расход' IF doc IS OutcomeDocument);
 
 // Case property
 // Expression syntax:
@@ -162,11 +162,11 @@ documentTypeString 'Тип документа' (doc) = IF (doc IS incomeDocument
 //      DEFAULT defaultPropertyExpression
 // END
 sizeCode 'Размер склада (код)' (ss) = CASE
-                                          WHEN ss == storeSize.huge THEN ('HUGE' IF ss IS storeSize)
-                                          WHEN ss == storeSize.big THEN ('BIG' IF ss IS storeSize)
-                                          WHEN ss == storeSize.medium THEN ('MEDIUM' IF ss IS storeSize)
-                                          WHEN ss == storeSize.small THEN ('SMALL' IF ss IS storeSize)
-                                          DEFAULT 'UNKNOWN' IF ss IS store
+                                          WHEN ss == storeSize.huge THEN ('HUGE' IF ss IS StoreSize)
+                                          WHEN ss == storeSize.big THEN ('BIG' IF ss IS StoreSize)
+                                          WHEN ss == storeSize.medium THEN ('MEDIUM' IF ss IS StoreSize)
+                                          WHEN ss == storeSize.small THEN ('SMALL' IF ss IS StoreSize)
+                                          DEFAULT 'UNKNOWN' IF ss IS Store
                                       END;
 storeSizeCode 'Размер склада (код)' (s) = sizeCode(storeSize(s));
 
@@ -183,8 +183,8 @@ testPartition(store, article) = PARTITION SUM incomeQuantity(store, article) BY 
 // PARTITION UNGROUP propertyObject PROPORTION [STRICT] ROUND(precision) proportionPropertyExpression
 // [BY propertyExpressionM1, ..., propertyExpressionMN]
 // [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
-testAmount(store) = 20.0 IF store IS store;
-testData(article) = DATA DOUBLE (article);
+testAmount(store) = 20.0 IF store IS Store;
+testData(article) = DATA DOUBLE (Article);
 testPropPartition(store, article) = PARTITION UNGROUP testAmount PROPORTION STRICT ROUND(2) testData(article) BY store ORDER name(article);
 
 // UNGROUP LIMIT partition property
@@ -205,11 +205,11 @@ onlyIncomeQuantity(store, article) = ioQuantity(store, article)[1];
 // Abstract property
 // Expression syntax:
 // ABSTRACT returnClass ( [paramClass1, ..., paramClassN] ) [EXCLUSIVE]
-testAbstract(named) = ABSTRACT INTEGER (namedClass);
+testAbstract(named) = ABSTRACT INTEGER (NamedClass);
 // overriding abstract property syntax:
 // propertyName(namedParam1, ..., namedParamN) += expression;
-testAbstract(named) += 5 AND named IS article;
-testAbstract(named) += 6 AND named IS store;
+testAbstract(named) += 5 AND named IS Article;
+testAbstract(named) += 6 AND named IS Store;
 
 // Abstract action property
 // Expression syntax:
@@ -218,10 +218,10 @@ testAbstractAction(object) = ABSTRACT ACTION (object);
 // overriding abstract action property syntax:
 // propertyName(namedParam1, ..., namedParamN) += ACTION actionBody;
 
-testAbstractAction(store) += ACTION MESSAGE 'testing store' AND store IS store;
-testAbstractAction(store) += ACTION MESSAGE 'testing store2' AND store IS store;
-testAbstractAction(document) += ACTION MESSAGE 'testing document' AND document IS document;
-testAbstractAction(document) += ACTION MESSAGE 'testing document2' AND document IS document;
+testAbstractAction(store) += ACTION MESSAGE 'testing store' AND store IS Store;
+testAbstractAction(store) += ACTION MESSAGE 'testing store2' AND store IS Store;
+testAbstractAction(document) += ACTION MESSAGE 'testing document' AND document IS Document;
+testAbstractAction(document) += ACTION MESSAGE 'testing document2' AND document IS Document;
 
 // Formula property
 // Expression syntax:
@@ -305,13 +305,13 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Add object action
 // statement syntax:
 // ADDOBJ className
-addObjectActionTest() = ACTION ADDOBJ store;
+addObjectActionTest() = ACTION ADDOBJ Store;
 
 // Add/Edit form action
 // statement syntax:
 // (ADDFORM | EDITFORM) [SESSION] className
-addActionTest() = ACTION ADDFORM store;
-editActionTest(obj) = ACTION EDITFORM store;
+addActionTest() = ACTION ADDFORM Store;
+editActionTest(obj) = ACTION EDITFORM Store;
 
 // Custom action
 // statement syntax:
@@ -353,16 +353,16 @@ editActionTest(obj) = ACTION EDITFORM store;
 // statement syntax:
 // EVAL expression
 
-script(doc) = DATA TEXT (document);
+script(doc) = DATA TEXT (Document);
 evalScript(doc) = ACTION EVAL script(doc);
 
 FORM TestEvalActionForm 'Тест скриптов'
-OBJECTS d=document
+OBJECTS d=Document
 PROPERTIES(d) store, script, evalScript;
 
 
 copyStoreNameToArticles 'Скопировать имя склада в имена артиклей' (s) = ACTION(s) {
-    name(a) <- (name(s) AND s IS store) WHERE a IS article;
+    name(a) <- (name(s) AND s IS Store) WHERE a IS Article;
 };
 
 copyStoreNameToArticle 'Добавить имя склада к имени артикля' (s, a) = ACTION(s, a) NEWSESSION AUTOAPPLY {
@@ -375,7 +375,7 @@ copyStoreNameToArticleError 'Скопировать имя склада в им�
 };
 
 createNewStore 'Добавить большой склад' = ACTION () {
-    ADDOBJ store;
+    ADDOBJ Store;
 
     sessionObj() <- addedObject();
 
@@ -385,9 +385,9 @@ createNewStore 'Добавить большой склад' = ACTION () {
 
 //////////////// TEST PUSHING FOR //////
 
-selCur = DATA SESSION BOOLEAN (document, article);
-selAll = DATA SESSION BOOLEAN (document, article);
-selArt = DATA SESSION BOOLEAN (article);
+selCur = DATA SESSION BOOLEAN (Document, Article);
+selAll = DATA SESSION BOOLEAN (Document, Article);
+selArt = DATA SESSION BOOLEAN (Article);
 
 testExec = ACTION (document, article) {
     IF quantity(document, article) > 3 THEN
@@ -413,7 +413,7 @@ testPush = ACTION(document) {
         name(article) <- [FORMULA STRING[20] '$1 || CAST($2 as char(20))']('Article ', quantity(document2, article));
     }
 
-    FOR ADDOBJ article DO {
+    FOR ADDOBJ Article DO {
         MESSAGE name(added);
     }
 
@@ -422,7 +422,7 @@ testPush = ACTION(document) {
 testPush2 = ACTION(document) {
 
     FOR date(document2) DO { // to be pushed
-        name(article) <- 'NEW' IF article IS article IF document IS incomeDocument;
+        name(article) <- 'NEW' IF article IS Article IF document IS IncomeDocument;
     }
 
     FOR quantity(document2, article) ORDER date(document2) DO { // to be pushed
@@ -442,7 +442,7 @@ testPush2 = ACTION(document) {
 }
 
 copy = ACTION(document) {
-    FOR quantity(document, article) ADDOBJ article DO {
+    FOR quantity(document, article) ADDOBJ Article DO {
         name(added) <- name(article);
         quantity(document, added) <- quantity(document, article);
     }
@@ -576,7 +576,7 @@ EVENTS
 // ORDER BY (propertyAlias1 | <mappedProperty1>), ..., (propertyAliasN | <mappedPropertyN>)
 
 showDocumentArticleModalForm 'Показать модальную "По документам"' = ACTION() NEWSESSION {
-    ADDOBJ article;
+    ADDOBJ Article;
 
     FOR (k == addedObject()) DO {
         name(k) <- 'this is new article';
@@ -586,7 +586,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
 
     FORM documentArticle MODAL CHECK;
 
-    IF (formResult() == formResult.ok) THEN {
+    IF (formResult() == FormResult.ok) THEN {
         MESSAGE 'You pressed "ok"' LENGTH 50;
         MESSAGE [FORMULA STRING[100] '\'You have choosen article \' || $1 || \' and store \' || $2'](name(chosenObject('article')), name(store(chosenObject('document'))));
 
@@ -598,7 +598,7 @@ showDocumentArticleModalForm 'Показать модальную "По доку
         };
 
         RETURN;
-    } ELSE IF (formResult() == formResult.close) THEN {
+    } ELSE IF (formResult() == FormResult.close) THEN {
         MESSAGE 'You pressed "close"';
     };
 };
@@ -608,9 +608,9 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
     i() <- 0;
     WHILE (i() < 3) DO {
         FORM documentArticle MODAL CHECK;
-        IF (formResult() == formResult.ok) THEN {
+        IF (formResult() == FormResult.ok) THEN {
             MESSAGE 'You pressed "ok"' LENGTH 50;
-        } ELSE IF (formResult() == formResult.close) THEN {
+        } ELSE IF (formResult() == FormResult.close) THEN {
             MESSAGE 'You pressed "close"';
         };
 
@@ -625,8 +625,8 @@ PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 
 showTestModalForm 'Показать док-модальную форму' = ACTION() {
     FORM testModalForm NEWSESSION DOCKEDMODAL;
-    name(k) <- chosenString('s') WHERE k == chosenObject('store') IF (formResult() == formResult.ok);
-    name(k) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i')) WHERE k == chosenObject('article') IF (formResult() == formResult.ok);
+    name(k) <- chosenString('s') WHERE k == chosenObject('store') IF (formResult() == FormResult.ok);
+    name(k) <- [FORMULA STRING[30] '$1 || CAST($2 as char(20))']('Товар ', chosenInteger('i')) WHERE k == chosenObject('article') IF (formResult() == FormResult.ok);
 };
 
 remindPasswordEmail 'Выслать пароль на этот email' (u, to) = ACTION EMAIL
@@ -635,26 +635,26 @@ remindPasswordEmail 'Выслать пароль на этот email' (u, to) = 
     TO (to IF to IS STRING[200])
     CC 'some@someserv.net'
 //    BCC 'luxsoft@adsl.by'
-    INLINE remindUserPass OBJECTS u=(u AS customUser)
+    INLINE remindUserPass OBJECTS u=(u AS CustomUser)
     ATTACH PDF
            NAME [FORMULA STRING[60] '\'ATTACH: Напоминание пароля для \' || $1'](emailContact(u))
-           remindUserPass OBJECTS u=(u AS customUser)
+           remindUserPass OBJECTS u=(u AS CustomUser)
     ;
 
 FORM testEmailForm 'Тестирование EMAIL'
-OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=customUser
+OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=CustomUser
 PROPERTIES OBJVALUE(s), loginCustomUser(u), passwordCustomUser(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
 ;
 
-stime 'Время' (store) = DATA TIME (store) IN base;
-sdate 'Дата' (store) = DATA DATE (store) IN base;
-sdatetime 'ДатаВремя' (store) = DATA DATETIME (store) IN base;
-sword 'Word' (store) = DATA WORDFILE (store) IN base;
-simage 'Image' (store) = DATA IMAGEFILE (store) IN base;
-spdf 'PDF' (store) = DATA PDFFILE (store) IN base;
-scustom 'Custom file' (store) = DATA CUSTOMFILE (store) IN base;
-sexcel 'Excel' (store) = DATA EXCELFILE (store) IN base;
-scolor 'Color' (store) = DATA COLOR (store) IN base;
+stime 'Время' (store) = DATA TIME (Store) IN base;
+sdate 'Дата' (store) = DATA DATE (Store) IN base;
+sdatetime 'ДатаВремя' (store) = DATA DATETIME (Store) IN base;
+sword 'Word' (store) = DATA WORDFILE (Store) IN base;
+simage 'Image' (store) = DATA IMAGEFILE (Store) IN base;
+spdf 'PDF' (store) = DATA PDFFILE (Store) IN base;
+scustom 'Custom file' (store) = DATA CUSTOMFILE (Store) IN base;
+sexcel 'Excel' (store) = DATA EXCELFILE (Store) IN base;
+scolor 'Color' (store) = DATA COLOR (Store) IN base;
 
 testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
     CONFIRM 'Быть или не быть?' LENGTH 100;
@@ -665,7 +665,7 @@ testRequestInput 'Тестирование REQUEST input' = ACTION(s) {
             IF (requestedColor() == #FF0000) THEN {
                 requestedColor() <- #00FF00;
             }
-            scolor(s) <- requestedColor() WHERE s IS store;
+            scolor(s) <- requestedColor() WHERE s IS Store;
         }
     } ELSE {
         MESSAGE 'Нет... ';
@@ -676,7 +676,7 @@ loadf(s) = ACTION OPENFILE simage(s);
 savef(s) = ACTION LOADFILE simage(s);
 
 FORM storeArticle 'По складам'
-OBJECTS s=store '-Склад-', a=article
+OBJECTS s=Store '-Склад-', a=Article
 PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
 PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
@@ -696,18 +696,18 @@ PROPERTIES(s) scolor AFTER ssw
 ;
 
 FORM editStore 'Редактирование склада'
-OBJECTS s=store FIXED PANEL
+OBJECTS s=Store FIXED PANEL
 PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
 // To use this form as EDIT\DIALOG\LIST form for some class (for ex. store)
 // Use this syntax:
 //(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
-EDIT store OBJECT s
+EDIT Store OBJECT s
 ;
 
-dateProp(store) = 2007_12_01 AND store IS store;
-//dateTimeProp(store) = 2007_12_01_18:00 AND store IS store;
-//timeProp(store) = 18:00 AND store IS store;
-variableDateTime(store) = DATA DATETIME (store);
+dateProp(store) = 2007_12_01 AND store IS Store;
+//dateTimeProp(store) = 2007_12_01_18:00 AND store IS Store;
+//timeProp(store) = 18:00 AND store IS Store;
+variableDateTime(store) = DATA DATETIME (Store);
 
 FORM TestDataPropForm 'Тест дат'
 OBJECTS store
@@ -717,11 +717,11 @@ PROPERTIES(store) dateProp, variableDateTime
 ;
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
-storeSizeString (s, ss) = DATA STRING[10] (store, storeSize);
-storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS store AND ss IS storeSize AND ss!=storeSize.small, storeSizeString(s, ss);
+storeSizeString (s, ss) = DATA STRING[10] (Store, StoreSize);
+storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=storeSize.small, storeSizeString(s, ss);
 
 FORM TestColumnGroupObjects 'Тест групп в колонках'
-OBJECTS ss=storeSize, s=store
+OBJECTS ss=StoreSize, s=Store
 PROPERTIES name(ss), sizeCode(ss)
 PROPERTIES OBJVALUE(s), name(s), scolor(s), storeSizeCode(s)
 PROPERTIES storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
@@ -729,7 +729,7 @@ PROPERTIES storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND co
 colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElement(element) > 4;
 
 FORM TestTree 'Тест дерева (формы)'
-TREE forms e=navigatorElement PARENT parentNavigatorElement
+TREE forms e=NavigatorElement PARENT parentNavigatorElement
 PROPERTIES(e) captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitNavigatorElement, forbidNavigatorElement;
 
 DESIGN TestTree FROM DEFAULT {
@@ -744,7 +744,7 @@ OBJECTS s=QuantityString
 PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), delete(s);
 
 FORM TestHeaders 'Тест заголовков'
-OBJECTS s=store, a=article
+OBJECTS s=Store, a=Article
 PROPERTIES(s) name, storeSizeCode
 PROPERTIES(a) OBJVALUE, name
 PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
@@ -764,7 +764,7 @@ DESIGN TestHeaders FROM DEFAULT {
 }
 
 FORM TestHotkeys 'Тест хоткеев'
-OBJECTS s=store, a=article
+OBJECTS s=Store, a=Article
 PROPERTIES(s) ns=name, storeSizeCode
 PROPERTIES(a) OBJVALUE, na=name
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
@@ -788,7 +788,7 @@ DESIGN TestHotkeys FROM DEFAULT {
 }
 
 FORM TestTabs 'Тест табов'
-OBJECTS s=store, a=article
+OBJECTS s=Store, a=Article
 PROPERTIES(s) OBJVALUE, name, storeSizeCode, name, storeSizeCode, name
 PROPERTIES(a) OBJVALUE, name, name, name, name
 PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
@@ -1103,7 +1103,7 @@ END
 //////////////// TABLE STATEMENT ////////////////
 // Syntax:
 // TABLE name(className1, ..., classNameN);
-TABLE documentArticle(document, article);
+TABLE documentArticle(Document, Article);
 
 fib(i, to) = GROUP MAX f IF (RECURSION i==1 AND f==0 AND f1==1 AND to IS INTEGER
                 STEP i==$i+1 AND f==$f+0+$f1 AND f1==$f AND i<to) BY i, to;

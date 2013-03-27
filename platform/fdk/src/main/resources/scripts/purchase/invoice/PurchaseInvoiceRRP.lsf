@@ -37,20 +37,20 @@ EXTEND FORM invoices
 ;
 
 // Создаем виды цен
-EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoiceStockPriceListType 'RRP (последняя по складу)' }
-batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(ledger) WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == systemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
+EXTEND CLASS SystemLedgerPriceListType { purchaseRRPInvoiceStockPriceListType 'RRP (последняя по складу)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(ledger) WHEN CLASS(RRPPriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseRRPInvoiceStockPriceListType;
 
 // Создаем вид цен по всем складам компании
-EXTEND CLASS systemLedgerPriceListType { purchaseRRPInvoicePriceListType 'RRP (последняя по ценовой группе)' }
-batchLedgerPriceListType(type) += type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
-pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == systemLedgerPriceListType.purchaseRRPInvoicePriceListType;
+EXTEND CLASS SystemLedgerPriceListType { purchaseRRPInvoicePriceListType 'RRP (последняя по ценовой группе)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseRRPInvoicePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(RRPPriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseRRPInvoicePriceListType;
 
 //// Тип обмена для RRP, пок не используется.
-//RRPTypeExchangeInvoiceDetail  (invoiceDetail) = ABSTRACT typeExchange (invoiceDetail) PERSISTENT;
+//RRPTypeExchangeInvoiceDetail  (invoiceDetail) = ABSTRACT TypeExchange (InvoiceDetail) PERSISTENT;
 //nameRRPTypeExchangeInvoiceDetail 'Тип обмена (RRP)' (invoiceDetail)= name(RRPTypeExchangeInvoiceDetail(invoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 //
-//RRPTypeExchangeUserInvoiceDetail (userInvoiceDetail) = DATA typeExchange (userInvoiceDetail);
+//RRPTypeExchangeUserInvoiceDetail (userInvoiceDetail) = DATA TypeExchange (UserInvoiceDetail);
 //nameRRPTypeExchangeUserInvoiceDetail 'Тип обмена (RRP)' (userInvoiceDetail)= name(RRPTypeExchangeUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10 PREFCHARWIDTH 20;
 //
 //CONSTRAINT currencyRRPUserInvoiceDetail(detail) != currencyTypeExchange(RRPTypeExchangeUserInvoiceDetail(detail))

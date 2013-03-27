@@ -7,53 +7,53 @@ REQUIRE System,
         Numerator,
         Document;
 
-CLASS genType 'Тип генерации' {
+CLASS GenType 'Тип генерации' {
     genDays 'Генерация через N дней',
     genNumber 'Генерация по числам',
     genDayMonth 'Генерация по дням недели и месяца'
-} : named;
+} : Named;
 
-CLASS ABSTRACT scheduleOrder 'График';
-TABLE scheduleOrder(scheduleOrder);
+CLASS ABSTRACT ScheduleOrder 'График';
+TABLE scheduleOrder(ScheduleOrder);
 
-CLASS ABSTRACT scheduleOrderDetail 'Заказ по графику';
-TABLE scheduleOrderDetail(scheduleOrderDetail);
+CLASS ABSTRACT ScheduleOrderDetail 'Заказ по графику';
+TABLE scheduleOrderDetail(ScheduleOrderDetail);
 
-startDateScheduleOrder 'Дата начала' = ABSTRACT DATE (scheduleOrder) IN base;
-endDateScheduleOrder 'Дата окончания' = ABSTRACT DATE (scheduleOrder) IN base;
+startDateScheduleOrder 'Дата начала' = ABSTRACT DATE (ScheduleOrder) IN base;
+endDateScheduleOrder 'Дата окончания' = ABSTRACT DATE (ScheduleOrder) IN base;
 
-typeScheduleOrder 'Тип генерации графика' = ABSTRACT genType (scheduleOrder);
+typeScheduleOrder 'Тип генерации графика' = ABSTRACT GenType (ScheduleOrder);
 nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN base;
 
-supplierScheduleOrder = ABSTRACT legalEntity(scheduleOrder);
-customerScheduleOrder = ABSTRACT legalEntity(scheduleOrder);
+supplierScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
+customerScheduleOrder = ABSTRACT LegalEntity(ScheduleOrder);
 
 addScheduleOrderSupplierCustomer 'Добавить' = ABSTRACT ACTION(supplier, customer) IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 editScheduleOrder 'Редактировать' = ABSTRACT ACTION(scheduleOrder) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 META defineScheduleOrder(sign, stockProp)
 
-    CLASS scheduleOrder 'График поставок'##sign : ScheduleOrder.scheduleOrder;
-    CLASS scheduleOrderDetail 'Заказ по графику'##sign : ScheduleOrder.scheduleOrderDetail;
+    CLASS ScheduleOrder 'График поставок'##sign : ScheduleOrder.ScheduleOrder;
+    CLASS ScheduleOrderDetail 'Заказ по графику'##sign : ScheduleOrder.ScheduleOrderDetail;
 
     //общие свойства
-    typeScheduleOrder 'Тип генерации графика (ИД)' = DATA genType (scheduleOrder);
+    typeScheduleOrder 'Тип генерации графика (ИД)' = DATA GenType (ScheduleOrder);
     ScheduleOrder.typeScheduleOrder(scheduleOrder) += typeScheduleOrder(scheduleOrder);
     nameTypeScheduleOrder 'Тип генерации графика' (scheduleOrder) = name(typeScheduleOrder(scheduleOrder)) IN base;
 
-    supplierScheduleOrder 'Поставщик (ИД)' = DATA legalEntity(scheduleOrder);
+    supplierScheduleOrder 'Поставщик (ИД)' = DATA LegalEntity(ScheduleOrder);
     nameSupplierScheduleOrder 'Поставщик' (scheduleOrder) = name(supplierScheduleOrder(scheduleOrder)) IN base;
 
-    customerScheduleOrder 'Покупатель (ИД)' = DATA legalEntity(scheduleOrder);
+    customerScheduleOrder 'Покупатель (ИД)' = DATA LegalEntity(ScheduleOrder);
     nameCustomerScheduleOrder 'Покупатель' (scheduleOrder) = name(customerScheduleOrder(scheduleOrder)) IN base;
 
     ScheduleOrder.supplierScheduleOrder(scheduleOrder) += supplierScheduleOrder(scheduleOrder);
     ScheduleOrder.customerScheduleOrder(scheduleOrder) += customerScheduleOrder(scheduleOrder);
 
-    supplierStockScheduleOrder = DATA stock(scheduleOrder);
+    supplierStockScheduleOrder = DATA Stock(ScheduleOrder);
     nameSupplierStockScheduleOrder 'Склад поставщика' (scheduleOrder) = name(supplierStockScheduleOrder(scheduleOrder));
 
-    customerStockScheduleOrder = DATA stock(scheduleOrder);
+    customerStockScheduleOrder = DATA Stock(ScheduleOrder);
     nameCustomerStockScheduleOrder 'Склад покупателя' (scheduleOrder) = name(customerStockScheduleOrder(scheduleOrder));
 
     CONSTRAINT supplierScheduleOrder(scheduleOrder) AND supplierStockScheduleOrder(scheduleOrder) AND NOT
@@ -66,45 +66,45 @@ META defineScheduleOrder(sign, stockProp)
         CHECKED BY customerScheduleOrder, customerStockScheduleOrder
             MESSAGE 'Покупатель и склад покупателя для графика заказов не имеют связи';
 
-    startDateScheduleOrder 'Дата начала' = DATA DATE (scheduleOrder) IN base;
-    endDateScheduleOrder 'Дата окончания' = DATA DATE (scheduleOrder) IN base;
+    startDateScheduleOrder 'Дата начала' = DATA DATE (ScheduleOrder) IN base;
+    endDateScheduleOrder 'Дата окончания' = DATA DATE (ScheduleOrder) IN base;
 
     ScheduleOrder.startDateScheduleOrder (scheduleOrder) += startDateScheduleOrder(scheduleOrder);
     ScheduleOrder.endDateScheduleOrder (scheduleOrder) += endDateScheduleOrder(scheduleOrder);
 
-    dayBeforeScheduleOrder 'За сколько дней формировать заказ' = DATA INTEGER (scheduleOrder);
+    dayBeforeScheduleOrder 'За сколько дней формировать заказ' = DATA INTEGER (ScheduleOrder);
 
     //свойства "Каждые N недель"
-    periodScheduleOrder 'Кол-во недель между поставками' = DATA INTEGER (scheduleOrder);
-    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = UNION OVERRIDE 1 IF scheduleOrder IS scheduleOrder, periodScheduleOrder(scheduleOrder);
+    periodScheduleOrder 'Кол-во недель между поставками' = DATA INTEGER (ScheduleOrder);
+    overPeriodScheduleOrder 'Кол-во недель между поставками' (scheduleOrder) = UNION OVERRIDE 1 IF scheduleOrder IS ScheduleOrder, periodScheduleOrder(scheduleOrder);
 
     //свойства "Каждые N дней"
-    dayAfterScheduleOrder 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (scheduleOrder);
-    dayLastOrderScheduleOrder 'Дата последнего заказа' = DATA DATE (scheduleOrder);
+    dayAfterScheduleOrder 'Через сколько дней после последней поставки делать заказ' = DATA INTEGER (ScheduleOrder);
+    dayLastOrderScheduleOrder 'Дата последнего заказа' = DATA DATE (ScheduleOrder);
 
     //свойства "По числам"
-    stringNumberScheduleOrder 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (scheduleOrder);
-    transferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (scheduleOrder);
+    stringNumberScheduleOrder 'Числа месяца поставок (указывать через запятую)' = DATA STRING[100] (ScheduleOrder);
+    transferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья (ИД)' = DATA DOW (ScheduleOrder);
     nameTransferDayScheduleOrder 'День на который переносить поставки с Субботы и Воскресенья' (scheduleOrder) = name(transferDayScheduleOrder(scheduleOrder));
     CONSTRAINT transferDayScheduleOrder(scheduleOrder) != DOW.friday AND transferDayScheduleOrder(scheduleOrder) != DOW.monday CHECKED MESSAGE 'Выберите день с ПН по ПТ';
 
     //свойства "По дням недели и месяца"
-    TABLE scheduleOrderMonth(scheduleOrder, month);
-    inMonthScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, month);
-    inAllMonthScheduleOrder 'Включить все месяцы' = DATA BOOLEAN (scheduleOrder);
-    inMonthScheduleOrder(scheduleOrder, month) <- inAllMonthScheduleOrder(scheduleOrder) WHEN ASSIGNED(inAllMonthScheduleOrder(scheduleOrder) AND month IS month);
+    TABLE scheduleOrderMonth(ScheduleOrder, Month);
+    inMonthScheduleOrder 'Включать' = DATA BOOLEAN (ScheduleOrder, Month);
+    inAllMonthScheduleOrder 'Включить все месяцы' = DATA BOOLEAN (ScheduleOrder);
+    inMonthScheduleOrder(scheduleOrder, month) <- inAllMonthScheduleOrder(scheduleOrder) WHEN ASSIGNED(inAllMonthScheduleOrder(scheduleOrder) AND month IS Month);
 
-    TABLE scheduleOrderDOW(scheduleOrder, DOW);
-    inDayScheduleOrder 'Включать' = DATA BOOLEAN (scheduleOrder, DOW);
+    TABLE scheduleOrderDOW(ScheduleOrder, DOW);
+    inDayScheduleOrder 'Включать' = DATA BOOLEAN (ScheduleOrder, DOW);
 
-    toShowGenDay (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genDays;
-    toShowGenNumber (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genNumber;
-    toShowGenDayMonth (scheduleOrder) = typeScheduleOrder(scheduleOrder) == genType.genDayMonth;
+    toShowGenDay (scheduleOrder) = typeScheduleOrder(scheduleOrder) == GenType.genDays;
+    toShowGenNumber (scheduleOrder) = typeScheduleOrder(scheduleOrder) == GenType.genNumber;
+    toShowGenDayMonth (scheduleOrder) = typeScheduleOrder(scheduleOrder) == GenType.genDayMonth;
 
-    dateOrderScheduleOrderDetail 'Дата заказа' = DATA DATE (scheduleOrderDetail) IN base;
-    dateSupplyScheduleOrderDetail 'Дата поставки' = DATA DATE (scheduleOrderDetail) IN base;
+    dateOrderScheduleOrderDetail 'Дата заказа' = DATA DATE (ScheduleOrderDetail) IN base;
+    dateSupplyScheduleOrderDetail 'Дата поставки' = DATA DATE (ScheduleOrderDetail) IN base;
 
-    scheduleOrderScheduleOrderDetail 'График поставок' = DATA scheduleOrder(scheduleOrderDetail);
+    scheduleOrderScheduleOrderDetail 'График поставок' = DATA ScheduleOrder(ScheduleOrderDetail);
 
     CONSTRAINT scheduleOrderScheduleOrderDetail(scheduleOrderDetail1) == scheduleOrderScheduleOrderDetail(scheduleOrderDetail2) AND
                dateSupplyScheduleOrderDetail(scheduleOrderDetail1) == dateSupplyScheduleOrderDetail(scheduleOrderDetail2) AND
@@ -129,12 +129,12 @@ META defineScheduleOrder(sign, stockProp)
 
     createScheduleOrder 'Генерировать предварительные заказы' = ACTION (scheduleOrder) {
         // генерация через N дней
-        IF typeScheduleOrder(scheduleOrder) == genType.genDays THEN {
+        IF typeScheduleOrder(scheduleOrder) == GenType.genDays THEN {
             SET tmpDate() <- dayLastOrderScheduleOrder(scheduleOrder);
             // итерируемся по всем датам через n дней
             WHILE tmpDate() <= endDateScheduleOrder(scheduleOrder) DO {
                 IF tmpDate() >= startDateScheduleOrder(scheduleOrder) THEN {
-                    ADDOBJ scheduleOrderDetail;
+                    ADDOBJ ScheduleOrderDetail;
                     FOR o == addedObject() DO {
                         SET dateOrderScheduleOrderDetail(o) <- subtractDate(tmpDate(), dayBeforeScheduleOrder(scheduleOrder));
                         SET dateSupplyScheduleOrderDetail(o) <- tmpDate();
@@ -146,12 +146,12 @@ META defineScheduleOrder(sign, stockProp)
         };
 
         // генерация по числам
-        IF typeScheduleOrder(scheduleOrder) == genType.genNumber THEN {
+        IF typeScheduleOrder(scheduleOrder) == GenType.genNumber THEN {
             SET tmpDate() <- startDateScheduleOrder(scheduleOrder);
             // итерируемся по всем датам через 1 день
             WHILE tmpDate() <= endDateScheduleOrder(scheduleOrder) DO {
                 IF isWordInCSV(dayInDate(tmpDate()), stringNumberScheduleOrder(scheduleOrder)) == 1 THEN {
-                    ADDOBJ scheduleOrderDetail;
+                    ADDOBJ ScheduleOrderDetail;
                     FOR o == addedObject() DO {
                         SET tmpDateS() <- tmpDate();
                         SET scheduleOrderScheduleOrderDetail(o) <- scheduleOrder;
@@ -175,14 +175,14 @@ META defineScheduleOrder(sign, stockProp)
         };
 
         // генерация по дням и месяцам
-        IF typeScheduleOrder(scheduleOrder) == genType.genDayMonth THEN {
+        IF typeScheduleOrder(scheduleOrder) == GenType.genDayMonth THEN {
             SET tmpDate() <- startDateScheduleOrder(scheduleOrder);
             // итерируемся по всем датам через 1 день
             WHILE tmpDate() <= endDateScheduleOrder(scheduleOrder) DO {
                 SET tmpDateP() <- tmpDate();
                 WHILE tmpDate() < sumDate(tmpDateP(), 7) AND tmpDate() <= endDateScheduleOrder(scheduleOrder) DO {
                     IF inMonthScheduleOrder(scheduleOrder, monthInDate(tmpDate())) AND inDayScheduleOrder(scheduleOrder, DOWInDate(tmpDate())) THEN {
-                        ADDOBJ scheduleOrderDetail;
+                        ADDOBJ ScheduleOrderDetail;
                         FOR o == addedObject() DO {
                             SET dateOrderScheduleOrderDetail(o) <- subtractDate(tmpDate(), dayBeforeScheduleOrder(scheduleOrder));
                             SET dateSupplyScheduleOrderDetail(o) <- tmpDate();
@@ -212,7 +212,7 @@ META defineScheduleOrder(sign, stockProp)
 
     dateSupplyNextScheduleOrderDetail(scheduleOrderDetail) = dateSupplyScheduleOrderDetail(nextScheduleOrderDetail(scheduleOrderDetail));
 
-    scheduleOrderDetailUserOrder = DATA scheduleOrderDetail(userOrder);
+    scheduleOrderDetailUserOrder = DATA ScheduleOrderDetail(UserOrder);
     quantityOrdersScheduleOrderDetail 'Кол-во заказов' (scheduleOrderDetail) =
         GROUP SUM 1 IF supplierStockOrder(userOrder)==supplierStockScheduleOrderDetail(scheduleOrderDetail) AND
                        customerStockOrder(userOrder)==customerStockScheduleOrderDetail(scheduleOrderDetail) AND
@@ -223,7 +223,7 @@ META defineScheduleOrder(sign, stockProp)
     overCreateOrder = ABSTRACT ACTION (userOrder);
 
     createOrder 'Создать заказ' = ACTION (scheduleOrderDetail) NEWSESSION {
-        FOR ADDOBJ o = userOrder DO {
+        FOR ADDOBJ o = UserOrder DO {
             SET scheduleOrderDetailUserOrder(o) <- scheduleOrderDetail;
             SET dateOrder(o) <- dateOrderScheduleOrderDetail(scheduleOrderDetail);
             SET shipmentDateUserOrder(o) <- dateSupplyScheduleOrderDetail(scheduleOrderDetail);
@@ -242,14 +242,14 @@ META defineScheduleOrder(sign, stockProp)
 
 
     FORM scheduleOrder 'График поставок'
-        OBJECTS s=scheduleOrder FIXED PANEL
+        OBJECTS s=ScheduleOrder FIXED PANEL
         PROPERTIES (s) nameSupplierScheduleOrder, nameSupplierStockScheduleOrder, nameCustomerScheduleOrder, nameCustomerStockScheduleOrder,
                        startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder, dayBeforeScheduleOrder,
                        overPeriodScheduleOrder SHOWIF toShowGenDayMonth(s), inAllMonthScheduleOrder SHOWIF toShowGenDayMonth(s),
                        dayLastOrderScheduleOrder SHOWIF toShowGenDay(s), dayAfterScheduleOrder SHOWIF toShowGenDay(s),
                        stringNumberScheduleOrder SHOWIF toShowGenNumber(s), nameTransferDayScheduleOrder SHOWIF toShowGenNumber(s)
 
-        OBJECTS m=month FIXED GRID
+        OBJECTS m=Month FIXED GRID
         PROPERTIES(m) name SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, m) inMonthScheduleOrder SHOWIF toShowGenDayMonth(s)
 
@@ -257,7 +257,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES(d) name SHOWIF toShowGenDayMonth(s)
         PROPERTIES(s, d) inDayScheduleOrder SHOWIF toShowGenDayMonth(s)
 
-        OBJECTS sd=scheduleOrderDetail
+        OBJECTS sd=ScheduleOrderDetail
         PROPERTIES (sd) dateOrderScheduleOrderDetail, dateSupplyScheduleOrderDetail
         PROPERTIES (sd) READONLY monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
@@ -270,7 +270,7 @@ META defineScheduleOrder(sign, stockProp)
 
         FILTERS scheduleOrderScheduleOrderDetail(sd)==s
 
-        EDIT scheduleOrder OBJECT s
+        EDIT ScheduleOrder OBJECT s
     ;
 
     DESIGN scheduleOrder FROM DEFAULT{
@@ -340,19 +340,19 @@ META defineScheduleOrder(sign, stockProp)
         }
     }
 
-    editScheduleOrder 'Редактировать' = ACTION EDITFORM scheduleOrder TOOLBAR;
+    editScheduleOrder 'Редактировать' = ACTION EDITFORM ScheduleOrder TOOLBAR;
 
     ScheduleOrder.editScheduleOrder(scheduleOrder) += editScheduleOrder(scheduleOrder);
 
     editScheduleOrderDetail 'Редактировать' (detail) = editScheduleOrder(scheduleOrderScheduleOrderDetail(detail)) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 
     addScheduleOrderSupplierCustomer 'Добавить'##sign = ACTION (supplier, customer) {
-        FOR ADDOBJ s = scheduleOrder DO {
+        FOR ADDOBJ s = ScheduleOrder DO {
             SET supplierScheduleOrder(s) <- supplier;
             SET customerScheduleOrder(s) <- customer;
 
             FORM scheduleOrder OBJECTS s = s MANAGESESSION DOCKEDMODAL;
-            IF TRUE AND NOT formResult() == formResult.ok THEN {
+            IF TRUE AND NOT formResult() == FormResult.ok THEN {
                 EXEC delete(s);
             }
         }
@@ -360,13 +360,13 @@ META defineScheduleOrder(sign, stockProp)
 
     ScheduleOrder.addScheduleOrderSupplierCustomer(supplier, customer) += addScheduleOrderSupplierCustomer(supplier, customer);
 
-    supplier = DATA SESSION legalEntity();
+    supplier = DATA SESSION LegalEntity();
     nameSupplier 'Поставщик' = name(supplier());
-    customer = DATA SESSION legalEntity();
+    customer = DATA SESSION LegalEntity();
     nameCustomer 'Покупатель' = name(customer());
-    supplierStock = DATA SESSION stock();
+    supplierStock = DATA SESSION Stock();
     nameSupplierStock 'Склад поставщика' = name(supplierStock());
-    customerStock = DATA SESSION stock();
+    customerStock = DATA SESSION Stock();
     nameCustomerStock 'Склад покупателя' = name(customerStock());
 
     CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())
@@ -382,7 +382,7 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES dv=OBJVALUE(d)
         PROPERTIES () nameSupplier, nameCustomer, nameSupplierStock, nameCustomerStock
 
-        OBJECTS sd=scheduleOrderDetail
+        OBJECTS sd=ScheduleOrderDetail
         PROPERTIES (sd) READONLY dateOrderScheduleOrderDetail, dateSupplyScheduleOrderDetail,
                         monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                         nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
@@ -391,10 +391,10 @@ META defineScheduleOrder(sign, stockProp)
 
         ORDER BY dateSupplyScheduleOrderDetail
 
-        FILTERS supplierScheduleOrderDetail(sd) == supplier() OR (sd IS scheduleOrderDetail AND NOT supplier()),
-                supplierStockScheduleOrderDetail(sd) == supplierStock() OR (sd IS scheduleOrderDetail AND NOT supplierStock()),
-                customerScheduleOrderDetail(sd) == customer() OR (sd IS scheduleOrderDetail AND NOT customer()),
-                customerStockScheduleOrderDetail(sd) == customerStock() OR (sd IS scheduleOrderDetail AND NOT customerStock())
+        FILTERS supplierScheduleOrderDetail(sd) == supplier() OR (sd IS ScheduleOrderDetail AND NOT supplier()),
+                supplierStockScheduleOrderDetail(sd) == supplierStock() OR (sd IS ScheduleOrderDetail AND NOT supplierStock()),
+                customerScheduleOrderDetail(sd) == customer() OR (sd IS ScheduleOrderDetail AND NOT customer()),
+                customerStockScheduleOrderDetail(sd) == customerStock() OR (sd IS ScheduleOrderDetail AND NOT customerStock())
 
         FILTERGROUP dateFilter
             FILTER 'На дату' 'F10' dateOrderScheduleOrderDetail(sd) == d DEFAULT
@@ -422,13 +422,13 @@ META defineScheduleOrder(sign, stockProp)
         PROPERTIES dv=OBJVALUE(d)
         PROPERTIES () nameSupplier, nameCustomer, nameSupplierStock, nameCustomerStock
 
-        OBJECTS s=scheduleOrder
+        OBJECTS s=ScheduleOrder
         PROPERTIES(s) READONLY nameSupplierScheduleOrder, nameSupplierStockScheduleOrder,
                       nameCustomerScheduleOrder, nameCustomerStockScheduleOrder, nameTypeScheduleOrder
 
         PROPERTIES(s) ADDFORM, EDITFORM, delete TOOLBAR
 
-        OBJECTS sd=scheduleOrderDetail
+        OBJECTS sd=ScheduleOrderDetail
         PROPERTIES(sd) READONLY dateOrderScheduleOrderDetail, dateSupplyScheduleOrderDetail,
                        monthInDateScheduleOrderDetail, DOWInDateScheduleOrderDetail,
                        nameSupplierScheduleOrderDetail, nameSupplierStockScheduleOrderDetail,
@@ -436,10 +436,10 @@ META defineScheduleOrder(sign, stockProp)
 
         ORDER BY dateSupplyScheduleOrderDetail
 
-        FILTERS supplierScheduleOrderDetail(sd) == supplier() OR (sd IS scheduleOrderDetail AND NOT supplier()),
-                supplierStockScheduleOrderDetail(sd) == supplierStock() OR (sd IS scheduleOrderDetail AND NOT supplierStock()),
-                customerScheduleOrderDetail(sd) == customer() OR (sd IS scheduleOrderDetail AND NOT customer()),
-                customerStockScheduleOrderDetail(sd) == customerStock() OR (sd IS scheduleOrderDetail AND NOT customerStock())
+        FILTERS supplierScheduleOrderDetail(sd) == supplier() OR (sd IS ScheduleOrderDetail AND NOT supplier()),
+                supplierStockScheduleOrderDetail(sd) == supplierStock() OR (sd IS ScheduleOrderDetail AND NOT supplierStock()),
+                customerScheduleOrderDetail(sd) == customer() OR (sd IS ScheduleOrderDetail AND NOT customer()),
+                customerStockScheduleOrderDetail(sd) == customerStock() OR (sd IS ScheduleOrderDetail AND NOT customerStock())
 
         FILTERGROUP dateFilter
             FILTER 'На дату' 'F10' dateSupplyScheduleOrderDetail(sd) == d
@@ -475,14 +475,14 @@ filterCompanyCustomer(legalEntity, customer) = (isCompanyLegalEntity(legalEntity
 
 EXTEND FORM legalEntity
 
-    OBJECTS ss=scheduleOrder
+    OBJECTS ss=ScheduleOrder
     PROPERTIES(ss) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
     PROPERTIES(ss) delete, editScheduleOrder
 
     FILTERS filterCompanySupplier(l, s)
     FILTERS supplierScheduleOrder(ss) == s, customerScheduleOrder(ss) == l
 
-    OBJECTS sc=scheduleOrder
+    OBJECTS sc=ScheduleOrder
     PROPERTIES(sc) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
     PROPERTIES(sc) delete, editScheduleOrder
 

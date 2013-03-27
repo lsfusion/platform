@@ -2,19 +2,19 @@ MODULE Declaration;
 
 REQUIRE Certificate, Shipment, CustomsGroup;
 
-CLASS declaration 'Таможенная декларация' : certificate, numeratedObject;
+CLASS Declaration 'Таможенная декларация' : Certificate, NumeratedObject;
 
-TABLE declaration(declaration);
+TABLE declaration(Declaration);
 
-CLASS declarationPosted 'Проведенная таможенная декларация' : declaration, postedObject;
+CLASS DeclarationPosted 'Проведенная таможенная декларация' : Declaration, PostedObject;
 
 @defineNumeratedObjectDefault(declaration, 'Нумератор для деклараций', 'ДД');
 
-@defineDocumentHeaderTimePrefix(declaration, ,' создания');
+@defineDocumentHeaderTimePrefix(Declaration, ,' создания');
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );
 
-seriesCertificate(declaration) += seriesObject(declaration) AND declaration IS declaration;
-numberCertificate(declaration) += numberObject(declaration) AND declaration IS declaration;
+seriesCertificate(declaration) += seriesObject(declaration) AND declaration IS Declaration;
+numberCertificate(declaration) += numberObject(declaration) AND declaration IS Declaration;
 
 descriptionDeclaration 'Таможенная декларация' (declaration) =
     [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)']
@@ -22,34 +22,34 @@ descriptionDeclaration 'Таможенная декларация' (declaration)
 
 @defineCertificateObjectBatch(declaration, 'Таможенная декларация');
 
-customsZoneDeclaration = DATA customsZone(declaration);
+customsZoneDeclaration = DATA CustomsZone(Declaration);
 nameCustomsZoneDeclaration 'Таможенная зона' (declaration) = name(customsZoneDeclaration(declaration));
 
 currencyCustomsZoneDeclaration (declaration) = currencyCustomsZone(customsZoneDeclaration(declaration));
 nameCurrencyCustomsZoneDeclaration 'Валюта платежей' (declaration) = name(currencyCustomsZoneDeclaration(declaration));
 
-legalEntityDeclaration = DATA legalEntity(declaration);
+legalEntityDeclaration = DATA LegalEntity(Declaration);
 nameLegalEntityDeclaration 'Импортёр' (declaration) = name(legalEntityDeclaration(declaration));
 
-currencyDeclaration = DATA currency(declaration);
+currencyDeclaration = DATA Currency(Declaration);
 nameCurrencyDeclaration 'Валюта накладных' (declaration) = name(currencyDeclaration(declaration));
 
-homeCurrencyDeclaration = DATA currency(declaration);
+homeCurrencyDeclaration = DATA Currency(Declaration);
 nameHomeCurrencyDeclaration 'Валюта (расч.)' (declaration) = name(homeCurrencyDeclaration(declaration));
 
-typeExchangeDeclaration = DATA typeExchange(declaration);
+typeExchangeDeclaration = DATA TypeExchange(Declaration);
 nameTypeExchangeDeclaration 'Тип обмена' (declaration) = name(typeExchangeDeclaration(declaration));
 
 CONSTRAINT currencyTypeExchange(typeExchangeDeclaration(declaration)) != homeCurrencyDeclaration(declaration)
     CHECKED BY homeCurrencyDeclaration MESSAGE 'Тип обмена должен соответствовать расчётной валюте';
 
-rateExchangeDeclaration 'Курс для накладных' = DATA NUMERIC[14,3](declaration);
+rateExchangeDeclaration 'Курс для накладных' = DATA NUMERIC[14,3](Declaration);
 calcRateExchangeDeclaration 'Курс для накладных' (declaration) = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyDeclaration(declaration), dateDeclaration(declaration));
 rateExchangeDeclaration(declaration) <- calcRateExchangeDeclaration(declaration) WHEN CHANGED (dateDeclaration(declaration)) OR
                                                                                       CHANGED (typeExchangeDeclaration(declaration)) OR
                                                                                       CHANGED (currencyDeclaration(declaration));
 
-rateExchangeCustomsZoneDeclaration 'Курс платежей' = DATA NUMERIC[14,3](declaration);
+rateExchangeCustomsZoneDeclaration 'Курс платежей' = DATA NUMERIC[14,3](Declaration);
 calcRateExchangeCustomsZoneDeclaration 'Курс платежей' = rateTypeExchangeCurrencyDate(typeExchangeDeclaration(declaration), currencyCustomsZoneDeclaration(declaration), dateDeclaration(declaration));
 rateExchangeCustomsZoneDeclaration(declaration) <- calcRateExchangeCustomsZoneDeclaration(declaration) WHEN CHANGED (dateDeclaration(declaration)) OR
                                                                                                             CHANGED (typeExchangeDeclaration(declaration)) OR
@@ -58,11 +58,11 @@ rateExchangeCustomsZoneDeclaration(declaration) <- calcRateExchangeCustomsZoneDe
 roundCurrencyDeclaration(number, declaration) = roundPriceCurrency(number, currencyTypeExchange(typeExchangeDeclaration(declaration)));
 
 FORM declaration 'Таможенная декларация'
-    OBJECTS d = declaration FIXED PANEL
+    OBJECTS d = Declaration FIXED PANEL
     PROPERTIES(d) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateDeclaration, timeDeclaration,
                   nameLegalEntityDeclaration, nameCurrencyDeclaration, nameCustomsZoneDeclaration, nameHomeCurrencyDeclaration,
                   nameTypeExchangeDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
-    EDIT declaration OBJECT d
+    EDIT Declaration OBJECT d
 ;
 
 DESIGN declaration FROM DEFAULT{
@@ -107,18 +107,18 @@ DESIGN declaration FROM DEFAULT{
 }
 
 FORM declarations 'Таможенные декларации'
-    OBJECTS d = declaration
+    OBJECTS d = Declaration
     PROPERTIES(d) READONLY objectClassName, numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
                   nameHomeCurrencyDeclaration, nameCurrencyDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
 FORM declarationsDialog 'Таможенные декларация'
-    OBJECTS d = declaration
+    OBJECTS d = Declaration
     PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, nameLegalEntityDeclaration, nameCurrencyDeclaration,
                   nameHomeCurrencyDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration
 
-    DIALOG declaration OBJECT d
+    DIALOG Declaration OBJECT d
 ;
 
 NAVIGATOR {

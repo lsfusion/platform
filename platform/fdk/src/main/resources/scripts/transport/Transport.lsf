@@ -7,72 +7,72 @@ REQUIRE System,
         Stock;
 
 // Модели машины
-CLASS truckModel 'Модель': named;
+CLASS TruckModel 'Модель': Named;
 
 FORM truckModel 'Модель машины'
-    OBJECTS m=truckModel FIXED PANEL
+    OBJECTS m=TruckModel FIXED PANEL
     PROPERTIES (m) name
 
-    EDIT truckModel OBJECT m
+    EDIT TruckModel OBJECT m
 ;
 
 FORM truckModels 'Модели машин'
-    OBJECTS m=truckModel
+    OBJECTS m=TruckModel
     PROPERTIES(m) READONLY name
     PROPERTIES(m) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    DIALOG truckModel OBJECT m
+    DIALOG TruckModel OBJECT m
 ;
 
 // Машины
-CLASS truck 'Машина';
-TABLE truck(truck);
+CLASS Truck 'Машина';
+TABLE truck(Truck);
 
-sidTruck 'Номер' = DATA STRING[20](truck);
-truckModelTruck = DATA truckModel(truck);
+sidTruck 'Номер' = DATA STRING[20](Truck);
+truckModelTruck = DATA TruckModel(Truck);
 nameTruckModelTruck 'Марка' (truck) = name(truckModelTruck(truck));
 
 nameTruck 'Наименование' (truck) = [FORMULA STRING[70] ' CAST($1 AS TEXT) || \' \' || CAST($2 AS TEXT)'](nameTruckModelTruck(truck), sidTruck(truck));
 
-trailerTruck 'Прицеп' = DATA STRING[100](truck);
-weightTruck 'Грузоподъёмность (кг)' = DATA NUMERIC[14,2](truck);
-ownerTruck 'Владелец' = DATA STRING[100](truck);
+trailerTruck 'Прицеп' = DATA STRING[100](Truck);
+weightTruck 'Грузоподъёмность (кг)' = DATA NUMERIC[14,2](Truck);
+ownerTruck 'Владелец' = DATA STRING[100](Truck);
 
 FORM truck 'Машина'
-    OBJECTS t=truck FIXED PANEL
+    OBJECTS t=Truck FIXED PANEL
     PROPERTIES (t) sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
 
-    EDIT truck OBJECT t
+    EDIT Truck OBJECT t
 ;
 
 FORM trucks 'Машины'
-    OBJECTS t=truck
+    OBJECTS t=Truck
     PROPERTIES(t) READONLY sidTruck, nameTruckModelTruck, nameTruck, trailerTruck, ownerTruck, weightTruck
     PROPERTIES(t) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    DIALOG truck OBJECT t
+    DIALOG Truck OBJECT t
 ;
 
 // Водители
 
-CLASS driver 'Водитель': employee;
+CLASS Driver 'Водитель': Employee;
 
-sidDriver 'Табельный номер' = DATA STRING[10](driver);
-typeDriver 'Класс' = DATA STRING[10](driver);
+sidDriver 'Табельный номер' = DATA STRING[10](Driver);
+typeDriver 'Класс' = DATA STRING[10](Driver);
 
 FORM driver 'Водитель'
-    OBJECTS d=driver FIXED PANEL
+    OBJECTS d=Driver FIXED PANEL
     PROPERTIES (d) firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
 
-    EDIT driver OBJECT d
+    EDIT Driver OBJECT d
 ;
 
 FORM drivers 'Водители'
-    OBJECTS d=driver
+    OBJECTS d=Driver
     PROPERTIES(d) READONLY firstNameContact, lastNameContact, nameContact, sidDriver, typeDriver
     PROPERTIES(d) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
-    DIALOG driver OBJECT d
+    DIALOG Driver OBJECT d
 ;
 
 NAVIGATOR {

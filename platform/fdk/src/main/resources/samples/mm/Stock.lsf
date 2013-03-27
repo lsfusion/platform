@@ -2,12 +2,12 @@ MODULE Stock;
 
 REQUIRE System;
 
-CLASS stock 'Склад';
+CLASS Stock 'Склад';
 
-nameStock 'Наименование' (stock) = DATA STRING[100](stock) IN base;
-addressStock 'Адрес' (stock) = DATA STRING[150](stock) IN base;
+nameStock 'Наименование' (stock) = DATA STRING[100](Stock) IN base;
+addressStock 'Адрес' (stock) = DATA STRING[150](Stock) IN base;
 
 FORM stocks 'Склады'
-	OBJECTS s=stock
+	OBJECTS s=Stock
 	PROPERTIES(s) nameStock, addressStock, ADDOBJ, delete
 ;

@@ -9,19 +9,19 @@ REQUIRE System,
         Contract,
         Employee;
 
-CLASS inputTransferPriceAct 'Акт расценки' : inputListRegister, historizable;
-CLASS inputTransferPriceActDetail 'Строка акта расценки': inputListRegisterDetail, importerPriceLedger, supplierPriceLedger, retailVATLedger, retailPriceLedger, warePriceLedger;
+CLASS InputTransferPriceAct 'Акт расценки' : InputListRegister, Historizable;
+CLASS InputTransferPriceActDetail 'Строка акта расценки': InputListRegisterDetail, ImporterPriceLedger, SupplierPriceLedger, RetailVATLedger, RetailPriceLedger, WarePriceLedger;
 
-CLASS transferPriceAct 'Акт расценки' : inputTransferPriceAct, listRegister;
-CLASS transferPriceActDetail 'Строка акта расценки': inputTransferPriceActDetail, listRegisterDetail;
+CLASS TransferPriceAct 'Акт расценки' : InputTransferPriceAct, ListRegister;
+CLASS TransferPriceActDetail 'Строка акта расценки': InputTransferPriceActDetail, ListRegisterDetail;
 
 META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, stockProp, importerPriceProp, supplierPriceProp, VATProp)
 
-    isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS departmentStore;
+    isStoreDestinationStock###object##Out 'Перемещение на магазин' (object##Out) = destinationStock###object##Out(object##Out) IS DepartmentStore;
 
     needTransferPriceActDetail###object##OutDetailBatch (object##OutDetail, batch) = costSkuLedgerBatch(object##OutDetail, batch)
-        AND destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetail)) IS departmentStore
-        AND batch IS batchA;
+        AND destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetail)) IS DepartmentStore
+        AND batch IS BatchA;
 
     @defineDocumentTables (transferPriceAct###object);
 
@@ -48,20 +48,20 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     @defineDocumentHeaderQuantity(transferPriceAct###object);
     @defineDocumentHeaderSkuQuantity(transferPriceAct###object, skuProp);
 
-    departmentStoreTransferPriceAct###object (transferPriceAct###object) = destinationStock###object##Out(object##OutTransferPriceAct###object (transferPriceAct###object)) AS departmentStore;
+    departmentStoreTransferPriceAct###object (transferPriceAct###object) = destinationStock###object##Out(object##OutTransferPriceAct###object (transferPriceAct###object)) AS DepartmentStore;
 
     departmentStoreTransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
-        destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(transferPriceAct###object##Detail))) AS departmentStore;
+        destinationStock###object##Out(object##Out###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(transferPriceAct###object##Detail))) AS DepartmentStore;
 
     @defineDocumentDetailSkuArticle(transferPriceAct###object);
 
-    importerPriceTransferPriceAct###object##Detail 'Цена импортера' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (transferPriceAct###object##Detail);
+    importerPriceTransferPriceAct###object##Detail 'Цена импортера' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (TransferPriceAct###object##Detail);
     importerPriceTransferPriceAct###object##Detail (detail) <- importerPriceProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
 
-    supplierPriceTransferPriceAct###object##Detail 'Цена поставщика' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (transferPriceAct###object##Detail);
+    supplierPriceTransferPriceAct###object##Detail 'Цена поставщика' (transferPriceAct###object##Detail) = DATA NUMERIC[14,2] (TransferPriceAct###object##Detail);
     supplierPriceTransferPriceAct###object##Detail (detail) <- supplierPriceProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
 
-    retailVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA range (transferPriceAct###object##Detail);
+    retailVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA Range (TransferPriceAct###object##Detail);
     retailVATTransferPriceAct###object##Detail (detail) <- VATProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
 
     numberRetailVATTransferPriceAct###object##Detail 'НДС, номер' (transferPriceAct###object##Detail) = numberRange(retailVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
@@ -71,7 +71,7 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     retailPriceTransferPriceAct###object##Detail 'Цена розничная' (transferPriceAct###object##Detail) = retailPrice###object##OutDetail(object##OutDetailTransferPriceAct###object##Detail(transferPriceAct###object##Detail));
 
 
-    @implementBaseISkuDepartmentStoreLedger(transferPriceAct###object, skuProp);
+    @implementBaseISkuDepartmentStoreLedger(TransferPriceAct###object, skuProp);
 
     // Расчет сумм и показателей для реестра цен
     importerSumTransferPriceAct###object##Detail (transferPriceAct###object##Detail) =
@@ -117,8 +117,8 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     shipperListRegister (inputListRegister) += name###stockProp###object##Out(object##OutTransferPriceAct###object(inputListRegister));
 
     quantityListRegisterDetailListRegister (inputListRegister) += quantityTransferPriceAct###object##DetailTransferPriceAct###object (inputListRegister);
-    wareSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS transferPriceAct###object;
-    wareVATSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS transferPriceAct###object;
+    wareSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS TransferPriceAct###object;
+    wareVATSumListRegisterDetailListRegister (inputListRegister) += 0.0 IF inputListRegister IS TransferPriceAct###object;
     markupSumListRegisterDetailListRegister (inputListRegister) +=  markupSumTransferPriceAct###object##DetailPriceAct###object (inputListRegister);
     retailVATSumListRegisterDetailListRegister (inputListRegister) += retailVATSumTransferPriceAct###object##DetailTransferPriceAct###object (inputListRegister);
     retailSumListRegisterDetailListRegister (inputListRegister) += retailSumTransferPriceAct###object##DetailTransferPriceAct###object## (inputListRegister);
@@ -134,10 +134,10 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
     supplierSumListRegisterDetail (inputListRegisterDetail) += supplierSumTransferPriceAct###object##Detail (inputListRegisterDetail);
     supplierMarkupListRegisterDetail (inputListRegisterDetail) +=  (supplierPriceTransferPriceAct###object##Detail(inputListRegisterDetail)/
         importerPriceTransferPriceAct###object##Detail(inputListRegisterDetail) - 1)*100;
-    wareSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
-    warePriceListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
-    wareVATSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
-    valueWareRangeListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS transferPriceAct###object##Detail;
+    wareSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceAct###object##Detail;
+    warePriceListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceAct###object##Detail;
+    wareVATSumListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceAct###object##Detail;
+    valueWareRangeListRegisterDetail (inputListRegisterDetail) += 0.0 IF inputListRegisterDetail IS TransferPriceAct###object##Detail;
     importerMarkupListRegisterDetail (inputListRegisterDetail) += importerMarkupTransferPriceAct###object##Detail (inputListRegisterDetail);
     markupSumListRegisterDetail (inputListRegisterDetail) += markupSumTransferPriceAct###object##Detail (inputListRegisterDetail);
     valueRetailVATListRegisterDetail (inputListRegisterDetail) += valueRetailVATTransferPriceAct###object##Detail (inputListRegisterDetail);
@@ -148,7 +148,7 @@ META defineDocumentTransferPriceAct (object, caption, captionDetail, skuProp, st
 
     EXTEND FORM object##Ins
 
-        OBJECTS pd=transferPriceAct###object##Detail
+        OBJECTS pd=TransferPriceAct###object##Detail
         PROPERTIES (pd) READONLY indexTransferPriceAct###object##Detail, barcodeTransferPriceAct###object##Detail,
                         nameCategoryTransferPriceAct###object##Detail, nameBrandTransferPriceAct###object##Detail,
                         sidArticleTransferPriceAct###object##Detail, sidSizeTransferPriceAct###object##Detail,
@@ -174,7 +174,7 @@ END
 
 META defineDocumentTransferPriceActExtra (object, VATProp)
 
-    supplierVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA range (transferPriceAct###object##Detail);
+    supplierVATTransferPriceAct###object##Detail (transferPriceAct###object##Detail) = DATA Range (TransferPriceAct###object##Detail);
     supplierVATTransferPriceAct###object##Detail (detail) <- VATProp(batchTransferPriceAct###object##Detail(detail)) WHEN ASSIGNED(isPostedTransferPriceAct###object##Detail(detail));
     valueSupplierVATTransferPriceAct###object##Detail 'НДС поставщика, %' (transferPriceAct###object##Detail) = valueRateRangeDate
         (supplierVATTransferPriceAct###object##Detail(transferPriceAct###object##Detail), dateTransferPriceAct###object##Detail(transferPriceAct###object##Detail));

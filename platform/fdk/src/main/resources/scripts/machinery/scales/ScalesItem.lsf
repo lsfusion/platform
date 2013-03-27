@@ -5,26 +5,26 @@ REQUIRE Item, Machinery, Scales;
 NAMESPACE Item;
 
 createAttributeMachineryPriceTransactionGroupMachinery(transaction, groupMachinery) += ACTION (transaction, groupMachinery) {
-    IF groupMachinery IS groupScales THEN
+    IF groupMachinery IS GroupScales THEN
         SET nameMachineryPriceTransactionBarcode(transaction, barcode) <- titleScalesBarcode(barcode) WHERE inMachineryPriceTransactionBarcode(transaction, barcode);
 }
 
 GROUP scalesGroup 'Весы' : public;
 
 // Фильтрация для передачи на весы
-passScalesItem 'Передавать на весы' = DATA BOOLEAN (item) IN scalesGroup;
-overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS groupScales AND sku IS item AND NOT passScalesItem(sku);
+passScalesItem 'Передавать на весы' = DATA BOOLEAN (Item) IN scalesGroup;
+overInGroupMachinerySku(groupMachinery, sku) += groupMachinery IS GroupScales AND sku IS Item AND NOT passScalesItem(sku);
 
 // Формат этикетки
-labelFormatPackItem = DATA labelFormat(item);
+labelFormatPackItem = DATA LabelFormat(Item);
 idLabelFormatPackItem 'Код формата этикетки' (item) = idLabelFormat(labelFormatPackItem(item)) IN scalesGroup;
 labelFormatBarcode 'Формат этикетки' = idLabelFormatPackItem(skuBarcode(barcode));
 
 @defineMachineryPriceTransactionAttribute(labelFormat, 'Формат этикетки', INTEGER);
 
 // Сроки годности
-daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (item) IN scalesGroup;
-hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (item) IN scalesGroup;
+daysExpiryPackItem 'Срок годности в днях с момента фасовки' = DATA NUMERIC[8,2] (Item) IN scalesGroup;
+hoursExpiryPackItem 'Срок годности в часах с момента фасовки' = DATA INTEGER (Item) IN scalesGroup;
 
 daysExpiryBarcode 'Срок годности в днях с момента фасовки' = daysExpiryPackItem(skuBarcode(barcode));
 hoursExpiryBarcode 'Срок годности в часах с момента фасовки' = hoursExpiryPackItem(skuBarcode(barcode));
@@ -33,15 +33,15 @@ hoursExpiryBarcode 'Срок годности в часах с момента ф
 @defineMachineryPriceTransactionAttribute(hoursExpiry, 'Срок годности в часах с момента фасовки', INTEGER);
 
 // Состав товара
-compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (item) IN scalesGroup;
+compositionScalesItem 'Состав товара (ингредиенты) для весов' = DATA TEXT (Item) IN scalesGroup;
 compositionBarcode 'Состав товара' = compositionScalesItem(skuBarcode(barcode));
 
 @defineMachineryPriceTransactionAttribute(composition, 'Состав товара', TEXT);
 
 synchronizeCompositionMachineryPriceTransactionGroupScales = ACTION (transaction, groupMachinery) {
-    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS groupScales
+    FOR compositionMachineryPriceTransactionBarcode(transaction, barcode) AND groupMachinery IS GroupScales
         AND NOT cellScalesGroupScalesComposition(groupMachinery, compositionMachineryPriceTransactionBarcode(transaction, barcode))
-        ADDOBJ c = cellScales DO {
+        ADDOBJ c = CellScales DO {
             SET groupScalesCellScales(c) <- groupMachinery;
             SET compositionCellScales(c) <- compositionMachineryPriceTransactionBarcode (transaction, barcode);
         }
