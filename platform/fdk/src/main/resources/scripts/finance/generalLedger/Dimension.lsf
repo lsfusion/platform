@@ -79,9 +79,9 @@ orderCreditGeneralLedgerDimensionType 'Порядковый номер' (ledger,
 dimensionsDebitGeneralLedger 'Субконто (дебит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
                                                 BY ledger
                                                 ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
-dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
+dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP CONCAT toString255(nameCreditGeneralLedgerDimensionType(ledger, dimensionType)) IF orderCreditGeneralLedgerDimensionType(ledger, dimensionType) , ', '
                                                 BY ledger
-                                                ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+                                                ORDER orderCreditGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
 
 EXTEND FORM userGeneralLedger

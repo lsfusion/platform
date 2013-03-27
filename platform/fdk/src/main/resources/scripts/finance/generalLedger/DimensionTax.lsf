@@ -1,0 +1,11 @@
+MODULE DimensionTax;
+
+REQUIRE Dimension, Tax;
+
+EXTEND CLASS range : dimension;
+EXTEND CLASS dimensionType {
+    range 'Шкала'
+}
+nameDimension (dimension) += toString255(numberRange(dimension));
+dimensionTypeDimension (dimension) += dimensionType.range WHEN dimension IS range;
+

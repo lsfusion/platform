@@ -182,6 +182,9 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     @defineDocumentInterfaceHeaderSum(invoice);
 
+    @defineDocumentHeaderItemSum(invoice, , );
+    @defineDocumentHeaderItemSum(userInvoice, , );
+
     @defineAddDetailDialogSkuStock(userInvoice, sku, stockProp, dialogSku);
     @defineAddDetailDialogBarcode(userInvoice, sku);
 

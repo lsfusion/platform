@@ -1,0 +1,24 @@
+MODULE GeneralLedgerSOT;
+
+REQUIRE SaleInvoice, DimensionStock, DimensionLegalEntity, DimensionTax;
+
+NAMESPACE Sale;
+
+//-- Tара
+@defineGeneralLedgerAggregation (invoice, supplierContainer, sumContainerInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+//-- Товар
+@defineGeneralLedgerAggregation (invoice, supplierItem, sumItemInvoiceDetailInvoice, date, descriptionInvoice, '90.1', '41.1', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierItemGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+
+//-- НДС
+
+VATSumInvoiceRange (invoice, range)= GROUP SUM VATSumInvoiceDetail(detail) BY invoiceInvoiceDetail(detail), VATInvoiceDetail(detail);
+descriptionInvoiceRange (invoice, range) = [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', шкала № \' || CAST($2 AS TEXT) || \' ( \' || CAST($3 AS TEXT)|| \')\''](
+    descriptionInvoice(invoice), numberRange(range), valueCurrentRateRange(range));
+
+@defineGeneralLedgerAggregation (invoice, range, VAT, VATSumInvoiceRange, date, descriptionInvoiceRange, '90.1', '68.2', '1');
+debitGeneralLedgerDimensionType(generalLedger,dimensionType) += supplierInvoice(invoiceVATGeneralLedger(generalLedger)) AND dimensionType == dimensionType.organization;
+creditGeneralLedgerDimensionType(generalLedger,dimensionType) += rangeVATGeneralLedger(generalLedger) AND dimensionType == dimensionType.range;
