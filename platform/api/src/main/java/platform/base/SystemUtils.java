@@ -2,7 +2,7 @@ package platform.base;
 
 import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
-import platform.interop.remote.ServerSocketFactory;
+import platform.interop.remote.ZipSocketFactory;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -175,7 +175,14 @@ public class SystemUtils {
                 }
             });
 
-            RMISocketFactory.setSocketFactory(new ServerSocketFactory());
+            RMISocketFactory.setSocketFactory(new ZipSocketFactory());
+        }
+    }
+
+    public static void overrideRMIHostName(String hostName) {
+        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
+        if (socketFactory instanceof ZipSocketFactory) {
+            ((ZipSocketFactory) socketFactory).setOverrideHostName(hostName);
         }
     }
 

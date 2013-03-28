@@ -1,13 +1,10 @@
 package platform.client;
 
 import platform.client.rmi.ConnectionLostManager;
-import platform.client.rmi.RMITimeoutSocketFactory;
 import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
-import java.awt.*;
-import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -37,7 +34,7 @@ public class ClientCallBackProcessor {
                 notifyServerRestarting();
                 break;
             case CUT_OFF:
-                RMITimeoutSocketFactory.closeHangingSockets();
+                Main.closeHangingSockets();
                 disconnect(getString("rmi.connectionlost.cutoff"));
                 break;
         }

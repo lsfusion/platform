@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import platform.base.SystemUtils;
 import platform.gwt.base.server.ServerUtils;
-import platform.interop.RemoteLogicsLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.RemoteLogicsLoaderInterface;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
@@ -67,6 +67,8 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
         try {
             String serverHost = nvl(context.getInitParameter("serverHost"), DEFAULT_HOST);
             String serverPort = nvl(context.getInitParameter("serverPort"), DEFAULT_PORT);
+
+            SystemUtils.overrideRMIHostName(serverHost);
 
             Registry registry = LocateRegistry.getRegistry(serverHost, Integer.parseInt(serverPort));
             //todo: setup dbName

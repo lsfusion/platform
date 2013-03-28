@@ -1,22 +1,20 @@
 package platform.client.rmi;
 
 import platform.base.WeakLinkedHashSet;
-import platform.interop.remote.CountZipServerSocket;
 import platform.interop.remote.CountZipSocket;
 import platform.interop.remote.ISocketTrafficSum;
+import platform.interop.remote.ZipSocketFactory;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.rmi.server.RMISocketFactory;
-import java.util.Iterator;
 
-public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocketTrafficSum{
+public class RMITimeoutSocketFactory extends ZipSocketFactory implements ISocketTrafficSum {
 
-    private int timeout;
+    private final int timeout;
+
+    private final WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
+
     public long inSum;
     public long outSum;
-    public static WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
 
     public RMITimeoutSocketFactory(int timeout) {
         this.timeout = timeout;
@@ -29,28 +27,16 @@ public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocket
     }
 
     @Override
-    public Socket createSocket(String host, int port) throws IOException {
-        CountZipSocket socket = new CountZipSocket(host, port);
+    public CountZipSocket createSocket(String host, int port) throws IOException {
+        CountZipSocket socket = super.createSocket(host, port);
         socket.setObserver(this);
         socket.setSoTimeout(timeout);
-        ConnectionLostManager.connectionRelived();
+
         sockets.add(socket);
+
+        ConnectionLostManager.connectionRelived();
+
         return socket;
-    }
-
-    public static void closeHangingSockets() {
-        Iterator<CountZipSocket> iterator = sockets.iterator();
-        while (iterator.hasNext()) {
-            CountZipSocket socket = iterator.next();
-            if (socket != null) {
-                socket.closeIfHung();
-            }
-        }
-    }
-
-    @Override
-    public ServerSocket createServerSocket(int port) throws IOException {
-        return new CountZipServerSocket(port);
     }
 
     public void incrementIn(long in) {
@@ -59,5 +45,13 @@ public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocket
 
     public void incrementOut(long out) {
         outSum += out;
+    }
+
+    public void closeHangingSockets() {
+        for (CountZipSocket socket : sockets) {
+            if (socket != null) {
+                socket.closeIfHung();
+            }
+        }
     }
 }

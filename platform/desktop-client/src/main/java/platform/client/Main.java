@@ -308,6 +308,14 @@ public class Main {
         return socketFactory.inSum;
     }
 
+    public static void overrideRMIHostName(String hostName) {
+        socketFactory.setOverrideHostName(hostName);
+    }
+
+    public static void closeHangingSockets() {
+        socketFactory.closeHangingSockets();
+    }
+
     private static void startSplashScreen() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
