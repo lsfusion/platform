@@ -241,11 +241,17 @@ public class GridSelectionController {
             }
     }
 
-    private Object modifyIfString(Object value) {
+    private Object modifyIfString(Object value, boolean multiline) {
         if (value != null && value instanceof String) {
             value = BaseUtils.rtrim((String) value);
-            value = ((String) value).replaceAll("\n", " ");
-            value = ((String) value).replaceAll("\t", " ");
+            if (multiline) {
+                if (((String) value).contains("\n") || ((String) value).contains("\t")) {
+                    value = "\"" + ((String) value).replace("\"", "\"\"") + "\"";
+                }
+            } else {
+                value = ((String) value).replaceAll("\n", " ");
+                value = ((String) value).replaceAll("\t", " ");
+            }
         }
         return value;
     }
@@ -291,7 +297,7 @@ public class GridSelectionController {
 
         //если выделена одна ячейка (или ни одной) и нажали CTRL+C, копируем текущее значение
         if (hasSingleSelection() && firstPropertyIndex != -1) {
-            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
+            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null), false);
             ClientPropertyDraw property = getProperties().get(firstPropertyIndex);
             return value == null ? "" : property.formatString(value);
         }
@@ -309,7 +315,7 @@ public class GridSelectionController {
                 Object value = null;
                 if (selectedCells.get(property).containsKey(key)) {
                     addString = true;
-                    value = modifyIfString(selectedCells.get(property).get(key));
+                    value = modifyIfString(selectedCells.get(property).get(key), true);
                 }
                 rowString += (value == null ? "" : property.formatString(value));
                 if (i < lastPropertyIndex) {

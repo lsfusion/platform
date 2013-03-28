@@ -70,34 +70,86 @@ public class TableTransferHandler extends TransferHandler {
 
     List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<List<String>>();
-        Scanner rowScanner = new Scanner(line).useDelimiter("\n");
-        while (rowScanner.hasNext()) {
-            String rowString = rowScanner.nextLine();
-            List<String> row = new ArrayList<String>();
-            Scanner cellScanner = new Scanner(rowString).useDelimiter("\t");
-            if (rowString.startsWith("\t") || rowString.isEmpty()) {
-                row.add(null);
-            }
-            while (cellScanner.hasNext()) {
-                String cell = BaseUtils.nullEmpty(cellScanner.next());
-                row.add(cell);
-            }
-            if (rowString.endsWith("\t")) {
-                row.add(null);
-            }
-            table.add(row);
-        }
-        if (line.equals("\n") || line.endsWith("\n\n") || line.equals("")) {
-            List<String> row = new ArrayList<String>();
-            if (table.isEmpty()) {
-                row.add(null);
+        List<String> row = new ArrayList<String>();
+
+        char[] charline = line.toCharArray();
+
+        int quotesCount = 0;
+        boolean quotesOpened = false;
+        boolean hasSeparator = false;
+        boolean isFirst = true;
+
+        int start = 0;
+
+        for (int i = 0; i <= charline.length; i++) {
+            boolean isCellEnd, isRowEnd, isQuote = false, isSeparator;
+
+            boolean isLast = i >= charline.length;
+            if (!isLast) {
+                isCellEnd = charline[i] == '\t';
+                isRowEnd = charline[i] == '\n';
+                isQuote = charline[i] == '"';
+                isSeparator = isCellEnd || isRowEnd;
             } else {
-                for (int i = 0; i < table.get(0).size(); i++) {
-                    row.add(null);
+                if (isFirst)
+                    break;
+                isRowEnd = true;
+                isSeparator = true;
+            }
+
+            if (quotesOpened) {
+                if (isQuote)
+                    quotesCount++;
+                else {
+                    if (isSeparator) {
+                        if (quotesCount % 2 == 1 || isLast) {
+                            quotesOpened = false;
+                            String cell = line.substring(hasSeparator ? start : (start - 1), hasSeparator ? (i - 1) : i).replace("\"\"", "\"");
+                            row.add(BaseUtils.nullEmpty(cell));
+                            start = i;
+                            if (isRowEnd) {
+                                table.add(row);
+                                row = new ArrayList<String>();
+                            }
+                            isFirst = true;
+                            hasSeparator = false;
+                        } else {
+                            hasSeparator = true;
+                        }
+                    } else
+                        quotesCount = 0;
+                }
+
+            } else {
+                if (isSeparator) {
+                    row.add(BaseUtils.nullEmpty(line.substring(start, i)));
+                    start = i;
+                    if (isRowEnd) {
+                        table.add(row);
+                        row = new ArrayList<String>();
+                    }
+                    isFirst = true;
+                } else if (isFirst) {
+                    if (isQuote) {
+                        start = i + 1;
+                        quotesOpened = true;
+                    } else {
+                        start = i;
+                    }
+                    isFirst = false;
                 }
             }
-            table.add(row);
         }
+
+        if (table.isEmpty()) {
+            row.add(null);
+        } else {
+            for (int i = 0; i < table.get(0).size(); i++) {
+                row.add(null);
+            }
+        }
+        table.add(row);
+
         return table;
     }
 
