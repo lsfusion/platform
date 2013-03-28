@@ -28,16 +28,21 @@ TABLE supplierStock(Supplier, Stock);
 emailOrderSupplierStock 'e-mail для передачи заказа' = DATA STRING[100] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 contactSupplierStock 'Контактная информация' = DATA STRING[500] (Supplier, Stock) IN orderGroup MINCHARWIDTH 50 PREFCHARWIDTH 50;
 
-@defineHistorizableYesNo(controlSupplierStock, 'Контролировать ассортимент поставщика', supplier, name, stock, name, orderGroup);
-@defineHistorizableYesNo(sureSupplierStock, 'Обязателен заказ поставщику', supplier, name, stock, name, orderGroup);
+defaultControlSupplierStock (supplier, stock) = YesNo.no AND supplier IS Supplier AND stock IS Stock;
+@defineHistorizableYesNo(controlSupplierStock, defaultControlSupplierStock, 'Контролировать ассортимент поставщика', supplier, name, stock, name, orderGroup);
+
+defaultSureSupplierStock (supplier, stock) = YesNo.no AND supplier IS Supplier AND stock IS Stock;
+@defineHistorizableYesNo(sureSupplierStock, defaultSureSupplierStock, 'Обязателен заказ поставщику', supplier, name, stock, name, orderGroup);
 
 // ---------------------------------------- Группы поставщиков -------------------------------- //
 
 CLASS SupplierGroup 'Группа поставщиков' : Named, LegalEntityGroup;
+TABLE supplierGroup (SupplierGroup);
 
 supplierGroupSupplier (supplier) = DATA SupplierGroup (Supplier) AUTOSET NOT NULL;
 nameSupplierGroupSupplier 'Группа поставщиков' (supplier) = name(supplierGroupSupplier(supplier));
 
+TABLE supplierGroupSupplierGroup(SupplierGroup, SupplierGroup);
 @defineHierarchy(supplierGroup);
 //parentLegalEntityGroup(supplierGroup) += parentSupplierGroup(supplierGroup);
 //legalEntityGroupLegalEntity(supplier) += supplierGroupSupplier(supplier);

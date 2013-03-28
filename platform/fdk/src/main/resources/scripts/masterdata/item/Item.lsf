@@ -5,7 +5,9 @@ REQUIRE System, Stock, Hierarchy, Barcode, PriceList;
 // ------------------------------------ Классификатор товаров --------------------------- //
 
 CLASS ItemGroup 'Товарная группа' : Named, SkuGroup;
+TABLE itemGroup (ItemGroup);
 
+TABLE itemGroupItemGroup(ItemGroup, ItemGroup);
 @defineHierarchy(itemGroup);
 
 parentSkuGroup (itemGroup) += parentItemGroup(itemGroup);

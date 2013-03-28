@@ -31,10 +31,12 @@ TABLE customer (Customer);
 // ---------------------------------------- Группы покупателей -------------------------------- //
 
 CLASS CustomerGroup 'Группа покупателей' : Named, LegalEntityGroup;
+TABLE customerGroup (CustomerGroup);
 
 customerGroupCustomer (customer) = DATA CustomerGroup (Customer) AUTOSET NOT NULL;
 nameCustomerGroupCustomer 'Группа покупателей' (customer) = name(customerGroupCustomer(customer));
 
+TABLE customerGroupCustomerGroup(CustomerGroup, CustomerGroup);
 @defineHierarchy(customerGroup);
 //parentLegalEntityGroup(customerGroup) += parentCustomerGroup(customerGroup);
 //legalEntityGroupLegalEntity(customer) += customerGroupCustomer(customer);

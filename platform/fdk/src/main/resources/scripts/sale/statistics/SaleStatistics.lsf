@@ -7,6 +7,7 @@ NAMESPACE Sale;
 // ----------------------------------- Статистический классификатор ------------------------------------------ //
 
 CLASS StatisticGroup 'Статистическая группа' : Named, Externalizable;
+TABLE statisticGroup(StatisticGroup);
 
 CLASS GroupStatic 'Ед. изм.' {
     statisticLiter 'Литр',
@@ -15,6 +16,7 @@ CLASS GroupStatic 'Ед. изм.' {
     statisticSum 'Валюта'
 } : Named;
 
+TABLE statisticGroupStatisticGroup(StatisticGroup, StatisticGroup);
 @defineHierarchy(statisticGroup);
 
 countryStatisticGroup = DATA Country (StatisticGroup);

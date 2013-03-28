@@ -39,6 +39,7 @@ FORM GLAccountTypes 'Планы счетов'
 //-------------------------- Счета -------------------------//
 
 CLASS GLAccount 'Счет' : Named;
+TABLE GLAccount(GLAccount);
 
 nameGLAccount 'Наименование' = DATA STRING[255] (GLAccount) MINCHARWIDTH 20 MAXCHARWIDTH 80 PREFCHARWIDTH 50;
 GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
@@ -47,7 +48,9 @@ nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLA
 
 idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
+TABLE GLAccountGLAccount(GLAccount, GLAccount);
 @defineHierarchy(GLAccount);
+
 canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
                            [GROUP CONCAT idGLAccount(parent), ' / ' BY child ORDER DESC levelGLAccountGLAccount(child, parent)](GLAccount))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;

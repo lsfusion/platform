@@ -1,28 +1,24 @@
 MODULE Hierarchy;
 
-META defineHierarchy (object)
-    @defineHierarchyInner(object, ###object);
+META defineHierarchy(object)
+    @defineHierarchy(object, ###object);
 END
 
-META defineHierarchyAbstract (object)
-    @defineHierarchyAbstractInner(object, ###object);
+META defineHierarchyAbstract(object)
+    @defineHierarchyAbstract(object, ###object);
 END
 
-
-META defineHierarchyInner (object, class)
+META defineHierarchy (object, class)
     parent###object = DATA class (class) AUTOSET;
     @defineHierarchyCustom(object, class);
 END
 
-META defineHierarchyAbstractInner (object, class)
+META defineHierarchyAbstract (object, class)
     parent###object = ABSTRACT class (class) PERSISTENT;
     @defineHierarchyCustom(object, class);
 END
 
 META defineHierarchyCustom (object, class)
-    TABLE object(class);
-    TABLE object###object (class, class);
-
     nameParent###object 'Родительский объект' = name(parent###object(object)) IN base;
 
     level###object###object 'Уровень' (child, parent) = RECURSION 1l AND child IS class AND parent == child

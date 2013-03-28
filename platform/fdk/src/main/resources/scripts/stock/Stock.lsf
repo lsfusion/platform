@@ -5,7 +5,10 @@ REQUIRE System, MasterData, Utils, Hierarchy, LegalEntity, I18n, Geo, Employee, 
 // ----------------------------------- Склады ------------------------------------------ //
 
 CLASS ABSTRACT StockGroup 'Группа складов' : Named;
-@defineHierarchyAbstract(stockGroup);
+TABLE stockGroup (StockGroup);
+
+TABLE stockGroupStockGroup(StockGroup, StockGroup);
+@defineHierarchyAbstract(stockGroup, StockGroup);
 
 CLASS ABSTRACT Stock 'Склад' : Named;
 TABLE stock(Stock);
@@ -88,7 +91,10 @@ FORM UOMs 'Единицы измерений'
 // ----------------------------------- Абстрактная группа ------------------------------------------ //
 
 CLASS ABSTRACT Group 'Классификатор SKU' : Named;
-@defineHierarchyAbstract(group);
+TABLE group(Group);
+
+TABLE groupGroup(Group, Group);
+@defineHierarchyAbstract(group, Group);
 
 CLASS ABSTRACT GroupType 'Тип классификатора SKU' : Named;
 CLASS SystemGroupType 'Системный тип классификатор SKU' : GroupType;
@@ -107,6 +113,9 @@ isParentGroupSku(group, sku) = isParentGroupGroup(groupGroupTypeSku(groupTypeGro
 // ----------------------------------- Custom Group ------------------------------------------ //
 
 CLASS CustomGroup 'Дополнительный классификатор SKU' : Group;
+TABLE customGroup (CustomGroup);
+
+TABLE customGroupCustomGroup(CustomGroup, CustomGroup);
 @defineHierarchy(customGroup);
 
 parentGroup (group) += parentCustomGroup(group);
@@ -188,7 +197,10 @@ FORM customGroups 'Дополнительные группы'
 // ----------------------------------- Sku Group ------------------------------------------ //
 
 CLASS ABSTRACT SkuGroup 'Группа SKU' : Group;
-@defineHierarchyAbstract(skuGroup);
+TABLE skuGroup (SkuGroup);
+
+TABLE skuGroupSkuGroup(SkuGroup, SkuGroup);
+@defineHierarchyAbstract(skuGroup, SkuGroup);
 
 EXTEND CLASS SystemGroupType { skuGroupType 'Основной' }
 

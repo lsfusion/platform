@@ -84,23 +84,13 @@ CLASS YesNo 'Логическое' {
 
 classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS YesNo;
 
-META defineHistorizableYesNo(property, caption, object1, object1Identity, object2, object2Identity, group)
-    @defineHistorizableYesNoInner(property, caption, object1, ###object1, object1Identity, object2, ###object2, object2Identity, group);
-END
-
-META defineHistorizableYesNoInner(property, caption, object1, object1Class, object1Identity, object2, object2Class, object2Identity, group)
-    default###property###object1###object2 = YesNo.no AND object1 IS object1Class AND object2 IS object2Class;
-    @defineHistorizableCustomDefault(property, default###property###object1###object2, caption, YesNo, name,
+META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
+    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, name,
         object1, object1Identity, object2, object2Identity, 7, group);
 END
 
-META defineHistorizableYesNo(property, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    @defineHistorizableYesNoInner(property, caption, object1, ###object1, object1Identity, object2, ###object2, object2Identity, object3, ###object3, object3Identity, group);
-END
-
-META defineHistorizableYesNoInner(property, caption, object1, object1Class, object1Identity, object2, object2Class, object2Identity, object3, object3Class, object3Identity, group)
-    default###property###object1###object2###object3 = YesNo.no AND object1 IS object1Class AND object2 IS object2Class AND object3 IS object3Class;
-    @defineHistorizableCustomDefault(property, default###property###object1###object2###object3, caption, YesNo, name,
+META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
+    @defineHistorizableCustomDefault(property, defau, caption, YesNo, name,
         object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
 END
 
@@ -134,11 +124,9 @@ DESIGN dialogNumeric FROM DEFAULT {
 
 // --------------------------- Агрегации --------------------------------- //
 
-META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
-    @defineAggregationCustomInner(primProperty, primObject, aggrObject, ###aggrObject, aggrProperty);
-END
+// -- Агрегации для 1го объекта -- //
 
-META defineAggregationCustomInner (primProperty, primObject, aggrObject, aggrClass, aggrProperty)
+META defineAggregationCustom (primProperty, primObject, aggrObject, aggrClass, aggrProperty)
     aggrObject###primObject (primObject) =
         GROUP UNIQUE aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
@@ -149,21 +137,23 @@ META defineAggregationCustomInner (primProperty, primObject, aggrObject, aggrCla
     is###aggrObject(aggrObject) => aggrProperty(primProperty(aggrObject)) RESOLVE FALSE;
 END
 
-META defineAggregation (primObject, aggrObject, aggrProperty)
-    @defineAggregationInner(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
+META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
+    @defineAggregationCustom(primProperty, primObject, aggrObject, ###aggrObject, aggrProperty);
 END
 
-META defineAggregationInner (primObject, primClass, aggrObject, aggrClass, aggrProperty)
+META defineAggregationClass (primObject, primClass, aggrObject, aggrClass, aggrProperty)
     primObject###aggrObject = DATA primClass (aggrClass) INDEXED;
 
     @defineAggregationCustom (primObject###aggrObject, primObject, aggrObject, aggrProperty);
 END
 
-META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
-    @defineAggregationCustomInner(prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, ###aggrObject, aggrProperty);
+META defineAggregation (primObject, aggrObject, aggrProperty)
+    @defineAggregationClass(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
 END
 
-META defineAggregationCustomInner (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrClass, aggrProperty)
+// -- Агрегации для 2х объектов -- //
+
+META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object (prim1Object, prim2Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
         WHERE aggrObject IS aggrClass;
@@ -174,22 +164,24 @@ META defineAggregationCustomInner (prim1Property, prim2Property, prim1Object, pr
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
 END
 
-META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
-    @defineAggregationInner(prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
+META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
-META defineAggregationInner (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
     prim1Object###aggrObject = DATA prim1Class (aggrClass) INDEXED;
     prim2Object###aggrObject = DATA prim2Class (aggrClass) INDEXED;
 
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim2Object, aggrObject, aggrProperty);
 END
 
-META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
-    @defineAggregationCustomInner(prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, ###aggrObject, aggrProperty);
+META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
-META defineAggregationCustomInner (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrClass, aggrProperty)
+// -- Агрегации для 3х объектов -- //
+
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object###prim3Object (prim1Object, prim2Object, prim3Object) =
         GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
@@ -200,11 +192,11 @@ META defineAggregationCustomInner (prim1Property, prim2Property, prim3Property, 
     is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE FALSE;
 END
 
-META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
-    @defineAggregationInner(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
-META defineAggregationInner (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
     prim1Object###aggrObject = DATA prim1Class (aggrClass);
     prim2Object###aggrObject = DATA prim2Class (aggrClass);
     prim3Object###aggrObject = DATA prim3Class (aggrClass);
@@ -212,13 +204,8 @@ META defineAggregationInner (prim1Object, prim1Class, prim2Object, prim2Class, p
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty);
 END
 
-META defineAggregationCapt(sign3, prim1Object, capt1, prim2Object, capt2, prim3Object, capt3, aggrObject, aggrProperty)
-    capt1###aggrObject = DATA prim1Object (aggrObject);
-    capt2###aggrObject = DATA prim2Object (aggrObject);
-    capt3###aggrObject ''###sign3 = DATA prim3Object (aggrObject);
-
-    @defineAggregationCustom(capt1###aggrObject, capt2###aggrObject, capt3###aggrObject, capt1, capt2, capt3, aggrObject, aggrProperty);
-
+META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
 // --------------------------- Групповая корректировка на форме --------------------------------- //

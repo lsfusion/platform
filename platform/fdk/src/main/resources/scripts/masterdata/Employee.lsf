@@ -17,7 +17,10 @@ FORM position 'Должность'
 // ------------------------------------- Доступ ------------------------------------------ //
 
 CLASS ABSTRACT EmployeeDivisionGroup 'Группа подразделений' : Named;
-@defineHierarchyAbstract(employeeDivisionGroup);
+TABLE employeeDivisionGroup (EmployeeDivisionGroup);
+
+TABLE employeeDivisionGroupEmployeeDivisionGroup(EmployeeDivisionGroup, EmployeeDivisionGroup);
+@defineHierarchyAbstract(employeeDivisionGroup, EmployeeDivisionGroup);
 
 CLASS ABSTRACT EmployeeDivision 'Подразделение' : Named;
 TABLE employeeDivision(EmployeeDivision);

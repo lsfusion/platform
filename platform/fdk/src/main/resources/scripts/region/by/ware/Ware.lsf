@@ -15,7 +15,9 @@ EXTEND DESIGN options {
 
 // ----------------------------------------- Группа посуды ----------------------------- //
 CLASS WareGroup 'Группа посуды' : Named, SkuGroup;
+TABLE wareGroup (WareGroup);
 
+TABLE wareGroupWareGroup(WareGroup, WareGroup);
 @defineHierarchy(wareGroup);
 
 parentSkuGroup (wareGroup) += parentWareGroup(wareGroup);

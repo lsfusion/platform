@@ -16,8 +16,11 @@ PRIORITY Stock;
 
 // ----------------------------------------- Группы складов ------------------------------ //
 CLASS GroupDefectStock 'Группа складов брака' : StockGroup, EmployeeDivisionGroup;
+TABLE groupDefectStock (GroupDefectStock);
 
+TABLE groupDefectStockGroupDefectStock(GroupDefectStock, GroupDefectStock);
 @defineHierarchy(groupDefectStock);
+
 parentStockGroup (stockGroup) += parentGroupDefectStock (stockGroup);
 
 // ----------------------------------------- Склады ------------------------------ //

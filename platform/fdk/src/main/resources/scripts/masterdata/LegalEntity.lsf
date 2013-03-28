@@ -73,10 +73,12 @@ quantityDaysCloseOrdersLegalEntity 'Срок автоматического за
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
 CLASS LegalEntityGroup 'Группа организаций' : Named, EmployeeDivisionGroup;
+TABLE legalEntityGroup(LegalEntityGroup);
 
 legalEntityGroupLegalEntity (legalEntity) = DATA LegalEntityGroup (LegalEntity) PERSISTENT AUTOSET;
 nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEntity) = name(legalEntityGroupLegalEntity(legalEntity));
 
+TABLE legalEntityGroupLegalEntityGroup(LegalEntityGroup, LegalEntityGroup);
 @defineHierarchy(legalEntityGroup);
 
 inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =

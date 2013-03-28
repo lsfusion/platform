@@ -261,10 +261,10 @@ END
 // ----------------------------------- Historizable Ledger -------------------------------------- //
 
 META defineHistorizableLedger(property, caption, type, key0, key1)
-    @defineHistorizableLedgerInner(property, caption, type, key0, ###key0, key1, ###key1);
+    @defineHistorizableLedger(property, caption, type, key0, ###key0, key1, ###key1);
 END
 
-META defineHistorizableLedgerInner(property, caption, type, key0, key0Class, key1, key1Class)
+META defineHistorizableLedger(property, caption, type, key0, key0Class, key1, key1Class)
     dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (###property##Ledger) PERSISTENT INDEXED;
     date###property##Ledger 'Дата' (ledger) = toDate(dateTime###property##Ledger(ledger)) PERSISTENT;
 

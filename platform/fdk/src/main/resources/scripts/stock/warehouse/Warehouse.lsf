@@ -8,7 +8,9 @@ REQUIRE System,
 
 // ----------------------------------------- Группы складов ------------------------------ //
 CLASS WarehouseGroup 'Группа складов' : StockGroup;
+TABLE warehouseGroup (WarehouseGroup);
 
+TABLE warehouseGroupWarehouseGroup(WarehouseGroup, WarehouseGroup);
 @defineHierarchy(warehouseGroup);
 parentStockGroup (stockGroup) += parentWarehouseGroup (stockGroup);
 

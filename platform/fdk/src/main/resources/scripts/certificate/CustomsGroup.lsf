@@ -11,6 +11,7 @@ currencyCustomsZone = DATA Currency(CustomsZone);
 nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;
 
 CLASS CustomsGroup 'Позиция ТН ВЭД' : Named;
+TABLE customsGroup (CustomsGroup);
 
 hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (CustomsGroup) IN base;
 dateFromCustomsGroup 'Дата с' = DATA DATE (CustomsGroup) IN base;
@@ -20,6 +21,7 @@ customsGroupCode (code) = GROUP UNIQUE customsGroup BY codeCustomsGroup(customsG
 
 numberCustomsGroup 'Номер строки' = DATA INTEGER(CustomsGroup) IN base;
 
+TABLE customsGroupCustomsGroup (CustomsGroup, CustomsGroup);
 @defineHierarchy(customsGroup);
 
 customsZoneCustomsGroup = DATA CustomsZone(CustomsGroup) AUTOSET;

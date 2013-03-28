@@ -108,6 +108,9 @@ EXTEND DESIGN migrationData {
 }
 
 // ---------------------------------- Формы изменения атрибутов ------------------------------------- //
+TABLE category (Category);
+
+TABLE categoryCategory(Category, Category);
 @defineHierarchy(category);
 
 FORM category 'Товарная группа'

@@ -47,7 +47,10 @@ rangeTypeRange(range) <- RangeType.common WHEN ASSIGNED(range IS Range);     ///
 // ----------------------------- Разбиение шкалы для подразделений ------------------------------------- //
 
 CLASS ABSTRACT TaxUnitGroup 'Группа налогового субъекта' : Named;
-@defineHierarchyAbstract(taxUnitGroup);
+TABLE taxUnitGroup(TaxUnitGroup);
+
+TABLE taxUnitGroupTaxUnitGroup(TaxUnitGroup, TaxUnitGroup);
+@defineHierarchyAbstract (taxUnitGroup, TaxUnitGroup);
 
 CLASS ABSTRACT TaxUnit 'Налоговый субъект';
 TABLE taxUnit(TaxUnit);
