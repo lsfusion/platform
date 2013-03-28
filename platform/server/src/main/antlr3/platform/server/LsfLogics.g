@@ -541,7 +541,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'ON' 'CHANGE' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE, $prop.action); }
-		|	'ON' 'CHANGE_WYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
+		|	'ON' 'CHANGEWYS' prop=formActionPropertyObject { $options.addEditAction(ServerResponse.CHANGE_WYS, $prop.action); }
 		|	'ON' 'SHORTCUT' (c=stringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
@@ -2096,6 +2096,20 @@ globalEventStatement
 		action=actionPropertyDefinitionBody[new ArrayList<String>(), false]
 	;
 
+baseEvent returns [Event event]
+@init {
+	SystemEvent baseEvent = SystemEvent.APPLY;
+	List<String> ids = null;
+}
+@after {
+	if (inPropParseState()) {
+		$event = self.createScriptedEvent(baseEvent, ids);
+	}
+}
+	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
+	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
+	;
+	
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// ASPECT STATEMENT //////////////////////////////
@@ -2825,20 +2839,6 @@ emailAttachFormat returns [AttachmentFormat val]
 	|	'RTF'	{ $val = AttachmentFormat.RTF; }
 	;
 
-baseEvent returns [Event event]
-@init {
-	SystemEvent baseEvent = SystemEvent.APPLY;
-	List<String> ids = null;
-}
-@after {
-	if (inPropParseState()) {
-		$event = self.createEvent(baseEvent, ids);
-	}
-}
-	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
-	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
-	;
-	
 udoubleLiteral returns [double val]
 	:	d=POSITIVE_DOUBLE_LITERAL  { $val = Double.parseDouble($d.text); }
 	; 

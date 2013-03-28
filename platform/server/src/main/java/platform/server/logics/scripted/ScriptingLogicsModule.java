@@ -337,12 +337,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public List<FormEntity> findFormsByCompoundName(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
         List<FormEntity> forms = new ArrayList<FormEntity>();
-        for(String name : names)
+        for (String name : names) {
             forms.add(findFormByCompoundName(name));
+        }
         return forms;
     }
 
-    public Event createEvent(BaseEvent base, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
+    public Event createScriptedEvent(BaseEvent base, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
         return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findFormsByCompoundName(formIds)))) : SessionEnvEvent.ALWAYS);
     }
 
