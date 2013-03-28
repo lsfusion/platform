@@ -12,7 +12,7 @@ CLASS UserOutput 'Производство (польз.)': Output, Historizable,
 CLASS UserOutputDetail 'Строка производства (польз.)' : OutputDetail;
 CLASS UserOutputPosted 'Проведенное призводство (польз.)': UserOutput, PostedObject;
 
-@defineNumeratedObjectDefault(userOutput, 'Нумератор для производства', 'НП');
+@defineNumeratedObjectDefault(UserOutput, 'Нумератор для производства', 'НП');
 
 @defineDocumentInterface(output);
 @defineDocumentInterfaceNumber(output);

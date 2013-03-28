@@ -7,7 +7,7 @@ CLASS PaymentPosted 'Проведенный платеж' : Payment, PostedObjec
 TABLE payment(Payment);
 
 @defineDocumentHeaderPosted(payment);
-@defineNumeratedObjectDefault(payment, 'Нумератор для платежей', 'ПЛ');
+@defineNumeratedObjectDefault(Payment, 'Нумератор для платежей', 'ПЛ');
 
 datePayment 'Дата' (payment) = DATA DATE (Payment);
 datePayment(payment) <- currentDate() WHEN ASSIGNED(payment IS Payment);

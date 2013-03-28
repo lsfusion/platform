@@ -19,7 +19,7 @@ CLASS UserMenuPosted 'Проведенное меню (польз.)' : UserMenu,
 
 @defineDocumentInterface(menu);
 @defineDocumentInterfaceNumber(menu);
-@defineNumeratedObjectDefaultPrefix(userMenu, 'Нумератор для меню', 'МЮ', );
+@defineNumeratedObjectDefault(UserMenu, 'Нумератор для меню', 'МЮ');
 
 @defineDocumentInterfaceDataStock(menu, stock, 'Склад', );
 

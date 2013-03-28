@@ -10,7 +10,7 @@ NAMESPACE PurchaseReturn;
 
 @defineOrderStockDestination(customerStock, supplierStock);
 
-@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (закупка-возврат)', 'ВЗ', purchaseReturn);
+@defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (закупка-возврат)', 'ВЗ', purchaseReturn);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

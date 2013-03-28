@@ -11,7 +11,7 @@ TABLE order(Order);
 @defineDocumentHeaderTime(Order);
 @defineDocumentHeaderNote(Order);
 
-@defineNumeratedObjectDefault(order, 'Нумератор для производственного заказа', 'ПЗ');
+@defineNumeratedObjectDefault(Order, 'Нумератор для производственного заказа', 'ПЗ');
 
 @defineDocumentHeaderPosted (order);
 @defineDocumentHeaderPriceListType (order, priceListType, , ' (потребность)');

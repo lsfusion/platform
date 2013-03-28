@@ -98,7 +98,7 @@ TABLE collection (Collection);
 
 isCollection (collection) = collection IS Collection;
 
-@defineNumeratedObjectDefault(collection, 'Нумератор для инкассаций', 'ИН');
+@defineNumeratedObjectDefault(Collection, 'Нумератор для инкассаций', 'ИН');
 
 @defineDocumentHeaderTime(Collection);
 @defineDocumentHeaderDepartmentStore(collection);
@@ -242,7 +242,7 @@ TABLE incomeCashOperation (IncomeCashOperation);
 
 isIncomeCashOperation (cashOperation) = cashOperation IS IncomeCashOperation;
 
-@defineNumeratedObjectDefault(incomeCashOperation, 'Нумератор для внесения денег', 'ВД');
+@defineNumeratedObjectDefault(IncomeCashOperation, 'Нумератор для внесения денег', 'ВД');
 
 @defineDocumentHeaderTime(IncomeCashOperation);
 @defineDocumentHeaderDepartmentStore(incomeCashOperation);
@@ -290,7 +290,7 @@ TABLE outcomeCashOperation (OutcomeCashOperation);
 
 isOutcomeCashOperation (cashOperation) = cashOperation IS OutcomeCashOperation;
 
-@defineNumeratedObjectDefault(outcomeCashOperation, 'Нумератор для изъятия денег', 'ВД');
+@defineNumeratedObjectDefault(OutcomeCashOperation, 'Нумератор для изъятия денег', 'ВД');
 
 @defineDocumentHeaderTime(OutcomeCashOperation);
 @defineDocumentHeaderDepartmentStore(outcomeCashOperation);

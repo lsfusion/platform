@@ -8,7 +8,7 @@ CLASS Trip 'Рейс' : NumeratedObject;
 TABLE trip(Trip);
 
 @defineDocumentHeaderTime(Trip);
-@defineNumeratedObjectDefault(trip, 'Нумератор для рейсов', 'РЕ');
+@defineNumeratedObjectDefault(Trip, 'Нумератор для рейсов', 'РЕ');
 
 truckTrip = DATA Truck(Trip);
 sidTruckTrip 'Машина (номер)'(trip) = sidTruck(truckTrip(trip));

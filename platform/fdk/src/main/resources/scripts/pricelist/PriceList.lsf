@@ -251,7 +251,7 @@ toDatePriceList(userPriceList) += toDateUserPriceList(userPriceList);
 toTimePriceList(userPriceList) += toTimeUserPriceList(userPriceList);
 
 @defineDocumentInterfaceNumber(priceList);
-@defineNumeratedObjectDefault(priceList, 'Нумератор для прайсов', 'ПЛ');
+@defineNumeratedObjectDefault(PriceList, 'Нумератор для прайсов', 'ПЛ');
 
 //@defineDocumentInterfaceDataStock(priceList, stock, 'Склад');
 @defineDocumentInterfacePosted(priceList);

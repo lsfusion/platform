@@ -7,7 +7,7 @@ TABLE compliance(Compliance);
 
 CLASS CompliancePosted 'Проведенный сертификат' : Compliance, PostedObject;
 
-@defineNumeratedObjectDefault(compliance, 'Нумератор для сертификатов', 'СС');
+@defineNumeratedObjectDefault(Compliance, 'Нумератор для сертификатов', 'СС');
 
 @defineDocumentHeaderTimePrefix(Compliance, ,' создания');
 @defineDocumentHeaderTimePrefix(Compliance, to, ' действия');

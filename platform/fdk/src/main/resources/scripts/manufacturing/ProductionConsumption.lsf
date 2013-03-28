@@ -12,7 +12,7 @@ CLASS UserConsumption 'Списание сырья (польз.)': Consumption, 
 CLASS UserConsumptionDetail 'Строка списания сырья (польз.)' : ConsumptionDetail;
 CLASS UserConsumptionPosted 'Проведенное списание сырья (польз.)': UserConsumption, PostedObject;
 
-@defineNumeratedObjectDefault(userConsumption, 'Нумератор для списания сырья', 'СС');
+@defineNumeratedObjectDefault(UserConsumption, 'Нумератор для списания сырья', 'СС');
 
 @defineDocumentInterface(consumption);
 @defineDocumentInterfaceNumber(consumption);

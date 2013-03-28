@@ -10,7 +10,7 @@ NAMESPACE SaleReturn;
 
 @defineOrderStockDestination(customerStock, supplierStock);
 
-@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);
+@defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);
 
 @defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
 

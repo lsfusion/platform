@@ -8,7 +8,7 @@ TABLE declaration(Declaration);
 
 CLASS DeclarationPosted 'Проведенная таможенная декларация' : Declaration, PostedObject;
 
-@defineNumeratedObjectDefault(declaration, 'Нумератор для деклараций', 'ДД');
+@defineNumeratedObjectDefault(Declaration, 'Нумератор для деклараций', 'ДД');
 
 @defineDocumentHeaderTimePrefix(Declaration, ,' создания');
 @implementDocumentHeaderTimePrefix(certificate, , declaration, );

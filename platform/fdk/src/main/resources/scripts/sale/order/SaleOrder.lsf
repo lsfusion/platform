@@ -8,7 +8,7 @@ NAMESPACE Sale;
 
 @defineOrderStockDestination(supplierStock, customerStock);
 
-@defineNumeratedObjectDefaultPrefix(userOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
+@defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
 
 toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(supplierUserOrder(userOrder))) WHEN CHANGED(supplierUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
 

@@ -126,25 +126,21 @@ loadDefaultNumerators 'Загрузить стандартные нумерат�
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
-META defineNumeratedObjectDefault(object, caption, series)
-    @defineNumeratedObjectDefaultPrefix(object, caption, series, );
+META defineNumeratedObjectDefault(class, caption, series)
+    @defineNumeratedObjectDefaultPrefix(class, caption, series, );
 END
 
-META defineNumeratedObjectDefaultPrefix(object, caption, series, prefix)
-    @defineNumeratedObjectDefaultPrefixInner(object, ###object, caption, series, prefix);
-END
+META defineNumeratedObjectDefaultPrefix(class, caption, series, prefix)
 
-META defineNumeratedObjectDefaultPrefixInner(object, class, caption, series, prefix)
-
-    prefix###defaultNumerator###object = DATA Numerator ();
-    name###prefix##DefaultNumerator###object caption = name(prefix###defaultNumerator###object());
+    prefix###defaultNumerator###class = DATA Numerator ();
+    name###prefix##DefaultNumerator###class caption = name(prefix###defaultNumerator###class());
 
     EXTEND FORM defaultNumerators
-        PROPERTIES() name###prefix##DefaultNumerator###object
+        PROPERTIES() name###prefix##DefaultNumerator###class
     ;
     EXTEND DESIGN defaultNumerators {
         defaultContainer {
-            ADD PROPERTY(name###prefix##DefaultNumerator###object);
+            ADD PROPERTY(name###prefix##DefaultNumerator###class);
         }
     }
 
@@ -157,11 +153,11 @@ META defineNumeratedObjectDefaultPrefixInner(object, class, caption, series, pre
             SET maxValueNumerator(n) <- 99999L;
             SET stringLengthNumerator(n) <- 5;
 
-            SET prefix###defaultNumerator###object() <- n;
+            SET prefix###defaultNumerator###class() <- n;
         }
     }
 
-    initValueNumeratorObject(object) += prefix###defaultNumerator###object() IF object IS class;
+    initValueNumeratorObject(object) += prefix###defaultNumerator###class() IF object IS class;
     initWhenNumeratorObject(object) += ASSIGNED(object IS class);
 
 END
