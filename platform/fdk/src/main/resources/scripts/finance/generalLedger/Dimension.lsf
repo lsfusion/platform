@@ -26,6 +26,12 @@ dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString25
                                                 BY GLAccount
                                                 ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
 
+overCopyGLAccount(from, to) += ACTION (from, to) {
+    FOR orderGLAccountDimensionType(from,dimensionType) DO {
+        SET orderGLAccountDimensionType(to,dimensionType) <- orderGLAccountDimensionType(from,dimensionType) WHERE orderGLAccountDimensionType(from,dimensionType) AND dimensionType IS DimensionType;
+    }
+}
+
 prevGLAccountDimensionType (account, type) = PARTITION PREV type IF orderGLAccountDimensionType(account, type) BY account
                                                                   ORDER orderGLAccountDimensionType(account, type);
 namePrevGLAccountDimensionType 'Предок' (account, type) = name(prevGLAccountDimensionType(account, type));
@@ -49,7 +55,35 @@ CONSTRAINT creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType)
     CHECKED BY creditUserGeneralLedgerDimensionType
         MESSAGE 'Субконто (кредит) проводки должен соответствовать субконто';
 
+overCopyGeneralLedger(from, to) += ACTION (from, to) {
+    FOR debitGeneralLedgerDimensionType(from,dimensionType) DO {
+        SET debitGeneralLedgerDimensionType(to,dimensionType) <- debitGeneralLedgerDimensionType(from,dimensionType) WHERE debitGeneralLedgerDimensionType(from,dimensionType) AND dimensionType IS DimensionType;
+    }
+    FOR creditGeneralLedgerDimensionType(from,dimensionType) DO {
+        SET creditGeneralLedgerDimensionType(to,dimensionType) <- creditGeneralLedgerDimensionType(from,dimensionType) WHERE creditGeneralLedgerDimensionType(from,dimensionType) AND dimensionType IS DimensionType;
+    }
+}
+
 dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS DimensionType;
+
+//-- Подсчет сумм
+
+//sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
+//sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
+//balanceGLAccountCompany 'Сальдо' (GLAccount, company)= sumDebitGLAccountCompany(GLAccount, company) (-) sumCreditGLAccountCompany(GLAccount, company);
+//
+//sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
+//sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
+//balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date)= sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
+//
+//sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
+//        sumCreditGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+//        BY GLAccount, company, dateFrom, dateTo;
+//sumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
+//        sumDebitGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+//        BY GLAccount, company, dateFrom, dateTo;
+//balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo)= sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
+
 
 FORM dimensionType 'Тип субконто'
     OBJECTS d = DimensionType FIXED PANEL
@@ -74,6 +108,9 @@ EXTEND DESIGN GLAccount {
     ADD d.box BEFORE functions.box;
 }
 EXTEND FORM GLAccounts
+    PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
+;
+EXTEND FORM GLAccountDialog
     PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
 ;
 

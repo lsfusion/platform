@@ -3,6 +3,7 @@ MODULE GLAccountType;
 REQUIRE System,
         Utils,
         Document,
+        LegalEntity,
         Historizable,
         Hierarchy,
         Currency,
@@ -28,16 +29,11 @@ FORM GLAccountType 'План счетов'
     EDIT GLAccountType OBJECT g
 ;
 
-FORM dialogGLAccountType 'План счетов'
-    OBJECTS g = GLAccountType
-    PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
-    DIALOG GLAccountType OBJECT g
-;
-
 FORM GLAccountTypes 'Планы счетов'
     OBJECTS g = GLAccountType
     PROPERTIES(g) READONLY name, idGLAccountType, nameCurrencyGLAccountType
     PROPERTIES(g) ADDFORM, EDITFORM, delete
+    DIALOG GLAccountType OBJECT g
 ;
 
 //-------------------------- Счета -------------------------//
@@ -49,7 +45,7 @@ GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
 nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
 nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
 
-idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
+idGLAccount 'Идентификатор' = DATA STRING[20] (GLAccount) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
 @defineHierarchy(GLAccount);
 canonicalIdGLAccount 'Канонический код' (GLAccount) = toString255(
@@ -77,6 +73,40 @@ FORM GLAccounts 'Счета'
     OBJECTS t = GLAccountType FIXED PANEL
     PROPERTIES(t) SELECTOR name
 
+    OBJECTS dates = (dFrom = DATE, dTo = DATE) FIXED PANEL
+    PROPERTIES valFrom = OBJVALUE(dFrom), valTo = OBJVALUE(dTo)
+
+    OBJECTS l = LegalEntity FIXED PANEL
+    PROPERTIES(l) SELECTOR name
+
+    TREE treeGroups g=GLAccount PARENT parentGLAccount
+    PROPERTIES(g) READONLY nameGLAccount, idGLAccount
+    PROPERTIES(g) READONLY canonicalNamesGLAccount, canonicalIdGLAccount
+    PROPERTIES(g) ADDFORM, EDITFORM, delete
+    FILTERS GLAccountTypeGLAccount(g) == t
+    ORDER BY canonicalIdGLAccount
+;
+
+DESIGN GLAccounts FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+        NEW row1 {
+            childConstraints = TO THE RIGHT;
+            ADD t.box;
+            ADD l.box;
+        }
+        ADD dates.box {
+            childConstraints = TO THE RIGHT;
+        }
+        ADD treeGroups.tree.box{ title = 'Счет';}
+    }
+    ADD functions.box;
+}
+
+FORM GLAccountDialog 'Счета'
+    OBJECTS t = GLAccountType FIXED PANEL
+    PROPERTIES(t) SELECTOR name
+
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
     PROPERTIES(g) READONLY canonicalNamesGLAccount, canonicalIdGLAccount
@@ -84,6 +114,32 @@ FORM GLAccounts 'Счета'
     FILTERS GLAccountTypeGLAccount(g) == t
     ORDER BY canonicalIdGLAccount
     DIALOG GLAccount OBJECT g
+;
+
+overCopyGLAccount = ABSTRACT ACTION (from, to);
+copyGLAccountType 'Копировать' = ACTION (GLAccountType) NEWSESSION {
+    LOCAL mapping = GLAccount (GLAccount);
+
+    FOR ADDOBJ t = GLAccountType DO {
+        SET currencyGLAccountType(t) <- currencyGLAccountType(GLAccountType);
+
+        FOR GLAccountTypeGLAccount(GLAccount) == GLAccountType DO {
+            FOR ADDOBJ d=GLAccount DO {
+                SET GLAccountTypeGLAccount(d) <- t;
+                SET nameGLAccount(d) <- nameGLAccount(GLAccount);
+                SET idGLAccount(d) <- idGLAccount(GLAccount);
+                SET parentGLAccount(d) <- mapping(parentGLAccount(GLAccount));
+                SET mapping(GLAccount) <- d;
+                EXEC overCopyGLAccount(GLAccount, d);
+            }
+        }
+
+        FORM GLAccountType OBJECTS g = t MANAGESESSION DOCKEDMODAL;
+    }
+} TOOLBAR;
+
+EXTEND FORM GLAccountTypes
+    PROPERTIES(g) copyGLAccountType
 ;
 
 NAVIGATOR {
