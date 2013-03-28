@@ -90,7 +90,7 @@ META defineHistorizableYesNo(property, defaultProperty, caption, object1, object
 END
 
 META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    @defineHistorizableCustomDefault(property, defau, caption, YesNo, name,
+    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, name,
         object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
 END
 
