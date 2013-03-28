@@ -12,6 +12,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.interop.exceptions.LoginException;
 import platform.interop.remote.UserInfo;
+import platform.server.ServerLoggers;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.StringClass;
@@ -31,7 +32,7 @@ import java.util.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class SecurityManager extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(SecurityManager.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 

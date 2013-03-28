@@ -6,6 +6,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteLogicsLoaderInterface;
+import platform.server.ServerLoggers;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.RMIManager;
@@ -16,7 +17,7 @@ import java.rmi.RemoteException;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogicsLoaderInterface, InitializingBean {
-    private static final Logger logger = Logger.getLogger(RemoteLogicsLoader.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private RMIManager rmiManager;
 

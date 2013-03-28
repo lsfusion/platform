@@ -4,6 +4,7 @@ package platform.server.mail;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
+import platform.server.ServerLoggers;
 import platform.server.logics.ServerResourceBundle;
 
 import javax.activation.DataHandler;
@@ -24,7 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class EmailSender {
-    private final static Logger logger = Logger.getLogger(EmailSender.class);
+    private final static Logger logger = ServerLoggers.mailLogger;
 
     MimeMessage message;
     Multipart mp = new MimeMultipart();

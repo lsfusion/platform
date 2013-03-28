@@ -20,6 +20,7 @@ import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.UserInfo;
+import platform.server.ServerLoggers;
 import platform.server.classes.ValueClass;
 import platform.server.logics.*;
 import platform.server.logics.SecurityManager;
@@ -42,7 +43,7 @@ import java.util.*;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingRemoteObject implements RemoteLogicsInterface, InitializingBean, LifecycleListener {
-    protected final static Logger logger = Logger.getLogger(RemoteLogics.class);
+    protected final static Logger logger = ServerLoggers.remoteLogger;
 
     protected T businessLogics;
     protected BaseLogicsModule baseLM;

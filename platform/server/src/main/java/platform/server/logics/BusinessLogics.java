@@ -15,6 +15,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
+import platform.server.ServerLoggers;
 import platform.server.SystemProperties;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
@@ -58,7 +59,8 @@ import static platform.base.BaseUtils.isRedundantString;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
-    protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
+    protected final static Logger logger = ServerLoggers.systemLogger;
+    protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
 
     private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
 
@@ -705,7 +707,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (property instanceof ActionProperty && ((ActionProperty) property).showDep != null)
                 show += findDependency(property, ((ActionProperty) property).showDep);
         if (!show.isEmpty()) {
-            logger.debug("Dependencies: " + show);
+            debuglogger.debug("Dependencies: " + show);
         }
     }
 
@@ -912,15 +914,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private boolean checkProps() {
         if (checkClasses)
             for (Property prop : getOrderProperties()) {
-                logger.debug("Checking property : " + prop + "...");
+                debuglogger.debug("Checking property : " + prop + "...");
                 assert prop.check();
             }
         for (LCP[] props : LM.checkCUProps) {
-            logger.debug("Checking class properties : " + Arrays.toString(props) + "...");
+            debuglogger.debug("Checking class properties : " + Arrays.toString(props) + "...");
             assert !intersect(props);
         }
         for (LCP[] props : LM.checkSUProps) {
-            logger.debug("Checking union properties : " + Arrays.toString(props) + "...");
+            debuglogger.debug("Checking union properties : " + Arrays.toString(props) + "...");
 //            assert intersect(props);
         }
         return true;
@@ -928,7 +930,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void outputPropertyClasses() {
         for (LP lp : LM.lproperties) {
-            logger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere());
+            debuglogger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere());
         }
     }
 

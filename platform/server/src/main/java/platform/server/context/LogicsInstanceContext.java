@@ -1,7 +1,6 @@
 package platform.server.context;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.LogMessageClientAction;
@@ -22,6 +21,7 @@ import java.util.List;
 
 import static platform.base.BaseUtils.padLeft;
 import static platform.base.BaseUtils.replicate;
+import static platform.server.ServerLoggers.systemLogger;
 
 public class LogicsInstanceContext extends AbstractContext {
     private static final Logger logger = Logger.getLogger(LogicsInstanceContext.class);
@@ -91,7 +91,7 @@ public class LogicsInstanceContext extends AbstractContext {
             return true;
         } else if (action instanceof MessageClientAction) {
             MessageClientAction msgAction = (MessageClientAction) action;
-            BaseUtils.systemLogger.info("Server message: " + msgAction.message);
+            systemLogger.info("Server message: " + msgAction.message);
             return true;
         }
         return false;

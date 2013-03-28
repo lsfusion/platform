@@ -5,10 +5,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
+import platform.server.ServerLoggers;
 
 @Aspect
 public class RemoteLoggerAspect {
-    private final static Logger logger = Logger.getLogger(RemoteLoggerAspect.class);
+    private final static Logger logger = ServerLoggers.remoteLogger;
 
     @Around("(execution(* platform.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* platform.interop.form.RemoteFormInterface.*(..))" +

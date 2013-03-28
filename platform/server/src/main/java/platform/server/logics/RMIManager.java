@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import platform.base.SystemUtils;
+import platform.server.ServerLoggers;
 import platform.server.SystemProperties;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
@@ -16,7 +17,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class RMIManager extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(RMIManager.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private Registry registry;
 

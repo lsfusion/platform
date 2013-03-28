@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.interop.exceptions.LoginException;
 import platform.interop.exceptions.RemoteInternalException;
 import platform.interop.exceptions.RemoteServerException;
+import platform.server.ServerLoggers;
 import platform.server.context.ThreadLocalContext;
 import platform.server.logics.BusinessLogics;
 
@@ -19,7 +20,7 @@ import java.sql.SQLException;
 
 @Aspect
 public class RemoteExceptionsAspect {
-    private final static Logger logger = Logger.getLogger(RemoteExceptionsAspect.class);
+    private final static Logger logger = ServerLoggers.systemLogger;
     
     // аспектами ловим все RuntimeException которые доходят до внешней границы сервера и оборачиваем их
     @Around("execution(public * platform.interop.RemoteLogicsInterface.*(..)) ||" +

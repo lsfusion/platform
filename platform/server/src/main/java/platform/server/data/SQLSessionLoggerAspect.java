@@ -1,13 +1,13 @@
 package platform.server.data;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import static platform.server.ServerLoggers.sqlLogger;
+
 @Aspect
 public class SQLSessionLoggerAspect {
-    private final static Logger logger = Logger.getLogger(SQLSessionLoggerAspect.class);
 
     @Around("execution(* platform.server.data.SQLSession.executeDDL(java.lang.String)) && args(queryString)")
     public Object executeSQL(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
@@ -26,14 +26,14 @@ public class SQLSessionLoggerAspect {
 
     private Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
         long startTime = 0;
-        if (logger.isDebugEnabled())
+        if (sqlLogger.isDebugEnabled())
             startTime = System.currentTimeMillis();
 
         Object result = thisJoinPoint.proceed();
 
-        if (logger.isDebugEnabled()) {
+        if (sqlLogger.isDebugEnabled()) {
             long runTime = System.currentTimeMillis() - startTime;
-            logger.debug(String.format("Executed query (time: %1$d ms.): %2$s", runTime, queryString));
+            sqlLogger.debug(String.format("Executed query (time: %1$d ms.): %2$s", runTime, queryString));
         }
 
         return result;

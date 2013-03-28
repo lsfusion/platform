@@ -6,6 +6,7 @@ import platform.base.ByteArray;
 import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.interop.action.MessageClientAction;
+import platform.server.ServerLoggers;
 import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.EmailLogicsModule;
@@ -24,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NotificationActionProperty extends SystemActionProperty {
-    private final static Logger logger = Logger.getLogger(NotificationActionProperty.class);
+    private final static Logger logger = ServerLoggers.mailLogger;
 
     private final LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<CalcPropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 

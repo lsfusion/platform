@@ -23,6 +23,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import paas.terminal.ApplicationTerminal;
+import platform.server.ServerLoggers;
 import platform.server.context.Context;
 import platform.server.context.ContextAwareDaemonThreadFactory;
 import platform.server.data.expr.Expr;
@@ -55,7 +56,7 @@ import static platform.base.BaseUtils.nvl;
 import static platform.server.lifecycle.LifecycleEvent.*;
 
 public final class AppManager extends LifecycleAdapter implements InitializingBean {
-    private final static Logger logger = Logger.getLogger(AppManager.class);
+    private final static Logger logger = ServerLoggers.systemLogger;
 
     private static final String javaExe = System.getProperty("java.home") + "/bin/java";
 

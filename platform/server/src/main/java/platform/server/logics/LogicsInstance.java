@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+import platform.server.ServerLoggers;
 import platform.server.Settings;
 import platform.server.context.LogicsInstanceContext;
 import platform.server.context.ThreadLocalContext;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LogicsInstance implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(LogicsInstance.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private final LogicsInstanceContext context;
 

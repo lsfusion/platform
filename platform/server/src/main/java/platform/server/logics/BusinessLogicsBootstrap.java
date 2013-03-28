@@ -4,11 +4,12 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.base.SystemUtils;
 import platform.base.col.lru.LRUCache;
+import platform.server.ServerLoggers;
 import platform.server.Settings;
 import platform.server.SystemProperties;
 
 public class BusinessLogicsBootstrap {
-    private static final Logger logger = Logger.getLogger(BusinessLogicsBootstrap.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private static FileSystemXmlApplicationContext springContext;
 

@@ -4,16 +4,15 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import platform.interop.DaemonThreadFactory;
+import platform.server.ServerLoggers;
 import platform.server.classes.LogicalClass;
 import platform.server.logics.property.CalcProperty;
 
 import java.sql.SQLException;
 import java.util.concurrent.*;
 
-import static platform.server.logics.ServerResourceBundle.getString;
-
 public class RestartManager implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(RestartManager.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private static final int restartDelayMinutes = 15;
 
@@ -46,7 +45,7 @@ public class RestartManager implements InitializingBean {
             return;
         }
 
-        logger.info(getString("logics.server.initiated.server.stopping"));
+        logger.info("Server Stopping initiated");
         try {
             restartFuture = scheduler.scheduleAtFixedRate(new Runnable() {
                 public void run() {
@@ -54,7 +53,7 @@ public class RestartManager implements InitializingBean {
                     if (canRestart) {
                         doRestart();
                     } else {
-                        logger.info(getString("logics.server.some.clients.prohibited.server.stopping"));
+                        logger.info("Some clients prohibited server stopping.");
                     }
                 }
             }, 0, restartDelayMinutes, TimeUnit.MINUTES);
@@ -70,7 +69,7 @@ public class RestartManager implements InitializingBean {
         //чтобы удалённый клиент продолжил выполнение
         scheduler.schedule(new Runnable() {
             public void run() {
-                logger.info(getString("logics.server.server.stopping"));
+                logger.info("Server stopping...");
                 BusinessLogicsBootstrap.stop();
             }
         }, 5, TimeUnit.SECONDS);
@@ -85,7 +84,7 @@ public class RestartManager implements InitializingBean {
             return;
         }
 
-        logger.info(getString("logics.server.stopping.canceled"));
+        logger.info("Server stopping canceled.");
         restartFuture.cancel(false);
 
         restartFuture = null;
@@ -101,7 +100,7 @@ public class RestartManager implements InitializingBean {
 
     public synchronized void forcedRestartIfPending() {
         if (isPendingRestart()) {
-            logger.info(getString("logics.server.all.clients.disconnected.server.will.be.stopped"));
+            logger.info("All clients were disconnected, so the server will be stopped.");
             doRestart();
         }
     }

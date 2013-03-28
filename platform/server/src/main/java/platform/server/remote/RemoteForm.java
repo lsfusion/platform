@@ -21,6 +21,7 @@ import platform.interop.form.FormUserPreferences;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportGenerationData;
 import platform.interop.form.ServerResponse;
+import platform.server.ServerLoggers;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.context.ContextAwareDaemonThreadFactory;
@@ -53,7 +54,7 @@ import static platform.base.BaseUtils.deserializeObject;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends ContextAwarePendingRemoteObject implements RemoteFormInterface {
-    private final static Logger logger = Logger.getLogger(RemoteForm.class);
+    private final static Logger logger = ServerLoggers.remoteLogger;
 
     public final F form;
     private final FormView richDesign;
@@ -77,7 +78,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
         this.reportManager = new FormReportManager(form);
-        this.requestLock = new SequentialRequestLock(getSID());
+        this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
@@ -554,26 +555,29 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private <T> T processRMIRequest(long requestIndex, Callable<T> request) {
-        requestLock.acquireRequestLock(requestIndex);
+        String invocationSID = generateInvocationSid(requestIndex);
+
+        requestLock.acquireRequestLock(invocationSID, requestIndex);
         try {
             return request.call();
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            requestLock.releaseRequestLock(requestIndex);
+            requestLock.releaseRequestLock(invocationSID, requestIndex);
         }
     }
 
     private ServerResponse executeServerInvocation(long requestIndex, RemotePausableInvocation invocation) throws RemoteException {
         numberOfFormChangesRequests.incrementAndGet();
-        requestLock.acquireRequestLock(requestIndex);
+        requestLock.acquireRequestLock(invocation.getSID(), requestIndex);
 
         currentInvocation = invocation;
         return invocation.execute();
     }
 
     private ServerResponse processPausableRMIRequest(final long requestIndex, final ERunnable runnable) throws RemoteException {
-        return executeServerInvocation(requestIndex, new RemotePausableInvocation("f#" + getSID() + "_rq#" + requestIndex, pausablesExecutor, this) {
+
+        return executeServerInvocation(requestIndex, new RemotePausableInvocation(generateInvocationSid(requestIndex), pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
@@ -596,9 +600,27 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 currentInvocation = null;
                 int left = numberOfFormChangesRequests.decrementAndGet();
                 assert left >= 0;
-                requestLock.releaseRequestLock(requestIndex);
+                requestLock.releaseRequestLock(getSID(), requestIndex);
             }
         });
+    }
+
+    private String generateInvocationSid(long requestIndex) {
+        String invocationSID;
+        if (ServerLoggers.pausablesInvocationLogger.isDebugEnabled()) {
+            StackTraceElement[] st = new Throwable().getStackTrace();
+            String methodName = st[2].getMethodName();
+
+            int aspectPostfixInd = methodName.indexOf("_aroundBody");
+            if (aspectPostfixInd != -1) {
+                methodName = methodName.substring(0, aspectPostfixInd);
+            }
+
+            invocationSID = "[f: " + getSID() + ", m: " + methodName + ", rq: " + requestIndex + "]";
+        } else {
+            invocationSID = "";
+        }
+        return invocationSID;
     }
 
     public ServerResponse continueServerInvocation(Object[] actionResults) throws RemoteException {

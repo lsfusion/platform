@@ -12,6 +12,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.ServerLoggers;
 import platform.server.WrapperContext;
 import platform.server.context.Context;
 import platform.server.context.ContextAwareDaemonThreadFactory;
@@ -33,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(Scheduler.class);
+    private static final Logger logger = ServerLoggers.systemLogger;
 
     private Context instanceContext;
 

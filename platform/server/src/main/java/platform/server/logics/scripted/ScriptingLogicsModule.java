@@ -17,6 +17,7 @@ import platform.base.col.interfaces.mutable.MExclSet;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.interop.ModalityType;
+import platform.server.ServerLoggers;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -79,7 +80,7 @@ import static platform.server.logics.PropertyUtils.*;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
-    private final static Logger scriptLogger = Logger.getLogger(ScriptingLogicsModule.class);
+    private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
     private final CompoundNameResolver<LP<?, ?>> lpResolver = new LPNameResolver();
     private final CompoundNameResolver<AbstractGroup> groupResolver = new AbstractGroupNameResolver();

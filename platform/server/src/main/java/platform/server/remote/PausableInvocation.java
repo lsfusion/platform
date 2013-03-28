@@ -1,13 +1,14 @@
 package platform.server.remote;
 
 import org.apache.log4j.Logger;
+import platform.server.ServerLoggers;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 
 public abstract class PausableInvocation<T, E extends Exception> {
-    protected final static Logger logger = Logger.getLogger(PausableInvocation.class);
+    protected final static Logger logger = ServerLoggers.pausablesInvocationLogger;
 
     protected final String sid;
     private final ExecutorService invocationsExecutor;
@@ -26,6 +27,10 @@ public abstract class PausableInvocation<T, E extends Exception> {
     public PausableInvocation(String sid, ExecutorService invocationsExecutor) {
         this.sid = sid;
         this.invocationsExecutor = invocationsExecutor;
+    }
+
+    public String getSID() {
+        return sid;
     }
 
     /**

@@ -18,6 +18,7 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.AlterationScriptLexer;
 import platform.server.AlterationScriptParser;
+import platform.server.ServerLoggers;
 import platform.server.SystemProperties;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.classes.*;
@@ -60,6 +61,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = Logger.getLogger(DBManager.class);
+    private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     private static Comparator<DBVersion> dbVersionComparator = new Comparator<DBVersion>() {
         @Override
@@ -135,7 +137,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.emailLM = businessLogics.emailLM;
         this.systemEventsLM = businessLogics.systemEventsLM;
         try {
-            logger.info("Synchronizing DB.");
+            systemLogger.info("Synchronizing DB.");
             synchronizeDB();
 
             setUserLoggableProperties();
@@ -906,10 +908,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             sql.addColumn(newProperty.tableName, newProperty.property.field);
                             // делаем запрос на перенос
 
-                            logger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
+                            systemLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
                             newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
                                                                            foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.sID));
-                            logger.info("Done");
+                            systemLogger.info("Done");
                             moved = true;
                         } else { // надо проверить что тип не изменился
                             if (!oldTable.findProperty(oldProperty.sID).type.equals(newProperty.property.field.type))

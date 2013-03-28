@@ -17,6 +17,7 @@ import platform.base.SystemUtils;
 import platform.base.col.MapFact;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.ReportGenerationData;
+import platform.server.ServerLoggers;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -53,7 +54,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
  */
 
 public class EmailActionProperty extends SystemActionProperty {
-    private final static Logger logger = Logger.getLogger(EmailActionProperty.class);
+    private final static Logger logger = ServerLoggers.mailLogger;
 
     public static enum FormStorageType {INLINE, ATTACH}
 

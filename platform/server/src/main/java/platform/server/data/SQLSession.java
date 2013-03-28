@@ -12,6 +12,7 @@ import platform.base.col.interfaces.mutable.MOrderExclMap;
 import platform.base.col.interfaces.mutable.mapvalue.*;
 import platform.server.Message;
 import platform.server.ParamMessage;
+import platform.server.ServerLoggers;
 import platform.server.Settings;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.ExecuteEnvironment;
@@ -34,8 +35,10 @@ import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.util.*;
 
+import static platform.server.ServerLoggers.systemLogger;
+
 public class SQLSession extends MutableObject {
-    private final static Logger logger = Logger.getLogger(SQLSession.class);
+    private static final Logger logger = ServerLoggers.sqlLogger;
 
     public SQLSyntax syntax;
     
@@ -464,7 +467,7 @@ public class SQLSession extends MutableObject {
         ResultSet result = statement.executeQuery();
         try {
             while(result.next()) {
-                BaseUtils.systemLogger.info(result.getObject("QUERY PLAN"));
+                systemLogger.info(result.getObject("QUERY PLAN"));
             }
         } finally {
             result.close();
@@ -487,7 +490,7 @@ public class SQLSession extends MutableObject {
                 PreparedStatement explainStatement = statement;
                 if(explainNoAnalyze)
                     explainStatement = getStatement("EXPLAIN " + command, paramObjects, connection, syntax);
-                BaseUtils.systemLogger.info(explainStatement.toString());
+                systemLogger.info(explainStatement.toString());
                 executeExplain(explainStatement);
                 result = 100;
             }
@@ -537,7 +540,7 @@ public class SQLSession extends MutableObject {
         env.before(this, connection, select);
 
         if(explainAnalyzeMode) {
-            BaseUtils.systemLogger.info(select);
+            systemLogger.info(select);
             executeExplain(getStatement("EXPLAIN ("+(explainNoAnalyze?"":"ANALYZE, BUFFERS, ")+"VERBOSE, COSTS) " + select, paramObjects, connection, syntax));
         }
 

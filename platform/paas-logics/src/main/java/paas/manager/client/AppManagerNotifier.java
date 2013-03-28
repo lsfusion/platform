@@ -9,6 +9,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import paas.manager.common.NotificationData;
 import platform.interop.DaemonThreadFactory;
+import platform.server.ServerLoggers;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.Executors;
 import static platform.server.lifecycle.LifecycleEvent.*;
 
 public class AppManagerNotifier extends LifecycleAdapter implements InitializingBean {
-    private final static Logger logger = Logger.getLogger(AppManagerNotifier.class);
+    private final static Logger logger = ServerLoggers.systemLogger;
 
     private ChannelFactory channelFactory;
 

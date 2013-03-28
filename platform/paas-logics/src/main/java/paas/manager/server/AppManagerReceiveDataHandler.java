@@ -3,9 +3,10 @@ package paas.manager.server;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.*;
 import paas.manager.common.NotificationData;
+import platform.server.ServerLoggers;
 
 public final class AppManagerReceiveDataHandler extends SimpleChannelHandler {
-    private final static Logger logger = Logger.getLogger(AppManagerReceiveDataHandler.class);
+    private final static Logger logger = ServerLoggers.systemLogger;
 
     private final AppManager applicationManager;
 
