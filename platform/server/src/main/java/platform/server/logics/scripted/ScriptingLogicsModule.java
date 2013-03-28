@@ -279,15 +279,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> captions = instCaptions;
         if (!isAbstract) {
             ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions);
-//            String newSID = cls.getSID();
-//            if (newSID.contains("_")) {
-//                int pos = newSID.indexOf("_");
-//                newSID = newSID.substring(0, pos+1) + Character.toUpperCase(newSID.charAt(pos+1)) + newSID.substring(pos+2);
-//            } else {
-//                newSID = BaseUtils.capitalize(newSID);
-//            }
-//            printStaticObjectsChanges2("D:/sot_class_rename.txt", newSID, cls.getSID(), instNames);
-//            printStaticObjectsChanges("D:/roman_class_migrate.txt", cls.getSID(), instNames);
             names = ((ConcreteCustomClass) cls).getStaticObjectsNames();
             captions = ((ConcreteCustomClass) cls).getStaticObjectsCaptions();
         }

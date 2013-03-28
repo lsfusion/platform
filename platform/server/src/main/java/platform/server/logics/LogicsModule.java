@@ -345,32 +345,6 @@ public abstract class LogicsModule {
         }
     }
 
-    protected static void printStaticObjectsChanges2(String path, String newSID, String oldSID, List<String> sids) {
-        if (!newSID.equals(oldSID)) {
-            try {
-                PrintWriter w = new PrintWriter(new FileWriter(path, true));
-                for (String sid : sids) {
-                    w.print("OBJECT " + oldSID + "." + sid + " -> " + newSID + "." + sid + "\n");
-                }
-                w.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    protected static void printClassNamesChanges(String path, String newSID, String oldSID) {
-        if (!newSID.equals(oldSID)) {
-            try {
-                PrintWriter w = new PrintWriter(new FileWriter(path, true));
-                w.print("CLASS " + oldSID + " -> " + newSID + "\n");
-                w.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
         assert name.charAt(0) >= 'A' && name.charAt(0) <= 'Z';
