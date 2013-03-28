@@ -143,12 +143,8 @@ public class TableTransferHandler extends TransferHandler {
 
         if (table.isEmpty()) {
             row.add(null);
-        } else {
-            for (int i = 0; i < table.get(0).size(); i++) {
-                row.add(null);
-            }
+            table.add(row);
         }
-        table.add(row);
 
         return table;
     }
