@@ -16,21 +16,8 @@ public class PropertyController {
     protected ClientGroupObjectValue columnKey;
     protected ClientPropertyDraw key;
 
-    public ClientPropertyDraw getKey() {
-        return key;
-    }
-
     protected final PanelView view;
     protected ExternalScreenComponent extView;
-
-    // возвращаем только как компоненту, большего пока не надо
-    public JComponent getView() {
-        return view.getComponent();
-    }
-
-    public PanelView getPanelView() {
-        return view;
-    }
 
     protected final ClientFormController form;
 
@@ -66,6 +53,16 @@ public class PropertyController {
         }
     }
 
+
+    public ClientPropertyDraw getKey() {
+        return key;
+    }
+
+    // возвращаем только как компоненту, большего пока не надо
+    public JComponent getView() {
+        return view.getComponent();
+    }
+
     public void addView(ClientFormLayout formLayout) {
         formLayout.add(key, getView());
         if (key.externalScreen != null) {
@@ -78,6 +75,10 @@ public class PropertyController {
         if (key.externalScreen != null) {
             key.externalScreen.remove(form.getID(), extView);
         }
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        view.setReadOnly(readOnly);
     }
 
     public void setValue(Object ivalue) {

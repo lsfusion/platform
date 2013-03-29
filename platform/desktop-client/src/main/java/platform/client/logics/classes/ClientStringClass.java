@@ -3,8 +3,8 @@ package platform.client.logics.classes;
 import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -94,16 +94,16 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new StringPropertyRenderer(property);
     }
 
     @Override
-    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new StringPropertyEditor(property, value, length, false);
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new StringPropertyEditor(property, value, length, true);
     }
 

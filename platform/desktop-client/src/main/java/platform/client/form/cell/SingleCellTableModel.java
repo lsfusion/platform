@@ -9,6 +9,7 @@ final class SingleCellTableModel extends AbstractTableModel {
     private final ClientGroupObjectValue columnKey;
     private ClientPropertyDraw property;
     private Object value;
+    private boolean readOnly;
 
     public SingleCellTableModel(ClientGroupObjectValue columnKey) {
         this.columnKey = columnKey;
@@ -30,6 +31,10 @@ final class SingleCellTableModel extends AbstractTableModel {
         this.value = value;
     }
 
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     public ClientGroupObjectValue getColumnKey() {
         return columnKey;
     }
@@ -43,7 +48,7 @@ final class SingleCellTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        return true;
+        return !readOnly;
     }
 
     public Object getValueAt(int row, int col) {

@@ -3,8 +3,8 @@ package platform.client.logics.classes;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.cell.DataPanelView;
 import platform.client.form.cell.PanelView;
 import platform.client.form.editor.IntegerPropertyEditor;
@@ -61,7 +61,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new IntegerPropertyRenderer(property);
     }
 
@@ -69,17 +69,17 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new DataPanelView(form, key, columnKey);
     }
 
-    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         assert false:"shouldn't be used anymore";
         return null;
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditor getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         assert false:"shouldn't be used anymore";
         return null;
     }
 
-    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return new IntegerPropertyEditor(value, (NumberFormat) ClientIntegerClass.instance.getDefaultFormat(), null, Integer.class);
     }
 

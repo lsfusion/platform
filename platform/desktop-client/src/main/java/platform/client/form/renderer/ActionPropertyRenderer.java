@@ -1,13 +1,13 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class ActionPropertyRenderer extends JButton implements PropertyRendererComponent {
+public class ActionPropertyRenderer extends JButton implements PropertyRenderer {
     private static final String defaultCaption = "...";
 
     private final Color defaultBackground = getBackground();
@@ -46,6 +46,6 @@ public class ActionPropertyRenderer extends JButton implements PropertyRendererC
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
     }
 }

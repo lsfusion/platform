@@ -103,6 +103,10 @@ public class GPanelController {
         propertyControllers.get(property).setPropertyCaptions(propertyCaptions);
     }
 
+    public void updateReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
+        propertyControllers.get(property).setReadOnlyValues(readOnlyValues);
+    }
+
     public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
         propertyControllers.get(property).setColumnKeys(columnKeys);
     }
@@ -133,6 +137,7 @@ public class GPanelController {
         private Map<GGroupObjectValue, Object> values;
 
         private Map<GGroupObjectValue, Object> propertyCaptions;
+        private Map<GGroupObjectValue, Object> readOnly;
         private Map<GGroupObjectValue, Object> cellBackgroundValues;
 
         private Map<GGroupObjectValue, Object> cellForegroundValues;
@@ -208,6 +213,7 @@ public class GPanelController {
 
         private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
             renderer.setValue(values.get(columnKey));
+            renderer.setReadOnly(readOnly != null && readOnly.get(columnKey) != null);
 
             Object background = rowBackground;
             if (background == null && cellBackgroundValues != null) {
@@ -252,6 +258,13 @@ public class GPanelController {
         public void setPropertyCaptions(Map<GGroupObjectValue,Object> propertyCaptions) {
             if (columnsUpdated || !GwtSharedUtils.nullEquals(this.propertyCaptions, propertyCaptions)) {
                 this.propertyCaptions = propertyCaptions;
+                columnsUpdated = true;
+            }
+        }
+
+        public void setReadOnlyValues(Map<GGroupObjectValue,Object> readOnly) {
+            if (columnsUpdated || !GwtSharedUtils.nullEquals(this.readOnly, readOnly)) {
+                this.readOnly = readOnly;
                 columnsUpdated = true;
             }
         }

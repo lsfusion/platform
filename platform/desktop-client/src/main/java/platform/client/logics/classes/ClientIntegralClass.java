@@ -1,7 +1,7 @@
 package platform.client.logics.classes;
 
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
@@ -46,9 +46,9 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         return format;
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new IntegerPropertyRenderer(property);
     }
 
-    public abstract PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property);
+    public abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 }

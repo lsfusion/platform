@@ -2,8 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.cell.ActionPanelView;
 import platform.client.form.cell.PanelView;
 import platform.client.form.editor.ActionPropertyEditor;
@@ -48,7 +48,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ActionPropertyRenderer(property);
     }
 
@@ -56,7 +56,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return new ActionPanelView(key, columnKey, form);
     }
 
-    protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new ActionPropertyEditor(property);
     }
 

@@ -12,9 +12,6 @@ import platform.gwt.form.shared.view.grid.GridEditableCell;
 import java.util.Arrays;
 
 public class GSinglePropertyTable extends GPropertyTable {
-    private String background;
-    private String foreground;
-
     /**
      * Default style's overrides
      */
@@ -29,6 +26,10 @@ public class GSinglePropertyTable extends GPropertyTable {
     private final GPropertyDraw property;
     private GGroupObjectValue columnKey;
     private Object value;
+    private boolean readOnly = false;
+
+    private String background;
+    private String foreground;
 
     public GSinglePropertyTable(GFormController iform, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         super(iform, GSINGLE_PROPERTY_TABLE_RESOURCE, true);
@@ -55,6 +56,13 @@ public class GSinglePropertyTable extends GPropertyTable {
     public void setValue(Object value) {
         if (!GwtSharedUtils.nullEquals(this.value, value)) {
             this.value = value;
+            redraw();
+        }
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        if (this.readOnly != readOnly) {
+            this.readOnly = readOnly;
             redraw();
         }
     }
@@ -100,7 +108,7 @@ public class GSinglePropertyTable extends GPropertyTable {
 
     @Override
     public boolean isEditable(Cell.Context context) {
-        return true;
+        return !readOnly;
     }
 
     @Override

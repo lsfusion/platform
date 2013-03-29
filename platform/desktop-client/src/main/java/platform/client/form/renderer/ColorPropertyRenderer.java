@@ -1,6 +1,6 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientColorClass;
 
@@ -29,9 +29,9 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer {
     public void drawBackground(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
-                setBackground(new Color(value.getRGB() & PropertyRendererComponent.FOCUSED_CELL_BACKGROUND.getRGB()));
+                setBackground(new Color(value.getRGB() & PropertyRenderer.FOCUSED_CELL_BACKGROUND.getRGB()));
             } else {
-                setBackground(new Color(value.getRGB() & PropertyRendererComponent.SELECTED_ROW_BACKGROUND.getRGB()));
+                setBackground(new Color(value.getRGB() & PropertyRenderer.SELECTED_ROW_BACKGROUND.getRGB()));
             }
         } else {
             setBackground(value);
@@ -40,6 +40,6 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer {
 
     @Override
     public void paintAsSelected() {
-        setBackground(new Color(value.getRGB() & PropertyRendererComponent.SELECTED_CELL_BACKGROUND.getRGB()));
+        setBackground(new Color(value.getRGB() & PropertyRenderer.SELECTED_CELL_BACKGROUND.getRGB()));
     }
 }

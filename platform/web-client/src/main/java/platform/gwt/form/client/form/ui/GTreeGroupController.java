@@ -8,10 +8,7 @@ import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GFormChanges;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
-import platform.gwt.form.shared.view.reader.GBackgroundReader;
-import platform.gwt.form.shared.view.reader.GCaptionReader;
-import platform.gwt.form.shared.view.reader.GForegroundReader;
-import platform.gwt.form.shared.view.reader.GPropertyReader;
+import platform.gwt.form.shared.view.reader.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,6 +166,16 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
             panel.updatePropertyCaptions(property, values);
         } else {
             tree.updatePropertyCaptions(property, values);
+        }
+    }
+
+    @Override
+    public void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values) {
+        GPropertyDraw property = formController.getProperty(reader.readerID);
+        if (panel.containsProperty(property)) {
+            panel.updateReadOnlyValues(property, values);
+        } else {
+            tree.updateReadOnlyValues(property, values);
         }
     }
 

@@ -1233,6 +1233,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 fillChangedReader(drawProperty.propertyFooter, drawProperty.footerReader, columnGroupGrids, hidden, read, mReadProperties, changedProps);
 
+                fillChangedReader(drawProperty.propertyReadOnly, drawProperty.readOnlyReader, drawGridObjects, hidden, read, mReadProperties, changedProps);
+
                 fillChangedReader(drawProperty.propertyBackground, drawProperty.backgroundReader, drawGridObjects, hidden, read, mReadProperties, changedProps);
 
                 fillChangedReader(drawProperty.propertyForeground, drawProperty.foregroundReader, drawGridObjects, hidden, read, mReadProperties, changedProps);

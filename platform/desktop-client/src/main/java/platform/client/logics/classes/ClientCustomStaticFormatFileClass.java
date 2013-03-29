@@ -1,7 +1,7 @@
 package platform.client.logics.classes;
 
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.CustomStaticFormatFileRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -65,11 +65,11 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
         return filterDescription;
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new CustomStaticFormatFileRenderer(property, filterExtensions[0]);
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
         return new FilePropertyEditor(multiple, storeName, filterDescription, filterExtensions);
     }
 }

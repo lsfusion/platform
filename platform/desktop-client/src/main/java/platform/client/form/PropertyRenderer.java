@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public interface PropertyRendererComponent {
+public interface PropertyRenderer {
     Color SELECTED_ROW_BORDER_COLOR = new Color(175, 175, 255);
     Color SELECTED_ROW_BACKGROUND = new Color(249, 249, 255);
     Color SELECTED_CELL_BACKGROUND = new Color(237, 238, 244);

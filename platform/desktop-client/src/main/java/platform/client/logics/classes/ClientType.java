@@ -1,8 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.cell.PanelView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -27,15 +27,15 @@ public interface ClientType {
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(ClientPropertyDraw property);
+    PropertyRenderer getRendererComponent(ClientPropertyDraw property);
 
     PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 
-    PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
+    PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value);
 
-    PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
+    PropertyEditor getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException;
 
-    PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value);
+    PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value);
 
     Object parseString(String s) throws ParseException;
 

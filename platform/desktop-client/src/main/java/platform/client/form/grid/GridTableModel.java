@@ -13,15 +13,24 @@ import static platform.base.BaseUtils.toCaption;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];
+    private boolean[][] readOnly = new boolean[0][0];
     private ClientPropertyDraw[] columnProps = new ClientPropertyDraw[0];
     private ClientGroupObjectValue[] columnKeys = new ClientGroupObjectValue[0];
     private String[] columnNames = new String[0];
     private Color[][] backgroundColor = new Color[0][];
     private Color[][] foregroundColor = new Color[0][];
 
-    public void updateRows(List<ClientGroupObjectValue> rowKeys, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values, Map<ClientGroupObjectValue, Object> mapRowBackgroundValues, Map<ClientGroupObjectValue, Object> mapRowForegroundValues, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues, Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
+    public void updateRows(List<ClientGroupObjectValue> rowKeys,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapReadOnlyValues,
+                           Map<ClientGroupObjectValue, Object> mapRowBackgroundValues,
+                           Map<ClientGroupObjectValue, Object> mapRowForegroundValues,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapBackgroundValues,
+                           Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mapForegroundValues) {
+
         if (data.length == 0 || data[0].length != columnProps.length || data.length != rowKeys.size()) {
             data = new Object[rowKeys.size()][columnProps.length];
+            readOnly = new boolean[rowKeys.size()][columnProps.length];
             backgroundColor = new Color[rowKeys.size()][columnProps.length];
             foregroundColor = new Color[rowKeys.size()][columnProps.length];
         }
@@ -35,10 +44,12 @@ public class GridTableModel extends AbstractTableModel {
                 ClientGroupObjectValue cellKey = new ClientGroupObjectValue(rowKey, columnKeys[j]);
 
                 Map<ClientGroupObjectValue, Object> propValues = values.get(columnProps[j]);
+                Map<ClientGroupObjectValue, Object> readOnlyValues = mapReadOnlyValues.get(columnProps[j]);
                 Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProps[j]);
                 Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProps[j]);
 
                 data[i][j] = propValues != null ? propValues.get(cellKey) : null;
+                readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
 
                 if (rowBackground != null) {
                     backgroundColor[i][j] = (Color) rowBackground;
@@ -112,20 +123,24 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int col) {
-        if (row < 0 || row >= getRowCount() || col < 0 || col >= getColumnCount()) {
+        if (!isCellInBounds(row, col)) {
             return true;
         }
 
-        return !columnProps[col].isReadOnly() && !(columnProps[col].baseType instanceof ClientObjectType);
+        return !readOnly[row][col] && !columnProps[col].isReadOnly() && !(columnProps[col].baseType instanceof ClientObjectType);
     }
 
     public boolean isCellFocusable(int row, int col) {
-        if (row < 0 || row >= getRowCount() || col < 0 || col >= getColumnCount()) {
+        if (!isCellInBounds(row, col)) {
             return false;
         }
 
         Boolean focusable = columnProps[col].focusable;
         return focusable == null || focusable;
+    }
+
+    private boolean isCellInBounds(int row, int col) {
+        return row >= 0 && row < getRowCount() && col >= 0 && col < getColumnCount();
     }
 
     public Object getValueAt(int row, int col) {

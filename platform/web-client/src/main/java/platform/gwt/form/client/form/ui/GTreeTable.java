@@ -132,6 +132,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    public void updateReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
+        if (readOnlyValues != null) {
+            tree.setReadOnlyValues(property, readOnlyValues);
+        }
+    }
+
     @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
@@ -345,13 +351,19 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return getColumnProperties().indexOf(property) + 1;
     }
 
-    private GGroupObject getRowGroup(int row) {
-        return currentRecords.get(row).getGroup();
+    @Override
+    String getCellBackground(GridDataRecord rowValue, int row, int column) {
+        return rowValue.getBackground(column);
+    }
+
+    @Override
+    String getCellForeground(GridDataRecord rowValue, int row, int column) {
+        return rowValue.getForeground(column);
     }
 
     @Override
     public GPropertyDraw getProperty(Cell.Context context) {
-        return tree.getProperty(getRowGroup(context.getIndex()), context.getColumn() - 1);
+        return tree.getProperty(((GTreeGridRecord) context.getRowValue()).getGroup(), context.getColumn() - 1);
     }
 
     @Override
@@ -361,11 +373,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public boolean isEditable(Cell.Context context) {
-        if (context.getColumn() != 0) {
-            GPropertyDraw property = getProperty(context);
-            return property != null && !property.isReadOnly();
-        }
-        return false;
+        GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
+        return tree.isEditable(record.getGroup(), context.getColumn() - 1, record.getKey());
     }
 
     @Override

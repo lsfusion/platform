@@ -1,6 +1,6 @@
 package platform.client.form.cell;
 
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ import static platform.client.SwingUtils.computeAbsoluteLocation;
 public class ClientAbstractCellEditor extends AbstractCellEditor implements PropertyTableCellEditor {
     private final JTable jTable;
     private final CellTableInterface table;
-    private PropertyEditorComponent propertyEditor;
+    private PropertyEditor propertyEditor;
 
     public ClientAbstractCellEditor(CellTableInterface table) {
         assert table instanceof JTable;

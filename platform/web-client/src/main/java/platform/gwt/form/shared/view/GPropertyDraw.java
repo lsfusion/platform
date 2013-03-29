@@ -47,6 +47,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GCaptionReader captionReader;
     public GFooterReader footerReader;
+    public GReadOnlyReader readOnlyReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
 

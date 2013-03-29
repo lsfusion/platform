@@ -5,7 +5,7 @@ import platform.client.form.cell.PropertyTableCellEditor;
 import java.awt.*;
 import java.util.EventObject;
 
-public interface PropertyEditorComponent {
+public interface PropertyEditor {
 
     void setTableEditor(PropertyTableCellEditor tableEditor);
 

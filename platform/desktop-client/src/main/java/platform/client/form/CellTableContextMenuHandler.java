@@ -69,9 +69,9 @@ public class CellTableContextMenuHandler extends MouseAdapter implements KeyList
 
     public class ContextMenuPopup extends JPopupMenu {
         public ContextMenuPopup() {
-            setBackground(PropertyRendererComponent.SELECTED_ROW_BACKGROUND);
-            setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, PropertyRendererComponent.SELECTED_ROW_BORDER_COLOR,
-                                                      getBackground(), Color.GRAY, PropertyRendererComponent.SELECTED_ROW_BORDER_COLOR));
+            setBackground(PropertyRenderer.SELECTED_ROW_BACKGROUND);
+            setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, PropertyRenderer.SELECTED_ROW_BORDER_COLOR,
+                                                      getBackground(), Color.GRAY, PropertyRenderer.SELECTED_ROW_BORDER_COLOR));
         }
 
         public void show(final int rowIndex, final int columnIndex, Point point, LinkedHashMap<String, String> items) {

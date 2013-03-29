@@ -2,7 +2,7 @@ package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
 import platform.client.StartupProperties;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
@@ -56,7 +56,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return NumberFormat.getInstance().format(obj);
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design);
     }
 

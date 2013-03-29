@@ -1,6 +1,6 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 
@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
-public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditorComponent {
+public abstract class TextFieldPropertyEditor extends JFormattedTextField implements PropertyEditor {
     private static final String CANCEL_EDIT_ACTION = "reset-field-edit";
 
     protected PropertyTableCellEditor tableEditor;

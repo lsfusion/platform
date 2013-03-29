@@ -3,7 +3,7 @@ package platform.client.logics.classes;
 import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.DataPanelView;
 import platform.client.form.cell.PanelView;
 import platform.client.logics.ClientGroupObjectValue;
@@ -83,19 +83,19 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return new DataPanelView(form, key, columnKey);
     }
 
-    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         return getDataClassEditorComponent(value, property);
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditor getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         return getDataClassEditorComponent(value, property);
     }
 
-    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
         return getDataClassEditorComponent(value, property);
     }
 
-    protected abstract PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property);
+    protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;

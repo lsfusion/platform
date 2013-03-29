@@ -40,6 +40,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
+    public ReadOnlyReader readOnlyReader = new ReadOnlyReader();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
@@ -78,7 +79,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int maximumCharWidth;
     public int preferredCharWidth;
 
-    private transient PropertyRendererComponent renderer;
+    private transient PropertyRenderer renderer;
 
     protected Format format;
 
@@ -155,11 +156,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return editBindingMap == null ? null : editBindingMap.getContextMenuItems();
     }
 
-    public PropertyEditorComponent getValueEditorComponent(ClientFormController form, Object value) {
+    public PropertyEditor getValueEditorComponent(ClientFormController form, Object value) {
         return baseType.getValueEditorComponent(form, this, value);
     }
 
-    public PropertyRendererComponent getRendererComponent() {
+    public PropertyRenderer getRendererComponent() {
         if (renderer == null) {
             renderer = baseType.getRendererComponent(this);
         }
@@ -557,6 +558,28 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.FOOTER;
+        }
+    }
+
+    public class ReadOnlyReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return ClientPropertyDraw.this.shouldBeDrawn(form);
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, GroupObjectLogicsSupplier controller) {
+            controller.updateReadOnlyValues(ClientPropertyDraw.this, readKeys);
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.READONLY;
         }
     }
 

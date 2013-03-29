@@ -1,6 +1,6 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 
 import javax.swing.*;
@@ -9,7 +9,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
-public abstract class DialogBasedPropertyEditor implements PropertyEditorComponent {
+public abstract class DialogBasedPropertyEditor implements PropertyEditor {
 
     protected PropertyTableCellEditor tableEditor;
 

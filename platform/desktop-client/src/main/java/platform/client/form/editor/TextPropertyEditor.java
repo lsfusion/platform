@@ -2,7 +2,7 @@ package platform.client.form.editor;
 
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 import platform.interop.KeyStrokes;
@@ -19,7 +19,7 @@ import java.util.EventObject;
 
 
 @SuppressWarnings({"FieldCanBeLocal"})
-public class TextPropertyEditor extends JScrollPane implements PropertyEditorComponent, PropertyChangeListener {
+public class TextPropertyEditor extends JScrollPane implements PropertyEditor, PropertyChangeListener {
     private final int WIDTH = 250;
     private final int HEIGHT = 200;
     private String typedText;

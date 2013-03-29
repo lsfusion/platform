@@ -1,8 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.ColorPropertyEditor;
 import platform.client.form.renderer.ColorPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -38,12 +38,12 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ColorPropertyRenderer(property);
     }
 
     @Override
-    protected PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new ColorPropertyEditor(value);
     }
 

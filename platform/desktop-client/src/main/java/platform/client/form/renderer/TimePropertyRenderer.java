@@ -1,6 +1,5 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;

@@ -3,7 +3,6 @@ package platform.client.form.panel;
 import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
-import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.PropertyController;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -15,13 +14,13 @@ import java.util.List;
 
 public class PanelController {
     private ClientFormController form;
-    private GroupObjectLogicsSupplier logicsSupplier;
     private ClientFormLayout formLayout;
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> properties = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>>();
 
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnlyValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
 
@@ -31,8 +30,7 @@ public class PanelController {
     private Color rowForeground;
 
 
-    public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout iformLayout) {
-        logicsSupplier = ilogicsSupplier;
+    public PanelController(ClientFormController iform, ClientFormLayout iformLayout) {
         form = iform;
         formLayout = iformLayout;
     }
@@ -73,6 +71,7 @@ public class PanelController {
         cellBackgroundValues.remove(property);
         cellForegroundValues.remove(property);
         values.remove(property);
+        readOnlyValues.remove(property);
     }
 
     public boolean containsProperty(ClientPropertyDraw property) {
@@ -102,12 +101,14 @@ public class PanelController {
     public void update() {
         for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> entry : values.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
+            Map<ClientGroupObjectValue, Object> propertyValues = entry.getValue();
+            Map<ClientGroupObjectValue, Object> propertyReadOnly = readOnlyValues.get(property);
             Map<ClientGroupObjectValue, Object> propertyCaptions = captions.get(property);
             Map<ClientGroupObjectValue, PropertyController> propControllers = properties.get(property);
 
             Collection<ClientGroupObjectValue> drawKeys = new ArrayList<ClientGroupObjectValue>(); // чисто из-за autohide
             for (ClientGroupObjectValue columnKey : columnKeys.get(property)) { // именно по columnKeys чтобы сохранить порядок
-                Object value = entry.getValue().get(columnKey);
+                Object value = propertyValues.get(columnKey);
 
                 if (!(property.autoHide && value == null) // если не прятать при значении null
                         && !(propertyCaptions != null && propertyCaptions.get(columnKey) == null)) // и если значения propertyCaption != null
@@ -124,6 +125,8 @@ public class PanelController {
                     }
 
                     propController.setValue(value);
+
+                    propController.setReadOnly(propertyReadOnly != null && propertyReadOnly.get(columnKey) != null);
 
                     drawKeys.add(columnKey);
                 }
@@ -203,6 +206,9 @@ public class PanelController {
         this.captions.put(property, captions);
     }
 
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {
+        this.readOnlyValues.put(property, readOnlyValues);
+    }
 
     public void updateCellBackgroundValue(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         this.cellBackgroundValues.put(property, cellBackgroundValues);

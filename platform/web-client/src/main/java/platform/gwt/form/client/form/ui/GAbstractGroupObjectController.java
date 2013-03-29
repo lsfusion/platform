@@ -36,10 +36,6 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
         return panel.containsProperty(property);
     }
 
-    @Override
-    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
-    }
-
     public void addToToolbar(Widget tool) {
         toolbar.addTool(tool);
     }
@@ -104,4 +100,8 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
 
     protected abstract void changeFilter(List<GPropertyFilter> conditions);
     public abstract boolean focusFirstWidget();
+
+    @Override
+    public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
+    }
 }

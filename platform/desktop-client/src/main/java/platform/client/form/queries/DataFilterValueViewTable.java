@@ -2,8 +2,8 @@ package platform.client.form.queries;
 
 import platform.client.SwingUtils;
 import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.TableTransferHandler;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.client.logics.ClientPropertyDraw;
@@ -127,14 +127,14 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
     private final class Renderer extends JComponent implements TableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            PropertyRendererComponent renderer = getProperty().getRendererComponent();
+            PropertyRenderer renderer = getProperty().getRendererComponent();
             renderer.setValue(value, isSelected, hasFocus);
             return renderer.getComponent();
         }
     }
 
     private final class Editor extends AbstractCellEditor implements PropertyTableCellEditor {
-        private PropertyEditorComponent propertyEditor;
+        private PropertyEditor propertyEditor;
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {

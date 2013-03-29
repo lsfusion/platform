@@ -20,6 +20,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     public final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
     public final List<ClientPropertyDraw> columnProperties = new ArrayList<ClientPropertyDraw>();
     public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    public final Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnly = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     public final Map<ClientGroupObject, List<ClientPropertyDraw>> groupPropsMap = new HashMap<ClientGroupObject, List<ClientPropertyDraw>>();
     private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
     private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<ClientGroupObjectValue, Object>();
@@ -123,8 +124,14 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
 
     @Override
     public boolean isCellEditable(Object node, int column) {
-        ClientPropertyDraw property = getProperty(node, column);
-        return column != 0 && property != null && !property.isReadOnly();
+        if (column != 0) {
+            ClientPropertyDraw property = getProperty(node, column);
+            if (property != null && !property.isReadOnly()) {
+                Map<ClientGroupObjectValue, Object> propReadOnly = readOnly.get(property);
+                return propReadOnly == null || propReadOnly.get(((TreeGroupNode) node).key) == null;
+            }
+        }
+        return false;
     }
 
     public Object getPropertyValue(Object node, ClientPropertyDraw property) {
@@ -270,6 +277,10 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
                 removeFromGroupNodes(groupNode.group, groupNode);
             }
         }
+    }
+
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues) {
+        BaseUtils.putUpdate(readOnly, property, ivalues, false);
     }
 
     public void updateDrawPropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> ivalues, boolean update) {

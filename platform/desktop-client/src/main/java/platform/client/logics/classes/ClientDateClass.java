@@ -3,8 +3,8 @@ package platform.client.logics.classes;
 import platform.base.DateConverter;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -41,11 +41,11 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
         return getSimpleDateFormat();
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new DatePropertyRenderer(property);
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new DatePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
     }
 

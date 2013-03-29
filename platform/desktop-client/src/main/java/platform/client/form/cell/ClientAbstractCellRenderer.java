@@ -1,6 +1,6 @@
 package platform.client.form.cell;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
@@ -25,7 +25,7 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
 
         ClientPropertyDraw property = cellTable.getProperty(row, column);
 
-        PropertyRendererComponent currentComp;
+        PropertyRenderer currentComp;
         if (property != null) {
             currentComp = property.getRendererComponent();
             currentComp.setValue(value, isSelected, hasFocus);

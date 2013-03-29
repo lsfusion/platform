@@ -92,6 +92,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).backgroundReader;
             case PropertyReadType.CELL_FOREGROUND:
                 return clientForm.getProperty(inStream.readInt()).foregroundReader;
+            case PropertyReadType.READONLY:
+                return clientForm.getProperty(inStream.readInt()).readOnlyReader;
             case PropertyReadType.ROW_BACKGROUND:
                 return clientForm.getGroupObject(inStream.readInt()).rowBackgroundReader;
             case PropertyReadType.ROW_FOREGROUND:

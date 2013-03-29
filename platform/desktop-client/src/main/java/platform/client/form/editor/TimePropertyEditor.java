@@ -1,7 +1,7 @@
 package platform.client.form.editor;
 
 import com.toedter.calendar.JSpinnerDateEditor;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 
@@ -17,7 +17,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.EventObject;
 
-public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEditorComponent {
+public class TimePropertyEditor extends JSpinnerDateEditor implements PropertyEditor {
     private PropertyTableCellEditor tableEditor;
 
     private final SimpleDateFormat format;

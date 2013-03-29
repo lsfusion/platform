@@ -531,7 +531,7 @@ FORM documentArticle 'По документам (caption)' TITLE 'По доку�
 // Object definition syntax:
 // [alias=] className ['<caption>'] [ON CHANGE action]
 
-OBJECTS document=Document, article=Article
+    OBJECTS document=Document, article=Article
 
 // TreeGroup list syntax:
 // TREE [SID] [alias=] className ['<caption>'] [PARENT <property>] | [groupAlias=] (object1 definition, ..., objectN definition) [PARENT <properties separated with space>],
@@ -547,27 +547,28 @@ OBJECTS document=Document, article=Article
 //                     [HEADER <mappedProperty>] [FOOTER <mappedProperty>] [READONLYIF <mappedProperty>] [FORCE PANEL | HIDE | GRID] [TODRAW <groupObject>]
 //                     [FOREGROUND <mappedProperty>] [ON (CHANGE | CHANGEWYS | SHORTCUT) <mappedAction>] [(BEFORE | AFTER) (propertyAlias | <mappedProperty>)] [EVENTID 'id']
 
-PROPERTIES(document) store, testPush, testPush2, copy, date,
-                     storeName ON CHANGE onChangeStoreName(document),
-                     documentTypeString
-PROPERTIES name(article)
-PROPERTIES quantity(document, article)
-PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article), selCur(document, article), selAll(document, article), selArt(article)
-PROPERTIES ADDOBJ(document), ADDOBJ(article), testAbstractAction(document)
-PROPERTIES globalInt()
+    PROPERTIES(document) store, testPush, testPush2, copy, date,
+                         storeName ON CHANGE onChangeStoreName(document),
+                         documentTypeString
+    PROPERTIES name(article)
+    PROPERTIES quantity(document, article)
+    PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article), selCur(document, article), selAll(document, article), selArt(article)
+    PROPERTIES ADDOBJ(document), ADDOBJ(article), testAbstractAction(document)
+    PROPERTIES globalInt()
 
 // Filters list syntax:
 // FILTERS propertyExpression1, ..., propertyExpressionK
-FILTERS name(article)
+    FILTERS name(article)
 
 // Events list syntax:
 // EVENTS
 // ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) action1,
 // ...
 // ON (INIT | APPLY | OK | CANCEL | CLOSE | DROP) actionN
-EVENTS
-    ON CANCEL cancledMessage(),
-    ON APPLY appliedMessage();
+    EVENTS
+        ON CANCEL cancledMessage(),
+        ON APPLY appliedMessage()
+;
 
 // Hints list syntax:
 // HINTNOUPDATE | HINTTABLE propertyName1, ..., propertyNameN
@@ -619,8 +620,8 @@ testAction 'Показать "По документам" 3 раза' = ACTION() 
 };
 
 FORM testModalForm 'Тестовая форма'
-OBJECTS article=Article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store=Store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
-PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
+    OBJECTS article=Article, i=INTEGER 'Новое имя товара ("Товар %N%"):' FIXED PANEL, store=Store, s=STRING[50] 'Новое имя склада:' FIXED PANEL
+    PROPERTIES name(article), name(store), OBJVALUE(s), OBJVALUE(i)
 ;
 
 showTestModalForm 'Показать док-модальную форму' = ACTION() {
@@ -642,8 +643,8 @@ remindPasswordEmail 'Выслать пароль на этот email' (u, to) = 
     ;
 
 FORM testEmailForm 'Тестирование EMAIL'
-OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=CustomUser
-PROPERTIES OBJVALUE(s), loginCustomUser(u), passwordCustomUser(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
+    OBJECTS s=STRING[100] 'Email:' FIXED PANEL, u=CustomUser
+    PROPERTIES OBJVALUE(s), loginCustomUser(u), passwordCustomUser(u), emailContact(u), ADDOBJ(u), remindPasswordEmail(u, s) TODRAW s
 ;
 
 stime 'Время' (store) = DATA TIME (Store) IN base;
@@ -676,32 +677,32 @@ loadf(s) = ACTION OPENFILE simage(s);
 savef(s) = ACTION LOADFILE simage(s);
 
 FORM storeArticle 'По складам'
-OBJECTS s=Store '-Склад-', a=Article
-PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
-PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
-PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
-PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
-FILTERGROUP filters1
-    FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
-ORDER BY name(s) DESC, foo, ssel
+    OBJECTS s=Store '-Склад-', a=Article
+    PROPERTIES ssel=SELECTION(s), sname=name(s), obja=OBJVALUE(a), aname=name(a)
+    PROPERTIES TODRAW s FORCE PANEL copyStoreNameToArticles(s), copyStoreNameToArticle(s, a), copyStoreNameToArticleError(s, a), createNewStore(), showDocumentArticleModalForm(), showTestModalForm() TOOLBAR, testRequestInput(s) TOOLBAR
+    PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
+    PROPERTIES(s) storeSizeName, ssc1=storeSizeCode, storeIsHuge, stime, sdate, sdatetime, ssi=Features.simage, spdf, scustom, sexcel, testAbstractAction, editActionTest, loadf, savef
+    PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
+    FILTERGROUP filters1
+        FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
+    ORDER BY name(s) DESC, foo, ssel
 ;
 
 EXTEND FORM storeArticle
-PROPERTIES(s) ssw=sword AFTER ssi
+    PROPERTIES(s) ssw=sword AFTER ssi
 ;
 
 EXTEND FORM storeArticle
-PROPERTIES(s) scolor AFTER ssw
+    PROPERTIES(s) scolor AFTER ssw
 ;
 
 FORM editStore 'Редактирование склада'
-OBJECTS s=Store FIXED PANEL
-PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
-// To use this form as EDIT\DIALOG\LIST form for some class (for ex. store)
-// Use this syntax:
-//(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
-EDIT Store OBJECT s
+    OBJECTS s=Store FIXED PANEL
+    PROPERTIES(s) name, storeSizeName, storeIsHuge, storeIsHuge2
+    // To use this form as EDIT\DIALOG\LIST form for some class (for ex. store)
+    // Use this syntax:
+    //(EDIT | DIALOG | LIST) <className> OBJECT <objectName>
+    EDIT Store OBJECT s
 ;
 
 dateProp(store) = 2007_12_01 AND store IS Store;
@@ -710,10 +711,10 @@ dateProp(store) = 2007_12_01 AND store IS Store;
 variableDateTime(store) = DATA DATETIME (Store);
 
 FORM TestDataPropForm 'Тест дат'
-OBJECTS store=Store
-PROPERTIES(store) dateProp, variableDateTime
-//PROPERTIES dateTimeProp(store)
-//PROPERTIES timeProp(store)
+    OBJECTS store=Store
+    PROPERTIES(store) dateProp, variableDateTime
+    //PROPERTIES dateTimeProp(store)
+    //PROPERTIES timeProp(store)
 ;
 
 colorizeMatchingStoreSize (s, ss) = scolor(s) IF storeSize(s) == ss;
@@ -721,16 +722,18 @@ storeSizeString (s, ss) = DATA STRING[10] (Store, StoreSize);
 storeSizeHeader (s, ss) = UNION OVERRIDE name(ss) IF s IS Store AND ss IS StoreSize AND ss!=StoreSize.small, storeSizeString(s, ss);
 
 FORM TestColumnGroupObjects 'Тест групп в колонках'
-OBJECTS ss=StoreSize, s=Store
-PROPERTIES name(ss), sizeCode(ss)
-PROPERTIES OBJVALUE(s), name(s), scolor(s), storeSizeCode(s)
-PROPERTIES storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss);
+    OBJECTS ss=StoreSize, s=Store
+    PROPERTIES name(ss), sizeCode(ss)
+    PROPERTIES OBJVALUE(s), name(s), scolor(s), storeSizeCode(s)
+    PROPERTIES storeSizeString(s, ss) COLUMNS (ss) HEADER sizeCode(ss) BACKGROUND colorizeMatchingStoreSize(s, ss) HEADER storeSizeHeader(s, ss)
+;
 
 colorizeElementWithNumberGreaterFour(element) = #5555ff IF numberNavigatorElement(element) > 4;
 
 FORM TestTree 'Тест дерева (формы)'
-TREE forms e=NavigatorElement PARENT parentNavigatorElement
-PROPERTIES(e) captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitNavigatorElement, forbidNavigatorElement;
+    TREE forms e=NavigatorElement PARENT parentNavigatorElement
+    PROPERTIES(e) captionNavigatorElement, sidNavigatorElement, numberNavigatorElement BACKGROUND colorizeElementWithNumberGreaterFour(e), permitNavigatorElement, forbidNavigatorElement
+;
 
 DESIGN TestTree FROM DEFAULT {
     forms.tree.box {
@@ -740,17 +743,18 @@ DESIGN TestTree FROM DEFAULT {
 }
 
 FORM TestAggr 'Тест агрегаций'
-OBJECTS s=QuantityString
-PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), delete(s);
+    OBJECTS s=QuantityString
+    PROPERTIES dateDocumentQuantityString(s), storeNameDocumentQuantityString(s), nameArticleQuantityString(s), delete(s)
+;
 
 FORM TestHeaders 'Тест заголовков'
-OBJECTS s=Store, a=Article
-PROPERTIES(s) name, storeSizeCode
-PROPERTIES(a) OBJVALUE, name
-PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
-PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar HEADER name(a), testUnion HEADER name(s)
-FILTERGROUP filters1
-    FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
+    OBJECTS s=Store, a=Article
+    PROPERTIES(s) name, storeSizeCode
+    PROPERTIES(a) OBJVALUE, name
+    PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity2, outcomeQuantity2
+    PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar HEADER name(a), testUnion HEADER name(s)
+    FILTERGROUP filters1
+        FILTER 'Показывать только огромные склады' 'F10' storeIsHuge(s)
 ;
 
 DESIGN TestHeaders FROM DEFAULT {
@@ -764,17 +768,17 @@ DESIGN TestHeaders FROM DEFAULT {
 }
 
 FORM TestHotkeys 'Тест хоткеев'
-OBJECTS s=Store, a=Article
-PROPERTIES(s) ns=name, storeSizeCode
-PROPERTIES(a) OBJVALUE, na=name
-PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
-FILTERGROUP filters1
-    FILTER 'Показывать только огромные склады' 'F7' storeIsHuge(s)
-FILTERGROUP filters2
-    FILTER 'Показывать только огромные склады' 'F3' storeIsHuge(s)
-    FILTER 'Показывать только большие склады' 'F9' storeIsBig(s)
-    FILTER 'Показывать только средние склады' 'F10' storeIsMedium(s)
-    FILTER 'Показывать только маленькие склады' 'F11' storeIsSmall(s)
+    OBJECTS s=Store, a=Article
+    PROPERTIES(s) ns=name, storeSizeCode
+    PROPERTIES(a) OBJVALUE, na=name
+    PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
+    FILTERGROUP filters1
+        FILTER 'Показывать только огромные склады' 'F7' storeIsHuge(s)
+    FILTERGROUP filters2
+        FILTER 'Показывать только огромные склады' 'F3' storeIsHuge(s)
+        FILTER 'Показывать только большие склады' 'F9' storeIsBig(s)
+        FILTER 'Показывать только средние склады' 'F10' storeIsMedium(s)
+        FILTER 'Показывать только маленькие склады' 'F11' storeIsSmall(s)
 ;
 
 DESIGN TestHotkeys FROM DEFAULT {
@@ -788,10 +792,10 @@ DESIGN TestHotkeys FROM DEFAULT {
 }
 
 FORM TestTabs 'Тест табов'
-OBJECTS s=Store, a=Article
-PROPERTIES(s) OBJVALUE, name, storeSizeCode, name, storeSizeCode, name
-PROPERTIES(a) OBJVALUE, name, name, name, name
-PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
+    OBJECTS s=Store, a=Article
+    PROPERTIES(s) OBJVALUE, name, storeSizeCode, name, storeSizeCode, name
+    PROPERTIES(a) OBJVALUE, name, name, name, name
+    PROPERTIES(s, a) incomeQuantity, outcomeQuantity, foobar, testUnion
 ;
 
 DESIGN TestTabs FROM DEFAULT {
@@ -799,6 +803,44 @@ DESIGN TestTabs FROM DEFAULT {
         type = TABBED;
         ADD s.box;
         ADD a.box;
+    }
+}
+
+isEditable 'Включить редактирование' () = DATA SESSION BOOLEAN ();
+isReadOnly 'Только чтение' () = TRUE AND NOT isEditable();
+FORM TestReadOnlyIf 'Тест read-only'
+    PROPERTIES isEditable()
+    OBJECTS s=Store, a=Article
+    PROPERTIES(s) READONLYIF isReadOnly() OBJVALUE, name, storeSizeCode
+    PROPERTIES(a) READONLYIF isReadOnly() OBJVALUE, name
+    PROPERTIES(s, a) READONLYIF isReadOnly() incomeQuantity, outcomeQuantity
+
+    TREE elements e=NavigatorElement PARENT parentNavigatorElement
+    PROPERTIES(e) READONLYIF isReadOnly() captionNavigatorElement, sidNavigatorElement, numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement;
+;
+
+DESIGN TestReadOnlyIf FROM DEFAULT {
+    NEW checkBox BEFORE functions.box {
+        fillHorizontal = 1;
+        caption = 'Включить read-only';
+
+        ADD PROPERTY(isEditable());
+    }
+    NEW tabsContainer BEFORE functions.box {
+        type = TABBED;
+        NEW testGrids {
+            caption = 'Таблицы';
+            ADD s.box;
+            ADD a.box;
+        }
+
+        NEW testTree {
+            caption = 'Дерево';
+            ADD elements.tree.box {
+                fillHorizontal = 1;
+                fillVertical = 1;
+            }
+        }
     }
 }
 
@@ -888,6 +930,7 @@ NAVIGATOR {
     ADD TestHotkeys;
     ADD TestEvalActionForm;
     ADD TestTabs;
+    ADD TestReadOnlyIf;
 }
 
 //////////////// DESIGN STATEMENT /////////////////

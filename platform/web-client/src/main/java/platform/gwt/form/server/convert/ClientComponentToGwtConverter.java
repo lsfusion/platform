@@ -257,6 +257,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.captionReader = convertCaptionReader(clientPropertyDraw.captionReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
+        propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
 
@@ -320,6 +321,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GFooterReader convertFooterReader(ClientPropertyDraw.FooterReader reader) {
         return reader == null ? null : new GFooterReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GReadOnlyReader convertReadOnlyReader(ClientPropertyDraw.ReadOnlyReader reader) {
+        return reader == null ? null : new GReadOnlyReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {

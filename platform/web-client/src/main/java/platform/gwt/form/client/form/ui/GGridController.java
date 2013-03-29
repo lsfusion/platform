@@ -88,6 +88,10 @@ public class GGridController implements DefaultFocusReceiver {
         table.updatePropertyCaptions(propertyDraw, values);
     }
 
+    public void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        table.updateReadOnlyValues(propertyDraw, values);
+    }
+
     public void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values) {
         table.updateRowBackgroundValues(values);
     }

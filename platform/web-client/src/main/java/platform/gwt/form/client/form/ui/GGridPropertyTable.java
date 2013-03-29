@@ -14,7 +14,6 @@ import platform.gwt.cellview.client.cell.CellPreviewEvent;
 import platform.gwt.form.shared.view.GKeyStroke;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form.shared.view.classes.GObjectType;
 import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.grid.NativeEditEvent;
 
@@ -61,7 +60,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if (event.getTypeInt() == Event.ONDBLCLICK) {
             if (form.isDialog() &&
                     getFocusHolderElement().isOrHasChild(Node.as(event.getEventTarget())) && // не включаем header, чтобы сортировка работала
-                    !isEditable(new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), null))) {
+                    !isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
                 form.okPressed();
             }
@@ -72,8 +71,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         } else if (GKeyStroke.isReplaceFilterEvent(event)) {
             getGroupController().replaceFilter();
         } else if (GKeyStroke.isPossibleStartFilteringEvent(event)) {
-            GPropertyDraw property = getSelectedProperty();
-            if (property != null && (property.isReadOnly() || property.baseType instanceof GObjectType)) {
+            if (!isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
                 quickFilter(new NativeEditEvent(event));
             }
@@ -86,6 +84,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
         }
         super.onBrowserEvent2(event);
+    }
+
+    public Cell.Context getCurrentCellContext() {
+        return new Cell.Context(getKeyboardSelectedRow(), getKeyboardSelectedColumn(), getKeyboardSelectedRowValue());
     }
 
     @Override
@@ -105,10 +107,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     public GPropertyDraw getSelectedProperty() {
-        int row = getKeyboardSelectedRow();
-        int column = getKeyboardSelectedColumn();
-
-        return getProperty(new Cell.Context(row, column, null));
+        return getProperty(getCurrentCellContext());
     }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
@@ -148,6 +147,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
     public abstract void quickFilter(EditEvent event);
     public abstract GAbstractGroupObjectController getGroupController();
+    abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
+    abstract String getCellForeground(GridDataRecord rowValue, int row, int column);
 
     void storeScrollPosition() {
         int selectedRow = getKeyboardSelectedRow();

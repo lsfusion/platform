@@ -33,7 +33,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
         view = new TreeView(this.form, treeGroup);
         tree = view.getTree();
 
-        panel = new PanelController(this, form, formLayout);
+        panel = new PanelController(form, formLayout);
 
         lastGroupObject = BaseUtils.last(treeGroup.groups);
 
@@ -184,6 +184,15 @@ public class TreeGroupController extends AbstractGroupObjectController {
     public void updateDrawPropertyCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         if (panel.containsProperty(property)) {
             panel.updatePropertyCaptions(property, captions);
+        }
+    }
+
+    @Override
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (panel.containsProperty(property)) {
+            panel.updateReadOnlyValues(property, values);
+        } else {
+            tree.updateReadOnlyValues(property, values);
         }
     }
 

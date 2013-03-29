@@ -5,10 +5,7 @@ import platform.gwt.form.shared.view.GObject;
 import platform.gwt.form.shared.view.GOrder;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
-import platform.gwt.form.shared.view.reader.GBackgroundReader;
-import platform.gwt.form.shared.view.reader.GCaptionReader;
-import platform.gwt.form.shared.view.reader.GFooterReader;
-import platform.gwt.form.shared.view.reader.GForegroundReader;
+import platform.gwt.form.shared.view.reader.*;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +16,7 @@ public interface GGroupObjectLogicsSupplier {
     void updateForegroundValues(GForegroundReader reader, Map<GGroupObjectValue, Object> values);
     void updateCaptionValues(GCaptionReader reader, Map<GGroupObjectValue, Object> values);
     void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values);
+    void updateReadOnlyValues(GReadOnlyReader reader, Map<GGroupObjectValue, Object> values);
     void updateRowBackgroundValues(Map<GGroupObjectValue, Object> values);
     void updateRowForegroundValues(Map<GGroupObjectValue, Object> values);
     boolean hasPanelProperty(GPropertyDraw property);

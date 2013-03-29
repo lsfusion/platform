@@ -49,6 +49,7 @@ public class GridTable extends ClientPropertyTable {
     private Map<ClientPropertyDraw, List<ClientGroupObjectValue>> columnKeys = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> captions = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> values = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> readOnlyValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
     private Map<ClientGroupObjectValue, Object> rowBackground = new HashMap<ClientGroupObjectValue, Object>();
     private Map<ClientGroupObjectValue, Object> rowForeground = new HashMap<ClientGroupObjectValue, Object>();
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> cellBackgroundValues = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
@@ -355,7 +356,7 @@ public class GridTable extends ClientPropertyTable {
     public void updateTable() {
         model.updateColumns(properties, columnKeys, captions);
 
-        model.updateRows(rowKeys, values, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
+        model.updateRows(rowKeys, values, readOnlyValues, rowBackground, rowForeground, cellBackgroundValues, cellForegroundValues);
 
         refreshColumnModel();
 
@@ -816,6 +817,7 @@ public class GridTable extends ClientPropertyTable {
         if (properties.contains(property)) {
             selectionController.removeProperty(property);
             properties.remove(property);
+            readOnlyValues.remove(property);
             values.remove(property);
             captions.remove(property);
             columnKeys.remove(property);
@@ -827,6 +829,10 @@ public class GridTable extends ClientPropertyTable {
 
     public void updateColumnCaptions(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> captions) {
         this.captions.put(property, captions);
+    }
+
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {
+        this.readOnlyValues.put(property, readOnlyValues);
     }
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {

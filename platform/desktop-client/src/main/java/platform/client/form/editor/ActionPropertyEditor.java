@@ -1,6 +1,6 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -10,7 +10,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
-public class ActionPropertyEditor implements PropertyEditorComponent {
+public class ActionPropertyEditor implements PropertyEditor {
     private ActionPropertyRenderer editorComponent;
     private PropertyTableCellEditor tableEditor;
 

@@ -49,6 +49,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
     public FooterReaderInstance footerReader = new FooterReaderInstance();
+    public ReadOnlyReaderInstance readOnlyReader = new ReadOnlyReaderInstance();
     public BackgroundReaderInstance backgroundReader = new BackgroundReaderInstance();
     public ForegroundReaderInstance foregroundReader = new ForegroundReaderInstance();
 
@@ -149,6 +150,25 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.property.footer") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+    }
+
+    public class ReadOnlyReaderInstance implements PropertyReaderInstance {
+        public CalcPropertyObjectInstance getPropertyObjectInstance() {
+            return propertyReadOnly;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.READONLY;
+        }
+
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.property.readonly") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

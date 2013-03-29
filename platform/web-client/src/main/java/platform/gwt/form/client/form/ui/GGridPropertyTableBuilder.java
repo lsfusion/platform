@@ -7,11 +7,11 @@ public class GGridPropertyTableBuilder<T extends GridDataRecord> extends GProper
     }
 
     public String getBackground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getBackground(column);
+        return ((GGridPropertyTable)cellTable).getCellBackground(rowValue, row, column);
     }
 
     public String getForeground(GridDataRecord rowValue, int row, int column) {
-        return rowValue.getForeground(column);
+        return ((GGridPropertyTable)cellTable).getCellForeground(rowValue, row, column);
     }
 }
 

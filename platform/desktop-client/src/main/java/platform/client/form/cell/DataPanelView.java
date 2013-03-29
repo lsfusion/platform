@@ -7,7 +7,6 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.dispatch.SimpleChangePropertyDispatcher;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.interop.ClassViewType;
 import platform.interop.event.ValueEvent;
 import platform.interop.event.ValueEventListener;
 
@@ -116,6 +115,10 @@ public class DataPanelView extends JPanel implements PanelView {
         table.setValue(ivalue);
     }
 
+    public void setReadOnly(boolean readOnly) {
+        table.setReadOnly(readOnly);
+    }
+
     public void setBackgroundColor(Color background) {
         if (nullEquals(table.getBackgroundColor(), background)) {
             return;
@@ -160,10 +163,6 @@ public class DataPanelView extends JPanel implements PanelView {
 
     public void setToolTip(String caption) {
         label.setToolTipText(property.getTooltipText(caption));
-    }
-
-    public void changeViewType(ClassViewType type) {
-        //пока тут ничего не делаем
     }
 
     public Icon getIcon() {

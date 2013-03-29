@@ -1,8 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.DynamicFormatFileRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -32,7 +32,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
         return "CustomFileClass";
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new DynamicFormatFileRenderer(property);
     }
 
@@ -46,7 +46,7 @@ public class ClientDynamicFormatFileClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new FilePropertyEditor(multiple, storeName);
     }
 

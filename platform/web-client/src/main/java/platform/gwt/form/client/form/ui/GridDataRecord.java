@@ -12,6 +12,7 @@ public class GridDataRecord {
     private String rowForeground;
 
     private HashMap<Object, Object> values;
+    private HashMap<Integer, Boolean> readOnlys;
     private HashMap<Integer, String> backgrounds;
     private HashMap<Integer, String> foregrounds;
 
@@ -47,8 +48,8 @@ public class GridDataRecord {
     public void setBackground(int column, Object color) {
         if (color != null) {
             createBackgrounds().put(column, color.toString());
-        } else {
-            createBackgrounds().remove(column);
+        } else if (backgrounds != null) {
+            backgrounds.remove(column);
         }
     }
 
@@ -61,8 +62,8 @@ public class GridDataRecord {
     public void setForeground(int column, Object color) {
         if (color != null) {
             createForegrounds().put(column, color.toString());
-        } else {
-            createForegrounds().remove(column);
+        } else if (foregrounds != null) {
+            foregrounds.remove(column);
         }
     }
 
@@ -70,6 +71,18 @@ public class GridDataRecord {
         return rowForeground != null
                ? rowForeground
                : foregrounds == null ? null : foregrounds.get(column);
+    }
+
+    public void setReadOnly(int column, Object readOnly) {
+        if (readOnly != null) {
+            createReadOnlys().put(column, Boolean.TRUE);
+        } else if (readOnlys != null) {
+            readOnlys.remove(column);
+        }
+    }
+
+    public boolean isReadonly(int column) {
+        return readOnlys != null && readOnlys.get(column) != null;
     }
 
     public void setRowBackground(Object newRowBackground) {
@@ -103,6 +116,13 @@ public class GridDataRecord {
             foregrounds = new HashMap<Integer, String>();
         }
         return foregrounds;
+    }
+
+    private HashMap<Integer, Boolean> createReadOnlys() {
+        if (readOnlys == null) {
+            readOnlys = new HashMap<Integer, Boolean>();
+        }
+        return readOnlys;
     }
 
     public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {

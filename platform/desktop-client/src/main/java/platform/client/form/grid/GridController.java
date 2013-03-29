@@ -275,6 +275,10 @@ public class GridController {
         table.updateColumnCaptions(property, captions);
     }
 
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {
+        table.updateReadOnlyValues(property, readOnlyValues);
+    }
+
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {
         table.updateCellBackgroundValues(property, cellBackgroundValues);
     }

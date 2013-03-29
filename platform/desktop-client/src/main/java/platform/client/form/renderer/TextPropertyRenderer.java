@@ -1,6 +1,6 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -8,7 +8,7 @@ import java.awt.*;
 import java.text.Format;
 
 
-public class TextPropertyRenderer extends JTextArea implements PropertyRendererComponent {
+public class TextPropertyRenderer extends JTextArea implements PropertyRenderer {
 
     Format format;
 
@@ -60,6 +60,6 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
     }
 }

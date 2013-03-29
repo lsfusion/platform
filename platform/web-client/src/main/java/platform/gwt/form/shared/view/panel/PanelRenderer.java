@@ -7,6 +7,7 @@ import java.io.Serializable;
 public interface PanelRenderer extends Serializable {
     Widget getComponent();
     void setValue(Object value);
+    void setReadOnly(boolean readOnly);
     void setCaption(String caption);
     void setDefaultIcon();
     void setIcon(String iconPath);

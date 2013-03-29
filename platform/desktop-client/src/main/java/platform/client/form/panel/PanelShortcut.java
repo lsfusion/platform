@@ -2,7 +2,7 @@ package platform.client.form.panel;
 
 import org.jdesktop.swingx.VerticalLayout;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.cell.ActionPanelView;
 import platform.client.form.cell.PropertyController;
 import platform.client.logics.ClientPropertyDraw;
@@ -32,9 +32,9 @@ public class PanelShortcut extends JPopupMenu {
         this.form = form;
         this.panel = panel;
 
-        setBackground(PropertyRendererComponent.SELECTED_ROW_BACKGROUND);
-        setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, PropertyRendererComponent.SELECTED_ROW_BORDER_COLOR,
-                getBackground(), Color.GRAY, PropertyRendererComponent.SELECTED_ROW_BORDER_COLOR));
+        setBackground(PropertyRenderer.SELECTED_ROW_BACKGROUND);
+        setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, PropertyRenderer.SELECTED_ROW_BORDER_COLOR,
+                getBackground(), Color.GRAY, PropertyRenderer.SELECTED_ROW_BORDER_COLOR));
     }
 
     public void setCurrentProperty(ClientPropertyDraw property) {

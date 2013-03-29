@@ -132,7 +132,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                             new HighlightPredicate.AndHighlightPredicate(
                                     HighlightPredicate.HAS_FOCUS,
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), PropertyRendererComponent.FOCUSED_CELL_BACKGROUND, Color.BLACK, PropertyRendererComponent.FOCUSED_CELL_BACKGROUND, Color.BLACK
+                            ), PropertyRenderer.FOCUSED_CELL_BACKGROUND, Color.BLACK, PropertyRenderer.FOCUSED_CELL_BACKGROUND, Color.BLACK
                     ),
                     new ColorHighlighter(
                             new HighlightPredicate.AndHighlightPredicate(
@@ -140,7 +140,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                             HighlightPredicate.HAS_FOCUS
                                     ),
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, PropertyRendererComponent.SELECTED_ROW_BACKGROUND, Color.BLACK
+                            ), Color.WHITE, Color.BLACK, PropertyRenderer.SELECTED_ROW_BACKGROUND, Color.BLACK
                     )
             );
 
@@ -291,6 +291,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents) {
         model.updateKeys(group, keys, parents);
+    }
+
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> readOnlyValues) {
+        model.updateReadOnlyValues(property, readOnlyValues);
     }
 
     public void updateCellBackgroundValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> cellBackgroundValues) {

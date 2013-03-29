@@ -220,7 +220,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             double newLeftWidth = leftInitialWidth + dragColumnWidth;
 
             if (table.getTableDataScroller().getMaximumHorizontalScrollPosition() > 0) {
-                GPropertyDraw property = table.getProperty(new Cell.Context(table.getKeyboardSelectedRow(), table.getColumnIndex(leftColumn), null));
+                GPropertyDraw property = table.getProperty(new Cell.Context(table.getKeyboardSelectedRow(), table.getColumnIndex(leftColumn), table.getKeyboardSelectedRowValue()));
                 int propertyMinWidth = property != null ? property.getMinimumPixelWidth() : 0;
                 int propertyMaxWidth = property != null ? property.getMaximumPixelWidth() : Integer.MAX_VALUE;
                 if (property == null || (newLeftWidth >= propertyMinWidth && newLeftWidth <= propertyMaxWidth)) {

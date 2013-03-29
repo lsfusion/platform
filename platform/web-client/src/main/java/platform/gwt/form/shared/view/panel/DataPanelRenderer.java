@@ -111,6 +111,11 @@ public class DataPanelRenderer implements PanelRenderer {
     }
 
     @Override
+    public void setReadOnly(boolean readOnly) {
+        valueTable.setReadOnly(readOnly);
+    }
+
+    @Override
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;

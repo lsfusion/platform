@@ -2,8 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditor;
+import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.TextPropertyEditor;
 import platform.client.form.renderer.TextPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
@@ -55,16 +55,16 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
         return fontMetrics.charWidth('0') * 25;//stringWidth(getPreferredMask()) + 8;
     }
 
-    public PropertyRendererComponent getRendererComponent(ClientPropertyDraw property) {
+    public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new TextPropertyRenderer(property);
     }
 
     @Override
-    public PropertyEditorComponent getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
+    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
         return new TextPropertyEditor(ownerComponent, value, property.design);
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new TextPropertyEditor(value, property.design);
     }
 

@@ -1,6 +1,6 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 
 import javax.swing.*;
@@ -9,7 +9,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.EventObject;
 
-public class LogicalPropertyEditor extends JCheckBox implements PropertyEditorComponent {
+public class LogicalPropertyEditor extends JCheckBox implements PropertyEditor {
     private boolean newValue;
     private PropertyTableCellEditor tableEditor;
 

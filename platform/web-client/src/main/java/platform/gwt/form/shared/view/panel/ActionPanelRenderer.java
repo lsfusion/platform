@@ -30,6 +30,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
     private final GGroupObjectValue columnKey;
 
     private final ImageButton button;
+    private boolean isValueTrue = true;
+    private boolean readOnly = false;
     private boolean enabled = true;
     private EventTarget focusTargetAfterEdit;
 
@@ -98,7 +100,18 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
 
     @Override
     public void setValue(Object value) {
-        boolean newEnabled = value != null && (Boolean) value;
+        this.isValueTrue = value != null && (Boolean) value;
+        updateEnabled();
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+        updateEnabled();
+    }
+
+    private void updateEnabled() {
+        boolean newEnabled = isValueTrue && !readOnly;
         if (enabled != newEnabled) {
             enabled = newEnabled;
             button.setEnabled(enabled);

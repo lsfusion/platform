@@ -1,7 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
@@ -39,7 +39,7 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         return obj.toString();
     }
 
-    public PropertyEditorComponent getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
+    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Integer.class);
     }
 

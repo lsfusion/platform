@@ -1,6 +1,6 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -8,7 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.Format;
 
-public abstract class LabelPropertyRenderer extends JLabel implements PropertyRendererComponent {
+public abstract class LabelPropertyRenderer extends JLabel implements PropertyRenderer {
     protected Format format;
 
     private Color defaultBackground = Color.WHITE;
@@ -31,10 +31,10 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     protected void drawBorder(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
-                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(0, 1, 0, 1)));
+                setBorder(BorderFactory.createCompoundBorder(PropertyRenderer.FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(0, 1, 0, 1)));
             } else {
                 setBorder(new EmptyBorder(2, 2, 2, 2));
-                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 2, 1, 2)));
+                setBorder(BorderFactory.createCompoundBorder(PropertyRenderer.SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 2, 1, 2)));
             }
         } else {
             setBorder(new EmptyBorder(1, 2, 1, 2));
@@ -44,9 +44,9 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     protected void drawBackground(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
-                setBackground(PropertyRendererComponent.FOCUSED_CELL_BACKGROUND);
+                setBackground(PropertyRenderer.FOCUSED_CELL_BACKGROUND);
             } else {
-                setBackground(PropertyRendererComponent.SELECTED_ROW_BACKGROUND);
+                setBackground(PropertyRenderer.SELECTED_ROW_BACKGROUND);
             }
         } else {
             setBackground(defaultBackground);
@@ -54,6 +54,6 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     }
 
     public void paintAsSelected() {
-        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
     }
 }

@@ -42,6 +42,10 @@ public abstract class SingleCellTable extends ClientPropertyTable {
         repaint();
     }
 
+    public void setReadOnly(boolean readOnly) {
+        model.setReadOnly(readOnly);
+    }
+
     @Override
     public int getCurrentRow() {
         return 0;

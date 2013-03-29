@@ -257,7 +257,7 @@ public class ChangeDialog extends JDialog {
                 //todo: this is broken
 //                TableCellEditor editor = getCellEditor(0, 0);
 //                if (editor instanceof ClientAbstractCellEditor) {
-//                    PropertyEditorComponent propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
+//                    PropertyEditor propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
 //                    if (propertyEditor instanceof ObjectPropertyEditor) {
 //                        try {
 //                            value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();

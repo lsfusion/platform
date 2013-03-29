@@ -18,6 +18,7 @@ public class GTreeTableTree {
     public final List<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
 
     public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
+    public HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnly = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
     public HashMap<GGroupObject, List<GPropertyDraw>> groupPropsMap = new HashMap<GGroupObject, List<GPropertyDraw>>();
 
     public GTreeTableNode root;
@@ -188,9 +189,11 @@ public class GTreeTableTree {
 
 
     public void setPropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        if (propValues != null) {
-            GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
-        }
+        GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
+    }
+
+    public void setReadOnlyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> readOnlyValues) {
+        GwtSharedUtils.putUpdate(readOnly, property, readOnlyValues, false);
     }
 
     private int nodeCounter;
@@ -267,6 +270,17 @@ public class GTreeTableTree {
             return null;
         }
         return values.get(property).get(key);
+    }
+
+    public boolean isEditable(GGroupObject group, int column, GGroupObjectValue key) {
+        if (column >= 0) {
+            GPropertyDraw property = getProperty(group, column);
+            if (property != null && !property.isReadOnly()) {
+                Map<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
+                return propReadOnly == null || propReadOnly.get(key) == null;
+            }
+        }
+        return false;
     }
 
     public void putValue(GPropertyDraw property, GGroupObjectValue key, Object value) {

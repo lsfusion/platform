@@ -4,14 +4,13 @@ import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.EditPropertyHandler;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.dispatch.EditPropertyDispatcher;
 import platform.client.form.editor.DialogBasedPropertyEditor;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
-import platform.interop.ClassViewType;
 import platform.interop.form.ServerResponse;
 
 import javax.swing.*;
@@ -28,6 +27,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
     public boolean toToolbar;
+    private Object value;
+    private boolean readOnly;
 
     public ActionPanelView(final ClientPropertyDraw ikey, final ClientGroupObjectValue icolumnKey, final ClientFormController iform) {
         super(ikey.getEditCaption());
@@ -76,7 +77,17 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setValue(Object value) {
-        setEnabled(value != null);
+        this.value = value;
+        updateButton();
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+        updateButton();
+    }
+
+    private void updateButton() {
+        setEnabled(value != null && !readOnly);
     }
 
     public void forceEdit() {
@@ -111,12 +122,6 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         setToolTipText(toolTip);
     }
 
-    public void changeViewType(ClassViewType type) {
-        toToolbar = (type == ClassViewType.GRID);
-        setPreferredSize(null);
-        setDefaultSizes();
-    }
-
     private void setDefaultSizes() {
         int height = toToolbar ? ToolbarGridButton.DEFAULT_SIZE.height : key.getPreferredHeight(this);
 
@@ -129,7 +134,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
     @Override
     public boolean requestValue(ClientType valueType, Object oldValue) {
-        PropertyEditorComponent propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, key, null);
+        PropertyEditor propertyEditor = valueType.getChangeEditorComponent(ActionPanelView.this, form, key, null);
 
         assert propertyEditor != null;
 

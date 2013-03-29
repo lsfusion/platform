@@ -40,6 +40,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<GGroupObjectValue>();
 
     private NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>>();
+    private Map<GPropertyDraw, Map<GGroupObjectValue, Object>> readOnlyValues = new HashMap<GPropertyDraw, Map<GGroupObjectValue, Object>>();
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private NativeHashMap<GPropertyDraw, Boolean> updatedProperties = new NativeHashMap<GPropertyDraw, Boolean>();
@@ -277,6 +278,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         if (propColumnKeys == null) {
                             propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
                         }
+                        NativeHashMap<GGroupObjectValue, Object> propValues = values.get(property);
+                        Map<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
+                        Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
+                        Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
                         for (GGroupObjectValue columnKey : propColumnKeys) {
                             NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
                             GridColumn column = propertyColumns == null ? null : propertyColumns.get(columnKey);
@@ -286,17 +291,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                                 GGroupObjectValue fullKey = columnKey.isEmpty() ? rowKey : new GGroupObjectValueBuilder(rowKey, columnKey).toGroupObjectValue();
 
-                                Object value = values.get(property).get(fullKey);
-
-                                Map<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
+                                Object value = propValues.get(fullKey);
+                                Object readOnly = propReadOnly == null ? null : propReadOnly.get(fullKey);
                                 Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
-
-                                Map<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
                                 Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
 
                                 record.setValue(column.columnID, value);
-                                record.setBackground(getColumnIndex(column), background == null ? property.background : background);
-                                record.setForeground(getColumnIndex(column), foreground == null ? property.foreground : foreground);
+                                record.setReadOnly(column.columnID, readOnly);
+                                record.setBackground(column.columnID, background == null ? property.background : background);
+                                record.setForeground(column.columnID, foreground == null ? property.foreground : foreground);
                             }
                         }
                     }
@@ -437,6 +440,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
+    public void updateReadOnlyValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
+        readOnlyValues.put(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
+    }
+
     @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         super.updateCellBackgroundValues(propertyDraw, values);
@@ -469,6 +478,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public GPropertyDraw getProperty(Cell.Context context) {
         return getProperty(context.getColumn());
+    }
+
+    @Override
+    String getCellBackground(GridDataRecord rowValue, int row, int column) {
+        return rowValue.getBackground(((GridColumn)getColumn(column)).columnID);
+    }
+
+    @Override
+    String getCellForeground(GridDataRecord rowValue, int row, int column) {
+        return rowValue.getForeground(((GridColumn)getColumn(column)).columnID);
     }
 
     private int getMinPropertyIndex(GPropertyDraw property) {
@@ -524,7 +543,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     @Override
     public boolean isEditable(Cell.Context context) {
         GPropertyDraw property = getProperty(context);
-        return property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType);
+        if (property != null && !property.isReadOnly() && !(property.baseType instanceof GObjectType)) {
+            GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
+            GridColumn column = (GridColumn) getColumn(context.getColumn());
+            return !rowRecord.isReadonly(column.columnID);
+        }
+        return false;
     }
 
     public Object getValueAt(Cell.Context context) {

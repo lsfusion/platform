@@ -4,7 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
 import platform.client.SwingUtils;
-import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyEditor;
 import platform.client.form.cell.PropertyTableCellEditor;
 import platform.interop.ComponentDesign;
 
@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
 
-public class DatePropertyEditor extends JDateChooser implements PropertyEditorComponent {
+public class DatePropertyEditor extends JDateChooser implements PropertyEditor {
     SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {

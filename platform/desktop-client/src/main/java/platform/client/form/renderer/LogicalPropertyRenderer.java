@@ -1,11 +1,11 @@
 package platform.client.form.renderer;
 
-import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyRenderer;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class LogicalPropertyRenderer extends JCheckBox implements PropertyRendererComponent {
+public class LogicalPropertyRenderer extends JCheckBox implements PropertyRenderer {
 
     public LogicalPropertyRenderer() {
         super();
@@ -39,6 +39,6 @@ public class LogicalPropertyRenderer extends JCheckBox implements PropertyRender
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
     }
 }

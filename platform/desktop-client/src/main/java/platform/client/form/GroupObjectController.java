@@ -40,7 +40,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
         super(iform, ilogicsSupplier, formLayout, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
 
-        panel = new PanelController(this, form, formLayout) {
+        panel = new PanelController(form, formLayout) {
             protected void addGroupObjectActions(JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
             }
@@ -280,6 +280,15 @@ public class GroupObjectController extends AbstractGroupObjectController {
             panel.updatePropertyCaptions(property, captions);
         } else {
             grid.updatePropertyCaptions(property, captions);
+        }
+    }
+
+    @Override
+    public void updateReadOnlyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
+        if (panel.containsProperty(property)) {
+            panel.updateReadOnlyValues(property, values);
+        } else {
+            grid.updateReadOnlyValues(property, values);
         }
     }
 
