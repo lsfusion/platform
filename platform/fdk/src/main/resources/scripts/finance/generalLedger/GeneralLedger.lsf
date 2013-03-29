@@ -43,8 +43,8 @@ sumGeneralLedger 'Сумма' = ABSTRACT NUMERIC[16,2] (GeneralLedger) PERSISTEN
 sumUserGeneralLedger 'Сумма' = DATA NUMERIC[16,2] (UserGeneralLedger);
 sumGeneralLedger (generalLedger) += sumUserGeneralLedger (generalLedger);
 
-descriptionGeneralLedger 'Описание' = ABSTRACT STRING[200] (GeneralLedger) PERSISTENT;
-descriptionUserGeneralLedger 'Описание' = DATA STRING[200] (UserGeneralLedger);
+descriptionGeneralLedger 'Описание' = ABSTRACT STRING[255] (GeneralLedger) PERSISTENT MINCHARWIDTH 40 PREFCHARWIDTH 80;
+descriptionUserGeneralLedger 'Описание' = DATA STRING[255] (UserGeneralLedger) MINCHARWIDTH 40 PREFCHARWIDTH 80;
 descriptionGeneralLedger (generalLedger) += descriptionUserGeneralLedger (generalLedger);
 
 skipGeneralLedger 'Не изменять значение' (generalLedger) = ABSTRACT BOOLEAN (GeneralLedger) PERSISTENT;
@@ -74,9 +74,13 @@ sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROU
 sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
 balanceGLAccountCompany 'Сальдо' (GLAccount, company)= sumDebitGLAccountCompany(GLAccount, company) (-) sumCreditGLAccountCompany(GLAccount, company);
 
-sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
-sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
-balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date)= sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
+TABLE GLAccountLegalEntityDate(GLAccount, LegalEntity, DATE);
+sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)
+    BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
+sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)
+    BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger) PERSISTENT;
+balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
+    sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
 
 sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
         sumCreditGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
@@ -84,7 +88,8 @@ sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, comp
 sumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
         sumDebitGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
         BY GLAccount, company, dateFrom, dateTo;
-balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo)= sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
+balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo) =
+    sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
 
 @defineGLAccountSum ('(кредит)', credit, );
 @defineGLAccountSum ('(дебит)', debit, );
@@ -95,22 +100,22 @@ recSumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)=  
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company;
 recSumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)=  GROUP SUM sumDebitGLAccountCompany(child, company)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company;
-recBalanceGLAccountCompany 'Сальдо' (GLAccount, company)=  GROUP SUM balanceGLAccountCompany(child, company)
-    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company;
+recBalanceGLAccountCompany 'Сальдо' (GLAccount, company)=
+    recSumDebitGLAccountCompany(GLAccount, company) (-) recSumCreditGLAccountCompany(GLAccount, company);
 
 recSumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)=  GROUP SUM sumCreditGLAccountCompanyDate(child, company, date)
-    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date;
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date PERSISTENT;
 recSumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)=  GROUP SUM sumDebitGLAccountCompanyDate(child, company, date)
-    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date;
-recBalanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date)=  GROUP SUM balanceGLAccountCompanyDate(child, company, date)
-    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date;
+    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, date PERSISTENT;
+recBalanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date) =
+    recSumDebitGLAccountCompanyDate(GLAccount, company, date) (-) recSumCreditGLAccountCompanyDate(GLAccount, company, date);
 
 recSumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM sumCreditGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, dateFrom, dateTo;
 recSumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM sumDebitGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
     IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, dateFrom, dateTo;
-recBalanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo)=  GROUP SUM balanceGLAccountCompanyDateFromTo(child, company, dateFrom, dateTo)
-    IF isParentGLAccountGLAccount(child, GLAccount) BY GLAccount, company, dateFrom, dateTo;
+recBalanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo) =
+    recSumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) recSumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
 
 
 @defineGLAccountSum ('(кредит)', credit, rec);
@@ -119,7 +124,25 @@ recBalanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFro
 
 EXTEND FORM GLAccounts
     PROPERTIES(g,l,dFrom,dTo) READONLY BEFORE delete(g) recSumCreditGLAccountCompanyDateFromTo, recSumDebitGLAccountCompanyDateFromTo, recBalanceGLAccountCompanyDateFromTo
+
+    OBJECTS gl = GeneralLedger
+    PROPERTIES(gl) READONLY dateGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
+                   idCreditGeneralLedger, sumGeneralLedger
+
+    FILTERS isPostedGeneralLedger(gl),
+            legalEntityGeneralLedger(gl)==l,
+            dateGeneralLedger(gl) >= dFrom, dateGeneralLedger(gl) <= dTo
+
+    FILTERGROUP filter3
+            FILTER 'По счету' 'F8' debitGeneralLedger(gl)==g OR creditGeneralLedger(gl)==g DEFAULT
+            FILTER 'Только дебит' 'F7' debitGeneralLedger(gl)==g
+            FILTER 'Только кредит' 'F6' creditGeneralLedger(gl)==g
 ;
+EXTEND DESIGN GLAccounts {
+    wor{
+        ADD gl.box;
+    }
+}
 
 
 FORM userGeneralLedger 'Проводка'
@@ -171,7 +194,6 @@ copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {
 
     FOR ADDOBJ g = UserGeneralLedger DO {
         SET legalEntityUserGeneralLedger(g) <- legalEntityGeneralLedger(generalLedger);
-//        SET dateUserGeneralLedger(g) <- dateGeneralLedger(generalLedger);
         SET descriptionUserGeneralLedger(g) <- descriptionGeneralLedger(generalLedger);
         SET sumUserGeneralLedger(g) <- sumGeneralLedger(generalLedger);
         SET creditUserGeneralLedger(g) <- creditGeneralLedger(generalLedger);

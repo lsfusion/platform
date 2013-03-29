@@ -1,0 +1,11 @@
+MODULE DimensionEmployee;
+
+REQUIRE Dimension, Employee;
+
+//-- Employee
+EXTEND CLASS Employee : Dimension;
+EXTEND CLASS DimensionType {
+    employee 'МОЛ (сотрудник)'
+}
+nameDimension (dimension) += positionNameEmployee(dimension) ;
+dimensionTypeDimension (dimension) += DimensionType.employee WHEN dimension IS Employee;

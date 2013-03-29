@@ -5,7 +5,8 @@ REQUIRE GeneralLedger;
 //------------------------- Субконто -------------------------------//
 
 CLASS ABSTRACT Dimension 'Субконто': Named;
-nameDimension 'Название' = ABSTRACT STRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 50;
+TABLE dimension(Dimension);
+nameDimension 'Название' = ABSTRACT STRING[255] (Dimension) MINCHARWIDTH 40 PREFCHARWIDTH 80;
 
 FORM dimensions 'Субконто'
     OBJECTS d = Dimension
@@ -24,7 +25,7 @@ TABLE GLAccountDimensionType(GLAccount, DimensionType);
 orderGLAccountDimensionType 'Порядковый номер' = DATA INTEGER (GLAccount,DimensionType);
 dimensionsTypeGLAccount 'Субконто' (GLAccount) = GROUP CONCAT toString255(name(dimensionType)) IF orderGLAccountDimensionType (GLAccount,dimensionType) , ', '
                                                 BY GLAccount
-                                                ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
+                                                ORDER orderGLAccountDimensionType (GLAccount,dimensionType) MINCHARWIDTH 40 PREFCHARWIDTH 80 PERSISTENT;
 
 overCopyGLAccount(from, to) += ACTION (from, to) {
     FOR orderGLAccountDimensionType(from,dimensionType) DO {
@@ -37,7 +38,7 @@ prevGLAccountDimensionType (account, type) = PARTITION PREV type IF orderGLAccou
 namePrevGLAccountDimensionType 'Предок' (account, type) = name(prevGLAccountDimensionType(account, type));
 
 TABLE generalLedgerDimensionType(GeneralLedger, DimensionType);
-debitGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType);
+debitGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType) EXCLUSIVE;
 nameDebitGeneralLedgerDimensionType 'Субконто (дебит)' (generalLedger,dimensionType)= nameDimension(debitGeneralLedgerDimensionType(generalLedger,dimensionType));
 debitUserGeneralLedgerDimensionType = DATA Dimension (UserGeneralLedger, DimensionType);
 nameDebitUserGeneralLedgerDimensionType 'Субконто (дебит)' (userGeneralLedger,dimensionType)= nameDimension(debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
@@ -46,7 +47,7 @@ CONSTRAINT debitUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType) 
     CHECKED BY debitUserGeneralLedgerDimensionType
         MESSAGE 'Субконто (дебит) проводки должен соответствовать субконто';
 
-creditGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType);
+creditGeneralLedgerDimensionType = ABSTRACT Dimension (GeneralLedger, DimensionType) EXCLUSIVE;
 nameCreditGeneralLedgerDimensionType 'Субконто (кредит)' (generalLedger,dimensionType)= nameDimension(creditGeneralLedgerDimensionType(generalLedger,dimensionType));
 creditUserGeneralLedgerDimensionType = DATA Dimension (UserGeneralLedger,DimensionType);
 nameCreditUserGeneralLedgerDimensionType 'Субконто (кредит)' (userGeneralLedger,dimensionType)= nameDimension(creditUserGeneralLedgerDimensionType(userGeneralLedger,dimensionType));
@@ -66,24 +67,80 @@ overCopyGeneralLedger(from, to) += ACTION (from, to) {
 
 dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS DimensionType;
 
-//-- Подсчет сумм
+//-- Подсчет сумм одно субконто
+TABLE GLAccountLegalEntityDDate(GLAccount, LegalEntity, Dimension, DATE);
+sumCreditGLAccountCompanyDimensionDate 'Сумма (кредит)' (GLAccount, company, d1, date)= GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) AND t1 IS DimensionType
+        BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), creditGeneralLedgerDimensionType(ledger,t1), dateGeneralLedger(ledger) PERSISTENT;
+sumDebitGLAccountCompanyDimensionDate 'Сумма (дебит)' (GLAccount, company, d1, date)= GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) AND t1 IS DimensionType
+        BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), debitGeneralLedgerDimensionType(ledger,t1), dateGeneralLedger(ledger) PERSISTENT;
+balanceGLAccountCompanyDimensionDate 'Сальдо' (GLAccount, company, d1, date)=
+    sumDebitGLAccountCompanyDimensionDate(GLAccount, company, d1, date) (-) sumCreditGLAccountCompanyDimensionDate(GLAccount, company, d1, date);
 
-//sumCreditGLAccountCompany 'Сумма (кредит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
-//sumDebitGLAccountCompany 'Сумма (дебит)' (GLAccount, company)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger);
-//balanceGLAccountCompany 'Сальдо' (GLAccount, company)= sumDebitGLAccountCompany(GLAccount, company) (-) sumCreditGLAccountCompany(GLAccount, company);
-//
-//sumCreditGLAccountCompanyDate 'Сумма (кредит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
-//sumDebitGLAccountCompanyDate 'Сумма (дебит)' (GLAccount, company, date)= GROUP SUM sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), dateGeneralLedger(ledger);
-//balanceGLAccountCompanyDate 'Сальдо' (GLAccount, company, date)= sumDebitGLAccountCompanyDate(GLAccount, company, date) (-) sumCreditGLAccountCompanyDate(GLAccount, company, date);
-//
-//sumCreditGLAccountCompanyDateFromTo 'Сумма (кредит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
-//        sumCreditGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
-//        BY GLAccount, company, dateFrom, dateTo;
-//sumDebitGLAccountCompanyDateFromTo 'Сумма (дебит)' (GLAccount, company, dateFrom, dateTo) = GROUP SUM
-//        sumDebitGLAccountCompanyDate(GLAccount, company, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
-//        BY GLAccount, company, dateFrom, dateTo;
-//balanceGLAccountCompanyDateFromTo 'Сальдо' (GLAccount, company, dateFrom, dateTo)= sumDebitGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDateFromTo(GLAccount, company, dateFrom, dateTo);
+sumCreditGLAccountCompanyDimensionDateFromTo 'Сумма (кредит)' (GLAccount, company, d1, dateFrom, dateTo) = GROUP SUM
+    sumCreditGLAccountCompanyDimensionDate(GLAccount, company, d1, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, dateFrom, dateTo;
+sumDebitGLAccountCompanyDimensionDateFromTo 'Сумма (дебит)' (GLAccount, company, d1, dateFrom, dateTo) = GROUP SUM
+    sumDebitGLAccountCompanyDimensionDate(GLAccount, company, d1, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, dateFrom, dateTo;
+balanceGLAccountCompanyDimensionDateFromTo 'Сальдо' (GLAccount, company, d1, dateFrom, dateTo)=
+    sumDebitGLAccountCompanyDimensionDateFromTo(GLAccount, company, d1, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDimensionDateFromTo(GLAccount, company, d1, dateFrom, dateTo);
 
+//-- Подсчет сумм два субконто
+TABLE GLAccountLegalEntityDDDate(GLAccount, LegalEntity, Dimension, Dimension, DATE);
+sumCreditGLAccountCompanyDimensionDimensionDate 'Сумма (кредит)' (GLAccount, company, d1, d2, date)= GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) AND t1 IS DimensionType AND t2 IS DimensionType  AND t1 != t2
+        BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), creditGeneralLedgerDimensionType(ledger,t1), creditGeneralLedgerDimensionType(ledger,t2), dateGeneralLedger(ledger) PERSISTENT;
+sumDebitGLAccountCompanyDimensionDimensionDate 'Сумма (дебит)' (GLAccount, company, d1, d2, date)= GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) AND t1 IS DimensionType AND t2 IS DimensionType  AND t1 != t2
+        BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), debitGeneralLedgerDimensionType(ledger,t1), debitGeneralLedgerDimensionType(ledger,t2), dateGeneralLedger(ledger) PERSISTENT;
+balanceGLAccountCompanyDimensionDimensionDate 'Сальдо' (GLAccount, company, d1, d2, date)=
+    sumDebitGLAccountCompanyDimensionDimensionDate(GLAccount, company, d1, d2, date) (-) sumCreditGLAccountCompanyDimensionDimensionDate(GLAccount, company, d1, d2, date);
+
+sumCreditGLAccountCompanyDimensionDimensionDateFromTo 'Сумма (кредит)' (GLAccount, company, d1, d2, dateFrom, dateTo) = GROUP SUM
+    sumCreditGLAccountCompanyDimensionDimensionDate(GLAccount, company, d1, d2, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, d2, dateFrom, dateTo;
+sumDebitGLAccountCompanyDimensionDimensionDateFromTo 'Сумма (дебит)' (GLAccount, company, d1, d2, dateFrom, dateTo) = GROUP SUM
+    sumDebitGLAccountCompanyDimensionDimensionDate(GLAccount, company, d1, d2, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, d2, dateFrom, dateTo;
+balanceGLAccountCompanyDimensionDimensionDateFromTo 'Сальдо' (GLAccount, company, d1, d2, dateFrom, dateTo)=
+    sumDebitGLAccountCompanyDimensionDimensionDateFromTo(GLAccount, company, d1, d2, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDimensionDimensionDateFromTo(GLAccount, company, d1, d2, dateFrom, dateTo);
+
+//-- Подсчет сумм три субконто
+TABLE GLAccountLegalEntityDDDDate(GLAccount, LegalEntity, Dimension, Dimension, Dimension, DATE);
+sumCreditGLAccountCompanyDimensionDimensionDimensionDate 'Сумма (кредит)' (GLAccount, company, d1, d2, d3, date) = GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger) AND
+    t1 IS DimensionType AND t2 IS DimensionType AND t3 IS DimensionType AND
+    t1 != t2 AND t2 != t3 AND t1 != t3
+        BY creditGeneralLedger(ledger), legalEntityGeneralLedger(ledger), creditGeneralLedgerDimensionType(ledger,t1), creditGeneralLedgerDimensionType(ledger,t2), creditGeneralLedgerDimensionType(ledger,t3), dateGeneralLedger(ledger) PERSISTENT;
+sumDebitGLAccountCompanyDimensionDimensionDimensionDate 'Сумма (дебит)' (GLAccount, company, d1, d2, d3, date) = GROUP SUM
+    sumGeneralLedger(ledger) AND isPostedGeneralLedger(ledger)  AND
+    t1 IS DimensionType AND t2 IS DimensionType AND t3 IS DimensionType AND
+    t1 != t2 AND t2 != t3 AND t1 != t3
+        BY debitGeneralLedger(ledger), legalEntityGeneralLedger(ledger), creditGeneralLedgerDimensionType(ledger,t1), creditGeneralLedgerDimensionType(ledger,t2), creditGeneralLedgerDimensionType(ledger,t3), dateGeneralLedger(ledger) PERSISTENT;
+balanceGLAccountCompanyDimensionDimensionDimensionDate 'Сальдо' (GLAccount, company, d1, d2, d3, date)=
+    sumDebitGLAccountCompanyDimensionDimensionDimensionDate(GLAccount, company, d1, d2, d3, date) (-) sumCreditGLAccountCompanyDimensionDimensionDimensionDate(GLAccount, company, d1, d2, d3, date);
+
+sumCreditGLAccountCompanyDimensionDimensionDimensionDateFromTo 'Сумма (кредит)' (GLAccount, company, d1, d2, d3, dateFrom, dateTo) = GROUP SUM
+    sumCreditGLAccountCompanyDimensionDimensionDimensionDate(GLAccount, company, d1, d2, d3, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, d2, d3, dateFrom, dateTo;
+sumDebitGLAccountCompanyDimensionDimensionDimensionDateFromTo 'Сумма (дебит)' (GLAccount, company, d1, d2, d3, dateFrom, dateTo) = GROUP SUM
+    sumDebitGLAccountCompanyDimensionDimensionDimensionDate(GLAccount, company, d1, d2, d3, date) AND date >= (dateFrom AS DATE) AND date <= (dateTo AS DATE)
+        BY GLAccount, company, d1, d2, d3, dateFrom, dateTo;
+balanceGLAccountCompanyDimensionDimensionDimensionDateFromTo 'Сальдо' (GLAccount, company, d1, d2, d3, dateFrom, dateTo)=
+    sumDebitGLAccountCompanyDimensionDimensionDimensionDateFromTo(GLAccount, company, d1, d2, d3, dateFrom, dateTo) (-) sumCreditGLAccountCompanyDimensionDimensionDimensionDateFromTo(GLAccount, company, d1, d2, d3, dateFrom, dateTo);
+
+//--
+orderDebitGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(debitGeneralLedger(ledger), dimensionType);
+orderCreditGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(creditGeneralLedger(ledger), dimensionType);
+
+dimensionsDebitGeneralLedger 'Субконто (дебит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
+                                                BY ledger
+                                                ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 40 PREFCHARWIDTH 80 PERSISTENT;
+dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP CONCAT toString255(nameCreditGeneralLedgerDimensionType(ledger, dimensionType)) IF orderCreditGeneralLedgerDimensionType(ledger, dimensionType) , ', '
+                                                BY ledger
+                                                ORDER orderCreditGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 40 PREFCHARWIDTH 80 PERSISTENT;
 
 FORM dimensionType 'Тип субконто'
     OBJECTS d = DimensionType FIXED PANEL
@@ -109,21 +166,66 @@ EXTEND DESIGN GLAccount {
 }
 EXTEND FORM GLAccounts
     PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
+    PROPERTIES(gl) READONLY dimensionsDebitGeneralLedger AFTER idDebitGeneralLedger(gl)
+    PROPERTIES(gl) READONLY dimensionsCreditGeneralLedger AFTER idCreditGeneralLedger(gl)
+    OBJECTS w = DimensionType FIXED PANEL
+    PROPERTIES(w) SELECTOR name
+    FILTERS orderGLAccountDimensionType(g,w)
+    OBJECTS ww = DimensionType FIXED PANEL
+    PROPERTIES(ww) SELECTOR name
+    FILTERS orderGLAccountDimensionType(g,ww)
+    OBJECTS www = DimensionType FIXED PANEL
+    PROPERTIES(www) SELECTOR name
+    FILTERS orderGLAccountDimensionType(g,www)
+
+    OBJECTS d = Dimension
+    PROPERTIES READONLY nameDimension(d), sumDebitGLAccountCompanyDimensionDateFromTo(g,l,d,dFrom,dTo), sumCreditGLAccountCompanyDimensionDateFromTo(g,l,d,dFrom,dTo), balanceGLAccountCompanyDimensionDateFromTo(g,l,d,dFrom,dTo)
+    FILTERS dimensionTypeDimension(d) == w
+    FILTERGROUP filter1
+            FILTER 'С суммами' 'F11' sumCreditGLAccountCompanyDimensionDateFromTo(g,l,d,dFrom,dTo) OR sumDebitGLAccountCompanyDimensionDateFromTo(g,l,d,dFrom,dTo) DEFAULT
+    OBJECTS dd = Dimension
+    PROPERTIES READONLY nameDimension(dd), sumDebitGLAccountCompanyDimensionDimensionDateFromTo(g,l,d,dd,dFrom,dTo), sumCreditGLAccountCompanyDimensionDimensionDateFromTo(g,l,d,dd,dFrom,dTo), balanceGLAccountCompanyDimensionDimensionDateFromTo(g,l,d,dd,dFrom,dTo)
+    FILTERS dimensionTypeDimension(dd) == ww
+    FILTERGROUP filter2
+            FILTER 'С суммами' 'F10' sumCreditGLAccountCompanyDimensionDimensionDateFromTo(g,l,d,dd,dFrom,dTo) OR sumDebitGLAccountCompanyDimensionDimensionDateFromTo(g,l,d,dd,dFrom,dTo) DEFAULT
+    OBJECTS ddd = Dimension
+    PROPERTIES READONLY nameDimension(ddd), sumDebitGLAccountCompanyDimensionDimensionDimensionDateFromTo(g,l,d,dd,ddd,dFrom,dTo), sumCreditGLAccountCompanyDimensionDimensionDimensionDateFromTo(g,l,d,dd,ddd,dFrom,dTo), balanceGLAccountCompanyDimensionDimensionDimensionDateFromTo(g,l,d,dd,ddd,dFrom,dTo)
+    FILTERS dimensionTypeDimension(ddd) == www
+    FILTERGROUP filter3
+            FILTER 'С суммами' 'F9' sumCreditGLAccountCompanyDimensionDimensionDimensionDateFromTo(g,l,d,dd,ddd,dFrom,dTo) OR sumCreditGLAccountCompanyDimensionDimensionDimensionDateFromTo(g,l,d,dd,ddd,dFrom,dTo) DEFAULT
+
 ;
+EXTEND DESIGN GLAccounts {
+    wor{
+        NEW dimension BEFORE gl.box {
+            title = 'Аналитика';
+            childConstraints = TO THE RIGHT;
+            NEW dimension1 {
+                childConstraints = TO THE BOTTOM;
+                title = 'Субконто 1';
+                ADD w.box;
+                ADD d.box;
+            }
+            NEW dimension2 {
+                childConstraints = TO THE BOTTOM;
+                title = 'Субконто 2';
+                ADD ww.box;
+                ADD dd.box;
+            }
+            NEW dimension3 {
+                childConstraints = TO THE BOTTOM;
+                title = 'Субконто 3';
+                ADD www.box;
+                ADD ddd.box;
+            }
+        }
+    }
+}
+
+
 EXTEND FORM GLAccountDialog
     PROPERTIES(g) READONLY dimensionsTypeGLAccount BEFORE delete(g)
 ;
-
-orderDebitGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(debitGeneralLedger(ledger), dimensionType);
-orderCreditGeneralLedgerDimensionType 'Порядковый номер' (ledger, dimensionType)=  orderGLAccountDimensionType(creditGeneralLedger(ledger), dimensionType);
-
-dimensionsDebitGeneralLedger 'Субконто (дебит)' (ledger) = GROUP CONCAT toString255(nameDebitGeneralLedgerDimensionType(ledger, dimensionType)) IF orderDebitGeneralLedgerDimensionType(ledger, dimensionType) , ', '
-                                                BY ledger
-                                                ORDER orderDebitGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
-dimensionsCreditGeneralLedger 'Субконто (кредит)' (ledger) = GROUP CONCAT toString255(nameCreditGeneralLedgerDimensionType(ledger, dimensionType)) IF orderCreditGeneralLedgerDimensionType(ledger, dimensionType) , ', '
-                                                BY ledger
-                                                ORDER orderCreditGeneralLedgerDimensionType (ledger, dimensionType) MINCHARWIDTH 30 PREFCHARWIDTH 50 PERSISTENT;
-
 
 EXTEND FORM userGeneralLedger
 
@@ -138,24 +240,19 @@ EXTEND FORM userGeneralLedger
     PROPERTIES nameCreditUserGeneralLedgerDimensionType(g,c)
     FILTERS orderCreditGeneralLedgerDimensionType(g,c)
     ORDER BY orderCreditGeneralLedgerDimensionType
-
 ;
 EXTEND DESIGN userGeneralLedger {
-
-
     NEW row BEFORE functions.box{
         childConstraints = TO THE RIGHT;
         title = 'Субконто';
-
         ADD d.box {title = 'Дебит';}
         ADD c.box {title = 'Кредит';}
     }
 }
 
 EXTEND FORM generalLedgers
-
-
-    PROPERTIES(g) READONLY BEFORE sumGeneralLedger(g) dimensionsDebitGeneralLedger, dimensionsCreditGeneralLedger
+    PROPERTIES(g) READONLY AFTER idDebitGeneralLedger(g) dimensionsDebitGeneralLedger
+    PROPERTIES(g) READONLY AFTER idCreditGeneralLedger(g) dimensionsCreditGeneralLedger
 ;
 
 NAVIGATOR {
@@ -164,6 +261,11 @@ NAVIGATOR {
     }
 }
 
+// ----------------------------------- Стандартные данные ----------------------------------- //
 
+loadDefaultDimensionGLAccount 'Добавить субконто' = ACTION (integer, sidType, sidAccount, type) {
+    SET orderGLAccountDimensionType(g,type) <- integer AS INTEGER WHERE g == GLAccountIdTypeIdGLAccount(sidType, sidAccount);
+}
+loadDefaultDimensionGLAccounts 'Загрузить стандарный субконто для счетов' () = ABSTRACT ACTION () IN loadDefaultGroup;
 
-
+@implementLoadDefaultData(loadDefaultDimensionGLAccounts);

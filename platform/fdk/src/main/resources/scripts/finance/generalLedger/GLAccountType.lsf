@@ -41,7 +41,7 @@ FORM GLAccountTypes 'Планы счетов'
 CLASS GLAccount 'Счет' : Named;
 TABLE GLAccount(GLAccount);
 
-nameGLAccount 'Наименование' = DATA STRING[255] (GLAccount) MINCHARWIDTH 20 MAXCHARWIDTH 80 PREFCHARWIDTH 50;
+nameGLAccount 'Наименование' = DATA STRING[255] (GLAccount) MINCHARWIDTH 40 MAXCHARWIDTH 80 PREFCHARWIDTH 80;
 GLAccountTypeGLAccount = DATA GLAccountType (GLAccount) AUTOSET;
 nameGLAccountTypeGLAccount 'План счетов' (GLAccount)= name(GLAccountTypeGLAccount(GLAccount));
 nameCurrencyGLAccount 'Валюта' (GLAccount) = nameCurrencyGLAccountType(GLAccountTypeGLAccount(GLAccount));
@@ -84,7 +84,7 @@ FORM GLAccounts 'Счета'
 
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
-    PROPERTIES(g) READONLY canonicalNamesGLAccount, canonicalIdGLAccount
+    PROPERTIES(g) READONLY canonicalIdGLAccount
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS GLAccountTypeGLAccount(g) == t
     ORDER BY canonicalIdGLAccount
@@ -93,15 +93,25 @@ FORM GLAccounts 'Счета'
 DESIGN GLAccounts FROM DEFAULT {
     main {
         childConstraints = TO THE BOTTOM;
-        NEW row1 {
-            childConstraints = TO THE RIGHT;
-            ADD t.box;
-            ADD l.box;
+        NEW primary {
+            childConstraints = TO THE BOTTOM;
+            type = SPLITV;
+            NEW row {
+                childConstraints = TO THE BOTTOM;
+                NEW row1 {
+                    childConstraints = TO THE RIGHT;
+                    ADD t.box;
+                    ADD l.box;
+                }
+                ADD dates.box {
+                    childConstraints = TO THE RIGHT;
+                }
+                ADD treeGroups.tree.box{ title = 'Счет';}
+            }
+            NEW wor {
+                type = TABBED;
+            }
         }
-        ADD dates.box {
-            childConstraints = TO THE RIGHT;
-        }
-        ADD treeGroups.tree.box{ title = 'Счет';}
     }
     ADD functions.box;
 }
@@ -112,7 +122,7 @@ FORM GLAccountDialog 'Счета'
 
     TREE treeGroups g=GLAccount PARENT parentGLAccount
     PROPERTIES(g) READONLY nameGLAccount, idGLAccount
-    PROPERTIES(g) READONLY canonicalNamesGLAccount, canonicalIdGLAccount
+    PROPERTIES(g) READONLY canonicalIdGLAccount
     PROPERTIES(g) ADDFORM, EDITFORM, delete
     FILTERS GLAccountTypeGLAccount(g) == t
     ORDER BY canonicalIdGLAccount
@@ -171,214 +181,6 @@ loadDefaultGLAccount 'Добавить значение счета' = ACTION (in
         SET parentGLAccount (g) <- GLAccountIdTypeIdGLAccount(sidType, sidParent);
     }
 }
-
-loadDefaultGLAccounts 'Загрузить стандарный план счетов и счета' = ACTION () {
-    EXEC loadDefaultGLAccountType('ТИПОВОЙ ПЛАН СЧЕТОВ БУХГАЛТЕРСКОГО УЧЕТА', '1', 'BLR');
-
-    EXEC loadDefaultGLAccount('ДОЛГОСРОЧНЫЕ АКТИВЫ', 'I', '1',' ');
-    EXEC loadDefaultGLAccount('Основные средства', '01', '1','I');
-    EXEC loadDefaultGLAccount('Амортизация основных средств', '02', '1','I');
-    EXEC loadDefaultGLAccount('Доходные вложения в материальные активы', '03', '1','I');
-    EXEC loadDefaultGLAccount('Инвестиционная недвижимость', '03.1', '1','03');
-    EXEC loadDefaultGLAccount('Предметы финансовой аренды (лизинга)', '03.2', '1','03');
-    EXEC loadDefaultGLAccount('Прочие доходные вложения в материальные активы', '03.3', '1','03');
-    EXEC loadDefaultGLAccount('Нематериальные активы', '04', '1','I');
-    EXEC loadDefaultGLAccount('Амортизация нематериальных активов', '05', '1','I');
-    EXEC loadDefaultGLAccount('Долгосрочные финансовые вложения', '06', '1','I');
-    EXEC loadDefaultGLAccount('Долгосрочные финансовые вложения в ценные бумаги', '06.1', '1','06');
-    EXEC loadDefaultGLAccount('Предоставленные долгосрочные займы', '06.2', '1','06');
-    EXEC loadDefaultGLAccount('Вклады по договору о совместной деятельности', '06.3', '1','06');
-    EXEC loadDefaultGLAccount('Оборудование к установке и строительные материалы', '07', '1','I');
-    EXEC loadDefaultGLAccount('Оборудование к установке на складе', '07.1', '1','07');
-    EXEC loadDefaultGLAccount('Оборудование к установке, переданное в монтаж', '07.2', '1','07');
-    EXEC loadDefaultGLAccount('Строительные материалы', '07.3', '1','07');
-    EXEC loadDefaultGLAccount('Вложения в долгосрочные активы', '08', '1','I');
-    EXEC loadDefaultGLAccount('Приобретение и создание основных средств', '08.1', '1','08');
-    EXEC loadDefaultGLAccount('Приобретение и создание инвестиционной', '08.2', '1','08');
-    EXEC loadDefaultGLAccount('Приобретение предметов финансовой аренды (лизинга)', '08.3', '1','08');
-    EXEC loadDefaultGLAccount('Приобретение и создание нематериальных активов', '08.4', '1','08');
-    EXEC loadDefaultGLAccount('Приобретение и создание иных долгосрочных активов', '08.5', '1','08');
-    EXEC loadDefaultGLAccount('Отложенные налоговые активы', '09', '1','I');
-    EXEC loadDefaultGLAccount('ПРОИЗВОДСТВЕННЫЕ ЗАПАСЫ', 'II', '1',' ');
-    EXEC loadDefaultGLAccount('Материалы', '10', '1','II');
-    EXEC loadDefaultGLAccount('Сырье и материалы', '10.1', '1','10');
-    EXEC loadDefaultGLAccount('Покупные полуфабрикаты и комплектующие изделия', '10.2', '1','10');
-    EXEC loadDefaultGLAccount('Топливо', '10.3', '1','10');
-    EXEC loadDefaultGLAccount('Тара и тарные материалы', '10.4', '1','10');
-    EXEC loadDefaultGLAccount('Запасные части', '10.5', '1','10');
-    EXEC loadDefaultGLAccount('Прочие материалы', '10.6', '1','10');
-    EXEC loadDefaultGLAccount('Материалы, переданные в переработку на сторону', '10.7', '1','10');
-    EXEC loadDefaultGLAccount('Временные сооружения', '10.8', '1','10');
-    EXEC loadDefaultGLAccount('Инвентарь и хозяйственные принадлежности, инструменты', '10.9', '1','10');
-    EXEC loadDefaultGLAccount('Специальная оснастка и специальная одежда на складе', '10.10', '1','10');
-    EXEC loadDefaultGLAccount('Специальная оснастка и специальная одежда в эксплуатации', '10.11', '1','10');
-    EXEC loadDefaultGLAccount('Лом и отходы, содержащие драгоценные металлы', '10.12', '1','10');
-    EXEC loadDefaultGLAccount('Животные на выращивании и откорме', '11', '1','II');
-    EXEC loadDefaultGLAccount(' ', '12', '1','II');
-    EXEC loadDefaultGLAccount(' ', '13', '1','II');
-    EXEC loadDefaultGLAccount('Резервы под снижение стоимости запасов', '14', '1','II');
-    EXEC loadDefaultGLAccount('Заготовление и приобретение материалов', '15', '1','II');
-    EXEC loadDefaultGLAccount('Отклонение в стоимости материалов', '16', '1','II');
-    EXEC loadDefaultGLAccount(' ', '17', '1','II');
-    EXEC loadDefaultGLAccount('Налог на добавленную стоимость по приобретенным товарам, работам, услугам', '18', '1','II');
-    EXEC loadDefaultGLAccount(' ', '19', '1','II');
-    EXEC loadDefaultGLAccount('ЗАТРАТЫ НА ПРОИЗВОДСТВО', 'III', '1',' ');
-    EXEC loadDefaultGLAccount('Основное производство', '20', '1','III');
-    EXEC loadDefaultGLAccount('Полуфабрикаты собственного производства', '21', '1','III');
-    EXEC loadDefaultGLAccount('Страховые выплаты', '22', '1','III');
-    EXEC loadDefaultGLAccount('Вспомогательные производства', '23', '1','III');
-    EXEC loadDefaultGLAccount(' ', '24', '1','III');
-    EXEC loadDefaultGLAccount('Общепроизводственные затраты', '25', '1','III');
-    EXEC loadDefaultGLAccount('Общехозяйственные затраты', '26', '1','III');
-    EXEC loadDefaultGLAccount(' ', '27', '1','III');
-    EXEC loadDefaultGLAccount('Брак в производстве', '28', '1','III');
-    EXEC loadDefaultGLAccount('Обслуживающие производства и хозяйства', '29', '1','III');
-    EXEC loadDefaultGLAccount(' ', '30', '1','III');
-    EXEC loadDefaultGLAccount(' ', '31', '1','III');
-    EXEC loadDefaultGLAccount(' ', '32', '1','III');
-    EXEC loadDefaultGLAccount(' ', '33', '1','III');
-    EXEC loadDefaultGLAccount(' ', '34', '1','III');
-    EXEC loadDefaultGLAccount(' ', '35', '1','III');
-    EXEC loadDefaultGLAccount(' ', '36', '1','III');
-    EXEC loadDefaultGLAccount(' ', '37', '1','III');
-    EXEC loadDefaultGLAccount(' ', '38', '1','III');
-    EXEC loadDefaultGLAccount(' ', '39', '1','III');
-    EXEC loadDefaultGLAccount('ГОТОВАЯ ПРОДУКЦИЯ И ТОВАРЫ', 'IV', '1',' ');
-    EXEC loadDefaultGLAccount(' ', '40', '1','IV');
-    EXEC loadDefaultGLAccount('Товары', '41', '1','IV');
-    EXEC loadDefaultGLAccount('Товары на складах', '41.1', '1','41');
-    EXEC loadDefaultGLAccount('Товары в розничной торговле', '41.2', '1','41');
-    EXEC loadDefaultGLAccount('Тара под товаром и порожняя', '41.3', '1','41');
-    EXEC loadDefaultGLAccount('Покупные изделия', '41.4', '1','41');
-    EXEC loadDefaultGLAccount('Товары, переданные для подготовки на сторону', '41.5', '1','41');
-    EXEC loadDefaultGLAccount('Предметы проката', '41.6', '1','41');
-    EXEC loadDefaultGLAccount('Торговая наценка', '42', '1','IV');
-    EXEC loadDefaultGLAccount('Готовая продукция', '43', '1','IV');
-    EXEC loadDefaultGLAccount('Расходы на реализацию', '44', '1','IV');
-    EXEC loadDefaultGLAccount('Товары отгруженные', '45', '1','IV');
-    EXEC loadDefaultGLAccount(' ', '46', '1','IV');
-    EXEC loadDefaultGLAccount('Долгосрочные активы, предназначенные для реализации', '47', '1','IV');
-    EXEC loadDefaultGLAccount(' ', '48', '1','IV');
-    EXEC loadDefaultGLAccount(' ', '49', '1','IV');
-    EXEC loadDefaultGLAccount('ДЕНЕЖНЫЕ СРЕДСТВА И КРАТКОСРОЧНЫЕ ФИНАНСОВЫЕ ВЛОЖЕНИЯ', 'V', '1',' ');
-    EXEC loadDefaultGLAccount('Касса', '50', '1','V');
-    EXEC loadDefaultGLAccount('Расчетные счета', '51', '1','V');
-    EXEC loadDefaultGLAccount('Валютные счета', '52', '1','V');
-    EXEC loadDefaultGLAccount(' ', '53', '1','V');
-    EXEC loadDefaultGLAccount(' ', '54', '1','V');
-    EXEC loadDefaultGLAccount('Специальные счета в банках', '55', '1','V');
-    EXEC loadDefaultGLAccount('Депозитные счета', '55.1', '1','55');
-    EXEC loadDefaultGLAccount('Счета в драгоценных металлах', '55.2', '1','55');
-    EXEC loadDefaultGLAccount('Специальный счет денежных средств целевого назначения', '55.3', '1','55');
-    EXEC loadDefaultGLAccount(' ', '56', '1','V');
-    EXEC loadDefaultGLAccount('Денежные средства в пути', '57', '1','V');
-    EXEC loadDefaultGLAccount('Инкассированные денежные средства', '57.1', '1','57');
-    EXEC loadDefaultGLAccount('Денежные средства для приобретения иностранной валюты', '57.2', '1','57');
-    EXEC loadDefaultGLAccount('Денежные средства в иностранных валютах для реализации', '57.3', '1','57');
-    EXEC loadDefaultGLAccount('Краткосрочные финансовые вложения', '58', '1','V');
-    EXEC loadDefaultGLAccount('Краткосрочные финансовые вложения в ценные бумаги', '58.1', '1','58');
-    EXEC loadDefaultGLAccount('Предоставленные краткосрочные займы', '58.2', '1','58');
-    EXEC loadDefaultGLAccount('Резервы под обесценение краткосрочных финансовых вложений', '59', '1','V');
-    EXEC loadDefaultGLAccount('РАСЧЕТЫ', 'VI', '1',' ');
-    EXEC loadDefaultGLAccount('Расчеты с поставщиками и подрядчиками', '60', '1','VI');
-    EXEC loadDefaultGLAccount(' ', '61', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты с покупателями и заказчиками', '62', '1','VI');
-    EXEC loadDefaultGLAccount('Резервы по сомнительным долгам', '63', '1','VI');
-    EXEC loadDefaultGLAccount(' ', '64', '1','VI');
-    EXEC loadDefaultGLAccount('Отложенные налоговые обязательства', '65', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по краткосрочным кредитам и займам', '66', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по краткосрочным кредитам', '66.1', '1','66');
-    EXEC loadDefaultGLAccount('Расчеты по краткосрочным займам', '66.2', '1','66');
-    EXEC loadDefaultGLAccount('Расчеты по процентам по краткосрочным кредитам и займам', '66.3', '1','66');
-    EXEC loadDefaultGLAccount('Расчеты по долгосрочным кредитам и займам', '67', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по долгосрочным кредитам', '67.1', '1','67');
-    EXEC loadDefaultGLAccount('Расчеты по долгосрочным займам', '67.2', '1','67');
-    EXEC loadDefaultGLAccount('Расчеты по процентам по долгосрочным кредитам и займам', '67.3', '1','67');
-    EXEC loadDefaultGLAccount('Расчеты по налогам и сборам', '68', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по налогам и сборам, относимым на затраты по производству и реализации продукции, товаров, работ, услуг', '68.1', '1','68');
-    EXEC loadDefaultGLAccount('Расчеты по налогам и сборам, исчисляемым из выручки от реализации продукции, товаров, работ, услуг', '68.2', '1','68');
-    EXEC loadDefaultGLAccount('Расчеты по налогам и сборам, исчисляемым из прибыли (дохода)', '68.3', '1','68');
-    EXEC loadDefaultGLAccount('Расчеты по подоходному налогу', '68.4', '1','68');
-    EXEC loadDefaultGLAccount('Расчеты по прочим платежам в бюджет', '68.5', '1','68');
-    EXEC loadDefaultGLAccount('Расчеты по социальному страхованию и обеспечению', '69', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты с персоналом по оплате труда', '70', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты с подотчетными лицами', '71', '1','VI');
-    EXEC loadDefaultGLAccount(' ', '72', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты с персоналом по прочим операциям', '73', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по предоставленным займам', '73.1', '1','73');
-    EXEC loadDefaultGLAccount('Расчеты по возмещению ущерба', '73.2', '1','73');
-    EXEC loadDefaultGLAccount(' ', '74', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты с учредителями', '75', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по вкладам в уставный капитал', '75.1', '1','75');
-    EXEC loadDefaultGLAccount('Расчеты по выплате дивидендов и других доходов', '75.2', '1','75');
-    EXEC loadDefaultGLAccount('Расчеты с разными дебиторами и кредиторами', '76', '1','VI');
-    EXEC loadDefaultGLAccount('Расчеты по исполнительным документам', '76.1', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по имущественному и личному страхованию', '76.2', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по претензиям', '76.3', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по причитающимся дивидендам и другим доходам', '76.4', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по депонированным суммам', '76.5', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по договору доверительного управления имуществом', '76.6', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты, связанные с выбывающей группой', '76.7', '1','76');
-    EXEC loadDefaultGLAccount('Расчеты по прямому страхованию и перестрахованию', '77', '1','VI');
-    EXEC loadDefaultGLAccount(' ', '78', '1','VI');
-    EXEC loadDefaultGLAccount('Внутрихозяйственные расчеты', '79', '1','VI');
-    EXEC loadDefaultGLAccount('СОБСТВЕННЫЙ КАПИТАЛ', 'VII', '1',' ');
-    EXEC loadDefaultGLAccount('Уставный капитал', '80', '1','VII');
-    EXEC loadDefaultGLAccount('Собственные акции (доли в уставном капитале);', '81', '1','VII');
-    EXEC loadDefaultGLAccount('Резервный капитал', '82', '1','VII');
-    EXEC loadDefaultGLAccount('Добавочный капитал', '83', '1','VII');
-    EXEC loadDefaultGLAccount('Нераспределенная прибыль (непокрытый убыток);', '84', '1','VII');
-    EXEC loadDefaultGLAccount(' ', '85', '1','VII');
-    EXEC loadDefaultGLAccount('Целевое финансирование', '86', '1','VII');
-    EXEC loadDefaultGLAccount(' ', '87', '1','VII');
-    EXEC loadDefaultGLAccount(' ', '88', '1','VII');
-    EXEC loadDefaultGLAccount(' ', '89', '1','VII');
-    EXEC loadDefaultGLAccount('ФИНАНСОВЫЕ РЕЗУЛЬТАТЫ', 'VIII', '1',' ');
-    EXEC loadDefaultGLAccount('Доходы и расходы по текущей деятельности', '90', '1','VIII');
-    EXEC loadDefaultGLAccount('Выручка от реализации продукции, товаров, работ, услуг', '90.1', '1','90');
-    EXEC loadDefaultGLAccount('Налог на добавленную стоимость, исчисляемый из выручки от реализации продукции, товаров, работ, услуг', '90.2', '1','90');
-    EXEC loadDefaultGLAccount('Прочие налоги и сборы, исчисляемые из выручки от реализации продукции, товаров, работ, услуг', '90.3', '1','90');
-    EXEC loadDefaultGLAccount('Себестоимость реализованной продукции, товаров, работ, услуг', '90.4', '1','90');
-    EXEC loadDefaultGLAccount('Управленческие расходы', '90.5', '1','90');
-    EXEC loadDefaultGLAccount('Расходы на реализацию', '90.6', '1','90');
-    EXEC loadDefaultGLAccount('Прочие доходы по текущей деятельности', '90.7', '1','90');
-    EXEC loadDefaultGLAccount('Налог на добавленную стоимость, исчисляемый от прочих доходов по текущей деятельности', '90.8', '1','90');
-    EXEC loadDefaultGLAccount('Прочие налоги и сборы, исчисляемые от прочих доходов по текущей деятельности', '90.9', '1','90');
-    EXEC loadDefaultGLAccount('Прочие расходы по текущей деятельности', '90.10', '1','90');
-    EXEC loadDefaultGLAccount('Прибыль (убыток) от текущей деятельности', '90.11', '1','90');
-    EXEC loadDefaultGLAccount('Прочие доходы и расходы', '91', '1','VIII');
-    EXEC loadDefaultGLAccount('Прочие доходы', '91.1', '1','91');
-    EXEC loadDefaultGLAccount('Налог на добавленную стоимость', '91.2', '1','91');
-    EXEC loadDefaultGLAccount('Прочие налоги и сборы, исчисляемые от прочих доходов', '91.3', '1','91');
-    EXEC loadDefaultGLAccount('Прочие расходы', '91.4', '1','91');
-    EXEC loadDefaultGLAccount('Сальдо прочих доходов и расходов', '91.5', '1','91');
-    EXEC loadDefaultGLAccount(' ', '92', '1','VIII');
-    EXEC loadDefaultGLAccount('Страховые взносы (премии)', '93', '1','VIII');
-    EXEC loadDefaultGLAccount('Недостачи и потери от порчи имущества', '94', '1','VIII');
-    EXEC loadDefaultGLAccount('Страховые резервы', '95', '1','VIII');
-    EXEC loadDefaultGLAccount('Резервы предстоящих платежей', '96', '1','VIII');
-    EXEC loadDefaultGLAccount('Расходы будущих периодов', '97', '1','VIII');
-    EXEC loadDefaultGLAccount('Доходы будущих периодов', '98', '1','VIII');
-    EXEC loadDefaultGLAccount('Прибыли и убытки', '99', '1','VIII');
-    EXEC loadDefaultGLAccount('ЗАБАЛАНСОВЫЕ СЧЕТА', 'VIIII', '1',' ');
-    EXEC loadDefaultGLAccount('Арендованные основные средства', '001', '1','VIIII');
-    EXEC loadDefaultGLAccount('Имущество, принятое на ответственное хранение', '002', '1','VIIII');
-    EXEC loadDefaultGLAccount('Материалы, принятые в переработку', '003', '1','VIIII');
-    EXEC loadDefaultGLAccount('Товары, принятые на комиссию', '004', '1','VIIII');
-    EXEC loadDefaultGLAccount('Оборудование, принятое для монтажа', '005', '1','VIIII');
-    EXEC loadDefaultGLAccount('Бланки строгой отчетности', '006', '1','VIIII');
-    EXEC loadDefaultGLAccount('Списанная безнадежная к получению дебиторская задолженность', '007', '1','VIIII');
-    EXEC loadDefaultGLAccount('Обеспечения обязательств полученные', '008', '1','VIIII');
-    EXEC loadDefaultGLAccount('Обеспечения обязательств выданные', '009', '1','VIIII');
-    EXEC loadDefaultGLAccount(' ', '010', '1','VIIII');
-    EXEC loadDefaultGLAccount('Основные средства, сданные в аренду', '011', '1','VIIII');
-    EXEC loadDefaultGLAccount(' ', '012', '1','VIIII');
-    EXEC loadDefaultGLAccount(' ', '013', '1','VIIII');
-    EXEC loadDefaultGLAccount('Потеря стоимости основных средств', '014', '1','VIIII');
-    EXEC loadDefaultGLAccount(' ', '015', '1','VIIII');
-    EXEC loadDefaultGLAccount('Недвижимое имущество, находящееся в совместном домовладении', '016', '1','VIIII');
-    EXEC loadDefaultGLAccount('Именные приватизационные чеки "Имущество"', '017', '1','VIIII');
-
-} IN loadDefaultGroup;
+loadDefaultGLAccounts 'Загрузить стандарный план счетов и счета' () = ABSTRACT ACTION ()  IN loadDefaultGroup;
 
 @implementLoadDefaultData(loadDefaultGLAccounts);

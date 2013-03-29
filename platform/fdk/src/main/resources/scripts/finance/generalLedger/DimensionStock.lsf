@@ -2,9 +2,26 @@ MODULE DimensionStock;
 
 REQUIRE Dimension, Stock;
 
-EXTEND CLASS Sku : Dimension;
+////-- Sku
+//EXTEND CLASS Sku : Dimension;
+//EXTEND CLASS DimensionType {
+//    sku 'Товар'
+//}
+//nameDimension (dimension) += nameSku(dimension);
+//dimensionTypeDimension (dimension) += DimensionType.sku WHEN dimension IS Sku;
+//
+////-- SkuGroup
+//EXTEND CLASS SkuGroup : Dimension;
+//EXTEND CLASS DimensionType {
+//    skuGroup 'Группа товаров'
+//}
+//nameDimension (dimension) += name(dimension) IF dimension IS SkuGroup;
+//dimensionTypeDimension (dimension) += DimensionType.skuGroup WHEN dimension IS SkuGroup;
+
+//-- Stock
+EXTEND CLASS Stock : Dimension;
 EXTEND CLASS DimensionType {
-    sku 'Товар'
+    stock 'Место храниения (подразделение)'
 }
-nameDimension (dimension) += nameSku(dimension);
-dimensionTypeDimension (dimension) += DimensionType.sku WHEN dimension IS Sku;
+nameDimension (dimension) += name(dimension) IF dimension IS Stock;
+dimensionTypeDimension (dimension) += DimensionType.stock WHEN dimension IS Stock;

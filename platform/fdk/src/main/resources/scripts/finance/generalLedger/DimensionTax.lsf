@@ -6,6 +6,8 @@ EXTEND CLASS Range : Dimension;
 EXTEND CLASS DimensionType {
     range 'Шкала'
 }
-nameDimension (dimension) += toString255(numberRange(dimension));
+nameDimension (dimension) += [FORMULA STRING[255]  ' CAST($1 AS TEXT) || \', шкала № \' || CAST($2 AS TEXT) || \', тек.ставка\' || \' ( \' || CAST($3 AS TEXT)|| \')\''](
+    name(taxRange(dimension)), numberRange(dimension), valueCurrentRateRange(dimension));
 dimensionTypeDimension (dimension) += DimensionType.range WHEN dimension IS Range;
+
 
