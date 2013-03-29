@@ -14,7 +14,7 @@ CLASS UserPriceChangePosted 'Проведенная переоценка тов�
 numberUserPriceChange (userPriceChange) = numberObject(userPriceChange) AND userPriceChange IS UserPriceChange;
 seriesUserPriceChange (userPriceChange) = seriesObject(userPriceChange) AND userPriceChange IS UserPriceChange;
 
-@defineNumeratedObjectDefault(userPriceChange, 'Нумератор для переоценки товара', 'ПT');
+@defineNumeratedObjectDefault(UserPriceChange, 'Нумератор для переоценки товара', 'ПT');
 @defineDocumentDetailSku(userPriceChange, sku);
 
 @defineDocumentDetailQuantity(userPriceChange);

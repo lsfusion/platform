@@ -369,7 +369,7 @@ META defineItemAttribute(attribute, formProperty, caption, group, itemType, attr
     EXTEND FORM itemGroup PROPERTIES(g) userShow###attribute##ItemGroup;
     EXTEND FORM itemGroups PROPERTIES(g) READONLY show###attribute##ItemGroup BACKGROUND backgroundShow###attribute##ItemGroup(g);
     EXTEND FORM item PROPERTIES(i) formProperty SHOWIF show###attribute##Item(i);
-    EXTEND FORM items PROPERTIES(i) READONLY BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
+    EXTEND FORM items PROPERTIES(i) READONLYIF isReadonly() BEFORE delete formProperty SHOWIF show###attribute##ItemGroup(g);
 
     @implementItemAttribute(attribute, caption, itemType, attributeClass);
 END

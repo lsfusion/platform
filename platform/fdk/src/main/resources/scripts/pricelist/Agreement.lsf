@@ -22,7 +22,7 @@ toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(t
 
 @defineDocumentHeaderNote(Agreement);
 @defineDocumentHeaderCurrency(agreement);
-@defineDocumentHeaderDescription(agreement, seriesNumberObject, 'Соглашение');
+@defineDocumentHeaderDescription(Agreement, seriesNumberObject, 'Соглашение');
 //--
 inCustomerAgreement 'Отм' = DATA BOOLEAN (Agreement);
 

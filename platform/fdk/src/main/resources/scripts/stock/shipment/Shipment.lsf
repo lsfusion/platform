@@ -695,7 +695,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
     currencyInvoiceShipment  (invoiceShipment) = currencyInvoice(invoiceInvoiceShipment(invoiceShipment));
     currencyShipment (shipment) += currencyInvoiceShipment(shipment);
 
-    @defineDocumentDescription(invoiceShipment, invoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
+    @defineDocumentDescription(invoiceShipment, InvoiceShipmentDetail, seriesNumberInvoiceShipment, 'Поставка на основе инвойса'###sign);
     descriptionShipment (shipment) += descriptionInvoiceShipment(shipment);
 
     @defineDocumentAggregationDetailProperty (invoice, invoiceShipment, order, 'Заказ');

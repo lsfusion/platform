@@ -357,7 +357,7 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 
 @defineDocumentInterfaceHeaderPricingCommittee (pricing, departmentStore);
 
-@defineDocumentInterfaceHeaderSkip (pricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceHeaderSkip(Pricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(pricing, changeLedger, 'Не изменять текущие цены');
 
 descriptionDocumentPricing 'Документы-основания'= ABSTRACT STRING[255] (Pricing)PERSISTENT;
@@ -695,7 +695,7 @@ META definePricingAggregationInner(concrete, concreteClass, sign, caption, capti
     currencyPricing (pricing) += currency###concrete###pricing(pricing);
     pricingCommitteePricing(pricing) += pricingCommitteeInvoice(invoice###concrete###pricing(pricing));
 
-    @defineDocumentDescription(concrete###pricing, concrete###pricingDetail, seriesNumber###concrete###pricing, caption###sign);
+    @defineDocumentDescription(concrete###pricing, ###concrete###pricingDetail, seriesNumber###concrete###pricing, caption###sign);
     descriptionPricing (pricing) += description###concrete###pricing(pricing);
 
     @defineDocumentAggregationDetailSku(invoice, concrete###pricing, sku);

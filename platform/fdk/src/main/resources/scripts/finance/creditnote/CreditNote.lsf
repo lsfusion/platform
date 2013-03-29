@@ -325,7 +325,7 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     currencyCreditNote (creditNote) += currencyInvoiceCreditNote(creditNote);
     currencyInvoiceCreditNoteDetail (invoiceCreditNoteDetail) = currencyInvoiceCreditNote(invoiceCreditNoteInvoiceCreditNoteDetail(invoiceCreditNoteDetail));
 
-    @defineDocumentDescription(invoiceCreditNote, invoiceCreditNoteDetail, seriesNumberInvoiceCreditNote, 'Акт расхождения на основе инвойса'###sign);
+    @defineDocumentDescription(invoiceCreditNote, InvoiceCreditNoteDetail, seriesNumberInvoiceCreditNote, 'Акт расхождения на основе инвойса'###sign);
     descriptionCreditNote (creditNote) += descriptionInvoiceCreditNote(creditNote);
 
     @defineDocumentAggregationDetailSku(invoice, invoiceCreditNote, sku);

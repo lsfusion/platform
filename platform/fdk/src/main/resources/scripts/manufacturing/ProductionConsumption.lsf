@@ -274,7 +274,7 @@ currencyConsumption (consumption) += currencyOrder(orderOrderConsumption(consump
 
 priceListTypeConsumption(consumption) += priceListTypeOrder(orderOrderConsumption(consumption));
 
-@defineDocumentDescription(orderConsumption, orderConsumptionDetail, seriesNumberOrderConsumption, 'Списание сырья на основе заказа');
+@defineDocumentDescription(orderConsumption, OrderConsumptionDetail, seriesNumberOrderConsumption, 'Списание сырья на основе заказа');
 descriptionConsumption (consumption) += descriptionOrderConsumption(consumption);
 
 

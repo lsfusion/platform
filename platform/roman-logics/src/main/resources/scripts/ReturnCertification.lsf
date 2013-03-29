@@ -24,7 +24,7 @@ CLASS ReturnCertificationDetail 'Строка возврата из сертиф
 
 @defineDocumentTables(returnCertification);
 
-@defineNumeratedObjectDefault(returnCertification, 'Нумератор для возвратов из сертификации', 'СЕ');
+@defineNumeratedObjectDefault(ReturnCertification, 'Нумератор для возвратов из сертификации', 'СЕ');
 
 @defineDocumentRelation(returnCertification);
 @defineDocumentPosted(returnCertification);

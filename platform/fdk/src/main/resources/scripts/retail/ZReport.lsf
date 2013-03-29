@@ -24,7 +24,7 @@ CLASS ZReportPosted 'Z-отчет (проведенный)' : ZReport, PostedObj
 
 TABLE zReport (ZReport);
 
-@defineDocumentHeaderPosted(zReport);
+@defineDocumentHeaderPosted(ZReport);
 @defineDocumentHeaderTime(ZReport);
 @defineDocumentHeaderDepartmentStore(zReport);
 
@@ -70,7 +70,7 @@ TABLE receiptDetail (ReceiptDetail);
 TABLE receiptSaleDetail (ReceiptSaleDetail);
 TABLE receiptReturnDetail (ReceiptReturnDetail);
 
-@defineDocumentRelation(zReport, receipt);
+@defineDocumentRelation(zReport, Receipt);
 cashRegisterReceipt (receipt) = cashRegisterZReport(zReportReceipt(receipt));
 numberCashRegisterReceipt 'Номер кассы' (receipt) = numberCashRegister(cashRegisterReceipt(receipt)) IN recognize;
 
@@ -88,10 +88,10 @@ userReceipt(receipt) <- currentUser() WHEN ASSIGNED(receipt IS Receipt);
 @defineDocumentHeaderTime(Receipt);
 
 @defineDocumentDetailDepartmentStoreCustom(zReport, receipt);
-@defineDocumentDetailPosted(zReport, receipt);
+@defineDocumentDetailPosted(zReport, Receipt);
 
-@defineDocumentRelation(receipt, receiptSaleDetail);
-@defineDocumentRelation(receipt, receiptReturnDetail);
+@defineDocumentRelation(receipt, ReceiptSaleDetail);
+@defineDocumentRelation(receipt, ReceiptReturnDetail);
 
 @defineDocumentHeaderCurrency (receipt);
 @deriveDocumentCurrency (receipt, departmentStore);
@@ -106,15 +106,15 @@ sidCashRegisterModelReceiptDetail 'Код модели' (receiptDetail) = sidCas
 
 typeReceiptDetail 'Тип' (receiptDetail) = UNION CLASS 'Продажа' AND receiptDetail IS ReceiptSaleDetail, 'Возврат' AND receiptDetail IS ReceiptReturnDetail FIXEDCHARWIDTH 8;
 
-@defineDocumentDetailIndex(receipt, receiptDetail);
+@defineDocumentDetailIndex(receipt, ReceiptDetail);
 
-@defineDocumentDetailTime(receipt, receiptSaleDetail);
-@defineDocumentDetailTime(receipt, receiptReturnDetail);
+@defineDocumentDetailTime(receipt, ReceiptSaleDetail);
+@defineDocumentDetailTime(receipt, ReceiptReturnDetail);
 dateReceiptDetail 'Дата' (receiptDetail) = UNION CLASS dateReceiptReturnDetail(receiptDetail), dateReceiptSaleDetail(receiptDetail) PERSISTENT;
 dateTimeReceiptDetail 'Дата/время' (receiptDetail) = UNION CLASS dateTimeReceiptReturnDetail(receiptDetail), dateTimeReceiptSaleDetail(receiptDetail) PERSISTENT;
 
-@defineDocumentDetailPosted(receipt, receiptSaleDetail);
-@defineDocumentDetailPosted(receipt, receiptReturnDetail);
+@defineDocumentDetailPosted(receipt, ReceiptSaleDetail);
+@defineDocumentDetailPosted(receipt, ReceiptReturnDetail);
 isPostedReceiptDetail 'Проведен' (receiptDetail) = UNION CLASS isPostedReceiptReturnDetail(receiptDetail), isPostedReceiptSaleDetail(receiptDetail) PERSISTENT;
 
 @defineDocumentDetailDepartmentStoreCustom(receipt, receiptSaleDetail);

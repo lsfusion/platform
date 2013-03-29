@@ -151,7 +151,7 @@ META defineDocumentTransferOutBatchInner(object, class, skuProp)
     @defineAggregation(object##OutDetail, batch, object##OutBatchDetail, cost###object##OutDetailBatch);
 
     object##Out###object##OutBatchDetail (detail) = object##Out###object##OutDetail(object##OutDetail###object##OutBatchDetail(detail));
-    @defineDocumentDetailIndex(object##Out, object##OutBatchDetail);
+    @defineDocumentDetailIndex(object##Out, ###object##OutBatchDetail);
 
     @defineDocumentAggregationDetailSku(object##Out, object##OutBatch, sku);
     @defineDocumentDetailSkuArticle(object##OutBatch);
@@ -247,7 +247,7 @@ META defineDocumentTransferIn(object, caption, skuProp, stockProp)
 
     @defineDocumentAggregationHeaderNumber(object##Out, object##In);
 
-    @defineDocumentDescription(object##In, object##InDetail, seriesNumber###object##In, caption);
+    @defineDocumentDescription(object##In, ###object##InDetail, seriesNumber###object##In, caption);
 
     @defineDocumentAggregationDetailSku(object##Out, object##In, skuProp);
 
@@ -468,26 +468,26 @@ META defineDocumentTransferDiff(object, caption, skuProp, stockProp)
     object##Diff###object##DiffSDetail (detail) = object##Diff###object##Rec(object##Rec###object##DiffSDetail(detail));
 
     @defineDocumentDetailIndex(object##Diff);
-    @defineDocumentDetailIndex(object##Diff, object##DiffEDetail);
-    @defineDocumentDetailIndex(object##Diff, object##DiffSDetail);
+    @defineDocumentDetailIndex(object##Diff, ###object##DiffEDetail);
+    @defineDocumentDetailIndex(object##Diff, ###object##DiffSDetail);
 
     @defineDocumentAggregationHeaderTime(object##Rec, object##Diff);
-    @defineDocumentDetailTime(object##Diff, object##DiffEDetail);
-    @defineDocumentDetailTime(object##Diff, object##DiffSDetail);
+    @defineDocumentDetailTime(object##Diff, ###object##DiffEDetail);
+    @defineDocumentDetailTime(object##Diff, ###object##DiffSDetail);
 
     @defineDocumentAggregationHeaderNumberCustom(object##Rec, object##Diff, object##Rec);
 
-    @defineDocumentHeaderDescription(object##Diff, seriesNumber###object##Diff, caption);
-    @defineDocumentDetailDescription(object##Diff, object##DiffEDetail);
-    @defineDocumentDetailDescription(object##Diff, object##DiffSDetail);
+    @defineDocumentHeaderDescription(###object##Diff, seriesNumber###object##Diff, caption);
+    @defineDocumentDetailDescription(object##Diff, ###object##DiffEDetail);
+    @defineDocumentDetailDescription(object##Diff, ###object##DiffSDetail);
 
     @defineDocumentAggregationHeaderStock(object##Rec, object##Diff, stockProp, 'Склад-получатель');
     @defineDocumentDetailStock(object##Diff, object##DiffEDetail, stockProp, 'Склад-получатель');
     @defineDocumentDetailStock(object##Diff, object##DiffSDetail, stockProp, 'Склад-получатель');
 
     @defineDocumentAggregationHeaderPosted(object##Rec, object##Diff);
-    @defineDocumentDetailPosted(object##Diff, object##DiffEDetail);
-    @defineDocumentDetailPosted(object##Diff, object##DiffSDetail);
+    @defineDocumentDetailPosted(object##Diff, ###object##DiffEDetail);
+    @defineDocumentDetailPosted(object##Diff, ###object##DiffSDetail);
 
     skuProp###object##DiffDetail (detail) = UNION EXCLUSIVE skuProp###object##DiffEDetail(detail), skuProp###object##DiffSDetail(detail) PERSISTENT;
     quantity###object##DiffDetail 'Кол-во' (detail) = UNION EXCLUSIVE quantity###object##DiffEDetail(detail), quantity###object##DiffSDetail(detail) PERSISTENT;

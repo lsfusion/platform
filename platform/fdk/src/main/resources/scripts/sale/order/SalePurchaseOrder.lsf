@@ -81,7 +81,7 @@ Purchase.noteOrder(order) += noteOrderPurchaseOrder(order);
 currencyPurchaseOrder  (purchaseOrder) = currencyOrder(orderPurchaseOrder(purchaseOrder));
 Purchase.currencyOrder (order) += currencyPurchaseOrder(order);
 
-@defineDocumentDescription(purchaseOrder, purchaseOrderDetail, seriesNumberPurchaseOrder, 'Поставка на основе поставки ');
+@defineDocumentDescription(purchaseOrder, PurchaseOrderDetail, seriesNumberPurchaseOrder, 'Поставка на основе поставки ');
 Purchase.descriptionOrder (order) += descriptionPurchaseOrder(order);
 
 @defineDocumentAggregationDetailSku(order, purchaseOrder, sku);

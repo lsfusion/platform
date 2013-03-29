@@ -58,7 +58,7 @@ nameSupplierCommercialInvoice 'Поставщик' (commercialInvoice) = name(su
 companyCommercialInvoice (commercialInvoice) = partyBContract(contractCommercialInvoice(commercialInvoice));
 nameCompanyCommercialInvoice 'Поставщик' (commercialInvoice) = name(companyCommercialInvoice(commercialInvoice));
 
-@defineNumeratedObjectDefault(commercialInvoice, 'Нумератор для коммерческих инвойсов', 'КИ');
+@defineNumeratedObjectDefault(CommercialInvoice, 'Нумератор для коммерческих инвойсов', 'КИ');
 
 invoiceCommercialInvoice 'Инвойс-основание' = DATA Invoice (CommercialInvoice);
 descriptionInvoiceCommercialInvoice 'Основание' (commercialInvoice) =

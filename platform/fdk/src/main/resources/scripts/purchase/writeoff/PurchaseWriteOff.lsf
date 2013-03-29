@@ -366,7 +366,7 @@ noteWriteOff(writeOff) += noteShipmentShipmentWriteOff(writeOff);
 currencyShipmentWriteOff  (shipmentWriteOff) = currencyShipment(shipmentShipmentWriteOff(shipmentWriteOff));
 currencyWriteOff (writeOff) += currencyShipmentWriteOff(writeOff);
 
-@defineDocumentDescription(shipmentWriteOff, shipmentWriteOffDetail, seriesNumberShipmentWriteOff, 'Акт списания на основе поставки');
+@defineDocumentDescription(shipmentWriteOff, ShipmentWriteOffDetail, seriesNumberShipmentWriteOff, 'Акт списания на основе поставки');
 descriptionWriteOff (writeOff) += descriptionShipmentWriteOff(writeOff);
 
 reasonWriteOff(writeOff) += reasonShipment(shipmentShipmentWriteOff(writeOff));

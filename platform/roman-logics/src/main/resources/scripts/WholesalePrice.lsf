@@ -12,7 +12,7 @@ CLASS WholesalePriceDocument 'Оптовый прайс' : NumeratedObject;
 TABLE wholesalePriceDocument (WholesalePriceDocument);
 TABLE wholesalePriceDocumentArticle (WholesalePriceDocument, Article);
 
-@defineNumeratedObjectDefault(wholesalePriceDocument, 'Нумератор для оптовых прайсов', 'ОП');
+@defineNumeratedObjectDefault(WholesalePriceDocument, 'Нумератор для оптовых прайсов', 'ОП');
 @defineDocumentHeaderTime(WholesalePriceDocument);
 @defineDocumentHeaderCurrency(wholesalePriceDocument);
 

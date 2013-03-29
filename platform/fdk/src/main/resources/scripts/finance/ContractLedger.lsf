@@ -206,7 +206,7 @@ CLASS PaymentRequest 'Платежное требование' : NumeratedObject
 CLASS PaymentRequestPosted 'Проведенное платежное требование' : PaymentRequest, PostedObject;
 TABLE paymentRequest(PaymentRequest);
 
-@defineDocumentHeaderPosted(paymentRequest);
+@defineDocumentHeaderPosted(PaymentRequest);
 @defineNumeratedObjectDefault(PaymentRequest, 'Нумератор для платежных требований', 'ПТ');
 
 datePaymentRequest 'Дата' (paymentRequest) = DATA DATE (PaymentRequest);
@@ -302,7 +302,7 @@ META defineCreditMemoPrefix(prefix, caption, captionPost)
     CLASS CreditMemo###prefix caption : CreditMemo, ContractLedger, ContractALedger, prefix##ContractLedger;
     CLASS CreditMemo###prefix##Posted  captionPost : CreditMemo###prefix, PostedObject;
 
-    @defineDocumentHeaderPosted(creditMemo###prefix);
+    @defineDocumentHeaderPosted(CreditMemo###prefix);
     @defineNumeratedObjectDefault(CreditMemo###prefix, 'Нумератор для кредитных нот', 'КН');
 
     dateCreditMemo###prefix 'Дата' (creditMemo###prefix) = DATA DATE (CreditMemo###prefix);

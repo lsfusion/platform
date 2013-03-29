@@ -13,7 +13,7 @@ createRepricingDisparity (disparity) <- createRepricingOperation(operationDispar
     WHEN CHANGED(operationDisparity(disparity));
 
 // До
-@defineDocumentTimeBeforePrefix (disparity, , ' до');
+@defineDocumentTimePrefix(disparity, before, ' документа до');
 
 @defineDocumentDetailPricePrefix(disparity, curInput, ' поставщика до');
 @defineDocumentDetailDataSumCustomPrefix (disparityDetail, curInput, ' поставщика до');
@@ -39,7 +39,7 @@ curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 @deriveDocumentDetailMarkupSumPrefix(disparity, curInput, curInputRetail, curInput);
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, supplierPricingPriceListType, curInput, sku, stock);
-@deriveDocumentDetailVAT (disparity, curInput, dateBefore, sku, stock);
+@deriveDocumentDetailVAT (disparity, curInput, beforeDate, sku, stock);
 @deriveDocumentDetailPriceSystemLedgerPriceListType(disparity, retailPricingPriceListType, curInputRetail, sku, stock);
 
 @changeDocumentDetailMarkupCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput);
@@ -97,7 +97,7 @@ CLASS DisparityRepricingDetail 'Строка акта дооценки на ос
 @defineDocumentTables(disparityRepricing);
 
 @defineDocumentAggregation(disparity, disparityRepricing, needToRepricingDisparity);
-@defineDocumentAggregationTimeBefore(disparity, disparityRepricing);
+@defineDocumentAggregationTimePrefix(disparity, disparityRepricing, before);
 
 repricingRepricingDetail(detail) += disparityRepricingDisparityRepricingDetail(detail);
 
@@ -107,8 +107,8 @@ printRepricingDisparity 'Акт переоценки' (disparity) = printReprici
 dateRepricing(repricing) += dateDisparityRepricing(repricing);
 timeRepricing(repricing) += timeDisparityRepricing(repricing);
 
-dateBeforeRepricing(repricing) += dateBeforeDisparityRepricing(repricing);
-timeBeforeRepricing(repricing) += timeBeforeDisparityRepricing(repricing);
+beforeDateRepricing(repricing) += beforeDateDisparityRepricing(repricing);
+beforeTimeRepricing(repricing) += beforeTimeDisparityRepricing(repricing);
 
 @defineDocumentAggregationStockPrefix(disparity, disparityRepricing, stock, 'Склад', , );
 departmentStoreRepricing(repricing) += stockDisparityRepricing(repricing) IF stockDisparityRepricing(repricing) IS DepartmentStore;
@@ -132,7 +132,7 @@ currencyRepricing (repricing) += currencyDisparityRepricing(repricing);
 repricingCommitteeRepricing(repricing) += repricingCommitteeDisparity(disparityDisparityRepricing(repricing));
 numberDisposalRepricing(repricing) += numberDisposalDisparity(disparityDisparityRepricing(repricing));
 
-@defineDocumentDescription(disparityRepricing, disparityRepricingDetail, seriesNumberDisparityRepricing, 'Акт переоценки (сортность)');
+@defineDocumentDescription(disparityRepricing, DisparityRepricingDetail, seriesNumberDisparityRepricing, 'Акт переоценки (сортность)');
 descriptionRepricing (repricing) += descriptionDisparityRepricing(repricing);
 
 //skipChangeLedgerRepricing(repricing) += repricing IS DisparityRepricing;
@@ -150,7 +150,7 @@ showCreateRepricingDisparity (disparity) = stockDisparity(disparity) IS Departme
 
 EXTEND FORM disparity
     PROPERTIES(dis)   SHOWIF showCreateRepricingDisparity(dis) BACKGROUND backgroundCurDisparity(dis) createRepricingDisparity
-    PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingCommitteeDisparity, numberDisposalDisparity, dateBeforeDisparity
+    PROPERTIES(dis)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) nameRepricingCommitteeDisparity, numberDisposalDisparity, beforeDateDisparity
     PROPERTIES(dis)   BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) diffRetailSumDisparityDetailDisparity
 
     PROPERTIES(d)   BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) BEFORE delete(d)
@@ -172,7 +172,7 @@ EXTEND DESIGN disparity {
             ADD PROPERTY(createRepricingDisparity);
             ADD PROPERTY(nameRepricingCommitteeDisparity);
             ADD PROPERTY(numberDisposalDisparity);
-            ADD PROPERTY(dateBeforeDisparity);
+            ADD PROPERTY(beforeDateDisparity);
         }
     }
 }

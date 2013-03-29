@@ -257,8 +257,8 @@ needToInLedgerAdjustment (adjustment) = GROUP SUM needToInLedgerAdjustmentDetail
 adjustmentDetailAdjustmentSkuDetail(adjustmentSkuDetail) = UNION CLASS adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail),
                                                                                 adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail);
 
-@defineDocumentDetailTime(adjustmentDetail, adjustmentSkuDetail);
-@defineDocumentDetailPosted(adjustmentDetail, adjustmentSkuDetail);
+@defineDocumentDetailTime(adjustmentDetail, AdjustmentSkuDetail);
+@defineDocumentDetailPosted(adjustmentDetail, AdjustmentSkuDetail);
 
 stockInAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailInAdjustmentSkuDetail(adjustmentSkuDetail));
 stockOutAdjustmentSkuDetail(adjustmentSkuDetail) = stockAdjustmentDetail(adjustmentDetailOutAdjustmentSkuDetail(adjustmentSkuDetail));

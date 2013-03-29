@@ -179,14 +179,14 @@ saleInSaleInBatchDetail (detail) = saleInSaleOut(saleOutSaleInBatchDetail(detail
 skipSkuLedgerSaleIn 'Не проводить по учету' (saleIn) = skipSkuLedgerSaleOut(saleOutSaleIn(saleIn));
 skipSkuLedgerSaleInBatchDetail (detail) = skipSkuLedgerSaleOutDetail(saleOutDetailSaleInBatchDetail(detail));
 
-@defineDocumentDetailIndex(saleIn, saleInBatchDetail);
+@defineDocumentDetailIndex(saleIn, SaleInBatchDetail);
 
 @defineDocumentAggregationDetailTime(saleOut, saleInBatch);
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-получатель', destination, );
 @defineDocumentAggregationDetailStockPrefix(saleOut, saleInBatch, stock, 'Склад-отправитель', , destination);
 @defineDocumentAggregationDetailPosted(saleOut, saleInBatch);
 @defineDocumentAggregationDetailSku(saleOut, saleInBatch, sku);
-@defineDocumentDetailDescription(saleIn, saleInBatchDetail);
+@defineDocumentDetailDescription(saleIn, SaleInBatchDetail);
 
 quantitySaleInBatchDetail 'Кол-во' (detail) = costDataSkuLedgerBatch(saleOutDetailSaleInBatchDetail(detail), batchSaleInBatchDetail(detail));
 

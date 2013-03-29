@@ -101,7 +101,7 @@ Purchase.noteShipment(shipment) += noteShipmentPurchaseShipment(shipment);
 currencyPurchaseShipment  (purchaseShipment) = currencyShipment(shipmentPurchaseShipment(purchaseShipment));
 Purchase.currencyShipment (shipment) += currencyPurchaseShipment(shipment);
 
-@defineDocumentDescription(purchaseShipment, purchaseShipmentDetail, seriesNumberPurchaseShipment, 'Поставка на основе поставки ');
+@defineDocumentDescription(purchaseShipment, PurchaseShipmentDetail, seriesNumberPurchaseShipment, 'Поставка на основе поставки ');
 Purchase.descriptionShipment (shipment) += descriptionPurchaseShipment(shipment);
 
 @defineDocumentAggregationDetailSku(shipment, purchaseShipment, sku);

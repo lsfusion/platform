@@ -83,7 +83,7 @@ CLASS RepairDetail 'Строка передачи в ремонт' : Consignment
 
 @defineDocument(repair);
 
-@defineDocumentDetailNote(Repair);
+@defineDocumentDetailNote(RepairDetail);
 
 @defineDocumentStock(repair, stock, 'Склад-отправитель');
 
@@ -306,7 +306,7 @@ CLASS ReturnRepairDetail 'Строка возврата из ремонта';
 
 @defineDocument(returnRepair);
 
-@defineDocumentDetailNote(ReturnRepair);
+@defineDocumentDetailNote(ReturnRepairDetail);
 
 @defineDocumentStock(returnRepair, stock, 'Склад-получатель');
 
@@ -536,7 +536,7 @@ CLASS DryCleaningDetail 'Строка передачи в химчистку' : 
 
 @defineDocument(dryCleaning);
 
-@defineDocumentDetailNote(DryCleaning);
+@defineDocumentDetailNote(DryCleaningDetail);
 
 @defineDocumentStock(dryCleaning, stock, 'Склад-отправитель');
 
@@ -593,7 +593,7 @@ CLASS ReturnDryCleaningDetail 'Строка возврата из химчист
 
 @defineDocument(returnDryCleaning);
 
-@defineDocumentDetailNote(ReturnDryCleaning);
+@defineDocumentDetailNote(ReturnDryCleaningDetail);
 
 @defineDocumentStock(returnDryCleaning, stock, 'Склад-получатель');
 

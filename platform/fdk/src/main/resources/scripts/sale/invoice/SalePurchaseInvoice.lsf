@@ -231,7 +231,7 @@ Purchase.agreementInvoice (invoice) += agreementPurchaseInvoice(invoice);
 priceListTypeIPurchaseInvoice  (purchaseInvoice) = priceListTypeInvoice(invoicePurchaseInvoice(purchaseInvoice));
 Purchase.priceListTypeInvoice (invoice) += priceListTypeIPurchaseInvoice(invoice);
 
-@defineDocumentDescription(purchaseInvoice, purchaseInvoiceDetail, seriesNumberPurchaseInvoice, 'Поставка на основе поставки ');
+@defineDocumentDescription(purchaseInvoice, PurchaseInvoiceDetail, seriesNumberPurchaseInvoice, 'Поставка на основе поставки ');
 Purchase.descriptionInvoice (invoice) += descriptionPurchaseInvoice(invoice);
 
 Purchase.contractSkuInvoice (invoice) += contractSkuInvoice(invoicePurchaseInvoice(invoice));

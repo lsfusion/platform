@@ -6,9 +6,12 @@ CLASS Sanitation 'ГГР' : Certificate, NumberedObject;
 TABLE sanitation(Sanitation);
 
 @defineDocumentHeaderTimePrefix(Sanitation, ,' создания');
+dateCertificate(sanitation) += dateSanitation(sanitation);
+timeCertificate(sanitation) += timeSanitation(sanitation);
+
 @defineDocumentHeaderTimePrefix(Sanitation, to, ' действия');
-@implementDocumentHeaderTimePrefix(certificate, , sanitation, );
-@implementDocumentHeaderTimePrefix(certificate, to, sanitation, to);
+toDateCertificate(sanitation) += toDateSanitation(sanitation);
+toTimeCertificate(sanitation) += toTimeSanitation(sanitation);
 
 seriesCertificate(sanitation) += seriesObject(sanitation) AND sanitation IS Sanitation;
 numberCertificate(sanitation) += numberObject(sanitation) AND sanitation IS Sanitation;

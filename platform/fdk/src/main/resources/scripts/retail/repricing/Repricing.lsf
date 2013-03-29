@@ -132,7 +132,7 @@ CLASS UserRepricingPosted 'Проведенный акт переоценки (�
 
 @defineDocumentInterface(repricing);
 
-@defineDocumentInterfaceTimeBefore(repricing);
+@defineDocumentInterfaceTimePrefix(repricing, before, ' документа (до)');
 
 @defineDocumentInterfaceNumber(repricing);
 
@@ -231,13 +231,13 @@ roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmen
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, supplierPricingPriceListType, cur, sku, departmentStore);
 
-@deriveDocumentDetailVAT (userRepricing, cur, dateBefore);
+@deriveDocumentDetailVAT (userRepricing, cur, beforeDate);
 
 @deriveDocumentDetailValueVAT(userRepricing, cur);
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, retailPricingPriceListType, curRetail, sku, departmentStore);
 
-@defineDocumentInterfaceHeaderSkip (repricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceHeaderSkip(Repricing, changeLedger, 'Не изменять текущие цены');
 @defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
 
 @defineDocumentHeaderItemSum(repricing, diffRetail, );
@@ -362,7 +362,7 @@ printRepricing 'Акт переоценки' (repricing) = ACTION FORM repricing
 FORM userRepricing 'Акт переоценки'
     OBJECTS p=UserRepricing FIXED PANEL
     PROPERTIES (p) objectClassName, nameNumeratorObject, numberObject, seriesObject,
-                   dateUserRepricing, timeUserRepricing, dateBeforeUserRepricing, nameDepartmentStoreUserRepricing,
+                   dateUserRepricing, timeUserRepricing, beforeDateUserRepricing, nameDepartmentStoreUserRepricing,
                    diffSumUserRepricingDetailUserRepricing, diffMarkupSumUserRepricingDetailUserRepricing, diffVATSumUserRepricingDetailUserRepricing,
                    diffRetailSumUserRepricingDetailUserRepricing,
                    noteUserRepricing, numberDisposalUserRepricing, nameRepricingCommitteeUserRepricing, skipChangeLedgerUserRepricing
@@ -420,7 +420,7 @@ DESIGN userRepricing FROM DEFAULT {
                     ADD PROPERTY(seriesObject);
                     ADD PROPERTY(dateUserRepricing);
                     ADD PROPERTY(timeUserRepricing);
-                    ADD PROPERTY(dateBeforeUserRepricing);
+                    ADD PROPERTY(beforeDateUserRepricing);
                 }
                 ADD p.documentPrmGroup {
                     childConstraints = TO THE RIGHTBOTTOM;
@@ -488,7 +488,7 @@ editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM
 
 FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
     OBJECTS p = Repricing
-    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, dateBeforeRepricing,
+    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, beforeDateRepricing,
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
@@ -629,7 +629,7 @@ META defineRepricing(sign, stockProp)
 //    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
 //    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
-    @deriveDocumentDetailVAT (userInvoice, cur, dateBefore, sku, stockProp);
+    @deriveDocumentDetailVAT (userInvoice, cur, beforeDate, sku, stockProp);
     @deriveDocumentDetailValueVAT(userInvoice, cur);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
@@ -676,7 +676,7 @@ META defineRepricing(sign, stockProp)
     @defineDocumentTables(invoiceRepricing);
 
     @defineDocumentAggregation(invoice, invoiceRepricing, needToRepricingInvoice);
-    @defineDocumentAggregationTimeBefore(invoice, invoiceRepricing);
+    @defineDocumentAggregationTimePrefix(invoice, invoiceRepricing, before);
 
     repricingRepricingDetail(detail) += invoiceRepricingInvoiceRepricingDetail(detail);
 
@@ -687,8 +687,8 @@ META defineRepricing(sign, stockProp)
     dateRepricing(repricing) += dateInvoiceRepricing(repricing);
     timeRepricing(repricing) += timeInvoiceRepricing(repricing);
 
-    dateBeforeRepricing(repricing) += dateBeforeInvoiceRepricing(repricing);
-    timeBeforeRepricing(repricing) += timeBeforeInvoiceRepricing(repricing);
+    beforeDateRepricing(repricing) += beforeDateInvoiceRepricing(repricing);
+    beforeTimeRepricing(repricing) += beforeTimeInvoiceRepricing(repricing);
 
     @defineDocumentAggregationStockPrefix(invoice, invoiceRepricing, stockProp, 'Склад', , );
     departmentStoreRepricing(repricing) += stockProp###invoiceRepricing(repricing) IF stockProp###invoiceRepricing(repricing) IS DepartmentStore;
@@ -714,7 +714,7 @@ META defineRepricing(sign, stockProp)
     repricingCommitteeRepricing(repricing) += repricingCommitteeInvoice(invoiceInvoiceRepricing(repricing));
     numberDisposalRepricing(repricing) += numberDisposalInvoice(invoiceInvoiceRepricing(repricing));
 
-    @defineDocumentDescription(invoiceRepricing, invoiceRepricingDetail, seriesNumberInvoiceRepricing, 'Акт дооценки на основе инвойса');
+    @defineDocumentDescription(invoiceRepricing, InvoiceRepricingDetail, seriesNumberInvoiceRepricing, 'Акт дооценки на основе инвойса');
     descriptionRepricing (repricing) += descriptionInvoiceRepricing(repricing);
 
     skipChangeLedgerRepricing(repricing) += repricing IS InvoiceRepricing;
@@ -733,12 +733,12 @@ META defineRepricing(sign, stockProp)
         SET createRepricingUserInvoice(d) <- createRepricingUserInvoice(s);
         SET repricingCommitteeUserInvoice(d) <- repricingCommitteeUserInvoice(s);
         SET numberDisposalUserInvoice(d) <- numberDisposalUserInvoice(s);
-        SET dateBeforeUserInvoice(d) <- dateBeforeUserInvoice(s);
+        SET beforeDateUserInvoice(d) <- beforeDateUserInvoice(s);
     }
 
     EXTEND FORM userInvoice
         PROPERTIES(i)   SHOWIF showCreateRepricingInvoice(i) BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
-        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice, dateBeforeUserInvoice
+        PROPERTIES(i)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) nameRepricingCommitteeUserInvoice, numberDisposalUserInvoice, beforeDateUserInvoice
         PROPERTIES(i)   BACKGROUND backgroundAfterInvoice(i) SHOWIF createRepricingUserInvoice(i) diffRetailSumUserInvoiceDetailUserInvoice
 
         PROPERTIES(d)   BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) BEFORE name###stockProp###userInvoiceDetail(d)
@@ -757,7 +757,7 @@ META defineRepricing(sign, stockProp)
                 ADD PROPERTY(createRepricingUserInvoice);
                 ADD PROPERTY(nameRepricingCommitteeUserInvoice);
                 ADD PROPERTY(numberDisposalUserInvoice);
-                ADD PROPERTY(dateBeforeUserInvoice);
+                ADD PROPERTY(beforeDateUserInvoice);
             }
         }
     }

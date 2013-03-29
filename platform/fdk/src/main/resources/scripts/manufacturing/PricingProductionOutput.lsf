@@ -182,7 +182,7 @@ notePricing(pricing) += noteOutput(outputOutputPricing(pricing));
 currencyPricing (pricing) += currencyOutput(outputOutputPricing(pricing));
 pricingCommitteePricing(pricing) += pricingCommitteeOutput(outputOutputPricing(pricing));
 
-@defineDocumentDescription(outputPricing, outputPricingDetail, seriesNumberOutputPricing, 'Акт расценки на основе производства');
+@defineDocumentDescription(outputPricing, OutputPricingDetail, seriesNumberOutputPricing, 'Акт расценки на основе производства');
 descriptionPricing (pricing) += descriptionOutputPricing(pricing);
 
 skuPricingDetail(pricingDetail) +=  skuOutputDetail(outputDetailOutputPricingDetail(pricingDetail));

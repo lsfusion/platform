@@ -810,7 +810,7 @@ transferPriceActWHfromCSITransferPriceActWHfromCSIDetail (transferPriceActWHfrom
 @defineDocumentAggregationHeaderNumber(CStoWH, transferPriceActWHfromCSI);
 @defineDocumentAggregationHeaderNote(CStoWH, transferPriceActWHfromCSI);
 
-@defineDocumentDescription(transferPriceActWHfromCSI, transferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
+@defineDocumentDescription(transferPriceActWHfromCSI, TransferPriceActWHfromCSIDetail, seriesNumberTransferPriceActWHfromCSI, 'Акт расценки (поставка)');
 
 @defineDocumentAggregationDetailSku(CStoWH, transferPriceActWHfromCSI, sku);
 

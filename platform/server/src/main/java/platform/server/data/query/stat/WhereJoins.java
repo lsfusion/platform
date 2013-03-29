@@ -188,7 +188,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         for(int i=0,size=exprNotNullStats.size();i<size;i++) {
             BaseJoin notNullJoin = exprNotNullStats.getKey(i);
             Stat stat = exprNotNullStats.getValue(i);
-            assert stat.lessEquals(joinStats.get(notNullJoin));
+//            assert stat.lessEquals(joinStats.get(notNullJoin));
             joinStats.add(notNullJoin, stat);
         }
 

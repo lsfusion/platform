@@ -10,8 +10,8 @@ TABLE generalLedger(GeneralLedger);
 CLASS UserGeneralLedger 'Проводка (польз.)': GeneralLedger, Historizable;
 CLASS UserGeneralLedgerPosted 'Проведенная проводка (польз.)': UserGeneralLedger, PostedObject;
 
-@defineDocumentInterfaceHeaderPosted (generalLedger);
-@defineDocumentInterfaceHeaderDatePrefix(generalLedger, , );
+@defineDocumentInterfaceHeaderPosted (GeneralLedger);
+@defineDocumentInterfaceHeaderDatePrefix(GeneralLedger, , );
 WHEN SESSION ASSIGNED(userGeneralLedger AS UserGeneralLedger) DO {
     IF userGeneralLedger IS UserGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
 };

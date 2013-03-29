@@ -13,7 +13,7 @@ TABLE order(Order);
 
 @defineNumeratedObjectDefault(Order, 'Нумератор для производственного заказа', 'ПЗ');
 
-@defineDocumentHeaderPosted (order);
+@defineDocumentHeaderPosted (Order);
 @defineDocumentHeaderPriceListType (order, priceListType, , ' (потребность)');
 includeVATOrder 'Цена с НДС' = DATA BOOLEAN (Order);
 includeVATOrder(order) <- includeVATPriceListType(priceListTypeOrder(order)) WHEN CHANGED(priceListTypeOrder(order));
@@ -25,10 +25,10 @@ backgroundVATOrder 'Цвет' (order) = RGB(255, 255, 224) IF order IS Order;
 @defineDocumentHeaderStock (order, stock, 'Склад компонент', components);
 @defineDocumentHeaderStock (order, stock, 'Склад изделий', products);
 
-@defineDocumentHeaderDatePrefix (order, from, ' действия с');
-@defineDocumentHeaderDatePrefix (order, to, ' действия по');
+@defineDocumentHeaderDatePrefix (Order, from, ' действия с');
+@defineDocumentHeaderDatePrefix (Order, to, ' действия по');
 
-@defineDocumentHeaderDescription(order, 'Производственный заказ');
+@defineDocumentHeaderDescription(Order, 'Производственный заказ');
 @defineDocumentHeaderCurrency (order);
 @deriveDocumentCurrency (order, componentsStock, currencyStock);
 
@@ -36,16 +36,16 @@ backgroundVATOrder 'Цвет' (order) = RGB(255, 255, 224) IF order IS Order;
 CLASS ProductDetail 'Строка изделия' : Named;
 TABLE productDetail (ProductDetail);
 
-@defineDocumentRelation (order, productDetail, );
-@defineDocumentDetailIndex (order, productDetail);
+@defineDocumentRelation (order, ProductDetail, );
+@defineDocumentDetailIndex (order, ProductDetail);
 @defineDocumentDetailActionsCustom (order, ProductDetail);
-@defineDocumentDetailPosted (order, productDetail);
+@defineDocumentDetailPosted (order, ProductDetail);
 
-@defineDocumentDetailTime (order, productDetail);
-@defineDocumentDetailDatePrefix (order, productDetail, from, ' действия с');
-@defineDocumentDetailDatePrefix (order, productDetail, to, ' действия по');
+@defineDocumentDetailTime (order, ProductDetail);
+@defineDocumentDetailDatePrefix (order, ProductDetail, from, ' действия с');
+@defineDocumentDetailDatePrefix (order, ProductDetail, to, ' действия по');
 
-@defineDocumentDetailDescription(order, productDetail);
+@defineDocumentDetailDescription(order, ProductDetail);
 
 currencyProductDetail (productDetail) = currencyOrder(orderProductDetail(productDetail));
 
@@ -93,16 +93,16 @@ productsSumProductDetail(productDetail) <-
 CLASS ComponentDetail 'Строка компонента' : Named;
 TABLE componentDetail (ComponentDetail);
 
-@defineDocumentRelation (order, componentDetail, );
-@defineDocumentDetailIndex (order, componentDetail);
+@defineDocumentRelation (order, ComponentDetail, );
+@defineDocumentDetailIndex (order, ComponentDetail);
 @defineDocumentDetailActionsCustom (order, ComponentDetail);
-@defineDocumentDetailPosted (order, componentDetail);
+@defineDocumentDetailPosted (order, ComponentDetail);
 
-@defineDocumentDetailTime (order, componentDetail);
-@defineDocumentDetailDatePrefix (order, componentDetail, from, ' действия с');
-@defineDocumentDetailDatePrefix (order, componentDetail, to, ' действия по');
+@defineDocumentDetailTime (order, ComponentDetail);
+@defineDocumentDetailDatePrefix (order, ComponentDetail, from, ' действия с');
+@defineDocumentDetailDatePrefix (order, ComponentDetail, to, ' действия по');
 
-@defineDocumentDetailDescription(order, componentDetail);
+@defineDocumentDetailDescription(order, ComponentDetail);
 
 currencyComponentDetail (componentDetail) = currencyOrder(orderComponentDetail(componentDetail));
 

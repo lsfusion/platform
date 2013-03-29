@@ -6,7 +6,7 @@ CLASS Payment 'Платеж' : NumeratedObject, PaymentLedger;
 CLASS PaymentPosted 'Проведенный платеж' : Payment, PostedObject;
 TABLE payment(Payment);
 
-@defineDocumentHeaderPosted(payment);
+@defineDocumentHeaderPosted(Payment);
 @defineNumeratedObjectDefault(Payment, 'Нумератор для платежей', 'ПЛ');
 
 datePayment 'Дата' (payment) = DATA DATE (Payment);

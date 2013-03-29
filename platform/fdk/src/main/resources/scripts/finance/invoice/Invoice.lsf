@@ -55,7 +55,7 @@ CLASS ABSTRACT InvoiceDetail 'Строка накладной' : DocumentDetail;
 @defineDocumentAbstractDetailVAT(invoice, , );
 @defineDocumentAbstractDetailVATDataSumCustom (invoiceDetail, invoice);
 
-@defineDocumentAbstractDetailNote (Invoice);
+@defineDocumentAbstractDetailNote (InvoiceDetail);
 
 shortDescriptionInvoice (invoice) = [FORMULA STRING[30] 'CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)'] (
                                                seriesNumberObject(invoice), dateInvoice(invoice));
@@ -84,7 +84,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     Invoice.dateInvoice (invoice) += dateInvoice(invoice);
     Invoice.timeInvoice (invoice) += timeInvoice(invoice);
 
-    @defineDocumentInterfaceTimeBefore(invoice);
+    @defineDocumentInterfaceTimePrefix(invoice, before, ' документа (до)');
 
     @defineDocumentInterfaceNumber(invoice);
     Invoice.numberInvoice (invoice) += numberInvoice(invoice);

@@ -285,7 +285,7 @@ currencyOutput (output) += currencyOrder(orderOrderOutput(output));
 
 priceListTypeOutput(output) += calcPriceListTypeOrder(orderOrderOutput(output));
 
-@defineDocumentDescription(orderOutput, orderOutputDetail, seriesNumberOrderOutput, 'Производство на основе заказа');
+@defineDocumentDescription(orderOutput, OrderOutputDetail, seriesNumberOrderOutput, 'Производство на основе заказа');
 descriptionOutput (output) += descriptionOrderOutput(output);
 
 

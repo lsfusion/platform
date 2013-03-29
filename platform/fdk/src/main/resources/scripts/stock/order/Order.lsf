@@ -117,7 +117,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     @defineDocumentInterfacePosted(order);
     Order.isPostedOrder (order) += isPostedOrder(order);
 
-    @defineDocumentInterfaceTimeShipment(order, shipment, ' поставки');
+    @defineDocumentInterfaceDataTimePrefix(order, shipment, ' поставки');
     toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
     toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (UserOrder) IN documentPrmGroup;
     toDateOrder(order) += toDateUserOrder(order);
@@ -301,8 +301,11 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                             childConstraints = TO THE RIGHTBOTTOM;
                             ADD PROPERTY(toShowProp###userOrder);
                         }
-                        ADD o.documentShipmentGroup {
+                        NEW documentShipmentGroup {
+                            title = 'Исполнение';
                             childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(shipmentDateUserOrder);
+                            ADD PROPERTY(shipmentTimeUserOrder);
                         }
                         NEW headerRow121 {
                             title = 'Поставка';

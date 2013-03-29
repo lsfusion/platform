@@ -420,7 +420,7 @@ canonicalBrandFreight 'Бренды' (freight) = toString255(
     MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 
 
-@defineNumeratedObjectDefault(freight, 'Нумератор для фрахтов', 'ФР');
+@defineNumeratedObjectDefault(Freight, 'Нумератор для фрахтов', 'ФР');
 
 EXTEND FORM freightListForm
     PROPERTIES (freight) READONLY numberObject BEFORE date, seriesObject BEFORE date, canonicalBrandFreight BEFORE date

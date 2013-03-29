@@ -27,7 +27,7 @@ META defineBlanketOrder(sign)
     @defineDocumentPosted(blanketOrder);
     @defineDocumentClosed (blanketOrder);
 
-    @defineDocumentTimeShipment (blanketOrder, shipment, ' поставки');
+    @defineDocumentDataTimePrefix (blanketOrder, shipment, ' поставки');
 
     @defineDocumentDescription(blanketOrder, 'Множественный заказ'###sign);
 
@@ -102,7 +102,9 @@ META defineBlanketOrder(sign)
 
     @defineDocumentHeaderSumContractor (blanketOrder, customerStock);
     @defineDocumentHeaderSum (blanketOrder);
-    @defineDocumentHeaderCountContractor (blanketOrder, customerStock);
+
+    countBlanketOrderDetailBlanketOrderCustomerStock 'Количество строк в документе' (order, stock) =
+        GROUP SUM 1 BY blanketOrderBlanketOrderDetail(d), customerStockBlanketOrderDetail(d) PERSISTENT IN documentSumGroup;
 
     CONSTRAINT customerStockBlanketOrderDetail(blanketOrderDetail) AND NOT inBlanketOrderStock(blanketOrderBlanketOrderDetail(blanketOrderDetail), customerStockBlanketOrderDetail(blanketOrderDetail))
         CHECKED BY customerStockBlanketOrderDetail
@@ -196,8 +198,11 @@ META defineBlanketOrder(sign)
                         ADD o.documentPrmGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
                         }
-                        ADD o.documentShipmentGroup {
+                        NEW documentShipmentGroup {
+                            title = 'Исполнение';
                             childConstraints = TO THE RIGHTBOTTOM;
+                            ADD PROPERTY(shipmentDateBlanketOrder);
+                            ADD PROPERTY(shipmentTimeBlanketOrder);
                         }
                     }
                 }
@@ -345,7 +350,7 @@ META defineOrderBlanketOrder(sign)
     dateOrder(order) += dateBlanketOrderOrder(order);
     timeOrder(order) += timeBlanketOrderOrder(order);
 
-    @defineDocumentHeaderDescription(blanketOrderOrder, seriesNumberBlanketOrderOrder, 'Заказ на основе множественного'###sign);
+    @defineDocumentHeaderDescription(BlanketOrderOrder, seriesNumberBlanketOrderOrder, 'Заказ на основе множественного'###sign);
     descriptionOrder (order) += descriptionBlanketOrderOrder(order);
 
     @defineDocumentAggregationPosted(blanketOrder, blanketOrderOrder);

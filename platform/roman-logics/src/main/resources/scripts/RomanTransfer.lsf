@@ -26,7 +26,7 @@ GROUP datesGroup 'Период продаж' : public;
 TABLE transferTable (TransferTable);
 @defineDocumentHeaderTime(TransferTable);
 @defineDocumentHeaderNote(TransferTable);
-@defineDocumentHeaderDescription(transferTable, 'Трансфер');
+@defineDocumentHeaderDescription(TransferTable, 'Трансфер');
 
 transferTableInnerOrder= DATA TransferTable(InnerOrder);
 descriptionTransferTableInnerOrder 'Трансфер' (innerOrder) =  descriptionTransferTable(transferTableInnerOrder(innerOrder)) IN documentPrmGroup;

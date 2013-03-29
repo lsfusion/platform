@@ -235,10 +235,10 @@ shortNameUOMProduct 'Ед.изм.' (product) = shortName(UOMProduct(product)) IN
 UOMProduct(product) <- UOMSku(skuProduct(product)) WHEN CHANGED (skuProduct(product));
 
 
-@defineDocumentRelation (BOM, product, ' (изделие)');
+@defineDocumentRelation (BOM, Product, ' (изделие)');
 descriptionProduct 'Название документа' (product) = descriptionBOM(BOMProduct(product));
 
-@defineDocumentDetailIndex (BOM, product);
+@defineDocumentDetailIndex (BOM, Product);
 @defineDocumentDetailActionsCustom (BOM, Product);
 
 @defineDocumentDetailQuantityCustomPrefix (product, , );
@@ -271,10 +271,10 @@ FORM products 'Изделия'
 CLASS Component 'Компонент' : Named;
 TABLE component (Component);
 
-@defineDocumentRelation (BOM, component, ' (компонент)');
+@defineDocumentRelation (BOM, Component, ' (компонент)');
 descriptionComponent 'Название документа' (component)= descriptionBOM(BOMComponent(component));
 
-@defineDocumentDetailIndex (BOM, component);
+@defineDocumentDetailIndex (BOM, Component);
 @defineDocumentDetailActionsCustom (BOM, Component);
 
 materialComponent = DATA Material (Component);

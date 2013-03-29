@@ -91,7 +91,7 @@ CLASS InventoryPosted 'Проведенная инвентаризация' : In
 
 TABLE inventory (Inventory);
 
-@defineDocumentHeaderPosted (inventory) ;
+@defineDocumentHeaderPosted (Inventory) ;
 
 @defineDocumentHeaderTime(Inventory);
 @defineDocumentHeaderNote(Inventory);
@@ -135,7 +135,7 @@ CLASS ListInventoryPosted 'Опись (проведенная)' : ListInventory,
 
 TABLE listInventory (ListInventory);
 
-@defineDocumentHeaderPosted(listInventory);
+@defineDocumentHeaderPosted(ListInventory);
 @defineDocumentHeaderStock(listInventory, stock, 'Склад');
 @defineDocumentHeaderNote(ListInventory);
 
@@ -145,9 +145,9 @@ TABLE listInventory (ListInventory);
 inventoryListInventory = DATA Inventory (ListInventory);
 nameInventoryListInventory 'Название инвентаризации' (listInventory) = nameInventory(inventoryListInventory(listInventory));
 
-@defineDocumentDetailTime(inventory, listInventory);
+@defineDocumentDetailTime(inventory, ListInventory);
 
-@defineDocumentDetailIndex(inventory, listInventory);
+@defineDocumentDetailIndex(inventory, ListInventory);
 nameListInventory 'Номер описи' (listInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
                                                   ('Опись ', indexListInventory(listInventory));
 
@@ -172,8 +172,8 @@ TABLE pageInventory (PageInventory);
 
 @defineDocumentHeaderNote(PageInventory);
 
-@defineDocumentRelation(listInventory, pageInventory);
-@defineDocumentDetailIndex(listInventory, pageInventory);
+@defineDocumentRelation(listInventory, PageInventory);
+@defineDocumentDetailIndex(listInventory, PageInventory);
 
 namePageInventory 'Номер страницы' (pageInventory) = [FORMULA STRING[30] '$1 || CAST ($2 AS character(20))']
                                                               ('Страница ', indexPageInventory(pageInventory)) IN base;
@@ -189,7 +189,7 @@ listInventoryPageInventoryDetail(pageInventoryDetail) = listInventoryPageInvento
 inventoryPageInventoryDetail(pageInventoryDetail) = inventoryListInventory(listInventoryPageInventoryDetail(pageInventoryDetail)) PERSISTENT;
 
 @defineDocumentDetailStock(listInventory, pageInventoryDetail, stock, 'Склад');
-@defineDocumentDetailTime(inventory, pageInventoryDetail);
+@defineDocumentDetailTime(inventory, PageInventoryDetail);
 
 @defineDocumentDetailCurrency(listInventory, pageInventoryDetail);
 
@@ -261,12 +261,12 @@ CLASS ManyCollationSheet 'Сличительная ведомость по мн�
 
 TABLE collationSheet (CollationSheet);
 
-@defineDocumentRelation(inventory, collationSheet);
+@defineDocumentRelation(inventory, CollationSheet);
 
 @defineDocumentHeaderStock(collationSheet, stock, 'Склад');
-@defineDocumentDetailTime(inventory, collationSheet);
-@defineDocumentDetailPosted(inventory, collationSheet);
-@defineDocumentDetailIndex(inventory, collationSheet);
+@defineDocumentDetailTime(inventory, CollationSheet);
+@defineDocumentDetailPosted(inventory, CollationSheet);
+@defineDocumentDetailIndex(inventory, CollationSheet);
 
 isBatchCollationSheet (collationSheet) = isBatchInventory(inventoryCollationSheet(collationSheet));
 isSkuCollationSheet (collationSheet) = isSkuInventory(inventoryCollationSheet(collationSheet));
@@ -629,8 +629,8 @@ collationSheetInventorySkuDetail(inventorySkuDetail) = UNION CLASS collationShee
 
 inventoryInventorySkuDetail(inventorySkuDetail) = inventoryCollationSheet(collationSheetInventorySkuDetail(inventorySkuDetail)) PERSISTENT;
 
-@defineDocumentDetailTime(inventory, inventorySkuDetail);
-@defineDocumentDetailPosted(inventory, inventorySkuDetail);
+@defineDocumentDetailTime(inventory, InventorySkuDetail);
+@defineDocumentDetailPosted(inventory, InventorySkuDetail);
 
 @defineDocumentDetailStock(collationSheet, inventorySkuDetail, stock, 'Склад');
 stockInInventorySkuDetail(detail) = stockInventorySkuDetail(detail) AND detail IS InInventorySkuDetail;
@@ -694,8 +694,8 @@ collationSheetInventoryBatchDetail(inventoryBatchDetail) = UNION CLASS collation
 
 inventoryInventoryBatchDetail(inventoryBatchDetail) = inventoryCollationSheet(collationSheetInventoryBatchDetail(inventoryBatchDetail)) PERSISTENT;
 
-@defineDocumentDetailTime(inventory, inventoryBatchDetail);
-@defineDocumentDetailPosted(inventory, inventoryBatchDetail);
+@defineDocumentDetailTime(inventory, InventoryBatchDetail);
+@defineDocumentDetailPosted(inventory, InventoryBatchDetail);
 
 @defineDocumentDetailStock(collationSheet, inventoryBatchDetail, stock, 'Склад');
 stockInInventoryBatchDetail(detail) = stockInventoryBatchDetail(detail) AND detail IS InInventoryBatchDetail;

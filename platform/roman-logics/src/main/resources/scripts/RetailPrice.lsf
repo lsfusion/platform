@@ -116,7 +116,7 @@ TABLE priceSetDocument (PriceSetDocument);
 TABLE basePriceSetDocument (BasePriceSetDocument);
 TABLE discountPriceSetDocument (DiscountPriceSetDocument);
 
-@defineNumeratedObjectDefault(priceSetDocument, 'Нумератор для розничных прайсов', 'РП');
+@defineNumeratedObjectDefault(PriceSetDocument, 'Нумератор для розничных прайсов', 'РП');
 
 // Сроки действия прайсов
 @defineDocumentHeaderTime(PriceSetDocument);
