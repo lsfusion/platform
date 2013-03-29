@@ -209,7 +209,7 @@ public class ImportActionProperty {
         ImportField isWeightItemField = new ImportField(LM.findLCPByCompoundName("isWeightItem"));
         ImportField netWeightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
         ImportField grossWeightItemField = new ImportField(LM.findLCPByCompoundName("grossWeightItem"));
-        ImportField compositionField = new ImportField(LM.findLCPByCompoundName("compositionScalesItem"));
+        ImportField compositionField = new ImportField(LM.findLCPByCompoundName("compositionItem"));
         ImportField valueVATItemCountryDateField = new ImportField(LM.findLCPByCompoundName("valueVATItemCountryDate"));
         ImportField wareIDField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
         ImportField priceWareField = new ImportField(LM.findLCPByCompoundName("dataWarePriceDate"));
@@ -299,7 +299,7 @@ public class ImportActionProperty {
         props.add(new ImportProperty(isWeightItemField, LM.findLCPByCompoundName("isWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(netWeightItemField, LM.findLCPByCompoundName("netWeightItem").getMapping(itemKey)));
         props.add(new ImportProperty(grossWeightItemField, LM.findLCPByCompoundName("grossWeightItem").getMapping(itemKey)));
-        props.add(new ImportProperty(compositionField, LM.findLCPByCompoundName("compositionScalesItem").getMapping(itemKey)));
+        props.add(new ImportProperty(compositionField, LM.findLCPByCompoundName("compositionItem").getMapping(itemKey)));
         props.add(new ImportProperty(valueVATItemCountryDateField, LM.findLCPByCompoundName("dataVATItemCountryDate").getMapping(itemKey, defaultCountryObject, dateField),
                 LM.object(LM.findClassByCompoundName("Range")).getMapping(VATKey)));
 
