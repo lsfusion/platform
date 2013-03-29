@@ -21,16 +21,14 @@ public class UserInvoiceDetail {
     public Double chargePrice;
     public Double retailPrice;
     public Double retailMarkup;
-    //public String numberCompliance;
-    //public Timestamp dateTimeCompliance;
-    //public Timestamp toDateTimeCompliance;
     public String textCompliance;
+    public String contractID;
+
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
                              Date date, String item, Double quantity, String supplier, String warehouse,
                              String supplierWarehouse, Double price, Double chargePrice, Double retailPrice,
-                             Double retailMarkup, /*String numberCompliance, Timestamp dateTimeCompliance,
-                             Timestamp toDateTimeCompliance, */String textCompliance) {
+                             Double retailMarkup, String textCompliance, String contractID) {
         this.number = number;
         this.series = series;
         this.createPricing = createPricing;
@@ -46,9 +44,7 @@ public class UserInvoiceDetail {
         this.chargePrice = chargePrice;
         this.retailPrice = retailPrice;
         this.retailMarkup = retailMarkup;
-        //this.numberCompliance = numberCompliance;
-        //this.dateTimeCompliance = dateTimeCompliance;
-        //this.toDateTimeCompliance = toDateTimeCompliance;
         this.textCompliance = textCompliance;
+        this.contractID = contractID;
     }
 }

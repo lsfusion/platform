@@ -60,7 +60,7 @@ public class FiscalDatecsUpdateDataActionProperty extends ScriptingActionPropert
 
             List<UpdateDataTaxRate> taxRateList = new ArrayList<UpdateDataTaxRate>();
             ObjectValue countryObject = LM.findLCPByCompoundName("countryCurrentCashRegister").readClasses(session);
-            DataObject taxVATObject = ((ConcreteCustomClass) LM.findClassByCompoundName("tax")).getDataObject("taxVAT");
+            DataObject taxVATObject = ((ConcreteCustomClass) LM.findClassByCompoundName("Tax")).getDataObject("taxVAT");
             KeyExpr rangeExpr = new KeyExpr("range");
             KeyExpr taxExpr = new KeyExpr("tax");
             ImRevMap<Object, KeyExpr> rangeKeys = MapFact.toRevMap((Object) "range", rangeExpr, "tax", taxExpr);

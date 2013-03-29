@@ -37,7 +37,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
             if (backupFilePath != null) {
                 String backupFileLogPath = backupFilePath + ".log";
 
-                DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("backup"));
+                DataObject backupObject = session.addObject((ConcreteCustomClass) LM.findClassByCompoundName("Backup"));
                 LM.findLCPByCompoundName("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
                 LM.findLCPByCompoundName("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
                 LM.findLCPByCompoundName("fileBackup").change(backupFilePath, session, backupObject);

@@ -115,13 +115,13 @@ public class ImportGroupsXMLDeclarationActionProperty extends ScriptingActionPro
 
                     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-                    ImportKey<?> groupDeclarationKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("groupDeclaration"),
+                    ImportKey<?> groupDeclarationKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("GroupDeclaration"),
                             LM.findLCPByCompoundName("uniqueGroupDeclaration").getMapping(overNumberGroupDeclarationField, declaration));
 
-                    ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory10"),
+                    ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("CustomCategory10"),
                             getLCP("sidToCustomCategory10").getMapping(customCategory10Field, customsZone));
 
-                    ImportKey<?> articleKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("articleComposite"), LM.findLCPByCompoundName("articleCustomsSIDSupplier").getMapping(sidArticleGroupDeclarationField, customsSIDBrandSupplierField));
+                    ImportKey<?> articleKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("ArticleComposite"), LM.findLCPByCompoundName("articleCustomsSIDSupplier").getMapping(sidArticleGroupDeclarationField, customsSIDBrandSupplierField));
 
                     properties.add(new ImportProperty(overNumberGroupDeclarationField, LM.findLCPByCompoundName("overNumberGroupDeclaration").getMapping(groupDeclarationKey)));
                     properties.add(new ImportProperty(nameDataGroupDeclarationField, LM.findLCPByCompoundName("nameDataGroupDeclaration").getMapping(groupDeclarationKey)));

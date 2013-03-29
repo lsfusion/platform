@@ -71,7 +71,7 @@ public class ImportPriceListActionProperty extends ScriptingActionProperty {
                                     new DataObject(currency, StringClass.get(5)));
 
                             if (priceSetDocumentObjectValue.isNull()) {
-                                priceSetDocumentObject = context.addObject((ConcreteCustomClass) LM.findClassByCompoundName("basePriceSetDocument"));
+                                priceSetDocumentObject = context.addObject((ConcreteCustomClass) LM.findClassByCompoundName("BasePriceSetDocument"));
                                 LM.findLCPByCompoundName("seriesObject").change(series, session, priceSetDocumentObject);
                                 LM.findLCPByCompoundName("numberObject").change(number, session, priceSetDocumentObject);
                                 LM.findLCPByCompoundName("currencyPriceSetDocument").change(LM.findLCPByCompoundName("currencyShortName").read(session, new DataObject(currency, StringClass.get(5))), session, (DataObject) priceSetDocumentObject);

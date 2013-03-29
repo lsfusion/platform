@@ -96,7 +96,7 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
         String[] userInvoiceProperties = new String[]{"Sale.supplierInvoice", "Sale.supplierStockInvoice",
                 "Sale.customerInvoice", "Sale.customerStockInvoice", "Sale.numberInvoice",
                 "Sale.dateInvoice"};
-        LCP<?> isUserInvoice = LM.is(LM.findClassByCompoundName("Sale.userInvoice"));
+        LCP<?> isUserInvoice = LM.is(LM.findClassByCompoundName("Sale.UserInvoice"));
         ImRevMap<Object, KeyExpr> keys = (ImRevMap<Object, KeyExpr>) isUserInvoice.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> userInvoiceQuery = new QueryBuilder<Object, Object>(keys);
@@ -108,7 +108,7 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
 
         int i = 0;
         for (ImMap<Object, Object> userInvoiceValues : userInvoiceResult.valueIt()) {
-            DataObject userInvoiceObject = new DataObject(userInvoiceResult.getKey(i).valueIt().iterator().next(), (ConcreteClass) LM.findClassByCompoundName("Sale.userInvoice"));
+            DataObject userInvoiceObject = new DataObject(userInvoiceResult.getKey(i).valueIt().iterator().next(), (ConcreteClass) LM.findClassByCompoundName("Sale.UserInvoice"));
             i++;
 
             Object supplierInvoice = userInvoiceValues.get("Sale.supplierInvoice");
@@ -148,15 +148,15 @@ public class ExportSOTActionProperty extends ScriptingActionProperty {
                 for (ImMap<Object, Object> uidValues : uidResult.valueIt()) {
                     Object sku = uidValues.get("Sale.skuInvoiceDetail");
                     if (sku != null) {
-                        DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("item"));
+                        DataObject itemObject = new DataObject(sku, (ConcreteClass) LM.findClassByCompoundName("Item"));
 
                         Object uomObject = LM.findLCPByCompoundName("sotUOMItem").read(context, itemObject);
-                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("sotUOM")));
+                        String uomID = uomObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(uomObject, (ConcreteClass) LM.findClassByCompoundName("SotUOM")));
                         Object itemGroupValue = LM.findLCPByCompoundName("itemGroupItem").read(context, itemObject);
-                        DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup"));
-                        String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
+                        DataObject itemGroupObject = itemGroupValue == null ? null : new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("ItemGroup"));
+                        String itemGroupID = itemGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(itemGroupValue, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
                         Object parentGroupObject = itemGroupObject == null ? null : LM.findLCPByCompoundName("parentItemGroup").read(context, itemGroupObject);
-                        String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("itemGroup")));
+                        String parentGroupID = parentGroupObject == null ? null : (String) LM.findLCPByCompoundName("sidExternalizable").read(context, new DataObject(parentGroupObject, (ConcreteClass) LM.findClassByCompoundName("ItemGroup")));
 
                         String nameSku = (String) uidValues.get("Sale.nameSkuInvoiceDetail");
                         Double price = (Double) uidValues.get("Sale.RRPPriceInvoiceDetail");

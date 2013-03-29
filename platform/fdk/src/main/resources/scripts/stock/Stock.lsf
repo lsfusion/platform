@@ -685,10 +685,10 @@ EXTEND CLASS Stock : EmployeeDivision;
 employeeDivisionGroupEmployeeDivision (stock) += stockGroupStock(stock);
 
 countAccessStockEmployeeLegalEntity (employee, legalEntity) = GROUP SUM 1 IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
-                                                               BY employee, legalEntity PERSISTENT;
+                                                               BY employee, legalEntity;
 
 defaultStockEmployeeLegalEntity 'Склад по умолчанию' (employee, legalEntity)= GROUP MIN stock IF inLegalEntityStock(legalEntity, stock) AND accessEmployeeEmployeeDivision(employee, stock)
-                                                                                    BY employee, legalEntity PERSISTENT;
+                                                                                    BY employee, legalEntity;
 
 META extendFormFilterAccess(object, concrete, form, stockProp)
     EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR accessEmployeeEmployeeDivision(currentUser(),stockProp###object(concrete));

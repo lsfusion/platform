@@ -286,7 +286,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                             java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
                             userInvoiceDetailsList.add(new UserInvoiceDetail(number, "AA", null, true, sid,
                                     date, itemID, quantity, supplierID, warehouseID, supplierWarehouse, price,
-                                    chargePrice, null, null, null));
+                                    chargePrice, null, null, null, null));
                             quantity = null;
                             supplierID = null;
                             warehouseID = null;

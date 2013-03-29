@@ -337,13 +337,14 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             Double priceShipmentDetail = new Double(new String(importFile.getField("N_IZG").getBytes(), "Cp1251").trim());
             Double retailPriceShipmentDetail = new Double(new String(importFile.getField("N_CENU").getBytes(), "Cp1251").trim());
             Double retailMarkupShipmentDetail = new Double(new String(importFile.getField("N_TN").getBytes(), "Cp1251").trim());
+            String contractID = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
 
             if ((seriesNumber.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
                 data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
                         quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null,
-                        retailPriceShipmentDetail, retailMarkupShipmentDetail, null));
+                        retailPriceShipmentDetail, retailMarkupShipmentDetail, null, contractID.isEmpty() ? null : contractID));
         }
-        return data;
+        return data.subList(0, 100);
     }
 
 

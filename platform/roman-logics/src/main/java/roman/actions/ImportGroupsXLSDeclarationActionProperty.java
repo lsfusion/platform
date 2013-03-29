@@ -85,16 +85,16 @@ public class ImportGroupsXLSDeclarationActionProperty extends ScriptingActionPro
 
                 List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-                ImportKey<?> groupDeclarationKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("groupDeclaration"),
+                ImportKey<?> groupDeclarationKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("GroupDeclaration"),
                         LM.findLCPByCompoundName("uniqueGroupDeclaration").getMapping(userNumberGroupDeclarationField, declaration));
 
-                ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory10"),
+                ImportKey<?> customCategory10Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("CustomCategory10"),
                         getLCP("sidToCustomCategory10").getMapping(customCategory10Field, customsZone));
 
-                ImportKey<?> customCategory9Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("customCategory9"),
+                ImportKey<?> customCategory9Key = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("CustomCategory9"),
                         getLCP("sidToCustomCategory9").getMapping(customCategory9Field, customsZone));
 
-                //ImportKey<?> declarationDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("declarationDetail"),
+                //ImportKey<?> declarationDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("DeclarationDetail"),
                 //        LM.findLCPByCompoundName("uniqueDeclarationDetail").getMapping(userNumberGroupDeclarationField, declarationDetailField));
 
 

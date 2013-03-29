@@ -141,18 +141,18 @@ differentStocksInDetailsLegalEntity 'Разные склады в строках
 // ------------------------------------ Доступные организации для пользователей -------------------------- //
 
 countAccessSupplierEmployee (employee) = GROUP SUM 1 IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                               BY employee PERSISTENT;
+                                               BY employee;
 countAccessCompanyEmployee (employee) = GROUP SUM 1 IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                              BY employee PERSISTENT;
+                                              BY employee;
 countAccessCustomerEmployee (employee)= GROUP SUM 1 IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                              BY employee PERSISTENT;
+                                              BY employee;
 
 defaultSupplierEmployee 'Поставщик по умолчанию' (employee)= GROUP MIN legalEntity IF isSupplierLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                                                   BY employee PERSISTENT;
+                                                                   BY employee;
 defaultCompanyEmployee 'Компания по умолчанию' (employee)= GROUP MIN legalEntity IF isCompanyLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                                                 BY employee PERSISTENT;
+                                                                 BY employee;
 defaultCustomerEmployee 'Покупатель по умолчанию' (employee)= GROUP MIN legalEntity IF isCustomerLegalEntity(legalEntity) AND accessEmployeeEmployeeDivision(employee, legalEntity)
-                                                                    BY employee PERSISTENT;
+                                                                    BY employee;
 
 // ---------------------------------------- Формы для ввода компаний ------------------------------------- //
 

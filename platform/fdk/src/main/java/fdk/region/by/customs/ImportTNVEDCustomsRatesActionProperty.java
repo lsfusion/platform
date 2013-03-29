@@ -98,9 +98,9 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
         ImportField weightDutyCustomsGroupDateField = new ImportField(LM.findLCPByCompoundName("dataWeightDutyCustomsGroupDate"));
         ImportField vatField = new ImportField(LM.findLCPByCompoundName("dataValueSupplierVATCustomsGroupDate"));
 
-        ImportKey<?> customsGroupKey = new ImportKey((CustomClass) LM.findClassByCompoundName("customsGroup"),
+        ImportKey<?> customsGroupKey = new ImportKey((CustomClass) LM.findClassByCompoundName("CustomsGroup"),
                 LM.findLCPByCompoundName("customsGroupCode").getMapping(groupIDField));
-        ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("range"),
+        ImportKey<?> VATKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Range"),
                 LM.findLCPByCompoundName("valueCurrentVATDefaultValue").getMapping(vatField));
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
@@ -108,7 +108,7 @@ public class ImportTNVEDCustomsRatesActionProperty extends ScriptingActionProper
         properties.add(new ImportProperty(percentDutyCustomsGroupDateField, LM.findLCPByCompoundName("dataPercentDutyCustomsGroupDate").getMapping(customsGroupKey, dateFromField)));
         properties.add(new ImportProperty(weightDutyCustomsGroupDateField, LM.findLCPByCompoundName("dataWeightDutyCustomsGroupDate").getMapping(customsGroupKey, dateFromField)));
         properties.add(new ImportProperty(vatField, LM.findLCPByCompoundName("dataSupplierVATCustomsGroupDate").getMapping(customsGroupKey, dateFromField),
-                LM.object(LM.findClassByCompoundName("range")).getMapping(VATKey)));
+                LM.object(LM.findClassByCompoundName("Range")).getMapping(VATKey)));
         properties.add(new ImportProperty(dateFromField, LM.findLCPByCompoundName("dateFromCustomsGroup").getMapping(customsGroupKey)));
         properties.add(new ImportProperty(dateToField, LM.findLCPByCompoundName("dateToCustomsGroup").getMapping(customsGroupKey)));
 
