@@ -46,18 +46,20 @@ FORM paymentLedger 'Движение денег'
                             sumToPaymentLedger
 ;
 
-NAVIGATOR {
-    financeNavigator{
-        ADD paymentLedger;
-    }
-}
-
 EXTEND DESIGN legalEntity {
     extendContainer {
         NEW accountContainer{
             caption = 'Счета';
             childConstraints = TO THE RIGHT;
             type = SPLITH;
+        }
+    }
+}
+
+NAVIGATOR {
+    financeNavigator {
+        NEW paymentNavigator 'Движение денежных среств' {
+            ADD paymentLedger;
         }
     }
 }

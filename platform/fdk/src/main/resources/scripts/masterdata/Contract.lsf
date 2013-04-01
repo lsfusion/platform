@@ -41,19 +41,19 @@ noteContract 'Примечание' = DATA TEXT (Contract) MINCHARWIDTH 50 PREFC
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
 META defineContractDefault (contract, partyA, partyB)
-    @defineContractDefault (contract, partyA, partyB, partyA, partyB);
+    @defineContractDefault (contract, ###partyA, ###partyB, partyA, partyB);
 END
 
-META defineContractDefault (contract, partyA, partyB, prefixA, prefixB)
-    @defineContractDefaultInner(contract, ###contract, partyA, partyB, prefixA, prefixB);
+META defineContractDefault (contract, partyAClass, partyBClass, prefixA, prefixB)
+    @defineContractDefault(contract, ###contract, partyAClass, partyBClass, prefixA, prefixB);
 END
 
-META defineContractDefaultInner (contract, contractClass, partyA, partyB, prefixA, prefixB)
-    data###contract###prefixA###prefixB = DATA contractClass (###partyA, ###partyB);
+META defineContractDefault (contract, contractClass, partyAClass, partyBClass, prefixA, prefixB)
+    data###contract###prefixA###prefixB = DATA contractClass (partyAClass, partyBClass);
 
-    CONSTRAINT partyA != prefixA###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
+    CONSTRAINT pA != prefixA###contract(data###contract###prefixA###prefixB(pA, pB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
-    CONSTRAINT partyB != prefixB###contract(data###contract###prefixA###prefixB(partyA, partyB)) CHECKED BY data###contract###prefixA###prefixB
+    CONSTRAINT pB != prefixB###contract(data###contract###prefixA###prefixB(pA, pB)) CHECKED BY data###contract###prefixA###prefixB
         MESSAGE 'Договор по умолчанию не является договором между выбранными контрагентами';
 
     contract###prefixA###prefixB (pA, pB) = [GROUP MAX contract IF dateFromContract(contract) <= currentDate() AND NOT dateToContract(contract) < currentDate()
@@ -66,46 +66,46 @@ META defineContractDefaultInner (contract, contractClass, partyA, partyB, prefix
     is###prefixA###prefixB###contract 'Основной' (pA, pB, contract) = contract###prefixA###prefixB (pA, pB) == contract;
 END
 
-META defineDocumentContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
-    @defineDocumentContract (object, contractType, prefixA, prefixB, single###contractType###prefixA###prefixB, partyAMessage, partyBMessage);
+META defineDocumentContract (objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
+    @defineDocumentContract (objectClass, contractType, prefixA, prefixB, single###contractType###prefixA###prefixB, partyAMessage, partyBMessage);
 END
 
-META defineDocumentContract (object, contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
-    @defineDocumentContractInner (object, contractType, ###contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage);
+META defineDocumentContract (objectClass, contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
+    @defineDocumentContract (objectClass, contractType, ###contractType, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage);
 END
 
-META defineDocumentContractInner (object, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
-    contractType###object = DATA contractTypeClass (###object);
-    number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
+META defineDocumentContract (objectClass, contractType, contractTypeClass, prefixA, prefixB, singleContractProp, partyAMessage, partyBMessage)
+    contractType##objectClass = DATA contractTypeClass (objectClass);
+    number###contractType##objectClass 'Номер договора' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
-    isCommission###object 'Продажа на комиссию' = DATA BOOLEAN (###object) IN documentPrmGroup;
-    isCommission###object(object) <- typeContractSkuDate(contractType###object(object), date###object(object)) == ContractSkuType.commission
-        WHEN CHANGED(contractType###object(object)) OR
-             CHANGED(date###object(object));
+    isCommission##objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
+    isCommission##objectClass(o) <- typeContractSkuDate(contractType##objectClass(o), date##objectClass(o)) == ContractSkuType.commission
+        WHEN CHANGED(contractType##objectClass(o)) OR
+             CHANGED(date##objectClass(o));
 
-    contractType###object(object) <- singleContractProp(prefixA###object(object), prefixB###object(object))
-                                          WHEN CHANGED(prefixA###object(object)) OR CHANGED(prefixB###object(object));
+    contractType##objectClass(o) <- singleContractProp(prefixA##objectClass(o), prefixB###objectClass(o))
+                                          WHEN CHANGED(prefixA##objectClass(o)) OR CHANGED(prefixB###objectClass(o));
 
-    CONSTRAINT contractType###object(object) AND NOT prefixA###object(object) == partyAContract(contractType###object(object))
-        CHECKED BY contractType###object MESSAGE partyAMessage;
+    CONSTRAINT contractType##objectClass(o) AND NOT prefixA##objectClass(o) == partyAContract(contractType##objectClass(o))
+        CHECKED BY contractType##objectClass MESSAGE partyAMessage;
 
-    CONSTRAINT contractType###object(object) AND NOT prefixB###object(object) == partyBContract(contractType###object(object))
-        CHECKED BY contractType###object MESSAGE partyBMessage;
+    CONSTRAINT contractType##objectClass(o) AND NOT prefixB##objectClass(o) == partyBContract(contractType##objectClass(o))
+        CHECKED BY contractType##objectClass MESSAGE partyBMessage;
 END
 
-META defineDocumentAbstractContract (object, contractType)
-    @defineDocumentAbstractContractInner(object, contractType, ###contractType);
+META defineDocumentAbstractContract (objectClass, contractType)
+    @defineDocumentAbstractContract(objectClass, contractType, ###contractType);
 END
 
-META defineDocumentAbstractContractInner (object, contractType, contractTypeClass)
-    contractType###object = ABSTRACT contractTypeClass (###object) PERSISTENT;
-    number###contractType###object 'Номер договора' (object) = numberContract(contractType###object(object)) IN documentPrmGroup;
+META defineDocumentAbstractContract (objectClass, contractType, contractTypeClass)
+    contractType##objectClass = ABSTRACT contractTypeClass (objectClass) PERSISTENT;
+    number###contractType##objectClass 'Номер договора' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
-    isCommission###object 'Продажа на комиссию' = ABSTRACT BOOLEAN (###object) PERSISTENT IN documentPrmGroup;
+    isCommission##objectClass 'Продажа на комиссию' = ABSTRACT BOOLEAN (objectClass) PERSISTENT IN documentPrmGroup;
 END
-META defineDocumentInterfaceContract (object, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
-    @defineDocumentAbstractContract(object, contractType);
-    @defineDocumentContract(user###object, contractType, prefixA, prefixB, partyAMessage, partyBMessage);
-    contractType###object(object) += contractType###user###object(object);
-    isCommission###object(object) += isCommission###user###object(object);
+META defineDocumentInterfaceContract (objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage)
+    @defineDocumentAbstractContract(objectClass, contractType);
+    @defineDocumentContract(User###objectClass, contractType, prefixA, prefixB, partyAMessage, partyBMessage);
+    contractType###objectClass(o) += contractType###user###objectClass(o);
+    isCommission###objectClass(o) += isCommissionUser###objectClass(o);
 END

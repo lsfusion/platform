@@ -120,7 +120,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     @deriveDocumentCurrency(userInvoice, supplier, currencyLegalEntity);
     Invoice.currencyInvoice(invoice) += currencyInvoice(invoice);
 
-    @defineDocumentInterfaceContract(invoice, contractSku, supplier, customer,
+    @defineDocumentInterfaceContract(Invoice, contractSku, supplier, customer,
                                      'Организация (поставщик) договора накладной не соответствует организация (поставщик) накладной',
                                      'Организация (покупатель) договора накладной не соответствует организация (покупатель) накладной');
 

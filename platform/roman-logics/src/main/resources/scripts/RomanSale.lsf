@@ -47,7 +47,7 @@ CONSTRAINT legalEntityStockSaleOut(saleOut) == destinationLegalEntityStockSaleOu
 @extendFormDocumentDetailSkuArticle(saleOut, d, saleOut);
 @extendFormDocumentDetailSkuArticleReadonly(saleOuts, d, saleOut);
 
-@defineDocumentContract(saleOut, contractSku, legalEntityStock, destinationLegalEntityStock, singleContractSkuSupplierCustomer,
+@defineDocumentContract(SaleOut, contractSku, legalEntityStock, destinationLegalEntityStock, singleContractSkuSupplierCustomer,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 

@@ -32,7 +32,7 @@ CONSTRAINT legalEntityStockReturnOut(returnOut) == destinationLegalEntityStockRe
 @defineDocumentCurrency(returnOut);
 @deriveDocumentCurrency(returnOut, stock);
 
-@defineDocumentContract(returnOut, contractSku, destinationLegalEntityStock, legalEntityStock, singleContractSkuSupplierCustomer,
+@defineDocumentContract(ReturnOut, contractSku, destinationLegalEntityStock, legalEntityStock, singleContractSkuSupplierCustomer,
                         'Сторона A договора возврата товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора возврата товаров не соответствуют компании склада-получателя');
 

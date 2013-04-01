@@ -172,7 +172,7 @@ DESIGN payments FROM DEFAULT{
 }
 
 NAVIGATOR {
-    financeNavigator{
+    paymentNavigator {
         ADD payments;
     }
 }

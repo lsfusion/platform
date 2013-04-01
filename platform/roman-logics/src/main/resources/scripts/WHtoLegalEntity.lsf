@@ -58,7 +58,7 @@ nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoice
 
 //----------------
 
-@defineDocumentContract(invoiceWHOut, contractSku, legalEntityStock, customer, singleContractSkuSupplierCustomer,
+@defineDocumentContract(InvoiceWHOut, contractSku, legalEntityStock, customer, singleContractSkuSupplierCustomer,
                         'Сторона A договора продажи товаров не соответствуют компании склада-отправителя',
                         'Сторона B договора продажи товаров не соответствуют компании склада-получателя');
 
