@@ -428,35 +428,11 @@ DESIGN chooseMarkUpSkuUserPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-FORM priceLists 'Прайсы'
-
-    OBJECTS p = PriceList
-    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
-                           fromDateTimePriceList, toDateTimePriceList, nameCurrencyPriceList,
-                           nameCompanyPriceList, noteUserPriceList, priceListTypesPriceList, stocksPriceList
-
-    DIALOG PriceList OBJECT p
-;
-
-addUnderPriceListUserPriceList 'Заполнить на основании' = ACTION (userPriceList){
-
-    FORM priceLists MODAL;
-    IF formResult() == FormResult.ok THEN {
-        FOR priceListPriceListDetail(detail) == chosenObject('p') DO {
-            ADDOBJ UserPriceListDetail;
-            FOR d == addedObject() DO {
-                SET userPriceListUserPriceListDetail(d) <- userPriceList;
-                SET skuUserPriceListDetail(d) <- skuPriceListDetail(detail);
-            }
-        }
-    }
-}
-
 sessionDataPriceListType 'Вид цены' = DATA SESSION DataPriceListType();
 
-changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, dataPriceListType, stock){
+changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPriceList, stock){
 
-    FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList, t2 = dataPriceListType MODAL;
+    FORM chooseMarkUpSkuUserPriceList OBJECTS p = userPriceList MODAL;
     IF formResult() == FormResult.ok THEN {
         IF TRUE AND NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
         SET priceUserPriceListDetailDataPriceListType(detail, t) <-
@@ -479,40 +455,41 @@ FORM userPriceList 'Прайс'
     OBJECTS t = PriceListType
     PROPERTIES(t) READONLY name
     PROPERTIES(p, t) inPriceListDataPriceListType TODRAW t FORCE GRID, showPriceListPriceListType
+    FILTERS (currencyUserPriceList(p) == currencyPriceListType(t)) OR (p IS UserPriceList AND t IS PriceListType AND NOT currencyPriceListType(t))
 
     OBJECTS d = UserPriceListDetail
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
-    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addUnderPriceListUserPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
+    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addDetailInputBarcodeUserPriceListDetailUserPriceList
+    FILTERS userPriceListUserPriceListDetail(d) == p,
+            isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))
+
 
     TREE stockTree a=STRING[3], sg = StockGroup PARENT parentStockGroup
     PROPERTIES READONLY OBJVALUE(a), sgTreeName = name(sg)
-    ORDER BY sgTreeName
-    FILTERS stringEqualsAll(a)
     PROPERTIES(p) inPriceList TODRAW a FORCE GRID
     PROPERTIES(p, sg) inPriceListStockGroupOver
+    ORDER BY sgTreeName
+    FILTERS stringEqualsAll(a)
+    FILTERS quantityStocksStockGroup(sg)
 
     OBJECTS ts = Stock
-    PROPERTIES READONLY name(ts), stockName = name(ts) FORCE PANEL
-    PROPERTIES(p, ts) inPriceListStockOver
-
-    PROPERTIES(p, t, ts) changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL TOOLBAR
-
-    PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
-    PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
-    PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES READONLY  name(ts)
+    PROPERTIES(p, ts)    inPriceListStockOver
     PROPERTIES(d, t, ts) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
     PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t)
-
-    FILTERS userPriceListUserPriceListDetail(d) == p,
-            isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d)),
-            inStockGroupStock(sg, ts),
-            currencyUserPriceList(p) == currencyDataPriceListType(t),
-            isCompanyStock(ts),
-            quantityStocksStockGroup(sg)
-
+    FILTERS inStockGroupStock(sg, ts),
+            isCompanyStock(ts)
     FILTERGROUP filters
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
+
+    OBJECTS tt = Stock FIXED PANEL
+    PROPERTIES SELECTOR stockName = name(tt) FORCE PANEL
+    PROPERTIES(d, t, tt) currentPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(d, t, tt) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t) TODRAW d FORCE GRID
+    PROPERTIES(p, tt)    changeMarkUpSkuUserPriceList TODRAW d FORCE PANEL TOOLBAR
+    FILTERS isCompanyStock(tt)
 
     TREE skuTree2 sk2 = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName2 = name(sk2)
@@ -592,7 +569,7 @@ DESIGN userPriceList FROM DEFAULT {
                 caption = 'Спецификация';
                 childConstraints = TO THE BOTTOM;
 
-                ADD PROPERTY(stockName);
+                ADD tt.box; // PROPERTY(stockName);
                 NEW secondSecondContainer{
                     type = SPLITH;
                     childConstraints =  TO THE RIGHT;
@@ -623,15 +600,20 @@ DESIGN userPriceList FROM DEFAULT {
     ADD functions.box;
 }
 
-copyUserPriceList 'Копировать' = ACTION (price) NEWSESSION {
+addUserPriceList 'Добавить' = ACTION ADDFORM UserPriceList;
+editUserPriceList 'Редактировать' = ACTION EDITFORM UserPriceList;
+editPriceList 'Редактировать' = ABSTRACT ACTION (PriceList) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+editPriceList (p) += editUserPriceList(p);
+
+copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
 
     FOR ADDOBJ u = UserPriceList DO {
-        SET currencyUserPriceList(u) <- currencyUserPriceList(price);
-        SET inUserPriceListStock(u, stock) <- inUserPriceListStock(price, stock);
-        SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(price, stockGroup);
-        SET inUserPriceList(u) <- inUserPriceList(price);
-        SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(price, priceListType);
-        FOR userPriceListUserPriceListDetail(detail) == price DO {
+        SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
+        SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
+        SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
+        SET inUserPriceList(u) <- inUserPriceList(priceList);
+        SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
+        FOR userPriceListUserPriceListDetail(detail) == priceList DO {
             FOR ADDOBJ d = UserPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
@@ -641,18 +623,21 @@ copyUserPriceList 'Копировать' = ACTION (price) NEWSESSION {
     }
 }
 
-FORM userPriceLists 'Прайсы'
+FORM priceLists 'Прайсы'
 
-    OBJECTS p = UserPriceList
-    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject,
-                           fromDateTimeUserPriceList, toDateTimeUserPriceList, nameCurrencyUserPriceList,
-                           nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList, stocksPriceList
-    PROPERTIES(p) copyUserPriceList TODRAW p FORCE PANEL TOOLBAR
-    PROPERTIES(p) ADDFORM, EDITFORM, delete TODRAW p FORCE PANEL TOOLBAR
+    OBJECTS p = PriceList
+    PROPERTIES(p) READONLY isPostedPriceList FORCE GRID, numberObject, seriesObject, datePriceList, timePriceList,
+                           fromDatePriceList, fromTimePriceList, toDatePriceList, toTimePriceList,
+                           nameCurrencyPriceList, nameCompanyPriceList, priceListTypesPriceList, stocksPriceList,
+                           notePriceList, objectClassName
+
+    PROPERTIES ()  addUserPriceList TODRAW p
+    PROPERTIES (p) editPriceList, copyPriceList
+    PROPERTIES (p) delete FORCE PANEL TOOLBAR  SHOWIF isUserPriceList(p)
 
     OBJECTS t = DataPriceListType
 
-    OBJECTS d =UserPriceListDetail
+    OBJECTS d = UserPriceListDetail
     PROPERTIES(d) READONLY indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                            shortNameUOMSkuUserPriceListDetail
 
@@ -668,9 +653,10 @@ FORM userPriceLists 'Прайсы'
             currencyUserPriceList(p) == currencyDataPriceListType(t),
             isCompanyStock(ts)
 
+    DIALOG PriceList OBJECT p
 ;
 
-DESIGN userPriceLists FROM DEFAULT{
+DESIGN priceLists FROM DEFAULT{
 
     REMOVE t.box;
     NEW topContainer{
@@ -690,6 +676,26 @@ DESIGN userPriceLists FROM DEFAULT{
     }
     ADD functions.box;
 }
+
+// Заполнение на основании
+
+addUnderPriceListUserPriceList 'Заполнить на основании' = ACTION (userPriceList){
+
+    FORM priceLists MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR priceListPriceListDetail(detail) == chosenObject('p') DO {
+            ADDOBJ UserPriceListDetail;
+            FOR d == addedObject() DO {
+                SET userPriceListUserPriceListDetail(d) <- userPriceList;
+                SET skuUserPriceListDetail(d) <- skuPriceListDetail(detail);
+            }
+        }
+    }
+}
+
+EXTEND FORM userPriceList
+    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addUnderPriceListUserPriceList
+;
 
 // ------- Проведение по priceListLedger ----- //
 
@@ -856,8 +862,10 @@ FORM priceListTypes 'Виды цен'
     ORDER BY objectClassName
 
     OBJECTS p = UserPriceList
-    PROPERTIES(p) READONLY seriesNumberObject, dateUserPriceList, timeUserPriceList, fromDateUserPriceList, fromTimeUserPriceList,
-                           toDateUserPriceList, toTimeUserPriceList, nameCurrencyUserPriceList, noteUserPriceList
+    PROPERTIES(p) READONLY isPostedUserPriceList FORCE GRID, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
+                           fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
+                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList, stocksPriceList,
+                           noteUserPriceList, objectClassName
     PROPERTIES(p) EDITFORM, delete
     ORDER BY fromDateUserPriceList, fromTimeUserPriceList
     FILTERS inPriceListDataPriceListType(p, pt),
@@ -965,7 +973,7 @@ EXTEND DESIGN legalEntity{
 NAVIGATOR {
     NEW priceListNavigator 'Цены' BEFORE administration TO toolbar IMAGE '/images/label.png' {
         NEW priceListDocuments 'Документы' {
-            ADD userPriceLists;
+            ADD priceLists;
         }
         NEW priceListMasterData 'Справочники' {
             ADD priceListTypes;

@@ -21,7 +21,7 @@ REQUIRE Dimension, Stock;
 //-- Stock
 EXTEND CLASS Stock : Dimension;
 EXTEND CLASS DimensionType {
-    stock 'Место храниения (подразделение)'
+    stock 'Место хранения'
 }
 nameDimension (dimension) += name(dimension) IF dimension IS Stock;
 dimensionTypeDimension (dimension) += DimensionType.stock WHEN dimension IS Stock;
