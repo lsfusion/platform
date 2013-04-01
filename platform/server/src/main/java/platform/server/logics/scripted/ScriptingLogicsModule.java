@@ -99,6 +99,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     private ScriptParser parser;
     private List<String> warningList = new ArrayList<String>();
 
+    private String lastOpimizedJPropSID = null;
+
     private Map<String, LP<?, ?>> currentLocalProperties = new HashMap<String, LP<?, ?>>();
 
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
@@ -531,6 +533,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkDistinctParameters(namedParams);
         checkNamedParams(property, namedParams);
 
+        // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
+        if (property.property.getSID().equals(lastOpimizedJPropSID)) {
+            property = addJProp("", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+        }
         changePropertyName(property, name); // должно идти первым
 
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
@@ -671,6 +677,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP prop;
         if (isTrivialParamList(resultParams)) {
             prop = mainProp;
+            lastOpimizedJPropSID = mainProp.property.getSID();
         } else {
             scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
             prop = addJProp("", (LCP) mainProp, resultParams.toArray());
