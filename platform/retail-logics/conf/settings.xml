@@ -11,11 +11,7 @@
 
     <context:property-placeholder location="file:conf/settings.properties"/>
 
-    <import resource="classpath:settings/common-bl-settings.xml"/>
-
-    <bean id="businessLogics" class="retail.RetailBusinessLogics">
-        <property name="overridingModulesList" value="${logics.overridingModulesList}"/>
-    </bean>
+    <import resource="classpath:settings/common-bl-scripted-settings.xml"/>
 
     <!-- Other services -->
     <bean id="equipmentServer" class="equ.srv.EquipmentServer">
