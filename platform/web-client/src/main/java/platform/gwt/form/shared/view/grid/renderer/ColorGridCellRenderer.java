@@ -16,8 +16,6 @@ public class ColorGridCellRenderer extends AbstractGridCellRenderer {
         cellElement.getStyle().setBorderWidth(0, Style.Unit.PX);
 
         updateElement(cellElement, color);
-
-        cellElement.appendChild(cellElement);
     }
 
     @Override
