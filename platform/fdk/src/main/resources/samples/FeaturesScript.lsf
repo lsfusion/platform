@@ -953,7 +953,7 @@ NAVIGATOR {
 //getControlsContainer => CONTAINER groupName.controls
 //getFilterContainer => CONTAINER groupName.filters
 //
-//getGroupPropertyContainer(AbstractGroup)
+//getGroupPropertyContainer(PropertyGroup)
 //     для групп данного модуля =>  CONTAINER groupName.propGroupName
 //     для групп других модулей =>  CONTAINER groupName.moduleName_propGroupName
 //

@@ -680,3 +680,22 @@ V0.6.4 {
     CLASS Route_route -> Route_Route
     CLASS Trip_trip -> Trip_Trip
 }
+
+V0.6.5 {
+    CLASS Reflection_AbstractGroup -> Reflection_PropertyGroup
+    TABLE Reflection_abstractGroup -> Reflection_propertyGroup
+    TABLE Security_userRoleAbstractGroup -> Security_userRolePropertyGroup
+
+    PROPERTY Reflection_parentAbstractGroup -> Reflection_parentPropertyGroup
+    PROPERTY Reflection_captionAbstractGroup -> Reflection_captionPropertyGroup
+    PROPERTY Reflection_numberAbstractGroup -> Reflection_numberPropertyGroup
+    PROPERTY Reflection_SIDAbstractGroup -> Reflection_SIDPropertyGroup
+    PROPERTY Security_dataPermitViewAbstractGroup -> Security_dataPermitViewPropertyGroup
+    PROPERTY Security_dataForbidViewAbstractGroup -> Security_dataForbidViewPropertyGroup
+    PROPERTY Security_dataPermitChangeAbstractGroup -> Security_dataPermitChangePropertyGroup
+    PROPERTY Security_dataForbidChangeAbstractGroup -> Security_dataForbidChangePropertyGroup
+    PROPERTY Security_dataPermitViewUserRoleAbstractGroup -> Security_dataPermitViewUserRolePropertyGroup
+    PROPERTY Security_dataForbidViewUserRoleAbstractGroup -> Security_dataForbidViewUserRolePropertyGroup
+    PROPERTY Security_dataPermitChangeUserRoleAbstractGroup -> Security_dataPermitChangeUserRolePropertyGroup
+    PROPERTY Security_dataForbidChangeUserRoleAbstractGroup -> Security_dataForbidChangeUserRolePropertyGroup
+}

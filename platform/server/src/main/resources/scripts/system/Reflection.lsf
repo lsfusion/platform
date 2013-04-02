@@ -2,17 +2,17 @@ MODULE Reflection;
 
 REQUIRE System, Authentication;
 
-CLASS AbstractGroup 'Родит. группа';
-TABLE abstractGroup (AbstractGroup);
+CLASS PropertyGroup 'Родит. группа';
+TABLE propertyGroup (PropertyGroup);
 
-parentAbstractGroup 'Родит. группа' = DATA AbstractGroup (AbstractGroup);
-levelAbstractGroupAbstractGroup 'Уровень' (child, parent) = RECURSION 1l AND child IS AbstractGroup AND parent == child
-                                                                      STEP 2l AND parent == parentAbstractGroup($parent) PERSISTENT;
+parentPropertyGroup 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
+levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l AND child IS PropertyGroup AND parent == child
+                                                                      STEP 2l AND parent == parentPropertyGroup($parent) PERSISTENT;
 
-captionAbstractGroup 'Имя' = DATA STRING[250] (AbstractGroup);
-numberAbstractGroup 'Номер' = DATA INTEGER (AbstractGroup);
-SIDAbstractGroup 'Код свойства' = DATA STRING[100] (AbstractGroup);
-abstractGroupSID 'Свойство' (sid) = GROUP UNIQUE abstractGroup BY SIDAbstractGroup(abstractGroup) WHERE abstractGroup IS AbstractGroup;
+captionPropertyGroup 'Имя' = DATA STRING[250] (PropertyGroup);
+numberPropertyGroup 'Номер' = DATA INTEGER (PropertyGroup);
+SIDPropertyGroup 'Код свойства' = DATA STRING[100] (PropertyGroup);
+propertyGroupSID 'Свойство' (sid) = GROUP UNIQUE propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
@@ -31,7 +31,7 @@ isNavigatorAction (navigatorAction) = navigatorAction IS NavigatorAction;
 CLASS Property 'Свойство';
 TABLE property (Property);
 
-parentProperty 'Родит. группа' = DATA AbstractGroup (Property);
+parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
 numberProperty 'Номер' = DATA INTEGER (Property);
 SIDProperty 'Код свойства' = DATA STRING[100] (Property) IN base;
 loggableProperty 'Логируется' = DATA BOOLEAN (Property);
@@ -237,12 +237,12 @@ FORM properties 'Свойства'
     OBJECTS p=Property
     PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
-    TREE treePropertiesObject tps=AbstractGroup, ps=Property PARENT parentAbstractGroup
-    PROPERTIES(tps) READONLY captionAbstractGroup, SIDAbstractGroup, dumb1, dumb1, dumb1, parentAbstractGroup, numberAbstractGroup, dumb1, dumb1, dumb1, dumb1
+    TREE treePropertiesObject tps=PropertyGroup, ps=Property PARENT parentPropertyGroup
+    PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumb1, dumb1, dumb1, parentPropertyGroup, numberPropertyGroup, dumb1, dumb1, dumb1, dumb1
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty
-    ORDER BY numberAbstractGroup(tps)
+    ORDER BY numberPropertyGroup(tps)
 
     FILTERS
         parentProperty(ps)==tps

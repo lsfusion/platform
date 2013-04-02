@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
-    public ConcreteCustomClass abstractGroup;
+    public ConcreteCustomClass propertyGroup;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass navigatorAction;
     public ConcreteCustomClass form;
@@ -25,12 +25,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass property;
     public ConcreteCustomClass groupObject;
     
-    public LCP captionAbstractGroup;
+    public LCP captionPropertyGroup;
     public LCP captionNavigatorElement;
-    public LCP parentAbstractGroup;
-    public LCP numberAbstractGroup;
-    public LCP SIDAbstractGroup;
-    public LCP abstractGroupSID;
+    public LCP parentPropertyGroup;
+    public LCP numberPropertyGroup;
+    public LCP SIDPropertyGroup;
+    public LCP propertyGroupSID;
 
     public LCP parentProperty;
     public LCP numberProperty;
@@ -127,7 +127,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        abstractGroup = (ConcreteCustomClass) getClassByName("AbstractGroup");
+        propertyGroup = (ConcreteCustomClass) getClassByName("PropertyGroup");
         navigatorElement = (ConcreteCustomClass) getClassByName("NavigatorElement");
         navigatorAction = (ConcreteCustomClass) getClassByName("NavigatorAction");
         form = (ConcreteCustomClass) getClassByName("Form");
@@ -148,12 +148,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // ------- Доменная логика --------- //
 
         // Группы свойства
-        captionAbstractGroup = getLCPByName("captionAbstractGroup");
+        captionPropertyGroup = getLCPByName("captionPropertyGroup");
         captionNavigatorElement = getLCPByName("captionNavigatorElement");
-        parentAbstractGroup = getLCPByName("parentAbstractGroup");
-        numberAbstractGroup = getLCPByName("numberAbstractGroup");
-        SIDAbstractGroup = getLCPByName("SIDAbstractGroup");
-        abstractGroupSID = getLCPByName("abstractGroupSID");
+        parentPropertyGroup = getLCPByName("parentPropertyGroup");
+        numberPropertyGroup = getLCPByName("numberPropertyGroup");
+        SIDPropertyGroup = getLCPByName("SIDPropertyGroup");
+        propertyGroupSID = getLCPByName("propertyGroupSID");
 
         // Свойства
         parentProperty = getLCPByName("parentProperty");

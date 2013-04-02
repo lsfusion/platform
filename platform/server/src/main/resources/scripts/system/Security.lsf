@@ -28,105 +28,105 @@ permitChangeAllPropertyUser 'Разрешить изменение всех св
 forbidChangeAllPropertyUserRole 'Запретить изменение всех свойств' = DATA BOOLEAN (UserRole);
 forbidChangeAllPropertyRole 'Запретить изменение всех свойств' (user) = forbidChangeAllPropertyUserRole(mainRoleUser(user));
 
-dataPermitViewAbstractGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (AbstractGroup);
+dataPermitViewPropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitViewParentAbstractGroup (abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataPermitViewAbstractGroup(parent)
-          BY abstractGroup PERSISTENT;
+levelPermitViewParentPropertyGroup (propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitViewPropertyGroup(parent)
+          BY propertyGroup PERSISTENT;
 
-levelPermitViewAbstractGroup = TRUE IF levelPermitViewParentAbstractGroup (abstractGroup);
-permitViewAbstractGroup 'Разрешить просмотр группы свойств' (abstractGroup) = levelPermitViewAbstractGroup (abstractGroup) OR dataPermitViewAbstractGroup (abstractGroup);
+levelPermitViewPropertyGroup = TRUE IF levelPermitViewParentPropertyGroup (propertyGroup);
+permitViewPropertyGroup 'Разрешить просмотр группы свойств' (propertyGroup) = levelPermitViewPropertyGroup (propertyGroup) OR dataPermitViewPropertyGroup (propertyGroup);
 
 dataPermitViewProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (Property);
-permitViewProperty 'Разрешить просмотр свойства' (property) = levelPermitViewAbstractGroup (parentProperty(property)) OR dataPermitViewProperty (property) PERSISTENT;
+permitViewProperty 'Разрешить просмотр свойства' (property) = levelPermitViewPropertyGroup (parentProperty(property)) OR dataPermitViewProperty (property) PERSISTENT;
 
-dataForbidViewAbstractGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (AbstractGroup);
+dataForbidViewPropertyGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidViewParentAbstractGroup (abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataForbidViewAbstractGroup(parent)
-          BY abstractGroup PERSISTENT;
+levelForbidViewParentPropertyGroup (propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidViewPropertyGroup(parent)
+          BY propertyGroup PERSISTENT;
 
-levelForbidViewAbstractGroup = TRUE IF levelForbidViewParentAbstractGroup (abstractGroup);
-forbidViewAbstractGroup 'Запретить просмотр группы свойств' (abstractGroup) = levelForbidViewAbstractGroup (abstractGroup) OR dataForbidViewAbstractGroup (abstractGroup);
+levelForbidViewPropertyGroup = TRUE IF levelForbidViewParentPropertyGroup (propertyGroup);
+forbidViewPropertyGroup 'Запретить просмотр группы свойств' (propertyGroup) = levelForbidViewPropertyGroup (propertyGroup) OR dataForbidViewPropertyGroup (propertyGroup);
 
 dataForbidViewProperty 'Запретить просмотр свойства' = DATA BOOLEAN (Property);
-forbidViewProperty 'Запретить просмотр свойства' (property) = levelForbidViewAbstractGroup (parentProperty(property)) OR dataForbidViewProperty (property) PERSISTENT;
+forbidViewProperty 'Запретить просмотр свойства' (property) = levelForbidViewPropertyGroup (parentProperty(property)) OR dataForbidViewProperty (property) PERSISTENT;
 
-dataPermitChangeAbstractGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (AbstractGroup);
+dataPermitChangePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitChangeParentAbstractGroup (abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataPermitChangeAbstractGroup(parent)
-          BY abstractGroup PERSISTENT;
+levelPermitChangeParentPropertyGroup (propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitChangePropertyGroup(parent)
+          BY propertyGroup PERSISTENT;
 
-levelPermitChangeAbstractGroup = TRUE IF levelPermitChangeParentAbstractGroup (abstractGroup);
-permitChangeAbstractGroup 'Разрешить изменение группы свойств' (abstractGroup) = levelPermitChangeAbstractGroup (abstractGroup) OR dataPermitChangeAbstractGroup (abstractGroup);
+levelPermitChangePropertyGroup = TRUE IF levelPermitChangeParentPropertyGroup (propertyGroup);
+permitChangePropertyGroup 'Разрешить изменение группы свойств' (propertyGroup) = levelPermitChangePropertyGroup (propertyGroup) OR dataPermitChangePropertyGroup (propertyGroup);
 
 dataPermitChangeProperty 'Разрешить изменение свойства' = DATA BOOLEAN (Property);
-permitChangeProperty 'Разрешить изменение свойства' (property) = levelPermitChangeAbstractGroup (parentProperty(property)) OR dataPermitChangeProperty (property) PERSISTENT;
+permitChangeProperty 'Разрешить изменение свойства' (property) = levelPermitChangePropertyGroup (parentProperty(property)) OR dataPermitChangeProperty (property) PERSISTENT;
 
-dataForbidChangeAbstractGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (AbstractGroup);
+dataForbidChangePropertyGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidChangeParentAbstractGroup (abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataForbidChangeAbstractGroup(parent)
-          BY abstractGroup PERSISTENT;
+levelForbidChangeParentPropertyGroup (propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidChangePropertyGroup(parent)
+          BY propertyGroup PERSISTENT;
 
-levelForbidChangeAbstractGroup = TRUE IF levelForbidChangeParentAbstractGroup (abstractGroup);
-forbidChangeAbstractGroup 'Запретить изменение группы свойств' (abstractGroup) = levelForbidChangeAbstractGroup (abstractGroup) OR dataForbidChangeAbstractGroup (abstractGroup);
+levelForbidChangePropertyGroup = TRUE IF levelForbidChangeParentPropertyGroup (propertyGroup);
+forbidChangePropertyGroup 'Запретить изменение группы свойств' (propertyGroup) = levelForbidChangePropertyGroup (propertyGroup) OR dataForbidChangePropertyGroup (propertyGroup);
 
 dataForbidChangeProperty 'Запретить изменение свойства' = DATA BOOLEAN (Property);
-forbidChangeProperty 'Запретить изменение свойства' (property) = levelForbidChangeAbstractGroup (parentProperty(property)) OR dataForbidChangeProperty (property) PERSISTENT;
+forbidChangeProperty 'Запретить изменение свойства' (property) = levelForbidChangePropertyGroup (parentProperty(property)) OR dataForbidChangeProperty (property) PERSISTENT;
 
-TABLE userRoleAbstractGroup (UserRole, AbstractGroup);
-dataPermitViewUserRoleAbstractGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, AbstractGroup);
+TABLE userRolePropertyGroup (UserRole, PropertyGroup);
+dataPermitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitViewParentUserRoleAbstractGroup (userRole, abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataPermitViewUserRoleAbstractGroup(userRole, parent)
-          BY userRole, abstractGroup PERSISTENT;
+levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitViewUserRolePropertyGroup(userRole, parent)
+          BY userRole, propertyGroup PERSISTENT;
 
-levelPermitViewUserRoleAbstractGroup = TRUE IF levelPermitViewParentUserRoleAbstractGroup (userRole, abstractGroup);
-permitViewUserRoleAbstractGroup 'Разрешить просмотр группы свойств' (userRole, abstractGroup) = levelPermitViewUserRoleAbstractGroup (userRole, abstractGroup) OR dataPermitViewUserRoleAbstractGroup (userRole, abstractGroup) PERSISTENT;
+levelPermitViewUserRolePropertyGroup = TRUE IF levelPermitViewParentUserRolePropertyGroup (userRole, propertyGroup);
+permitViewUserRolePropertyGroup 'Разрешить просмотр группы свойств' (userRole, propertyGroup) = levelPermitViewUserRolePropertyGroup (userRole, propertyGroup) OR dataPermitViewUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
 
 dataPermitViewUserRoleProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-permitViewUserRoleProperty 'Разрешить просмотр свойства' (userRole, property) = levelPermitViewUserRoleAbstractGroup (userRole, parentProperty(property)) OR dataPermitViewUserRoleProperty (userRole, property) PERSISTENT;
+permitViewUserRoleProperty 'Разрешить просмотр свойства' (userRole, property) = levelPermitViewUserRolePropertyGroup (userRole, parentProperty(property)) OR dataPermitViewUserRoleProperty (userRole, property) PERSISTENT;
 permitViewUserProperty 'Разрешить просмотр свойства' (user, property) = permitViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
 
-dataForbidViewUserRoleAbstractGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, AbstractGroup);
+dataForbidViewUserRolePropertyGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidViewParentUserRoleAbstractGroup (userRole, abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataForbidViewUserRoleAbstractGroup(userRole, parent)
-          BY userRole, abstractGroup PERSISTENT;
+levelForbidViewParentUserRolePropertyGroup (userRole, propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidViewUserRolePropertyGroup(userRole, parent)
+          BY userRole, propertyGroup PERSISTENT;
 
-levelForbidViewUserRoleAbstractGroup = TRUE IF levelForbidViewParentUserRoleAbstractGroup (userRole, abstractGroup);
-forbidViewUserRoleAbstractGroup 'Запретить просмотр группы свойств' (userRole, abstractGroup) = levelForbidViewUserRoleAbstractGroup (userRole, abstractGroup) OR dataForbidViewUserRoleAbstractGroup (userRole, abstractGroup) PERSISTENT;
+levelForbidViewUserRolePropertyGroup = TRUE IF levelForbidViewParentUserRolePropertyGroup (userRole, propertyGroup);
+forbidViewUserRolePropertyGroup 'Запретить просмотр группы свойств' (userRole, propertyGroup) = levelForbidViewUserRolePropertyGroup (userRole, propertyGroup) OR dataForbidViewUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
 
 dataForbidViewUserRoleProperty 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-forbidViewUserRoleProperty 'Запретить просмотр свойства' (userRole, property) = levelForbidViewUserRoleAbstractGroup (userRole, parentProperty(property)) OR dataForbidViewUserRoleProperty (userRole, property) PERSISTENT;
+forbidViewUserRoleProperty 'Запретить просмотр свойства' (userRole, property) = levelForbidViewUserRolePropertyGroup (userRole, parentProperty(property)) OR dataForbidViewUserRoleProperty (userRole, property) PERSISTENT;
 forbidViewUserProperty 'Запретить просмотр свойства' (user, property) = forbidViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
 
-dataPermitChangeUserRoleAbstractGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, AbstractGroup);
+dataPermitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitChangeParentUserRoleAbstractGroup (userRole, abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataPermitChangeUserRoleAbstractGroup(userRole, parent)
-          BY userRole, abstractGroup PERSISTENT;
+levelPermitChangeParentUserRolePropertyGroup (userRole, propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataPermitChangeUserRolePropertyGroup(userRole, parent)
+          BY userRole, propertyGroup PERSISTENT;
 
-levelPermitChangeUserRoleAbstractGroup = TRUE IF levelPermitChangeParentUserRoleAbstractGroup (userRole, abstractGroup);
-permitChangeUserRoleAbstractGroup 'Разрешить изменение группы свойств' (userRole, abstractGroup) = levelPermitChangeUserRoleAbstractGroup (userRole, abstractGroup) OR dataPermitChangeUserRoleAbstractGroup (userRole, abstractGroup) PERSISTENT;
+levelPermitChangeUserRolePropertyGroup = TRUE IF levelPermitChangeParentUserRolePropertyGroup (userRole, propertyGroup);
+permitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' (userRole, propertyGroup) = levelPermitChangeUserRolePropertyGroup (userRole, propertyGroup) OR dataPermitChangeUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
 
 dataPermitChangeUserRoleProperty 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-permitChangeUserRoleProperty 'Разрешить изменение свойства' (userRole, property) = levelPermitChangeUserRoleAbstractGroup (userRole, parentProperty(property)) OR dataPermitChangeUserRoleProperty (userRole, property) PERSISTENT;
+permitChangeUserRoleProperty 'Разрешить изменение свойства' (userRole, property) = levelPermitChangeUserRolePropertyGroup (userRole, parentProperty(property)) OR dataPermitChangeUserRoleProperty (userRole, property) PERSISTENT;
 permitChangeUserProperty 'Разрешить изменение свойства' (user, property) = permitChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
 
-dataForbidChangeUserRoleAbstractGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, AbstractGroup);
+dataForbidChangeUserRolePropertyGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidChangeParentUserRoleAbstractGroup (userRole, abstractGroup) =
-    GROUP MIN levelAbstractGroupAbstractGroup(abstractGroup, parent) IF dataForbidChangeUserRoleAbstractGroup(userRole, parent)
-          BY userRole, abstractGroup PERSISTENT;
+levelForbidChangeParentUserRolePropertyGroup (userRole, propertyGroup) =
+    GROUP MIN levelPropertyGroupPropertyGroup(propertyGroup, parent) IF dataForbidChangeUserRolePropertyGroup(userRole, parent)
+          BY userRole, propertyGroup PERSISTENT;
 
-levelForbidChangeUserRoleAbstractGroup = TRUE IF levelForbidChangeParentUserRoleAbstractGroup (userRole, abstractGroup);
-forbidChangeUserRoleAbstractGroup 'Запретить изменение группы свойств' (userRole, abstractGroup) = levelForbidChangeUserRoleAbstractGroup (userRole, abstractGroup) OR dataForbidChangeUserRoleAbstractGroup (userRole, abstractGroup) PERSISTENT;
+levelForbidChangeUserRolePropertyGroup = TRUE IF levelForbidChangeParentUserRolePropertyGroup (userRole, propertyGroup);
+forbidChangeUserRolePropertyGroup 'Запретить изменение группы свойств' (userRole, propertyGroup) = levelForbidChangeUserRolePropertyGroup (userRole, propertyGroup) OR dataForbidChangeUserRolePropertyGroup (userRole, propertyGroup) PERSISTENT;
 
 dataForbidChangeUserRoleProperty 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-forbidChangeUserRoleProperty 'Запретить изменение свойства' (userRole, property) = levelForbidChangeUserRoleAbstractGroup (userRole, parentProperty(property)) OR dataForbidChangeUserRoleProperty (userRole, property) PERSISTENT;
+forbidChangeUserRoleProperty 'Запретить изменение свойства' (userRole, property) = levelForbidChangeUserRolePropertyGroup (userRole, parentProperty(property)) OR dataForbidChangeUserRoleProperty (userRole, property) PERSISTENT;
 forbidChangeUserProperty 'Запретить изменение свойства' (user, property) = forbidChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
 
 notNullPermissionUserProperty (user, property) = permitViewUserProperty(user, property) OR forbidViewUserProperty(user, property) OR permitChangeUserProperty(user, property) OR forbidChangeUserProperty(user, property);
@@ -218,12 +218,12 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(ur, tf) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
     ORDER BY numberNavigatorElement(tf)
 
-    TREE treePropertyObject tprs = AbstractGroup PARENT parentAbstractGroup, prs = Property
-    PROPERTIES(tprs) captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup
-    ORDER BY numberAbstractGroup(tprs)
+    TREE treePropertyObject tprs = PropertyGroup PARENT parentPropertyGroup, prs = Property
+    PROPERTIES(tprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup
+    ORDER BY numberPropertyGroup(tprs)
     PROPERTIES(prs) captionProperty, SIDProperty, numberProperty
     PROPERTIES(ur, prs) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
-    PROPERTIES(ur, tprs) permitViewUserRoleAbstractGroup, forbidViewUserRoleAbstractGroup, permitChangeUserRoleAbstractGroup, forbidChangeUserRoleAbstractGroup
+    PROPERTIES(ur, tprs) permitViewUserRolePropertyGroup, forbidViewUserRolePropertyGroup, permitChangeUserRolePropertyGroup, forbidChangeUserRolePropertyGroup
     ORDER BY numberProperty(prs)
 
     TREE treeDefaultForm tdf = NavigatorElement PARENT parentNavigatorElement
@@ -231,9 +231,9 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement
     ORDER BY numberNavigatorElement(tdf)
 
-    TREE treeDefaultProperty tdprs = AbstractGroup PARENT parentAbstractGroup, dprs = Property
-    PROPERTIES (tdprs) captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup, permitViewAbstractGroup, forbidViewAbstractGroup, permitChangeAbstractGroup, forbidChangeAbstractGroup
-    ORDER BY numberAbstractGroup(tdprs)
+    TREE treeDefaultProperty tdprs = PropertyGroup PARENT parentPropertyGroup, dprs = Property
+    PROPERTIES (tdprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup, permitViewPropertyGroup, forbidViewPropertyGroup, permitChangePropertyGroup, forbidChangePropertyGroup
+    ORDER BY numberPropertyGroup(tdprs)
 
     PROPERTIES (dprs)  captionProperty,      SIDProperty,      numberProperty,      permitViewProperty,          forbidViewProperty,          permitChangeProperty,          forbidChangeProperty
     ORDER BY numberProperty(dprs)

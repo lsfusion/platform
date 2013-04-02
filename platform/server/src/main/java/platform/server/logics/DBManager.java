@@ -487,10 +487,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
-        ImportKey<?> keyParent = new ImportKey(reflectionLM.abstractGroup, reflectionLM.abstractGroupSID.getMapping(parentSidField));
+        ImportKey<?> keyParent = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        properties.add(new ImportProperty(parentSidField, reflectionLM.parentProperty.getMapping(keyProperty), LM.object(reflectionLM.abstractGroup).getMapping(keyParent)));
+        properties.add(new ImportProperty(parentSidField, reflectionLM.parentProperty.getMapping(keyProperty), LM.object(reflectionLM.propertyGroup).getMapping(keyParent)));
         properties.add(new ImportProperty(numberPropertyField, reflectionLM.numberProperty.getMapping(keyProperty)));
         ImportTable table = new ImportTable(asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
 
@@ -512,9 +512,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     protected void synchronizeGroupProperties() {
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
-        ImportField numberField = new ImportField(reflectionLM.numberAbstractGroup);
+        ImportField numberField = new ImportField(reflectionLM.numberPropertyGroup);
 
-        ImportKey<?> key = new ImportKey(reflectionLM.abstractGroup, reflectionLM.abstractGroupSID.getMapping(sidField));
+        ImportKey<?> key = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(sidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
 
@@ -523,11 +523,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-        props.add(new ImportProperty(sidField, reflectionLM.SIDAbstractGroup.getMapping(key)));
-        props.add(new ImportProperty(captionField, reflectionLM.captionAbstractGroup.getMapping(key)));
+        props.add(new ImportProperty(sidField, reflectionLM.SIDPropertyGroup.getMapping(key)));
+        props.add(new ImportProperty(captionField, reflectionLM.captionPropertyGroup.getMapping(key)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(key, LM.is(reflectionLM.abstractGroup).getMapping(key), false));
+        deletes.add(new ImportDelete(key, LM.is(reflectionLM.propertyGroup).getMapping(key), false));
 
         ImportTable table = new ImportTable(asList(sidField, captionField), data);
 
@@ -540,10 +540,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportKey<?> key2 = new ImportKey(reflectionLM.abstractGroup, reflectionLM.abstractGroupSID.getMapping(parentSidField));
+        ImportKey<?> key2 = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
-        props2.add(new ImportProperty(parentSidField, reflectionLM.parentAbstractGroup.getMapping(key), LM.object(reflectionLM.abstractGroup).getMapping(key2)));
-        props2.add(new ImportProperty(numberField, reflectionLM.numberAbstractGroup.getMapping(key)));
+        props2.add(new ImportProperty(parentSidField, reflectionLM.parentPropertyGroup.getMapping(key), LM.object(reflectionLM.propertyGroup).getMapping(key2)));
+        props2.add(new ImportProperty(numberField, reflectionLM.numberPropertyGroup.getMapping(key)));
         ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
 
         try {
