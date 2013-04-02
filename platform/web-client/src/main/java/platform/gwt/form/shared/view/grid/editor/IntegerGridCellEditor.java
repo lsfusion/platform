@@ -12,8 +12,8 @@ public class IntegerGridCellEditor extends TextBasedGridCellEditor {
     @Override
     protected Object tryParseInputText(String inputText) throws ParseException {
         try {
-            return inputText.isEmpty() ? null : Integer.parseInt(inputText);
-        } catch (NumberFormatException e) {
+            return property.parseString(inputText);
+        } catch (Exception e) {
             throw new ParseException();
         }
     }

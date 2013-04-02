@@ -9,9 +9,11 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.sql.Time;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
 
@@ -39,9 +41,9 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
         return new TimePropertyRenderer(property);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Time parseString(String s) throws ParseException {
         try {
-            return getDefaultFormat().parseObject(s);
+            return new Time(((Date) getDefaultFormat().parseObject(s)).getTime());
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.time"), 0);
         }

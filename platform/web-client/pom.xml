@@ -150,6 +150,10 @@
             <groupId>com.samaxes.filter</groupId>
             <artifactId>cachefilter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.bfr.client</groupId>
+            <artifactId>gwt-selection</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>log4j</groupId>

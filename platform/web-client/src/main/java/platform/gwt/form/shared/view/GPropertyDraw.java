@@ -11,6 +11,7 @@ import platform.gwt.form.shared.view.panel.PanelRenderer;
 import platform.gwt.form.shared.view.reader.*;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -94,6 +95,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GridCellEditor createValueCellEdtor(EditManager editManager) {
         return baseType.createValueCellEditor(editManager, this);
+    }
+
+    public Object parseString(String s) throws ParseException {
+        return baseType.parseString(s);
     }
 
     @Override

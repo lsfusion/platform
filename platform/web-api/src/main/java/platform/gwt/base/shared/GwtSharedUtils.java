@@ -33,13 +33,21 @@ public class GwtSharedUtils {
         return new String(chars);
     }
 
+    public static String multiplyString(String string, int multiplier) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < multiplier; i++) {
+            sb.append(string);
+        }
+        return sb.toString();
+    }
+
     public static DateTimeFormat getDefaultDateFormat() {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
     }
 
     public static DateTimeFormat getDefaultDateTimeFormat() {
         DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()));
+        return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), info.dateFormatShort()).replace(",", ""));
     }
 
     public static DateTimeFormat getDefaultTimeFormat() {
@@ -61,6 +69,11 @@ public class GwtSharedUtils {
             return obj2 == null;
         else
             return obj1.equals(obj2);
+    }
+
+    public static Object nullBoolean(Boolean b) {
+        if (b) return true;
+        else return null;
     }
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
@@ -140,5 +153,16 @@ public class GwtSharedUtils {
             sb.append(randomsymbols[random.nextInt(randomsymbols.length)]);
         }
         return sb.toString();
+    }
+
+    public static java.sql.Date safeDateToSql(Date date) {
+        if (date == null) return null;
+
+        if (date instanceof java.sql.Date)
+            return (java.sql.Date) date;
+        else {
+            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+            return sqlDate;
+        }
     }
 }

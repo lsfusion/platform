@@ -11,7 +11,6 @@ import java.awt.datatransfer.Transferable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class TableTransferHandler extends TransferHandler {
 
@@ -68,7 +67,7 @@ public class TableTransferHandler extends TransferHandler {
         return (flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String"));
     }
 
-    List<List<String>> getClipboardTable(String line) {
+    public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<List<String>>();
         List<String> row = new ArrayList<String>();
 

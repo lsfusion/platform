@@ -9,6 +9,7 @@ import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.FileGridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import static platform.gwt.form.shared.view.filter.GCompare.EQUALS;
@@ -34,6 +35,11 @@ public abstract class GFileType extends GDataType {
     @Override
     public GCompare[] getFilterCompares() {
         return new GCompare[] {EQUALS, NOT_EQUALS};
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        throw new ParseException("File class doesn't support conversion from string", 0);
     }
 
     @Override

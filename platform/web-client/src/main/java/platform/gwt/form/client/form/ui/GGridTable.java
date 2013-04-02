@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import platform.gwt.base.client.jsni.Function;
 import platform.gwt.base.client.jsni.NativeHashMap;
+import platform.gwt.base.client.ui.DialogBoxHelper;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.cellview.client.Column;
 import platform.gwt.cellview.client.DataGrid;
@@ -107,9 +108,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         int oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
                         int scrollerHeight = getTableDataScroller().getClientHeight();
                         if (oldRowScrollTop < 0) {
-                            setKeyboardSelectedRow(selectedRow + Math.abs(oldRowScrollTop / getRowHeight()));
+                            setKeyboardSelectedRow(selectedRow + Math.abs(oldRowScrollTop / getRowHeight()), false);
                         } else if (oldRowScrollTop + getRowHeight() > scrollerHeight) {
-                            setKeyboardSelectedRow(selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1);
+                            setKeyboardSelectedRow(selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1, false);
                         }
                     }
                 }
@@ -554,6 +555,34 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public Object getValueAt(Cell.Context context) {
         Column column = getColumn(context.getColumn());
         return column.getValue(context.getRowValue());
+    }
+
+    @Override
+    public void pasteData(final String dataLine, boolean multi) {
+        int selectedColumn = getKeyboardSelectedColumn();
+
+        if (selectedColumn == -1 || dataLine == null) {
+            return;
+        }
+
+        final ArrayList<GPropertyDraw> propertiesAfterSelected = new ArrayList<GPropertyDraw>();
+        for (int i = selectedColumn; i < getColumnCount(); i++) {
+            GPropertyDraw propertyDraw = getProperty(i);
+            propertiesAfterSelected.add(propertyDraw);
+        }
+
+        if (multi) {
+            DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", new DialogBoxHelper.CloseCallback() {
+                @Override
+                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                    if (chosenOption == DialogBoxHelper.OptionType.YES) {
+                        form.pasteExternalTable(propertiesAfterSelected, dataLine);
+                    }
+                }
+            });
+        } else {
+            form.pasteExternalTable(propertiesAfterSelected, dataLine);
+        }
     }
 
     @Override

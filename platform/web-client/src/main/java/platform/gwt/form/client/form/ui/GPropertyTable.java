@@ -1,11 +1,16 @@
 package platform.gwt.form.client.form.ui;
 
+import com.bfr.client.selection.Range;
+import com.bfr.client.selection.RangeEndPoint;
+import com.bfr.client.selection.Selection;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.DataGrid;
 import platform.gwt.cellview.client.cell.Cell;
 import platform.gwt.cellview.client.cell.HasCell;
@@ -38,6 +43,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     protected Element editCellParent;
     protected GType editType;
 
+    private Selection selection;
+
     public GPropertyTable(GFormController iform, Resources resources) {
         this(iform, resources, false);
     }
@@ -51,6 +58,10 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editBindingMap = new GEditBindingMap();
         this.editBindingMap.setMouseAction(GEditBindingMap.CHANGE);
         this.editBindingMap.setKeyAction(new GKeyStroke(KeyCodes.KEY_BACKSPACE), GEditBindingMap.EDIT_OBJECT);
+
+        selection = Selection.getSelection();
+
+        sinkEvents(Event.ONPASTE);
     }
 
     public abstract boolean isEditable(Cell.Context context);
@@ -65,6 +76,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     public abstract Object getValueAt(Cell.Context context);
 
+    public abstract void pasteData(String dataLine, boolean multi);
+
     @Override
     protected <C> void fireEventToCellImpl(Event event, String eventType, Element cellParent, T rowValue, Cell.Context context, HasCell<T, C> column) {
         Cell<C> cell = column.getCell();
@@ -75,12 +88,45 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
                 if (BrowserEvents.CONTEXTMENU.equals(event.getType())) {
                     stopPropagation(event);
                     contextMenuHandler.show(event.getClientX(), event.getClientY(), context);
+                } else if (GKeyStroke.isCopyToClipboardEvent(event)) {
+                    if (selection.getRange() == null || selection.getRange().getText().isEmpty()) {
+                        selection.setRange(new Range(getFocusCellElement()));
+
+                        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                            @Override
+                            public void execute() {
+                                Range range = selection.getRange();
+                                range.collapse(true);
+                                selection.setRange(range);
+                            }
+                        });
+                    }
+                } else if (GKeyStroke.isPasteFromClipboardEvent(event)) {  // для IE, в котором не удалось словить ONPASTE, но он и так даёт доступ к буферу обмена
+                    executePaste(event);
                 } else {
                     onEditEvent((GridEditableCell) cell, new NativeEditEvent(event), context, cellParent);
                 }
             }
         } else {
             super.fireEventToCellImpl(event, eventType, cellParent, rowValue, context, column);
+        }
+    }
+
+    @Override
+    protected void onFocus() {
+        if (!GwtClientUtils.isIEUserAgent()) {
+            // для вставки в Chrome без предварительного клика по ячейке, но валит весь селекшн в IE
+            selection.setRange(new Range(new RangeEndPoint(getFocusCellElement(), true)));
+        }
+        super.onFocus();
+    }
+
+    @Override
+    protected void onBrowserEvent2(Event event) {
+        if (cellEditor == null && event.getTypeInt() == Event.ONPASTE) { // пока работает только для Chrome
+            executePaste(event);
+        } else {
+            super.onBrowserEvent2(event);
         }
     }
 
@@ -228,4 +274,47 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         getTableBuilder().setCellHeight(cellHeight);
         setRowHeight(cellHeight + 1); //1px for border
     }
+
+    private Element getFocusCellElement() {
+        return getChildElement(getKeyboardSelectedRow()).getCells().getItem(getKeyboardSelectedColumn()).getFirstChildElement();
+    }
+
+    private void executePaste(Event event) {
+        String line = getClipboardData(event);
+        if (!line.isEmpty()) {
+            stopPropagation(event);
+            line = line.replaceAll("\r\n", "\n");    // браузеры заменяют разделители строк на "\r\n"
+            boolean isMultiLine = line.contains("\n") && (line.indexOf("\n") != line.lastIndexOf("\n") || !line.endsWith("\n"));
+            pasteData(line, line.contains("\t") || isMultiLine);
+        }
+    }
+
+    private native String getClipboardData(Event event)
+    /*-{
+        var text = "";
+
+        // This should eventually work in Firefox:
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=407983
+        if (event.clipboardData) // WebKit (Chrome/Safari)
+        {
+            try {
+                text = event.clipboardData.getData("text/plain");
+                return text;
+            }
+            catch (e) {
+            }
+        }
+
+        if ($wnd.clipboardData) // IE
+        {
+            try {
+                text = $wnd.clipboardData.getData("Text");
+                return text;
+            }
+            catch (e) {
+            }
+        }
+
+        return text;
+    }-*/;
 }

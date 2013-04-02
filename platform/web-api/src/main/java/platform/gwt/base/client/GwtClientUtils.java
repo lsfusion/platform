@@ -156,11 +156,11 @@ public class GwtClientUtils {
         return strut;
     }
 
-    public static String multiplyString(String string, int multiplier) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < multiplier; i++) {
-            sb.append(string);
-        }
-        return sb.toString();
+    public static native String getUserAgent() /*-{
+        return navigator.userAgent.toLowerCase();
+    }-*/;
+
+    public static boolean isIEUserAgent() {
+        return getUserAgent().contains("msie");
     }
 }

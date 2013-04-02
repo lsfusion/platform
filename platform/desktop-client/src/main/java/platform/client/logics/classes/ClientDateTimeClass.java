@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {
 
@@ -49,7 +50,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     public Object parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToStamp(new SimpleDateFormat().parse(s));
+            return DateConverter.dateToStamp((Date) getDefaultFormat().parseObject(s));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
@@ -58,7 +59,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     @Override
     public String formatString(Object obj) {
         if (obj != null) {
-            return new SimpleDateFormat().format(DateConverter.stampToDate((Timestamp) obj));
+            return getDefaultFormat().format(DateConverter.stampToDate((Timestamp) obj));
         }
         else return "";
     }

@@ -74,6 +74,7 @@
         <gwt.dnd.version>3.1.2</gwt.dnd.version>
         <color.picker.version>2.1-patched</color.picker.version>
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
+        <gwt.selection.version>1.1</gwt.selection.version>
 
         <!-- general properties -->
         <maven.test.skip>true</maven.test.skip>
@@ -769,6 +770,11 @@
                 <groupId>org.moxieapps.gwt.uploader</groupId>
                 <artifactId>uploader</artifactId>
                 <version>${moxieapps.gwt.uploader.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bfr.client</groupId>
+                <artifactId>gwt-selection</artifactId>
+                <version>${gwt.selection.version}</version>
             </dependency>
 
             <!-- Platform modules -->

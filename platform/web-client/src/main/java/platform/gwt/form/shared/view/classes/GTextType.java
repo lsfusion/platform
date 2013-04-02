@@ -8,6 +8,8 @@ import platform.gwt.form.shared.view.grid.editor.TextGridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.TextGridCellRenderer;
 
+import java.text.ParseException;
+
 public class GTextType extends GDataType {
     public static GTextType instance = new GTextType();
 
@@ -46,5 +48,10 @@ public class GTextType extends GDataType {
     public int getPreferredPixelWidth(int preferredCharWidth, GFont font) {
         int prefCharWidth = getPreferredCharWidth(preferredCharWidth);
         return font == null || font.size == null ? prefCharWidth * 10 : prefCharWidth * font.size * 5 / 8;
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        return s;
     }
 }

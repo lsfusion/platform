@@ -9,9 +9,10 @@ import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.changes.dto.ColorDTO;
 import platform.gwt.form.shared.view.grid.GridEditableCell;
 
+import java.text.ParseException;
 import java.util.Arrays;
 
-public class GSinglePropertyTable extends GPropertyTable {
+public class GSinglePropertyTable extends GPropertyTable<Object> {
     /**
      * Default style's overrides
      */
@@ -121,6 +122,21 @@ public class GSinglePropertyTable extends GPropertyTable {
     public Object getValueAt(Cell.Context context) {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return value;
+    }
+
+    @Override
+    public void pasteData(String stringValue, boolean multi) {
+        try {
+            if (stringValue.contains("\n") && (stringValue.indexOf("\n") == stringValue.lastIndexOf("\n") && stringValue.endsWith("\n"))) {
+                // при копировании из Excel даже одной ячейки приходит \n в конце строки
+                stringValue = stringValue.replace("\n", "");
+            }
+            Object value = property.parseString(stringValue);
+            if (value != null) {
+                form.getSimpleDispatcher().changeProperty(value, property, columnKey, true);
+            }
+        } catch (ParseException ignored) {
+        }
     }
 
     @Override

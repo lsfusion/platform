@@ -13,6 +13,7 @@ import platform.gwt.form.shared.view.panel.DataPanelRenderer;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
 
 import java.io.Serializable;
+import java.text.ParseException;
 
 public abstract class GType implements Serializable {
     public PanelRenderer createPanelRenderer(GFormController form, GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -39,6 +40,7 @@ public abstract class GType implements Serializable {
     public abstract int getMaximumPixelWidth(int maximumCharWidth, GFont font);
     public abstract int getPreferredPixelWidth(int preferredCharWidth, GFont font);
     public abstract GCompare[] getFilterCompares();
+    public abstract Object parseString(String s) throws ParseException;
 
     public int getMinimumPixelHeight(GFont font) {
         return font == null || font.size == null ? 16 : (int) (font.size * 1.25);

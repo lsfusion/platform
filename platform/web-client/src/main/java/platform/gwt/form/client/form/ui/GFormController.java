@@ -33,6 +33,7 @@ import platform.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import platform.gwt.form.client.form.FormsController;
 import platform.gwt.form.client.form.dispatch.GEditPropertyHandler;
 import platform.gwt.form.client.form.dispatch.GFormActionDispatcher;
+import platform.gwt.form.client.form.dispatch.GSimpleChangePropertyDispatcher;
 import platform.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import platform.gwt.form.client.form.ui.classes.GResizableClassDialog;
 import platform.gwt.form.client.form.ui.dialog.GResizableModalDialog;
@@ -63,6 +64,7 @@ public class GFormController extends ResizableSimplePanel {
     private final FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
+    private final GSimpleChangePropertyDispatcher simpleDispatcher;
 
     private final FormsController formsController;
 
@@ -90,10 +92,13 @@ public class GFormController extends ResizableSimplePanel {
     private final int ASYNC_TIME_OUT = 50;
     private boolean needToResize = false;
 
+    private boolean initialResizeProcessed = false;
+
     private HotkeyManager hotkeyManager = new HotkeyManager();
 
     public GFormController(FormsController formsController, GForm gForm, final boolean isDialog) {
         actionDispatcher = new GFormActionDispatcher(this);
+        simpleDispatcher = new GSimpleChangePropertyDispatcher(this);
 
         this.formsController = formsController;
         this.form = gForm;
@@ -467,6 +472,10 @@ public class GFormController extends ResizableSimplePanel {
         });
     }
 
+    public void pasteExternalTable(List<GPropertyDraw> properties, String dataLine) {
+        syncDispatch(new PasteExternalTable(properties, dataLine), new ServerResponseCallback());
+    }
+
     public void scrollToEnd(GGroupObject group, boolean toEnd) {
         syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
     }
@@ -803,12 +812,17 @@ public class GFormController extends ResizableSimplePanel {
             tgc.setFilterVisible(selected);
         }
 
-//        пробуем не вызывать. при возникновении проблем с отображением следует раскомментировать
-//        relayoutTables(formLayout.getMainKey());
-
         if (selected) {
+            if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
+                relayoutTables(formLayout.getMainKey());
+                initialResizeProcessed = true;
+            }
             focusFirstWidget();
         }
+    }
+
+    public GSimpleChangePropertyDispatcher getSimpleDispatcher() {
+        return simpleDispatcher;
     }
 
     private static final class Change {

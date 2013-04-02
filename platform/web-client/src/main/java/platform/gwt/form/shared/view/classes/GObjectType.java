@@ -9,6 +9,8 @@ import platform.gwt.form.shared.view.grid.editor.IntegerGridCellEditor;
 import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
+import java.text.ParseException;
+
 import static platform.gwt.form.shared.view.filter.GCompare.*;
 
 //import platform.gwt.form.shared.view.filter.GCompare;
@@ -44,5 +46,10 @@ public class GObjectType extends GType {
     @Override
     public GCompare[] getFilterCompares() {
         return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        throw new ParseException("Object class doesn't support conversion from string", 0);
     }
 }

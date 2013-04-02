@@ -25,7 +25,7 @@ public class DoubleGridCellEditor extends TextBasedGridCellEditor {
     @Override
     protected Object tryParseInputText(String inputText) throws ParseException {
         try {
-            return inputText.isEmpty() ? null : format.parse(inputText);
+            return inputText.isEmpty() ? null : format.parse(inputText.replaceAll(" ", ""));
         } catch (NumberFormatException e) {
             throw new ParseException();
         }

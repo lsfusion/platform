@@ -12,8 +12,8 @@ public class LongGridCellEditor extends TextBasedGridCellEditor {
     @Override
     protected Object tryParseInputText(String inputText) throws TextBasedGridCellEditor.ParseException {
         try {
-            return inputText.isEmpty() ? null : Long.parseLong(inputText);
-        } catch (NumberFormatException e) {
+            return property.parseString(inputText);
+        } catch (Exception e) {
             throw new TextBasedGridCellEditor.ParseException();
         }
     }

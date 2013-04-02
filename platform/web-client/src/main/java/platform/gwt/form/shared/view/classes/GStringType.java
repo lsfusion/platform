@@ -8,6 +8,8 @@ import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.StringGridCellEditor;
 
+import java.text.ParseException;
+
 public class GStringType extends GDataType {
     protected int length = 50;
 
@@ -40,6 +42,11 @@ public class GStringType extends GDataType {
     @Override
     public GCompare[] getFilterCompares() {
         return GCompare.values();
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        return s;
     }
 
     @Override

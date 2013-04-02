@@ -26,6 +26,9 @@ public class GKeyStroke implements Serializable {
 
     public static final int KEY_INSERT = 45;
 
+    public static final int KEY_C = 67;
+    public static final int KEY_V = 86;
+
     public int keyCode;
     public boolean altPressed;
     public boolean ctrlPressed;
@@ -179,5 +182,17 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isRemoveAllFiltersEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F2 && event.getShiftKey();
+    }
+
+    public static boolean isCopyToClipboardEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) &&
+                ((event.getKeyCode() == GKeyStroke.KEY_C && event.getCtrlKey()) ||
+                (event.getKeyCode() == GKeyStroke.KEY_INSERT && event.getCtrlKey()));
+    }
+
+    public static boolean isPasteFromClipboardEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) &&
+                ((event.getKeyCode() == GKeyStroke.KEY_V && event.getCtrlKey()) ||
+                (event.getKeyCode() == GKeyStroke.KEY_INSERT && event.getShiftKey()));
     }
 }

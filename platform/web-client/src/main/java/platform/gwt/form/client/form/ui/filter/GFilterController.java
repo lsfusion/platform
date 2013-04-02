@@ -105,11 +105,15 @@ public abstract class GFilterController {
         switch (newState) {
             case REMOVED:
                 toolbarButtonIconPath = ADD_FILTER;
-                toolbarButton.getElement().getStyle().setProperty("background", "");
+                if (state != State.HIDDEN) {
+                    toolbarButton.getElement().getStyle().setProperty("background", "");
+                }
                 break;
             case COLLAPSED:
                 toolbarButtonIconPath = EXPAND;
-                toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
+                if (state != State.HIDDEN) {
+                    toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
+                }
         }
         if (toolbarButtonIconPath != null) {
             toolbarButton.setModuleImagePath(toolbarButtonIconPath);

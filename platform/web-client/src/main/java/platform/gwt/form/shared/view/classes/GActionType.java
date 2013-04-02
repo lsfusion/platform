@@ -9,6 +9,8 @@ import platform.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import platform.gwt.form.shared.view.panel.ActionPanelRenderer;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
 
+import java.text.ParseException;
+
 public class GActionType extends GDataType {
     public static GActionType instance = new GActionType();
 
@@ -25,6 +27,11 @@ public class GActionType extends GDataType {
     @Override
     public int getMaximumPixelWidth(int maximumCharWidth, GFont font) {
         return getPreferredPixelWidth(maximumCharWidth, font);
+    }
+
+    @Override
+    public Object parseString(String s) throws ParseException {
+        throw new ParseException("Action class doesn't support conversion from string", 0);
     }
 
     @Override
