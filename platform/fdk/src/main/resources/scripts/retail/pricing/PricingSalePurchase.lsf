@@ -30,12 +30,12 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
 purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
                                                 WHEN CHANGED(purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
 
-@changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail);
+@changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, pricing, purchaseRetail, purchaseRetail);
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
     IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
-@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, , purchaseRetail, purchaseRetail, currency);
+@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, pricing, purchaseRetail, purchaseRetail, currency);
 
 @defineDocumentInterfaceHeaderSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
 
@@ -49,7 +49,7 @@ toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoi
 
 
 
-@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, , customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, pricing, customerStock);
 
 backgroundPurchaseRetailInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS Invoice;
 

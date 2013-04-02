@@ -163,7 +163,21 @@ CLASS UserRepricingPosted 'Проведенный акт переоценки (�
 @defineDocumentInterfaceDetailPricePrefix(repricing, retail, ' розничная после');
 @defineDocumentInterfaceDetailDataSumPrefix (repricing, retail, ' розничная после');
 @deriveDocumentDetailSumPrefix(userRepricing, retail, currency, quantity);
+//--
+overRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PERSISTENT;
+overRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
+overRepricingPriceRepricingDetail (detail) += overRepricingPriceUserRepricingDetail(detail);
 
+repricingPriceUserRepricingDetail (detail) = priceUserRepricingDetail(detail) OR overRepricingPriceUserRepricingDetail(detail) PERSISTENT;
+repricingPriceRepricingDetail (detail) = priceRepricingDetail(detail) OR overRepricingPriceRepricingDetail(detail) PERSISTENT;
+//--
+overCurRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PERSISTENT;
+overCurRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
+overCurRepricingPriceRepricingDetail (detail) += overCurRepricingPriceUserRepricingDetail(detail);
+
+curRepricingPriceUserRepricingDetail (detail) = curPriceUserRepricingDetail(detail) OR overCurRepricingPriceUserRepricingDetail(detail) PERSISTENT;
+curRepricingPriceRepricingDetail (detail) = curPriceRepricingDetail(detail) OR overCurRepricingPriceRepricingDetail(detail) PERSISTENT;
+//--
 @defineDocumentInterfaceHeaderQuantity(repricing);
 @defineDocumentHeaderSkuQuantity(repricing, sku);
 @defineDocumentHeaderSkuQuantity(userRepricing, sku);
@@ -179,18 +193,18 @@ CLASS UserRepricingPosted 'Проведенный акт переоценки (�
 curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
     0.0 IF userRepricingDetail IS UserRepricingDetail OR curRetailPriceUserRepricingDetail(userRepricingDetail),
     0.0 IF userRepricingDetail IS UserRepricingDetail OR valueCurVATUserRepricingDetail(userRepricingDetail),
-    curPriceUserRepricingDetail(userRepricingDetail))
-    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curPriceUserRepricingDetail(userRepricingDetail));
+    curRepricingPriceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curRepricingPriceUserRepricingDetail(userRepricingDetail));
 @defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
 markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
     0.0 IF userRepricingDetail IS UserRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
     0.0 IF userRepricingDetail IS UserRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
-    priceUserRepricingDetail(userRepricingDetail))
-    WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(priceUserRepricingDetail(userRepricingDetail));
+    repricingPriceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(repricingPriceUserRepricingDetail(userRepricingDetail));
 
-@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, retail, , , );
+@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, retail, repricing, , );
 roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmentStore(departmentStoreUserRepricingDetail(userRepricingDetail));
-@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, retail, , , , currency);
+@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, retail, repricing, , , currency);
 
 @defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
 @deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
@@ -243,8 +257,8 @@ roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmen
 @defineDocumentHeaderItemSum(repricing, diffRetail, );
 @defineDocumentHeaderItemSum(userRepricing, diffRetail, );
 
-@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, curRetail, cur, cur, cur);
-@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, curRetail, cur, cur, cur, currency);
+@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur);
+@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur, currency);
 
 @implementSkuLedger(userRepricingDetail, sku, departmentStore);
 sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
@@ -268,7 +282,7 @@ newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundPriceCur
     percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail))), currencyUserRepricingDetail(userRepricingDetail));
 
 newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR curPriceUserRepricingDetail(userRepricingDetail),
+    0.0 IF userRepricingDetail IS UserRepricingDetail OR curRepricingPriceUserRepricingDetail(userRepricingDetail),
     0.0 IF userRepricingDetail IS UserRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
     valueCurVATUserRepricingDetail(userRepricingDetail)), currencyUserRepricingDetail(userRepricingDetail));
 
@@ -295,11 +309,14 @@ DESIGN addPercentUserRepricing FROM DEFAULT {
     }
 }
 
+overChangePriceUserRepricing = ABSTRACT ACTION (a);
+
 changePriceUserRepricing 'Изменить цену' (userRepricing) = ACTION (userRepricing) {
         FORM addPercentUserRepricing OBJECTS u = userRepricing MODAL;
-        IF formResult() == FormResult.ok AND changePriceTypeUserRepricing(userRepricing) AND percentUserRepricing(userRepricing) THEN  {
+        IF formResult() == FormResult.ok AND changePriceTypeUserRepricing(userRepricing) AND percentUserRepricing(userRepricing) THEN {
             FOR userRepricingUserRepricingDetail(userRepricingDetail) == userRepricing DO {
                 SET priceUserRepricingDetail(userRepricingDetail) <- curPriceUserRepricingDetail(userRepricingDetail);
+                EXEC overChangePriceUserRepricing(userRepricingDetail);
                 SET VATUserRepricingDetail(userRepricingDetail) <- curVATUserRepricingDetail(userRepricingDetail);
                 SET valueVATUserRepricingDetail(userRepricingDetail) <- valueCurVATUserRepricingDetail(userRepricingDetail);
                 IF changePriceTypeUserRepricing(userRepricing) == ChangePriceType.markupChange THEN {
@@ -606,6 +623,9 @@ META defineRepricing(sign, stockProp)
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
     @deriveDocumentDetailSumPrefix(userInvoice, cur, currency, balanceBSku);
 
+    curRepricingPriceUserInvoiceDetail (detail) = curPriceUserInvoiceDetail(detail) OR overCurRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    curRepricingPriceInvoiceDetail (detail) = curPriceInvoiceDetail(detail) OR overCurRepricingPriceInvoiceDetail(detail) PERSISTENT;
+
     @defineDocumentInterfaceDetailPricePrefix(invoice, curRetail, ' розничная до');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
     @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
@@ -617,8 +637,8 @@ META defineRepricing(sign, stockProp)
     curMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
         0.0 IF userInvoiceDetail IS UserInvoiceDetail OR curRetailPriceUserInvoiceDetail(userInvoiceDetail),
         0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueCurVATUserInvoiceDetail(userInvoiceDetail),
-        curPriceUserInvoiceDetail(userInvoiceDetail))
-        WHEN CHANGED(curRetailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (curVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(curPriceUserInvoiceDetail(userInvoiceDetail));
+        curRepricingPriceUserInvoiceDetail(userInvoiceDetail))
+        WHEN CHANGED(curRetailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (curVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(curRepricingPriceUserInvoiceDetail(userInvoiceDetail));
 
     @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, cur, ' до');
     @deriveDocumentDetailReverseVATSumPrefix(userInvoice, cur, curRetail);
@@ -633,8 +653,8 @@ META defineRepricing(sign, stockProp)
     @deriveDocumentDetailValueVAT(userInvoice, cur);
     @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
 
-    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, curRetail, cur, cur, cur);
-    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, curRetail, cur, cur, cur, currency);
+    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, curRetail, curRepricing, cur, cur);
+    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, curRetail, curRepricing, cur, cur, currency);
 
 // После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');

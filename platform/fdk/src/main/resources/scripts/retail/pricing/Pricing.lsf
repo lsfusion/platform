@@ -228,22 +228,6 @@ META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, 
     }
 END
 
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currencyProp)
-    @deriveDocumentDetailPriceMarkupCustomPrefixInner(detail, ###detail, prefix, currencyProp);
-END
-
-META deriveDocumentDetailPriceMarkupCustomPrefixInner(detail, detailClass, prefix, currencyProp)
-    prefix###price###detail(detail)  <- roundPriceCurrency([X*(Y+100)*(Z+100)/10000](    // надо округление для sku?????
-    0.0 IF detail IS detailClass OR price###detail(detail),
-    0.0 IF detail IS detailClass OR prefix###markup###detail(detail),
-    value###prefix##VAT###detail(detail)), currencyProp###detail(detail))
-                    WHEN CHANGED(price###detail(detail)) OR CHANGED (prefix###markup###detail(detail)) OR CHANGED(prefix##VAT###detail(detail)) OR CHANGED(currencyProp###detail(detail));
-END
-
-META deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix)
-    @deriveDocumentDetailPriceMarkupCustomPrefix(detail, prefix, currency);
-END
-
 META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
     @changeDocumentDetailMarkupCustomPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD);
 END
@@ -324,6 +308,13 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 @defineDocumentInterfaceDetailDataSumPrefix (pricing, , ' входная');
 @deriveDocumentDetailSum(userPricing, quantity);
 
+overPricingPricePricingDetail = ABSTRACT NUMERIC[14,2] (PricingDetail) PERSISTENT;
+overPricingPriceUserPricingDetail = ABSTRACT NUMERIC[14,2] (UserPricingDetail) PERSISTENT;
+overPricingPricePricingDetail (detail) += overPricingPriceUserPricingDetail(detail);
+
+pricingPriceUserPricingDetail (detail) = priceUserPricingDetail(detail) OR overPricingPriceUserPricingDetail(detail) PERSISTENT;
+pricingPricePricingDetail (detail) = pricePricingDetail(detail) OR overPricingPricePricingDetail(detail) PERSISTENT;
+
 @defineDocumentInterfaceHeaderQuantity(pricing);
 @defineDocumentHeaderSkuQuantity(pricing, sku);
 @defineDocumentHeaderSkuQuantity(userPricing, sku);
@@ -335,11 +326,11 @@ CONSTRAINT supplierUserPricing(userPricing) AND NOT isSellerLegalEntity(supplier
 @deriveDocumentDetailValueVAT(userPricing, retail);
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
-@changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, , retail, retail);
-@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, , retail, retail, currency);
+@changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, pricing, retail, retail);
+@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, pricing, retail, retail, currency);
 @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
 
-@deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, , departmentStore);
+@deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore);
 @deriveDocumentDetailSumPrefix(userPricing, retail, currency, quantity);
 
 @defineDocumentInterfaceHeaderSumPrefix (pricing, retail, ' выходная');
@@ -381,7 +372,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
     OBJECTS d=PricingDetail
 
     PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
-                   quantityPricingDetail, pricePricingDetail, sumPricingDetail,
+                   quantityPricingDetail, overPricingPricePricingDetail, pricingPricePricingDetail, pricePricingDetail, sumPricingDetail,
                    retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
                    retailPricePricingDetail, retailSumPricingDetail
 
@@ -596,8 +587,8 @@ META definePricingAggregationInner(concrete, concreteClass, sign, caption, capti
     @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
 
-    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, , retail, retail);
-    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, , retail, retail, currency);
+    @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, pricing, retail, retail);
+    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, pricing, retail, retail, currency);
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 

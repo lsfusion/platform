@@ -1,6 +1,6 @@
 MODULE PurchaseManufacturingPrice;
 
-REQUIRE PurchaseInvoice;
+REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingManufacturingPrice;
 
 NAMESPACE Purchase;
 
@@ -16,10 +16,27 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPri
 
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, customerStock);
 
+@defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
+@deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, curManufacturing, sku, customerStock);
+
 EXTEND FORM userInvoice
     PROPERTIES(d) manufacturingPriceUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail
+    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) curManufacturingPriceUserInvoiceDetail BEFORE curPriceUserInvoiceDetail
 ;
 
 EXTEND FORM invoices
     PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail AFTER invoiceSumInvoiceDetail
 ;
+//--
+overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+overPricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+
+manufacturingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+//--
+overRepricingPriceRepricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+overRepricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+manufacturingPriceRepricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+
+overCurRepricingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+overCurRepricingPriceUserInvoiceDetail(detail) += curManufacturingPriceUserInvoiceDetail(detail);
+curManufacturingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));

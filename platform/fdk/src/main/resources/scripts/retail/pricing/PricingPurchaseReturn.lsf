@@ -13,8 +13,8 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentSto
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
     0.0 IF userInvoiceDetail IS UserInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
     0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
-    priceUserInvoiceDetail(userInvoiceDetail))
-    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(priceUserInvoiceDetail(userInvoiceDetail));
+    pricingPriceUserInvoiceDetail(userInvoiceDetail))
+    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(pricingPriceUserInvoiceDetail(userInvoiceDetail));
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, customerStock);
 @deriveDocumentDetailVAT (userInvoice, retail, date, sku, customerStock);

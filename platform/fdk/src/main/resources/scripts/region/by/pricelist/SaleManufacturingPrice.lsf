@@ -1,6 +1,6 @@
 MODULE SaleManufacturingPrice;
 
-REQUIRE SaleInvoice;
+REQUIRE SaleInvoice, PricingSale, PricingManufacturingPrice;
 
 NAMESPACE Sale;
 
@@ -18,3 +18,8 @@ EXTEND FORM userInvoice
 EXTEND FORM invoices
     PROPERTIES(d) READONLY  AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
+
+overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+overPricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
+
+manufacturingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

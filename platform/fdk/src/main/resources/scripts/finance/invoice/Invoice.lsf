@@ -190,6 +190,25 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
+//--
+    overPricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overPricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overPricingPriceInvoiceDetail (detail) += overPricingPriceUserInvoiceDetail(detail);
+
+    pricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overPricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    pricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overPricingPriceInvoiceDetail(detail) PERSISTENT;
+//--
+    overRepricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overRepricingPriceInvoiceDetail (detail) += overRepricingPriceUserInvoiceDetail(detail);
+
+    repricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    repricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overRepricingPriceInvoiceDetail(detail) PERSISTENT;
+//--
+    overCurRepricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overCurRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overCurRepricingPriceInvoiceDetail (detail) += overCurRepricingPriceUserInvoiceDetail(detail);
+
 //-- Упаковка
     @defineDocumentInterfaceCreate (invoice, toShowProp, captionProp);
 

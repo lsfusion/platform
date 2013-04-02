@@ -1,0 +1,18 @@
+MODULE PricingManufacturingPrice;
+
+REQUIRE Pricing;
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(pricingDetail, manufacturing, ' изготовителя');
+
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userPricing, manufacturingPriceStockPriceListType, manufacturing, sku, departmentStore);
+
+overPricingPriceUserPricingDetail(detail) += manufacturingPriceUserPricingDetail(detail);
+
+EXTEND FORM userPricing
+    PROPERTIES(d) manufacturingPriceUserPricingDetail BEFORE priceUserPricingDetail
+;
+
+EXTEND FORM pricings
+    PROPERTIES(d) READONLY manufacturingPricePricingDetail BEFORE pricePricingDetail
+;
+

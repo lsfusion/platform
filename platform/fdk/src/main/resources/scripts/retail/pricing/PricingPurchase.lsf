@@ -45,10 +45,11 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 
 // расчет надбавок и цены при изменении priceListType
 
-@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, retail, , customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, retail, pricing, customerStock);
 
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPricingUserInvoice(d) <- createPricingUserInvoice(s);
     SET pricingCommitteeUserInvoice(d) <- pricingCommitteeUserInvoice(s);
     SET retailPriceListTypeUserInvoice(d) <- retailPriceListTypeUserInvoice(s);
 }
+

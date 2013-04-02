@@ -1,0 +1,27 @@
+MODULE RepricingManufacturingPrice;
+
+REQUIRE Repricing;
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(repricingDetail, manufacturing, ' изготовителя после');
+
+@defineDocumentInterfaceDetailPriceCustomPrefix(repricingDetail, curManufacturing, ' изготовителя до');
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, manufacturingPriceStockPriceListType, curManufacturing, sku, departmentStore);
+
+overRepricingPriceUserRepricingDetail(detail) += manufacturingPriceUserRepricingDetail(detail);
+overCurRepricingPriceUserRepricingDetail(detail) += curManufacturingPriceUserRepricingDetail(detail);
+
+EXTEND FORM userRepricing
+    PROPERTIES(d) manufacturingPriceUserRepricingDetail BEFORE priceUserRepricingDetail, curManufacturingPriceUserRepricingDetail BEFORE curPriceUserRepricingDetail
+;
+EXTEND DESIGN userRepricing{
+    PROPERTY(manufacturingPriceUserRepricingDetail) { background = #FFFFCC; }
+}
+
+EXTEND FORM repricings
+    PROPERTIES(d) READONLY manufacturingPriceRepricingDetail BEFORE priceRepricingDetail, curManufacturingPriceRepricingDetail BEFORE curPriceRepricingDetail
+;
+
+overChangePriceUserRepricing(userRepricingDetail) += ACTION (userRepricingDetail) {
+    SET manufacturingPriceUserRepricingDetail(userRepricingDetail) <- curManufacturingPriceUserRepricingDetail(userRepricingDetail);
+}
+

@@ -74,6 +74,8 @@
 	<field name="retailVATSumPricingDetail" class="java.lang.Double"/>
 	<field name="retailPricePricingDetail" class="java.lang.Double"/>
 	<field name="retailSumPricingDetail" class="java.lang.Double"/>
+	<field name="overPricingPricePricingDetail" class="java.lang.Double"/>
+	<field name="pricingPricePricingDetail" class="java.lang.Double"/>
 	<group name="captionGroup10">
 		<groupExpression><![CDATA[String.valueOf($F{p})]]></groupExpression>
 	</group>
@@ -513,10 +515,10 @@
 				<textFieldExpression><![CDATA[$F{shortNameUOMSkuPricingDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="85" height="22" backcolor="#FFFFFF"/>
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="260" y="0" width="85" height="11" backcolor="#FFFFFF"/>
 				<box>
 					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
@@ -548,6 +550,18 @@
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{quantityPricingDetail}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle0_2" stretchType="RelativeToBandHeight" x="260" y="11" width="85" height="11" backcolor="#FFFFFF"/>
+				<box>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{overPricingPricePricingDetail}!=null?("изг.:"+" "+ $F{overPricingPricePricingDetail}):"")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
