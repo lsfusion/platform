@@ -4,6 +4,7 @@ import fdk.integration.*;
 import org.apache.commons.lang.time.DateUtils;
 import org.xBaseJ.xBaseJException;
 import platform.interop.action.MessageClientAction;
+import platform.server.ServerLoggers;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.*;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -21,6 +22,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,7 +85,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
-                        importUserInvoices(path + "//OST", path + "//SEDI", startDate, numberOfUserInvoices, context) : null);
+                        importUserInvoices(path + "//SWTP", path + "//OST", path + "//SEDI", startDate, numberOfUserInvoices, context) : null);
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
@@ -355,26 +357,69 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return (correctDate || correctQuantity) || correctGroupID;
     }
 
-    private List<UserInvoiceDetail> importUserInvoices(String ostPath, String sediPath, Date startDate, Integer numberOfItems,
+    List<String> ownershipsList = Arrays.asList("НАУЧНО ПРОИЗ.ОБЩЕСТВО С ДОПОЛ ОТВЕТ.",
+            "ОАОТ", "ОАО", "СООО", "ООО", "ОДО", "ЗАО", "ЧУТПП", "ЧТУП", "ЧУТП", "ТЧУП", "ЧУП", "РУП", "РДУП", "УП", "ИП", "СПК", "СП");
+    List<String> patterns = Arrays.asList("КАЧ(\\.)?(УД\\.)?(N|№)?(Б\\/Н)?\\s?((\\d|\\/|-|\\.)+\\s)?(12\\s)?(ОТ|ЛТ)?\\s?(\\d|\\.)+Г?",
+            "((К|У|R)(\\/|\\s)?(У|К|У|E))(\\s)?(\\p{L}{2})?(\\s)?(N|№)?(((\\d|\\/|\\\\)+\\s)|(Б\\/Н\\s))?(СМ|А)?(ОТ)?(\\s)?(\\d|\\.)+Г?");
+
+    private List<UserInvoiceDetail> importUserInvoices(String swtpPath, String ostPath, String sediPath, Date startDate, Integer numberOfItems,
                                                        ExecutionContext context) throws IOException, ParseException {
+
+        Map<String, String[]> suppliersMap = new HashMap<String, String[]>();
+        Map<String, String[]> suppliersFastMap = new HashMap<String, String[]>();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(swtpPath), "cp866"));
+        Map<String, String> warehouseLegalEntityMap = new HashMap<String, String>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("^SWTP")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                if (splittedLine.length >= 2) {
+                    String legalEntityID = splittedLine[1].replaceAll("\"", "");
+                    String warehouseID = (splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", "");
+                    if(warehouseLegalEntityMap.containsKey(warehouseID))
+                        legalEntityID = warehouseLegalEntityMap.get(warehouseID);
+                    else
+                        warehouseLegalEntityMap.put(warehouseID, legalEntityID);
+                    splittedLine = reader.readLine().split(":");
+                    String name = splittedLine.length > 0 ? splittedLine[0].trim().replace("\u007F", "") : "";
+                    name = name.replaceAll("\"|\'", "").replaceAll("-|\\*", " ");
+                    Boolean filtered = false;
+                    for (String filter : employeeFilters) {
+                        if (name.startsWith(filter)) {
+                            filtered = true;
+                            break;
+                        }
+                    }
+                    if (!name.isEmpty() && !filtered) {
+                        for (String ownership : ownershipsList) {
+                            if (name.contains(ownership))
+                                name = name.replace(ownership, "");
+                        }
+                        if (!suppliersMap.containsKey(name))
+                            suppliersMap.put(name, new String[]{legalEntityID, "S" + warehouseID});
+                    }
+                }
+            }
+        }
+        reader.close();
 
         Map<String, Double> totalSumWarehouse = new HashMap<String, Double>();
 
         List<UserInvoiceDetail> userInvoiceDetailsList = new ArrayList<UserInvoiceDetail>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
 
-        String line;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
+        reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
 
         String uomID = null;
         Date date = null;
         String dateField = null;
         String name = null;
+        String supplierID = null;
+        String supplierWarehouseID = null;
         Double quantity = null;
         Double price = null;
         Double chargePrice = null;
-        //String numberCompliance = null;
-        //Timestamp toDateTimeCompliance = null;
         String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && userInvoiceDetailsList.size() >= numberOfItems)
@@ -392,9 +437,49 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
                     String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
-                    dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
-                    date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    Date currentDate = new Date(System.currentTimeMillis());
+                    String currentDateField = new SimpleDateFormat("dd/MM/yy").format(currentDate);
+                    dateField = date1 == null ? (date2==null ? currentDateField : date2Field) : (date2==null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
+                    date = date1 == null ? (date2==null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
+
+                    String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
+                    if (supplierString != null && !supplierString.isEmpty()) {
+                        supplierID = null;
+                        supplierWarehouseID = null;
+                        if (suppliersFastMap.containsKey(supplierString)) {
+                            String[] value = suppliersFastMap.get(supplierString);
+                            supplierID = warehouseLegalEntityMap.containsKey(value[1]) ? warehouseLegalEntityMap.get(value[1]) : value[0];
+                            supplierWarehouseID = value[1];
+                        } else {
+                            String supplierName = supplierString.replaceAll("\"|\'", "").replaceAll("-|\\*", " ");
+                            for (String pattern : patterns)
+                                supplierName = supplierName.replaceAll(pattern, "");
+                            for (String ownership : ownershipsList) {
+                                if (supplierName.contains(ownership))
+                                    supplierName = supplierName.replace(ownership, "");
+                            }
+                            int matchesMax = 0;
+                            for (Map.Entry<String, String[]> entry : suppliersMap.entrySet()) {
+                                int matchesCount = 0;
+                                for (String entryPart : entry.getKey().split("\\s|\\.")) {
+                                    if (entryPart.length() > 3 && supplierName.contains(entryPart))
+                                        matchesCount += entryPart.length();
+                                }
+                                if (matchesCount > matchesMax) {
+                                    matchesMax = matchesCount;
+                                    supplierID = warehouseLegalEntityMap.containsKey(entry.getValue()[1]) ? warehouseLegalEntityMap.get(entry.getValue()[1]) : entry.getValue()[0];
+                                    supplierWarehouseID = entry.getValue()[1];
+                                }
+                            }
+                            if (matchesMax == 0 || ((matchesMax > 0) && (matchesMax < 6) && (matchesMax < supplierName.length() / 4))) {
+                                //ServerLoggers.systemLogger.info(name + ":   " + supplierName);
+                                supplierID = "ds";
+                                supplierWarehouseID = "dsw";
+                            } else
+                                suppliersFastMap.put(supplierString, new String[]{supplierID, supplierWarehouseID});
+                        }
+                    }
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
                     sumPrice = sumPrice == null ? null : ((double) (Math.round(sumPrice * 100))) / 100;
@@ -406,22 +491,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     } catch (NumberFormatException e) {
                         chargePrice = null;
                     }
-                    price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - (chargePrice==null ? 0 : chargePrice));
-                } else if ("1".equals(extra)) {
-                    textCompliance = reader.readLine();
-                    //String[] compliance = textCompliance.split(" ДО | ПО ");
-                    //numberCompliance = compliance.length > 0 ? (compliance[0].trim().length() > 17 ? compliance[0].substring(0, 17) : compliance[0].trim()) : null;
-                    //if (compliance.length > 1) {
-                    //    compliance[1] = compliance[1].replace("+", "");
-                    //    while (compliance[1].matches(".*\\D"))
-                    //        compliance[1] = compliance[1].substring(0, compliance[1].length() - 1);
-                    //}
-                    //try {
-                    //    toDateTimeCompliance = compliance.length > 1 ?
-                    //            new Timestamp(DateUtils.parseDate(compliance[1], new String[]{"dd.mm.yy", "dd.mm.yyyy", "d.mm.yy", "ddmm-yy", "dd\\mm-yy", "ddmm.yy"}).getTime()) : null;
-                    //} catch (ParseException e) {
-                    //    toDateTimeCompliance = null;
-                    //}
+                    price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - (chargePrice == null ? 0 : chargePrice));
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     if (groupID.split(":")[0].length() == 2)
@@ -430,10 +500,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID)) {
-                        userInvoiceDetailsList.add(new UserInvoiceDetail(warehouse + "/" + dateField,
-                                "AA", null, true, warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
-                                quantity, "70020", warehouse, "S70020", price, chargePrice, null, null,/* numberCompliance,*/
-                                /*new Timestamp(date.getTime()), toDateTimeCompliance, */textCompliance, null));
+                        userInvoiceDetailsList.add(new UserInvoiceDetail(supplierWarehouseID + "/" + warehouse + "/" + dateField,
+                                "AA", null, true, supplierWarehouseID + "/" + warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
+                                quantity, supplierID, warehouse, supplierWarehouseID, price, chargePrice, null, null,
+                                textCompliance, null));
                         Double sum = ((double) (Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
                         Double subtotal = totalSumWarehouse.get(warehouse);
                         if (subtotal == null)
@@ -472,8 +542,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         List<Warehouse> warehousesList = new ArrayList<Warehouse>();
 
+        warehousesList.add(new Warehouse("ds", "own", "dsw", "Стандартный склад", null));
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
-        List<String> warehouses = new ArrayList<String>();
+        Set<String> warehousesOST = new HashSet<String>();
         String smol;
         Date date = null;
         Double quantity = 0.0;
@@ -492,8 +564,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : 0;
                 }
-                if ((smol != null && !warehouses.contains(smol)) && (isCorrectUserInvoiceDetail(quantity, startDate, date, null)))
-                    warehouses.add(smol);
+                if (smol != null && isCorrectUserInvoiceDetail(quantity, startDate, date, null))
+                    warehousesOST.add(smol);
             }
         }
         reader.close();
@@ -505,7 +577,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 String warehouseID = line.split("\\(|\\)|,")[1].replace("\"", "");
                 String[] dataWarehouse = reader.readLine().split(":");
                 String name = dataWarehouse.length > 0 ? dataWarehouse[0].trim() : null;
-                if (name != null && !"".equals(name) && warehouses.contains(warehouseID)) {
+                if (name != null && !"".equals(name) && warehousesOST.contains(warehouseID)) {
                     warehousesList.add(new Warehouse(defaultLegalEntitySID, "own", warehouseID, name, null));
                 }
             }
@@ -513,6 +585,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         reader.close();
 
         reader = new BufferedReader(new InputStreamReader(new FileInputStream(swtpPath), "cp866"));
+        Set<String> warehousesSWTP = new HashSet<String>();
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^SWTP")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
@@ -530,8 +603,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         break;
                     }
                 }
-                if (!name.trim().isEmpty() && !filtered)
+                if (!name.trim().isEmpty() && !filtered && !warehousesSWTP.contains(sid)) {
                     warehousesList.add(new Warehouse(legalEntityID, "contractor", "S" + sid, name, warehouseAddress.isEmpty() ? null : warehouseAddress));
+                    warehousesSWTP.add(sid);
+                }
             }
         }
         reader.close();
@@ -546,6 +621,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         legalEntitiesList.add(new LegalEntity("sle", "Стандартная Организация", null, null, null,
                 null, null, null, null, null, null, null, null, nameCountry, null, true, null));
+        legalEntitiesList.add(new LegalEntity("ds", "Стандартный поставщик", null, null, null,
+                null, null, null, null, null, null, null, null, nameCountry, true, null, null));
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "cp866"));
         String line;
