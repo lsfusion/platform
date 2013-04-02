@@ -214,12 +214,8 @@ public class SystemUtils {
     }
 
     public static String getRevision() {
-        return getRevision("/platform/server");
-    }
-
-    public static String getRevision(String basePackage) {
         String revision = null;
-        InputStream manifestStream = SystemUtils.class.getResourceAsStream(basePackage + "/../../META-INF/MANIFEST.MF");
+        InputStream manifestStream = SystemUtils.class.getResourceAsStream("/META-INF/MANIFEST.MF");
         try {
             if (manifestStream != null) {
                 Manifest manifest = new Manifest(manifestStream);
