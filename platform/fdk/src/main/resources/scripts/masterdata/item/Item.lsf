@@ -434,7 +434,7 @@ END
 // Строка
 CLASS StringItemAttribute 'Строковый атрибут' : ItemAttribute;
 
-valueStringItemAttribute = ABSTRACT STRING[100] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
+valueStringItemAttribute = ABSTRACT STRING[255] (Item, StringItemAttribute) EXCLUSIVE PERSISTENT;
 valueItemAttribute(item, attribute) += valueStringItemAttribute(item, attribute);
 
 META defineStringItemAttribute(attribute, type, caption, group)

@@ -344,7 +344,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
                         quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail, null, contractID.isEmpty() ? null : contractID));
         }
-        return data.subList(0, 100);
+        return data;
     }
 
 
