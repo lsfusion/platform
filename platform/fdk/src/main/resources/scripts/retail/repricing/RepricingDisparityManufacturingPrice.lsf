@@ -17,9 +17,14 @@ manufacturingPriceRepricingDetail(detail) += afterInputManufacturingPriceDispari
 
 afterInputManufacturingPriceDisparityDetail(detail) <- curInputManufacturingPriceDisparityDetail(detail) WHEN CHANGED (curInputManufacturingPriceDisparityDetail(detail));
 
+@changeDocumentDetailPricePrefix(disparityDetail, curInputManufacturing, curInput, curInput, curInputManufacturing, curInput, curInputRetail);
+@changeDocumentDetailPricePrefix(disparityDetail, afterInputManufacturing, afterInput, afterInput, afterInputManufacturing, afterInput, afterInputRetail);
+
 EXTEND FORM disparity
-    PROPERTIES(d)  BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) curInputManufacturingPriceDisparityDetail BEFORE curInputPriceDisparityDetail
-    PROPERTIES(d)  BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis) afterInputManufacturingPriceDisparityDetail BEFORE afterInputPriceDisparityDetail
+    PROPERTIES(d)  BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis)
+                   curInputManufacturingPriceDisparityDetail ON CHANGE changeCurInputManufacturingPriceDisparityDetail(d) BEFORE curInputPriceDisparityDetail
+    PROPERTIES(d)  BACKGROUND backgroundAfterDisparity(dis) SHOWIF createRepricingDisparity(dis)
+                   afterInputManufacturingPriceDisparityDetail ON CHANGE changeAfterInputManufacturingPriceDisparityDetail(d) BEFORE afterInputPriceDisparityDetail
 ;
 EXTEND FORM disparities
     PROPERTIES(d)  READONLY BACKGROUND backgroundCurDisparity(dis) SHOWIF createRepricingDisparity(dis) curInputManufacturingPriceDisparityDetail BEFORE curInputPriceDisparityDetail

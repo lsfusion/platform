@@ -47,7 +47,7 @@ curInputMarkupDisparityDetail(disparityDetail)  <- [round2((((X - X*Y/(100+Y))/Z
 
 @changeDocumentDetailMarkupCustomPrefix(disparityDetail, curInputRetail, curInput, curInput, curInput);
 roundConditionDisparityDetail(disparityDetail) = roundConditionDepartmentStore(stockDisparityDetail(disparityDetail));
-@changeDocumentDetailPriceCustomPrefix(disparityDetail, curInputRetail, curInputRepricing, curInput, curInput, currency);
+@changeDocumentDetailPriceCustomPrefix(disparityDetail, curInputRetail, curInputRepricing, curInput, curInput);
 
 // После
 @defineDocumentDetailPricePrefix (disparity, afterInput, ' поставщика после');
@@ -81,7 +81,7 @@ afterInputVATDisparityDetail(detail) <- curInputVATDisparityDetail(detail) WHEN 
 afterInputRetailPriceDisparityDetail(detail) <- curInputRetailPriceDisparityDetail(detail) WHEN CHANGED (curInputPriceDisparityDetail(detail));
 
 @changeDocumentDetailMarkupCustomPrefix(disparityDetail, afterInputRetail, afterInput, afterInput, afterInput);
-@changeDocumentDetailPriceCustomPrefix(disparityDetail, afterInputRetail, afterInputRepricing, afterInput, afterInput, currency);
+@changeDocumentDetailPriceCustomPrefix(disparityDetail, afterInputRetail, afterInputRepricing, afterInput, afterInput);
 
 @defineDocumentDetailDiffSumCustomPrefix (disparityDetail, retailSum, afterInput, curInput, ' переоценки');
 @defineDocumentHeaderSumPrefix(disparity, diffRetail, ' переоценки');

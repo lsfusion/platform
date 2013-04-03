@@ -7,11 +7,16 @@ REQUIRE Repricing;
 @defineDocumentInterfaceDetailPriceCustomPrefix(repricingDetail, curManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, manufacturingPriceStockPriceListType, curManufacturing, sku, departmentStore);
 
+@changeDocumentDetailPricePrefix(userRepricingDetail, curManufacturing, cur, cur, curManufacturing, cur, curRetail);
+@changeDocumentDetailPricePrefix(userRepricingDetail, manufacturing, newRetail, , manufacturing, , retail);
+
 overRepricingPriceUserRepricingDetail(detail) += manufacturingPriceUserRepricingDetail(detail);
 overCurRepricingPriceUserRepricingDetail(detail) += curManufacturingPriceUserRepricingDetail(detail);
 
 EXTEND FORM userRepricing
-    PROPERTIES(d) manufacturingPriceUserRepricingDetail BEFORE priceUserRepricingDetail, curManufacturingPriceUserRepricingDetail BEFORE curPriceUserRepricingDetail
+    PROPERTIES(d) manufacturingPriceUserRepricingDetail ON CHANGE changeManufacturingPriceUserRepricingDetail(d) BEFORE priceUserRepricingDetail,
+                  curManufacturingPriceUserRepricingDetail ON CHANGE changeCurManufacturingPriceUserRepricingDetail(d) BEFORE curPriceUserRepricingDetail
+
 ;
 EXTEND DESIGN userRepricing{
     PROPERTY(manufacturingPriceUserRepricingDetail) { background = #FFFFCC; }

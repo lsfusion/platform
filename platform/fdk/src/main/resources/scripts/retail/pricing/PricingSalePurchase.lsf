@@ -35,7 +35,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
     IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
-@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, pricing, purchaseRetail, purchaseRetail, currency);
+@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, pricing, purchaseRetail, purchaseRetail);
 
 @defineDocumentInterfaceHeaderSumPrefix (invoice, purchaseRetail, ' розничная (закупка)');
 

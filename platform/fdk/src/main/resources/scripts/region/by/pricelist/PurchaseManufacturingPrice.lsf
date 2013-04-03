@@ -4,6 +4,7 @@ REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingMa
 
 NAMESPACE Purchase;
 
+@defineDocumentInterfaceCreate (invoice, toShowManufacturingPrice, 'Цена изг.');
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
 
 EXTEND CLASS SystemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
@@ -19,13 +20,20 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += manufacturingPri
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, curManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, curManufacturing, sku, customerStock);
 
+@changeDocumentDetailPricePrefix(userInvoiceDetail, manufacturing, manRetail, retail, manufacturing, retail, retail);
+@changeDocumentDetailPricePrefix(userInvoiceDetail, curManufacturing, newManRetail, cur, curManufacturing, cur, curRetail);
+
+toShowRepricingPriceInvoice (invoice) = createRepricingInvoice(invoice) AND toShowManufacturingPriceInvoice(invoice);
+
 EXTEND FORM userInvoice
-    PROPERTIES(d) manufacturingPriceUserInvoiceDetail AFTER invoiceSumUserInvoiceDetail
-    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF createRepricingUserInvoice(i) curManufacturingPriceUserInvoiceDetail BEFORE curPriceUserInvoiceDetail
+    PROPERTIES(i) toShowManufacturingPriceUserInvoice
+    PROPERTIES(d) SHOWIF toShowManufacturingPriceUserInvoice(i) manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)  AFTER invoiceSumUserInvoiceDetail
+    PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail AFTER invoiceSumInvoiceDetail
+    PROPERTIES(i) READONLY toShowManufacturingPriceInvoice
+    PROPERTIES(d) READONLY manufacturingPriceInvoiceDetail SHOWIF toShowManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail
 ;
 //--
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

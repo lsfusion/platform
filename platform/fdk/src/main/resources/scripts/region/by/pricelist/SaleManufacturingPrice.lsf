@@ -4,6 +4,7 @@ REQUIRE SaleInvoice, PricingSale, PricingManufacturingPrice;
 
 NAMESPACE Sale;
 
+@defineDocumentInterfaceCreate (invoice, toShowManufacturingPrice, 'Цена изг.');
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
 
 @deriveDocumentDetailPriceSystemLedgerPriceListTypeBatch(userInvoice, manufacturingPriceStockPriceListType, manufacturing, sku, supplierStock);
@@ -12,11 +13,13 @@ wholesaleMarkupInvoiceDetail 'Оптовая надбавка' (detail) = round2
 wholesaleMarkupUserInvoiceDetail 'Оптовая надбавка' (detail) = round2([(X/Y-1)*100](priceUserInvoiceDetail(detail),manufacturingPriceUserInvoiceDetail(detail)));
 
 EXTEND FORM userInvoice
-    PROPERTIES(d)  AFTER invoiceSumUserInvoiceDetail  wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
+    PROPERTIES(i)  toShowManufacturingPriceUserInvoice
+    PROPERTIES(d)  SHOWIF toShowManufacturingPriceUserInvoice(i) AFTER invoiceSumUserInvoiceDetail  wholesaleMarkupUserInvoiceDetail READONLY, manufacturingPriceUserInvoiceDetail
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(d) READONLY  AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
+    PROPERTIES(i) READONLY toShowManufacturingPriceInvoice
+    PROPERTIES(d) READONLY  SHOWIF toShowManufacturingPriceInvoice(i) AFTER invoiceSumInvoiceDetail wholesaleMarkupInvoiceDetail, manufacturingPriceInvoiceDetail
 ;
 
 overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));

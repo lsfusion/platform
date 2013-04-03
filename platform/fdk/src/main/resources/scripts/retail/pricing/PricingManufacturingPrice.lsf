@@ -8,8 +8,10 @@ REQUIRE Pricing;
 
 overPricingPriceUserPricingDetail(detail) += manufacturingPriceUserPricingDetail(detail);
 
+@changeDocumentDetailPricePrefix(userPricingDetail, manufacturing, retail, retail, manufacturing, retail, retail);
+
 EXTEND FORM userPricing
-    PROPERTIES(d) manufacturingPriceUserPricingDetail BEFORE priceUserPricingDetail
+    PROPERTIES(d) manufacturingPriceUserPricingDetail ON CHANGE changeManufacturingPriceUserPricingDetail(d) BEFORE priceUserPricingDetail
 ;
 
 EXTEND FORM pricings

@@ -189,19 +189,22 @@ META changeDocumentDetailMarkupCustomPrefixInner(detail, detailClass, prefixA, p
         0.0 IF detail IS detailClass OR value###prefixD###VAT###detail(detail));
 
     change###prefixA###price###detail = ACTION (detail) {
-
         REQUEST NUMERIC[14,2] INPUT;
-        SET prefixA###price###detail(detail) <- requestedNumeric();
 
-        SET prefixC###markup###detail(detail) <- calc###prefixC###markup###detail(detail);
+        IF requestedNumeric() THEN {
+            SET prefixA###price###detail(detail) <- requestedNumeric();
+            SET prefixC###markup###detail(detail) <- calc###prefixC###markup###detail(detail) WHERE calc###prefixC###markup###detail(detail);
+        } ELSE {
+            SET prefixA###price###detail(detail) <- NULL;
+        }
     }
 END
 
-META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, currencyProp)
-    @changeDocumentDetailPriceCustomPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD, currencyProp);
+META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
+    @changeDocumentDetailPriceCustomPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD);
 END
 
-META changeDocumentDetailPriceCustomPrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD, currencyProp)
+META changeDocumentDetailPriceCustomPrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD)
 
     calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
     0.0 IF detail IS detailClass OR prefixB###price###detail(detail),
@@ -209,11 +212,60 @@ META changeDocumentDetailPriceCustomPrefixInner(detail, detailClass, prefixA, pr
     value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));
 
     change###prefixC###markup###detail = ACTION (detail) {
-
         REQUEST NUMERIC[8,3] INPUT;
-        SET prefixC###markup###detail(detail) <- requestedNumeric();
 
-        SET prefixA###price###detail(detail) <- calc###prefixA###price###detail(detail);
+        IF requestedNumeric() THEN {
+            SET prefixC###markup###detail(detail) <- requestedNumeric();
+            SET prefixA###price###detail(detail) <- calc###prefixA###price###detail(detail) WHERE calc###prefixA###price###detail(detail);
+        } ELSE {
+            SET prefixC###markup###detail(detail) <- NULL;
+        }
+    }
+END
+//-- Для общего случая
+META changeDocumentDetailMarkupPrefix(detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
+    @changeDocumentDetailMarkupPrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF);
+END
+META changeDocumentDetailMarkupPrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
+    calc###prefixB###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
+        0.0 IF detail IS detailClass OR prefixC###price###detail(detail),
+        prefixD###price###detail(detail),
+        0.0 IF detail IS detailClass OR value###prefixE###VAT###detail(detail));
+
+    change###prefixA###price###detail = ACTION (detail) {
+        REQUEST NUMERIC[14,2] INPUT;
+
+        IF requestedNumeric() THEN {
+            SET prefixA###price###detail(detail) <- requestedNumeric();
+            SET prefixF###markup###detail(detail) <- calc###prefixB###markup###detail(detail) WHERE calc###prefixB###markup###detail(detail);
+        } ELSE {
+            SET prefixA###price###detail(detail) <- NULL;
+        }
+    }
+END
+//--
+META changeDocumentDetailPricePrefix(detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
+    @changeDocumentDetailPricePrefixInner(detail, ###detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF);
+END
+
+META changeDocumentDetailPricePrefixInner(detail, detailClass, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
+
+    calc###prefixB###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
+        0.0 IF detail IS detailClass OR prefixD###price###detail(detail),
+        0.0 IF detail IS detailClass OR prefixC###markup###detail(detail),
+        value###prefixE###VAT###detail(detail)), roundCondition###detail(detail));
+
+    change###prefixA###price###detail = ACTION (detail) {
+        REQUEST NUMERIC[14,2] INPUT;
+
+        IF requestedNumeric() THEN {
+            SET prefixA###price###detail(detail) <- requestedNumeric();
+//            MESSAGE toString255(prefixA###price###detail(detail));
+//            MESSAGE toString255(calc###prefixB###price###detail(detail));
+            SET prefixF###price###detail(detail) <- calc###prefixB###price###detail(detail) WHERE calc###prefixB###price###detail(detail);
+        } ELSE {
+            SET prefixA###price###detail(detail) <- NULL;
+        }
     }
 END
 
@@ -277,7 +329,7 @@ pricingPricePricingDetail (detail) = pricePricingDetail(detail) OR overPricingPr
 
 @defineDocumentInterfaceDetailMarkupPrefix (pricing, retail, );
 @changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, pricing, retail, retail);
-@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, pricing, retail, retail, currency);
+@changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, pricing, retail, retail);
 @defineDocumentInterfaceDetailDataSumPrefix (pricing, retail, ' выходная');
 
 @deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore);
@@ -538,7 +590,7 @@ META definePricingAggregationInner(concrete, concreteClass, sign, caption, capti
     @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
 
     @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, retail, pricing, retail, retail);
-    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, pricing, retail, retail, currency);
+    @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, retail, pricing, retail, retail);
 
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
 
