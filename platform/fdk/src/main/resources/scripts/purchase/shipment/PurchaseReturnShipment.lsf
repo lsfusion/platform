@@ -24,9 +24,9 @@ createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoi
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supplierUserShipment(userShipment))
-    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком';
+    CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком: закупка-возврат';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
-    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией';
+    CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией: закупка-возврат';
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 

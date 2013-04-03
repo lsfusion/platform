@@ -245,7 +245,7 @@ META defineDocumentDetailVATCustom(detail, countryProp, prefix, caption)
     CONSTRAINT taxRange(prefix###VAT###detail(detail)) != Tax.taxVAT OR
                countryRange(prefix###VAT###detail(detail)) != countryProp###detail(detail)
                CHECKED BY prefix###VAT###detail
-               MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+               MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС: Tax'##caption;
 END
 
 META defineDocumentAbstractDetailVATCustom(detail, prefix, caption)

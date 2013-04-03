@@ -13,7 +13,7 @@ VATSkuCountryDate (item, country, date) += VATItemCountryDate (item, country, da
 CONSTRAINT taxRange(dataVATItemCountryDate(item, country, date)) != Tax.taxVAT OR
            countryRange(dataVATItemCountryDate(item, country, date)) != country AS Country
            CHECKED BY dataVATItemCountryDate
-           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС : TaxItem';
 
 valueVATItemCountryDate 'НДС, %' (item, country, date) = valueRateRangeDate(VATItemCountryDate(item, country, date), date);
 valueCurrentRateVATItemCountry 'НДС, %' (item, country) = valueCurrentRateRange(VATItemCountry(item, country));

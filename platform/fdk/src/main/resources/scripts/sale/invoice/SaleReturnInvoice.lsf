@@ -27,9 +27,9 @@ NAMESPACE SaleReturn;
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
-    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией';
+    CHECKED BY supplierUserInvoice MESSAGE 'Для накладной выбрано в качестве поставщика организация, не являющаяся компанией: возврат';
 CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(customerUserInvoice(userInvoice))
-    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся покупателем';
+    CHECKED BY customerUserInvoice MESSAGE 'Для накладной выбрано в качестве покупателя организация, не являющаяся покупателем: возврат';
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 

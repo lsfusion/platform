@@ -30,7 +30,7 @@ CONSTRAINT taxRange(VATUserOrder(userOrder)) != Tax.taxVAT OR
            countryRange(VATUserOrder(userOrder)) != countryStock(supplierStockOrder(userOrder)) OR
            rangeTypeRange(VATUserOrder(userOrder)) != RangeType.units
            CHECKED BY VATUserOrder
-           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС';
+           MESSAGE 'ошибка: Шкала и страна строки должна соответствовать шкале и строке НДС: продажа';
 
 VATUserOrder (userOrder) <- rangeTaxTaxUnit(Tax.taxVAT, storeDepartmentStore(supplierStockUserOrder(userOrder)))
         WHEN CHANGED(supplierStockUserOrder(userOrder));
