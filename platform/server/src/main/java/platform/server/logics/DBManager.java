@@ -244,6 +244,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 elementsData.add(asList((Object) element.getSID(), element.caption));
             }
         }
+        elementsData.add(asList((Object) "noParentGroup", "Без родительской группы"));
 
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<ImportProperty<?>>();
         propsNavigatorElement.add(new ImportProperty(sidField, reflectionLM.sidNavigatorElement.getMapping(keyNavigatorElement)));
@@ -274,7 +275,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
-        List<List<Object>> dataParents = getRelations(LM.root);
+        List<List<Object>> dataParents = getRelations(LM.root, getElementsWithParent(LM.root));
 
         ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(sidField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(parentSidField));
@@ -297,6 +298,33 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    protected Set<String> getElementsWithParent(NavigatorElement element) {
+        Set<String> parentInfo = new HashSet<String>();
+        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
+        parentInfo.add(element.getSID());
+        for (NavigatorElement child : children) {
+            parentInfo.add(child.getSID());
+            parentInfo.addAll(getElementsWithParent(child));
+        }
+        return parentInfo;
+    }
+
+    protected List<List<Object>> getRelations(NavigatorElement element, Set<String> elementsWithParent) {
+        List<List<Object>> parentInfo = new ArrayList<List<Object>>();
+        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
+        int counter = 1;
+        for (NavigatorElement child : children) {
+            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
+            parentInfo.addAll(getRelations(child));
+        }
+        counter = 1;
+        for(NavigatorElement navigatorElement : businessLogics.getNavigatorElements()) {
+            if(!elementsWithParent.contains(navigatorElement.getSID()))
+                parentInfo.add(BaseUtils.toList((Object) navigatorElement.getSID(), "noParentGroup", counter++));
+        }
+        return parentInfo;
+    }
+
     protected List<List<Object>> getRelations(NavigatorElement element) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
         List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
@@ -305,7 +333,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
             parentInfo.addAll(getRelations(child));
         }
-        return parentInfo;
+            return parentInfo;
     }
 
     private void synchronizePropertyDraws() {
