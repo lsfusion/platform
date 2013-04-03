@@ -153,7 +153,7 @@ FORM item 'Товар'
     PROPERTIES(ct) READONLY name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionCalcPriceListType,
                             nameBasePriceListTypeCalcPriceListType
     PROPERTIES(ct, i, st2) READONLY currentBasePricePriceListTypeSkuStock
-    PROPERTIES(ct, i) dataMarkupCalcPriceListTypeSku
+    PROPERTIES(ct, i) markupCalcPriceListTypeSku
     PROPERTIES(ct, i, st2) READONLY currentCalcPricePriceListTypeSkuStock
 
     EDIT Item OBJECT i

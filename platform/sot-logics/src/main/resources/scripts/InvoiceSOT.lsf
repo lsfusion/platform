@@ -1,6 +1,6 @@
 MODULE InvoiceSOT;
 
-REQUIRE System, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse, PurchaseManufacturingPrice;
+REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse, PurchaseManufacturingPrice;
 
 NAMESPACE PurchaseInvoice;
 
@@ -38,3 +38,17 @@ EXTEND DESIGN options {
 // Проведение по ценам изготвителя
 overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail)
     WHEN customerStockUserInvoiceDetail(detail) IS Warehouse;
+
+//Задание торговой надбавки в документе
+retailMarkupSkuUserInvoiceDetail 'Надбавка,% (розничная)' (detail) = markupCalcPriceListTypeSku (externalizableSID('cplt_retail'), Purchase.skuUserInvoiceDetail(detail));
+
+changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
+    REQUEST NUMERIC[8,2] INPUT;
+    IF requestedNumeric() THEN {
+        SET dataMarkupCalcPriceListTypeSku(t, s) <- requestedNumeric() WHERE sidExternalizable(t) == 'cplt_retail' AND s == Purchase.skuUserInvoiceDetail(detail);
+    }
+}
+
+EXTEND FORM Purchase.userInvoice
+    PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
+;
