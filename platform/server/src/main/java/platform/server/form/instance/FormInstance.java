@@ -1478,7 +1478,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
-                if (autoInstance.isInInterface(null)) { // для проверки null'ов
+                if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
                     FlowResult result = autoInstance.execute(this);
                     if (result != FlowResult.FINISH)
                         return;
