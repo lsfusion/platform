@@ -18,7 +18,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 @defineRepricing(' (закупка)', customerStock);
 
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)
-    IF customerStockUserInvoiceDetail(detail) IS DepartmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
+    WHEN customerStockUserInvoiceDetail(detail) IS DepartmentStore AND NOT costLedgerDepartmentStore(customerStockUserInvoiceDetail(detail));
 
 createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));

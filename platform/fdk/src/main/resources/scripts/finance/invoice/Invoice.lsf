@@ -363,30 +363,30 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     overCopyInvoice = ABSTRACT ACTION (s, d);
 
-    copyInvoice 'Копировать' = ACTION (userInvoice) NEWSESSION {
+    copyInvoice 'Копировать' = ACTION (invoice) NEWSESSION {
         FOR ADDOBJ i = UserInvoice DO {
-            SET supplierUserInvoice(i) <- supplierUserInvoice(userInvoice);
-            SET supplierStockUserInvoice(i) <- supplierStockUserInvoice(userInvoice);
-            SET customerUserInvoice(i) <- customerUserInvoice(userInvoice);
-            SET customerStockUserInvoice(i) <- customerStockUserInvoice(userInvoice);
-            SET contractSkuUserInvoice(i) <- contractSkuUserInvoice(userInvoice);
-            SET isCommissionUserInvoice(i) <- isCommissionUserInvoice(userInvoice);
-            SET currencyUserInvoice(i) <- currencyUserInvoice(userInvoice);
-            SET agreementUserInvoice(i) <- agreementUserInvoice(userInvoice);
-            SET priceListTypeUserInvoice(i) <- priceListTypeUserInvoice(userInvoice);
-            SET noteUserInvoice(i) <- noteUserInvoice(userInvoice);
-            //SET createShipmentUserInvoice(i) <- createShipmentUserInvoice(userInvoice);
-            SET toShowProp###userInvoice(i) <- toShowProp###userInvoice(userInvoice);
+            SET supplierUserInvoice(i) <- supplierInvoice(invoice);
+            SET supplierStockUserInvoice(i) <- supplierStockInvoice(invoice);
+            SET customerUserInvoice(i) <- customerInvoice(invoice);
+            SET customerStockUserInvoice(i) <- customerStockInvoice(invoice);
+            SET contractSkuUserInvoice(i) <- contractSkuInvoice(invoice);
+            SET isCommissionUserInvoice(i) <- isCommissionInvoice(invoice);
+            SET currencyUserInvoice(i) <- currencyInvoice(invoice);
+            SET agreementUserInvoice(i) <- agreementInvoice(invoice);
+            SET priceListTypeUserInvoice(i) <- priceListTypeInvoice(invoice);
+            SET noteUserInvoice(i) <- noteInvoice(invoice);
+            //SET createShipmentUserInvoice(i) <- createShipmentUserInvoice(invoice);
+            SET toShowProp###userInvoice(i) <- toShowProp###invoice(invoice);
 
-            EXEC overCopyInvoice(userInvoice, i);
+            EXEC overCopyInvoice(invoice, i);
 
-            FOR userInvoiceUserInvoiceDetail(userInvoiceDetail) == userInvoice DO {
+            FOR invoiceInvoiceDetail(invoiceDetail) == invoice DO {
                 FOR ADDOBJ d=UserInvoiceDetail DO {
                     SET userInvoiceUserInvoiceDetail(d) <- i;
-                    SET skuUserInvoiceDetail(d) <- skuUserInvoiceDetail(userInvoiceDetail);
-                    SET quantityUserInvoiceDetail(d) <- quantityUserInvoiceDetail(userInvoiceDetail);
-                    SET priceUserInvoiceDetail(d) <- priceUserInvoiceDetail(userInvoiceDetail);
-                    SET data###stockProp###userInvoiceDetail(d) <- data###stockProp###userInvoiceDetail(userInvoiceDetail);
+                    SET skuUserInvoiceDetail(d) <- skuInvoiceDetail(invoiceDetail);
+                    SET quantityUserInvoiceDetail(d) <- quantityInvoiceDetail(invoiceDetail);
+                    SET priceUserInvoiceDetail(d) <- priceInvoiceDetail(invoiceDetail);
+                    SET data###stockProp###userInvoiceDetail(d) <- data###stockProp###invoiceDetail(invoiceDetail);
                 }
             }
 

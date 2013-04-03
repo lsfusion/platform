@@ -632,8 +632,8 @@ FORM priceLists 'Прайсы'
                            notePriceList, objectClassName
 
     PROPERTIES ()  addUserPriceList TODRAW p
-    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL
-    PROPERTIES (p) delete FORCE PANEL TOOLBAR  SHOWIF isUserPriceList(p)
+    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR
+    PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
 
     OBJECTS t = DataPriceListType
 

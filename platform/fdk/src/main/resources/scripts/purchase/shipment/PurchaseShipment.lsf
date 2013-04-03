@@ -42,7 +42,7 @@ customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(curre
         WHEN CHANGED(customerUserShipment(userShipment));
 
 // ------------------------------- Расчет учетной цены для поставки ------------------------ //
-overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+overShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) EXCLUSIVE PERSISTENT;
 calcShipmentPriceUserInvoiceDetail (detail) = costPriceUserInvoiceDetail(detail) OR overShipmentPriceUserInvoiceDetail(detail) PERSISTENT;
 
 extraShipmentPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;

@@ -1546,7 +1546,7 @@ END
 // ------------------------------------------------ Сумма в документе ------------------------------------ //
 
 META defineDocumentHeaderSumCustom (object, detail, caption)
-    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) MINCHARWIDTH 15 PREFCHARWIDTH 15 MAXCHARWIDTH 20 IN documentSumGroup;
+    sum###detail###object 'Сумма'###caption (object) = GROUP SUM sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
     @defineDocumentHeaderSumCustom (object, detail, caption);
@@ -1570,7 +1570,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) MINCHARWIDTH 15 PREFCHARWIDTH 15 MAXCHARWIDTH 20 IN documentSumGroup;
+    prefix###sum###detail###object 'Сумма'###caption (object) = GROUP SUM prefix###sum###detail(idetail) BY object###detail(idetail) IN documentSumGroup;
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);

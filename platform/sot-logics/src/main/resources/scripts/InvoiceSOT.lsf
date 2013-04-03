@@ -1,6 +1,6 @@
 MODULE InvoiceSOT;
 
-REQUIRE System, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation;
+REQUIRE System, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse, PurchaseManufacturingPrice;
 
 NAMESPACE PurchaseInvoice;
 
@@ -34,3 +34,7 @@ EXTEND DESIGN options {
         ADD PROPERTY(usePurchaseBatchAutoSet);
     }
 }
+
+// Проведение по ценам изготвителя
+overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail)
+    WHEN customerStockUserInvoiceDetail(detail) IS Warehouse;
