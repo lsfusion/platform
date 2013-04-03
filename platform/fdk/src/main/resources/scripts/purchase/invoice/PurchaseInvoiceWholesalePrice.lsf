@@ -1,0 +1,67 @@
+MODULE PurchaseInvoiceWholesalePrice;
+
+REQUIRE PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+//------------------------- Оптовая цена-------------------------//
+@defineDocumentInterfaceHeaderCreate (invoice, toShowWholesalePrice, 'Оптовая цена');
+@defineDocumentInterfaceHeaderPriceListType (invoice, calcPriceListType, wholesale, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (invoice, invoiceDetail, calcPriceListType, wholesale, ' (надбавка)');
+@defineDocumentDetailPriceListTypePrefix (userInvoice, userInvoiceDetail, calcPriceListType, wholesale, ' (надбавка)');
+
+@defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, wholesale, ' (оптовая)');
+@defineDocumentInterfaceDetailMarkupCustomPrefix (invoiceDetail, wholesale, ' (оптовая)');
+
+wholesaleMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypeSku(wholesaleCalcPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
+    WHEN CHANGED(wholesaleCalcPriceListTypeUserInvoiceDetail(detail)) OR
+         CHANGED(skuUserInvoiceDetail(detail));
+
+wholesalePriceUserInvoiceDetail(detail) <- roundPriceCurrency((priceUserInvoiceDetail(detail) * (wholesaleMarkupUserInvoiceDetail(detail) + 100)/ 100), currencyUserInvoiceDetail(detail))
+    WHEN CHANGED(priceUserInvoiceDetail(detail)) OR
+         CHANGED(wholesaleMarkupUserInvoiceDetail(detail)) OR
+         CHANGED(currencyUserInvoiceDetail(detail));
+
+calcWholesaleMarkupUserInvoiceDetail(detail)  = [round2((X/Y-1)*100)](
+    0.0 IF detail IS UserInvoiceDetail OR wholesaleMarkupUserInvoiceDetail(detail),
+    priceUserInvoiceDetail(detail));
+
+changeWholesalePriceUserInvoiceDetail = ACTION (detail) {
+
+    REQUEST NUMERIC[14,2] INPUT;
+    SET wholesalePriceUserInvoiceDetail(detail) <- requestedNumeric();
+    SET wholesaleMarkupUserInvoiceDetail(detail) <- calcWholesaleMarkupUserInvoiceDetail(detail);
+}
+
+calcWholesalePriceUserInvoiceDetail(detail)  = roundPriceCurrency([X*(Y+100)/100](
+    priceUserInvoiceDetail(detail),
+    0.0 IF detail IS UserInvoiceDetail OR wholesaleMarkupUserInvoiceDetail(detail)),currencyUserInvoiceDetail(detail));
+
+changeWholesaleMarkupUserInvoiceDetail = ACTION (detail) {
+
+    REQUEST NUMERIC[8,3] INPUT;
+    SET wholesaleMarkupUserInvoiceDetail(detail) <- requestedNumeric();
+
+    SET wholesalePriceUserInvoiceDetail(detail) <- calcWholesalePriceUserInvoiceDetail(detail);
+}
+
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) toShowWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF toShowWholesalePriceUserInvoice(i)
+    PROPERTIES(d) SHOWIF toShowWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail ON CHANGE changeWholesaleMarkupUserInvoiceDetail(d),
+                  wholesalePriceUserInvoiceDetail ON CHANGE changeWholesalePriceUserInvoiceDetail(d)
+;
+EXTEND FORM invoices
+    PROPERTIES(i) toShowWholesalePriceInvoice
+    PROPERTIES(d) READONLY SHOWIF toShowWholesalePriceInvoice(i) wholesaleMarkupInvoiceDetail, wholesalePriceInvoiceDetail
+;
+
+// Создаем виды цен
+EXTEND CLASS SystemLedgerPriceListType { purchaseWholesaleInvoiceStockPriceListType 'Оптовая (последняя по складу)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseWholesaleInvoiceStockPriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceInvoiceDetail(ledger) WHEN CLASS(wholesalePriceInvoiceDetail(ledger)) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoiceStockPriceListType;
+
+// Создаем вид цен по всем складам компании
+EXTEND CLASS SystemLedgerPriceListType { purchaseWholesaleInvoicePriceListType 'Оптовая (последняя по ценовой группе)' }
+batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
+pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
