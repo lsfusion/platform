@@ -15,6 +15,7 @@ import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
 import platform.gwt.form.shared.view.grid.EditManager;
+import platform.gwt.form.shared.view.grid.editor.DialogBasedGridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
 
@@ -84,6 +85,8 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         GridCellEditor editor = valueType.createGridCellEditor(editManager, property);
         if (editor instanceof PopupBasedGridCellEditor) {
             ((PopupBasedGridCellEditor) editor).showPopup(null);
+        } else if (editor instanceof DialogBasedGridCellEditor) {
+            editor.startEditing(null, null, null, null);
         } else {
             editDispatcher.cancelEdit();
         }
