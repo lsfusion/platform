@@ -28,6 +28,9 @@ customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(c
     IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserCreditNote(userCreditNote)) == 1
         WHEN CHANGED(customerUserCreditNote(userCreditNote));
 
+//-- Операция
+createCreditNoteUserInvoice (invoice) <- createCreditNoteOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 NAVIGATOR {
     purchasePurchaseNavigator {

@@ -71,3 +71,9 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceIn
 EXTEND CLASS SystemLedgerPriceListType { purchaseWholesaleInvoicePriceListType 'Оптовая (последняя по ценовой группе)' }
 batchLedgerPriceListType(type) += type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
 pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger)) WHEN CLASS(wholesalePriceInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) AND type == SystemLedgerPriceListType.purchaseWholesaleInvoicePriceListType;
+
+//-- Операция
+toShowWholesalePriceUserInvoice (invoice) <- toShowWholesalePriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+wholesaleCalcPriceListTypeUserInvoice (invoice) <- wholesaleCalcPriceListTypeOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

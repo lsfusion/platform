@@ -48,3 +48,7 @@ manufacturingPriceRepricingDetail(detail) += manufacturingPriceInvoiceDetail(inv
 overCurRepricingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
 overCurRepricingPriceUserInvoiceDetail(detail) += curManufacturingPriceUserInvoiceDetail(detail);
 curManufacturingPriceRepricingDetail(detail) += curManufacturingPriceInvoiceDetail(invoiceDetailInvoiceRepricingDetail(detail));
+
+//-- Операция
+toShowManufacturingPriceUserInvoice (invoice) <- toShowManufacturingPriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

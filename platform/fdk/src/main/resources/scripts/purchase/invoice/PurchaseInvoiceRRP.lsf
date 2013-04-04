@@ -73,5 +73,9 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceD
 //toShowRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
 //    invoice) AND toShowRRPPriceInvoice(invoice);
 
+//-- Операция
+toShowRRPPriceUserInvoice (invoice) <- toShowRRPPriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
 
 

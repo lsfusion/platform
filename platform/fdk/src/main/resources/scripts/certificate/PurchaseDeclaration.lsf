@@ -390,6 +390,10 @@ EXTEND DESIGN declaration {
     }
     ADD functions.box;
 }
+//-- Операция
+isCustomUserInvoice (invoice) <- isCustomOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
+
 
 
 

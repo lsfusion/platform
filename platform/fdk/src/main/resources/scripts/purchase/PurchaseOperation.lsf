@@ -18,10 +18,24 @@ pricingPriceListTypeOperation = DATA PriceListType (Operation);
 namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
 createRepricingOperation 'Создавать акт дооценки' = DATA BOOLEAN (Operation) IN createGroup;
 
+toShowManufacturingPriceOperation 'Показывать цену изготовителя' = DATA BOOLEAN (Operation) IN toShowGroup;
+toShowWholesalePriceOperation 'Показывать отпускную оптовую цену' = DATA BOOLEAN (Operation) IN toShowGroup;
+wholesaleCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
+nameWholesaleCalcPriceListTypeOperation 'Вид цен (надбавка) оптовая' (operation) = name(wholesaleCalcPriceListTypeOperation(operation));
+showPurchasePackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
+toShowRRPPriceOperation 'Показывать RRP' = DATA BOOLEAN (Operation) IN toShowGroup;
+isHomeCurrencyOperation 'Показывать конвертацию' = DATA BOOLEAN (Operation) IN toShowGroup;
+isComplianceOperation 'Показывать сертификацию' = DATA BOOLEAN (Operation) IN toShowGroup;
+isCustomOperation 'Показывать таможенные платежи' = DATA BOOLEAN (Operation) IN toShowGroup;
+
 EXTEND FORM operation
     PROPERTIES(o) createShipmentOperation, createPurchaseWriteOffOperation,
                   createCreditNoteOperation, createPricingOperation, namePricingPriceListTypeOperation,
-                  createRepricingOperation
+                  createRepricingOperation,
+                  toShowManufacturingPriceOperation, toShowWholesalePriceOperation, nameWholesaleCalcPriceListTypeOperation,
+                  toShowRRPPriceOperation, showPurchasePackOperation, isHomeCurrencyOperation, isComplianceOperation,
+                  isCustomOperation
+
 ;
 
 EXTEND DESIGN operation{
@@ -34,6 +48,17 @@ EXTEND DESIGN operation{
             ADD PROPERTY(createPricingOperation);
             ADD PROPERTY(namePricingPriceListTypeOperation);
             ADD PROPERTY(createRepricingOperation);
+        }
+        NEW showContainer {
+            caption = 'Отображение свойств';
+            ADD PROPERTY(toShowManufacturingPriceOperation);
+            ADD PROPERTY(toShowWholesalePriceOperation);
+            ADD PROPERTY(nameWholesaleCalcPriceListTypeOperation);
+            ADD PROPERTY(toShowRRPPriceOperation);
+            ADD PROPERTY(showPurchasePackOperation);
+            ADD PROPERTY(isHomeCurrencyOperation);
+            ADD PROPERTY(isComplianceOperation);
+            ADD PROPERTY(isCustomOperation);
         }
     }
 }

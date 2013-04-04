@@ -57,6 +57,7 @@ GROUP createGroup 'Создавать по умолчанию' : public;
 GROUP committeeGroup 'Комиссии' : public;
 GROUP responsibilityGroup 'Ответственные лица' : public;
 GROUP bookkeepingGroup 'Учет и цены' : public;
+GROUP toShowGroup 'Отображать' : public;
 
 // -------------------------------------- Регион ------------------------------- //
 

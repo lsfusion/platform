@@ -26,3 +26,7 @@ overPricingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoice
 overPricingPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail);
 
 manufacturingPricePricingDetail(detail) += manufacturingPriceInvoiceDetail(invoiceDetailInvoicePricingDetail(detail));
+
+//-- Операция
+toShowManufacturingPriceUserInvoice (invoice) <- toShowManufacturingPriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

@@ -270,3 +270,7 @@ EXTEND FORM invoices
     PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) isComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceInvoice(i)
     PROPERTIES(d) READONLY BACKGROUND backgroundCompliancedInvoice(i) priceComplianceInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isComplianceInvoice(i)
 ;
+
+//-- Операция
+isComplianceUserInvoice (invoice) <- isComplianceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

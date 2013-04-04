@@ -39,3 +39,7 @@ EXTEND FORM invoices
     PROPERTIES(i) READONLY toShowRRPPriceInvoice
     PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
 ;
+
+//-- Операция
+toShowRRPPriceUserInvoice (invoice) <- toShowRRPPriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
