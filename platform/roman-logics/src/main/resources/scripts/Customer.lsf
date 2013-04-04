@@ -67,7 +67,7 @@ FORM customerGroups 'Группы покупателей'
 //                  nameCurrencyContract, noteContract
 //
 //    OBJECTS pc = PaymentCondition
-//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
 //                            nameFormPaymentCondition
 //    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
 //    ORDER BY datePaymentCondition
@@ -110,7 +110,7 @@ FORM customer 'Покупатель'
 
 //    OBJECTS c=ContractSkuCustomer
 //    PROPERTIES isLegalEntityCustomerContractSkuCustomer(co, cu, c)
-//    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, nameFormContractSku, dateFromContract,
+//    PROPERTIES(c) READONLY numberContract, nameLegalEntityContractSkuCustomer, nameTypeContractSku, dateFromContract,
 //                  dateToContract, nameCurrencyContract, noteContract
 //    PROPERTIES(c) ADDFORM, EDITFORM, delete
 //    FILTERS legalEntityContractSkuCustomer(c) == co,

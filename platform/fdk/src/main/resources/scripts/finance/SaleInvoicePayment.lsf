@@ -1,0 +1,17 @@
+MODULE SaleInvoicePayment;
+
+REQUIRE SaleInvoice, InvoicePayment;
+
+NAMESPACE Sale;
+
+@defineInvoicePaymentCondition(' (продажа)', Invoice);
+
+// --------------------------- Проведение по регистру задолженностей ------------------------------------ //
+
+@implementContractLedger(a, invoice, contractSku);
+sumContractALedger(contractALedger) += invoiceSumInvoiceDetailInvoice(contractALedger);
+
+@implementContractPrepaymentLedger(invoice, invoiceSumInvoiceDetailInvoice, contractSku);
+
+@implementOutContractLedgerInContractLedgerPrefix(in, invoice, contractSku);
+sumInContractLedger(inContractLedger) += invoiceSumInvoiceDetailInvoice(inContractLedger);

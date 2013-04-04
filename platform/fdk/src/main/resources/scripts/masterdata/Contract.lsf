@@ -78,10 +78,10 @@ META defineDocumentContract (objectClass, contractType, contractTypeClass, prefi
     contractType##objectClass = DATA contractTypeClass (objectClass);
     number###contractType##objectClass 'Номер договора' (o) = numberContract(contractType##objectClass(o)) IN documentPrmGroup;
 
-    isCommission##objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
-    isCommission##objectClass(o) <- typeContractSkuDate(contractType##objectClass(o), date##objectClass(o)) == ContractSkuType.commission
-        WHEN CHANGED(contractType##objectClass(o)) OR
-             CHANGED(date##objectClass(o));
+    isCommission###objectClass 'Продажа на комиссию' = DATA BOOLEAN (objectClass) IN documentPrmGroup;
+    isCommission###objectClass(o) <- typeContractSku(contractType###objectClass(o)) == ContractSkuType.commission
+        WHEN CHANGED(contractType##objectClass(o));
+
 
     contractType##objectClass(o) <- singleContractProp(prefixA##objectClass(o), prefixB###objectClass(o))
                                           WHEN CHANGED(prefixA##objectClass(o)) OR CHANGED(prefixB###objectClass(o));

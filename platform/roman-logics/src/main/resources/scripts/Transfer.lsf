@@ -43,7 +43,7 @@ numberCommissionContractSkuTransferOut 'Номер договора комисс
 
 isCommissionTransferOut 'Продажа на комиссию' (transferOut) = TRUE IF commissionContractSkuTransferOut(transferOut);
 
-CONSTRAINT typeContractSkuDate(commissionContractSkuTransferOut(transferOut), dateTransferOut(transferOut)) != ContractSkuType.commission
+CONSTRAINT typeContractSku(commissionContractSkuTransferOut(transferOut)) != ContractSkuType.commission
     CHECKED BY commissionContractSkuTransferOut MESSAGE 'Для перемещения выбран договор, который не является договором комиссии';
 
 CONSTRAINT partyBContract(commissionContractSkuTransferOut(transferOut)) != legalEntityStockTransferOut(transferOut)

@@ -66,8 +66,9 @@ META implementContractPrepaymentLedgerInner(object, classPrefix, sumProp, contra
     //TABLE object##ContractLedger(object##ContractLedger);
 
     needToCreate###object##ContractLedger (object, paymentPeriod) =
-        isSaleTypePrepaymentFormPaymentCondition(paymentConditionContractDate(contractProp###object(object), date###object(object))) AND
-        contractProp###object(object) == contractPaymentCondition(paymentConditionPaymentPeriod(paymentPeriod)) AND
+        isSaleTypeContract(contractProp###object(object)) AND
+        isPrepaymentTypePaymentCondition(paymentCondition###object(object)) AND
+        paymentCondition###object(object) == paymentConditionPaymentPeriod(paymentPeriod) AND
         isPosted###object(object);
 
     @defineAggregation(object, paymentPeriod, object##ContractLedger, needToCreate###object##ContractLedger);
@@ -97,9 +98,6 @@ META defineOutContractLedgerInContractLedgerPrefix(caption, prefix, classPrefix)
 
     contract###prefix##ContractLedger 'Договор' (prefix##ContractLedger) = ABSTRACT Contract (classPrefix##ContractLedger) PERSISTENT;
 
-    paymentCondition###prefix##ContractLedger 'Условия оплаты' (prefix##ContractLedger) =
-        paymentConditionContractDate(contract###prefix##ContractLedger(prefix##ContractLedger), date###prefix##ContractLedger(prefix##ContractLedger));
-
     description###prefix##ContractLedger 'Название документа' (prefix##ContractLedger) = ABSTRACT STRING[200] (classPrefix##ContractLedger) PERSISTENT;
     sum###prefix##ContractLedger 'Сумма' = ABSTRACT NUMERIC[22,8] (classPrefix##ContractLedger) PERSISTENT;
 
@@ -108,6 +106,7 @@ META defineOutContractLedgerInContractLedgerPrefix(caption, prefix, classPrefix)
 END
 
 @defineOutContractLedgerInContractLedgerPrefix('Приход', in, In);
+paymentConditionInContractLedger 'Условия оплаты'  = ABSTRACT PaymentCondition (InContractLedger);
 @defineOutContractLedgerInContractLedgerPrefix('Расход', out, Out);
 
 TABLE outContractLedgerInContractLedger (OutContractLedger, InContractLedger);
@@ -139,11 +138,11 @@ debtInContractLedgerDate 'Долг по документу на дату' (inCon
 
 appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod) =
     debtInContractLedgerDate(inContractLedger, sumDate(dateInContractLedger(inContractLedger), countDaysBonusPeriod(bonusPeriod))) <= 0.0
-    AND contractInContractLedger(inContractLedger) == contractPaymentCondition(paymentConditionBonusPeriod(bonusPeriod));
+    AND paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod);
 
 daysBonusPeriodInContractLedger(inContractLedger, date) =
     GROUP MIN countDaysBonusPeriod(bonusPeriod) AND
-              contractInContractLedger(inContractLedger) == contractPaymentCondition(paymentConditionBonusPeriod(bonusPeriod)) AND
+              paymentConditionInContractLedger(inContractLedger) == paymentConditionBonusPeriod(bonusPeriod) AND
               sumDate(dateInContractLedger(inContractLedger), countDaysBonusPeriod(bonusPeriod)) >= (date AS DATE)
               //appliedInContractLedgerBonusPeriod(inContractLedger, bonusPeriod)
     BY inContractLedger, date;
@@ -688,6 +687,7 @@ NAVIGATOR {
         NEW contractNavigator 'Задолженности' BEFORE financeMasterData {
             ADD contractLedger;
             ADD costContractLedger;
+            ADD paymentConditions;
         }
     }
 }

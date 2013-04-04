@@ -88,7 +88,7 @@ FORM supplierGroups 'Группы поставщиков'
 //                  nameCurrencyContract, noteContract
 //
 //    OBJECTS pc = PaymentCondition
-//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
 //                            nameFormPaymentCondition
 //    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
 //    ORDER BY datePaymentCondition
@@ -137,7 +137,7 @@ FORM supplier 'Поставщик'
     OBJECTS c=ContractSku
     PROPERTIES isSupplierCustomerContractSku(s, co, c)
     PROPERTIES(c)  READONLY numberContract, dateFromContract, dateToContract,
-                            nameTypeContractSku, nameFormContractSku,
+                            nameTypeContractSku,
                             nameCurrencyContract, noteContract
     PROPERTIES(c)  ADDFORM, EDITFORM, delete
     FILTERS supplierContractSku(c) == s,

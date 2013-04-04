@@ -159,16 +159,6 @@ EXTEND FORM userInvoice
 // Резервы
 @extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
 
-// --------------------------- Проведение по регистру задолженностей ------------------------------------ //
-
-@implementContractLedger(a, userInvoice, contractSku);
-sumContractALedger(contractALedger) += invoiceSumUserInvoiceDetailUserInvoice(contractALedger);
-
-@implementContractPrepaymentLedger(userInvoice, invoiceSumUserInvoiceDetailUserInvoice, contractSku);
-
-@implementOutContractLedgerInContractLedgerPrefix(in, userInvoice, contractSku);
-sumInContractLedger(inContractLedger) += invoiceSumUserInvoiceDetailUserInvoice(inContractLedger);
-
 // --------------------------- Проведение по регистру продаж ------------------------------------ //
 @implementSaleLedger(Invoice, sku, supplierStock);
 quantitySaleLedger (ledger) += quantityInvoiceDetail(ledger);

@@ -24,7 +24,7 @@ NAMESPACE Contract;
 //                  nameCurrencyContract, noteContract
 //
 //    OBJECTS pc = PaymentCondition
-//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition, nameTypePaymentCondition,
+//    PROPERTIES(pc) READONLY datePaymentCondition, numberContractPaymentCondition,
 //                            nameFormPaymentCondition
 //    PROPERTIES(pc) ADDSESSIONFORM, EDITSESSIONFORM, delete
 //    ORDER BY datePaymentCondition
@@ -53,7 +53,7 @@ NAMESPACE Contract;
 //
 //    OBJECTS cc=ContractSkuCompany
 //    PROPERTIES(cc)  READONLY numberContract, dateFromContract, dateToContract,
-//                            nameTypeContractSku, nameFormContractSku,
+//                            nameTypeContractSku,
 //                            nameCurrencyContract, noteContract
 //    PROPERTIES(co, cb, cc) isCompanyACompanyBContractSkuCompany
 //    PROPERTIES(cc)  ADDFORM, EDITFORM, delete

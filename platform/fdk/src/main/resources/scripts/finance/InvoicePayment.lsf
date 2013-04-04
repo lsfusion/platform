@@ -1,0 +1,26 @@
+MODULE InvoicePayment;
+
+REQUIRE Payment, StockContract;
+
+META defineInvoicePaymentCondition (sign, invoice)
+
+    paymentConditionInvoice 'Условия оплаты' = ABSTRACT PaymentCondition (invoice);
+    paymentConditionUserInvoice 'Условия оплаты' = DATA PaymentCondition (User###invoice);
+    paymentConditionInvoice(prop) += paymentConditionUserInvoice(prop);
+    paymentConditionInContractLedger(prop) += paymentConditionInvoice(prop);
+    descriptionPaymentConditionUserInvoice 'Условия оплаты' (prop) = descriptionPaymentCondition(paymentConditionUserInvoice(prop));
+
+    paymentConditionUserInvoice(prop) <- paymentConditionAgreement(agreementUserInvoice(prop))
+        WHEN CHANGED(agreementUserInvoice(prop));
+
+    EXTEND FORM userInvoice
+        PROPERTIES(i) descriptionPaymentConditionUserInvoice
+    ;
+
+    EXTEND DESIGN userInvoice{
+        i.documentPrmGroup{
+            ADD PROPERTY(descriptionPaymentConditionUserInvoice);
+        }
+    }
+
+END
