@@ -164,6 +164,7 @@ DESIGN employees FROM DEFAULT {
 FORM employeeDialog 'Сотрудники'
     OBJECTS e=Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact, namePositionEmployee
+    PROPERTIES(e) ADDFORM, EDITFORM
 
     DIALOG Employee OBJECT e
 ;

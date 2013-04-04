@@ -142,10 +142,10 @@ subtotalContainerIncStockDocumentStockDateInterval 'Итого с остатко
 
 // ------------------------------------------- Ответственные лица --------------------------------------------- //
 
-MRPStock 'Материально ответственное лицо, подписывающее товарный отчет (ИД)' = DATA Employee (Stock);
-nameMRPStock 'Материально ответственное лицо, подписывающее товарный отчет' (stock) =
+MRPStock 'Материально ответственное лицо (ИД)' = DATA Employee (Stock);
+nameMRPStock 'Материально ответственное лицо' (stock) =
     nameContact (MRPStock(stock)) IN responsibilityGroup;
-namePositionMRPStock 'Материально ответственное лицо, подписывающее товарный отчет (должность)' =
+namePositionMRPStock 'Материально ответственное лицо (должность)' =
     namePositionEmployee(MRPStock(stock));
 CONSTRAINT MRPStock(stock) AND NOT inEmployeeDivisionEmployee(stock, MRPStock(stock))
     CHECKED BY MRPStock MESSAGE 'МОЛ не сотрудник отдела';
