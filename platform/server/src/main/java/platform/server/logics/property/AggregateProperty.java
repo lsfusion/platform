@@ -92,12 +92,4 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         query.addProperty("value", calculateClassExpr(query.getMapExprs()));
         return query.getQuery().getClassWhere(SetFact.singleton("value"), full);
     }
-
-    public boolean supportsDrillDown() {
-        return false;
-    }
-
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
-        return null;
-    }
 }

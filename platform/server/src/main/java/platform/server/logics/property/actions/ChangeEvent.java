@@ -26,6 +26,10 @@ public class ChangeEvent<C extends PropertyInterface> {
         return where.property;
     }
 
+    public CalcProperty<?> getWriteFrom() {
+        return ((CalcPropertyMapImplement) writeFrom).property;
+    }
+
     public ChangeEvent(CalcProperty<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {
         assert ((CalcProperty)where.property).noDB();
         this.writeTo = writeTo;

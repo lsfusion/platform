@@ -12,12 +12,12 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
 import static platform.server.logics.ServerResourceBundle.getString;
 
-public class DrillDownFormEntity<I extends PropertyInterface, P extends AggregateProperty<I>> extends FormEntity {
+public class DrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends FormEntity {
     protected final P property;
     protected final BusinessLogics BL;
 

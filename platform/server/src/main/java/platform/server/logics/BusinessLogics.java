@@ -513,8 +513,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void setupDrillDown() {
         for (Property p : getOrderProperties()) {
-            if (p instanceof AggregateProperty) {
-                AggregateProperty<?> property = (AggregateProperty<?>) p;
+            if (p instanceof CalcProperty) {
+                CalcProperty<?> property = (CalcProperty<?>) p;
                 if (property.supportsDrillDown()) {
                     DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
                     if (drillDownFormEntity != null) {

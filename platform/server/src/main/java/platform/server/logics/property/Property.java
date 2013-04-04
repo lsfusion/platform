@@ -31,8 +31,10 @@ import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LAP;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
@@ -510,5 +512,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 return list.get(i);
             }
         });
+    }
+
+    public boolean supportsDrillDown() {
+        return false;
+    }
+
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return null;
     }
 }

@@ -15,15 +15,27 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.drilldown.DataDrillDownFormEntity;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.actions.ChangeEvent;
 import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
 
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
+
 public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
 
     public ValueClass value;
+
+    public static class Interface extends PropertyInterface<Interface> {
+        Interface(int ID) {
+            super(ID);
+        }
+    }
 
     public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, IsClassProperty.getInterfaces(classes));
@@ -172,5 +184,19 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
                 return true;
 
         return false;
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return event != null;
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new DataDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.data"), this, BL
+        );
+        //return super.createDrillDownForm(BL);
     }
 }
