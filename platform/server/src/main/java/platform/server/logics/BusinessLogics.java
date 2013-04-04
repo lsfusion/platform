@@ -512,20 +512,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void setupDrillDown() {
-        for (Property p : getOrderProperties()) {
-            if (p instanceof CalcProperty) {
-                CalcProperty<?> property = (CalcProperty<?>) p;
-                if (property.supportsDrillDown()) {
-                    DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
-                    if (drillDownFormEntity != null) {
-                        String drillDownActionSID = LM.isGeneratedSID(property.getSID()) ? LM.genSID() : "drillDownAction_" + property.getSID();
-                        LAP<?> drillDownFormProperty =
-                                LM.addMFAProp(LM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, false);
+        for (Property property : getOrderProperties()) {
+            if (property.supportsDrillDown()) {
+                DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
+                if (drillDownFormEntity != null) {
+                    String drillDownActionSID = LM.isGeneratedSID(property.getSID()) ? LM.genSID() : "drillDownAction_" + property.getSID();
+                    LAP<?> drillDownFormProperty =
+                            LM.addMFAProp(LM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, false);
 
-                        ActionProperty formProperty = drillDownFormProperty.property;
-                        property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-                        property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
-                    }
+                    ActionProperty formProperty = drillDownFormProperty.property;
+                    property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+                    property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
                 }
             }
         }

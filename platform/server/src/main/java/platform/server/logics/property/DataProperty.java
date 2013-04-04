@@ -197,6 +197,5 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
                 "drillDown" + capitalize(getSID()) + "Form",
                 getString("logics.property.drilldown.form.data"), this, BL
         );
-        //return super.createDrillDownForm(BL);
     }
 }
