@@ -12,7 +12,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
         THEN roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
-@definePricingAggregation(invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
+@definePricingAggregation(invoice, Invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
 @definePricingRelation(' (закупка)', customerStock);
 
 @defineRepricing(' (закупка)', customerStock);

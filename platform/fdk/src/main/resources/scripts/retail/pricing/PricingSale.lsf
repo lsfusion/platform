@@ -11,7 +11,7 @@ NAMESPACE Sale;
 @defineDocumentInterfaceHeaderSumPrefix (invoice, supplier, ' поставщика');
 
 roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(supplierStockUserInvoiceDetail(userInvoiceDetail));
-@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
+@definePricingAggregation(invoice, Invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 

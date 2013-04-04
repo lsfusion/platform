@@ -7,7 +7,7 @@ NAMESPACE PurchaseReturn;
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
-@definePricingAggregation(invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
+@definePricingAggregation(invoice, Invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
 //-- аггр.объект
 
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
