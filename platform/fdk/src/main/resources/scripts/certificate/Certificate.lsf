@@ -73,7 +73,7 @@ META defineDocumentCertificateText(document)
         }
     }
 
-    EXTEND FORM document##s PROPERTIES(dc) certificateText###document##Detail;
+    EXTEND FORM document##s PROPERTIES(dc) READONLY certificateText###document##Detail;
     EXTEND DESIGN document##s {
         PROPERTY(certificateText###document##Detail){
             minimumSize = (200, 36);

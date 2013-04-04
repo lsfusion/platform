@@ -1,6 +1,7 @@
 MODULE InvoiceSOT;
 
-REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse, PurchaseManufacturingPrice;
+REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
+        PurchaseManufacturingPrice, PurchaseCertificateSOT;
 
 NAMESPACE PurchaseInvoice;
 
@@ -22,7 +23,7 @@ ON SESSION FORMS userInvoice {
 };
 
 EXTEND FORM dialogBatch
-    PROPERTIES (bt) READONLY certificateTextBatch
+    PROPERTIES (bt) READONLY certificateTextBatch, priceListTextBatch
 ;
 
 EXTEND FORM options
