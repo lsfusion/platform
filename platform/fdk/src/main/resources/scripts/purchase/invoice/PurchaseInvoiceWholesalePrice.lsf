@@ -23,28 +23,34 @@ wholesalePriceUserInvoiceDetail(detail) <- roundPriceCurrency((priceUserInvoiceD
          CHANGED(currencyUserInvoiceDetail(detail));
 
 calcWholesaleMarkupUserInvoiceDetail(detail)  = [round2((X/Y-1)*100)](
-    0.0 IF detail IS UserInvoiceDetail OR wholesaleMarkupUserInvoiceDetail(detail),
+    wholesalePriceUserInvoiceDetail(detail),
     priceUserInvoiceDetail(detail));
 
 changeWholesalePriceUserInvoiceDetail = ACTION (detail) {
-
     REQUEST NUMERIC[14,2] INPUT;
-    SET wholesalePriceUserInvoiceDetail(detail) <- requestedNumeric();
-    SET wholesaleMarkupUserInvoiceDetail(detail) <- calcWholesaleMarkupUserInvoiceDetail(detail);
+    IF requestedNumeric() THEN {
+        SET wholesalePriceUserInvoiceDetail(detail) <- requestedNumeric();
+        SET wholesaleMarkupUserInvoiceDetail(detail) <- calcWholesaleMarkupUserInvoiceDetail(detail) WHERE calcWholesaleMarkupUserInvoiceDetail(detail);
+    }
+    ELSE {
+        SET wholesalePriceUserInvoiceDetail(detail) <- NULL;
+    }
 }
 
 calcWholesalePriceUserInvoiceDetail(detail)  = roundPriceCurrency([X*(Y+100)/100](
     priceUserInvoiceDetail(detail),
-    0.0 IF detail IS UserInvoiceDetail OR wholesaleMarkupUserInvoiceDetail(detail)),currencyUserInvoiceDetail(detail));
+    wholesaleMarkupUserInvoiceDetail(detail)),currencyUserInvoiceDetail(detail));
 
 changeWholesaleMarkupUserInvoiceDetail = ACTION (detail) {
-
     REQUEST NUMERIC[8,3] INPUT;
-    SET wholesaleMarkupUserInvoiceDetail(detail) <- requestedNumeric();
-
-    SET wholesalePriceUserInvoiceDetail(detail) <- calcWholesalePriceUserInvoiceDetail(detail);
+    IF requestedNumeric() THEN {
+        SET wholesaleMarkupUserInvoiceDetail(detail) <- requestedNumeric();
+        SET wholesalePriceUserInvoiceDetail(detail) <- calcWholesalePriceUserInvoiceDetail(detail) WHERE calcWholesalePriceUserInvoiceDetail(detail);
+    }
+    ELSE {
+        SET wholesaleMarkupUserInvoiceDetail(detail) <- NULL;
+    }
 }
-
 
 EXTEND FORM userInvoice
     PROPERTIES(i) toShowWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF toShowWholesalePriceUserInvoice(i)
