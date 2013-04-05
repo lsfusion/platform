@@ -12,7 +12,7 @@ NAMESPACE Sale;
 
 // Создаем акт расценки
 roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(supplierStockUserInvoiceDetail(userInvoiceDetail));
-@defineInvoicePricingAggregation(invoice, Invoice, ' (закупка-возврат)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
+@defineInvoicePricingAggregation(invoice, Invoice, ' (продажа)', 'Акт расценки при продаже', 'Проведенный акт расценки при продаже', supplierStock, supplier);
 
 // Автоматически проставляем цены поставщика и розничные
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, supplier, sku, supplierStock);

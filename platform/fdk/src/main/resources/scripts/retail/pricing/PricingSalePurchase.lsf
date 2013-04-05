@@ -76,6 +76,8 @@ toShowPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoi
 
 backgroundPurchaseRetailInvoice 'Цвет' (invoice) = RGB(255, 255, 190) IF invoice IS Invoice;
 
+printSalePurchasePricingInvoice 'Акт расценки (закупка)' (invoice) = Purchase.printPricingInvoice(SalePurchaseInvoice.purchaseInvoiceInvoice(invoice)) IMAGE 'print.png' IN printGroup;
+
 EXTEND FORM userInvoice
     PROPERTIES(i) SHOWIF showCreatePurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingUserInvoice
     PROPERTIES(i) SHOWIF createPurchasePricingUserInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i) namePurchasePricingCommitteeUserInvoice,
@@ -105,6 +107,7 @@ EXTEND DESIGN userInvoice {
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundPurchaseRetailInvoice(i) createPurchasePricingInvoice, purchaseRetailSumInvoiceDetailInvoice BEFORE ordersInvoice(i)
+    PROPERTIES (i) FORCE PANEL printSalePurchasePricingInvoice
     PROPERTIES(d) READONLY SHOWIF createPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
                   namePurchaseRetailPriceListTypeInvoiceDetail,
                   purchaseRetailMarkupInvoiceDetail, purchaseRetailMarkupSumInvoiceDetail, numberPurchaseRetailVATInvoiceDetail,
