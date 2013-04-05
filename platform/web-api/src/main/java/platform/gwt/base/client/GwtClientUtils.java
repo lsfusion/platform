@@ -156,9 +156,9 @@ public class GwtClientUtils {
         return strut;
     }
 
-    public static native String getUserAgent() /*-{
-        return navigator.userAgent.toLowerCase();
-    }-*/;
+    public static String getUserAgent() {
+        return Window.Navigator.getUserAgent().toLowerCase();
+    };
 
     public static boolean isIEUserAgent() {
         return getUserAgent().contains("msie");

@@ -17,11 +17,12 @@ public class TextGridCellRenderer extends AbstractGridCellRenderer {
 
     @Override
     public void renderDom(platform.gwt.cellview.client.cell.Cell.Context context, DivElement cellElement, Object value) {
-        cellElement.getStyle().setPaddingRight(4, Style.Unit.PX);
-        cellElement.getStyle().setPaddingLeft(4, Style.Unit.PX);
-        cellElement.getStyle().setHeight(100, Style.Unit.PCT);
-        cellElement.getStyle().setWidth(100, Style.Unit.PCT);
-        cellElement.getStyle().setProperty("display", "table");
+        Style divStyle = cellElement.getStyle();
+        divStyle.setPaddingRight(4, Style.Unit.PX);
+        divStyle.setPaddingLeft(4, Style.Unit.PX);
+        divStyle.setHeight(100, Style.Unit.PCT);
+        divStyle.setProperty("lineHeight", "normal"); // избегаем наследования от td,
+                                                      // ибо в случае с textarea внутри это приводит к увеличению высоты
 
         TextAreaElement textArea = cellElement.appendChild(Document.get().createTextAreaElement());
         textArea.setTabIndex(-1);

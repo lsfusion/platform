@@ -123,9 +123,12 @@ public class FileUtils {
     }
 
     public static String saveFile(byte[] fileBytes, String extension) {
+        return saveFile(BaseUtils.randomString(15) + "." + extension, fileBytes);
+    }
+
+    public static String saveFile(String fileName, byte[] fileBytes) {
         try {
             if (fileBytes != null) {
-                String fileName  = BaseUtils.randomString(15) + "." + extension;
                 File file = new File(APP_TEMP_FOLDER_URL, fileName);
                 FileOutputStream f = new FileOutputStream(file);
                 f.write(fileBytes);

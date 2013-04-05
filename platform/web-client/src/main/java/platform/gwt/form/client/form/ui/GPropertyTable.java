@@ -114,11 +114,12 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     @Override
     protected void onFocus() {
+        super.onFocus();
+
         if (!GwtClientUtils.isIEUserAgent()) {
             // для вставки в Chrome без предварительного клика по ячейке, но валит весь селекшн в IE
             selection.setRange(new Range(new RangeEndPoint(getFocusCellElement(), true)));
         }
-        super.onFocus();
     }
 
     @Override

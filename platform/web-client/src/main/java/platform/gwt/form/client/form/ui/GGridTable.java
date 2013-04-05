@@ -108,9 +108,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                         int oldRowScrollTop = childElement.getAbsoluteTop() - getTableDataScroller().getAbsoluteTop();
                         int scrollerHeight = getTableDataScroller().getClientHeight();
                         if (oldRowScrollTop < 0) {
-                            setKeyboardSelectedRow(selectedRow + Math.abs(oldRowScrollTop / getRowHeight()), false);
+                            int newRow = selectedRow + Math.abs(oldRowScrollTop / getRowHeight());
+                            if (selectedRow == newRow) {
+                                setKeyboardSelectedRow(++newRow, false);
+                                setDesiredVerticalScrollPosition(getTableDataScroller().getVerticalScrollPosition() + (getRowHeight() + oldRowScrollTop));
+                            } else {
+                                setKeyboardSelectedRow(newRow, false);
+                            }
                         } else if (oldRowScrollTop + getRowHeight() > scrollerHeight) {
-                            setKeyboardSelectedRow(selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1, false);
+                            int newRow = selectedRow - (oldRowScrollTop - scrollerHeight) / getRowHeight() - 1;
+                            setKeyboardSelectedRow(newRow, false);
+
+                            if (oldRowScrollTop < scrollerHeight) {
+                                setDesiredVerticalScrollPosition(getTableDataScroller().getVerticalScrollPosition() - (scrollerHeight - oldRowScrollTop));
+                            }
                         }
                     }
                 }
@@ -224,7 +235,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
-                rowHeight = Math.max(rowHeight, columnProperties.get(i).getMinimumPixelHeight());
+                rowHeight = Math.max(rowHeight, property.getMinimumPixelHeight());
             }
             setCellHeight(rowHeight);
 

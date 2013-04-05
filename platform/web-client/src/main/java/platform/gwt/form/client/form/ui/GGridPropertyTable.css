@@ -3,6 +3,7 @@
 .dataGridWidget {
     border: 1px solid lightGrey;
     margin: 2px;
+    cursor: default;
 }
 
 .dataGridHeader {

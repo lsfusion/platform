@@ -30,4 +30,6 @@ public interface GActionDispatcher {
     public void execute(GEditNotPerformedAction action);
 
     public void execute(GOpenFileAction action);
+
+    public void execute(GExportFileAction action);
 }
