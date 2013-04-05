@@ -1,7 +1,7 @@
 MODULE InvoiceSOT;
 
 REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
-        PurchaseManufacturingPrice, PurchaseCertificateSOT;
+        PurchaseManufacturingPrice, PurchaseCertificateSOT, PurchaseInvoiceCharge;
 
 NAMESPACE PurchaseInvoice;
 
@@ -17,7 +17,7 @@ ON SESSION FORMS userInvoice {
     IF usePurchaseBatchAutoSet() THEN 
         FOR CHANGED(skuUserInvoiceDetail(detail)) OR
             CHANGED(shipmentPriceUserInvoiceDetail(detail)) OR
-            CHANGED(certificateTextUserInvoiceDetail(detail)) DO
+            CHANGED(certificateTextUserInvoiceDetail(detail)) NOINLINE DO
                 SET batchUserInvoiceDetail (detail) <-
                     necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
 };
@@ -37,7 +37,7 @@ EXTEND DESIGN options {
 }
 
 // Проведение по ценам изготвителя
-overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail)
+overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetail(detail) (+) chargePriceUserInvoiceDetail(detail)
     WHEN customerStockUserInvoiceDetail(detail) IS Warehouse;
 
 //Задание торговой надбавки в документе
