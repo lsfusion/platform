@@ -1,6 +1,7 @@
 MODULE ImportBIVCDOS;
 
 REQUIRE Import,
+        PurchaseCertificateSOT,
         SOT;
 
 

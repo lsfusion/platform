@@ -904,6 +904,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField userInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
                 ImportField sotSIDField = new ImportField(LM.findLCPByCompoundName("sotSIDItem"));
+                ImportField priceListTextUserInvoiceDetailField = new ImportField(LM.findLCPByCompoundName("priceListTextUserInvoiceDetail"));
 
                 ImportKey<?> userInvoiceDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Purchase.UserInvoiceDetail"),
                         LM.findLCPByCompoundName("externalizableSID").getMapping(userInvoiceDetailField));
@@ -915,9 +916,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
                 props.add(new ImportProperty(sotSIDField, LM.findLCPByCompoundName("sotSIDItem").getMapping(itemKey)));
                 props.add(new ImportProperty(sotSIDField, LM.findLCPByCompoundName("sotSIDUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
+                props.add(new ImportProperty(priceListTextUserInvoiceDetailField, LM.findLCPByCompoundName("priceListTextUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                 ImportTable table = new ImportTable(Arrays.asList(itemField, userInvoiceDetailField,
-                        sotSIDField), data);
+                        sotSIDField, priceListTextUserInvoiceDetailField), data);
 
                 DataSession session = context.createSession();
                 IntegrationService service = new IntegrationService(session, table, Arrays.asList(userInvoiceDetailKey,
@@ -943,6 +945,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String dateField = null;
         Date date = null;
         String name = null;
+        String priceListText = null;
         Double quantity = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && SOTUserInvoicesList.size() >= numberOfItems)
@@ -963,6 +966,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
                     date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    priceListText = splittedLine.length > 4 ? splittedLine[4] : null;
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
@@ -971,7 +975,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID))
                         SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
-                                pnt13 + pnt48));
+                                pnt13 + pnt48, priceListText));
                 }
             }
         }
