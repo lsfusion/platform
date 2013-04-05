@@ -144,125 +144,171 @@ CLASS UserRepricingPosted 'Проведенный акт переоценки (�
 @defineDocumentInterfaceCurrency(repricing);
 @deriveDocumentCurrency(userRepricing, departmentStore);
 
+// Комиссия
+@defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
+
+// Sku
 @defineDocumentInterfaceDetailSku(repricing, sku);
 
+// Кол-во
 @defineDocumentInterfaceDetailQuantity(repricing);
 
+// Округление розничной цены
+roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmentStore(departmentStoreUserRepricingDetail(userRepricingDetail));
+
+// -- До
+
+// Цена поставщика
 @defineDocumentInterfaceDetailPricePrefix(repricing, cur, ' поставщика до');
-@defineDocumentInterfaceDetailDataSumPrefix (repricing, cur, ' поставщика до');
-@deriveDocumentDetailSumPrefix(userRepricing, cur, currency, quantity);
 
-@defineDocumentInterfaceDetailPricePrefix(repricing, , ' поставщика после');
-@defineDocumentInterfaceDetailDataSumPrefix (repricing, , ' поставщика после');
-@deriveDocumentDetailSumPrefix(userRepricing, , currency, quantity);
-
-@defineDocumentInterfaceDetailPricePrefix(repricing, curRetail, ' розничная до');
-@defineDocumentInterfaceDetailDataSumPrefix (repricing, curRetail, ' розничная до');
-@deriveDocumentDetailSumPrefix(userRepricing, curRetail, currency, quantity);
-
-@defineDocumentInterfaceDetailPricePrefix(repricing, retail, ' розничная после');
-@defineDocumentInterfaceDetailDataSumPrefix (repricing, retail, ' розничная после');
-@deriveDocumentDetailSumPrefix(userRepricing, retail, currency, quantity);
-//--
-overRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PERSISTENT;
-overRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
-overRepricingPriceRepricingDetail (detail) += overRepricingPriceUserRepricingDetail(detail);
-
-repricingPriceUserRepricingDetail (detail) = priceUserRepricingDetail(detail) OR overRepricingPriceUserRepricingDetail(detail) PERSISTENT;
-repricingPriceRepricingDetail (detail) = priceRepricingDetail(detail) OR overRepricingPriceRepricingDetail(detail) PERSISTENT;
-//--
+// Цена от которой будет считаться надбавка
 overCurRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PERSISTENT;
 overCurRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
 overCurRepricingPriceRepricingDetail (detail) += overCurRepricingPriceUserRepricingDetail(detail);
 
 curRepricingPriceUserRepricingDetail (detail) = curPriceUserRepricingDetail(detail) OR overCurRepricingPriceUserRepricingDetail(detail) PERSISTENT;
 curRepricingPriceRepricingDetail (detail) = curPriceRepricingDetail(detail) OR overCurRepricingPriceRepricingDetail(detail) PERSISTENT;
-//--
-@defineDocumentInterfaceHeaderQuantity(repricing);
-@defineDocumentHeaderSkuQuantity(repricing, sku);
-@defineDocumentHeaderSkuQuantity(userRepricing, sku);
 
+// Надбавка
+@defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
+
+// НДС
 @defineDocumentInterfaceDetailVAT(repricing, countryDepartmentStore, cur, ' до');
+@deriveDocumentDetailVAT (userRepricing, cur, beforeDate);
 @deriveDocumentDetailValueVAT(userRepricing, cur);
 
+// Розничная цена
+@defineDocumentInterfaceDetailPricePrefix(repricing, curRetail, ' розничная до');
+
+// Автоматическое заполнение цен до
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, supplierPricingPriceListType, cur, sku, departmentStore);
+@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, retailPricingPriceListType, curRetail, sku, departmentStore);
+
+// Автоматическое проставление надбавок
+curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    curRetailPriceUserRepricingDetail(userRepricingDetail),
+    valueCurVATUserRepricingDetail(userRepricingDetail),
+    curRepricingPriceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR
+         CHANGED(curVATUserRepricingDetail(userRepricingDetail)) OR
+         CHANGED(curRepricingPriceUserRepricingDetail(userRepricingDetail));
+
+// Объявление действий, которые будут срабатывать по изменению надбавки и розничной цены
+@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur);
+@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur);
+
+// -- После
+
+// Цена поставщика
+@defineDocumentInterfaceDetailPricePrefix(repricing, , ' поставщика после');
+
+// Цена от которой будет считаться надбавка
+overRepricingPriceRepricingDetail = ABSTRACT NUMERIC[14,2] (RepricingDetail) PERSISTENT;
+overRepricingPriceUserRepricingDetail = ABSTRACT NUMERIC[14,2] (UserRepricingDetail) PERSISTENT;
+overRepricingPriceRepricingDetail (detail) += overRepricingPriceUserRepricingDetail(detail);
+
+repricingPriceUserRepricingDetail (detail) = priceUserRepricingDetail(detail) OR overRepricingPriceUserRepricingDetail(detail) PERSISTENT;
+repricingPriceRepricingDetail (detail) = priceRepricingDetail(detail) OR overRepricingPriceRepricingDetail(detail) PERSISTENT;
+
+// Надбавка
+@defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
+
+// НДС
 @defineDocumentInterfaceDetailVAT(repricing, countryDepartmentStore, , ' после');
 @deriveDocumentDetailVAT(userRepricing, );
 @deriveDocumentDetailValueVAT(userRepricing, );
 
-@defineDocumentInterfaceDetailMarkupPrefix (repricing, cur, ' до');
-curMarkupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR curRetailPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR valueCurVATUserRepricingDetail(userRepricingDetail),
-    curRepricingPriceUserRepricingDetail(userRepricingDetail))
-    WHEN CHANGED(curRetailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (curVATUserRepricingDetail(userRepricingDetail)) OR CHANGED(curRepricingPriceUserRepricingDetail(userRepricingDetail));
-@defineDocumentInterfaceDetailMarkupPrefix (repricing, , ' после');
-markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR retailPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR valueVATUserRepricingDetail(userRepricingDetail),
-    repricingPriceUserRepricingDetail(userRepricingDetail))
-    WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR CHANGED(repricingPriceUserRepricingDetail(userRepricingDetail));
+// Розничная цена
+@defineDocumentInterfaceDetailPricePrefix(repricing, retail, ' розничная после');
 
+// Автоматическое проставление надбавок
+markupUserRepricingDetail(userRepricingDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
+    retailPriceUserRepricingDetail(userRepricingDetail),
+    valueVATUserRepricingDetail(userRepricingDetail),
+    repricingPriceUserRepricingDetail(userRepricingDetail))
+    WHEN CHANGED(retailPriceUserRepricingDetail(userRepricingDetail)) OR
+         CHANGED (VATUserRepricingDetail(userRepricingDetail)) OR
+         CHANGED(repricingPriceUserRepricingDetail(userRepricingDetail));
+
+// Объявление действий, которые будут срабатывать по изменению надбавки и розничной цены
 @changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, retail, repricing, , );
-roundConditionUserRepricingDetail(userRepricingDetail) = roundConditionDepartmentStore(departmentStoreUserRepricingDetail(userRepricingDetail));
 @changeDocumentDetailPriceCustomPrefix(userRepricingDetail, retail, repricing, , );
 
-@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
-@deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
+// ---- Суммы по строкам ---- //
 
-@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, , ' после');
-@deriveDocumentDetailReverseVATSumPrefix(userRepricing, , retail);
-
+// -- До
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, cur, ' поставщика до');
 @defineDocumentInterfaceDetailMarkupSumPrefix (repricing, cur, ' до');
-@deriveDocumentDetailMarkupSumPrefix(userRepricing, cur, curRetail, cur);
+@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, cur, ' до');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, curRetail, ' розничная до');
 
+// -- После
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, , ' поставщика после');
 @defineDocumentInterfaceDetailMarkupSumPrefix (repricing, , ' после');
-@deriveDocumentDetailMarkupSumPrefix(userRepricing, , retail, );
+@defineDocumentInterfaceDetailVATDataSumPrefix (repricing, , ' после');
+@defineDocumentInterfaceDetailDataSumPrefix (repricing, retail, ' розничная после');
 
+// -- Разница
 @defineDocumentInterfaceDetailDiffSumPrefix (repricing, sum, , cur, ' изменения поставщика ');
 @defineDocumentInterfaceDetailDiffSumPrefix (repricing, markupSum, , cur, ' изменения надбавки');
 @defineDocumentInterfaceDetailDiffSumPrefix (repricing, VATSum, , cur, ' изменения НДС');
 @defineDocumentInterfaceDetailDiffSumPrefix (repricing, retailSum, , cur, ' изменения розничной');
 
+// Расчет сумм обратным счетом
+// -- До
+@deriveDocumentDetailSumPrefix(userRepricing, curRetail, currency, quantity);
+@deriveDocumentDetailReverseVATSumPrefix(userRepricing, cur, curRetail);
+@deriveDocumentDetailMarkupSumPrefix(userRepricing, cur, curRetail, cur);
+@deriveDocumentDetailSumPrefix(userRepricing, cur, currency, quantity);
+
+// -- После
+@deriveDocumentDetailSumPrefix(userRepricing, retail, currency, quantity);
+@deriveDocumentDetailReverseVATSumPrefix(userRepricing, , retail);
+@deriveDocumentDetailMarkupSumPrefix(userRepricing, , retail, );
+@deriveDocumentDetailSumPrefix(userRepricing, , currency, quantity);
+
+// ---- Суммы по документу ---- //
+
+@defineDocumentInterfaceHeaderQuantity(repricing);
+@defineDocumentHeaderSkuQuantity(repricing, sku);
+@defineDocumentHeaderSkuQuantity(userRepricing, sku);
+
+// -- До
 @defineDocumentInterfaceHeaderSumPrefix (repricing, cur, ' поставщика  до');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, curMarkup, ' надбавки до');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, curVAT, ' НДС до');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, curRetail, ' розничная до');
 
+// -- После
 @defineDocumentInterfaceHeaderSumPrefix (repricing, , ' поставщика после');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, markup, ' надбавки после');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, VAT, ' НДС после');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, retail, ' розничная после');
 
+// -- Разница
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diff, ' изменения поставщика');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffMarkup, ' изменения надбавки');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffVAT, ' изменения НДС');
 @defineDocumentInterfaceHeaderSumPrefix (repricing, diffRetail, ' изменения розничной');
 
-@defineAddDetailDialogSkuStock(userRepricing, sku, departmentStore, dialogSku);
-@defineAddDetailDialogBarcode(userRepricing, sku);
-@defineAddDetailDialogTerminal(userRepricing, sku);
-@defineDocumentInterfaceHeaderRepricingCommittee (repricing, departmentStore);
-
-@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, supplierPricingPriceListType, cur, sku, departmentStore);
-
-@deriveDocumentDetailVAT (userRepricing, cur, beforeDate);
-
-@deriveDocumentDetailValueVAT(userRepricing, cur);
-
-@deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, retailPricingPriceListType, curRetail, sku, departmentStore);
-
-@defineDocumentInterfaceHeaderSkip(Repricing, changeLedger, 'Не изменять текущие цены');
-@defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
-
+// Изменение сумм по товару и таре
 @defineDocumentHeaderItemSum(repricing, diffRetail, );
 @defineDocumentHeaderItemSum(userRepricing, diffRetail, );
 
-@changeDocumentDetailMarkupCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur);
-@changeDocumentDetailPriceCustomPrefix(userRepricingDetail, curRetail, curRepricing, cur, cur);
+// Действия по добавлению строк
+@defineAddDetailDialogSkuStock(userRepricing, sku, departmentStore, dialogSku);
+@defineAddDetailDialogBarcode(userRepricing, sku);
+@defineAddDetailDialogTerminal(userRepricing, sku);
 
-@implementSkuLedger(userRepricingDetail, sku, departmentStore);
+// Не изменять текущие цены
+@defineDocumentInterfaceHeaderSkip(Repricing, changeLedger, 'Не изменять текущие цены');
+@defineDocumentInterfaceDetailSkip(repricing, changeLedger, 'Не изменять текущие цены');
+
+// Проведение по регистру
+@implementSkuLedger(repricingDetail, sku, departmentStore);
 sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
-//--
+
+// ---- Действия по проставлению новых надбавок и цен ------- //
 
 CLASS ChangePriceType 'Тип изменения цены' {
     markupChange 'Процент торговой надбавки',
@@ -282,15 +328,14 @@ newDiscountRetailPriceUserRepricingDetail (userRepricingDetail) =  roundPriceCur
     percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail))), currencyUserRepricingDetail(userRepricingDetail));
 
 newMarkupRetailPriceUserRepricingDetail (userRepricingDetail) = roundPriceCurrency([X*(Y+100)*(Z+100)/10000](
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR curRepricingPriceUserRepricingDetail(userRepricingDetail),
-    0.0 IF userRepricingDetail IS UserRepricingDetail OR percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
+    curRepricingPriceUserRepricingDetail(userRepricingDetail),
+    percentUserRepricing(userRepricingUserRepricingDetail(userRepricingDetail)),
     valueCurVATUserRepricingDetail(userRepricingDetail)), currencyUserRepricingDetail(userRepricingDetail));
 
 
 FORM addPercentUserRepricing 'Изменение цены'
     OBJECTS u=UserRepricing FIXED PANEL
     PROPERTIES (u) nameChangePriceTypeUserRepricing, percentUserRepricing
-
 ;
 
 DESIGN addPercentUserRepricing FROM DEFAULT {
@@ -613,69 +658,94 @@ sumContainerIncStockDocumentLedger (ledger) += sumContainerRepricingDetailRepric
 
 // ------------------------------------- Автоматическое создание дооценки для документа -------------------- //
 
-META defineRepricing(sign, stockProp)
+META defineRepricingAggregation(sign, stockProp)
 //-- аггр.объект
 
+    // Комиссия
+    @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stockProp);
+
+    // Кол-во
     @defineDocumentInterfaceDetailSkuBalance (invoice);
     @deriveDocumentDetailSkuBalance (userInvoice, sku, stockProp);
-// До
+
+    // -- До
     @defineDocumentInterfaceDetailPricePrefix(invoice, cur, ' поставщика до');
-    @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
-    @deriveDocumentDetailSumPrefix(userInvoice, cur, currency, balanceBSku);
+
+    overCurRepricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overCurRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overCurRepricingPriceInvoiceDetail (detail) += overCurRepricingPriceUserInvoiceDetail(detail);
 
     curRepricingPriceUserInvoiceDetail (detail) = curPriceUserInvoiceDetail(detail) OR overCurRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
     curRepricingPriceInvoiceDetail (detail) = curPriceInvoiceDetail(detail) OR overCurRepricingPriceInvoiceDetail(detail) PERSISTENT;
 
-    @defineDocumentInterfaceDetailPricePrefix(invoice, curRetail, ' розничная до');
-    @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
-    @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
+    @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
 
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, cur, ' до');
+    @deriveDocumentDetailVAT (userInvoice, cur, beforeDate, sku, stockProp);
     @deriveDocumentDetailValueVAT(userInvoice, cur);
 
-    @defineDocumentInterfaceDetailMarkupPrefix (invoice, cur, ' до');
+    @defineDocumentInterfaceDetailPricePrefix(invoice, curRetail, ' розничная до');
+
+    // Автоматическое заполнение цен до
+    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
+    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
+
+    // Расчет надбавки обратным счетом
     curMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-        0.0 IF userInvoiceDetail IS UserInvoiceDetail OR curRetailPriceUserInvoiceDetail(userInvoiceDetail),
-        0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueCurVATUserInvoiceDetail(userInvoiceDetail),
+        curRetailPriceUserInvoiceDetail(userInvoiceDetail),
+        valueCurVATUserInvoiceDetail(userInvoiceDetail),
         curRepricingPriceUserInvoiceDetail(userInvoiceDetail))
         WHEN CHANGED(curRetailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (curVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(curRepricingPriceUserInvoiceDetail(userInvoiceDetail));
 
-    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, cur, ' до');
-    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, cur, curRetail);
-    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
-    @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
-
-//    @derivePriceLedgerOnSkuChangePrefix(supplierPrice, userInvoice, curPrice, sku, stockProp);
-//    @derivePriceLedgerOnSkuChangePrefix(retailVAT, userInvoice, curVAT, sku, stockProp);
-//    @derivePriceLedgerOnSkuChangePrefix(retailPrice, userInvoice, curRetailPrice, sku, stockProp);
-    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, supplierPricingPriceListType, cur, sku, stockProp);
-    @deriveDocumentDetailVAT (userInvoice, cur, beforeDate, sku, stockProp);
-    @deriveDocumentDetailValueVAT(userInvoice, cur);
-    @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, curRetail, sku, stockProp);
-
+    // Объявление действий, которые будут срабатывать по изменению надбавки и розничной цены
     @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, curRetail, curRepricing, cur, cur);
     @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, curRetail, curRepricing, cur, cur);
 
-// После
+    // -- После
+    overRepricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overRepricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overRepricingPriceInvoiceDetail (detail) += overRepricingPriceUserInvoiceDetail(detail);
+
+    repricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overRepricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    repricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overRepricingPriceInvoiceDetail(detail) PERSISTENT;
+
+    // ---- Суммы по строкам ---- //
+
+    // -- До
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, cur, ' поставщика до');
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, cur, ' до');
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, cur, ' до');
+    @defineDocumentInterfaceDetailDataSumPrefix (invoice, curRetail, ' розничная до');
+
+    // Расчет сумм обратным счетом
+    @deriveDocumentDetailSumPrefix(userInvoice, curRetail, currency, balanceBSku);
+    @deriveDocumentDetailReverseVATSumPrefix(userInvoice, cur, curRetail);
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, cur, curRetail, cur);
+    @deriveDocumentDetailSumPrefix(userInvoice, cur, currency, balanceBSku);
+
+    // -- После
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, after, ' поставщика после');
-    afterSumUserInvoiceDetail (detail)  <- roundPriceCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
-                        WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (priceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
+    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, afterRetail, ' после');
+    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, afterRetail, ' после');
     @defineDocumentInterfaceDetailDataSumPrefix (invoice, afterRetail, ' розничная после');
+
+    // Расчет сумм обратным счетом
     afterRetailSumUserInvoiceDetail (detail)  <- roundPriceCurrency(balanceBSkuUserInvoiceDetail(detail) * retailPriceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
                         WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (retailPriceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
-
-    @defineDocumentInterfaceDetailVATDataSumPrefix (invoice, afterRetail, ' после');
-
     afterRetailVATSumUserInvoiceDetail (detail)  <- roundPriceCurrency([X*Y/(100+Y)](afterRetailSumUserInvoiceDetail(detail), valueRetailVATUserInvoiceDetail(detail)), currencyUserInvoiceDetail(detail))
                     WHEN CHANGED(afterRetailSumUserInvoiceDetail(detail)) OR CHANGED (valueRetailVATUserInvoiceDetail(detail)) OR CHANGED (currencyUserInvoiceDetail(detail));
-
-    @defineDocumentInterfaceDetailMarkupSumPrefix (invoice, afterRetail, ' после');
     afterRetailMarkupSumUserInvoiceDetail(detail) <- afterRetailSumUserInvoiceDetail(detail) (-) afterRetailVATSumUserInvoiceDetail (detail) (-) afterSumUserInvoiceDetail(detail)
                     WHEN CHANGED(afterRetailVATSumUserInvoiceDetail(detail)) OR CHANGED (afterRetailVATSumUserInvoiceDetail (detail)) OR CHANGED (afterSumUserInvoiceDetail(detail));
+    afterSumUserInvoiceDetail (detail)  <- roundPriceCurrency(balanceBSkuUserInvoiceDetail(detail) * priceUserInvoiceDetail(detail), currencyUserInvoiceDetail(detail))
+                        WHEN CHANGED(balanceBSkuUserInvoiceDetail(detail)) OR CHANGED (priceUserInvoiceDetail(detail)) OR CHANGED(currencyUserInvoiceDetail(detail));
 
+    // -- Разница
     @defineDocumentInterfaceDetailDiffSumPrefix (invoice, retailSum, after, cur, ' дооценки');
+
+    // ---- Суммы по документу ---- //
     @defineDocumentInterfaceHeaderSumPrefix (invoice, diffRetail, ' дооценки');
 
+    showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
     @defineDocumentInterfaceCreate (invoice, createRepricing, 'Создать акт дооценки');
 
     needToRepricingInvoiceDetail (invoiceDetail) = curRetailPriceInvoiceDetail(invoiceDetail) != retailPriceInvoiceDetail(invoiceDetail)
@@ -686,8 +756,6 @@ META defineRepricing(sign, stockProp)
 
     needToRepricingInvoice (invoice)= GROUP SUM 1 IF needToRepricingInvoiceDetail(invoiceDetail)
         BY invoiceInvoiceDetail(invoiceDetail) PERSISTENT;
-
-    @defineDocumentInterfaceHeaderRepricingCommittee (invoice, stockProp);
 
     CLASS InvoiceRepricing 'Акт дооценки на основе инвойса'###sign : Repricing;
     CLASS InvoiceRepricingPosted 'Проведенный акт дооценки на основе инвойса'###sign : InvoiceRepricing, PostedObject;
@@ -742,19 +810,15 @@ META defineRepricing(sign, stockProp)
     @defineDocumentAggregationDetailSku(invoice, invoiceRepricing, sku);
     skuRepricingDetail(repricingDetail) +=  skuInvoiceRepricingDetail(repricingDetail);
 
-    @implementSkuLedger(invoiceRepricingDetail, sku, stockProp);
-
-    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS Invoice;
-    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS Invoice;
-
-    showCreateRepricingInvoice (invoice) = stockProp###invoice(invoice) IS DepartmentStore AND NOT costLedgerDepartmentStore(stockProp###invoice(invoice));
-
     overCopyInvoice(s, d) += ACTION (s, d) {
         SET createRepricingUserInvoice(d) <- createRepricingUserInvoice(s);
         SET repricingCommitteeUserInvoice(d) <- repricingCommitteeUserInvoice(s);
         SET numberDisposalUserInvoice(d) <- numberDisposalUserInvoice(s);
         SET beforeDateUserInvoice(d) <- beforeDateUserInvoice(s);
     }
+
+    backgroundCurInvoice 'Цвет' (invoice) = RGB(255, 255, 224) IF invoice IS Invoice;
+    backgroundAfterInvoice 'Цвет' (invoice) = RGB(255, 255, 200) IF invoice IS Invoice;
 
     EXTEND FORM userInvoice
         PROPERTIES(i)   SHOWIF showCreateRepricingInvoice(i) BACKGROUND backgroundCurInvoice(i) createRepricingUserInvoice
@@ -791,49 +855,66 @@ META defineRepricing(sign, stockProp)
 //----------------------------------------------------------------------------------------------------------
     quantityRepricingDetail(repricingDetail) += balanceBSkuInvoiceDetail(invoiceDetailInvoiceRepricingDetail(repricingDetail));
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, price, 'Цена поставщика после');
-    priceRepricingDetail(repricingDetail) += priceInvoiceRepricingDetail(repricingDetail);
+    // -- До
+
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curPrice, 'Цена поставщика до');
     curPriceRepricingDetail(repricingDetail) += curPriceInvoiceRepricingDetail(repricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailPrice, 'Цена розничная после');
-    retailPriceRepricingDetail(repricingDetail) += retailPriceInvoiceRepricingDetail(repricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailPrice, 'Цена розничная до');
-    curRetailPriceRepricingDetail(repricingDetail) += curRetailPriceInvoiceRepricingDetail(repricingDetail);
-
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailSum, 'Сумма розничная после');
-    retailSumRepricingDetail(repricingDetail) += afterRetailSumInvoiceRepricingDetail(repricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailSum, 'Сумма розничная до');
-    curRetailSumRepricingDetail(repricingDetail) += curRetailSumInvoiceRepricingDetail(repricingDetail);
-
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailMarkup, 'Надбавка после');
-    markupRepricingDetail(repricingDetail) += retailMarkupInvoiceRepricingDetail(repricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curMarkup, 'Надбавка до');
     curMarkupRepricingDetail(repricingDetail) += curMarkupInvoiceRepricingDetail(repricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailVAT, 'НДС после');
-    VATRepricingDetail(repricingDetail) += retailVATInvoiceRepricingDetail(repricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curVAT, 'НДС до');
     curVATRepricingDetail(repricingDetail) += curVATInvoiceRepricingDetail(repricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, valueRetailVAT, 'НДС,% после');
-    valueVATRepricingDetail(repricingDetail) += valueRetailVATInvoiceRepricingDetail(repricingDetail);
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, valueCurVAT, 'НДС,% до');
     valueCurVATRepricingDetail(repricingDetail) += valueCurVATInvoiceRepricingDetail(repricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterSum, 'Сумма поставщика после');
-    sumRepricingDetail(repricingDetail) += afterSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailPrice, 'Цена розничная до');
+    curRetailPriceRepricingDetail(repricingDetail) += curRetailPriceInvoiceRepricingDetail(repricingDetail);
+
+    // -- После
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, price, 'Цена поставщика после');
+    priceRepricingDetail(repricingDetail) += priceInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailMarkup, 'Надбавка после');
+    markupRepricingDetail(repricingDetail) += retailMarkupInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailVAT, 'НДС после');
+    VATRepricingDetail(repricingDetail) += retailVATInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, valueRetailVAT, 'НДС,% после');
+    valueVATRepricingDetail(repricingDetail) += valueRetailVATInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, retailPrice, 'Цена розничная после');
+    retailPriceRepricingDetail(repricingDetail) += retailPriceInvoiceRepricingDetail(repricingDetail);
+
+    // ---- Суммы по строкам ---- //
+
+    // -- До
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curSum, 'Сумма поставщика до');
     curSumRepricingDetail(repricingDetail) += curSumInvoiceRepricingDetail(repricingDetail);
 
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailVATSum, 'Сумма НДС после');
-    VATSumRepricingDetail(repricingDetail) += afterRetailVATSumInvoiceRepricingDetail(repricingDetail);
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curMarkupSum, 'Сумма надбавки до');
+    curMarkupSumRepricingDetail(repricingDetail) += curMarkupSumInvoiceRepricingDetail(repricingDetail);
+
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curVATSum, 'Сумма НДС до');
     curVATSumRepricingDetail(repricingDetail) += curVATSumInvoiceRepricingDetail(repricingDetail);
 
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curRetailSum, 'Сумма розничная до');
+    curRetailSumRepricingDetail(repricingDetail) += curRetailSumInvoiceRepricingDetail(repricingDetail);
+
+    // -- После
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterSum, 'Сумма поставщика после');
+    sumRepricingDetail(repricingDetail) += afterSumInvoiceRepricingDetail(repricingDetail);
+
     @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailMarkupSum, 'Сумма надбавки после');
     markupSumRepricingDetail(repricingDetail) += afterRetailMarkupSumInvoiceRepricingDetail(repricingDetail);
-    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, curMarkupSum, 'Сумма надбавки до');
-    curMarkupSumRepricingDetail(repricingDetail) += curMarkupSumInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailVATSum, 'Сумма НДС после');
+    VATSumRepricingDetail(repricingDetail) += afterRetailVATSumInvoiceRepricingDetail(repricingDetail);
+
+    @defineDocumentAggregationDetailProperty (invoice, invoiceRepricing, afterRetailSum, 'Сумма розничная после');
+    retailSumRepricingDetail(repricingDetail) += afterRetailSumInvoiceRepricingDetail(repricingDetail);
 
 END

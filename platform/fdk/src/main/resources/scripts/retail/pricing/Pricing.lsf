@@ -574,7 +574,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
 //-- аггр.объект
-META definePricingAggregation(concrete, concreteClass, sign, caption, captionPost, stockProp, prefix)
+META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, captionPost, stockProp, prefix)
 
     // Комиссия
     @defineDocumentInterfaceHeaderPricingCommittee(invoice, stockProp);
@@ -586,6 +586,14 @@ META definePricingAggregation(concrete, concreteClass, sign, caption, captionPos
     extraPricingQuantityUserInvoiceDetail = ABSTRACT NUMERIC[14,3] (UserInvoiceDetail) PERSISTENT;
     pricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail) (+) extraPricingQuantityUserInvoiceDetail(detail)
         WHEN CHANGED(quantityUserInvoiceDetail(detail)) OR CHANGED(extraPricingQuantityUserInvoiceDetail(detail));
+
+    // Базовая цена
+    overPricingPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+    overPricingPriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+    overPricingPriceInvoiceDetail (detail) += overPricingPriceUserInvoiceDetail(detail);
+
+    pricingPriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overPricingPriceUserInvoiceDetail(detail) PERSISTENT;
+    pricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overPricingPriceInvoiceDetail(detail) PERSISTENT;
 
     // Надбавка
     @defineDocumentInterfaceDetailMarkupPrefix (invoice, retail, );
@@ -616,7 +624,7 @@ META definePricingAggregation(concrete, concreteClass, sign, caption, captionPos
     // Расчет сумм обратным счетом
     @deriveDocumentDetailSumPrefix(userInvoice, retail, currency, pricingQuantity);
     @deriveDocumentDetailReverseVATSumPrefix(userInvoice, retail, retail);
-    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, );
+    @deriveDocumentDetailMarkupSumPrefix(userInvoice, retail, retail, prefix);
 
     // -- Суммы по документу
     @defineDocumentInterfaceHeaderSumPrefix (invoice, retail, ' розничная');
@@ -754,7 +762,7 @@ META definePricingAggregation(concrete, concreteClass, sign, caption, captionPos
 
 END
 //--  Связь накладной и расценки
-META definePricingRelation(sign, stockProp)
+META defineInvoicePricingRelation(sign, stockProp)
 
     invoiceDetailPricingDetail = ABSTRACT InvoiceDetail (PricingDetail) PERSISTENT;
     invoiceDetailUserPricingDetail = DATA InvoiceDetail (UserPricingDetail);

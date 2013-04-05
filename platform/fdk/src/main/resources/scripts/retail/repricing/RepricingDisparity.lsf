@@ -146,9 +146,6 @@ skuDisparityRepricingDetail (repricingDetail) = inputSkuDisparityDetail(disparit
 
 skuRepricingDetail(repricingDetail) +=  skuDisparityRepricingDetail(repricingDetail);
 
-@implementSkuLedger(disparityRepricingDetail, sku, stock);
-//sumInSkuLedger (ledger) += diffRetailSumRepricingDetail(ledger);
-
 backgroundCurDisparity 'Цвет' (disparity) = RGB(255, 255, 224) IF disparity IS Disparity;
 backgroundAfterDisparity 'Цвет' (disparity) = RGB(255, 255, 200) IF disparity IS Disparity;
 

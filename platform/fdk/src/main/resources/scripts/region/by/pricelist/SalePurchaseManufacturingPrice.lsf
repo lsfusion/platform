@@ -1,9 +1,11 @@
 MODULE SalePurchaseManufacturingPrice;
 
-REQUIRE SaleManufacturingPrice, PurchaseManufacturingPrice, SalePurchaseInvoice;
+REQUIRE SaleManufacturingPrice, PurchaseManufacturingPrice, SalePurchaseInvoice, PricingSalePurchase;
 
 PRIORITY Sale;
 
 //----------------------------------------------------------------------------//
+
+overPurchasePricingPriceUserInvoiceDetail(detail) += Sale.manufacturingPriceUserInvoiceDetail(detail);
 
 Purchase.manufacturingPriceInvoiceDetail(invoiceDetail) += manufacturingPriceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
