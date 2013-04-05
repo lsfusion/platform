@@ -5,7 +5,13 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.OldDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.PropertyChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
@@ -36,5 +42,23 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
 
     public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
         return property.getInterfaceCommonClasses(commonValue);
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return property != null;
+    }
+
+    @Override
+    public boolean drillDownInNewSession() {
+        return true;
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new OldDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.old"), this, BL
+        );
     }
 }

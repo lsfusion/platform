@@ -518,6 +518,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return false;
     }
 
+    public boolean drillDownInNewSession() {
+        return false;
+    }
+
     public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
         return null;
     }

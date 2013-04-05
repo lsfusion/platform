@@ -2319,6 +2319,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy // для ID
     public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type) {
+        addProperty(null, new LCP(lp.property.getOld(), lp.listInterfaces));
         return addProperty(null, new LCP<T>(lp.property.getChanged(type), lp.listInterfaces));
     }
 
