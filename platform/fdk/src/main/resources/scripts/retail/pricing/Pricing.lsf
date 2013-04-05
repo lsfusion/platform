@@ -141,8 +141,8 @@ END
 
 //------------------------  derive or change ------------------------------------//
 
-META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, stockProp)
-    ON SESSION PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
+META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, stockProp, form)
+    ON SESSION FORMS form PREVSTART pricePriceListTypeSkuStockDateTime { // цены берем на начало сессии, а не этого event'а
         LOCAL changedPriceListType = BOOLEAN (###idetail);
         SET changedPriceListType(detail) <- TRUE IF prefix###priceListType###idetail(detail) AND
                                                     sku###idetail(detail) AND
@@ -324,9 +324,6 @@ pricingPricePricingDetail (detail) = pricePricingDetail(detail) OR overPricingPr
 // Объявление действий, которые будут срабатывать по изменению надбавки и розничной цены
 @changeDocumentDetailMarkupCustomPrefix(userPricingDetail, retail, pricing, retail, retail);
 @changeDocumentDetailPriceCustomPrefix(userPricingDetail, retail, pricing, retail, retail);
-
-// Проставление надбавки и розничной цены при изменении sku, склада, времени, вида цен, цены расценки, НДС
-@deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore);
 
 // -- Суммы по строкам
 
@@ -540,6 +537,9 @@ NAVIGATOR {
         }
     }
 }
+
+// Проставление надбавки и розничной цены при изменении sku, склада, времени, вида цен, цены расценки, НДС в форме userPricing
+@deriveDocumentDetailPriceOnSessionPriceListType (userPricingDetail, retail, pricing, departmentStore, userPricing);
 
 // ---------------------------- Создание PriceList ----------------------------------- //
 

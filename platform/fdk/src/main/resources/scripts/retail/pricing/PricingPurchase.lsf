@@ -41,7 +41,7 @@ EXTEND DESIGN userInvoice {
 EXTEND FORM invoices PROPERTIES(d) SHOWIF createPricingUserInvoice(i) BACKGROUND backgroundRetailInvoice(i) READONLY nameRetailPriceListTypeInvoiceDetail BEFORE retailMarkupInvoiceDetail;
 
 // расчет надбавок и цены при изменении priceListType
-@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, retail, pricing, customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, retail, pricing, customerStock, userInvoice);
 
 // Изменяем учетную цену
 overShipmentPriceUserInvoiceDetail(detail) += retailPriceUserInvoiceDetail(detail)

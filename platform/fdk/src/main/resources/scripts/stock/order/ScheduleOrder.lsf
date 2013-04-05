@@ -370,10 +370,10 @@ META defineScheduleOrder(sign, stockProp)
     nameCustomerStock 'Склад покупателя' = name(customerStock());
 
     CONSTRAINT supplier() AND supplierStock() AND NOT inLegalEntityStock(supplier(), supplierStock())
-        CHECKED BY supplier, supplierStock MESSAGE 'Поставщик и склад поставщика для графика заказов не имеют связи';
+        CHECKED BY supplierStock MESSAGE 'Поставщик и склад поставщика для графика заказов не имеют связи';
 
     CONSTRAINT customer() AND customerStock() AND NOT inLegalEntityStock(customer(), customerStock())
-        CHECKED BY customer, customerStock MESSAGE 'Покупатель и склад покупателя для графика заказов не имеют связи';
+        CHECKED BY customerStock MESSAGE 'Покупатель и склад покупателя для графика заказов не имеют связи';
 
 
     FORM scheduleOrderDetails 'Заказы по графику'

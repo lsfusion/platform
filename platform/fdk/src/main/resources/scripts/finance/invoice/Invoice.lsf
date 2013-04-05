@@ -104,11 +104,11 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     CONSTRAINT supplierUserInvoice(userInvoice) AND supplierStockUserInvoice(userInvoice) AND NOT
     inLegalEntityStock(supplierUserInvoice(userInvoice), supplierStockUserInvoice(userInvoice))
-        CHECKED BY supplierUserInvoice, supplierStockUserInvoice
+        CHECKED BY supplierStockUserInvoice
             MESSAGE 'Поставщик и склад поставщика для накладной не имеют связи';
     CONSTRAINT customerUserInvoice(userInvoice) AND customerStockUserInvoice(userInvoice) AND NOT
     inLegalEntityStock(customerUserInvoice(userInvoice), customerStockUserInvoice(userInvoice))
-        CHECKED BY customerUserInvoice, customerStockUserInvoice
+        CHECKED BY customerStockUserInvoice
             MESSAGE 'Покупатель и склад покупателя для накладной не имеют связи';
 
     @defineDocumentInterfacePosted(invoice);
@@ -530,13 +530,14 @@ META defineInvoiceReturn(NS, NSR, stockProp)
             SET NSR.VATUserInvoiceDetail(detail) <- NS.VATInvoiceDetail(invoiceDetailUserInvoiceDetail(detail));
         }
     }
-        WHEN SESSION (CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
+        WHEN SESSION FORMS userInvoice
+            CHANGED(invoiceDetailUserInvoiceDetail(detail)) OR
             CHANGED(NSR.batchInvoiceDetail(detail)) OR
             CHANGED(NSR.priceListTypeInvoiceDetail(detail)) OR
             CHANGED(NSR.skuInvoiceDetail(detail)) OR
             CHANGED(NSR.stockProp###invoiceDetail(detail)) OR
-            CHANGED(NSR.dateTimeInvoiceDetail(detail)))
-            DO EXEC recalculatedPriceUserInvoiceDetail(detail);
+            CHANGED(NSR.dateTimeInvoiceDetail(detail))
+                DO EXEC recalculatedPriceUserInvoiceDetail(detail);
 
 
     EXTEND FORM userInvoice PROPERTIES (d) descriptionInvoiceDetailUserInvoiceDetail AFTER shortNameUOMSkuUserInvoiceDetail;

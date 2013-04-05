@@ -701,6 +701,21 @@ META extendFormFilterStockGroupAccess(object, concrete, form, prop)
     EXTEND FORM form FILTERS (concrete IS object AND NOT limitAccessEmployee(currentUser())) OR prop(currentUser(), concrete);
 END
 
+// ----------------------------- Автоматическое проставление организаций и складов --------------------------------------- //
+
+META defineDocumentLegalEntityStockAccess(objectClass, prefix, filter, form)
+    prefix###objectClass(o) <- default###filter##Employee(currentUser()) IF countAccess###filter##Employee (currentUser()) == 1
+        WHEN ASSIGNED(o IS objectClass);
+    WHEN SESSION FORMS form CHANGED(prefix###objectClass(o)) DO
+        prefix###stock###objectClass(o) <- defaultStockEmployeeLegalEntity(currentUser(), prefix###objectClass(o))
+            IF countAccessStockEmployeeLegalEntity (currentUser(), prefix###objectClass(o)) == 1;
+END
+
+META defineDocumentSupplierCustomerStockAccess (objectClass, supplierFilter, customerFilter, form)
+    @defineDocumentLegalEntityStockAccess(objectClass, supplier, supplierFilter, form);
+    @defineDocumentLegalEntityStockAccess(objectClass, customer, customerFilter, form);
+END
+
 // ---------------------------------------------- Макросы ------------------------------------------------ //
 
 META implementSkuLedger(object, skuProp, stockProp)

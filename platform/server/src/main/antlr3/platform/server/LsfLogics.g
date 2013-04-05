@@ -1252,6 +1252,7 @@ sessionPropertyDefinition[List<String> context, boolean dynamic] returns [LPWith
 specialPropertyName
 	:	('PREV') 
 	| 	('CHANGED')
+	|   ('CHANGEDSET')
 	| 	('ASSIGNED')
     | 	('CLASS')
 	;

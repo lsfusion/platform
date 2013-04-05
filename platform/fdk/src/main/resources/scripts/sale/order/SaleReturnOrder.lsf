@@ -31,17 +31,7 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
-supplierUserOrder(userOrder) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS UserOrder);
-customerUserOrder(userOrder) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userOrder IS UserOrder);
-
-supplierStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserOrder(userOrder))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserOrder(userOrder)) == 1
-        WHEN CHANGED(supplierUserOrder(userOrder));
-customerStockUserOrder(userOrder) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserOrder(userOrder))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserOrder(userOrder)) == 1
-        WHEN CHANGED(customerUserOrder(userOrder));
+@defineDocumentSupplierCustomerStockAccess(UserOrder, company, customer, userOrder);
 
 //------------------------------ Ввод в упаковках -----------------------------//
 

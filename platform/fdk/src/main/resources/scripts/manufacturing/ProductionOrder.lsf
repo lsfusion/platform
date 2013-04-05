@@ -346,16 +346,12 @@ changeMarkupSkuOrder (sku, order) = ACTION (sku, order) {
 }
 
 // Изменение надбавок при изменении вида цен
-recordMarkupSkuOrder(sku, order) = ACTION (sku, order) {
-    IF componentsCalcPriceListTypeOrder(order) AND bruttoQuantitySkuOrder(sku, order) THEN {
+recordMarkupOrder(order) = ACTION (order) {
+    FOR componentsCalcPriceListTypeOrder(order) AND bruttoQuantitySkuOrder(sku, order) DO {
         SET markupSkuOrder(sku, order) <- markupCalcPriceListTypeSku(componentsCalcPriceListTypeOrder(order), sku);
         EXEC changeValueMarkupSkuOrder(sku, order);
     }
 }
-
-WHEN SESSION CHANGED(componentsCalcPriceListTypeOrder(order) AND sku IS Sku)
-    DO EXEC recordMarkupSkuOrder(sku, order);
-
 
 backgroundSubstitutesOrder 'Цвет' (order) = RGB(255,224,255) IF order IS Order;
 
@@ -399,10 +395,6 @@ recordMarkupProductDetail(detail) = ACTION (detail) {
         EXEC changeValueMarkupProductDetail(detail);
     }
 }
-
-WHEN SESSION CHANGED(calcPriceListTypeProductDetail(detail)) OR
-     CHANGED(skuProductDetail(detail))
-     DO EXEC recordMarkupProductDetail(detail);
 
 // расчет НДС
 valueVATSkuOrder 'НДС, %' = DATA NUMERIC[10,5] (Sku, Order);
@@ -629,6 +621,13 @@ copyOrder 'Копировать' = ACTION (order) NEWSESSION {
         FORM order OBJECTS o = o MANAGESESSION DOCKEDMODAL;
     }
 } TOOLBAR;
+
+WHEN SESSION FORMS order CHANGED(componentsCalcPriceListTypeOrder(order))
+    DO EXEC recordMarkupOrder(order);
+
+WHEN SESSION FORMS order CHANGED(calcPriceListTypeProductDetail(detail)) OR
+                         CHANGED(skuProductDetail(detail))
+                            DO EXEC recordMarkupProductDetail(detail);
 
 FORM orders 'Производственные заказы'
 

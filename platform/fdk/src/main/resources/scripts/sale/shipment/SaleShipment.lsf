@@ -30,17 +30,7 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(cust
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
-supplierUserShipment(userShipment) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS UserShipment);
-customerUserShipment(userShipment) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userShipment IS UserShipment);
-
-supplierStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserShipment(userShipment))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserShipment(userShipment)) == 1
-        WHEN CHANGED(supplierUserShipment(userShipment));
-customerStockUserShipment(userShipment) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserShipment(userShipment))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserShipment(userShipment)) == 1
-        WHEN CHANGED(customerUserShipment(userShipment));
+@defineDocumentSupplierCustomerStockAccess(UserShipment, company, customer, userShipment);
 
 // ------------------------------- Расчет учетной цены для поставки ------------------------ //
 

@@ -49,7 +49,7 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 @changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail);
 
 // Проставление цены по виду цен
-@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, pricing, customerStock);
+@deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, pricing, customerStock, userInvoice);
 
 // -- Суммы по строкам
 

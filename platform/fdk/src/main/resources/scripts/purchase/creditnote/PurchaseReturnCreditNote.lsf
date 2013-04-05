@@ -17,17 +17,7 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(c
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
-supplierUserCreditNote(userCreditNote) <- defaultSupplierEmployee(currentUser()) IF countAccessSupplierEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userCreditNote IS UserCreditNote);
-customerUserCreditNote(userCreditNote) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userCreditNote IS UserCreditNote);
-
-supplierStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserCreditNote(userCreditNote))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserCreditNote(userCreditNote)) == 1
-        WHEN CHANGED(supplierUserCreditNote(userCreditNote));
-customerStockUserCreditNote(userCreditNote) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserCreditNote(userCreditNote))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserCreditNote(userCreditNote)) == 1
-        WHEN CHANGED(customerUserCreditNote(userCreditNote));
+@defineDocumentSupplierCustomerStockAccess(CreditNote, supplier, company, userCreditNote);
 
 //-- Операция
 createCreditNoteUserInvoice (invoice) <- createCreditNoteOperation(operationUserInvoice(invoice))

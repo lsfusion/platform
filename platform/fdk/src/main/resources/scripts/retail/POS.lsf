@@ -50,7 +50,6 @@ createCurrentReceipt 'Создать новый чек' = ACTION () {
 // Вывод на дисплей
 
 fiscalDisplayTextReceiptDetail 'Вывести текст на дисплей'(receiptDetail) = ABSTRACT ACTION (receiptDetail);
-WHEN SESSION CHANGED (quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail);
 
 // Проведение чека
 
@@ -549,8 +548,6 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
     SET discountSumReceiptSaleDetail(detail) <- calcDiscountSumReceiptSaleDetail(detail) WHERE detail IS ReceiptSaleDetail AND receiptReceiptSaleDetail(detail) == receipt AND discountPercentReceiptSaleDetail(detail) AND NOT promotionSumReceiptSaleDetail(detail);
 }
 
-WHEN SESSION CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) OR CHANGED(discountPercentReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt);
-
 // Форма POS-терминала
 
 prevCurrentBalanceSkuReceipt (sku, receipt) = [PREV(currentBalanceSkuStock(sku, stock))] (sku, departmentStoreReceipt(receipt));
@@ -699,6 +696,9 @@ DESIGN POS FROM DEFAULT {
         }
     }
 }
+
+WHEN SESSION FORMS POS CHANGED(quantityReceiptDetailReceipt(receipt)) OR CHANGED(discountCardReceipt(receipt)) OR CHANGED(setUserPromotionReceipt(receipt)) OR CHANGED(discountPercentReceipt(receipt)) DO EXEC calculatePromotionsReceipt(receipt);
+WHEN SESSION FORMS POS CHANGED(quantityReceiptDetail(receiptDetail)) OR CHANGED(sumReceiptDetail(receiptDetail)) DO EXEC fiscalDisplayTextReceiptDetail(receiptDetail);
 
 NAVIGATOR {
     retailNavigator {

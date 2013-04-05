@@ -117,17 +117,7 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(custom
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
-supplierUserInvoice(userInvoice) <- defaultCompanyEmployee(currentUser()) IF countAccessCompanyEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS UserInvoice);
-customerUserInvoice(userInvoice) <- defaultCustomerEmployee(currentUser()) IF countAccessCustomerEmployee (currentUser()) == 1
-    WHEN ASSIGNED(userInvoice IS UserInvoice);
-
-supplierStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), supplierUserInvoice(userInvoice))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), supplierUserInvoice(userInvoice)) == 1
-        WHEN CHANGED(supplierUserInvoice(userInvoice));
-customerStockUserInvoice(userInvoice) <- defaultStockEmployeeLegalEntity(currentUser(), customerUserInvoice(userInvoice))
-    IF countAccessStockEmployeeLegalEntity (currentUser(), customerUserInvoice(userInvoice)) == 1
-        WHEN CHANGED(customerUserInvoice(userInvoice));
+@defineDocumentSupplierCustomerStockAccess(UserInvoice, company, customer, userInvoice);
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
