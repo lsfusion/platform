@@ -45,7 +45,7 @@ overShipmentPriceUserInvoiceDetail(detail) += manufacturingPriceUserInvoiceDetai
 
 //Задание торговой надбавки в документе
 retailMarkupSkuUserInvoiceDetail 'Надбавка,% (розничная)' (detail) = markupCalcPriceListTypeSku (externalizableSID('cplt_retail'), Purchase.skuUserInvoiceDetail(detail));
-toShowRetailMarkupSkuUserInvoiceDetail 'Розничная надбавка' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
+toShowRetailMarkupSkuUserInvoice 'Розничная надбавка' (invoice) = DATA BOOLEAN (Purchase.UserInvoice) IN documentPrmGroup;
 
 changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
     REQUEST NUMERIC[8,2] INPUT;
@@ -55,6 +55,6 @@ changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
 }
 
 EXTEND FORM Purchase.userInvoice
-    PROPERTIES (i) AFTER toShowWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoiceDetail
-    PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail SHOWIF toShowRetailMarkupSkuUserInvoiceDetail(i) ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
+    PROPERTIES (i) AFTER toShowWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoice
+    PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail SHOWIF toShowRetailMarkupSkuUserInvoice(i) ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
 ;
