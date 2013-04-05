@@ -18,16 +18,12 @@ import platform.server.session.StructChanges;
 public class ChangeEvent<C extends PropertyInterface> {
 
     protected final CalcProperty<C> writeTo; // что меняем
-    protected final CalcPropertyMapImplement<?, C> where;
+    public final CalcPropertyMapImplement<?, C> where;
 
-    private final CalcPropertyInterfaceImplement<C> writeFrom;
+    public final CalcPropertyInterfaceImplement<C> writeFrom;
 
     public CalcProperty<?> getWhere() {
         return where.property;
-    }
-
-    public CalcProperty<?> getWriteFrom() {
-        return ((CalcPropertyMapImplement) writeFrom).property;
     }
 
     public ChangeEvent(CalcProperty<C> writeTo, CalcPropertyInterfaceImplement<C> writeFrom, CalcPropertyMapImplement<?, C> where) {

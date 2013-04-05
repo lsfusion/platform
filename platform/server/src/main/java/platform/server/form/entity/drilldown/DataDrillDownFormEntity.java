@@ -1,12 +1,9 @@
 package platform.server.form.entity.drilldown;
 
+import org.apache.poi.hssf.record.formula.functions.T;
 import platform.base.col.MapFact;
-import platform.base.col.implementations.simple.SingletonRevMap;
-import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.MMap;
-import platform.interop.ClassViewType;
-import platform.server.classes.ValueClass;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.ContainerView;
@@ -15,10 +12,6 @@ import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static platform.base.BaseUtils.isRedundantString;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInterface, DataProperty> {
@@ -35,33 +28,21 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     protected void setupDrillDownForm() {
         implPropertyDraw = addPropertyDraw(property, interfaceObjects);
 
-        CalcProperty<?> where = property.event.getWhere(); //h
-        ImRevMap whereMapping = where.getImplement().mapping;
-        MMap<ClassPropertyInterface, ObjectEntity> whereObjects = MapFact.mMap(MapFact.<ClassPropertyInterface, ObjectEntity>override());
-        ImMap<ClassPropertyInterface, ValueClass> whereClasses = (ImMap<ClassPropertyInterface, ValueClass>) where.getInterfaceClasses();
-        for (int i = 0; i < whereMapping.size(); ++i) {
-            if (whereMapping.getKey(i) instanceof ClassPropertyInterface) {
-                ClassPropertyInterface iFace = (ClassPropertyInterface) whereMapping.getKey(i);
-                ObjectEntity innerObject = addSingleGroupObject(whereClasses.get(iFace));
-                innerObject.groupTo.setSingleClassView(ClassViewType.PANEL);
-                whereObjects.add(iFace, innerObject);
-            }
+        CalcPropertyMapImplement<?, ClassPropertyInterface> where = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.where; //h
+        ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) where.mapping;
+        MMap<PropertyInterface, ObjectEntity> mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
+        for (PropertyInterface i : whereMapping.keys()) {
+                mapping.add(i, interfaceObjects.get(whereMapping.get(i)));
         }
-        wherePropertyDraw = addPropertyDraw(where, whereObjects.immutable());
+        wherePropertyDraw = addPropertyDraw(where.property, mapping.immutable());
 
-        CalcProperty<?> writeFrom = property.event.getWriteFrom(); //g
-        ImRevMap writeFromMapping = writeFrom.getImplement().mapping;
-        MMap<ClassPropertyInterface, ObjectEntity> writeFromObjects = MapFact.mMap(MapFact.<ClassPropertyInterface, ObjectEntity>override());
-        ImMap<ClassPropertyInterface, ValueClass> writeFromClasses = (ImMap<ClassPropertyInterface, ValueClass>) writeFrom.getInterfaceClasses();
-        for (int i = 0; i < writeFromMapping.size(); ++i) {
-            if (writeFromMapping.getKey(i) instanceof ClassPropertyInterface) {
-                ClassPropertyInterface iFace = (ClassPropertyInterface) writeFromMapping.getKey(i);
-                ObjectEntity innerObject = addSingleGroupObject(writeFromClasses.get(iFace));
-                innerObject.groupTo.setSingleClassView(ClassViewType.PANEL);
-                writeFromObjects.add(iFace, innerObject);
-            }
+        CalcPropertyMapImplement<?, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.writeFrom; //g
+        ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) writeFrom.mapping;
+        mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
+        for (PropertyInterface i : writeFromMapping.keys()) {
+                mapping.add(i, interfaceObjects.get(writeFromMapping.get(i)));
         }
-        writeFromPropertyDraw = addPropertyDraw(writeFrom, writeFromObjects.immutable());
+        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, mapping.immutable());
     }
 
     @Override
