@@ -50,7 +50,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
 
     @Override
     public boolean supportsDrillDown() {
-        return true;
+        return isFull();
     }
 
     @Override

@@ -17,7 +17,7 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(c
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 
-@defineDocumentSupplierCustomerStockAccess(CreditNote, supplier, company, userCreditNote);
+@defineDocumentSupplierCustomerStockAccess(UserCreditNote, supplier, company, userCreditNote);
 
 //-- Операция
 createCreditNoteUserInvoice (invoice) <- createCreditNoteOperation(operationUserInvoice(invoice))
