@@ -255,7 +255,7 @@ META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
     prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
     prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (###detail) IN recognize;
 
-    prefixB###amountPack###detail(detail) <- amountBarcode(prefixB###barcodePack###detail(detail)) WHEN CHANGED(prefixB###barcodePack###detail(detail));
+//    prefixB###amountPack###detail(detail) <- amountBarcode(prefixB###barcodePack###detail(detail)) WHEN CHANGED(prefixB###barcodePack###detail(detail));
 
     CONSTRAINT skuBarcode(prefixB###barcodePack###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###barcodePack###detail
         MESSAGE 'Выбран штрих-кода не соответствующий sku';

@@ -27,16 +27,6 @@ valueRetailVATUserOutputDetail(detail) <- valueVATProductDetail(productDetailUse
 
 
 @defineDocumentInterfaceDetailMarkupPrefix (output, retail, );
-retailMarkupUserOutputDetail(detail) <- [round2(((X/Z*100/(100+Y))-1)*100)](
-                                        0.0 IF detail IS UserOutputDetail OR retailPriceUserOutputDetail(detail),
-                                        supplierPriceUserOutputDetail(detail),
-                                        0.0 IF detail IS UserOutputDetail OR valueRetailVATUserOutputDetail(detail))
-        WHEN CHANGED(retailPriceUserOutputDetail(detail)) OR
-             CHANGED(supplierPriceUserOutputDetail(detail)) OR
-             CHANGED(retailPriceUserOutputDetail(detail))
-;
-//@changeDocumentDetailMarkupCustomPrefix(userOutputDetail, retail, , retail, retail);
-//@changeDocumentDetailPriceCustomPrefix(userOutputDetail, retail, , retail, retail, currency);
 @defineDocumentInterfaceDetailDataSumPrefix (output, retail, ' выходная');
 @deriveDocumentDetailSumPrefix(userOutput, retail, currency, quantity);
 

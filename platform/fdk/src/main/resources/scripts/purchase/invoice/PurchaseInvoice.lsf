@@ -15,6 +15,10 @@ NAMESPACE Purchase;
 // вторая валюта
 @defineHomeCurrencyInvoice(invoice);
 
+@deriveDocumentDetailVAT (userInvoice, , date,  sku, customerStock); // записываем ставку
+@deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
+@deriveDocumentDetailVATPrefixSum(userInvoice, invoice); // записываем сумму с НДС
+
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineDocumentOperation(invoice, i);

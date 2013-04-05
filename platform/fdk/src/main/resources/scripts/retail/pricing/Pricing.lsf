@@ -600,7 +600,7 @@ META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, cap
 
     // НДС
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, retail, ' розничный');
-    @deriveDocumentDetailVAT(userInvoice, retail, date, sku, stockProp);
+    // Не проставляется НДС, поскольку для прихода он равен НДС поставщика
     @deriveDocumentDetailValueVAT(userInvoice, retail);
 
     // Розничная

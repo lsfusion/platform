@@ -8,21 +8,24 @@ NAMESPACE PurchaseReturn;
 
 roundConditionUserInvoiceDetail(userInvoiceDetail) = roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 @defineInvoicePricingAggregation(invoice, Invoice, ' (закупка-возврат)', 'Акт расценки при возврате', 'Проведенный акт расценки при возврате', customerStock, );
-//-- аггр.объект
 
+// Автоматическое проставление свойств
 retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))/Z)-1)*100)](
-    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR retailPriceUserInvoiceDetail(userInvoiceDetail),
-    0.0 IF userInvoiceDetail IS UserInvoiceDetail OR valueRetailVATUserInvoiceDetail(userInvoiceDetail),
+    retailPriceUserInvoiceDetail(userInvoiceDetail),
+    valueRetailVATUserInvoiceDetail(userInvoiceDetail),
     pricingPriceUserInvoiceDetail(userInvoiceDetail))
-    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED (retailVATUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(pricingPriceUserInvoiceDetail(userInvoiceDetail));
+    WHEN CHANGED(retailPriceUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED(retailVATUserInvoiceDetail(userInvoiceDetail)) OR
+         CHANGED(pricingPriceUserInvoiceDetail(userInvoiceDetail));
+
+@deriveDocumentDetailVAT(userInvoice, retail, date, sku, customerStock);
 
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userInvoice, retailPricingPriceListType, retail, sku, customerStock);
-@deriveDocumentDetailVAT (userInvoice, retail, date, sku, customerStock);
-@deriveDocumentDetailValueVAT(userInvoice, retail);
 
+// Не изменять цену и является обратным
 skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
 isReturnPricing(pricing) +=  pricing IS InvoicePricing;
-//--
 
+// Автоматическое проставление галочки
 createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));

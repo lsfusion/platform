@@ -146,7 +146,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     Invoice.priceInvoiceDetail(detail) += priceInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVAT(invoice, country###stockProp, , ); // объявляем шкалу
-    @deriveDocumentDetailVAT (userInvoice, , date,  sku, stockProp); // записываем ставку
+    // саму шкалу не записываем, поскольку на продаже может быть расчетный НДС
     @deriveDocumentDetailValueVAT(userInvoice); // записываем значение ставки
 
     Invoice.VATInvoiceDetail(detail) += VATInvoiceDetail(detail);
@@ -169,8 +169,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVATDataSum (invoice, invoice); // объявляем свойства суммы НДС и суммы с НДС
-    @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
-    @deriveDocumentDetailVATPrefixSum(userInvoice, invoice); // записываем сумму с НДС
+    // суммы НДС и с НДС не записываем, поскольку для продажи нужен расчетный НДС
     Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
     Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
 

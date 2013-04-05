@@ -27,6 +27,8 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
          CHANGED (valueRetailVATUserInvoiceDetail(userInvoiceDetail)) OR
          CHANGED(supplierPriceUserInvoiceDetail(userInvoiceDetail));
 
+@deriveDocumentDetailVAT(userInvoice, retail, date, sku, supplierStock);
+
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
 // Проставление галочки акт расценки

@@ -144,7 +144,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     Order.priceOrderDetail(detail) += priceOrderDetail(detail);
 
     @defineDocumentInterfaceDetailVAT(order, country###stockProp, , ); // объявляем шкалу
-    @deriveDocumentDetailVAT (userOrder, , date,  sku, stockProp); // записываем ставку
+    // саму шкалу не записываем, поскольку на продаже может быть расчетный НДС
     @deriveDocumentDetailValueVAT(userOrder); // записываем значение ставки
 
     Order.VATOrderDetail(detail) += VATOrderDetail(detail);
@@ -169,8 +169,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
     // суммы НДС и с НДС
     @defineDocumentInterfaceDetailVATDataSum (order, invoice); // объявляем свойства суммы НДС и суммы с НДС
-    @deriveDocumentDetailVATDataSum(userOrder); // записываем сумму НДС
-    @deriveDocumentDetailVATPrefixSum (userOrder, invoice); // записываем сумму с НДС
+    // суммы НДС и с НДС не записываем, поскольку для продажи нужен расчетный НДС
 
     Order.VATSumOrderDetail(detail) += VATSumOrderDetail(detail);
     Order.invoiceSumOrderDetail(detail) += invoiceSumOrderDetail(detail);

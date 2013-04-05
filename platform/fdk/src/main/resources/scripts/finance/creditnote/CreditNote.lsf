@@ -240,10 +240,6 @@ META defineCreditNote(sign, stockProp)//contact, contactCaption)
     priceUserCreditNoteDetail (detail)  <- priceInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
-    sumUserCreditNoteDetail (detail)  <- roundPriceCurrency((quantityUserCreditNoteDetail(detail) *
-        priceUserCreditNoteDetail(detail)), currencyInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail)))
-        WHEN CHANGED(quantityUserCreditNoteDetail(detail)) OR CHANGED(priceUserCreditNoteDetail(detail)) OR CHANGED(currencyInvoiceDetail(detail));
-
     VATUserCreditNoteDetail (detail)  <- VATInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))
         WHEN CHANGED(invoiceDetailUserCreditNoteDetail(detail));
 
