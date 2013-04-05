@@ -58,31 +58,12 @@ END
 
 // ------------------------------------ Добавление сертификатов к документам ----------------------------------- //
 
-//META defineDocumentCertificateText(document)
-//
-//    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (###document##Detail);
-//    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (User###document##Detail);
-//    certificateText###document##Detail(detail) += certificateTextUser###document##Detail(detail);
-//
-//    EXTEND FORM user###document PROPERTIES(dc) certificateTextUser###document##Detail;
-//    EXTEND DESIGN user###document {
-//        PROPERTY(certificateTextUser###document##Detail){
-//            minimumSize = (200, 36);
-//            preferredSize = (300, 36);
-//            maximumSize = (300, 36);
-//        }
-//    }
-//
-//    EXTEND FORM document##s PROPERTIES(dc) READONLY certificateText###document##Detail;
-//    EXTEND DESIGN document##s {
-//        PROPERTY(certificateText###document##Detail){
-//            minimumSize = (200, 36);
-//            preferredSize = (300, 36);
-//            maximumSize = (300, 36);
-//        }
-//    }
-//
-//END
+META defineDocumentTextBatchPrefix(prefix, caption)
+
+    prefix###text###batch  caption = ABSTRACT TEXT (Batch) PERSISTENT;
+    prev###prefix###text###batch (batch) = PREV(prefix###text###batch(batch));
+END
+
 META defineDocumentCertificateTextPrefix(document, prefix, caption)
 
     prefix###text###document##Detail caption = ABSTRACT TEXT (###document##Detail);
@@ -152,6 +133,7 @@ END
 
 META defineCertificateObjectBatchInner(prop, propClass, caption)
     prop###batch = ABSTRACT propClass (Batch) PERSISTENT;
+    prev###prop###batch (batch) = PREV(prop###batch(batch));
     description###prop###batch caption (batch) = description###prop(prop###batch(batch));
     batchCount###prop##Sku(prop, sku) = GROUP SUM 1 BY prop##Batch(batch), skuBatch(batch);
 
@@ -161,7 +143,7 @@ META defineCertificateObjectBatchInner(prop, propClass, caption)
     EXTEND FORM balanceBatchStock PROPERTIES READONLY description###prop###batch(bt);
 END
 
-certificateTextBatch 'Дополнительные сертификаты' = ABSTRACT TEXT (Batch) PERSISTENT;
+@defineDocumentTextBatchPrefix(certificate, 'Дополнительные сертификаты');
 
 EXTEND FORM currentBalanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
 EXTEND FORM balanceSkuStock PROPERTIES READONLY certificateTextBatch(bt);
@@ -179,16 +161,16 @@ END
 // ------------------------------------ Автоматическое проставление ----------------------------------- //
 
 META deriveDocumentCertificate(prop, document, stockProp, prefix)
-    prefix###prop###user###document##Detail(detail)  <- IF prop###batch(batchUser###document##Detail(detail))
-                                                            THEN prop###batch(batchUser###document##Detail(detail))
-                                                            ELSE prop###batch(lastOrderBatchSkuStock(skuUser###document##Detail(detail), stockProp##User###document##Detail(detail)))
+    prefix###prop###user###document##Detail(detail)  <- IF batchUser###document##Detail(detail)
+                                                            THEN prev###prop###batch(batchUser###document##Detail(detail))
+                                                            ELSE prev###prop###batch(lastOrderBatchSkuStock(skuUser###document##Detail(detail), stockProp##User###document##Detail(detail)))
         WHEN CHANGED (batchUser###document##Detail(detail)) OR
              CHANGED (skuUser###document##Detail(detail)) OR
              CHANGED (stockProp##User###document##Detail(detail));
 END
 
 META deriveDocumentCertificate(prop, document, prefix)
-    prefix###prop###user###document##Detail(detail)  <-  prop###batch(batchUser###document##Detail(detail))
+    prefix###prop###user###document##Detail(detail)  <-  prev###prop###batch(batchUser###document##Detail(detail))
         WHEN CHANGED (batchUser###document##Detail(detail));
 END
 

@@ -1,0 +1,7 @@
+MODULE SalePurchaseCompliance;
+
+REQUIRE SaleCompliance, PurchaseCompliance, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+Purchase.complianceInvoiceDetail(detail) += complianceInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

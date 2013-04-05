@@ -1,0 +1,7 @@
+MODULE SalePurchaseSanitation;
+
+REQUIRE SaleSanitation, PurchaseSanitation, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+Purchase.sanitationInvoiceDetail(detail) += sanitationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

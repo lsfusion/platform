@@ -2,5 +2,5 @@ MODULE CertificateSOT;
 
 REQUIRE Certificate;
 
-priceListTextBatch 'Прейскурант цен' = ABSTRACT TEXT (Batch) PERSISTENT;
+@defineDocumentTextBatchPrefix(priceList, 'Прейскурант цен');
 

@@ -1,0 +1,7 @@
+MODULE SalePurchaseCertificate;
+
+REQUIRE SaleCertificate, PurchaseCertificate, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+Purchase.certificateTextInvoiceDetail(detail) += certificateTextInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

@@ -1,0 +1,7 @@
+MODULE SalePurchaseDeclaration;
+
+REQUIRE SaleDeclaration, PurchaseDeclaration, SalePurchaseInvoice;
+
+NAMESPACE Sale;
+
+Purchase.declarationInvoiceDetail(detail) += declarationInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(detail));

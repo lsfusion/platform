@@ -360,6 +360,7 @@ pricingPricePricingDetail (detail) = pricePricingDetail(detail) OR overPricingPr
 
 // Основание
 descriptionDocumentPricing 'Документы-основания' = ABSTRACT STRING[255] (Pricing)PERSISTENT;
+extraDescriptionPricingDetail 'Доп. наименование'  = ABSTRACT STRING[255] (PricingDetail) MINCHARWIDTH 30 PREFCHARWIDTH 80;
 
 // Возвраты
 isReturnPricing 'Обратный' = ABSTRACT BOOLEAN (Pricing);
@@ -380,7 +381,7 @@ FORM pricing 'Акт расценки (печать)' PRINT
 
     OBJECTS d=PricingDetail
 
-    PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, shortNameUOMSkuPricingDetail,
+    PROPERTIES (d) indexPricingDetail, idBarcodeSkuPricingDetail, nameSkuPricingDetail, extraDescriptionPricingDetail, shortNameUOMSkuPricingDetail,
                    quantityPricingDetail, overPricingPricePricingDetail, pricingPricePricingDetail, pricePricingDetail, sumPricingDetail,
                    retailMarkupPricingDetail, retailMarkupSumPricingDetail, numberRetailVATPricingDetail, valueRetailVATPricingDetail, retailVATSumPricingDetail,
                    retailPricePricingDetail, retailSumPricingDetail
