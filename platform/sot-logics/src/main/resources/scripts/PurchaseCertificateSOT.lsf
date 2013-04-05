@@ -1,6 +1,6 @@
 MODULE PurchaseCertificateSOT;
 
-REQUIRE CertificateSOT, PurchaseCertificate;
+REQUIRE PurchaseCertificate, CertificateSOT;
 
 NAMESPACE Purchase;
 

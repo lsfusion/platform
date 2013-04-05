@@ -1,11 +1,11 @@
 MODULE SaleCertificateSOT;
 
-REQUIRE CertificateSOT, SaleCertificate;
+REQUIRE SaleCertificate, CertificateSOT;
 
 NAMESPACE Sale;
 
 @defineDocumentCertificateTextPrefix(invoice, priceList, 'Прейскурант цен');
-@deriveDocumentCertificate(priceListText, invoice, supplierStock, 'Прейскурант цен', );
+@deriveDocumentCertificate(priceListText, invoice, supplierStock, );
 
 @defineDocumentCertificateTextPrefix(shipment, priceList, 'Прейскурант цен');
-@deriveDocumentCertificate(priceListText, shipment, supplierStock, 'Прейскурант цен', );
+@deriveDocumentCertificate(priceListText, shipment, supplierStock, );

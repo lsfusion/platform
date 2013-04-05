@@ -2,31 +2,5 @@ MODULE CertificateSOT;
 
 REQUIRE Certificate;
 
-META defineDocumentCertificateTextPrefix(document, prefix, caption)
-
-    prefix###text###document##Detail caption = ABSTRACT TEXT (###document##Detail);
-    prefix###textUser###document##Detail caption = DATA TEXT (User###document##Detail);
-    prefix###text###document##Detail(detail) += prefix###textUser###document##Detail(detail);
-
-    EXTEND FORM user###document PROPERTIES(dc) prefix###textUser###document##Detail;
-    EXTEND DESIGN user###document {
-        PROPERTY(prefix###textUser###document##Detail){
-            minimumSize = (200, 36);
-            preferredSize = (300, 36);
-            maximumSize = (300, 36);
-        }
-    }
-
-    EXTEND FORM document##s PROPERTIES(dc) READONLY prefix###text###document##Detail;
-    EXTEND DESIGN document##s {
-        PROPERTY(prefix###text###document##Detail){
-            minimumSize = (200, 36);
-            preferredSize = (300, 36);
-            maximumSize = (300, 36);
-        }
-    }
-
-END
-
 priceListTextBatch 'Прейскурант цен' = ABSTRACT TEXT (Batch) PERSISTENT;
 

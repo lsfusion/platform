@@ -6,10 +6,10 @@ NAMESPACE Sale;
 
 @defineDocumentCertificate(invoice, i);
 
-@defineDocumentCertificateText(invoice);
-@deriveDocumentCertificate(certificateText, invoice, supplierStock, 'Дополнительные сертификаты', );
+@defineDocumentCertificateTextPrefix(invoice, certificate, 'Дополнительные сертификаты');
+@deriveDocumentCertificate(certificateText, invoice, supplierStock, );
 
 @defineDocumentCertificate(shipment, s);
 
-@defineDocumentCertificateText(shipment);
-@deriveDocumentCertificate(certificateText, shipment, supplierStock, 'Дополнительные сертификаты', );
+@defineDocumentCertificateTextPrefix(shipment, certificate, 'Дополнительные сертификаты');
+@deriveDocumentCertificate(certificateText, shipment, supplierStock, );

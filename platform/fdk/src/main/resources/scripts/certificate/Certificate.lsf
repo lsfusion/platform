@@ -58,24 +58,49 @@ END
 
 // ------------------------------------ Добавление сертификатов к документам ----------------------------------- //
 
-META defineDocumentCertificateText(document)
+//META defineDocumentCertificateText(document)
+//
+//    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (###document##Detail);
+//    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (User###document##Detail);
+//    certificateText###document##Detail(detail) += certificateTextUser###document##Detail(detail);
+//
+//    EXTEND FORM user###document PROPERTIES(dc) certificateTextUser###document##Detail;
+//    EXTEND DESIGN user###document {
+//        PROPERTY(certificateTextUser###document##Detail){
+//            minimumSize = (200, 36);
+//            preferredSize = (300, 36);
+//            maximumSize = (300, 36);
+//        }
+//    }
+//
+//    EXTEND FORM document##s PROPERTIES(dc) READONLY certificateText###document##Detail;
+//    EXTEND DESIGN document##s {
+//        PROPERTY(certificateText###document##Detail){
+//            minimumSize = (200, 36);
+//            preferredSize = (300, 36);
+//            maximumSize = (300, 36);
+//        }
+//    }
+//
+//END
+META defineDocumentCertificateTextPrefix(document, prefix, caption)
 
-    certificateText###document##Detail 'Дополнительные сертификаты' = ABSTRACT TEXT (###document##Detail);
-    certificateTextUser###document##Detail 'Дополнительные сертификаты' = DATA TEXT (User###document##Detail);
-    certificateText###document##Detail(detail) += certificateTextUser###document##Detail(detail);
+    prefix###text###document##Detail caption = ABSTRACT TEXT (###document##Detail);
+    prefix###textUser###document##Detail caption = DATA TEXT (User###document##Detail);
+    prefix###text###document##Detail(detail) += prefix###textUser###document##Detail(detail);
 
-    EXTEND FORM user###document PROPERTIES(dc) certificateTextUser###document##Detail;
+    EXTEND FORM user###document PROPERTIES(dc) prefix###textUser###document##Detail;
     EXTEND DESIGN user###document {
-        PROPERTY(certificateTextUser###document##Detail){
+        PROPERTY(prefix###textUser###document##Detail){
             minimumSize = (200, 36);
             preferredSize = (300, 36);
             maximumSize = (300, 36);
         }
     }
 
-    EXTEND FORM document##s PROPERTIES(dc) READONLY certificateText###document##Detail;
+    EXTEND FORM document##s PROPERTIES(dc) READONLY prefix###text###document##Detail;
     EXTEND DESIGN document##s {
-        PROPERTY(certificateText###document##Detail){
+        PROPERTY(prefix###text###document##Detail){
             minimumSize = (200, 36);
             preferredSize = (300, 36);
             maximumSize = (300, 36);
@@ -145,21 +170,26 @@ EXTEND FORM balanceBatchStock PROPERTIES READONLY certificateTextBatch(bt);
 
 // ------------------------------------ Ограничение на выбор объектов ----------------------------------- //
 
-META defineDocumentCertificateConstraint(prop, document)
+META defineDocumentCertificateConstraint(prop, document, caption)
     CONSTRAINT prop###user###document##Detail(detail) AND NOT batchCount###prop##Sku(prop###user###document##Detail(detail), skuUser###document##Detail(detail))
         CHECKED BY description###prop###user###document##Detail
-        MESSAGE 'Выберите '##caption##', по которой есть в поставка';
+        MESSAGE 'Выберите '##caption##', по которой есть поставка';
 END
 
 // ------------------------------------ Автоматическое проставление ----------------------------------- //
 
-META deriveDocumentCertificate(prop, document, stockProp, caption, prefix)
+META deriveDocumentCertificate(prop, document, stockProp, prefix)
     prefix###prop###user###document##Detail(detail)  <- IF prop###batch(batchUser###document##Detail(detail))
                                                             THEN prop###batch(batchUser###document##Detail(detail))
                                                             ELSE prop###batch(lastOrderBatchSkuStock(skuUser###document##Detail(detail), stockProp##User###document##Detail(detail)))
         WHEN CHANGED (batchUser###document##Detail(detail)) OR
              CHANGED (skuUser###document##Detail(detail)) OR
              CHANGED (stockProp##User###document##Detail(detail));
+END
+
+META deriveDocumentCertificate(prop, document, prefix)
+    prefix###prop###user###document##Detail(detail)  <-  prop###batch(batchUser###document##Detail(detail))
+        WHEN CHANGED (batchUser###document##Detail(detail));
 END
 
 NAVIGATOR {

@@ -5,10 +5,10 @@ REQUIRE Compliance, SaleCertificate;
 NAMESPACE Sale;
 
 @defineDocumentCertificateObject(compliance, invoice, i, 'Сертификат соответствия');
-@defineDocumentCertificateConstraint(compliance, invoice);
-@deriveDocumentCertificate(compliance, invoice, supplierStock, 'Сертификат соответствия', data);
+@defineDocumentCertificateConstraint(compliance, invoice, 'Сертификат соответствия');
+@deriveDocumentCertificate(compliance, invoice, supplierStock, data);
 
 @defineDocumentCertificateObject(compliance, shipment, s, 'Сертификат соответствия');
 complianceShipmentDetail(detail) += complianceInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
-@defineDocumentCertificateConstraint(compliance, shipment);
-@deriveDocumentCertificate(compliance, shipment, supplierStock, 'Сертификат соответствия', data);
+@defineDocumentCertificateConstraint(compliance, shipment, 'Сертификат соответствия');
+@deriveDocumentCertificate(compliance, shipment, supplierStock, data);

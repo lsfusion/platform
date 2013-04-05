@@ -5,10 +5,10 @@ REQUIRE Sanitation, SaleCertificate;
 NAMESPACE Sale;
 
 @defineDocumentCertificateObject(sanitation, invoice, i, 'ГГР');
-@defineDocumentCertificateConstraint(sanitation, invoice);
-@deriveDocumentCertificate(sanitation, invoice, supplierStock, 'ГГР', data);
+@defineDocumentCertificateConstraint(sanitation, invoice, 'ГГР');
+@deriveDocumentCertificate(sanitation, invoice, supplierStock, data);
 
 @defineDocumentCertificateObject(sanitation, shipment, s, 'ГГР');
 sanitationShipmentDetail(detail) += sanitationInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
-@defineDocumentCertificateConstraint(sanitation, shipment);
-@deriveDocumentCertificate(sanitation, shipment, supplierStock, 'ГГР', data);
+@defineDocumentCertificateConstraint(sanitation, shipment, 'ГГР');
+@deriveDocumentCertificate(sanitation, shipment, supplierStock, data);

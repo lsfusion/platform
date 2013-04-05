@@ -5,10 +5,10 @@ REQUIRE Certificate, PurchaseInvoice, PurchaseShipment;
 NAMESPACE Purchase;
 
 @defineDocumentCertificate(invoice, i);
-@defineDocumentCertificateText(invoice);
+@defineDocumentCertificateTextPrefix(invoice, certificate, 'Дополнительные сертификаты');
 
 @defineDocumentCertificate(shipment, s);
-@defineDocumentCertificateText(shipment);
+@defineDocumentCertificateTextPrefix(shipment, certificate, 'Дополнительные сертификаты');
 certificateTextShipmentDetail(detail) += certificateTextInvoiceDetail(invoiceDetailInvoiceShipmentDetail(detail));
 
 certificateTextBatch (batch) += certificateTextShipmentDetail(shipmentDetailShipmentBatch(batch));
