@@ -5,7 +5,13 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.SumUnionDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.PropertyChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 
@@ -18,7 +24,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
 
     private final ImMap<CalcPropertyInterfaceImplement<Interface>,Integer> operands;
 
-    protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return operands.keys();
     }
 
@@ -40,5 +46,18 @@ public class SumUnionProperty extends IncrementUnionProperty {
             if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
         }
         return result;
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return true;
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new SumUnionDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.sum.union"), this, BL
+        );
     }
 }

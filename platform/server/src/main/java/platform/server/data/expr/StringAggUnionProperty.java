@@ -7,8 +7,14 @@ import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.InsensitiveStringClass;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.StringAggUnionDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.CalcPropertyInterfaceImplement;
 import platform.server.logics.property.FormulaUnionProperty;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {
 
@@ -44,5 +50,18 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
             public String getMapValue(int i) {
                 return "prm"+(i+1);
             }});
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return isFull();
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new StringAggUnionDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.agg.union"), this, BL
+        );
     }
 }

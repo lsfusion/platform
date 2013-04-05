@@ -29,7 +29,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         super(sID, caption, interfaces);
     }
 
-    protected abstract ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands();
+    public abstract ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands();
 
     @Override
     public void fillDepends(MSet<CalcProperty> depends, boolean events) {

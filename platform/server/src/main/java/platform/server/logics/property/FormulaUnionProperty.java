@@ -20,7 +20,7 @@ public abstract class FormulaUnionProperty extends UnionProperty {
         super(sID, caption, interfaces);
     }
 
-    protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return getParams().values();
     }
 

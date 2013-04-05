@@ -5,7 +5,13 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.MaxUnionDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.PropertyChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
 
@@ -39,7 +45,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
-    protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return operands;
     }
 
@@ -48,5 +54,18 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         this.operands = operands;
 
         finalizeInit();
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return true;
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new MaxUnionDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.max.union"), this, BL
+        );
     }
 }

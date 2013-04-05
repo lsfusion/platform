@@ -1,6 +1,5 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
@@ -9,10 +8,16 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.form.entity.drilldown.XorUnionDrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class XorUnionProperty extends IncrementUnionProperty {
 
@@ -25,7 +30,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
 
     private final ImList<CalcPropertyInterfaceImplement<Interface>> operands; // list нужен чтобы порядок редактирования был
 
-    protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return operands.getCol();
     }
 
@@ -78,5 +83,18 @@ public class XorUnionProperty extends IncrementUnionProperty {
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }
         return result;
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return true;
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new XorUnionDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.xor.union"), this, BL
+        );
     }
 }

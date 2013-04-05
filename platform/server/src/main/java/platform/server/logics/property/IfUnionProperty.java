@@ -22,7 +22,7 @@ public class IfUnionProperty extends IncrementUnionProperty {
     private CalcPropertyInterfaceImplement<Interface> trueProp;
     private CalcPropertyInterfaceImplement<Interface> falseProp;
 
-    protected ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
+    public ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands() {
         return SetFact.toSet(ifProp, trueProp, falseProp);
     }
 
