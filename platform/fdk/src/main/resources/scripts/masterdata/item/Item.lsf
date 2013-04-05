@@ -582,6 +582,7 @@ netWeightSku(sku) += netWeightItem(sku);
 @defineItemAttributeBatch (grossWeight, 'Вес брутто, кг');
 grossWeightSku(sku) += grossWeightItem(sku);
 
+grossWeightItem(sku) <- netWeightItem(sku) WHEN CHANGED(netWeightItem(sku));
 // Кол-во в грузовом месте
 // todo : здесь скорее всего надо будет рефакторить на более сложную логику
 //@defineDoubleItemAttribute(quantityPack, NUMERIC[9,3], 'Количество в грузовом месте', itemSizeGroup);
