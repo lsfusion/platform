@@ -1,19 +1,22 @@
 MODULE ConsignmentSOT;
 
-REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP, SaleCompliance, SaleCertificate, SaleDeclaration, SaleSanitation, PricingSalePurchase;
+REQUIRE ConsignmentBy, SaleManufacturingPrice, SaleInvoiceRRP, SaleCompliance, SaleCertificate,
+        SaleDeclaration, SaleSanitation, PricingSalePurchase, SaleCertificateSOT;
 
 NAMESPACE Sale;
 
-noteRRPInvoiceDetail(invoiceDetail) = ustring3SP(string2('Опт.над.: ', wholesaleMarkupInvoiceDetail(invoiceDetail)),
+noteRRPInvoiceDetail(invoiceDetail) = ustring4SP(string2('Цена.изг.: ', manufacturingPriceInvoiceDetail(invoiceDetail)),
+                                                 string2('Опт.над.: ', wholesaleMarkupInvoiceDetail(invoiceDetail)),
                                                  string2('Цена розн.: ', round0(purchaseRetailPriceInvoiceDetail(invoiceDetail))),
                                                  string2('Сумма розн.: ', round0(purchaseRetailSumInvoiceDetail(invoiceDetail)))
-                                                 ) PERSISTENT;
+                                                 );// PERSISTENT;
 Invoice.noteInvoiceDetail (invoiceDetail) += noteRRPInvoiceDetail(invoiceDetail);
 
-extraDescriptionInvoiceDetail(invoiceDetail) = ustring4CM(string2(descriptionComplianceInvoiceDetail(invoiceDetail), ''),
+extraDescriptionInvoiceDetail(invoiceDetail) = ustring5CM(string2(descriptionComplianceInvoiceDetail(invoiceDetail), ''),
                                                  string2(descriptionDeclarationInvoiceDetail(invoiceDetail), ''),
                                                  string2(descriptionSanitationInvoiceDetail(invoiceDetail), ''),
-                                                 string2(certificateTextInvoiceDetail(invoiceDetail), '')
-                                                 ) PERSISTENT;
+                                                 string2(certificateTextInvoiceDetail(invoiceDetail), ''),
+                                                 string2(priceListTextInvoiceDetail(invoiceDetail), '')
+                                                 );// PERSISTENT;
 
 Invoice.extraDescriptionInvoiceDetail (invoiceDetail) += extraDescriptionInvoiceDetail(invoiceDetail);

@@ -99,7 +99,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP string2SP, istring2SP, string3SP, istring3SP;
     public LCP string2, istring2, string3, istring3;
     public LCP string5CM;
-    public LCP ustring2CM, ustring2SP, ustring3SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
+    public LCP ustring2CM, ustring2SP, ustring3SP, ustring4SP, ustring2, ustring3, ustring4, ustring3CM, ustring4CM, ustring5CM;
     public LCP ustring2CR;
 
     public LCP weekInDate;
@@ -310,6 +310,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ustring2CM = addSFUProp("ustring2CM", " ", 2);
         ustring2SP = addSFUProp("ustring2SP", " ", 2);
         ustring3SP = addSFUProp("ustring3SP", " ", 3);
+        ustring4SP = addSFUProp("ustring4SP", " ", 4);
         ustring2 = addSFUProp("ustring2", "", 2);
         ustring3 = addSFUProp("ustring3", "", 3);
         ustring4 = addSFUProp("ustring4", "", 4);
