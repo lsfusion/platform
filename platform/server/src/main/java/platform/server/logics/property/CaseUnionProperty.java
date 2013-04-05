@@ -16,11 +16,17 @@ import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
+import platform.server.form.entity.drilldown.DrillDownFormEntity;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.DataChanges;
 import platform.server.session.PropertyChange;
 import platform.server.session.PropertyChanges;
 import platform.server.session.StructChanges;
+
+import static platform.base.BaseUtils.capitalize;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
 
@@ -53,8 +59,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     public static class Case {
-        CalcPropertyInterfaceImplement<Interface> where;
-        CalcPropertyInterfaceImplement<Interface> property;
+        public CalcPropertyInterfaceImplement<Interface> where;
+        public CalcPropertyInterfaceImplement<Interface> property;
 
         public Case(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
             this.where = where;
@@ -72,13 +78,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return getWheres().merge(getProps());
     }
 
-    protected ImSet<CalcPropertyInterfaceImplement<Interface>> getWheres() {
+    public ImSet<CalcPropertyInterfaceImplement<Interface>> getWheres() {
         return getCases().getCol().mapMergeSetValues(new GetValue<CalcPropertyInterfaceImplement<Interface>, Case>() {
             public CalcPropertyInterfaceImplement<Interface> getMapValue(Case value) {
                 return value.where;
             }});
     }
-    protected ImSet<CalcPropertyInterfaceImplement<Interface>> getProps() {
+    public ImSet<CalcPropertyInterfaceImplement<Interface>> getProps() {
         return getCases().getCol().mapMergeSetValues(new GetValue<CalcPropertyInterfaceImplement<Interface>, Case>() {
             public CalcPropertyInterfaceImplement<Interface> getMapValue(Case value) {
                 return value.property;
@@ -313,5 +319,18 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 if(op1.mapIntersect(op2))
                     throw new RuntimeException("Exclusive Intersect. Property : " + this + ", Operand 1 : " + op1.property +  ", Operand 2 : " + op2.property + ", Classes 1 : " + op1.mapClassWhere() + ", Classes 2 : " + op2.mapClassWhere());
             }
+    }
+
+    @Override
+    public boolean supportsDrillDown() {
+        return isFull() && getImplement().property.isFull();
+    }
+
+    @Override
+    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+        return new CaseUnionDrillDownFormEntity(
+                "drillDown" + capitalize(getSID()) + "Form",
+                getString("logics.property.drilldown.form.case.union"), this, BL
+        );
     }
 }
