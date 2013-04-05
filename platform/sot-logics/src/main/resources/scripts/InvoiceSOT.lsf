@@ -8,18 +8,21 @@ NAMESPACE PurchaseInvoice;
 certificateTextNotNullBatch(batch) = toText('') IF batch IS Batch OR certificateTextBatch(batch);
 
 necessaryBatchPriceCertificateText = GROUP MAX batch BY skuBatch(batch), costBatch (batch), certificateTextNotNullBatch(batch);
+prevNecessaryBatchPriceCertificateText = PREV(necessaryBatchPriceCertificateText(sku, cost, certificate));
 //necessaryBatchUserInvoiceDetail = necessaryBatch (priceUserInvoiceDetail(userInvoiceDetail), toText('    ') IF userInvoiceDetail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(userInvoiceDetail));
 //descriptionNecessaryBatchUserInvoiceDetail = descriptionBatch(necessaryBatchUserInvoiceDetail(userInvoiceDetail));
 
 usePurchaseBatchAutoSet 'Автоматически определять партии на приходе' = DATA BOOLEAN ();
 
+prevNecessaryBatchUserInvoiceDetail (detail) = prevNecessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
 ON SESSION FORMS userInvoice {
     IF usePurchaseBatchAutoSet() THEN 
         FOR CHANGED(skuUserInvoiceDetail(detail)) OR
             CHANGED(shipmentPriceUserInvoiceDetail(detail)) OR
             CHANGED(certificateTextUserInvoiceDetail(detail)) NOINLINE DO
                 SET batchUserInvoiceDetail (detail) <-
-                    necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
+                    prevNecessaryBatchUserInvoiceDetail(detail) AND detail != prevNecessaryBatchUserInvoiceDetail(detail);
+                   // necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));
 };
 
 EXTEND FORM dialogBatch
