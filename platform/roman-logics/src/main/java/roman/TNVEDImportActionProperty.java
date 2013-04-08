@@ -40,7 +40,7 @@ public class TNVEDImportActionProperty extends CustomReadValueActionProperty {
 
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
-            ObjectValue userObjectValue = context.getSession().getObjectValue(userValue, getFileClass());
+            ObjectValue userObjectValue = context.getSession().getObjectValue(getFileClass(), userValue);
             
             TNVEDImporter importer = null;
             switch (importType) {

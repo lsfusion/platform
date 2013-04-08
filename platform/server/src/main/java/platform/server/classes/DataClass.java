@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.text.Format;
 import java.util.Random;
 
-public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, AndClassSet, OrClassSet {
+public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, ValueClassSet, OrClassSet {
     private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
     protected String caption;
 
@@ -211,11 +211,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return new DataObjectInstance(entity, this);
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) {
         return this;
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
+    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
         return this;
     }
 
@@ -272,5 +272,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     public Stat getTypeStat() {
         return Stat.ALOT;
+    }
+
+    public ValueClassSet getValueClassSet() {
+        return this;
     }
 }

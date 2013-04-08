@@ -149,6 +149,18 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             property.serialize(outStream);
     }
 
+    protected void initBaseClasses(final BaseClass baseClass) {
+        final ImMap<KeyField, AndClassSet> baseClasses = getTableKeys().mapValues(new GetValue<AndClassSet, KeyField>() {
+            public AndClassSet getMapValue(KeyField value) {
+                return value.type.getBaseClassSet(baseClass);
+            }});
+        classes = new ClassWhere<KeyField>(baseClasses);
+
+        propertyClasses = properties.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
+            public ClassWhere<Field> getMapValue(PropertyField value) {
+                return new ClassWhere<Field>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
+            }});
+    }
 
     public Table(DataInputStream inStream, final BaseClass baseClass, int version) throws IOException {
         name = inStream.readUTF();
@@ -163,16 +175,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             mProperties.exclAdd((PropertyField) Field.deserialize(inStream, version));
         properties = mProperties.immutable();
 
-        final ImMap<KeyField, AndClassSet> baseClasses = getTableKeys().mapValues(new GetValue<AndClassSet, KeyField>() {
-            public AndClassSet getMapValue(KeyField value) {
-                return value.type.getBaseClassSet(baseClass);
-            }});
-        classes = new ClassWhere<KeyField>(baseClasses);
-
-        propertyClasses = properties.mapValues(new GetValue<ClassWhere<Field>, PropertyField>() {
-            public ClassWhere<Field> getMapValue(PropertyField value) {
-                return new ClassWhere<Field>(MapFact.addExcl(baseClasses, value, value.type.getBaseClassSet(baseClass)));
-            }});
+        initBaseClasses(baseClass);
     }
 
     public ImOrderMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException {

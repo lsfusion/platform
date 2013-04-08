@@ -6,8 +6,8 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
-import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
@@ -17,6 +17,7 @@ import platform.server.data.query.stat.UnionJoin;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.logics.property.ClassField;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту
 public abstract class UnionExpr extends NotNullExpr implements StaticClassExprInterface {
@@ -74,12 +75,12 @@ public abstract class UnionExpr extends NotNullExpr implements StaticClassExprIn
     }
 
     @Override
-    public Expr classExpr(BaseClass baseClass) {
-        return StaticClassExpr.classExpr(this, baseClass);
+    public Expr classExpr(ImSet<ClassField> classes) {
+        return StaticClassExpr.classExpr(this, classes);
     }
 
     @Override
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         return StaticClassExpr.isClass(this, set);
     }
 

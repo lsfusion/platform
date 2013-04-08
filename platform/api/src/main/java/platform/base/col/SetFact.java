@@ -350,4 +350,9 @@ public class SetFact {
             mSet.exclAdd(element);
         return mSet.immutableOrder();
     }
+
+    public static <T> void addJavaAll(Set<T> set, ImSet<T> add) {
+        for(T element : add)
+            set.add(element);
+    }
 }

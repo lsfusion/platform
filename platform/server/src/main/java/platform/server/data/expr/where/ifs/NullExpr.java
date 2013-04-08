@@ -7,8 +7,8 @@ import platform.base.col.interfaces.mutable.MMap;
 import platform.interop.Compare;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.BaseClass;
-import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
@@ -26,6 +26,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassField;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -63,11 +64,11 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public Expr classExpr(BaseClass baseClass) {
+    public Expr classExpr(ImSet<ClassField> classes) {
         return this;
     }
 
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         return Where.FALSE;
     }
 
@@ -116,5 +117,9 @@ public class NullExpr extends Expr {
 
     public ObjectValue getObjectValue() {
         return NullValue.instance;
+    }
+
+    public ConcreteClass getStaticClass() {
+        return null;
     }
 }

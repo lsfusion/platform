@@ -49,7 +49,7 @@ public class LoadActionProperty extends SystemActionProperty {
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)
             objects[i++] = context.getKeyValue(classInterface);
-        fileProperty.change(objectValue.getValue(), context, objects);
+        fileProperty.change(objectValue, context, objects);
     }
 
     @Override

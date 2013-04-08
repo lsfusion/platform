@@ -347,4 +347,20 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
     public ImList<K> toList() {
         return toOrderSet();
     }
+
+    private final static AddValue<Object, ImSet<Object>> addMergeSet = new SimpleAddValue<Object, ImSet<Object>>() {
+        @Override
+        public ImSet<Object> addValue(Object key, ImSet<Object> prevValue, ImSet<Object> newValue) {
+            return prevValue.merge(newValue);
+        }
+
+        @Override
+        public boolean symmetric() {
+            return true;
+        }
+    };
+
+    public static <K, V> AddValue<K, ImSet<V>> addMergeSet() {
+        return BaseUtils.immutableCast(addMergeSet);
+    }
 }

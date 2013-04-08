@@ -8013,8 +8013,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         Matcher m = p.matcher(str);
                         if (m.find()) {
                             Integer[] ids = BaseUtils.decode(2, m.group(5)); //voteID - expertID
-                            DataObject voteObj = session.getDataObject(ids[0], ObjectType.instance);
-                            DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
+                            DataObject voteObj = session.getDataObject(baseClass, ids[0]);
+                            DataObject expertObj = session.getDataObject(baseClass, ids[1]);
                             if (ipExpertVote.read(session, expertObj, voteObj) == null)
                                 ipExpertVote.change(m.group(1), context, expertObj, voteObj);
                         }

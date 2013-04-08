@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.IdentityLazy;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.CalcProperty;
@@ -35,6 +36,10 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
 
     public CalcPropertyObjectInstance getDrawProperty() {
         return this;
+    }
+
+    public ValueClass getValueClass() {
+        return property.getValueClass();
     }
 
     public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) {

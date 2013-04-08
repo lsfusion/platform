@@ -1,15 +1,20 @@
 package platform.server.classes.sets;
 
 import platform.base.ExtraSetWhere;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.where.Where;
+import platform.server.logics.property.ClassField;
+
+import java.util.Arrays;
 
 // выше вершин
 public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
@@ -28,7 +33,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return wheres[0].getBaseClass();
     }
 
-    public AndClassSet getKeepClass() {
+    public ValueClassSet getKeepClass() {
         return getBaseClass().getUpSet();
     }
 
@@ -44,6 +49,15 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
 
     protected UpClassSet createThis(CustomClass[] wheres) {
         return new UpClassSet(wheres);
+    }
+
+    public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mSet) {
+        for(CustomClass where : wheres)
+            where.fillNextConcreteChilds(mSet);
+    }
+
+    public UpClassSet or(UpClassSet set) {
+        return add(set);
     }
 
     protected CustomClass[] newArray(int size) {
@@ -88,7 +102,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
             else
                 return OrObjectClassSet.or(this,node);
         if(node instanceof UpClassSet)
-            return add((UpClassSet)node);
+            return or((UpClassSet)node);
         return getOr().or((OrObjectClassSet)node);
     }
 
@@ -112,36 +126,27 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return AbstractCustomClass.getSingleClass(wheres);
     }
 
-    private ImSet<ConcreteCustomClass> getConcreteChildren() {
+    public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
         MSet<ConcreteCustomClass> children = SetFact.mSet();
         for(CustomClass node : wheres)
             node.fillConcreteChilds(children);
         return children.immutable();
     }
 
-    private String getChildString(String source) {
-
-        ImSet<ConcreteCustomClass> children = getConcreteChildren();
-        if(children.size()==0) return Where.FALSE_STRING;
-        return source + " IN (" + children.toString(new GetValue<String, ConcreteCustomClass>() {
-            public String getMapValue(ConcreteCustomClass value) {
-                return value.ID.toString();
-            }}, ",") + ")";
+    public int getCount() {
+        return OrObjectClassSet.getCount(this);
     }
 
-    public int getCount() {
-        int stat = 0;
-        for(ConcreteCustomClass child : getConcreteChildren())
-            stat += child.getCount();
-        return stat;
+    public int getClassCount() {
+        return OrObjectClassSet.getClassCount(this);
     }
 
     public String getWhereString(String source) {
-        return getChildString(source);
+        return OrObjectClassSet.getWhereString(this, source);
     }
 
     public String getNotWhereString(String source) {
-        return "(" + source + " IS NULL OR NOT " + getChildString(source) + ")";
+        return OrObjectClassSet.getNotWhereString(this, source);
     }
 
     public Type getType() {
@@ -158,6 +163,9 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
     }
 
     protected CustomClass add(CustomClass addWhere, CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded) {
+        if(!Settings.get().isMergeUpClassSets())
+            return null;
+
         boolean empty = true;
         for (int i = 0; i < numWheres; i++)
             if (wheres[i] != null) {
@@ -186,11 +194,27 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         UpClassSet result = FALSE;
         for(CustomClass andOp : where.wheres)
             for(CustomClass and : wheres)
-                result = result.add(new UpClassSet(intersect(andOp,and)));
+                result = result.or(new UpClassSet(intersect(andOp,and)));
         return result;
     }
 
     public AndClassSet[] getAnd() {
         return new AndClassSet[]{this};
+    }
+
+    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
+        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<ClassField>objectValueSetAdd());
+        for(CustomClass customClass : wheres)
+            mMap.addAll(customClass.getUpTables());
+        return mMap.immutable().toRevExclMap();
+    }
+
+    public ValueClassSet getValueClassSet() {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "up{" + Arrays.toString(wheres) + "}";
     }
 }

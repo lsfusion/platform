@@ -7,6 +7,7 @@ import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
@@ -70,7 +71,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 
-    public abstract ObjectValue refresh(SessionChanges session) throws SQLException;
+    public abstract ObjectValue refresh(SessionChanges session, ValueClass upClass) throws SQLException;
 
     public abstract boolean isNull();
 

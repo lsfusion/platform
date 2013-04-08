@@ -57,14 +57,6 @@ public class UnknownClass extends ImmutableObject implements ConcreteObjectClass
         return Stat.MAX;
     }
 
-    public String getWhereString(String source) {
-        return source + " IS NULL";
-    }
-
-    public String getNotWhereString(String source) {
-        return source + " IS NOT NULL";
-    }
-
     public ObjectClassSet and(AndClassSet node) {
         return ConcreteCustomClass.and(this,node);
     }
@@ -92,5 +84,9 @@ public class UnknownClass extends ImmutableObject implements ConcreteObjectClass
     @IdentityStrongLazy // для ID
     public ActionProperty getChangeClassAction() {
         return CustomClass.getChangeClassAction(this);
+    }
+
+    public ValueClassSet getValueClassSet() {
+        return OrObjectClassSet.FALSE;
     }
 }

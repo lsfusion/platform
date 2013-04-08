@@ -154,6 +154,13 @@ public class MapFact {
         return BaseUtils.immutableCast(map.splitRevKeys(BaseUtils.<ImSet<BK>>immutableCast(keys), BaseUtils.<Result<ImRevMap<BK, V>>>immutableCast(rest)));
     }
 
+    public static <K, V> ImMap<K, V> mergeMaps(ImCol<ImMap<K, V>> maps, AddValue<K, V> addValue) {
+        MMap<K, V> mResult = MapFact.mMap(addValue);
+        for (ImMap<K, V> map : maps)
+            mResult.addAll(map);
+        return mResult.immutable();
+    }
+
     public static <V> ImRevMap<V, V> mergeMaps(ImRevMap<V, V>[] maps) {
         MRevMap<V, V> result = MapFact.mRevMap();
         for (ImRevMap<V, V> map : maps)

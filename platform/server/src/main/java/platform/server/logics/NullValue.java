@@ -6,6 +6,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.ValueClass;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
@@ -64,7 +65,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return this;
     }
 
-    public ObjectValue refresh(SessionChanges session) {
+    public ObjectValue refresh(SessionChanges session, ValueClass upClass) {
         return this;
     }
 

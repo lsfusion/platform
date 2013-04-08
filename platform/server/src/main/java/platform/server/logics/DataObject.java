@@ -186,8 +186,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return mapValues.translate(getExpr()).getDataObject();
     }
 
-    public DataObject refresh(SessionChanges session) throws SQLException {
-        return session.getDataObject(object, getType());
+    public DataObject refresh(SessionChanges session, ValueClass upClass) throws SQLException {
+        return session.getDataObject(upClass, object);
     }
 
     public boolean isNull() {

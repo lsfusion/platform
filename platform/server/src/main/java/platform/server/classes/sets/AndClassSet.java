@@ -1,13 +1,12 @@
 package platform.server.classes.sets;
 
 import platform.base.ArrayInstancer;
+import platform.server.classes.ValueClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.Type;
 
 // по сути на Or
 public interface AndClassSet {
-
-    AndClassSet getKeepClass();
 
     AndClassSet and(AndClassSet node);
 
@@ -28,4 +27,6 @@ public interface AndClassSet {
             return new AndClassSet[size];
         }
     };
+
+    ValueClassSet getValueClassSet();
 }

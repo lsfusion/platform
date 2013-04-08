@@ -13,7 +13,7 @@ public interface ValueClass extends RemoteClass {
 
     boolean isCompatibleParent(ValueClass remoteClass);
 
-    AndClassSet getUpSet();
+    ValueClassSet getUpSet();
 
     void serialize(DataOutputStream outStream) throws IOException;
 

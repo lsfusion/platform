@@ -1,5 +1,7 @@
 package platform.server.logics.table;
 
+import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.Result;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -8,17 +10,31 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.MExclMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.server.SystemProperties;
+import platform.server.classes.DataClass;
+import platform.server.classes.IntegerClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.query.*;
 import platform.server.data.query.QueryBuilder;
+import platform.server.data.query.stat.StatKeys;
+import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ReflectionLogicsModule;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class ImplementTable extends DataTable {
+public class ImplementTable extends GlobalTable {
     public final ImMap<KeyField, ValueClass> mapFields;
+    private StatKeys<KeyField> statKeys = null;
+    private ImMap<PropertyField, PropStat> statProps = null;
 
     public ImplementTable(String name, final ValueClass... implementClasses) {
         super(name);
@@ -163,5 +179,121 @@ public class ImplementTable extends DataTable {
     void fillSet(MSet<ImplementTable> tableImplements) {
         if(tableImplements.add(this)) return;
         for(ImplementTable parent : parents) parent.fillSet(tableImplements);
+    }
+
+    public StatKeys<KeyField> getStatKeys() {
+        if(statKeys!=null)
+            return statKeys;
+        else
+            return SerializedTable.getStatKeys(this);
+    }
+
+    public ImMap<PropertyField,PropStat> getStatProps() {
+        if(statProps!=null)
+            return statProps;
+        else
+            return SerializedTable.getStatProps(this);
+    }
+
+    public Object readCount(DataSession session, Where where) throws SQLException {
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
+        ValueExpr one = new ValueExpr(1, IntegerClass.instance);
+        query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
+                where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
+        return query.execute(session).singleValue().singleValue();
+    }
+
+    public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException {
+        if (!SystemProperties.doNotCalculateStats) {
+            ValueExpr one = new ValueExpr(1, IntegerClass.instance);
+
+            ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+            platform.server.data.query.Join<PropertyField> join = join(mapKeys);
+
+            MExclMap<Object, Object> mResult = MapFact.mExclMap();
+            Where inWhere = join.getWhere();
+            for(KeyField key : keys) {
+                ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
+                mResult.exclAdd(key, readCount(session, GroupExpr.create(map, inWhere, map).getWhere()));
+            }
+
+            for(PropertyField prop : properties)
+                if (!(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
+                    mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
+
+            mResult.exclAdd(0, readCount(session, inWhere));
+            ImMap<Object, Object> result = mResult.immutable();
+
+            DataObject tableObject = (DataObject) reflectionLM.tableSID.readClasses(session, new DataObject(name));
+            reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
+
+            for (KeyField key : keys) {
+                DataObject keyObject = (DataObject) reflectionLM.tableKeySID.readClasses(session, new DataObject(name + "." + key.name));
+                reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+            }
+
+            for (PropertyField property : properties) {
+                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.name));
+                reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+            }
+
+            // не null значения и разреженность колонок
+            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+            for (PropertyField property : properties)
+                mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
+            ImMap<Object, Object> notNulls = mNotNulls.immutable();
+            for (PropertyField property : properties) {
+                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.name));
+                int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
+                reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
+            }
+        }
+    }
+
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean statDefault) throws SQLException {
+        Stat rowStat;
+        if (!tableStats.containsKey(name))
+            rowStat = Stat.DEFAULT;
+        else
+            rowStat = new Stat(BaseUtils.nvl(tableStats.get(name), 0));
+
+        ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
+        for(int i=0,size=keys.size();i<size;i++) {
+            String keySID = name + "." + keys.get(i).name;
+            if (!keyStats.containsKey(keySID))
+                mvDistinctKeys.mapValue(i, Stat.DEFAULT);
+            else
+                mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl(keyStats.get(keySID), 0)));
+        }
+        statKeys = new StatKeys<KeyField>(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
+
+        ImValueMap<PropertyField, PropStat> mvUpdateStatProps = properties.mapItValues();
+        for(int i=0,size=properties.size();i<size;i++) {
+            PropertyField prop = properties.get(i);
+            Stat distinctStat;
+            Stat notNullStat;
+            if(propStats.containsKey(prop.name)) {
+                Pair<Integer, Integer> propStat = propStats.get(prop.name);
+                distinctStat = new Stat(BaseUtils.nvl(propStat.first, 0));
+                notNullStat = new Stat(BaseUtils.nvl(propStat.second, 0));
+            } else {
+                distinctStat = null;
+                notNullStat = null;
+            }
+
+            if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()) {
+                if (distinctStat==null) {
+                    Stat typeStat = ((DataClass) prop.type).getTypeStat().min(rowStat);
+                    mvUpdateStatProps.mapValue(i, new PropStat(typeStat));
+                } else
+                    mvUpdateStatProps.mapValue(i, new PropStat(notNullStat, notNullStat));
+            } else {
+                if (distinctStat==null)
+                    mvUpdateStatProps.mapValue(i, PropStat.DEFAULT);
+                else
+                    mvUpdateStatProps.mapValue(i, new PropStat(distinctStat, notNullStat));
+            }
+        }
+        statProps = mvUpdateStatProps.immutableValue();
     }
 }

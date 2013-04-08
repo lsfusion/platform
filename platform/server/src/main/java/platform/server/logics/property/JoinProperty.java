@@ -230,7 +230,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue();
             KeyExpr keyExpr = new KeyExpr("key");
             Expr groupExpr = GroupExpr.create(MapFact.singleton(0, implement.property.getExpr(MapFact.singleton(implement.property.interfaces.single(), keyExpr), propChanges)),
-                    keyExpr, keyExpr.isClass(implementSingle.property.getValueClass().getUpSet()), GroupType.ANY, MapFact.singleton(0, change.expr));
+                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass()), GroupType.ANY, MapFact.singleton(0, change.expr));
             return implementSingle.mapDataChanges(
                     new PropertyChange<Interface>(change, groupExpr), changedWhere, propChanges);
         }

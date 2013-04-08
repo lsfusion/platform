@@ -5,6 +5,7 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.type.Type;
 import platform.server.form.instance.FormCloseType;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 import platform.server.logics.property.ActionPropertyMapImplement;
@@ -60,21 +61,21 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                 Object value = formResultProperty.read(context);
 
                 if (value != null && !value.equals(closeFormResultID)) {
-                    Object chosenValue = value.equals(dropFormResultID) ? null : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
+                    ObjectValue chosenValue = value.equals(dropFormResultID) ? NullValue.instance : chosenValueProperty.read(requestValueType, context, new DataObject(chosenKey));
                     updateRequestedValue(context, chosenValue);
                 } else {
                     requestCanceledProperty.change(true, context);
                 }
             }
         } else {
-            updateRequestedValue(context, pushedUserInput.getValue());
+            updateRequestedValue(context, pushedUserInput);
         }
 
         return FlowResult.FINISH;
     }
 
-    private void updateRequestedValue(ExecutionContext context, Object requestedValue) throws SQLException {
+    private void updateRequestedValue(ExecutionContext context, ObjectValue requestedValue) throws SQLException {
         requestedValueProperty.write(requestValueType, requestedValue, context);
-        requestCanceledProperty.change(null, context);
+        requestCanceledProperty.change((Object)null, context);
     }
 }

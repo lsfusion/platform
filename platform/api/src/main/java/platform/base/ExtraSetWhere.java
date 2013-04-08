@@ -108,7 +108,7 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> exten
         }
     }
 
-    public This add(This add) {
+    protected This add(This add) {
         if(isFalse() || add.isTrue()) return add;
         if(add.isFalse() || isTrue()) return (This) this;
 

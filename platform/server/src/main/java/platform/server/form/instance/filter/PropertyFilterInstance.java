@@ -78,7 +78,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
                 mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
             else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
                 if(!mapObject.equals(object))
-                    mapWhere = mapKey.isClass(((ObjectInstance)mapObject).getGridClass().getUpSet());
+                    mapWhere = mapKey.isUpClass(((ObjectInstance)mapObject).getGridClass());
                 else
                     mapWhere = mapKey.compare(addObject.getExpr(), Compare.EQUALS);
             changeWhere = changeWhere.and(mapWhere);

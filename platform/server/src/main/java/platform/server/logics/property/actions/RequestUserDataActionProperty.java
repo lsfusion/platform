@@ -40,8 +40,8 @@ public class RequestUserDataActionProperty extends SystemActionProperty {
         if (userValue == null) {
             requestCanceledProperty.change(true, context);
         } else {
-            requestCanceledProperty.change(null, context);
-            requestedValueProperty.write(dataClass, userValue.getValue(), context);
+            requestCanceledProperty.change((Object)null, context);
+            requestedValueProperty.write(dataClass, userValue, context);
         }
     }
 

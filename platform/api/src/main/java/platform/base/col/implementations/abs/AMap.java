@@ -526,4 +526,17 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public <M> ImFilterValueMap<K, M> mapFilterValues() {
         return new FilterValueMap<K, M>(this.<M>mapItValues());
     }
+
+    private static final AddValue<Object, ImMap<Object, ImSet<Object>>> addMergeMapSets = new SimpleAddValue<Object, ImMap<Object, ImSet<Object>>>() {
+        public ImMap<Object, ImSet<Object>> addValue(Object key, ImMap<Object, ImSet<Object>> prevValue, ImMap<Object, ImSet<Object>> newValue) {
+            return prevValue.merge(newValue, ASet.addMergeSet());
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <K, KV, V> AddValue<K, ImMap<KV, ImSet<V>>> addMergeMapSets() {
+        return BaseUtils.immutableCast(addMergeMapSets);
+    }
 }

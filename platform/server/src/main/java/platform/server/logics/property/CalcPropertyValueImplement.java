@@ -5,6 +5,7 @@ import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
@@ -29,8 +30,8 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
         return !property.getDataChanges(getPropertyChange(property.getChangeExpr()), modifier).isEmpty();
     }
 
-    public Object read(FormInstance form) throws SQLException {
-        return property.read(form, mapping);
+    public ObjectValue readClasses(FormInstance form) throws SQLException {
+        return property.readClasses(form, mapping);
     }
 
     public CustomClass getDialogClass(DataSession session) throws SQLException {

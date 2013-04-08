@@ -6,10 +6,12 @@ import platform.base.Result;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.Settings;
 import platform.server.caches.AbstractValuesContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -138,14 +140,18 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>();
                 Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>();
                 session.readSingleValues(table, actualKeyValues, actualPropValues);
+                keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys())).addExcl(keyValues.result));
+                final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
+                propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(new GetValue<AndClassSet, PropertyField>() {
+                    public AndClassSet getMapValue(PropertyField value) {
+                        return fPropertyClasses.get(value).getCommonClass(value);
+                    }})).addExcl(propValues.result));
                 table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner);
-                keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, Field.<KeyField>typeGetter()).addExcl(keyValues.result));
-                propValues.set(baseClass.getObjectValues(session, actualPropValues.result, Field.<PropertyField>typeGetter()).addExcl(propValues.result));
             }
 
             return new SessionDataTable(table, keys, keyValues.result, propValues.result);
         } else {
-            ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
+            ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = (table.count == 0 ? MapFact.<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>EMPTYORDER() : table.read(session, baseClass));
 
             table.drop(session, owner); // выкидываем таблицу
 

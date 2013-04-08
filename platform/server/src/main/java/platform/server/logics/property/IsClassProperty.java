@@ -18,7 +18,6 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.Modifier;
 import platform.server.session.PropertyChanges;
-import platform.server.session.StructChanges;
 
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -118,7 +117,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, boolean propClasses, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return ValueExpr.get(joinImplement.singleValue().isClass(getInterfaceClass().getUpSet()));
+        return ValueExpr.get(joinImplement.singleValue().isUpClass(getInterfaceClass()));
     }
 
     @Override

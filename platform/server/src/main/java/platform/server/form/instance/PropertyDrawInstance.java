@@ -5,6 +5,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
+import platform.server.classes.ValueClass;
 import platform.server.form.entity.ActionPropertyObjectEntity;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -37,6 +38,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
     public ImOrderSet<GroupObjectInstance> getOrderColumnGroupObjects() {
         return columnGroupObjects;
+    }
+
+    public ValueClass getValueClass() {
+        return propertyObject.property.getValueClass();
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)

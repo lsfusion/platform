@@ -19,8 +19,8 @@ import platform.server.ServerLoggers;
 import platform.server.SystemProperties;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.StringClass;
+import platform.server.classes.*;
+import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.context.ThreadLocalContext;
 import platform.server.data.type.Type;
 import platform.server.form.entity.FormEntity;
@@ -41,7 +41,6 @@ import platform.server.logics.property.actions.flow.ChangeFlowType;
 import platform.server.logics.property.actions.flow.ListActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.scripted.ScriptingLogicsModule;
-import platform.server.logics.table.DataTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.session.DataSession;
 
@@ -135,7 +134,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ConcreteClass getDataClass(Object object, Type type) {
         try {
             DataSession session = getDbManager().createSession();
-            ConcreteClass result = type.getDataClass(object, session.sql, LM.baseClass);
+            ConcreteClass result = type.getDataClass(object, session.sql, LM.baseClass.getUpSet(), LM.baseClass);
             session.close();
 
             return result;
@@ -400,6 +399,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 module.initTables();
             }
 
+            logger.info("Initializing class tables.");
+            initClassDataProps();
+
             logger.info("Initializing properties.");
             int i = 1;
             for (LogicsModule module : orderedModules) {
@@ -424,6 +426,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 setupPropertyPolicyForms();
             }
 
+            logger.info("Showing dependencies.");
             showDependencies();
 
             logger.info("Finalizing properties.");
@@ -432,13 +435,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 property.finalizeAroundInit();
             }
 
+            logger.info("Initializing class forms.");
             LM.initClassForms();
 
 //            Set idSet = new HashSet<String>();
 //            for (Property property : getOrderProperties()) {
 //                assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
 //            }
-
             logger.info("Initializing indices.");
             for (LogicsModule module : orderedModules) {
                 module.initIndexes();
@@ -463,6 +466,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             throw new ScriptParsingException(syntaxErrors);
         } else if (initException != null) {
             Throwables.propagate(initException);
+        }
+    }
+
+    private void initClassDataProps() {
+        ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
+            public ImplementTable group(ConcreteCustomClass customClass) {
+                return LM.tableFactory.getMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
+            }
+        });
+
+        for(int i=0,size=groupTables.size();i<size;i++) {
+            ImplementTable table = groupTables.getKey(i);
+            ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
+
+            ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
+            ClassDataProperty dataProperty = new ClassDataProperty(table.name+"_class", classSet.toString(), classSet);
+            LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
+            dataProperty.markStored(LM.tableFactory, table);
+
+            for(ConcreteCustomClass customClass : set)
+                customClass.dataProperty = dataProperty;
         }
     }
 
@@ -553,7 +577,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void prereadCaches() {
         getAppliedProperties(true);
         getAppliedProperties(false);
-        getMapAppliedDepends();
+        getMapSingleApplyDepends();
         for (Property property : getPropertyList())
             property.prereadCaches();
     }
@@ -748,11 +772,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
+    public ImOrderSet<CalcProperty> getSingleApplyStoredProperties() {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property property) {
+                return property instanceof CalcProperty && ((CalcProperty) property).isSingleApplyStored();
+            }}));
+    }
+
+    @IdentityLazy
     public ImOrderSet<CalcProperty> getStoredProperties() {
         return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
             public boolean contains(Property property) {
                 return property instanceof CalcProperty && ((CalcProperty) property).isStored();
             }}));
+    }
+
+    public ImSet<CustomClass> getCustomClasses() {
+        return LM.baseClass.getAllClasses();
+    }
+
+    public ImSet<ConcreteCustomClass> getConcreteCustomClasses() {
+        return BaseUtils.immutableCast(getCustomClasses().filterFn(new SFunctionSet<CustomClass>() {
+            public boolean contains(CustomClass property) {
+                return property instanceof ConcreteCustomClass;
+            }
+        }));
     }
 
     @IdentityLazy
@@ -792,12 +836,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private void fillAppliedDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends) {
-        if (!fill.equals(applied) && fill.isStored())
+    private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends) {
+        if (!fill.equals(applied) && fill.isSingleApplyStored())
             mapDepends.get(fill).add(applied, appliedSet);
         else
             for (CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
-                fillAppliedDependFrom(depend, applied, appliedSet, mapDepends);
+                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends);
     }
 
     @IdentityLazy
@@ -813,16 +857,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // assert что key property is stored, а value property is stored или instanceof OldProperty
     @IdentityStrongLazy // глобальное очень сложное вычисление
-    private ImMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> getMapAppliedDepends() {
+    private ImMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> getMapSingleApplyDepends() {
         Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends = new HashMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>>();
-        for (CalcProperty property : getStoredProperties()) {
+        for (CalcProperty property : getSingleApplyStoredProperties()) {
             mapDepends.put(property, MapFact.mMap(SessionEnvEvent.<CalcProperty>mergeSessionEnv()));
-            fillAppliedDependFrom(property, property, SessionEnvEvent.ALWAYS, mapDepends);
+            fillSingleApplyDependFrom(property, property, SessionEnvEvent.ALWAYS, mapDepends);
         }
         ImOrderMap<OldProperty, SessionEnvEvent> eventDependProps = getApplyEventDependProps();
         for (int i=0,size=eventDependProps.size();i<size;i++) {
             OldProperty old = eventDependProps.getKey(i);
-            fillAppliedDependFrom(old.property, old, eventDependProps.getValue(i), mapDepends);
+            fillSingleApplyDependFrom(old.property, old, eventDependProps.getValue(i), mapDepends);
         }
 
         ImRevMap<Property, Integer> indexMap = getPropertyList().mapOrderRevValues(new GetIndex<Integer>() {
@@ -841,9 +885,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderMap<CalcProperty, SessionEnvEvent> getAppliedDependFrom(CalcProperty property) {
-        assert property.isStored();
-        return getMapAppliedDepends().get(property);
+    public ImOrderMap<CalcProperty, SessionEnvEvent> getSingleApplyDependFrom(CalcProperty property) {
+        assert property.isSingleApplyStored();
+        return getMapSingleApplyDepends().get(property);
     }
 
     @IdentityLazy
@@ -873,7 +917,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void recalculateStats(DataSession session) throws SQLException {
-        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.calculateStat(this.reflectionLM, session);
         }
     }

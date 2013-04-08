@@ -2,9 +2,7 @@ package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
@@ -14,9 +12,9 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.ValueClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
@@ -32,9 +30,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassField;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class CaseExpr extends Expr {
@@ -80,6 +78,21 @@ public class CaseExpr extends Expr {
             }
         }
         return source + (hasElse ? " ELSE " + SQLSyntax.NULL : "") + " END";
+    }
+
+    public ConcreteClass getStaticClass() {
+        ConcreteClass result = null;
+        for(ExprCase exprCase : cases) {
+            ConcreteClass staticClass = exprCase.data.getStaticClass();
+            if(staticClass != null) {
+                if(result == null)
+                    result = staticClass;
+                else
+                    if(!BaseUtils.hashEquals(result, staticClass))
+                        return null;
+            }
+        }
+        return result;
     }
 
     public Type getType(KeyType keyType) {
@@ -172,7 +185,7 @@ public class CaseExpr extends Expr {
         });
     }
 
-    public Where isClass(final AndClassSet set) {
+    public Where isClass(final ValueClassSet set) {
         return cases.getWhere(new GetValue<Where, Expr>(){
             public Where getMapValue(Expr cCase) {
                 return cCase.isClass(set);
@@ -215,10 +228,10 @@ public class CaseExpr extends Expr {
         return result.getExpr();
     }*/
 
-    public Expr classExpr(BaseClass baseClass) {
+    public Expr classExpr(ImSet<ClassField> classes) {
         MExprCaseList result = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
-            result.add(exprCase.where,exprCase.data.classExpr(baseClass));
+            result.add(exprCase.where,exprCase.data.classExpr(classes));
         return result.getFinal();
     }
 

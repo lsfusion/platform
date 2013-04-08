@@ -9,10 +9,6 @@ import platform.base.col.interfaces.mutable.add.MAddSet;
 
 public abstract class AMSet<K> extends ASet<K> implements MSet<K>, MExclSet<K>, MAddSet<K>, MFilterSet<K> {
 
-    public Iterable<K> it() {
-        return this;
-    }
-
     public void exclAdd(K key) {
         boolean was = add(key);
         assert !was;

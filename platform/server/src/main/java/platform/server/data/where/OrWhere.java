@@ -33,10 +33,10 @@ import platform.server.data.where.classes.PackClassWhere;
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
     // вообще надо противоположные + Object, но это наследованием не сделаешь
-    OrWhere(AndObjectWhere[] wheres, boolean check) {
+    public OrWhere(AndObjectWhere[] wheres, boolean check) {
         super(wheres, check);
     }
-    OrWhere() {
+    public OrWhere() {
         super(new AndObjectWhere[0], false);
     }
 
@@ -554,18 +554,20 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(equalsClassesNot.isFalse())
             return result;
 
-        ClassExprWhere classesOr = ClassExprWhere.FALSE;
-        for(int i=0;i<numWheres;i++) {
-            if(wheres[i] instanceof IsClassWhere || wheres[i] instanceof PackClassWhere) {
-                ClassExprWhere orClassesOr = classesOr.or(wheres[i].getClassWhere());
-                if(!BaseUtils.hashEquals(orClassesOr, classesOr)) {
-                    result[i] = true;
-                    classesOr = orClassesOr;
+        if(!equalsClassesNot.isTrue()) {
+            ClassExprWhere classesOr = ClassExprWhere.FALSE;
+            for(int i=0;i<numWheres;i++) {
+                if(wheres[i] instanceof IsClassWhere || wheres[i] instanceof PackClassWhere) {
+                    ClassExprWhere classWhere = wheres[i].getClassWhere();
+                    if(!equalsClassesNot.and(classWhere).isFalse()) {
+                        result[i] = true;
+                        classesOr = classesOr.or(classWhere);
+                    }
                 }
             }
+            if(equalsClassesNot.means(classesOr))
+                return result;
         }
-        if(equalsClassesNot.means(classesOr))
-            return result;
 
         // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
         CompareMap compare = new CompareMap();

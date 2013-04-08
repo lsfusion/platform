@@ -76,7 +76,7 @@ public class ExportReceiptsActionProperty extends ScriptingActionProperty {
 
             for (int i=0,size=receiptResult.size();i<size;i++) {
                 DataObject receiptObject = new DataObject(receiptResult.getKey(i).get("receipt"), (ConcreteClass) LM.findClassByCompoundName("receipt"));
-                LM.findLCPByCompoundName("exportReceipt").change(null, context.getSession(), receiptObject);
+                LM.findLCPByCompoundName("exportReceipt").change((Object)null, context.getSession(), receiptObject);
 
                 Element receipt = doc.createElement("receipt");
                 rootElement.appendChild(receipt);

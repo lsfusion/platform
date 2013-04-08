@@ -190,16 +190,21 @@ public class SessionRows extends SessionData<SessionRows> {
 
     // assert что содержит
     public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, Pair<Integer, Integer>[] shifts) {
-        DataObject prevValue = (DataObject)map.get(property);
-        Integer read = ObjectType.idClass.read(prevValue.object);
-        assert shifts.length > 0;
-        int calcshift = 0; int aggsh = 0;
-        for(Pair<Integer, Integer> shift : shifts) { // по аналогии с updateAdded в таблицах
-            if(read > aggsh)
-                calcshift = shift.first;
-            aggsh += shift.second;
+        ObjectValue value = map.get(property);
+        if(value instanceof DataObject) {
+            DataObject dataValue = (DataObject) value;
+            Integer read = ObjectType.idClass.read(dataValue.object);
+            assert shifts.length > 0;
+            int calcshift = 0; int aggsh = 0;
+
+            for(Pair<Integer, Integer> shift : shifts) { // по аналогии с updateAdded в таблицах
+                if(read > aggsh)
+                    calcshift = shift.first;
+                aggsh += shift.second;
+            }
+            return map.replaceValue(property, new DataObject(read + calcshift, dataValue.objectClass));
         }
-        return map.replaceValue(property, new DataObject(read + calcshift, prevValue.objectClass));
+        return map;
     }
 
     @Override

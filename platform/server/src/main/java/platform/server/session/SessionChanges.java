@@ -3,6 +3,7 @@ package platform.server.session;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.form.instance.FormInstance;
 import platform.server.logics.BusinessLogics;
@@ -26,8 +27,7 @@ public interface SessionChanges {
 
     public ConcreteClass getCurrentClass(DataObject value) throws SQLException;
 
-    public DataObject getDataObject(Object value, Type type) throws SQLException;
-    public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
+    public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException;
 
     // узнает список изменений произошедших без него
     public ImSet<CalcProperty> update(FormInstance<?> toUpdate) throws SQLException;

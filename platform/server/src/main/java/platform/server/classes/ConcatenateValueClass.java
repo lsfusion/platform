@@ -27,8 +27,8 @@ public class ConcatenateValueClass implements ValueClass {
         throw new RuntimeException("not supported");
     }
 
-    public AndClassSet getUpSet() {
-        AndClassSet[] upClasses = new AndClassSet[valueClasses.length];
+    public ValueClassSet getUpSet() {
+        ValueClassSet[] upClasses = new ValueClassSet[valueClasses.length];
         for(int i=0;i<valueClasses.length;i++)
             upClasses[i] = valueClasses[i].getUpSet();
         return new ConcatenateClassSet(upClasses);

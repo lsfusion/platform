@@ -18,7 +18,7 @@ public abstract class AMOrderSet<K> extends AOrderSet<K> implements MOrderSet<K>
     }
 
     public void keep(K element) {
-        add(element);
+        exclAdd(element);
     }
 
     public ImOrderSet<K> immutableOrder() {

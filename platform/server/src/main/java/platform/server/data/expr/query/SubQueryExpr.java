@@ -60,7 +60,7 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
 
     @IdentityInstanceLazy
     public SubQueryJoin getInnerJoin() {
-        return new SubQueryJoin(getInner().getInnerKeys(), getInner().getInnerValues(), query.getWhere(), group);
+        return new SubQueryJoin(getInner().getInnerKeys(), getInner().getInnerValues(), getInner().getFullWhere(), group);
     }
 
     public SubQueryExpr(SubQueryExpr expr, MapTranslate translator) {

@@ -8,6 +8,7 @@ import platform.base.col.interfaces.immutable.ImOrderSet;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.data.expr.Expr;
 import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
@@ -16,9 +17,6 @@ import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.NullReader;
 import platform.server.data.where.Where;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class ModifyQuery {
     public final Table table;
@@ -125,16 +123,26 @@ public class ModifyQuery {
         return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env);
     }
 
-    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps) {
-        return (new ModifyQuery(table, getInsertLeftQuery(updateProps), env)).getInsertSelect(syntax);
+    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
+        return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env)).getInsertSelect(syntax);
     }
 
-    public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps) {
+    public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps, boolean insertOnlyNotNull) {
         // делаем для этого еще один запрос
         QueryBuilder<KeyField, PropertyField> leftKeysQuery = new QueryBuilder<KeyField, PropertyField>(change.getMapKeys());
-        if(updateProps)
-            for(PropertyField property : change.getProperties())
-                leftKeysQuery.addProperty(property, change.getExpr(property));
+
+        Where onlyNotNull = Where.FALSE;
+        if(updateProps || insertOnlyNotNull)
+            for(PropertyField property : change.getProperties()) {
+                Expr expr = change.getExpr(property);
+                if(updateProps)
+                    leftKeysQuery.addProperty(property, expr);
+                if(insertOnlyNotNull)
+                    onlyNotNull = onlyNotNull.or(expr.getWhere());
+            }
+        if(insertOnlyNotNull)
+            leftKeysQuery.and(onlyNotNull);
+
         leftKeysQuery.and(change.getWhere());
         // исключим ключи которые есть
         leftKeysQuery.and(table.join(leftKeysQuery.getMapExprs()).getWhere().not());

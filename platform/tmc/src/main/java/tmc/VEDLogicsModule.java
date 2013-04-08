@@ -4241,7 +4241,7 @@ public class VEDLogicsModule extends LogicsModule {
             //To change body of implemented methods use File | Settings | File Templates.
             DataObject document = context.getSingleKeyValue();
             if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
-                orderSalePayCash.change(null, context, document);
+                orderSalePayCash.change((Object)null, context, document);
                 orderSalePayCard.change(sumWithDiscountObligationOrder.read(context, document), context, document);
 
                 context.apply();

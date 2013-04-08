@@ -24,7 +24,6 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.PropStat;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.IQuery;
 import platform.server.data.query.Query;
@@ -309,7 +308,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 inserted = session.modifyRecords(modify);
                 break;
             case LEFT:
-                inserted = session.insertLeftSelect(modify, true);
+                inserted = session.insertLeftSelect(modify, true, false);
                 break;
             case ADD:
                 inserted = session.insertSelect(modify);
@@ -411,14 +410,6 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys) throws SQLException {
         return session.deleteKeyRecords(this, DataObject.getMapValues(keys));
-    }
-
-    public SessionTable deleteRows(SQLSession session, Query<KeyField, PropertyField> query, QueryEnvironment env, Object owner) throws SQLException {
-        int deleted = session.deleteRecords(new ModifyQuery(this, query, env));
-
-        return new SessionTable(name, keys, properties, count - deleted,
-                orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
-                updateStatistics(session, count, owner);
     }
 
 

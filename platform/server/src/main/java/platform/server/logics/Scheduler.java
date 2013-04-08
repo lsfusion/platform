@@ -23,6 +23,7 @@ import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.linear.LAP;
 import platform.server.session.DataSession;
+import platform.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -221,7 +222,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         currentLogSession = dbManager.createSession();
         currentScheduledTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
         try {
-            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask.getValue(), currentLogSession, currentScheduledTaskLogObject);
+            businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment)currentLogSession, currentScheduledTaskLogObject);
             businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", currentLogSession, currentScheduledTaskLogObject);
             businessLogics.schedulerLM.dateStartScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), currentLogSession, currentScheduledTaskLogObject);
 
@@ -277,7 +278,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     DataObject scheduledClientTaskLogObject = currentLogSession.addObject(businessLogics.schedulerLM.scheduledClientTaskLog);
 
                     businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                            .change(currentScheduledTaskLogObject.getValue(), currentLogSession, scheduledClientTaskLogObject);
+                            .change(currentScheduledTaskLogObject, (ExecutionEnvironment)currentLogSession, scheduledClientTaskLogObject);
                     businessLogics.schedulerLM.messageScheduledClientTaskLog
                             .change(((MessageClientAction) action).message, currentLogSession, scheduledClientTaskLogObject);
                 } catch (SQLException e) {

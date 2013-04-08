@@ -131,6 +131,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public abstract boolean isStored();
 
+    public boolean isEnabledSingleApply() {
+        assert isStored();
+        return Settings.get().isEnabledApplySingleStored();
+    }
+    public boolean isSingleApplyStored() { // нужен для ClassDataProperty, для которого отдельный принцип обработки
+        return isStored() && isEnabledSingleApply();
+    }
+
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
         return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
@@ -158,14 +166,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         change(keys, context.getEnv(), value);
     }
 
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException {
+        getImplement().change(keys, env, value);
+    }
+
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
         getImplement().change(keys, env, value);
     }
 
-    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitFitClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
-        assert isStored();
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+        assert isSingleApplyStored();
 
-        if(!Settings.get().isEnableApplySingleStored() || DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
+        if(DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(createChangeTable(), changeTable);
         if(DataSession.fitClasses(this, changeTable))
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
@@ -470,7 +482,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // modify == null;
         if(isStored()) {
             if(!hasChanges(propChanges)) // propChanges.isEmpty() // если нету изменений
-                return mapTable.table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
+                return getStoredExpr(joinImplement);
             if(useSimpleIncrement()) {
                 WhereBuilder changedExprWhere = new WhereBuilder();
                 Expr changedExpr = calculateExpr(joinImplement, propClasses, propChanges, changedExprWhere);
@@ -480,6 +492,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
 
         return calculateExpr(joinImplement, propClasses, propChanges, changedWhere);
+    }
+
+    protected Expr getStoredExpr(ImMap<T, ? extends Expr> joinImplement) {
+        return mapTable.table.join(mapTable.mapKeys.crossJoin(joinImplement)).getExpr(field);
     }
 
     public MapKeysTable<T> mapTable; // именно здесь потому как не обязательно persistent
@@ -498,6 +514,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ImMap<T, ValueClass> keyClasses = getInterfaceClasses();
         if (table != null) {
             mapTable = table.getMapKeysTable(keyClasses);
+            assert mapTable!=null;
         }
         if (mapTable == null) {
             mapTable = tableFactory.getMapTable(keyClasses);
@@ -552,8 +569,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return read(form.session.sql, keys, form.getModifier(), form.getQueryEnv());
     }
 
-    public ObjectValue readClasses(DataSession session, ImMap<T, DataObject> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
-        return session.getObjectValue(read(session.sql, keys, modifier, env), getType());
+    public ObjectValue readClasses(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException {
+        return readClasses(form.session, keys, form.getModifier(), form.getQueryEnv());
+    }
+
+    public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
+        return session.getObjectValue(getValueClass(), read(session.sql, keys, modifier, env));
     }
 
     // используется для оптимизации - если Stored то попытать использовать это значение
@@ -871,7 +892,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public CalcPropertyMapImplement<?, T> getClassProperty() {
-        ClassWhere<T> classWhere = getClassWhere();
-        return IsClassProperty.getMapProperty(classWhere.getCommonParent(interfaces));
+        return IsClassProperty.getMapProperty(getInterfaceClasses());
     }
 }

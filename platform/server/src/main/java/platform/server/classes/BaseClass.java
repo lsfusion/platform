@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
@@ -9,29 +10,27 @@ import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import platform.server.ServerLoggers;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
-import platform.server.data.PropertyField;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.Table;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
-import platform.server.data.query.Join;
 import platform.server.data.query.QueryBuilder;
-import platform.server.data.type.ObjectType;
-import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.ClassField;
 import platform.server.logics.property.ObjectClassProperty;
 import platform.server.logics.property.actions.ChangeClassValueActionProperty;
-import platform.server.logics.table.ObjectTable;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -40,8 +39,7 @@ import java.util.*;
 public class BaseClass extends AbstractCustomClass {
 
     protected final static Logger logger = Logger.getLogger(BaseClass.class);
-
-    public ObjectTable table;
+    private static final Logger systemLogger = ServerLoggers.systemLogger;
 
     public final UnknownClass unknown;
     public final AbstractCustomClass named;
@@ -50,7 +48,6 @@ public class BaseClass extends AbstractCustomClass {
 
     public BaseClass(String sID, String caption) {
         super(sID, caption);
-        table = new ObjectTable(this);
         unknown = new UnknownClass(this);
         named = new AbstractCustomClass("Named", ServerResourceBundle.getString("classes.named.object"), this);
     }
@@ -70,19 +67,17 @@ public class BaseClass extends AbstractCustomClass {
     public ConcreteObjectClass findConcreteClassID(Integer idClass) {
         if(idClass==null) return unknown;
 
-        return findConcreteClassID((int)idClass);
+        return findConcreteClassID((int) idClass);
     }
 
-    public ConcreteCustomClass getConcrete() {
-        MSet<ConcreteCustomClass> mConcrete = SetFact.mSet();
-        fillNextConcreteChilds(mConcrete);
-        return mConcrete.immutable().get(0);
+    public ImSet<CustomClass> getAllClasses() {
+        MSet<CustomClass> mAllClasses = SetFact.mSet();
+        fillChilds(mAllClasses); // именно так, а не getChilds, потому как добавление objectClass - тоже влияет на getChilds, и их нельзя кэшировать
+        return mAllClasses.immutable();
     }
 
     public void initObjectClass() { // чтобы сохранить immutability классов
-        MSet<CustomClass> mAllClasses = SetFact.mSet();
-        fillChilds(mAllClasses); // именно так, а не getChilds, потому как добавление objectClass - тоже влияет на getChilds, и их нельзя кэшировать
-        ImSet<CustomClass> allClasses = mAllClasses.immutable();
+        ImSet<CustomClass> allClasses = getAllClasses();
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
         List<String> sidClasses = new ArrayList<String>();
@@ -96,9 +91,6 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void fillIDs(DataSession session, LCP name, LCP classSID, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
-        Set<CustomClass> allClasses = getChilds().toJavaSet();
-        allClasses.remove(objectClass);
-
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<String, ConcreteCustomClass>();
         Set<Integer> usedIds = new HashSet<Integer>();
 
@@ -107,8 +99,7 @@ public class BaseClass extends AbstractCustomClass {
         named.ID = 1;
 
         objectClass.ID = Integer.MAX_VALUE - 5; // в явную обрабатываем objectClass
-        Integer classID = getClassID(objectClass.ID, session.sql);
-        if(classID==null) {
+        if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
             name.change(objectClass.caption, session, classObject);
@@ -117,16 +108,21 @@ public class BaseClass extends AbstractCustomClass {
         usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
-        Map<Object, String> modifiedSIDs = new HashMap<Object, String>();
-        Map<Object, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs);
+        Map<DataObject, String> modifiedSIDs = new HashMap<DataObject, String>();
+        Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, name, classSID, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
-        int free = 0;
+        Set<CustomClass> allClasses = getChilds().toJavaSet();
+        allClasses.remove(objectClass);
+
         // пробежим по всем классам и заполним их ID
         for(CustomClass customClass : allClasses)
-            if(customClass instanceof ConcreteCustomClass) {
+            if(customClass instanceof ConcreteCustomClass)
                 customClass.ID = objectClass.getObjectID(customClass.getSID());
+
+        int free = 0;
+        for(CustomClass customClass : allClasses)
+            if(customClass instanceof ConcreteCustomClass)
                 free = Math.max(free, customClass.ID);
-            }
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof ConcreteCustomClass)
@@ -139,55 +135,37 @@ public class BaseClass extends AbstractCustomClass {
                 customClass.ID = free++;
             }
 
-        for (Object object : modifiedSIDs.keySet()) {
-            logger.info("changing sid of class with id " + object + " to " + modifiedSIDs.get(object));
-            classSID.change(modifiedSIDs.get(object), session, session.getDataObject(object, ObjectType.instance));
+        for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
+            systemLogger.info("changing sid of class with id " + modifiedSID.getKey() + " to " + modifiedSID.getValue());
+            classSID.change(modifiedSID.getValue(), session, modifiedSID.getKey());
         }
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
-        for (Object object : modifiedNames.keySet()) {
-            logger.info("renaming class with id " + object + " to " + modifiedNames.get(object));
-            name.change(modifiedNames.get(object), session, session.getDataObject(object, ObjectType.instance));
+        for (Map.Entry<DataObject, String> modifiedName : modifiedNames.entrySet()) {
+            systemLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
+            name.change(modifiedName.getValue(), session, modifiedName.getKey());
         }
     }
 
     public void updateClassStat(SQLSession session) throws SQLException {
-        QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
+        for(ObjectValueClassSet tableClasses : getUpTables().valueIt()) {
+            QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
-        KeyExpr countKeyExpr = new KeyExpr("count");
-        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(this)),
-                new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(this.getUpSet()), GroupType.SUM, classes.getMapExprs());
+            KeyExpr countKeyExpr = new KeyExpr("count");
+            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(this)),
+                    new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
 
-        classes.addProperty(0, countExpr);
-        classes.and(classes.getMapExprs().get(0).isClass(objectClass));
+            classes.addProperty(0, countExpr);
+            classes.and(countExpr.getWhere());//classes.getMapExprs().get(0).isClass(objectClass));
 
-        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-        for(int i=0,size=classStats.size();i<size;i++) {
-            CustomClass customClass = findClassID((int) (Integer) classStats.getKey(i).get(0));
-            if(customClass instanceof ConcreteCustomClass) {
-                Integer count = BaseUtils.nvl((Integer) classStats.getValue(i).get(0), 0);
-                ((ConcreteCustomClass)customClass).stat = count==0?1:count;
+            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+            ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
+            for(int i=0,size=concreteChilds.size();i<size;i++) {
+                ConcreteCustomClass customClass = concreteChilds.get(i);
+                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+                customClass.stat = classStat==null ? 1 : (Integer)classStat.singleValue();
             }
         }
-    }
-
-    public Integer getClassID(Integer value, SQLSession session) throws SQLException {
-        QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
-        Join<PropertyField> joinTable = table.joinAnd(MapFact.singleton(table.key, new ValueExpr(value, getConcrete())));
-        query.and(joinTable.getWhere());
-        query.addProperty("classid", joinTable.getExpr(table.objectClass));
-        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(session);
-        if(result.size()==0)
-            return null;
-        else {
-            assert (result.size()==1);
-            return (Integer) result.singleValue().get("classid");
-        }
-    }
-
-    public Table.Join.Expr getJoinExpr(SingleClassExpr expr) {
-        return (Table.Join.Expr) table.joinAnd(
-                MapFact.singleton(table.key, expr)).getExpr(table.objectClass);
     }
 
     public int getCount() {
@@ -199,33 +177,46 @@ public class BaseClass extends AbstractCustomClass {
         return new ObjectClassProperty("objectClass", this);
     }
 
-    public DataObject getDataObject(SQLSession sql, Object value, Type type) throws SQLException {
-        return new DataObject(value,type.getDataClass(value, sql, this));
+    public DataObject getDataObject(SQLSession sql, Object value, AndClassSet classSet) throws SQLException {
+        return new DataObject(value, classSet.getType().getDataClass(value, sql, classSet, this));
     }
 
-    public <K> ImMap<K, DataObject> getDataObjects(SQLSession sql, ImMap<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+    public <K> ImMap<K, DataObject> getDataObjects(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException {
         ImValueMap<K, DataObject> mvResult = values.mapItValues(); // exception кидается
         for(int i=0,size=values.size();i<size;i++)
-            mvResult.mapValue(i, getDataObject(sql, values.getValue(i), typeGetter.getType(values.getKey(i))));
+            mvResult.mapValue(i, getDataObject(sql, values.getValue(i), classes.get(values.getKey(i))));
         return mvResult.immutableValue();
     }
 
-    public ObjectValue getObjectValue(SQLSession sql, Object value, Type type) throws SQLException {
+    public ObjectValue getObjectValue(SQLSession sql, Object value, AndClassSet type) throws SQLException {
         if(value==null)
             return NullValue.instance;
         else
             return getDataObject(sql, value, type);
     }
 
-    public <K> ImMap<K, ObjectValue> getObjectValues(SQLSession sql, ImMap<K, Object> values, Type.Getter<K> typeGetter) throws SQLException {
+    public <K> ImMap<K, ObjectValue> getObjectValues(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException {
         ImValueMap<K, ObjectValue> mvResult = values.mapItValues(); // exception кидается
         for(int i=0,size=values.size();i<size;i++)
-            mvResult.mapValue(i, getObjectValue(sql, values.getValue(i), typeGetter.getType(values.getKey(i))));
+            mvResult.mapValue(i, getObjectValue(sql, values.getValue(i), classes.get(values.getKey(i))));
         return mvResult.immutableValue();
     }
 
     @IdentityStrongLazy // для ID
     public ChangeClassValueActionProperty getChangeClassValueAction() {
         return new ChangeClassValueActionProperty("CHANGE_CLASS_VALUE", ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
+    }
+
+    @IdentityLazy
+    public ObjectValueClassSet getSet(ImSet<ClassField> classTables) {
+        ObjectValueClassSet set = OrObjectClassSet.FALSE;
+        for(ClassField classTable : classTables)
+            set = (ObjectValueClassSet) set.or(classTable.getSet());
+        return set;
+    }
+    @IdentityLazy
+    public Pair<KeyExpr, Expr> getSubQuery(ImSet<ClassField> classTables) {
+        KeyExpr keyExpr = new KeyExpr("isSetClass");
+        return new Pair<KeyExpr, Expr>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold));
     }
 }

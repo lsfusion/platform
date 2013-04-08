@@ -17,6 +17,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
@@ -105,6 +106,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public boolean means(CheckWhere where) {
         return OrWhere.checkTrue(not(),where);
+    }
+
+    public static Where toWhere(IsClassWhere[] wheres) { // чисто оптимизационная вещь для классов
+        return toWhere((AndObjectWhere[])wheres);
     }
 
     protected static Where toWhere(AndObjectWhere[] wheres) {

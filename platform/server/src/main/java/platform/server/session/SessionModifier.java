@@ -53,7 +53,7 @@ public abstract class SessionModifier implements Modifier {
                 }
             }
             MAddSet<CalcProperty> removedNoUpdate = SetFact.mAddSet();
-            for(CalcProperty<?> incrementProperty : noUpdate.it())
+            for(CalcProperty<?> incrementProperty : noUpdate)
                 if(CalcProperty.depends(incrementProperty, property))
                     eventNoUpdate(incrementProperty);
                 else
@@ -123,7 +123,7 @@ public abstract class SessionModifier implements Modifier {
     public void clearHints(SQLSession session) throws SQLException {
         eventSourceChanges(increment.getProperties());
         increment.clear(session);
-        eventDataChanges(noUpdate.it());
+        eventDataChanges(noUpdate);
         noUpdate = SetFact.mAddSet();
     }
 

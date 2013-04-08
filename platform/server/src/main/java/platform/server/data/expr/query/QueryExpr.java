@@ -11,6 +11,7 @@ import platform.server.caches.AbstractInnerHashContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
@@ -225,8 +226,15 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 outerInner = BaseUtils.reverse(group);*/
             outerInner = group.toRevMap().reverse();
 
+            ConcreteClass staticClass = null;
+            if(!getInner().isSelect())
+                staticClass = (DataClass) getInner().getType();
+
+            if(staticClass==null) // оптимизация в основном для классов чтобы не тянуть case'ы лишние
+                staticClass = getInner().getMainExpr().getStaticClass();
+
             ClassExprWhere result;
-            if(getInner().isSelect()) {
+            if(staticClass==null) {
                 Expr mainExpr = getInner().getMainExpr();
                 ImRevMap<BaseExpr, Expr> valueMap = MapFact.<BaseExpr, Expr>singletonRev(QueryExpr.this, mainExpr);
                 if(getInner().isSelectNotInWhere())
@@ -234,7 +242,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 else
                     result = ClassExprWhere.mapBack(valueMap.addExcl(outerInner), fullWhere);
             } else
-                result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this,(DataClass) getInner().getType()));
+                result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this, staticClass));
             return result.and(getWhere(group).getClassWhere());
         }
     }

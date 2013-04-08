@@ -13,7 +13,9 @@ import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.ManualLazy;
+import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
@@ -145,8 +147,11 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
         public Where getWhere(GetValue<Expr, K> mapExprs) {
             Where result = Where.TRUE;
-            for(int i=0,size=size();i<size;i++)
-                result = result.and(mapExprs.getMapValue(getKey(i)).isClass(getValue(i)));
+            for(int i=0,size=size();i<size;i++) {
+                AndClassSet value = getValue(i);
+                if(BaseUtils.hashEquals(value, value.getValueClassSet())) // если ValueClassSet, тут формально можно добавлять and Not BaseClass
+                    result = result.and(mapExprs.getMapValue(getKey(i)).isClass((ValueClassSet)value));
+            }
             return result;
         }
 
@@ -520,8 +525,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         });
     }
 
+    public AndClassSet getCommonClass(K key) {
+        return getCommonClasses(SetFact.singleton(key)).get(key);
+    }
+
     public OrObjectClassSet getOrSet(K key) {
-        return (OrObjectClassSet) getCommonClasses(SetFact.singleton(key)).get(key).getOr();
+        return (OrObjectClassSet) getCommonClass(key).getOr();
     }
 
     private static <K> ImMap<K,AndClassSet> initUpClassSets(ImMap<K, ValueClass> map) {

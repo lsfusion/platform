@@ -37,7 +37,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           FocusListener<T> tFocusView,
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
-                          Object dialogValue,
+                          ObjectValue dialogValue,
                           PropertyObjectInterfaceInstance computer,
                           DataObject connection) throws SQLException {
         this(entity, logicsInstance, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, connection, null, null);
@@ -50,7 +50,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           FocusListener<T> tFocusView,
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
-                          Object dialogValue,
+                          ObjectValue dialogValue,
                           PropertyObjectInterfaceInstance computer,
                           DataObject connection,
                           ImSet<FilterEntity> additionalFilters,
@@ -63,7 +63,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
               classListener,
               computer,
               connection,
-              MapFact.singleton(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
+              MapFact.singleton(dialogEntity, dialogValue),
               true,
               false,
               false,

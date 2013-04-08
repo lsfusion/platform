@@ -8,10 +8,9 @@ import platform.base.col.interfaces.mutable.MMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.BaseClass;
 import platform.server.classes.ObjectValueClassSet;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
@@ -28,33 +27,52 @@ import platform.server.data.where.classes.ClassExprWhere;
 public class IsClassWhere extends DataWhere {
 
     private final SingleClassExpr expr;
-    private final AndClassSet classes;
+    private final ValueClassSet classes;
 
     // для того чтобы один и тот же JoinSelect все использовали
     private final IsClassExpr classExpr;
 
-    public IsClassWhere(SingleClassExpr expr, AndClassSet classes) {
+    public IsClassWhere(SingleClassExpr expr, ValueClassSet classes) {
         this.expr = expr;
         this.classes = classes;
 
-        assert !this.classes.isEmpty();
-        if(this.classes instanceof ObjectClassSet)
-            classExpr = (IsClassExpr) expr.classExpr(((ObjectClassSet) this.classes).getBaseClass());
+        assert !classes.isEmpty();
+        if(classes instanceof ObjectValueClassSet)
+            classExpr = new IsClassExpr(expr, (((ObjectValueClassSet) classes).getTables().keys())); // не через classExpr чтобы getWhere
         else
             classExpr = null;
+    }
+
+    public static Where create(SingleClassExpr expr, ValueClassSet classes) {
+        if(classes instanceof ObjectValueClassSet) {
+            ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE, expr, classes);
+            if(objectClasses.getTables().size()> IsClassExpr.inlineThreshold)
+                return new IsClassWhere(expr, classes);
+            else
+                return getTableWhere(expr, objectClasses);
+        }
+        return new IsClassWhere(expr, classes);
+    }
+
+    protected static Where getTableWhere(SingleClassExpr expr,ObjectValueClassSet classes) {
+        Where result = Where.FALSE;
+        ImSet<ObjectValueClassSet> tableChilds = classes.getTables().valuesSet();
+        for(ObjectValueClassSet tableChild : tableChilds)
+            result = result.exclOr(new IsClassWhere(expr, tableChild));
+        return result;
     }
 
     public String getSource(CompileSource compile) {
         if(compile instanceof ToString)
             return expr.getSource(compile) + " isClass(" + classes + ")";
 
-        return ((ObjectClassSet)classes).getWhereString(classExpr.getSource(compile));
+        return ((ObjectValueClassSet)classes).getWhereString(classExpr.getSource(compile));
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
     @Override
     protected String getNotSource(CompileSource compile) {
-        return ((ObjectClassSet)classes).getNotWhereString(classExpr.getSource(compile));
+        return ((ObjectValueClassSet)classes).getNotWhereString(classExpr.getSource(compile));
     }
 
     protected Where translate(MapTranslate translator) {
@@ -65,12 +83,30 @@ public class IsClassWhere extends DataWhere {
         return expr.translateQuery(translator).isClass(classes);
     }
 
+    public static ValueClassSet getPackSet(Where outWhere, SingleClassExpr expr) {
+        AndClassSet exprClasses = outWhere.and(expr.getWhere()).getClassWhere().getAndClassSet(expr);
+        if(exprClasses==null)
+            return null;
+        return exprClasses.getValueClassSet();
+    }
+
+    private static ValueClassSet packClassSet(Where trueWhere, SingleClassExpr expr, ValueClassSet classes) {
+        ValueClassSet packClasses;
+        if(classes instanceof ObjectValueClassSet && ((ObjectValueClassSet) classes).getTables().size()>1 && ((packClasses = getPackSet(trueWhere, expr)) != null)) // проверка на ObjectValueClassSet - оптимизация
+            classes = (ValueClassSet) packClasses.and(classes);
+        return classes;
+    }
+    @Override
+    public Where packFollowFalse(Where falseWhere) {
+        return expr.packFollowFalse(falseWhere).isClass(packClassSet(falseWhere.not(), expr, classes)); // два раза будет паковаться, но может и правильно потому как expr меняется
+    }
+
     public ImSet<OuterContext> calculateOuterDepends() {
         return SetFact.<OuterContext>singleton(expr);
     }
 
     protected void fillDataJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
-        if(classes instanceof ObjectClassSet)
+        if(classes instanceof ObjectValueClassSet)
             classExpr.fillJoinWheres(joins,andWhere);
         else
             expr.fillJoinWheres(joins,andWhere);        
@@ -84,13 +120,12 @@ public class IsClassWhere extends DataWhere {
 //        return expr.getWhere().getKeyEquals().and(new KeyEquals(this));
 //    }
 
-    private static Stat getClassStat(ObjectValueClassSet classes) { // "модифицируем" статистику classExpr'а чтобы правильно расчитывала кол-во объектов
-        BaseClass baseClass = classes.getBaseClass();
-        return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
-    }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, boolean noWhere) {
-        if(classes instanceof ObjectValueClassSet)
-            return new GroupJoinsWheres(new ExprStatJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this, noWhere);
+        if(classes instanceof ObjectValueClassSet) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
+            // тут правда есть нюанс, что статистика по классам считается одним механизмом, а по join'ами другим
+            Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getClassCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
+            return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, noWhere);
+        }
         return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop, noWhere).and(new GroupJoinsWheres(this, noWhere));
     }
     public ClassExprWhere calculateClassWhere() {

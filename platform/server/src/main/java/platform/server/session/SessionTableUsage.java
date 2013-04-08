@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
 
-    protected SessionData<?> table;
+    public SessionData<?> table;
     protected ImRevMap<KeyField, K> mapKeys;
     protected ImRevMap<PropertyField, V> mapProps;
     

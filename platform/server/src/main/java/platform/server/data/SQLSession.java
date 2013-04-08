@@ -852,12 +852,16 @@ public class SQLSession extends MutableObject {
         return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 
-    public int insertLeftSelect(ModifyQuery modify, boolean updateProps) throws SQLException {
-        return executeDML(modify.getInsertLeftKeys(syntax, updateProps));
+    public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException {
+        return executeDML(modify.getInsertLeftKeys(syntax, updateProps, insertOnlyNotNull));
     }
 
-    // сначала делает InsertSelect, затем UpdateRecords
     public int modifyRecords(ModifyQuery modify) throws SQLException {
+        return modifyRecords(modify, false);
+    }
+
+        // сначала делает InsertSelect, затем UpdateRecords
+    public int modifyRecords(ModifyQuery modify, boolean insertOnlyNotNull) throws SQLException {
         if (modify.isEmpty()) // оптимизация
             return 0;
 
@@ -866,7 +870,7 @@ public class SQLSession extends MutableObject {
             if (!isRecord(modify.table, MapFact.<KeyField, DataObject>EMPTY()))
                 result = insertSelect(modify);
         } else
-            result = insertLeftSelect(modify, false);
+            result = insertLeftSelect(modify, false, insertOnlyNotNull);
         updateRecords(modify);
         return result;
     }

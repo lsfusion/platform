@@ -1131,7 +1131,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                 if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
                     String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
-                        LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(key.singleValue(), LM.project.getType()));
+                        LM.sidProject.change(projectId, pInfo.session, pInfo.session.getDataObject(LM.project, key.singleValue()));
                         pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
                                 project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
@@ -2067,8 +2067,9 @@ public class ImportProjectsActionProperty extends UserActionProperty {
                     }
 
                     ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectMissionProjectKey, projectScheduleProjectKey, projectActionProjectKey, claimerKey};
-                    SessionTableUsage<String, ImportField> projectTable =
-                            importMultilanguageData(pInfo,
+                    SessionTableUsage<String, ImportField> projectTable = null;
+                    if(1==1) throw new RuntimeException("not supported any more");
+                    importMultilanguageData(pInfo,
                                                     fieldsBoth, fieldsNative, fieldsForeign,
                                                     properties, propertiesNative, propertiesForeign,
                                                     data, keysArray, null, fillNative, fillForeign);
@@ -2245,7 +2246,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         }
     }
 
-    private SessionTableUsage<String, ImportField> importMultilanguageData (
+    private void importMultilanguageData (
             PrivateInfo pInfo,
             List<ImportField> fieldsBoth, List<ImportField> fieldsNative, List<ImportField> fieldsForeign,
             List<ImportProperty<?>> propertiesBoth, List<ImportProperty<?>> propertiesNative, List<ImportProperty<?>> propertiesForeign,
@@ -2263,7 +2264,7 @@ public class ImportProjectsActionProperty extends UserActionProperty {
         }
 
         try {
-            return new IntegrationService(pInfo.session,
+            new IntegrationService(pInfo.session,
                                           new ImportTable(fieldsMerged, data),
                                           Arrays.asList(keysArray),
                                           propertiesMerged,

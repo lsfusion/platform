@@ -4,11 +4,12 @@ import platform.base.TwinImmutableObject;
 import platform.base.col.ListFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
@@ -24,6 +25,7 @@ import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.logics.property.ClassField;
 
 public class ConcatenateExpr extends VariableClassExpr {
 
@@ -86,14 +88,14 @@ public class ConcatenateExpr extends VariableClassExpr {
         return true;
     }
 
-    public Expr classExpr(BaseClass baseClass) {
+    public Expr classExpr(ImSet<ClassField> classes) {
         throw new RuntimeException("not supported");
     }
 
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         Where where = Where.TRUE;
         for(int i=0;i<exprs.size();i++)
-            where = where.and(exprs.get(i).isClass(getPartClass(set, i)));
+            where = where.and(exprs.get(i).isClass((ValueClassSet)getPartClass(set, i)));
         return where;
     }
 

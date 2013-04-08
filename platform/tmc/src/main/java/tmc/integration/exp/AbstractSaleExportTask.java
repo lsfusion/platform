@@ -124,7 +124,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
-        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
+        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(BL.LM.baseClass, store)));
 
         PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.VEDLM.articleQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) quantity.propertyObject));
@@ -156,7 +156,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
-        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
+        outStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) outStore.propertyObject, Compare.EQUALS, session.getDataObject(BL.LM.baseClass, store)));
 
         PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.VEDLM.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilterInstance((CalcPropertyObjectInstance) issued.propertyObject));
@@ -193,7 +193,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         // записываем фильтр на этот склад
         PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.VEDLM.subjectIncOrder, doc.groupTo);
-        incStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
+        incStore.toDraw.addTempFilter(new CompareFilterInstance((CalcPropertyObjectInstance) incStore.propertyObject, Compare.EQUALS, session.getDataObject(BL.LM.baseClass, store)));
 
         map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.barcode));
         map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.baseLM.name));

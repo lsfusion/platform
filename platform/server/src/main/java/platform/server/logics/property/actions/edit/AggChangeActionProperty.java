@@ -61,7 +61,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
             Expr groupExpr = GroupExpr.create(
                     MapFact.singleton(0, aggProp.getExpr(MapFact.singleton(aggProp.interfaces.single(), keyExpr), context.getModifier())),
                     keyExpr,
-                    keyExpr.isClass(aggClass.getUpSet()),
+                    keyExpr.isUpClass(aggClass),
                     GroupType.ANY,
                     MapFact.singleton(0, readValue.getExpr())
             );

@@ -1,10 +1,13 @@
 package platform.server.data;
 
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.query.PropStat;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.StatKeys;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -14,6 +17,11 @@ public class SerializedTable extends Table {
 
     public SerializedTable(DataInputStream inStream, BaseClass baseClass, int version) throws IOException {
         super(inStream, baseClass, version);
+    }
+
+    public SerializedTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass) {
+        super(name, keys, properties, null, null);
+        initBaseClasses(baseClass);
     }
 
     private final static int prevStats = 100000;

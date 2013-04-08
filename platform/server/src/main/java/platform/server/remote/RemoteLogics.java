@@ -319,14 +319,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public byte[] readFile(String sid, String... params) throws RemoteException {
-        LCP property = businessLogics.getLCP(sid);
+        LCP<PropertyInterface> property = businessLogics.getLCP(sid);
         ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
         DataObject[] objects = new DataObject[interfaces.size()];
         byte[] fileBytes;
         try {
             DataSession session = createSession();
+            ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(true);
             for (int i = 0; i < interfaces.size(); i++) {
-                objects[i] = session.getDataObject(Integer.decode(params[i]), property.property.getInterfaceType(interfaces.get(i)));
+                objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
             }
             fileBytes = (byte[]) property.read(session, objects);
         } catch (Exception e) {

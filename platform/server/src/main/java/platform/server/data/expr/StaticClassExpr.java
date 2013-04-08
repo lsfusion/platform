@@ -1,12 +1,14 @@
 package platform.server.data.expr;
 
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MMap;
-import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.logics.property.ClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
 
@@ -17,17 +19,20 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return getClassWhere(this, classes);
     }
 
-    public static Expr classExpr(StaticClassExprInterface expr, BaseClass baseClass) {
-        return ((ConcreteObjectClass)expr.getStaticClass()).getClassObject().getStaticExpr();
+    public static Expr classExpr(StaticClassExprInterface expr, ImSet<ClassField> classTables) {
+        ConcreteObjectClass staticClass = (ConcreteObjectClass) expr.getStaticClass();
+        if(!IsClassExpr.inSet(staticClass, classTables))
+            return Expr.NULL;
+        return staticClass.getClassObject().getStaticExpr();
     }
-    public Expr classExpr(BaseClass baseClass) {
-        return classExpr(this, baseClass);
+    public Expr classExpr(ImSet<ClassField> classes) {
+        return classExpr(this, classes);
     }
 
     public static Where isClass(StaticClassExprInterface expr, AndClassSet set) {
         return expr.getStaticClass().inSet(set)?Where.TRUE:Where.FALSE;
     }
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         return isClass(this, set);
     }
 

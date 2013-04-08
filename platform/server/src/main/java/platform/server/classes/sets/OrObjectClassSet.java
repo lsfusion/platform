@@ -1,22 +1,30 @@
 package platform.server.classes.sets;
 
+import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
 import platform.base.SFunctionSet;
+import platform.base.TwinImmutableObject;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
-import platform.base.col.interfaces.mutable.AddValue;
-import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.SimpleAddValue;
+import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.add.MAddExclMap;
+import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
+import platform.server.logics.property.ClassField;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Comparator;
 
 // IMMUTABLE
-public class OrObjectClassSet extends ImmutableObject implements OrClassSet, AndClassSet {
+public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet, ObjectValueClassSet {
 
     public final UpClassSet up;
     public final ImSet<ConcreteCustomClass> set;
@@ -46,18 +54,10 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
     public final static OrObjectClassSet FALSE = new OrObjectClassSet(true);
 
     // добавляет отфильтровывая up'ы
-    private static void addAll(MSet<ConcreteCustomClass> mTo, ImSet<ConcreteCustomClass> set, UpClassSet up, boolean has) {
+    private static void addAll(MSet<ConcreteCustomClass> mTo, ImSet<ConcreteCustomClass> set, UpClassSet up) {
         for(int i=0,size=set.size();i<size;i++) {
             ConcreteCustomClass nodeSet = set.get(i);
-            if(up.has(nodeSet)==has)
-                mTo.add(nodeSet);
-        }
-    }
-
-    private static void addAll(MSet<ConcreteCustomClass> mTo, ImSet<ConcreteCustomClass> set, ImSet<ConcreteCustomClass> and) {
-        for(int i=0,size=set.size();i<size;i++) {
-            ConcreteCustomClass nodeSet = set.get(i);
-            if(and.contains(nodeSet))
+            if(up.has(nodeSet))
                 mTo.add(nodeSet);
         }
     }
@@ -94,32 +94,21 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
 
     public OrObjectClassSet or(OrObjectClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
+        return createPack(set.merge(node.set), up.or(node.up), unknown || node.unknown);
+    }
 
-        MSet<ConcreteCustomClass> mAddSet = SetFact.mSet();
-        addAll(mAddSet, set, node.up, false);
-        addAll(mAddSet, node.set, up, false);
-        ImSet<ConcreteCustomClass> orSet = mAddSet.immutable();
-        UpClassSet orUp = up.add(node.up);
-
-        while(true) {
-            UpClassSet parentSet = null;
-            for(int i=0,size=orSet.size();i<size;i++) {
-                for(CustomClass parent : orSet.get(i).parents)
-                    if(parent.upInSet(orUp, orSet)) {
-                        parentSet = new UpClassSet(parent);
-                        break;
-                    }
-                if(parentSet!=null)
-                    break;
-            }
-            // remove'им orSet
-            if(parentSet == null)
-                return new OrObjectClassSet(orUp,orSet,unknown || node.unknown);
-            else {
-                orSet = remove(orSet, parentSet);
-                orUp = orUp.add(parentSet);
-            }
+    // рекурсию нет смысло крутить, так как по сути множество не меняется, а только структурируется в меньшее с точки зрения хранения
+    protected static OrObjectClassSet createPack(ImSet<ConcreteCustomClass> set, UpClassSet upSet, boolean unknown) {
+        MFilterSet<ConcreteCustomClass> mRestSet = SetFact.mFilter(set);
+        for(int i=0,size=set.size();i<size;i++) {
+            ConcreteCustomClass element = set.get(i);
+            if(element.upInSet(upSet, set))
+                upSet = upSet.or(new UpClassSet(element));
+            else
+                mRestSet.keep(element);
         }
+        ImSet<ConcreteCustomClass> restSet = SetFact.imFilter(mRestSet, set);
+        return new OrObjectClassSet(upSet, restSet, unknown);
     }
 
     public OrObjectClassSet and(OrClassSet node) {
@@ -129,11 +118,10 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
     public OrObjectClassSet and(OrObjectClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
 
-        MSet<ConcreteCustomClass> mAndSet = SetFact.mSet();
-        addAll(mAndSet, set, node.set);
-        addAll(mAndSet, set, node.up, true);
-        addAll(mAndSet, node.set, up, true);
-        return new OrObjectClassSet(up.intersect(node.up),mAndSet.immutable(),unknown && node.unknown);
+        MSet<ConcreteCustomClass> mAndSet = SetFact.mSet(set.filter(node.set));
+        addAll(mAndSet, set, node.up);
+        addAll(mAndSet, node.set, up);
+        return createPack(mAndSet.immutable(), up.intersect(node.up),unknown && node.unknown);
     }
     
     public boolean isEmpty() {
@@ -145,8 +133,13 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
         return !(objectNode.unknown && !unknown) && inSet(objectNode.set, up, set) && objectNode.up.inSet(up, set);
     }
 
-    public boolean equals(Object o) {
-        return this == o || o instanceof OrObjectClassSet && ((OrObjectClassSet)o).containsAll((OrClassSet)this) && containsAll((OrClassSet)o);
+    public boolean twins(TwinImmutableObject o) {
+        return unknown == ((OrObjectClassSet)o).unknown && up.equals(((OrObjectClassSet)o).up) && set.equals(((OrObjectClassSet)o).set);
+    }
+
+    @Override
+    public int immutableHashCode() {
+        return 31 * (31 * up.hashCode() + set.hashCode()) + (unknown?1:0);
     }
 
     public int hashCode() {
@@ -157,18 +150,94 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
         return set+(!up.isFalse() && !set.isEmpty()?" ":"")+(!up.isFalse()?"Up:"+ up.toString():"")+(!up.isFalse() || !set.isEmpty()?" ":"")+(unknown?"unknown":"");
     }
 
+    // возвращает до каких путей можно дойти и с каким минимальным путем
+    private static ImMap<CustomClass, Integer> recCommonClass(CustomClass customClass, ImSet<CustomClass> used, ImSet<CustomClass> commonSet, MExclMap<CustomClass, ImMap<CustomClass, Integer>> mPathes, MExclSet<CustomClass> mFirstFulls) {
+        ImMap<CustomClass, Integer> cachedResult = mPathes.get(customClass);
+        if(cachedResult!=null)
+            return cachedResult;
+
+        MMap<CustomClass, Integer> mChildPathes = MapFact.mMap(BaseUtils.<CustomClass>addMinInt());
+        if(commonSet.contains(customClass))
+            mChildPathes.add(customClass, 0);
+
+        boolean hasFullChild = false;
+        for(CustomClass childClass : customClass.children)
+            if(used.contains(childClass)) {
+                ImMap<CustomClass, Integer> recChildPathes = recCommonClass(childClass, used, commonSet, mPathes, mFirstFulls);
+                hasFullChild = hasFullChild || recChildPathes.keys().containsAll(commonSet);
+                mChildPathes.addAll(recChildPathes.mapValues(new GetValue<Integer, Integer>() {
+                    public Integer getMapValue(Integer value) {
+                        return value + 1;
+                    }
+                }));
+            } else
+                mChildPathes.add(childClass, 1);
+
+        ImMap<CustomClass, Integer> childPathes = mChildPathes.immutable();
+
+        if(!hasFullChild && childPathes.keys().containsAll(commonSet))
+            mFirstFulls.exclAdd(customClass);
+        mPathes.exclAdd(customClass, childPathes);
+        return childPathes;
+    }
+
     public ValueClass getCommonClass() {
-        assert (!isEmpty());
+        assert !isEmpty();
         assert !unknown;
 
-        Set<CustomClass> commonParents = SetFact.mAddRemoveSet(SetFact.toExclSet(up.getCommonClasses()).addExcl(set));
-        while(commonParents.size()>1) {
-            Iterator<CustomClass> i = commonParents.iterator();
-            CustomClass first = i.next(); i.remove();
-            CustomClass second = i.next(); i.remove();
-            commonParents.addAll(first.commonParents(second).toJavaSet());
-        }
-        return commonParents.iterator().next();
+        final ImSet<CustomClass> commonSet;
+        if(Settings.get().isMergeUpClassSets()) {
+            if(set.isEmpty() && up.getCommonClasses().length==1)
+                return up.getCommonClasses()[0];
+
+            MSet<ConcreteCustomClass> mConcrete = SetFact.mSet(set); // для детерменированности, так как upClassSet могут по разному "собираться"
+            up.fillNextConcreteChilds(mConcrete);
+            commonSet = BaseUtils.immutableCast(mConcrete.immutable());
+        } else
+            commonSet = SetFact.toExclSet(up.getCommonClasses()).addExcl(set);
+
+        if(commonSet.size()==1) // иначе firstFulls не заполнится
+            return commonSet.single();
+
+        BaseClass baseClass = getBaseClass(); // базовая вершина
+
+        MSet<CustomClass> mUsed = SetFact.mSet();
+        for(CustomClass commonClass : commonSet) // ищем все использованные вершины
+            commonClass.fillParents(mUsed);
+
+        MExclMap<CustomClass, ImMap<CustomClass, Integer>> mPathes = MapFact.mExclMap();
+        MExclSet<CustomClass> mFirstFulls = SetFact.mExclSet();
+        recCommonClass(baseClass, mUsed.immutable(), commonSet, mPathes, mFirstFulls);
+        final ImSet<CustomClass> firstFulls = mFirstFulls.immutable();
+        ImMap<CustomClass, ImMap<CustomClass, Integer>> pathes = mPathes.immutable();
+
+        final ImMap<CustomClass, Integer> pathCounts = pathes.mapValues(new GetKeyValue<Integer, CustomClass, ImMap<CustomClass, Integer>>() {
+            public Integer getMapValue(CustomClass key, ImMap<CustomClass, Integer> value) {
+                assert !firstFulls.contains(key) || value.keys().containsAll(commonSet);
+                int countCommon = 0;
+                int countOthers = 0;
+                for (int i = 0, size = value.size(); i < size; i++) {
+                    CustomClass customClass = value.getKey(i);
+                    if(commonSet.contains(customClass))
+                        countCommon += value.getValue(i);
+                    else
+                        countOthers += value.getValue(i);
+                }
+                return countOthers * 1000 + countCommon;
+            }
+        });
+
+        return firstFulls.sort(new Comparator<CustomClass>() {
+            public int compare(CustomClass o1, CustomClass o2) {
+                int cnt1 = pathCounts.get(o1);
+                int cnt2 = pathCounts.get(o2);
+                if (cnt1 > cnt2)
+                    return 1;
+                if (cnt1 < cnt2)
+                    return -1;
+                return o1.getSID().compareTo(o2.getSID());
+            }
+        }).get(0);
     }
 
     // получает конкретный класс если он один
@@ -198,7 +267,7 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
         return containsAll(node.getOr());
     }
 
-    public OrClassSet getOr() {
+    public OrObjectClassSet getOr() {
         return this;
     }
 
@@ -223,19 +292,12 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
         return set1.getOr().or(set2.getOr());
     }
 
-    public AndClassSet getKeepClass() {
-        if(up.isEmpty() && set.isEmpty()) {
-            if(unknown)
-                return new OrObjectClassSet();
-            else
-                return OrObjectClassSet.FALSE;
-        } else {
-            UpClassSet baseSet = (up.isEmpty() ? set.get(0) : up).getBaseClass().getUpSet();
-            if(unknown)
-                return new OrObjectClassSet(baseSet, SetFact.<ConcreteCustomClass>EMPTY(), true);
-            else
-                return baseSet; 
-        }
+    public ValueClassSet getKeepClass() {
+        assert !unknown;
+        if(up.isEmpty() && set.isEmpty())
+            return OrObjectClassSet.FALSE;
+        else
+            return getBaseClass().getUpSet();
     }
 
     private final static AddValue<Object, OrClassSet> addOr = new SimpleAddValue<Object, OrClassSet>() {
@@ -249,5 +311,93 @@ public class OrObjectClassSet extends ImmutableObject implements OrClassSet, And
     };
     public static <T> AddValue<T, OrClassSet> addOr() {
         return (AddValue<T, OrClassSet>) addOr;
+    }
+
+    // ObjectClassSet интерфейсы
+
+    // множественное наследование
+    public static int getCount(ObjectValueClassSet set) {
+        int stat = 0;
+        for(ConcreteCustomClass child : set.getSetConcreteChildren())
+            stat += child.getCount();
+        return stat;
+    }
+
+    public static int getClassCount(ObjectValueClassSet set) {
+        return set.getSetConcreteChildren().size();
+    }
+
+    public static String getWhereString(ObjectValueClassSet set, String source) {
+        ImSet<ConcreteCustomClass> children = set.getSetConcreteChildren();
+        if(children.size()==0) return Where.FALSE_STRING;
+        if(children.size()==1) return source + "=" + children.single().ID;
+        return source + " IN (" + children.toString(new GetValue<String, ConcreteCustomClass>() {
+            public String getMapValue(ConcreteCustomClass value) {
+                return value.ID.toString();
+            }
+        }, ",") + ")";
+    }
+
+    public static String getNotWhereString(ObjectValueClassSet set, String source) {
+        return "(" + source + " IS NULL OR NOT " + getWhereString(set, source) + ")";
+    }
+
+    public int getCount() {
+        return getCount(this);
+    }
+
+    public int getClassCount() {
+        return getClassCount(this);
+    }
+
+    public String getWhereString(String source) {
+        return getWhereString(this, source);
+    }
+
+    public String getNotWhereString(String source) {
+        return getNotWhereString(this, source);
+    }
+
+    public BaseClass getBaseClass() {
+        assert !unknown;
+        return (up.isEmpty() ? set.get(0) : up).getBaseClass();
+    }
+
+    public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
+        assert !unknown;
+        return SetFact.addExcl(up.getSetConcreteChildren(), set);
+    }
+
+    public static ObjectValueClassSet fromSetConcreteChildren(ImSet<ConcreteCustomClass> set) {
+        ObjectValueClassSet result = OrObjectClassSet.FALSE;
+        for(ConcreteCustomClass customClass : set)
+            result = (ObjectValueClassSet) result.or(customClass);
+        return result;
+    }
+
+    private static AddValue<Object, ObjectValueClassSet> objectValueSetAdd = new SimpleAddValue<Object, ObjectValueClassSet>() {
+        public ObjectValueClassSet addValue(Object key, ObjectValueClassSet prevValue, ObjectValueClassSet newValue) {
+            return (ObjectValueClassSet) prevValue.or(newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <K> AddValue<K, ObjectValueClassSet> objectValueSetAdd() {
+        return (AddValue<K, ObjectValueClassSet>) objectValueSetAdd;
+    }
+    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
+        assert !unknown;
+        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getTables(), OrObjectClassSet.<ClassField>objectValueSetAdd());
+        for(ConcreteCustomClass customClass : set)
+            mMap.add(customClass.dataProperty, customClass);
+        return mMap.immutable().toRevExclMap();
+    }
+
+    public ValueClassSet getValueClassSet() {
+        if(!unknown) // оптимизация
+            return this;
+        return new OrObjectClassSet(up, set, false);
     }
 }

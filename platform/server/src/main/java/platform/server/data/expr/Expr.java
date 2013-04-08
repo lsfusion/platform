@@ -13,10 +13,8 @@ import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.BaseClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.IntegralClass;
-import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.*;
+import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.query.Stat;
@@ -38,6 +36,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.property.ClassField;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -73,14 +72,23 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
             where = calculateWhere();
         return where;
     }
+/*    public void setWhere(Where setWhere) {
+        where = setWhere;
+    }*/
     public abstract Where calculateWhere();
 
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();
 
-    public abstract Expr classExpr(BaseClass baseClass);
+    public Expr classExpr(BaseClass baseClass) {
+        return classExpr(baseClass.getUpTables().keys());
+    }
+    public abstract Expr classExpr(ImSet<ClassField> classes); // classes - за пределами которых можно (и нужно ?) возвращать null
 
-    public abstract Where isClass(AndClassSet set);
+    public abstract Where isClass(ValueClassSet set);
+    public Where isUpClass(ValueClass set) {
+        return isClass(set.getUpSet());
+    }
 
     public abstract Where compareBase(BaseExpr expr, Compare compareBack);
     public abstract Where compare(Expr expr, Compare compare);
@@ -230,5 +238,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 //        return where1.or(where2);
         return (Where) where1.orCheck(where2);
     }
+
+    public abstract ConcreteClass getStaticClass(); // вообще можно будет убрать, потом оставить у StaticClassExpr - очень мелкая оптимизация
 }
 

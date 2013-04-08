@@ -10,9 +10,9 @@ import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
-import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.ValueClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
@@ -26,6 +26,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ClassReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.logics.property.ClassField;
 
 import java.util.Set;
 
@@ -128,6 +129,18 @@ public class IfExpr extends Expr {
         return createPack(ifWhere, trueExpr, falseExpr, where, pack);
     }
 
+    public ConcreteClass getStaticClass() {
+        ConcreteClass trueClass = trueExpr.getStaticClass();
+        if(trueClass==null)
+            return null;
+        ConcreteClass falseClass = falseExpr.getStaticClass();
+        if(falseClass==null)
+            return null;
+        if(BaseUtils.hashEquals(trueClass, falseClass))
+            return trueClass;
+        return null;
+    }
+
     public Type getType(KeyType keyType) { // порядок высот
         Type trueType = trueExpr.getType(keyType);
         assert trueType!=null;
@@ -167,11 +180,11 @@ public class IfExpr extends Expr {
         return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE, falseExpr)));
     }
 
-    public Expr classExpr(BaseClass baseClass) {
-        return trueExpr.classExpr(baseClass).ifElse(ifWhere, falseExpr.classExpr(baseClass));
+    public Expr classExpr(ImSet<ClassField> classes) {
+        return trueExpr.classExpr(classes).ifElse(ifWhere, falseExpr.classExpr(classes));
     }
 
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         return ifWhere.ifElse(trueExpr.isClass(set), falseExpr.isClass(set));
     }
 

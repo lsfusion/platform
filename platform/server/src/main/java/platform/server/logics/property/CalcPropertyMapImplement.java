@@ -49,7 +49,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
-        change(keys, env, env.getSession().getObjectValue(value, property.getType()));
+        change(keys, env, env.getSession().getObjectValue(property.getValueClass(), value));
     }
 
     public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {

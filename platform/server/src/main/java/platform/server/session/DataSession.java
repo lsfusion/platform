@@ -6,7 +6,6 @@ import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MOrderExclSet;
-import platform.base.col.interfaces.mutable.MOrderFilterSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -15,7 +14,6 @@ import platform.interop.Compare;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.Settings;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.context.ThreadLocalContext;
@@ -30,7 +28,6 @@ import platform.server.data.query.QueryBuilder;
 import platform.server.data.type.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.form.entity.FormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.navigator.ComputerController;
@@ -45,11 +42,11 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.SessionEnvEvent;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
-import platform.server.logics.table.ObjectTable;
 
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.contains;
 import static platform.base.BaseUtils.filterKeys;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges {
@@ -60,27 +57,32 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     // оптимизационные вещи
     private Set<CustomClass> add = SetFact.mAddRemoveSet();
     private Set<CustomClass> remove = SetFact.mAddRemoveSet();
+    private Set<ConcreteObjectClass> usedOldClasses = SetFact.mAddRemoveSet();
     private Set<ConcreteObjectClass> usedNewClasses = SetFact.mAddRemoveSet();
     private Map<CustomClass, DataObject> singleAdd = MapFact.mAddRemoveMap();
     private Map<CustomClass, DataObject> singleRemove = MapFact.mAddRemoveMap();
-    private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap();
+    private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap(); // просто lazy кэш для getCurrentClass
 
     public static Where isValueClass(Expr expr, CustomClass customClass, Set<ConcreteObjectClass> usedNewClasses) {
+        return isValueClass(expr, customClass.getUpSet(), usedNewClasses);
+    }
+
+    public static Where isValueClass(Expr expr, ObjectValueClassSet classSet, Set<ConcreteObjectClass> usedNewClasses) {
         Where result = Where.FALSE;
         for(ConcreteObjectClass usedClass : usedNewClasses)
             if(usedClass instanceof ConcreteCustomClass) {
                 ConcreteCustomClass customUsedClass = (ConcreteCustomClass) usedClass;
-                if(customUsedClass.isChild(customClass)) // если изменяется на класс, у которого
+                if(classSet.containsAll(customUsedClass)) // если изменяется на класс, у которого
                     result = result.or(expr.compare(customUsedClass.getClassObject(), Compare.EQUALS));
             }
         return result;
     }
 
-    public ImSet<CalcProperty> getChangedProps(ImSet<CustomClass> add, ImSet<CustomClass> remove, ImSet<DataProperty> data) {
-        return SetFact.<CalcProperty>addExcl(getClassChanges(add, remove), data);
+    public ImSet<CalcProperty> getChangedProps(ImSet<CustomClass> add, ImSet<CustomClass> remove, ImSet<ConcreteObjectClass> old, ImSet<ConcreteObjectClass> newc, ImSet<DataProperty> data) {
+        return SetFact.<CalcProperty>addExcl(getClassChanges(add, remove, old, newc), data);
     }
     public ImSet<CalcProperty> getChangedProps() {
-        return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(data.keySet()));
+        return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), SetFact.fromJavaSet(data.keySet()));
     }
 
     private class DataModifier extends SessionModifier {
@@ -114,6 +116,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(property instanceof ObjectClassProperty)
             return (PropertyChange<P>) getObjectClassChange((ObjectClassProperty) property);
 
+        if(property instanceof ClassDataProperty)
+            return (PropertyChange<P>) getClassDataChange((ClassDataProperty) property);
+
         if(property instanceof IsClassProperty)
             return (PropertyChange<P>) getClassChange((IsClassProperty) property);
 
@@ -125,6 +130,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     private class Transaction {
         private final Set<CustomClass> add;
         private final Set<CustomClass> remove;
+        private final Set<ConcreteObjectClass> usedOldClases;
         private final Set<ConcreteObjectClass> usedNewClases;
         private final Map<CustomClass, DataObject> singleAdd;
         private final Map<CustomClass, DataObject> singleRemove;
@@ -139,6 +145,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
             add = new HashSet<CustomClass>(DataSession.this.add);
             remove = new HashSet<CustomClass>(DataSession.this.remove);
+            usedOldClases = new HashSet<ConcreteObjectClass>(DataSession.this.usedOldClasses);
             usedNewClases = new HashSet<ConcreteObjectClass>(DataSession.this.usedNewClasses);
             singleAdd = new HashMap<CustomClass, DataObject>(DataSession.this.singleAdd);
             singleRemove = new HashMap<CustomClass, DataObject>(DataSession.this.singleRemove);
@@ -188,6 +195,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             // assert что новые включают старые
             DataSession.this.add = add;
             DataSession.this.remove = remove;
+            DataSession.this.usedOldClasses = usedOldClases;
             DataSession.this.usedNewClasses = usedNewClases;
             DataSession.this.singleAdd = singleAdd;
             DataSession.this.singleRemove = singleRemove;
@@ -196,7 +204,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             rollData();
             rollNews();
             
-            dataModifier.eventDataChanges(getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), data.keys()));
+            dataModifier.eventDataChanges(getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), data.keys()));
         }
     }
     private Transaction applyTransaction; // restore point
@@ -237,8 +245,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         sql.commitTransaction();
     }
 
-    private ImSet<AggregateProperty<ClassPropertyInterface>> getClassChanges(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
-        return SetFact.addExcl(CustomClass.getProperties(addClasses, removeClasses), baseClass.getObjectClassProperty());
+    private ImSet<CalcProperty<ClassPropertyInterface>> getClassChanges(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
+        return SetFact.addExcl(CustomClass.getProperties(addClasses, removeClasses, oldClasses, newClasses), baseClass.getObjectClassProperty());
     }
 
     public boolean hasChanges() {
@@ -262,6 +270,31 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return null;
     }
 
+    private boolean containsClassDataChange(ClassDataProperty property) {
+        for(ConcreteCustomClass child : property.set.getSetConcreteChildren())
+            if(usedOldClasses.contains(child) || usedNewClasses.contains(child))
+                return true;
+        return false;
+    }
+    private PropertyChange<ClassPropertyInterface> getClassDataChange(ClassDataProperty property) {
+        if(news!=null && containsClassDataChange(property)) {
+            ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
+            KeyExpr keyExpr = mapKeys.singleValue();
+
+            Join<String> join = news.join(keyExpr);
+            Expr newClassExpr = join.getExpr("value");
+            Where where = join.getWhere();
+
+            Where newClass = isValueClass(newClassExpr, property.set, usedNewClasses);
+/*            Where oldClass = keyExpr.isClass(property.set); // в общем то оптимизация (чтобы например не делать usedOldClasses)
+            where = where.and(oldClass.or(newClass));*/
+
+            return new PropertyChange<ClassPropertyInterface>(mapKeys, // на не null меняем только тех кто подходит по классу
+                    newClassExpr.and(newClass), where);
+        }
+        return null;
+    }
+
     private PropertyChange<ClassPropertyInterface> getClassChange(IsClassProperty property) {
         ValueClass isClass = property.getInterfaceClass();
         if(isClass instanceof CustomClass) {
@@ -276,7 +309,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 Expr newClassExpr = join.getExpr("value");
 
                 Where hasClass = isValueClass(newClassExpr, customClass, usedNewClasses);
-                Where hadClass = key.isClass(isClass.getUpSet());
+                Where hadClass = key.isUpClass(isClass);
 
                 Where changedWhere = Where.FALSE;
                 Expr changeExpr;
@@ -425,6 +458,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         dropTables(keep);
         add.clear();
         remove.clear();
+        usedOldClasses.clear();
         usedNewClasses.clear();
         singleAdd.clear();
         singleRemove.clear();
@@ -561,31 +595,46 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         
         boolean hadStoredChanges = hasStoredChanges();
 
+        SingleKeyPropertyUsage changeTable = null;
         MSet<CustomClass> mAddClasses = SetFact.mSet(); MSet<CustomClass> mRemoveClasses = SetFact.mSet();
+        MSet<ConcreteObjectClass> mChangeOldClasses = SetFact.mSet(); MSet<ConcreteObjectClass> mChangeNewClasses = SetFact.mSet();
         if(change.keyValue !=null) { // оптимизация
+            ConcreteObjectClass prevcl = (ConcreteObjectClass) getCurrentClass(change.keyValue);
             ConcreteObjectClass newcl = baseClass.findConcreteClassID((Integer) change.propValue.getValue());
-            newcl.getDiffSet((ConcreteObjectClass) getCurrentClass(change.keyValue), mAddClasses, mRemoveClasses);
-            usedNewClasses.add(newcl);
+            newcl.getDiffSet(prevcl, mAddClasses, mRemoveClasses);
+            mChangeOldClasses.add(prevcl);
+            mChangeNewClasses.add(newcl);
         } else {
-            change = change.materialize(sql, baseClass, env); // materialize'им изменение
+            changeTable = change.materialize(sql, baseClass, env); // materialize'им изменение
+            change = changeTable.getChange();
+            if(change.isEmpty()) // оптимизация, важна так как во многих event'ах может учавствовать
+                return;
 
             // читаем варианты изменения классов
             for(ImMap<String, ConcreteObjectClass> diffClasses : readDiffClasses(change.where, MapFact.singleton("newcl", change.expr), MapFact.singleton("prevcl", change.key))) {
                 ConcreteObjectClass newcl = diffClasses.get("newcl");
-                newcl.getDiffSet(diffClasses.get("prevcl"), mAddClasses, mRemoveClasses);
-                usedNewClasses.add(newcl);
+                ConcreteObjectClass prevcl = diffClasses.get("prevcl");
+                newcl.getDiffSet(prevcl, mAddClasses, mRemoveClasses);
+                mChangeOldClasses.add(prevcl);
+                mChangeNewClasses.add(newcl);
             }
         }
         ImSet<CustomClass> addClasses = mAddClasses.immutable(); ImSet<CustomClass> removeClasses = mRemoveClasses.immutable();
+        ImSet<ConcreteObjectClass> changedOldClasses = mChangeOldClasses.immutable(); ImSet<ConcreteObjectClass> changedNewClasses = mChangeNewClasses.immutable();
 
-        ImSet<AggregateProperty<ClassPropertyInterface>> updateChanges = getClassChanges(addClasses, removeClasses);
+        ImSet<CalcProperty<ClassPropertyInterface>> updateChanges = getClassChanges(addClasses, removeClasses, changedOldClasses, changedNewClasses);
 
         updateSessionEvents(updateChanges);
 
-        aspectChangeClass(addClasses, removeClasses, change);
+        aspectChangeClass(addClasses, removeClasses, changedOldClasses, changedNewClasses, change);
+
+        if(changeTable!=null)
+            changeTable.drop(sql);
 
         // так как таблица news используется при определении изменений всех классов, то нужно обновить и их "источники"
-        dataModifier.eventSourceChanges(CustomClass.getProperties(SetFact.fromJavaSet(add).remove(addClasses), SetFact.fromJavaSet(remove).remove(removeClasses)));
+        dataModifier.eventSourceChanges(CustomClass.getProperties(
+                                SetFact.fromJavaSet(add).remove(addClasses), SetFact.fromJavaSet(remove).remove(removeClasses),
+                                SetFact.fromJavaSet(usedOldClasses).remove(changedOldClasses), SetFact.fromJavaSet(usedNewClasses).remove(changedNewClasses)));
         updateProperties(updateChanges);
 
         aspectAfterChange(hadStoredChanges);
@@ -606,12 +655,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(neededProps!=null && property.isStored() && property.event==null) { // если транзакция, нет change event'а, singleApply'им
             assert isInTransaction();
 
-            SinglePropertyTableUsage<ClassPropertyInterface> changeTable = property.readFixChangeTable(sql, change, baseClass, getQueryEnv());
-
-            Pair<SinglePropertyTableUsage<ClassPropertyInterface>, SinglePropertyTableUsage<ClassPropertyInterface>> split = property.splitFitClasses(changeTable, sql, baseClass, env);
-
-            applySingleStored(property, split.first, ThreadLocalContext.getBusinessLogics());
-            change = SinglePropertyTableUsage.getChange(split.second);
+            change = SinglePropertyTableUsage.getChange(splitApplySingleStored(property,
+                    property.readFixChangeTable(sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics()));
         }
 
         ImSet<DataProperty> updateChanges = SetFact.singleton(property);
@@ -757,12 +802,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return mvResult.immutableValue();
     }
 
-    public DataObject getDataObject(Object value, Type type) throws SQLException {
-        return baseClass.getDataObject(sql, value, type);
+    public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException {
+        return baseClass.getDataObject(sql, value, valueClass.getUpSet());
     }
 
-    public ObjectValue getObjectValue(Object value, Type type) throws SQLException {
-        return baseClass.getObjectValue(sql, value, type);
+    public ObjectValue getObjectValue(ValueClass valueClass, Object value) throws SQLException {
+        return baseClass.getObjectValue(sql, value, valueClass.getUpSet());
     }
 
     // узнает список изменений произошедших без него
@@ -859,11 +904,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
     public final EmptyModifier emptyModifier = new EmptyModifier();
 
+    private <T extends PropertyInterface, D extends PropertyInterface> SinglePropertyTableUsage<T> splitApplySingleStored(CalcProperty<T> property, SinglePropertyTableUsage<T> changeTable, BusinessLogics<?> BL) throws SQLException {
+        if(property.isEnabledSingleApply()) {
+            Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> split = property.splitSingleApplyClasses(changeTable, sql, baseClass, env);
+            applySingleStored(property, split.first, BL);
+            return split.second;
+        }
+        return changeTable;
+    }
+
     private <T extends PropertyInterface, D extends PropertyInterface> void applySingleStored(CalcProperty<T> property, SinglePropertyTableUsage<T> change, BusinessLogics<?> BL) throws SQLException {
         assert isInTransaction();
 
         // assert что у change классы совпадают с property
-        assert property.isStored();
+        assert property.isSingleApplyStored();
         assert fitClasses(property, change); // проверяет гипотезу
         assert fitKeyClasses(property, change); // дополнительная проверка, она должна обеспечиваться тем что в change не должно быть замен null на null
 
@@ -878,7 +932,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
-        ImOrderSet<CalcProperty> dependProps = filterEnv(BL.getAppliedDependFrom(property)); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<CalcProperty> dependProps = filterEnv(BL.getSingleApplyDependFrom(property)); // !!! важно в лексикографическом порядке должно быть
 
         if(neededProps!=null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for(CalcProperty<D> depend : dependProps)
@@ -889,7 +943,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         for(CalcProperty<D> depend : dependProps) {
-            assert depend.isStored() || depend instanceof OldProperty;
+            assert depend.isSingleApplyStored() || depend instanceof OldProperty;
 
             if(neededProps!=null) { // управление pending'ом
                 assert !flush || !pendingSingleTables.containsKey(depend); // assert что если flush то уже обработано (так как в обратном лексикографике идет)
@@ -898,14 +952,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                         continue;
                 } else { // если нужная то уже обновили
                     if(flush) {
-                        if(depend.isStored())
+                        if(depend.isSingleApplyStored())
                             noUpdate.addNoChange(depend);
                         continue;
                     }
                 }
             }
 
-            if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
+            if(depend.isSingleApplyStored()) { // читаем новое значение, запускаем рекурсию
                 SinglePropertyTableUsage<D> dependChange = depend.readChangeTable(sql, modifier, baseClass, env);
                 applySingleStored((CalcProperty)depend, (SinglePropertyTableUsage)dependChange, BL);
                 noUpdate.addNoChange(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
@@ -974,14 +1028,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException {
-        savePropertyChanges(implementTable, changeTable.getValues().toMap(), changeTable.getKeys().toRevMap(), changeTable);
+        savePropertyChanges(implementTable, changeTable.getValues().toMap(), changeTable.getKeys().toRevMap(), changeTable, true);
     }
 
     private <T extends PropertyInterface> void savePropertyChanges(CalcProperty<T> property, SinglePropertyTableUsage<T> change) throws SQLException {
-        savePropertyChanges(property.mapTable.table, MapFact.singleton("value", (CalcProperty) property), property.mapTable.mapKeys, change);
+        savePropertyChanges(property.mapTable.table, MapFact.singleton("value", (CalcProperty) property), property.mapTable.mapKeys, change, false);
     }
 
-    private <K,V> void savePropertyChanges(Table implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable) throws SQLException {
+    private <K,V> void savePropertyChanges(Table implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable, boolean onlyNotNull) throws SQLException {
         QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(implementTable);
         Join<V> join = changeTable.join(mapKeys.join(modifyQuery.getMapExprs()));
         for (int i=0,size=props.size();i<size;i++)
@@ -1032,10 +1086,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
             currentSession.change(applyObject.object, DataSession.this);
             if (form != null){
-                BL.systemEventsLM.connectionSession.change(form.instanceFactory.connection.getValue(), DataSession.this, applyObject);
+                BL.systemEventsLM.connectionSession.change(form.instanceFactory.connection, (ExecutionEnvironment)DataSession.this, applyObject);
                 Object ne = BL.reflectionLM.navigatorElementSID.read(form, new DataObject(form.entity.getSID(), StringClass.get(50)));
                 if(ne!=null) 
-                    BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement).getValue(), DataSession.this, applyObject);
+                    BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment)DataSession.this, applyObject);
                 BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
                 BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);
                 BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
@@ -1108,6 +1162,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             return true;
         }
 
+        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = updateRecursiveActions();
+
         // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
         packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
         ImMap<ImplementTable, ImSet<CalcProperty>> groupTables = groupPropertiesByTables();
@@ -1116,22 +1172,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             savePropertyChanges(table, readSave(table, groupTables.getValue(i)));
         }
 
-        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = null;
-        if(recursiveActions.size()>0) {
-            recursiveUsed.add((SessionDataProperty) currentSession.property);
-
-            updateCurrentClasses(filterKeys(data, recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
-
-            MOrderExclSet<ActionPropertyValueImplement> mUpdatedRecursiveActions = SetFact.mOrderExclSet();
-            for(ActionPropertyValueImplement recursiveAction : recursiveActions)
-                mUpdatedRecursiveActions.exclAdd(recursiveAction.updateCurrentClasses(this));
-            updatedRecursiveActions = mUpdatedRecursiveActions.immutableOrder();
-        }
-
-        saveClassChanges(BL);
-
         apply.clear(sql); // все сохраненные хинты обнуляем
-
         restart(false, SetFact.fromJavaSet(recursiveUsed)); // оставляем usedSessiona
 
         if(recursiveActions.size() > 0) {
@@ -1144,24 +1185,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         return true;
     }
 
-    private void saveClassChanges(BusinessLogics BL) throws SQLException {
-        // сохраняем изменения по классам
-        if(news==null)
-            return;
+    private ImOrderSet<ActionPropertyValueImplement> updateRecursiveActions() throws SQLException {
+        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = null;
+        if(recursiveActions.size()>0) {
+            recursiveUsed.add((SessionDataProperty) currentSession.property);
 
-        ObjectTable classTable = baseClass.table;
+            updateCurrentClasses(filterKeys(data, recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
 
-        KeyExpr keyExpr = new KeyExpr("object");
-        Join<String> join = news.join(keyExpr);
-        Expr changeExpr = join.getExpr("value");
-
-        boolean hasDelete = usedNewClasses.contains(baseClass.unknown);
-        if(!(usedNewClasses.size()==1 && hasDelete))
-            sql.modifyRecords(new ModifyQuery(classTable, new Query<KeyField, PropertyField>(MapFact.singletonRev(classTable.key, keyExpr),
-                    changeExpr, classTable.objectClass, changeExpr.getWhere()), getQueryEnv()));
-        if(hasDelete)
-            sql.deleteRecords(new ModifyQuery(classTable, new Query<KeyField, PropertyField>(MapFact.singletonRev(classTable.key, keyExpr),
-                    join.getWhere().and(changeExpr.getWhere().not())), getQueryEnv()));
+            MOrderExclSet<ActionPropertyValueImplement> mUpdatedRecursiveActions = SetFact.mOrderExclSet();
+            for(ActionPropertyValueImplement recursiveAction : recursiveActions)
+                mUpdatedRecursiveActions.exclAdd(recursiveAction.updateCurrentClasses(this));
+            updatedRecursiveActions = mUpdatedRecursiveActions.immutableOrder();
+        }
+        return updatedRecursiveActions;
     }
 
     private void packRemoveClasses(BusinessLogics BL) throws SQLException {
@@ -1189,12 +1225,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         assert isInTransaction();
         assert property.isStored();
         if(property.hasChanges(getModifier())) {
-            SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
-
-            Pair<SinglePropertyTableUsage<P>,SinglePropertyTableUsage<P>> result = property.splitFitClasses(changeTable, sql, baseClass, env);
-
-            applySingleStored(property, result.first, BL);
-            apply.add(property, result.second);
+            apply.add(property, splitApplySingleStored(property,
+                    property.readChangeTable(sql, getModifier(), baseClass, env), BL));
         }
     }
 
@@ -1236,8 +1268,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     };
 
-    private void aspectChangeClass(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ClassChange change) throws SQLException {
+    private void aspectChangeClass(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses, ClassChange change) throws SQLException {
         checkTransaction(); // важно что, вначале
+
+        SetFact.addJavaAll(usedOldClasses, oldClasses);
+        SetFact.addJavaAll(usedNewClasses, newClasses);
 
         // оптимизация
         changeSingle(addClasses, change, singleAdd, add, singleRemove, remove);
@@ -1246,7 +1281,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(news ==null)
             news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
         change.modifyRows(news, sql, baseClass, Modify.MODIFY, env);
-        newClasses.clear();
+        this.newClasses.clear();
 
         for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> dataChange : data.entrySet()) { // удаляем существующие изменения
             DataProperty property = dataChange.getKey();
@@ -1401,7 +1436,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         SessionTableUsage<KeyField, CalcProperty> result = readSave(table, properties, modifier);
 
         modifier.clean(sql);
-        for(SessionTableUsage<KeyField, CalcProperty> splitTable : splitTables.it())
+        for(SessionTableUsage<KeyField, CalcProperty> splitTable : splitTables)
             splitTable.drop(sql);
 
         return result;

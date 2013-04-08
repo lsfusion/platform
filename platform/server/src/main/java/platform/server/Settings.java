@@ -144,7 +144,7 @@ public class Settings {
     private boolean editLogicalOnSingleClick = false;
     private boolean editActionOnSingleClick = false;
 
-    public boolean isEnableApplySingleStored() {
+    public boolean isEnabledApplySingleStored() {
         return enableApplySingleStored;
     }
 
@@ -662,5 +662,15 @@ public class Settings {
 
     public void setReserveIDStep(int reserveIDStep) {
         this.reserveIDStep = reserveIDStep;
+    }
+
+    private boolean mergeUpClassSets = false;
+
+    public boolean isMergeUpClassSets() {
+        return mergeUpClassSets;
+    }
+
+    public void setMergeUpClassSets(boolean mergeUpClassSets) {
+        this.mergeUpClassSets = mergeUpClassSets;
     }
 }

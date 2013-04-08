@@ -12,6 +12,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MFilterSet;
 import platform.base.col.interfaces.mutable.MMap;
+import platform.base.col.interfaces.mutable.SimpleAddValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 
 import java.awt.*;
@@ -2090,6 +2091,19 @@ public class BaseUtils {
 
     public static int max(int a, int b) {
         return a > b ? a : b;
+    }
+
+    private static SimpleAddValue<Object, Integer> addMinInt = new SimpleAddValue<Object, Integer>() {
+        public Integer addValue(Object key, Integer prevValue, Integer newValue) {
+            return BaseUtils.min(prevValue, newValue);
+        }
+
+        public boolean symmetric() {
+            return true;
+        }
+    };
+    public static <K> SimpleAddValue<K, Integer> addMinInt() {
+        return (SimpleAddValue<K, Integer>) addMinInt;
     }
 
     public static int min(int a, int b) {

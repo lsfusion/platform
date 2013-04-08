@@ -1,14 +1,16 @@
 package platform.server.data.expr;
 
 import platform.base.col.interfaces.immutable.ImMap;
-import platform.server.classes.BaseClass;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
+import platform.server.logics.property.ClassField;
 
 public abstract class SingleClassExpr extends VariableClassExpr {
 
@@ -21,16 +23,12 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         return this instanceof KeyExpr || this instanceof CurrentEnvironmentExpr;
     }
 
-    private Expr classExpr;
-    public Expr classExpr(BaseClass baseClass) {
-        if(classExpr==null) {
-            ConcreteObjectClass singleClass;
-            if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet()).getSingleClass(baseClass))!=null))
-                classExpr = singleClass.getClassObject().getStaticExpr().and(getWhere());
-            else
-                classExpr = new IsClassExpr(this,baseClass);
-        }
-        return classExpr;
+    public Expr classExpr(ImSet<ClassField> classes) {
+/*        ConcreteObjectClass singleClass;
+        if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet().and(classes.getOr())).getSingleClass(classes.getBaseClass()))!=null))
+            return singleClass.getClassObject().getStaticExpr().and(getWhere());*/
+
+        return IsClassExpr.create(this, classes);
     }
 
     private OrClassSet getSet() {
@@ -57,13 +55,13 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         }
     }
 
-    public Where isClass(AndClassSet set) {
+    public Where isClass(ValueClassSet set) {
         // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
         if(!intersect(set)) // если не пересекается то false
             return Where.FALSE;
         if(!isTrueWhere())
             if(set.getOr().containsAll(getSet())) // если set содержит все элементы, то достаточно просто что не null
                 return getWhere();
-        return new IsClassWhere(this,set);
+        return IsClassWhere.create(this, set);
     }
 }

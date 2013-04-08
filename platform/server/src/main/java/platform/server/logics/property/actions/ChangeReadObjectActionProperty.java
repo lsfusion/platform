@@ -33,7 +33,7 @@ public class ChangeReadObjectActionProperty extends SystemActionProperty {
         if(singleObjectInstance instanceof ObjectInstance) {
             ObjectInstance objectInstance = (ObjectInstance) singleObjectInstance;
             if(objectInstance.groupTo.curClassView == ClassViewType.PANEL) { // в grid'е диалог не имеет смысла
-                final Object oldValue = objectInstance.getObjectValue().getValue();
+                final ObjectValue oldValue = objectInstance.getObjectValue();
                 ObjectValue changeValue = null;
                 if(objectInstance instanceof CustomObjectInstance) {
                     final CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;

@@ -71,10 +71,10 @@ public class ClassChange extends ImmutableObject {
         return getQuery().join(MapFact.singleton("key", expr));
     }
 
-    public ClassChange materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
         SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(ObjectType.instance, SystemClass.instance);
         changedClasses.writeRows(sql, getQuery(), baseClass, env);
-        return changedClasses.getChange();
+        return changedClasses;
     }
     
     public boolean isEmpty() {

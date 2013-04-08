@@ -69,6 +69,10 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         change(value, (ExecutionEnvironment)session, objects);
     }
 
+    public void change(ObjectValue value, ExecutionContext context, DataObject... objects) throws SQLException {
+        change(value, context.getEnv(), objects);
+    }
+
     public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
         change(value, context.getEnv(), objects);
     }
@@ -77,8 +81,16 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         change(value, context.getEnv(), keys);
     }
 
+    public void change(ObjectValue value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+        change(value, env, getMapValues(objects));
+    }
+
     public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
         change(value, env, getMapValues(objects));
+    }
+
+    public void change(ObjectValue value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {
+        property.change(keys, env, value);
     }
 
     public void change(Object value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {

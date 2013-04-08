@@ -3,7 +3,10 @@ package platform.server.data.type;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ObjectValueClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -40,12 +43,12 @@ public interface Type<T> extends ClassReader<T> {
 
     Type getCompatible(Type type);
 
-    ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException;
+    ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException;
 
     ImList<AndClassSet> getUniversal(BaseClass baseClass);
 
     int getBinaryLength(boolean charBinary);
-    ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;
+    ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException;
 
     T parseString(String s) throws ParseException;
     

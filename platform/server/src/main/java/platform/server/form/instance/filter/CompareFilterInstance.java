@@ -7,6 +7,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.interop.Compare;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
@@ -44,15 +45,15 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         super(inStream,form);
         negate = inStream.readBoolean();
         compare = Compare.deserialize(inStream);
-        value = deserializeCompare(inStream, form, property.getType());
+        value = deserializeCompare(inStream, form, property.getValueClass());
         junction = inStream.readBoolean();
     }
 
-    private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, Type DBType) throws IOException, SQLException {
+    private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException {
         byte type = inStream.readByte();
         switch(type) {
             case 0:
-                return form.session.getObjectValue(BaseUtils.deserializeObject(inStream),DBType);
+                return form.session.getObjectValue(valueClass, BaseUtils.deserializeObject(inStream));
             case 1:
                 return form.getObjectInstance(inStream.readInt());
             case 2:

@@ -11,6 +11,7 @@ import platform.server.Message;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.IntegerClass;
 import platform.server.data.Modify;
+import platform.server.data.SessionDataTable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
@@ -47,16 +48,16 @@ public class IntegrationService {
         this.deletes = deletes;
     }
 
-    public SessionTableUsage<String, ImportField> synchronize() throws SQLException {
-        return synchronize(false);
+    public void synchronize() throws SQLException {
+        synchronize(false);
     }
 
-    public SessionTableUsage<String, ImportField> synchronize(boolean replaceNull) throws SQLException {
-        return synchronize(replaceNull, true);
+    public void synchronize(boolean replaceNull) throws SQLException {
+        synchronize(replaceNull, true);
     }
 
     @Message("message.synchronize")
-    public SessionTableUsage<String, ImportField> synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException {
+    public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
         
         MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
@@ -85,7 +86,10 @@ public class IntegrationService {
         
         session.change(propertyChanges);
 
-        return importTable;
+        for(SinglePropertyTableUsage<?> addedTable : addedKeys.valueIt())
+            addedTable.drop(session.sql);
+
+        importTable.drop(session.sql);
     }
 
     private <P extends PropertyInterface> void deleteObjects(SingleKeyTableUsage<ImportField> importTable) throws SQLException {

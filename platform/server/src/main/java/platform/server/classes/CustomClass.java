@@ -1,18 +1,24 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
 import platform.base.SFunctionSet;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
+import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.lru.LRUCache;
 import platform.base.col.lru.MCacheMap;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.IdentityStrongLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
@@ -333,10 +339,13 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е
     public boolean upInSet(UpClassSet upSet, ImSet<ConcreteCustomClass> set) {
-        if(upSet.has(this)) return true; // по child'ам уже не идем они явно все тоже есть
-        if(this instanceof ConcreteCustomClass && !set.contains((ConcreteCustomClass) this)) return false;
+        if(upSet.has(this))
+            return true; // по child'ам уже не идем они явно все тоже есть
+        if(this instanceof ConcreteCustomClass && !set.contains((ConcreteCustomClass) this))
+            return false;
         for(CustomClass child : children)
-            if(!child.upInSet(upSet, set)) return false;
+            if(!child.upInSet(upSet, set))
+                return false;
         return true;
     }
     public boolean upInSet(CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded, CustomClass check) {
@@ -456,6 +465,13 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             }});
     }
 
+    public static ImSet<ClassDataProperty> getDataProperties(ImSet<ConcreteCustomClass> classes) {
+        return classes.mapMergeSetValues(new GetValue<ClassDataProperty, ConcreteCustomClass>() {
+            public ClassDataProperty getMapValue(ConcreteCustomClass value) {
+                return value.dataProperty;
+            }});
+    }
+
     public ImSet<CalcProperty> getChildProps() {
         ImSet<CustomClass> childs = getChilds();
         MExclSet<CalcProperty> mResult = SetFact.mExclSet(childs.size()*2);
@@ -498,8 +514,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return result.immutable();
     }
 
-    public static ImSet<IsClassProperty> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) {
-        return getProperties(addClasses.merge(removeClasses));
+    public static ImSet<CalcProperty<ClassPropertyInterface>> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
+        return SetFact.addExcl(getProperties(addClasses.merge(removeClasses)), getDataProperties(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(oldClasses.merge(newClasses).filterFn(new SFunctionSet<ConcreteObjectClass>() {
+            public boolean contains(ConcreteObjectClass element) {
+                return element instanceof ConcreteCustomClass;
+            }
+        }))));
     }
 
     public void fillChangeProps(ConcreteObjectClass cls, MExclSet<CalcProperty> fill) {
@@ -516,5 +536,15 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     @IdentityStrongLazy // для ID
     public ActionProperty getChangeClassAction() {
         return getChangeClassAction(this);
+    }
+
+    @IdentityLazy
+    public ImMap<ClassField,ObjectValueClassSet> getUpTables() {
+        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<ClassField>objectValueSetAdd());
+        for(CustomClass customClass : children)
+            mMap.addAll(customClass.getUpTables());
+        if(this instanceof ConcreteCustomClass) // глуповато конечно,
+            mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
+        return mMap.immutable().toRevExclMap();
     }
 }

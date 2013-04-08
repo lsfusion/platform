@@ -76,7 +76,7 @@ public class CustomObjectInstance extends ObjectInstance {
     }
 
     public void refreshValueClass(SessionChanges session) throws SQLException {
-        value = value.refresh(session);
+        value = value.refresh(session, getBaseClass());
         updateCurrentClass(session);
     }
 

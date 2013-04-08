@@ -2,14 +2,19 @@ package platform.server.classes;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
+import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.UpClassSet;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.query.QueryBuilder;
@@ -17,6 +22,9 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LCP;
+import platform.server.logics.property.ClassDataProperty;
+import platform.server.logics.property.ClassField;
+import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -58,11 +66,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public String getWhereString(String source) {
-        return source + "=" + ID;
+        return OrObjectClassSet.getWhereString(this, source);
     }
 
     public String getNotWhereString(String source) {
-        return source + " IS NULL OR NOT " + getWhereString(source);
+        return OrObjectClassSet.getNotWhereString(this, source);
     }
 
     public ObjectClassSet and(AndClassSet node) {
@@ -96,7 +104,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return set1.inSet(set2)?set2:OrObjectClassSet.or(set1,set2); 
     }
 
-    public AndClassSet getKeepClass() {
+    public ValueClassSet getKeepClass() {
         return getBaseClass().getUpSet();
     }
 
@@ -111,11 +119,15 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return stat;
     }
 
+    public int getClassCount() {
+        return 1;
+    }
+
     public static class ObjectInfo {
         public ObjectInfo(String sid, String name, String caption, Integer id) {
             this.sid = sid;
             this.name = name;
-            this.caption = caption;
+            this.caption = caption.trim();
             this.id = id;
         }
 
@@ -177,15 +189,16 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<Object, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<Object, String> modifiedObjects) throws SQLException {
-        Map<Object, String> modifiedNames = new HashMap<Object, String>();
+    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP classSID, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException {
+        Map<DataObject, String> modifiedNames = new HashMap<DataObject, String>();
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
         Expr key = allClassesQuery.getMapExprs().singleValue();
-        allClassesQuery.and(classSID.getExpr(session.getModifier(), key).getWhere());
+        Expr sidExpr = classSID.getExpr(session.getModifier(), key);
+        allClassesQuery.and(sidExpr.getWhere());
         allClassesQuery.and(key.isClass(this));
-        allClassesQuery.addProperty("sid", classSID.getExpr(session.getModifier(), key));
+        allClassesQuery.addProperty("sid", sidExpr);
         allClassesQuery.addProperty("name", name.getExpr(session.getModifier(), key));
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(session.sql, session.env);
 
@@ -210,13 +223,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             if (reversedChanges.containsKey(newSID)) {
                 oldSID = reversedChanges.get(newSID);
                 if (oldClasses.containsKey(oldSID)) {
-                    modifiedObjects.put(oldClasses.get(oldSID).first, newSID);
+                    modifiedObjects.put(new DataObject(oldClasses.get(oldSID).first, this), newSID);
                 }
             }
 
             if (oldClasses.containsKey(oldSID)) {
                 if (info.caption != null && !info.caption.equals(oldClasses.get(oldSID).second)) {
-                    modifiedNames.put(oldClasses.get(oldSID).first, info.caption);
+                    modifiedNames.put(new DataObject(oldClasses.get(oldSID).first, this), info.caption);
                 }
                 info.id = oldClasses.get(oldSID).first;
             } else {
@@ -249,4 +262,20 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return getDataObject((String)value).getString(syntax);
     }
 
+    public ImSet<ConcreteCustomClass> getSetConcreteChildren() {
+        return SetFact.singleton(this);
+    }
+
+    public ClassDataProperty dataProperty;
+    public Integer readData(Integer data, SQLSession sql) throws SQLException {
+        return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, QueryEnvironment.empty);
+    }
+
+    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
+        return MapFact.singletonRev((ClassField)dataProperty, (ObjectValueClassSet)this);
+    }
+
+    public ValueClassSet getValueClassSet() {
+        return this;
+    }
 }

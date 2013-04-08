@@ -4,6 +4,7 @@ import platform.server.classes.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LCP;
 
 import java.sql.SQLException;
@@ -113,11 +114,11 @@ public class AnyValuePropertyHolder {
         }
     }
         
-    public void write(Type valueType, Object value, ExecutionContext context, DataObject... keys) throws SQLException {
+    public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException {
         getLCP(valueType).change(value, context, keys);
     }
 
-    public Object read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
-        return getLCP(valueType).read(context, keys);
+    public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
+        return getLCP(valueType).readClasses(context, keys);
     }
 }

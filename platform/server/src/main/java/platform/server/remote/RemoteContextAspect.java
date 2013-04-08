@@ -30,6 +30,9 @@ public class RemoteContextAspect {
 
     @AfterReturning(remotePointCut)
     public void afterReturn(ContextAwarePendingRemoteObject remoteObject) {
-        remoteObject.threads.remove(Thread.currentThread());
+        if (!(Thread.currentThread() instanceof ContextAwareThread)) {
+            ThreadLocalContext.set(null); // чтобы ссылка не зависла
+            remoteObject.threads.remove(Thread.currentThread());
+        }
     }
 }

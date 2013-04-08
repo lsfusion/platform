@@ -11,8 +11,12 @@ import platform.base.Pair;
 import platform.base.SystemUtils;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
+import platform.base.col.implementations.abs.AMap;
+import platform.base.col.implementations.abs.ASet;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MExclMap;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MMap;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.interop.Compare;
@@ -25,9 +29,14 @@ import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
@@ -40,7 +49,6 @@ import platform.server.logics.linear.LCP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.logics.table.DataTable;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.mail.NotificationActionProperty;
@@ -140,8 +148,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             systemLogger.info("Synchronizing DB.");
             synchronizeDB();
 
+            systemLogger.info("Setting user logging for properties");
             setUserLoggableProperties();
+            systemLogger.info("Setting user not null constraints for properties");
             setNotNullProperties();
+            systemLogger.info("Setting user notifications for property changes");
             setupPropertyNotifications();
 
             if (!SystemProperties.isDebug) {
@@ -150,6 +161,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 synchronizeProperties();
             }
 
+            systemLogger.info("Synchronizing tables");
             synchronizeTables();
 
             resetConnectionStatus();
@@ -671,53 +683,57 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         ImportKey<?> tableColumnKey = new ImportKey(reflectionLM.tableColumn, reflectionLM.tableColumnSID.getMapping(tableColumnSidField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
-        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+        List<List<Object>> dataKeys = new ArrayList<List<Object>>();
+        List<List<Object>> dataProps = new ArrayList<List<Object>>();
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             Object tableName = dataTable.name;
+            data.add(asList(tableName));
             ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
             for (KeyField key : dataTable.keys) {
-                data.add(asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
+                dataKeys.add(asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
+            }
+            for (PropertyField property : dataTable.properties) {
+                dataProps.add(asList(tableName, property.name));
             }
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         properties.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
-        properties.add(new ImportProperty(tableKeySidField, reflectionLM.sidTableKey.getMapping(tableKeyKey)));
-        properties.add(new ImportProperty(tableKeyNameField, reflectionLM.nameTableKey.getMapping(tableKeyKey)));
-        properties.add(new ImportProperty(tableSidField, reflectionLM.tableTableKey.getMapping(tableKeyKey), LM.object(reflectionLM.table).getMapping(tableKey)));
-        properties.add(new ImportProperty(tableKeyClassField, reflectionLM.classTableKey.getMapping(tableKeyKey)));
 
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(tableKey, LM.is(reflectionLM.table).getMapping(tableKey), false));
-        deletes.add(new ImportDelete(tableKeyKey, LM.is(reflectionLM.tableKey).getMapping(tableKeyKey), false));
+        List<ImportProperty<?>> propertiesKeys = new ArrayList<ImportProperty<?>>();
+        propertiesKeys.add(new ImportProperty(tableKeySidField, reflectionLM.sidTableKey.getMapping(tableKeyKey)));
+        propertiesKeys.add(new ImportProperty(tableKeyNameField, reflectionLM.nameTableKey.getMapping(tableKeyKey)));
+        propertiesKeys.add(new ImportProperty(tableKeyClassField, reflectionLM.classTableKey.getMapping(tableKeyKey)));
+        propertiesKeys.add(new ImportProperty(null, reflectionLM.tableTableKey.getMapping(tableKeyKey), reflectionLM.tableSID.getMapping(tableSidField)));
 
-        ImportTable table = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
+        List<ImportProperty<?>> propertiesColumns = new ArrayList<ImportProperty<?>>();
+        propertiesColumns.add(new ImportProperty(tableColumnSidField, reflectionLM.sidTableColumn.getMapping(tableColumnKey)));
+        propertiesColumns.add(new ImportProperty(null, reflectionLM.tableTableColumn.getMapping(tableColumnKey), reflectionLM.tableSID.getMapping(tableSidField)));
 
-        List<List<Object>> data2 = new ArrayList<List<Object>>();
-        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
-            Object tableName = dataTable.name;
-            for (PropertyField property : dataTable.properties) {
-                data2.add(asList(tableName, property.name));
-            }
-        }
+        List<ImportDelete> delete = new ArrayList<ImportDelete>();
+        delete.add(new ImportDelete(tableKey, LM.is(reflectionLM.table).getMapping(tableKey), false));
 
-        List<ImportProperty<?>> properties2 = new ArrayList<ImportProperty<?>>();
-        properties2.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
-        properties2.add(new ImportProperty(tableColumnSidField, reflectionLM.sidTableColumn.getMapping(tableColumnKey)));
-        properties2.add(new ImportProperty(tableSidField, reflectionLM.tableTableColumn.getMapping(tableColumnKey), LM.object(reflectionLM.table).getMapping(tableKey)));
+        List<ImportDelete> deleteKeys = new ArrayList<ImportDelete>();
+        deleteKeys.add(new ImportDelete(tableKeyKey, LM.is(reflectionLM.tableKey).getMapping(tableKeyKey), false));
 
-        List<ImportDelete> deletes2 = new ArrayList<ImportDelete>();
-        deletes2.add(new ImportDelete(tableColumnKey, LM.is(reflectionLM.tableColumn).getMapping(tableColumnKey), false));
+        List<ImportDelete> deleteColumns = new ArrayList<ImportDelete>();
+        deleteColumns.add(new ImportDelete(tableColumnKey, LM.is(reflectionLM.tableColumn).getMapping(tableColumnKey), false));
 
-        ImportTable table2 = new ImportTable(asList(tableSidField, tableColumnSidField), data2);
+        ImportTable table = new ImportTable(asList(tableSidField), data);
+        ImportTable tableKeys = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), dataKeys);
+        ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField), dataProps);
 
         try {
             DataSession session = createSession();
             session.pushVolatileStats();
 
-            IntegrationService service = new IntegrationService(session, table, asList(tableKey, tableKeyKey), properties, deletes);
+            IntegrationService service = new IntegrationService(session, table, asList(tableKey), properties, delete);
             service.synchronize(true, false);
 
-            service = new IntegrationService(session, table2, asList(tableKey, tableColumnKey), properties2, deletes2);
+            service = new IntegrationService(session, tableKeys, asList(tableKeyKey), propertiesKeys, deleteKeys);
+            service.synchronize(true, false);
+
+            service = new IntegrationService(session, tableColumns, asList(tableColumnKey), propertiesColumns, deleteColumns);
             service.synchronize(true, false);
 
             session.popVolatileStats();
@@ -865,7 +881,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
-        DBStructure oldDBStructure = new DBStructure(inputDB);
+        DBStructure oldDBStructure = new DBStructure(inputDB, sql);
 
         runAlterationScript();
 
@@ -903,23 +919,26 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
+        systemLogger.info("Applying migration script");
         alterateDBStructure(oldDBStructure, sql);
 
         // добавим таблицы которых не было
+        systemLogger.info("Creating tables");
         for (Table table : newDBStructure.tables.keySet()) {
             if (oldDBStructure.getTable(table.name) == null)
                 sql.createTable(table.name, table.keys);
         }
 
-        MSet<ImplementTable> mPackTables = SetFact.mSet();
+        MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
         // бежим по свойствам
         Map<String, String> columnsToDrop = new HashMap<String, String>();
+        List<DBStoredProperty> restNewDBStored = new ArrayList<DBStoredProperty>(newDBStructure.storedProperties);
         for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
             Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
             boolean keep = false, moved = false;
-            for (Iterator<DBStoredProperty> is = newDBStructure.storedProperties.iterator(); is.hasNext(); ) {
+            for (Iterator<DBStoredProperty> is = restNewDBStored.iterator(); is.hasNext(); ) {
                 DBStoredProperty newProperty = is.next();
 
                 if (newProperty.sID.equals(oldProperty.sID)) {
@@ -942,8 +961,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             systemLogger.info("Done");
                             moved = true;
                         } else { // надо проверить что тип не изменился
-                            if (!oldTable.findProperty(oldProperty.sID).type.equals(newProperty.property.field.type))
-                                sql.modifyColumn(newProperty.property.mapTable.table.name, newProperty.property.field, oldTable.findProperty(oldProperty.sID).type);
+                            Type oldType = oldTable.findProperty(oldProperty.sID).type;
+                            if (!oldType.equals(newProperty.property.field.type)) {
+                                systemLogger.info("Changing type of column " + newProperty.property.field.name + " in table " + newProperty.property.mapTable.table.name + " from " + oldType + " to " + newProperty.property.field.type);
+                                sql.modifyColumn(newProperty.property.mapTable.table.name, newProperty.property.field, oldType);
+                            }
                         }
                         is.remove();
                     }
@@ -960,23 +982,83 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         columnsToDrop.put(newName, oldProperty.tableName);
                     } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
                         sql.getConnection().rollback(savepoint);
-                        sql.dropColumn(oldTable.name, oldProperty.sID);
-                        ImplementTable table = (ImplementTable) newDBStructure.getTable(oldTable.name);
-                        if (table != null) mPackTables.add(table);
+                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.name, oldProperty.sID));
                     }
-                } else {
-                    sql.dropColumn(oldTable.name, oldProperty.sID);
-                    ImplementTable table = (ImplementTable) newDBStructure.getTable(oldTable.name); // надо упаковать таблицу если удалили колонку
-                    if (table != null) mPackTables.add(table);
-                }
+                } else
+                    mDropColumns.exclAdd(new Pair<String, String>(oldTable.name, oldProperty.sID));
             }
         }
 
         List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        for (DBStoredProperty property : newDBStructure.storedProperties) { // добавляем оставшиеся
+        for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
             sql.addColumn(property.tableName, property.property.field);
             if (struct != null && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
                 recalculateProperties.add((AggregateProperty) property.property);
+        }
+
+        // обработка изменений с классами
+        MMap<String, ImMap<String, ImSet<Integer>>> mToCopy = MapFact.mMap(AMap.<String, String, Integer>addMergeMapSets()); // в какое свойство, из какого свойства - какой класс
+        for(DBConcreteClass oldClass : oldDBStructure.concreteClasses) {
+            for(DBConcreteClass newClass : newDBStructure.concreteClasses) {
+                if(oldClass.sID.equals(newClass.sID)) {
+                    if(!(oldClass.sDataPropID.equals(newClass.sDataPropID))) // надо пометить перенос, и удаление
+                        mToCopy.add(newClass.sDataPropID, MapFact.singleton(oldClass.sDataPropID, SetFact.singleton(oldClass.ID)));
+                    break;
+                }
+            }
+        }
+        ImMap<String, ImMap<String, ImSet<Integer>>> toCopy = mToCopy.immutable();
+        for(int i=0,size=toCopy.size();i<size;i++) { // перенесем классы, которые сохранились но изменили поле
+            DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
+            Table table = newDBStructure.getTable(classProp.tableName);
+
+            QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<KeyField, PropertyField>(table);
+            Expr keyExpr = copyObjects.getMapExprs().singleValue();
+            Where moveWhere = Where.FALSE;
+            CaseExprInterface mExpr = Expr.newCases(true);
+            ImMap<String, ImSet<Integer>> copyFrom = toCopy.getValue(i);
+            MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
+            for(int j=0,sizeJ=copyFrom.size();j<sizeJ;j++) {
+                DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
+                Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
+                mCopyFromTables.add(oldClassProp.tableName);
+
+                Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.sID));
+                for(int prevID : copyFrom.getValue(j))
+                    moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
+                mExpr.add(moveWhere, oldExpr);
+            }
+            copyObjects.addProperty(table.findProperty(classProp.sID), mExpr.getFinal());
+            copyObjects.and(moveWhere);
+
+            systemLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
+            sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery()));
+        }
+        ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
+        for(int i=0,size=toClean.size();i<size;i++) { // удалим оставшиеся классы
+            DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
+            Table table = oldDBStructure.getTable(classProp.tableName);
+
+            QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<KeyField, PropertyField>(table);
+            Where moveWhere = Where.FALSE;
+
+            PropertyField oldField = table.findProperty(classProp.sID);
+            Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
+            for(int prevID : toClean.getValue(i))
+                moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
+            dropClassObjects.addProperty(oldField, Expr.NULL);
+            dropClassObjects.and(moveWhere);
+
+            systemLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
+            sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery()));
+        }
+
+        MSet<ImplementTable> mPackTables = SetFact.mSet();
+        for(Pair<String, String> dropColumn : mDropColumns.immutable()) {
+            systemLogger.info("Dropping column " + dropColumn.second + " from table " + dropColumn.first);
+            sql.dropColumn(dropColumn.first, dropColumn.second);
+            ImplementTable table = (ImplementTable) newDBStructure.getTable(dropColumn.first);
+            if (table != null) mPackTables.add(table);
         }
 
         // удаляем таблицы старые
@@ -986,14 +1068,26 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
+        systemLogger.info("Packing tables");
         packTables(sql, mPackTables.immutable()); // упакуем таблицы
 
+        systemLogger.info("Updating stats");
         updateStats();  // пересчитаем статистику
 
         // создадим индексы в базе
+        systemLogger.info("Adding indices");
         for (Map.Entry<Table, Map<List<String>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
             for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet())
                 sql.addIndex(mapIndex.getKey().name, mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
+
+        systemLogger.info("Filling static objects ids");
+        fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
+
+        for(DBConcreteClass newClass : newDBStructure.concreteClasses) {
+            newClass.ID = newClass.customClass.ID;
+        }
+
+        newDBStructure.writeConcreteClasses(outDB);
 
         try {
             sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true);
@@ -1002,10 +1096,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true);
         }
 
-        fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
+        systemLogger.info("Updating class stats");
 
         updateClassStat(sql);
 
+        systemLogger.info("Recalculating aggregations");
         recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
 //        recalculateAggregations(sql, getAggregateStoredProperties());
 
@@ -1083,6 +1178,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void alterateDBStructure(DBStructure data, SQLSession sql) throws SQLException {
         Map<String, String> propertyChanges = getChangesAfter(data.dbVersion, propertySIDChanges);
         Map<String, String> tableChanges = getChangesAfter(data.dbVersion, tableSIDChanges);
+        Map<String, String> classChanges = getChangesAfter(data.dbVersion, classSIDChanges);
 
         for (DBStoredProperty oldProperty : data.storedProperties) {
             if (propertyChanges.containsKey(oldProperty.sID)) {
@@ -1107,6 +1203,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 String newSID = tableChanges.get(table.name);
                 sql.renameTable(table.name, newSID);
                 table.name = newSID;
+            }
+        }
+
+        for (DBConcreteClass oldClass : data.concreteClasses) {
+            if(classChanges.containsKey(oldClass.sID)) {
+                oldClass.sID = classChanges.get(oldClass.sID);
             }
         }
     }
@@ -1271,7 +1373,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             propStats = readStatsFromDB(session, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
-        for (DataTable dataTable : LM.tableFactory.getDataTables(LM.baseClass)) {
+        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
         }
     }
@@ -1314,6 +1416,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public ImMap<Integer, KeyField> mapKeys;
         public CalcProperty<?> property = null;
 
+        @Override
+        public String toString() {
+            return sID + ' ' + tableName;
+        }
+
         public DBStoredProperty(CalcProperty<?> property) {
             this.sID = property.getSID();
             this.isDataProperty = property instanceof DataProperty;
@@ -1333,14 +1440,41 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    private class DBConcreteClass {
+        public String sID;
+        public String sDataPropID; // в каком ClassDataProperty хранился
+
+        @Override
+        public String toString() {
+            return sID + ' ' + sDataPropID;
+        }
+
+        public Integer ID = null; // только для старых
+        public ConcreteCustomClass customClass = null; // только для новых
+
+        private DBConcreteClass(String sID, String sDataPropID, Integer ID) {
+            this.sID = sID;
+            this.sDataPropID = sDataPropID;
+            this.ID = ID;
+        }
+
+        private DBConcreteClass(ConcreteCustomClass customClass) {
+            sID = customClass.getSID();
+            sDataPropID = customClass.dataProperty.getSID();
+
+            this.customClass = customClass;
+        }
+    }
+
     private class DBStructure {
         public int version;
         public DBVersion dbVersion;
         public Map<Table, Map<List<String>, Boolean>> tables = new HashMap<Table, Map<List<String>, Boolean>>();
         public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
+        public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 4;
+            version = 5;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1374,9 +1508,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (CalcProperty<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
             }
+
+            for (ConcreteCustomClass customClass : businessLogics.getConcreteCustomClasses()) {
+                concreteClasses.add(new DBConcreteClass(customClass));
+            }
         }
 
-        public DBStructure(DataInputStream inputDB) throws IOException {
+        public DBStructure(DataInputStream inputDB, SQLSession sql) throws IOException, SQLException {
             if (inputDB == null) {
                 version = -2;
                 dbVersion = new DBVersion("0.0");
@@ -1421,16 +1559,31 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     }
                     storedProperties.add(new DBStoredProperty(sID, isDataProperty, tableName, mMapKeys.immutable()));
                 }
-            }
-        }
 
-        public Table getTable(String name) {
-            for (Table table : tables.keySet()) {
-                if (table.name.equals(name)) {
-                    return table;
+                if(version > 4) {
+                    int prevConcreteNum = inputDB.readInt();
+                    for(int i = 0; i < prevConcreteNum; i++)
+                        concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), inputDB.readInt()));
+                } else {
+                    KeyField objectKey = new KeyField("object", ObjectType.instance);
+                    PropertyField classField = new PropertyField("class", ObjectType.instance);
+                    SerializedTable objectTable = new SerializedTable("objects", SetFact.singletonOrder(objectKey), SetFact.singleton(classField), LM.baseClass);
+                    tables.put(objectTable, new HashMap<List<String>, Boolean>());
+                    storedProperties.add(new DBStoredProperty("class", false, "objects", MapFact.singleton(0, objectKey))); // в map'е все равно что будет
+
+                    QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
+                    Expr key = allClassesQuery.getMapExprs().singleValue();
+                    Expr sidExpr = LM.classSID.getExpr(Property.defaultModifier, key);
+                    allClassesQuery.and(sidExpr.getWhere()); // вот тут придется напрямую из таблицы читать id'ки для классов, потому как isClass использовать очевидно нельзя
+                    allClassesQuery.and(objectTable.join(MapFact.singleton(objectKey, key)).getExpr(classField).compare(new ValueExpr(Integer.MAX_VALUE - 5, LM.baseClass.objectClass), Compare.EQUALS));
+                    allClassesQuery.addProperty("sid", sidExpr);
+                    ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, QueryEnvironment.empty);
+
+                    for (int i = 0, size = qResult.size(); i < size; i++)
+                        concreteClasses.add(new DBConcreteClass(
+                                ((String) qResult.getValue(i).get("sid")).trim(), "class", (Integer) qResult.getKey(i).singleValue()));
                 }
             }
-            return null;
         }
 
         public void write(DataOutputStream outDB) throws IOException {
@@ -1462,6 +1615,33 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     outDB.writeUTF(property.mapKeys.getValue(i).name);
                 }
             }
+        }
+
+        public void writeConcreteClasses(DataOutputStream outDB) throws IOException { // отдельно от write, так как ID заполняются после fillIDs
+            outDB.writeInt(concreteClasses.size());
+            for (DBConcreteClass concreteClass : concreteClasses) {
+                outDB.writeUTF(concreteClass.sID);
+                outDB.writeUTF(concreteClass.sDataPropID);
+                outDB.writeInt(concreteClass.ID);
+            }
+        }
+
+        public Table getTable(String name) {
+            for (Table table : tables.keySet()) {
+                if (table.name.equals(name)) {
+                    return table;
+                }
+            }
+            return null;
+        }
+
+        public DBStoredProperty getProperty(String name) {
+            for (DBStoredProperty prop : storedProperties) {
+                if (prop.sID.equals(name)) {
+                    return prop;
+                }
+            }
+            return null;
         }
     }
 

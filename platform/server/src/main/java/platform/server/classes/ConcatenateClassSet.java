@@ -13,13 +13,17 @@ import platform.server.data.type.Type;
 
 import java.util.Arrays;
 
-public class ConcatenateClassSet implements ConcreteClass  {
+public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // если ValueClassSet, то assert что classes тоже ValueClassSet
 
     private AndClassSet[] classes;
 
     public ConcatenateClassSet(AndClassSet[] classes) {
         this.classes = classes;
         assert classes.length > 1;
+    }
+
+    public ConcatenateClassSet(ValueClassSet[] classes) {
+        this((AndClassSet[])classes);
     }
 
     public AndClassSet get(int i) {
@@ -87,7 +91,7 @@ public class ConcatenateClassSet implements ConcreteClass  {
         return set.containsAll(this);
     }
 
-    public AndClassSet getKeepClass() {
+    public ValueClassSet getKeepClass() {
         return this;
     }
 
@@ -112,5 +116,12 @@ public class ConcatenateClassSet implements ConcreteClass  {
         for(AndClassSet[] comb : combs)
             result[k++] = new ConcatenateClassSet(comb);
         return result;
+    }
+
+    public ValueClassSet getValueClassSet() {
+        ValueClassSet[] types = new ValueClassSet[classes.length];
+        for(int i=0;i<classes.length;i++)
+            types[i] = classes[i].getValueClassSet();
+        return new ConcatenateClassSet(types);
     }
 }

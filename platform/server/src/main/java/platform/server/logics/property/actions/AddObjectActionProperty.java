@@ -113,6 +113,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException {
+        SinglePropertyTableUsage<I> addedTable = null;
         PropertyChange<I> resultChange;
         if(where==null) // оптимизация, один объект добавляем
             resultChange = new PropertyChange<I>(context.addObject(readClass));
@@ -123,11 +124,16 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
             Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
             if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
                 return;
-            resultChange = SinglePropertyTableUsage.getChange(context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, MapFact.<Expr, Boolean>EMPTYORDER(), false)));
+
+            addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, MapFact.<Expr, Boolean>EMPTYORDER(), false));
+            resultChange = SinglePropertyTableUsage.getChange(addedTable);
         }
 
         if(result != null)
             result.change(context.getEnv(), resultChange);
+
+        if(addedTable!=null)
+            addedTable.drop(context.getSession().sql);
     }
 
     @Override

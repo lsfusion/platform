@@ -374,7 +374,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             try {
                 checkProjectPermission(userLogin, projectId);
 
-                paasLM.moduleInProject.change(null, session, new DataObject(projectId, paasLM.project), new DataObject(moduleId, paasLM.module));
+                paasLM.moduleInProject.change((Object)null, session, new DataObject(projectId, paasLM.project), new DataObject(moduleId, paasLM.module));
 
                 session.apply(businessLogics);
             } finally {

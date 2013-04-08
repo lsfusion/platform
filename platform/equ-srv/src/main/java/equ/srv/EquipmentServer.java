@@ -772,7 +772,7 @@ public class EquipmentServer extends LifecycleAdapter implements EquipmentServer
         try {
             DataSession session = dbManager.createSession();
             equLM.findLCPByCompoundName("succeededMachineryPriceTransaction").change(true, session,
-                    session.getDataObject(transactionID, equLM.findClassByCompoundName("MachineryPriceTransaction").getType()));
+                    session.getDataObject(equLM.findClassByCompoundName("MachineryPriceTransaction"), transactionID));
             session.apply(businessLogics);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e.toString());

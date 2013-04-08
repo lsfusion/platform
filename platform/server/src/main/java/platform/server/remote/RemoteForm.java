@@ -212,8 +212,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         for (int i=0,size=dataKeys.size();i<size;i++) {
             Object value = dataKeys.getValue(i);
             //todo: для оптимизации можно забирать существующие ключи из GroupObjectInstance, чтобы сэкономить на query для чтения класса
-            if (value != null)
-                mvKeys.mapValue(i, form.session.getDataObject(value, dataKeys.getKey(i).getType()));
+            if (value != null) {
+                ObjectInstance key = dataKeys.getKey(i);
+                mvKeys.mapValue(i, form.session.getDataObject(key.getBaseClass(), value));
+            }
         }
         return mvKeys.immutableValue();
     }

@@ -14,7 +14,9 @@ import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.UnknownClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.ValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
@@ -58,16 +60,17 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
     }
 
     public Where getKeepWhere(KeyExpr keyExpr) {
-        AndClassSet keepClass = null;
+        ValueClassSet keepClass = null;
         for(And<VariableSingleClassExpr> where : wheres) {
             AndClassSet keyClass = where.getPartial(keyExpr);
-            if (keyClass == null) // потому как в canbechanged например могут появляться pullExpr'ы без классов
+            if (keyClass == null || !BaseUtils.hashEquals(keyClass, keyClass.getValueClassSet())) // потому как в canbechanged например могут появляться pullExpr'ы без классов, если Unknown то нет смысла сохранять, все равно класс не дает
                 return Where.TRUE;
-            AndClassSet keyKeepClass = keyClass.getKeepClass();
+            ValueClassSet valueKeyClass = (ValueClassSet) keyClass;
+            ValueClassSet keyKeepClass = valueKeyClass;// .getKeepClass();
             if (keepClass == null)
                 keepClass = keyKeepClass;
             else
-                keepClass = keepClass.or(keyKeepClass);
+                keepClass = (ValueClassSet)keepClass.or(keyKeepClass);
         }
 
         return keyExpr.isClass(keepClass);

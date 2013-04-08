@@ -135,7 +135,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                     session.getModifier());
 
             // импорт количества и цены
-            ObjectValue docValue = session.getObjectValue(impDocID, ObjectType.instance);
+            ObjectValue docValue = session.getObjectValue(BL.LM.baseClass, impDocID);
 
             // импорт количества
             ImRevMap<PropertyInterface, KeyExpr> mapQuantityKeys = BL.VEDLM.outerCommitedQuantity.getMapKeys();
@@ -162,7 +162,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                     session.getModifier());
 
             // импорт распродаж
-            ObjectValue saleActionValue = session.getObjectValue(impSaleActionID, ObjectType.instance);
+            ObjectValue saleActionValue = session.getObjectValue(BL.LM.baseClass, impSaleActionID);
 
             ImRevMap<PropertyInterface, KeyExpr> mapActionKeys = BL.VEDLM.xorActionArticle.getMapKeys();
             mapBarKeys = MapFact.singletonRev(BL.VEDLM.barcode.property.interfaces.single(),
@@ -210,7 +210,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             try {
                 Object importStore = BL.VEDLM.subjectIncOrder.read(session, (DataObject) docValue);
-                BL.VEDLM.dateLastImportShop.change(BL.VEDLM.baseLM.currentDate.read(session), session, session.getDataObject(importStore, ObjectType.instance));
+                BL.VEDLM.dateLastImportShop.change(BL.VEDLM.baseLM.currentDate.read(session), session, session.getDataObject(BL.LM.baseClass, importStore));
             } catch (SQLException e) {
             }
 

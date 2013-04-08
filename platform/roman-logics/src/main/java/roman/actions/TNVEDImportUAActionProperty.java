@@ -43,7 +43,7 @@ public class TNVEDImportUAActionProperty extends CustomReadValueActionProperty {
 
     protected void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException {
         try {
-            ObjectValue userObjectValue = context.getSession().getObjectValue(userValue, getFileClass());
+            ObjectValue userObjectValue = context.getSession().getObjectValue(getFileClass(), userValue);
             DataObject customsZoneObject = context.getKeyValue(customsZoneInterface);
 
             File tempFile = File.createTempFile("tempTNVED", ".dbf");

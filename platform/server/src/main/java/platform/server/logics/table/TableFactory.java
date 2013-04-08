@@ -41,10 +41,6 @@ public class TableFactory {
         return newTable;
     }
 
-    public ImSet<DataTable> getDataTables(BaseClass baseClass) {
-        return SetFact.addExcl(getImplementTables(), baseClass.table);
-    }
-
     // получает постоянные таблицы
     public ImSet<ImplementTable> getImplementTables() {
         MExclSet<ImplementTable> result = SetFact.mExclSet();
@@ -85,7 +81,6 @@ public class TableFactory {
 
         sql.startTransaction();
 
-        sql.ensureTable(baseClass.table);
         sql.ensureTable(IDTable.instance);
         sql.ensureTable(StructTable.instance);
 

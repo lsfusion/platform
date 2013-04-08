@@ -2,9 +2,11 @@ package platform.base.col.interfaces.mutable.add;
 
 import platform.base.col.interfaces.immutable.ImSet;
 
-public interface MAddSet<K> {
+public interface MAddSet<K> extends Iterable<K> {
 
-    Iterable<K> it(); // редкое использование поэтому не extends
+    int size();
+    boolean isEmpty();
+    K get(int i);
 
     ImSet<K> immutableCopy();
     boolean add(K element);

@@ -390,7 +390,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         List<String> extraRoles = new ArrayList<String>();
         try {
             DataSession session = createSession();
-            if (baseLM.is(SkolkovoLM.expert).read(session, session.getDataObject(businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(username)), businessLogics.authenticationLM.customUser.getType())) != null) {
+            if (baseLM.is(SkolkovoLM.expert).read(session, (DataObject)businessLogics.authenticationLM.customUserLogin.readClasses(session, new DataObject(username))) != null) {
                 extraRoles.add("expert");
             }
             session.close();
@@ -453,7 +453,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
 
-                SkolkovoLM.allowedEmailLetterExpertVote.execute(session, new DataObject(expertId, SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
+                SkolkovoLM.allowedEmailLetterExpertVote.execute(session, new DataObject(expertId, SkolkovoLM.expert), session.getDataObject(SkolkovoLM.baseLM.baseClass, voteId));
             } finally {
                 session.close();
             }
@@ -484,7 +484,7 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
 //                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
 //            }
 
-            voteObj = session.getDataObject(voteId, ObjectType.instance);
+            voteObj = session.getDataObject(SkolkovoLM.baseLM.baseClass, voteId);
 
             Integer projectId = (Integer) SkolkovoLM.projectVote.read(session, voteObj);
             if (projectId == null) {
@@ -508,8 +508,8 @@ public class SkolkovoRemoteLogics extends RemoteLogics<SkolkovoBusinessLogics> i
         try {
             DataSession session = createSession();
             try {
-                DataObject confObj = session.getDataObject(ids[0], ObjectType.instance);
-                DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
+                DataObject confObj = session.getDataObject(SkolkovoLM.baseLM.baseClass, ids[0]);
+                DataObject expertObj = session.getDataObject(SkolkovoLM.baseLM.baseClass, ids[1]);
                 if(result)
                     SkolkovoLM.confirmedConferenceExpert.change(true, session, confObj, expertObj);
                 else

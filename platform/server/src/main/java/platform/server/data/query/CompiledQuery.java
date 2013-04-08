@@ -435,7 +435,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return getAlias(where.getJoin()) + "." + where.getFirstKey() + " IS NOT NULL";
         }
         public String getSource(IsClassExpr classExpr) {
-            return getSource(classExpr.getJoinExpr());
+            InnerExpr joinExpr = classExpr.getJoinExpr();
+            if(joinExpr instanceof Table.Join.Expr)
+                return getSource((Table.Join.Expr)joinExpr);
+            else
+                return getSource((SubQueryExpr)joinExpr);
         }
 
         private abstract class QuerySelect<K extends Expr, I extends OuterContext<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
@@ -1319,12 +1323,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         for(int i=0,size=result.size();i<size;i++) {
             ImMap<K, Object> keyMap = result.getKey(i);
             for(int j=0,sizeJ=keyMap.size();j<sizeJ;j++) {
-                System.out.println(keyMap.getKey(i)+"-"+keyMap.getValue(i));
+                System.out.println(keyMap.getKey(j)+"-"+keyMap.getValue(j));
             }
             System.out.println("---- ");
             ImMap<V, Object> rowMap = result.getValue(i);
             for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++) {
-                System.out.println(rowMap.getKey(i)+"-"+rowMap.getValue(i));
+                System.out.println(rowMap.getKey(j)+"-"+rowMap.getValue(j));
             }
         }
     }

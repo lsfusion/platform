@@ -6,9 +6,7 @@ import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.mutable.MList;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ConcatenateClassSet;
-import platform.server.classes.ConcreteClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.DeconcatenateExpr;
@@ -108,7 +106,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return new ConcatenateClassSet(classes);
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
         byte[] byteValue = read(value);
 
         int offset = 0;
@@ -120,7 +118,7 @@ public class ConcatenateType extends AbstractType<byte[]> {
                 typeValue = new String(byteValue).substring(offset,offset+blength).getBytes();
             else
                 typeValue = Arrays.copyOfRange(byteValue,offset,offset+blength);
-            classes[i] = types[i].getBinaryClass(typeValue,session,baseClass);
+            classes[i] = types[i].getBinaryClass(typeValue,session, ((ConcatenateClassSet)classSet).get(i), baseClass);
             offset += blength;
         }
 
@@ -184,8 +182,8 @@ public class ConcatenateType extends AbstractType<byte[]> {
         return length;
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
-        return getDataClass(value, session, baseClass);
+    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
+        return getDataClass(value, session, classSet, baseClass);
     }
 
     public byte[] parseString(String s) throws ParseException {

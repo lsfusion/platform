@@ -1,20 +1,22 @@
 package platform.server.data.type;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.IntegerClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyType;
+import platform.server.data.expr.*;
+import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.query.QueryBuilder;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.property.ClassField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -75,15 +77,24 @@ public class ObjectType extends AbstractType<Integer> {
         return true;
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException {
-        Integer classID = baseClass.getClassID((Integer) value, session);
-        if(classID==null)
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
+        ObjectValueClassSet objectClassSet = (ObjectValueClassSet)classSet.getValueClassSet(); // unknown не интересуют
+        if(objectClassSet.isEmpty())
             return baseClass.unknown;
-        else
-            return baseClass.findConcreteClassID(classID);
+
+        QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
+        CaseExprInterface mCases = Expr.newCases(true); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
+        ImRevMap<ClassField,ObjectValueClassSet> readTables = objectClassSet.getTables();
+        for(int i=0,size=readTables.size();i<size;i++) {
+            Expr expr = readTables.getKey(i).getStoredExpr(new ValueExpr(value, readTables.getValue(i).getSetConcreteChildren().get(0)));
+            mCases.add(expr.getWhere(), expr);
+        }
+        query.addProperty("classid", mCases.getFinal());
+
+        return baseClass.findConcreteClassID((Integer)query.execute(session).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
     }
 
-    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
+    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
         int idobject;
         if(session.syntax.isBinaryString()) {
             idobject = Integer.parseInt(new String(value).trim());
@@ -92,7 +103,7 @@ public class ObjectType extends AbstractType<Integer> {
             for(int i=0;i<value.length;i++)
                 idobject = idobject * 8 + value[i];
         }
-        return getDataClass(idobject, session, baseClass); 
+        return getDataClass(idobject, session, classSet, baseClass);
     }
 
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {

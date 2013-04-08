@@ -120,14 +120,14 @@ public class FormActionProperty extends SystemActionProperty {
                 FormCloseType formResult = newFormInstance.getFormResult();
 
                 if (formResultProperty != null) {
-                    formResultProperty.change(formResultClass.getObjectID(formResult.asString()), context);
+                    formResultProperty.change(formResultClass.getDataObject(formResult.asString()), context);
                 }
 
                 if (chosenValueProperty != null) {
                     for (GroupObjectEntity group : form.groups) {
                         for (ObjectEntity object : group.getObjects()) {
                             chosenValueProperty.write(
-                                    object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue().getValue(), context, new DataObject(object.getSID())
+                                    object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())
                             );
                         }
                     }
