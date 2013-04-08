@@ -1567,13 +1567,15 @@ actionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPW
 	;
 
 extendContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
-@init {
+@init { 
 	if (inPropParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
 	:	setPDB=setActionPropertyDefinitionBody[context] { $property = $setPDB.property; }
 	|	forPDB=forActionPropertyDefinitionBody[context] { $property = $forPDB.property; }
+	|	classPDB=changeClassActionPropertyDefinitionBody[context] { $property = $classPDB.property; }
+	|	addPDB=addObjectActionPropertyDefinitionBody[context] { $property = $addPDB.property; }
 	;
 	
 keepContextActionPDB[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1591,13 +1593,11 @@ customActionPDB[List<String> context, boolean dynamic] returns [LPWithParams pro
 	:	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	addformPDB=addFormActionPropertyDefinitionBody { $property.property = $addformPDB.property; }
 	|	editformPDB=editFormActionPropertyDefinitionBody { $property.property = $editformPDB.property; }
-	|	addPDB=addObjectActionPropertyDefinitionBody { $property.property = $addPDB.property; }
 	|	actPDB=customActionPropertyDefinitionBody { $property.property = $actPDB.property; }
 	|   msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
 	|   confirmPDB=confirmActionPropertyDefinitionBody[context, dynamic] { $property = $confirmPDB.property; }
 	|   mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
-	|	classPDB=changeClassActionPropertyDefinitionBody[context, dynamic] { $property = $classPDB.property; }
 	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
 	;
 
@@ -1663,13 +1663,21 @@ editFormActionPropertyDefinitionBody returns [LP property]
 	:	'EDITFORM' ('SESSION' { session = true; })? cls=classId
 	;
 
-addObjectActionPropertyDefinitionBody returns [LP property]
+addObjectActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+@init {
+	List<String> newContext = new ArrayList<String>(context);
+	LPWithParams condition = null;
+	String toPropName = null;
+	List<LPWithParams> toPropMapping = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAddObjProp($cid.sid);
+		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropName, toPropMapping, condition);
 	}
 }
 	:	'ADDOBJ' cid=classId
+		('WHERE' pe=propertyExpression[newContext, true] { condition = $pe.property; })?
+		('TO' propName=compoundID '(' params=singleParameterList[newContext, false] ')' { toPropName = $propName.sid; toPropMapping = $params.props; } )?
 	;
 
 emailActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
@@ -1763,13 +1771,18 @@ fileActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns 
 		pe=propertyExpression[context, dynamic]	
 	;
 
-changeClassActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]
+changeClassActionPropertyDefinitionBody[List<String> context] returns [LPWithParams property]
+@init {
+	List<String> newContext = new ArrayList<String>(context);
+	LPWithParams condition = null;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedChangeClassAProp($param.property, $className.sid);	
+		$property = self.addScriptedChangeClassAProp(context, $param.property, $className.sid, condition);	
 	}
 }
-	:	'CHANGECLASS' param=singleParameter[context, dynamic] 'TO' className=classId 
+	:	'CHANGECLASS' param=singleParameter[newContext, true] 'TO' className=classId 
+		('WHERE' pe=propertyExpression[newContext, false] { condition = $pe.property; })?
 	;  
 
 evalActionPropertyDefinitionBody[List<String> context, boolean dynamic] returns [LPWithParams property]

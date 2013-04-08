@@ -46,7 +46,6 @@ import platform.server.logics.table.ImplementTable;
 import java.sql.SQLException;
 import java.util.*;
 
-import static platform.base.BaseUtils.contains;
 import static platform.base.BaseUtils.filterKeys;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges {
@@ -640,7 +639,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         aspectAfterChange(hadStoredChanges);
     }
     
-    public void dropChanges(SessionDataProperty property) throws SQLException {
+    public void dropChanges(DataProperty property) throws SQLException {
         if(!data.containsKey(property)) // оптимизация, см. использование
             return;
 
@@ -1328,7 +1327,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
 
-    private void aspectDropChanges(final SessionDataProperty property) throws SQLException {
+    private void aspectDropChanges(final DataProperty property) throws SQLException {
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.remove(property);
         if(dataChange!=null)
             dataChange.drop(sql);

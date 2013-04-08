@@ -1001,13 +1001,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, usedParams);
     }
 
-    public LP addScriptedAddObjProp(String className) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAddObjProp(" + className + ");");
-        ValueClass cls = findClassByCompoundName(className);
-        checkAddActionsClass(cls);
-        return getAddObjectAction((CustomClass) cls, false, baseLM.getAddedObjectProperty());
-    }
-
     public LP addScriptedAddFormAction(String className, boolean session) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAddFormAction(" + className + ", " + session + ");");
         ValueClass cls = findClassByCompoundName(className);
@@ -1032,14 +1025,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addMAProp("lsFusion", length), asList(msgProp));
     }
 
-    public LPWithParams addScriptedChangeClassAProp(LPWithParams param, String className) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedChangeClassAProp(" + className + ")");
-        ValueClass cls = findClassByCompoundName(className);
-        checkChangeClassActionClass(cls);
-        LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls);
-        return new LPWithParams(res,  param.usedParams);
-    }
-
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvalActionProp(" + property + ")");
         Type exprType = property.property.property.getType();
@@ -1055,20 +1040,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
-        List<LPWithParams> lpList = BaseUtils.toList(toProperty, fromProperty);
-        if (whereProperty != null) {
-            lpList.add(whereProperty);
-        }
-        List<Integer> allParams = mergeAllParams(lpList);
-
-        //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
-        List<Integer> resultInterfaces = new ArrayList<Integer>();
-        for (int paramIndex : allParams) {
-            if (paramIndex >= context.size()) {
-                break;
-            }
-            resultInterfaces.add(paramIndex);
-        }
+        List<Integer> resultInterfaces = getResultInterfaces(context, toProperty, fromProperty, whereProperty);
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
         for (int resI : resultInterfaces) {
@@ -1082,6 +1054,87 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(paramsList);
         LP result = addSetPropertyAProp(null, genSID(), "", resultInterfaces.size(), whereProperty != null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
+    }
+
+    public LPWithParams addScriptedAddObjProp(List<String> context, String className, String toPropName, List<LPWithParams> toPropMapping, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAddObjProp(" + className + ", " + toPropName + ", " + toPropMapping + ", " + whereProperty + ");");
+        ValueClass cls = findClassByCompoundName(className);
+        checkAddActionsClass(cls);
+
+        LPWithParams toProperty = null;
+        if (toPropName != null && toPropMapping != null) {
+            toProperty = addScriptedJProp(findLPByCompoundName(toPropName), toPropMapping);
+        }
+
+        List<Integer> resultInterfaces = getResultInterfaces(context, toProperty, whereProperty);
+
+        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        for (int resI : resultInterfaces) {
+            paramsList.add(new LPWithParams(null, asList(resI)));
+        }
+        if (toProperty != null) {
+            paramsList.add(toProperty);
+        } else if (whereProperty == null) {
+            paramsList.add(new LPWithParams(new LCP(baseLM.getAddedObjectProperty()), new ArrayList<Integer>()));
+        }
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+        List<Object> resultParams = getParamsPlainList(paramsList);
+        LAP result = getAddObjectAction((CustomClass) cls, false, resultInterfaces.size(), whereProperty != null, toProperty != null || whereProperty == null, resultParams.toArray());
+        return new LPWithParams(result, resultInterfaces);
+    }
+
+    public LPWithParams addScriptedChangeClassAProp(List<String> context, LPWithParams param, String className, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedChangeClassAProp(" + context + ", " + param + ", " + className + ", " + whereProperty + ")");
+        ValueClass cls = findClassByCompoundName(className);
+        checkChangeClassActionClass(cls);
+
+        List<LPWithParams> paramList = new ArrayList<LPWithParams>();
+        paramList.add(param);
+        if (whereProperty != null) {
+            paramList.add(whereProperty);
+        }
+        List<Integer> allParams = mergeAllParams(paramList);
+        int changedIndex = allParams.indexOf(param.usedParams.get(0));
+
+        List<Integer> resultInterfaces = new ArrayList<Integer>();
+        for (int paramIndex : allParams) {
+            if (paramIndex >= context.size()) {
+                break;
+            }
+            resultInterfaces.add(paramIndex);
+        }
+
+        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+        boolean contextExtended = allParams.size() > resultInterfaces.size();
+        List<Object> resultParams = getParamsPlainList(paramsList);
+
+        LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
+        return new LPWithParams(res,  resultInterfaces);
+    }
+
+    private List<Integer> getResultInterfaces(List<String> context, LPWithParams... params) {
+        List<LPWithParams> lpList = new ArrayList<LPWithParams>();
+        for (LPWithParams lp : params) {
+            if (lp != null) {
+                lpList.add(lp);
+            }
+        }
+        List<Integer> allParams = mergeAllParams(lpList);
+
+        //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
+        List<Integer> resultInterfaces = new ArrayList<Integer>();
+        for (int paramIndex : allParams) {
+            if (paramIndex >= context.size()) {
+                break;
+            }
+            resultInterfaces.add(paramIndex);
+        }
+        return resultInterfaces;
     }
 
     public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {

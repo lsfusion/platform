@@ -304,7 +304,7 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 
 // Add object action
 // statement syntax:
-// ADDOBJ className
+// ADDOBJ className [WHERE expression] [TO propertyName(param1, ..., paramN)]
 addObjectActionTest() = ACTION ADDOBJ Store;
 
 // Add/Edit form action
@@ -324,7 +324,7 @@ editActionTest(obj) = ACTION EDITFORM Store;
 
 // Change class action
 // statement syntax:
-// CHANGECLASS object TO className
+// CHANGECLASS object TO className [WHERE expression]
 // built-in or abstract class names are forbidden
 
 // File open/load action

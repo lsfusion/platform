@@ -627,9 +627,16 @@ public abstract class LogicsModule {
         return addAProp(baseClass.getChangeClassValueAction());
     }
 
-    @IdentityStrongLazy // для ID
-    protected LAP addChangeClassAProp(ConcreteCustomClass cls) {
-        return addAProp(cls.getChangeClassAction());
+    protected LAP addChangeClassAProp(ConcreteCustomClass cls, int resInterfaces, int changeIndex, boolean extendedContext, boolean conditional, Object... params) {
+        int innerIntCnt = resInterfaces + (extendedContext ? 1 : 0);
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(innerIntCnt);
+        ImOrderSet<PropertyInterface> mappedInterfaces = extendedContext ? innerInterfaces.removeOrderIncl(innerInterfaces.get(changeIndex)) : innerInterfaces;
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
+        CalcPropertyMapImplement<PropertyInterface, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<PropertyInterface, PropertyInterface>)
+                (conditional ? readImplements.get(0) : null);
+
+        return addAProp(new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(genSID(), cls, false, innerInterfaces.getSet(),
+                mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(Object... params) {
@@ -2059,6 +2066,17 @@ public abstract class LogicsModule {
 
     public LAP getAddObjectAction(CustomClass cls, boolean forceDialog, CalcProperty storeNewObjectProperty) {
         return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, storeNewObjectProperty));
+    }
+
+    public <T extends PropertyInterface, I extends PropertyInterface> LAP getAddObjectAction(CustomClass cls, boolean forceDialog, int resInterfaces, boolean conditional, boolean resultExists, Object... params) {
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
+        CalcPropertyMapImplement<T, PropertyInterface> resultPart = (CalcPropertyMapImplement<T, PropertyInterface>)
+                (resultExists ? readImplements.get(resInterfaces) : null);
+        CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
+                (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : DerivedProperty.createTrue());
+
+        return addAProp(null, new AddObjectActionProperty(genSID(), cls, forceDialog, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart));
     }
 
     @IdentityStrongLazy // data

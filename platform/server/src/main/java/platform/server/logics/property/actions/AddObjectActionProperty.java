@@ -32,7 +32,6 @@ import platform.server.session.PropertySet;
 import platform.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 
 public class AddObjectActionProperty<T extends PropertyInterface, I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
@@ -119,7 +118,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
             resultChange = new PropertyChange<I>(context.addObject(readClass));
         else {
             if(result!=null)
-                context.getSession().dropChanges((SessionDataProperty) result.property); // предполагается что пишем в SessionData, потом можно дообобщить
+                context.getSession().dropChanges((DataProperty) result.property);
 
             Where exprWhere = where.mapExpr(innerExprs, context.getModifier()).getWhere();
             if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать

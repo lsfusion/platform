@@ -298,7 +298,7 @@ META defineDocumentHeaderPosted(objectClass)
     isDraft##objectClass 'Не проведен' (o) = o IS objectClass AND NOT o IS objectClass##Posted PERSISTENT;
     isPosted##objectClass 'Проведен' (o) = o IS objectClass##Posted PERSISTENT;
 
-    prePost##objectClass 'Провести' (o) = [ACTION CHANGECLASS o TO objectClass##Posted ] (o)
+    prePost##objectClass 'Провести' (o) = [ACTION (o) CHANGECLASS o TO objectClass##Posted ] (o)
                                     IF o IS objectClass AND NOT o IS objectClass##Posted;
 
     post##objectClass 'Провести' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { CHANGECLASS o TO objectClass##Posted; } ] (o)
