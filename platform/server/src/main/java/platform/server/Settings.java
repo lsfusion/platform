@@ -408,6 +408,10 @@ public class Settings {
     private int limitHintNoUpdateComplexity = 4000;
     private int limitWrapComplexity = 200;
 
+    public boolean noApplyIncrement = false;
+    private int limitApplyHintIncrementComplexity = 100;
+    private int limitApplyHintIncrementStat = 1000;
+
     public boolean isNoExclusiveCompile() {
         return noExclusiveCompile;
     }
@@ -453,11 +457,29 @@ public class Settings {
     public void setLimitHintIncrementComplexity(int limitHintIncrementComplexity) {
         this.limitHintIncrementComplexity = limitHintIncrementComplexity;
     }
+    public boolean isNoApplyIncrement() {
+        return noApplyIncrement;
+    }
+    public void setNoApplyIncrement(boolean noApplyIncrement) {
+        this.noApplyIncrement = noApplyIncrement;
+    }
+    public int getLimitApplyHintIncrementComplexity() {
+        return limitApplyHintIncrementComplexity * limitIncrementCoeff;
+    }
+    public void setLimitApplyHintIncrementComplexity(int limitApplyHintIncrementComplexity) {
+        this.limitApplyHintIncrementComplexity = limitApplyHintIncrementComplexity;
+    }
     public int getLimitHintIncrementStat() {
         return limitHintIncrementStat;
     }
     public void setLimitHintIncrementStat(int limitHintIncrementStat) {
         this.limitHintIncrementStat = limitHintIncrementStat;
+    }
+    public int getLimitApplyHintIncrementStat() {
+        return limitApplyHintIncrementStat;
+    }
+    public void setLimitApplyHintIncrementStat(int limitApplyHintIncrementStat) {
+        this.limitApplyHintIncrementStat = limitApplyHintIncrementStat;
     }
     public int getLimitHintNoUpdateComplexity() {
         return limitHintNoUpdateComplexity * limitIncrementCoeff;
@@ -549,16 +571,6 @@ public class Settings {
 
     public void setEnablePrevWrapComplexity(boolean enablePrevWrapComplexity) {
         this.enablePrevWrapComplexity = enablePrevWrapComplexity;
-    }
-
-    public boolean applyNoIncrement = true;
-
-    public boolean isApplyNoIncrement() {
-        return applyNoIncrement;
-    }
-
-    public void setApplyNoIncrement(boolean applyNoIncrement) {
-        this.applyNoIncrement = applyNoIncrement;
     }
 
     public boolean applyVolatileStats = false;

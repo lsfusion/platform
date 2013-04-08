@@ -737,7 +737,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends())
             if(sessionCalcProperty instanceof ChangedProperty) // именно так, OldProperty нельзя подменять, так как предполагается что SET и DROPPED требуют разные значения PREV
                 changes.add(sessionCalcProperty, ((ChangedProperty)sessionCalcProperty).getFullChange(getModifier()));
-        resolveModifier = new OverrideSessionModifier(changes, FullFunctionSet.<CalcProperty>instance(), dataModifier);
+        resolveModifier = new OverrideSessionModifier(changes, true, dataModifier);
 
         action.execute(this);
 
@@ -1075,6 +1075,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(!hasChanges())
             return true;
 
+        long l = System.currentTimeMillis();
+
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
             applyObject = addObject(sessionClass);
@@ -1105,7 +1107,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         startTransaction();
 
         try {
-            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+            boolean result = recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
+            System.out.println("APPLIED " + (System.currentTimeMillis() - l));
+            return result;
         } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)

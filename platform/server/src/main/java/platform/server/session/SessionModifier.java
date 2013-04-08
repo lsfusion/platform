@@ -9,6 +9,7 @@ import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
+import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.data.QueryEnvironment;
@@ -155,6 +156,22 @@ public abstract class SessionModifier implements Modifier {
 
     public boolean forceDisableNoUpdate(CalcProperty property) {
         return true;
+    }
+
+    public int getLimitHintIncrementComplexity() {
+        return Settings.get().getLimitHintIncrementComplexity();
+    }
+
+    public int getLimitGrowthIncrementComplexity() {
+        return Settings.get().getLimitGrowthIncrementComplexity();
+    }
+
+    public int getLimitHintIncrementStat() {
+        return Settings.get().getLimitHintIncrementStat();
+    }
+
+    public int getLimitHintNoUpdateComplexity() {
+        return Settings.get().getLimitHintNoUpdateComplexity();
     }
 
     public void addHintIncrement(CalcProperty property) {

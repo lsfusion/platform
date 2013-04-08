@@ -215,14 +215,14 @@ public class AutoHintsAspect {
                 if(changed!=null)
                     whereComplexity = changed.getComplexity(false);
                 long complexity = max(exprComplexity, whereComplexity);
-                if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
+                if(complexity > catchHint.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                     if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
                         Expr prevExpr = property.getExpr(mapKeys);
-                        if(whereComplexity > Settings.get().getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * Settings.get().getLimitGrowthIncrementComplexity()) {
-                            if (changed.getStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(Settings.get().getLimitHintIncrementStat())))
+                        if(whereComplexity > catchHint.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * catchHint.getLimitGrowthIncrementComplexity()) {
+                            if (changed.getStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(catchHint.getLimitHintIncrementStat())))
                                 throw new AutoHintException(property, true);
-                            if(allowNoUpdate && complexity > Settings.get().getLimitHintNoUpdateComplexity()) {
+                            if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
                                 System.out.println("AUTO HINT NOUPDATE" + property);
                                 throw new AutoHintException(property, false);
                             }

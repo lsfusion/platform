@@ -35,9 +35,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.QueryBuilder;
-import platform.server.data.type.ObjectType;
 import platform.server.data.type.ParseException;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
@@ -1506,7 +1504,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return environmentIncrement;
     }
 
-    private Modifier createModifier(SessionModifier modifier) {
+    private Modifier createModifier() {
         FunctionSet<CalcProperty> noHints = getNoHints();
         return new OverrideSessionModifier(getEnvironmentIncrement(), noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
@@ -1517,7 +1515,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         SessionModifier sessionModifier = session.getModifier();
         Modifier modifier = modifiers.get(sessionModifier);
         if (modifier == null) {
-            modifier = createModifier(sessionModifier);
+            modifier = createModifier();
             modifiers.exclAdd(sessionModifier, modifier);
         }
         return modifier;

@@ -27,6 +27,9 @@ public class OverrideSessionModifier extends SessionModifier {
     private final FunctionSet<CalcProperty> forceHintIncrement;
     private final FunctionSet<CalcProperty> forceNoUpdate;
 
+    private Integer limitHintIncrementComplexity = null;
+    private Integer limitHintIncrementStat = null;
+
     @Override
     public ImSet<CalcProperty> getHintProps() {
         return super.getHintProps().merge(modifier.getHintProps());
@@ -72,6 +75,22 @@ public class OverrideSessionModifier extends SessionModifier {
         // если здесь запрещено, то и в modifier'е должно быть запрещено
         assert !result || modifier.forceDisableNoUpdate(property);
         return result;
+    }
+
+    @Override
+    public int getLimitHintIncrementComplexity() {
+        if(limitHintIncrementComplexity!=null)
+            return limitHintIncrementComplexity;
+
+        return super.getLimitHintIncrementComplexity();
+    }
+
+    @Override
+    public int getLimitHintIncrementStat() {
+        if(limitHintIncrementStat!=null)
+            return limitHintIncrementStat;
+
+        return super.getLimitHintIncrementStat();
     }
 
     @Override
@@ -142,7 +161,10 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     public OverrideSessionModifier(IncrementProps override, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
-        this(override, Settings.get().isApplyNoIncrement(), modifier);
+        this(override, Settings.get().isNoApplyIncrement(), modifier);
+
+        limitHintIncrementComplexity = Settings.get().getLimitApplyHintIncrementComplexity();
+        limitHintIncrementStat = Settings.get().getLimitApplyHintIncrementStat();
     }
 
     public OverrideSessionModifier(IncrementProps override, boolean disableHintIncrement, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а
