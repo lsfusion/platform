@@ -34,6 +34,8 @@ nameAccountToPayment 'Счет' (payment) = PaymentLedger.nameAccount(accountToP
 currencyAccountToPayment(payment) = PaymentLedger.currencyAccount(accountToPayment(payment));
 nameCurrencyAccountToPayment 'Валюта счета' (payment) = PaymentLedger.nameCurrencyAccount(accountToPayment(payment));
 sumToPayment 'Сумма' (payment) = DATA NUMERIC[16,2] (Payment) PREFCHARWIDTH 16;
+sumToPayment(payment) <- sumFromPayment(payment)
+    WHEN ASSIGNED(sumFromPayment(payment));
 
 rateFromPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumToPayment(payment),sumFromPayment(payment)) PREFCHARWIDTH 15;
 rateToPayment 'Курс' (payment) = [FORMULA NUMERIC[15,8] '$1/$2'](sumFromPayment(payment),sumToPayment(payment)) PREFCHARWIDTH 15;
@@ -148,10 +150,12 @@ FORM payments 'Платежи'
     PROPERTIES() namePartyA, namePartyB
 
     OBJECTS p = Payment
-    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, dateTimePayment,
-                                                                  namePayerPayment, nameBeneficiaryPayment, notePayment
+    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, datePayment,
+                                                                  timePayment, namePayerPayment, nameBeneficiaryPayment, notePayment
 
     PROPERTIES(p) ADDFORM, EDITFORM, delete
+
+    ORDER BY datePayment
 
     FILTERS payerPayment(p) == partyB() OR (p IS Payment AND NOT partyB()),
             beneficiaryPayment(p) == partyA() OR (p IS Payment AND NOT partyA())

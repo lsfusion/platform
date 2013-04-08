@@ -45,7 +45,9 @@ bankAccount = DATA Bank (Account);
 
 GROUP accountGroup 'Банковская информация' : base;
 
-currencyAccount = DATA Currency (Account);
+currencyAccount = DATA Currency (Account) NOT NULL;
+currencyAccount(account) <- currencyLegalEntity(legalEntityAccount(account))
+    WHEN ASSIGNED(legalEntityAccount(account));
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account)) IN accountGroup;
 
 numberAccount 'Номер расчетного счета'  = DATA STRING[13] (Account) IN accountGroup FIXEDCHARWIDTH 13;
@@ -61,6 +63,29 @@ noteAccount 'Примечание'  = DATA STRING[50] (Account) IN accountGroup;
 EXTEND CLASS Account : PaymentLedger.Account;
 nameAccount(account) += numberAccount(account);
 PaymentLedger.currencyAccount(account) += currencyAccount(account);
+
+FORM account 'Расчетный счет'
+    OBJECTS a = Account FIXED PANEL
+    PROPERTIES(a) numberAccount, nameCurrencyAccount, nameLegalEntityAccount, nameBankAccount, addressBankAccount,
+                  MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+
+    EDIT Account OBJECT a
+;
+
+DESIGN account FROM DEFAULT{
+    a.accountGroup{
+        ADD PROPERTY(nameLegalEntityAccount);
+    }
+}
+
+addAccount 'Добавить расчетный счет' = ACTION ADDFORM Bank.Account;
+editAccount 'Редактировать' (account) = ACTION EDITFORM Bank.Account;
+PaymentLedger.editAccount(account) += editAccount(account);
+
+EXTEND FORM accounts
+    PROPERTIES(a) READONLY nameBankAccount, addressBankAccount, MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
+;
 
 // ------------------------ Привязка банков к юрлицам ------------------------ //
 

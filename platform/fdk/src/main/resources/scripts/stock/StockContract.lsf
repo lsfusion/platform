@@ -10,8 +10,6 @@ NAMESPACE Contract;
 CLASS ABSTRACT ContractSku 'Договор на поставку' : Contract;
 TABLE contractSku(ContractSku);
 
-editContractSku 'Редактировать' = ABSTRACT ACTION (contractSku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
-
 GROUP paymentGroup 'Взаиморасчеты' : public;
 
 CLASS ContractSkuType 'Тип договора на поставку' {
@@ -125,7 +123,7 @@ FORM paymentConditions 'Условия оплаты'
 
 // Формы
 FORM userContractSku 'Договор на поставку товаров'
-    OBJECTS c=UserContractSku FIXED PANEL
+    OBJECTS c = UserContractSku FIXED PANEL
     PROPERTIES(c) nameSupplierContractSku, nameCustomerContractSku, nameTypeContractSku,
                   numberContract, dateFromContract, dateToContract,
                   nameCurrencyContract, noteContract
@@ -150,7 +148,7 @@ DESIGN userContractSku FROM DEFAULT{
 }
 
 editUserContractSku 'Редактировать' = ACTION EDITFORM UserContractSku;
-editContractSku(userContractSku) += editUserContractSku(userContractSku);
+editContract(userContractSku) += editUserContractSku(userContractSku);
 
 addUserContractSkuSupplierCustomer 'Добавить' = ACTION (supplier, customer) {
 
@@ -168,20 +166,14 @@ isUserContractSku (contractSku) = TRUE IF contractSku IS UserContractSku;
 
 addUserContractSku 'Добавить' = ACTION ADDFORM UserContractSku;
 
-FORM contractSkus 'Договора на поставку'
-    OBJECTS c=ContractSku
-    PROPERTIES(c) READONLY nameSupplierContractSku, nameCustomerContractSku, numberContract, dateFromContract, dateToContract,
-                           nameCurrencyContract, noteContract, nameTypeContractSku
-
-    PROPERTIES() addUserContractSku TODRAW c
-    PROPERTIES(c) editContractSku, delete FORCE PANEL TOOLBAR SHOWIF isUserContractSku(c)
-
-    DIALOG ContractSku OBJECT c
+EXTEND FORM contracts
+    PROPERTIES(c) nameTypeContractSku
+    PROPERTIES() addUserContractSku TODRAW c FORCE PANEL
 ;
 
 NAVIGATOR {
     stockMasterData {
-        ADD contractSkus;
+        ADD contracts;
     }
 }
 

@@ -38,6 +38,17 @@ symbolCurrencyContract 'Символ' (contract) = symbolCurrency(currencyContra
 
 noteContract 'Примечание' = DATA TEXT (Contract) MINCHARWIDTH 50 PREFCHARWIDTH 50 IN attributeGroup;
 
+editContract 'Редактировать' (contract) = ABSTRACT ACTION (contract) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM contracts 'Договоры'
+    OBJECTS c = Contract
+    PROPERTIES(c) READONLY namePartyAContract, namePartyBContract, numberContract, dateFromContract,
+                           dateToContract, nameCurrencyContract, noteContract
+    PROPERTIES(c) editContract, delete
+
+    DIALOG Contract OBJECT c
+;
+
 // ------------------------------------ Макрос для создания договоров по умолчанию ----------------------------- //
 
 META defineContractDefault (contract, partyA, partyB)

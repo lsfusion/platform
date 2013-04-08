@@ -7,33 +7,35 @@ REQUIRE PaymentLedger;
 CLASS Account 'Касса';
 TABLE account (Account);
 
-currencyAccount = DATA Currency (Account);
-nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
-
 numberAccount 'Номер кассового счета'  = DATA STRING[13] (Account) FIXEDCHARWIDTH 13;
 
 legalEntityAccount = DATA LegalEntity (Account);
 nameLegalEntityAccount 'Организация' = name(legalEntityAccount(account));
 defaultAccountLegalEntity(legalEntity) = GROUP MAX account BY legalEntityAccount(account);
 
+currencyAccount = DATA Currency (Account) NOT NULL;
+currencyAccount(account) <- currencyLegalEntity(legalEntityAccount(account))
+    WHEN ASSIGNED(legalEntityAccount(account));
+nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
+
 EXTEND CLASS Account : PaymentLedger.Account;
 PaymentLedger.nameAccount(account) += numberAccount(account);
 PaymentLedger.currencyAccount(account) += currencyAccount(account);
 PaymentLedger.legalEntityAccount(account) += legalEntityAccount(account);
 
-FORM account 'Счет'
-    OBJECTS a = Cash.Account FIXED PANEL
+FORM account 'Касса'
+    OBJECTS a = Account FIXED PANEL
     PROPERTIES(a) numberAccount, nameCurrencyAccount, nameLegalEntityAccount
 
-    EDIT Cash.Account OBJECT a
+    EDIT Account OBJECT a
 ;
 
-FORM accounts 'Счета'
-    OBJECTS a = Cash.Account
-    PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount
-    PROPERTIES(a) ADDFORM, EDITFORM, delete
+addAccount 'Добавить кассу' = ACTION ADDFORM Cash.Account;
+editAccount 'Редактировать' (account) = ACTION EDITFORM Cash.Account;
+PaymentLedger.editAccount(account) += editAccount(account);
 
-    DIALOG Cash.Account OBJECT a
+EXTEND FORM accounts
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
 ;
 
 EXTEND FORM legalEntity

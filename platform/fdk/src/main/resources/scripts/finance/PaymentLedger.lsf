@@ -12,6 +12,17 @@ currencyAccount = ABSTRACT Currency (Account);
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account));
 
 legalEntityAccount = ABSTRACT LegalEntity (Account);
+nameLegalEntityAccount 'Организация' (account) = name(legalEntityAccount(account));
+
+editAccount 'Редактировать' (account) = ABSTRACT ACTION (account) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM accounts 'Счета'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY nameAccount, nameCurrencyAccount, nameLegalEntityAccount
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+
+    DIALOG Account OBJECT a
+;
 
 // ---------------- Регистр денег ------------- //
 
