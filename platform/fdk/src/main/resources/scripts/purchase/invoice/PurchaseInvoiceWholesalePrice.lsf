@@ -59,14 +59,16 @@ changeWholesaleMarkupUserInvoiceDetail = ACTION (detail) {
     }
 }
 
+backgroundWholesaleInvoice 'Цвет' (invoice) = RGB(238, 250, 200) IF invoice IS Invoice;
+
 EXTEND FORM userInvoice
-    PROPERTIES(i) toShowWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF toShowWholesalePriceUserInvoice(i)
-    PROPERTIES(d) SHOWIF toShowWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail ON CHANGE changeWholesaleMarkupUserInvoiceDetail(d),
+    PROPERTIES(i) BACKGROUND backgroundWholesaleInvoice(i) toShowWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF toShowWholesalePriceUserInvoice(i)
+    PROPERTIES(d) BACKGROUND backgroundWholesaleInvoice(i) SHOWIF toShowWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail ON CHANGE changeWholesaleMarkupUserInvoiceDetail(d),
                   wholesalePriceUserInvoiceDetail ON CHANGE changeWholesalePriceUserInvoiceDetail(d)
 ;
 EXTEND FORM invoices
-    PROPERTIES(i) toShowWholesalePriceInvoice
-    PROPERTIES(d) READONLY SHOWIF toShowWholesalePriceInvoice(i) wholesaleMarkupInvoiceDetail, wholesalePriceInvoiceDetail
+    PROPERTIES(i) BACKGROUND backgroundWholesaleInvoice(i) toShowWholesalePriceInvoice
+    PROPERTIES(d) READONLY BACKGROUND backgroundWholesaleInvoice(i) SHOWIF toShowWholesalePriceInvoice(i) wholesaleMarkupInvoiceDetail, wholesalePriceInvoiceDetail
 ;
 
 // Создаем виды цен

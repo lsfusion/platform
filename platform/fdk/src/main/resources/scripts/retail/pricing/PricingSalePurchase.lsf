@@ -40,13 +40,13 @@ purchasePricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overP
 @defineDocumentInterfaceDetailPricePrefix(invoice, purchaseRetail, ' розничная (закупка)');
 
 // Действия по измению цен и надбавок на форме
-roundConditionUserInvoiceDetail(userInvoiceDetail) =
+purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
     IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
         THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
 @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail);
-@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail);
+@changeDocumentDetailPriceCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail, purchase);
 
 // Проставление цены по виду цен
 @deriveDocumentDetailPriceOnSessionPriceListType (UserInvoiceDetail, purchaseRetail, pricing, customerStock, userInvoice);

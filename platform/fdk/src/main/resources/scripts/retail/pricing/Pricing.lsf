@@ -196,12 +196,12 @@ META changeDocumentDetailMarkupCustomPrefix(detail, prefixA, prefixB, prefixC, p
     }
 END
 
-META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
+META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, prefixCondition)
 
     calc###prefixA###price###detail(detail)  = roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
     prefixB###price###detail(detail),
     prefixC###markup###detail(detail),
-    value###prefixD###VAT###detail(detail)), roundCondition###detail(detail));
+    value###prefixD###VAT###detail(detail)), prefixCondition###roundCondition###detail(detail));
 
     change###prefixC###markup###detail = ACTION (detail) {
         REQUEST NUMERIC[8,3] INPUT;
@@ -214,6 +214,10 @@ META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, pr
         }
     }
 END
+META changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD)
+    @changeDocumentDetailPriceCustomPrefix(detail, prefixA, prefixB, prefixC, prefixD, );
+END
+
 //-- Для общего случая
 META changeDocumentDetailMarkupPrefixInner(detail, prefixA, prefixB, prefixC, prefixD, prefixE, prefixF)
     calc###prefixB###markup###detail(detail)  = [round2(((X/Z*100/(100+Y))-1)*100)](
