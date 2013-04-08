@@ -29,7 +29,7 @@ public class DownloadFileHandler implements HttpRequestHandler {
             mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
         }
         response.setContentType(mimeMap.getContentType(file));
-        response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
+        response.addHeader("Content-Disposition", "inline; filename=" + fileName);
         ByteStreams.copy(fis, response.getOutputStream());
         fis.close();
         file.delete();
