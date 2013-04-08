@@ -10,8 +10,6 @@ NAMESPACE Sale;
 
 @defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
 
-toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(supplierUserOrder(userOrder))) WHEN CHANGED(supplierUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
-
 @defineDocumentContactSkuStock (userOrder, userOrder, supplier, 'Поставщик', o, sts);
 
 //----------------------------------------------- Операции -----------------------------------------------------//

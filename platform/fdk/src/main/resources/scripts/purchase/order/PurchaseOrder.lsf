@@ -53,8 +53,6 @@ inAssortmentSkuStockUserOrder (sku, stock, userOrder) =
 
 inUserOrderSku (userOrder, sku)= inSupplierSku(supplierUserOrder(userOrder), sku);
 
-toDateUserOrder(userOrder) <- sumDate(shipmentDateUserOrder(userOrder), quantityDaysCloseOrdersLegalEntity(customerUserOrder(userOrder))) WHEN CHANGED(customerUserOrder(userOrder)) OR CHANGED(shipmentDateUserOrder(userOrder));
-
 EXTEND FORM userOrder
 
     FILTERGROUP filter

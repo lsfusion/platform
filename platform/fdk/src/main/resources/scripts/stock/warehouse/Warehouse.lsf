@@ -43,6 +43,9 @@ longitudePOI (warehouse) += longitudeWarehouse(warehouse);
 explicitBatchLedgerWarehouse 'Партионный учет' = DATA BOOLEAN (Warehouse);
 explicitBatchLedgerStock(stock) += explicitBatchLedgerWarehouse(stock);
 
+quantityDaysCloseWarehouse 'Срок автоматического закрытия заказов' = DATA INTEGER(Warehouse);
+quantityDaysCloseOrdersStock(stock) += quantityDaysCloseWarehouse(stock);
+
 // -------------------------------------------------- Формы ----------------------------------------- //
 
 FORM warehouseGroup 'Группа складов'
@@ -58,7 +61,7 @@ FORM warehouse 'Склад'
 
     OBJECTS           w=Warehouse FIXED PANEL
     PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
-                      explicitBatchLedgerWarehouse, latitudePOI, longitudePOI, showOnMapPOI
+                      explicitBatchLedgerWarehouse, latitudePOI, longitudePOI, showOnMapPOI, quantityDaysCloseWarehouse
     ORDER BY          name
 
     OBJECTS           e = Employee

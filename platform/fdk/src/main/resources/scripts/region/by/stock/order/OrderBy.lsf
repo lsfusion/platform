@@ -21,7 +21,7 @@ FORM printOrderBy 'Счет-фактура (печать)' PRINT
                    nameCustomerOrder, nameCustomerStockOrder, addressCustomerOrder, UNPCustomerOrder,
                    numberAccountCustomerOrder, nameBankCustomerOrder, addressBankCustomerOrder,
                    departmentBankCustomerOrder, CBUBankCustomerOrder, MFOBankCustomerOrder, phoneCustomerOrder,
-                   numberOrder, seriesOrder, seriesNumberOrder, dateOrder, timeOrder, toDateOrder, currencyOrder,
+                   numberOrder, seriesOrder, seriesNumberOrder, dateOrder, timeOrder, closeDateOrder, currencyOrder,
                    nameCurrencyOrder, noteOrder, countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                    VATSumOrderDetailOrder, invoiceSumOrderDetailOrder
 

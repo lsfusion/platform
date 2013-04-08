@@ -34,7 +34,7 @@ addressSupplierOrder 'Адрес поставщика' (order) = addressLegalEnt
 @defineDocumentAbstractLegalEntity(order, customer, 'Покупатель');
 addressCustomerOrder 'Адрес покупателя' (order) = addressLegalEntity(customerOrder(order));
 
-toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
+closeDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
 
 @defineDocumentAbstractDataStock(order, stock, 'Склад поставщика', supplier);
 @defineDocumentAbstractDataStock(order, stock, 'Склад покупателя', customer);
@@ -118,12 +118,50 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     Order.isPostedOrder (order) += isPostedOrder(order);
 
     @defineDocumentInterfaceDataTimePrefix(order, shipment, ' поставки');
-    toDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup PERSISTENT;
-    toDateUserOrder 'Дата автоматического закрытия' = DATA DATE (UserOrder) IN documentPrmGroup;
-    toDateOrder(order) += toDateUserOrder(order);
-    Order.toDateOrder (order) += toDateOrder(order);
 
-    @defineDocumentClosed (order);
+    closeDateOrder 'Дата автоматического закрытия' = ABSTRACT DATE (Order) IN documentPrmGroup;
+    closeDateUserOrder 'Дата автоматического закрытия' = DATA DATE (UserOrder) IN documentPrmGroup;
+    closeDateOrder(order) += closeDateUserOrder(order);
+    Order.closeDateOrder (order) += closeDateOrder(order);
+    closeDataDateOrderDetail 'Дата автоматического закрытия' = ABSTRACT DATE (OrderDetail) IN documentPrmGroup;
+    closeDataDateUserOrderDetail 'Дата автоматического закрытия' = DATA DATE (UserOrderDetail) IN documentPrmGroup;
+    closeDataDateOrderDetail(detail) += closeDataDateUserOrderDetail(detail);
+
+    closeDateOrderDetail 'Дата автоматического закрытия' (detail) = UNION OVERRIDE closeDateOrder(orderOrderDetail(detail)), closeDataDateOrderDetail(detail) PERSISTENT;
+    closeDateUserOrderDetail 'Дата автоматического закрытия' (detail) = UNION OVERRIDE closeDateUserOrder(userOrderUserOrderDetail(detail)), closeDataDateUserOrderDetail(detail) PERSISTENT;
+
+    closeDataDateUserOrderDetail(detail) <- sumDate(shipmentDateUserOrderDetail(detail), quantityDaysCloseOrdersStock(stockProp###userOrderDetail(detail)))
+        WHEN CHANGED(shipmentDateUserOrderDetail(detail)) OR CHANGED(stockProp###userOrderDetail(detail));
+
+    isDataClosedOrder 'Закрыт' = ABSTRACT BOOLEAN(Order);
+    isDataClosedUserOrder 'Закрыт' = DATA BOOLEAN(UserOrder);
+    isDataClosedOrder(order) += isDataClosedUserOrder(order);
+
+    isDataClosedOrderDetail 'Закрыт' = ABSTRACT BOOLEAN(OrderDetail);
+    isDataClosedUserOrderDetail 'Закрыт' = DATA BOOLEAN(UserOrderDetail);
+    isDataClosedOrderDetail(order) += isDataClosedUserOrderDetail(order);
+
+    defaultClosedOrderDetail(detail) = closeDateOrderDetail(detail) < currentDate() ;
+    isClosedOrderDetail 'Закрыт' (detail) = UNION OVERRIDE defaultClosedOrderDetail(detail),
+                                                           isDataClosedOrder(orderOrderDetail(detail)),
+                                                           isDataClosedOrderDetail(detail);
+    countClosedOrderDetailOrder (order) = GROUP SUM 1 IF isClosedOrderDetail(detail) AND isPostedOrderDetail(detail) BY orderOrderDetail(detail);
+    isClosedOrder 'Закрыт' (order) =  countClosedOrderDetailOrder(order) == countOrderDetailOrder(order);
+
+    defaultClosedUserOrderDetail(detail) = closeDateUserOrderDetail(detail) < currentDate();
+    isClosedUserOrderDetail 'Закрыт' (detail) = UNION OVERRIDE defaultClosedUserOrderDetail(detail),
+                                                               isDataClosedUserOrder(userOrderUserOrderDetail(detail)),
+                                                               isDataClosedUserOrderDetail(detail);
+    countClosedUserOrderDetailUserOrder (userOrder) = GROUP SUM 1 IF isClosedUserOrderDetail(detail) AND isPostedUserOrderDetail(detail) BY userOrderUserOrderDetail(detail);
+    isClosedUserOrder 'Закрыт' (userOrder) =  countClosedUserOrderDetailUserOrder(userOrder) == countUserOrderDetailUserOrder(userOrder);
+
+    isOpenedUserOrder 'Не закрыт' (o) = isPostedUserOrder(o) AND NOT isClosedUserOrder(o) PERSISTENT;
+
+    closeUserOrder 'Закрыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isDataClosedUserOrder(o) <- TRUE; } ] (o)
+                                                IF isPostedUserOrder(o) AND NOT isClosedUserOrder(o) TOOLBAR CONFIRM;
+
+    openUserOrder 'Открыть' (o) = [ACTION (o) NEWSESSION AUTOAPPLY { SET isDataClosedUserOrder(o) <- NULL; } ] (o)
+                                      IF isClosedUserOrder(o) TOOLBAR CONFIRM;
 
     @defineDocumentInterfaceDescription(order, 'Заказ'###sign);
 
@@ -218,7 +256,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        nameCurrencyUserOrder, nameAgreementUserOrder, namePriceListTypeUserOrder SHOWIF noAgreementUserOrder(o), noteUserOrder,
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
-                       shipmentDateUserOrder, shipmentTimeUserOrder, toDateUserOrder, nextShipmentDateUserOrder,
+                       shipmentDateUserOrder, shipmentTimeUserOrder, closeDateUserOrder, nextShipmentDateUserOrder,
                        quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
 
         OBJECTS d = UserOrderDetail
@@ -232,7 +270,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        invoicePriceUserOrderDetail ON CHANGE changeInvoicePriceUserOrderDetail(d),
                        VATSumUserOrderDetail, invoiceSumUserOrderDetail,
                        name###stockProp###userOrderDetail, shipmentDateUserOrderDetail,
-                       shipmentTimeUserOrderDetail, ADDOBJ, delete
+                       shipmentTimeUserOrderDetail, closeDateUserOrderDetail, isDataClosedUserOrderDetail, ADDOBJ, delete
 
         PROPERTIES(o) TODRAW d fillDocumentOrder, addDetailDialogSkuStockUserOrderDetailUserOrder,
                                addDetailInputBarcodeUserOrderDetailUserOrder, deleteUserOrderDetailUserOrder
@@ -334,9 +372,6 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM UserOrder;
     editOrder(order) += editUserOrder(order);
 
-    isClosedOrder(userOrder) <- TRUE IF toDateUserOrder(userOrder) <= subtractDate(currentDate(), 1) AND isPostedOrder(userOrder)
-        WHEN CHANGED(currentDate() AND userOrder IS UserOrder) OR CHANGED(toDateUserOrder(userOrder));
-
     copyOrder 'Копировать' = ACTION (userOrder) NEWSESSION {
         FOR ADDOBJ o = UserOrder DO {
             SET supplierUserOrder(o) <- supplierUserOrder(userOrder);
@@ -369,7 +404,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
                                 nameAgreementOrder, namePriceListTypeOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
-                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, toDateOrder,
+                                VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, closeDateOrder,
                                 noteOrder, objectClassName,
                                 toShowProp###order
 
@@ -377,7 +412,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
         PROPERTIES ()  addUserOrder TODRAW o
         PROPERTIES (o) editOrder, copyOrder
-        PROPERTIES (o) closeOrder SHOWIF isOpenedOrder(o), openOrder SHOWIF isClosedOrder(o)
+        PROPERTIES (o) closeUserOrder SHOWIF isOpenedUserOrder(o), openUserOrder SHOWIF isClosedUserOrder(o)
         PROPERTIES     delete(o) FORCE PANEL TOOLBAR  SHOWIF isUserOrder(o)
 
         OBJECTS d=OrderDetail

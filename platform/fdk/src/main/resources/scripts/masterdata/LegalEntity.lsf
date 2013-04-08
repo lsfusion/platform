@@ -68,8 +68,6 @@ GROUP docGroup 'Для договора' : public;
 
 GROUP orderGroup 'Для заказов' : public;
 
-quantityDaysCloseOrdersLegalEntity 'Срок автоматического закрытия заказов' = DATA INTEGER(LegalEntity) IN orderGroup;
-
 // ----------------------------------- Группы юридический лиц ---------------------------- //
 
 CLASS LegalEntityGroup 'Группа организаций' : Named, EmployeeDivisionGroup;
@@ -167,8 +165,7 @@ FORM legalEntity 'Организация'
                    phoneLegalEntity,
                    emailLegalEntity, siteLegalEntity,
                    isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity,
-                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l),
-                   quantityDaysCloseOrdersLegalEntity
+                   differentStocksInDetailsLegalEntity SHOWIF isCompanyLegalEntity(l)
 
     OBJECTS li=License
     PROPERTIES(li) numberLicense, dateFromLicense, dateToLicense, ADDOBJ, delete
@@ -210,7 +207,6 @@ DESIGN legalEntity FROM DEFAULT {
 
                 ADD l.contactGroup;
                 ADD l.managementGroup;
-                ADD l.orderGroup;
             }
        }
 

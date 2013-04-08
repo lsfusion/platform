@@ -19,6 +19,8 @@ nameStockGroupStock 'Группа' (stock) = name(stockGroupStock (stock));
 legalEntityStock (stock) = ABSTRACT LegalEntity (Stock) PERSISTENT NOT NULL;
 nameLegalEntityStock 'Компания' (stock) = name(legalEntityStock(stock));
 
+quantityDaysCloseOrdersStock 'Срок автоматического закрытия заказов' = ABSTRACT INTEGER(Stock) PERSISTENT;
+
 isCompanyStock(stock) = isCompanyLegalEntity(legalEntityStock(stock));
 
 quantityStocksStockGroup 'Кол-во складов' (stockGroup) = GROUP SUM 1 IF isCompanyStock(stock)

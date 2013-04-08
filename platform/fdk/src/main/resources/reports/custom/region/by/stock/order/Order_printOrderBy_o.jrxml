@@ -49,7 +49,7 @@
 	<field name="seriesNumberOrder" class="java.lang.String"/>
 	<field name="dateOrder" class="java.util.Date"/>
 	<field name="timeOrder" class="java.sql.Time"/>
-	<field name="toDateOrder" class="java.util.Date"/>
+	<field name="closeDateOrder" class="java.util.Date"/>
 	<field name="currencyOrder" class="java.lang.Integer"/>
 	<field name="nameCurrencyOrder" class="java.lang.String"/>
 	<field name="noteOrder" class="java.lang.String"/>
@@ -420,7 +420,7 @@
 				<textElement>
 					<font size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{toDateOrder}!=null?(platform.base.BaseUtils.formatRussian($F{toDateOrder})+" года."):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ОПЛАТИТЬ ДО "+ ($F{closeDateOrder}!=null?(platform.base.BaseUtils.formatRussian($F{closeDateOrder})+" года."):"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="10" y="22" width="560" height="16"/>

@@ -101,6 +101,9 @@ chainStoresDepartmentStore(departmentStore) = chainStoresStoreType(storeTypeDepa
 legalEntityDepartmentStore (departmentStore) = legalEntityStore(storeDepartmentStore(departmentStore)) PERSISTENT;
 legalEntityStock (stock) += legalEntityDepartmentStore(stock);
 
+quantityDaysCloseDepartmentStore 'Срок автоматического закрытия заказов' = DATA INTEGER(DepartmentStore);
+quantityDaysCloseOrdersStock(stock) += quantityDaysCloseDepartmentStore(stock);
+
 userLegalEntityDepartmentStore 'Отм.' = DATA BOOLEAN (LegalEntity, DepartmentStore);
 userLegalEntityStock(legalEntity, stock) += userLegalEntityDepartmentStore(legalEntity, stock);
 
@@ -145,7 +148,7 @@ inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, depar
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = DepartmentStore FIXED PANEL
     PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, nameWriteOffCommitteeStock,
-                  explicitBatchLedgerStock, numberCashAccountDepartmentStore
+                  explicitBatchLedgerStock, numberCashAccountDepartmentStore, quantityDaysCloseDepartmentStore
 
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact
@@ -161,11 +164,12 @@ DESIGN departmentStore FROM DEFAULT {
         d.panel {
             childConstraints = TO THE BOTTOM;
             NEW topContainer {
-                childConstraints = TO THE RIGHT;
+                childConstraints = TO THE RIGHTBOTTOM;
                 ADD PROPERTY(nameDep);
                 ADD PROPERTY(nameStoreDepartmentStore);
                 ADD PROPERTY(tradingSquareDepartmentStore);
                 ADD PROPERTY(numberCashAccountDepartmentStore);
+                ADD PROPERTY(quantityDaysCloseDepartmentStore);
             }
             NEW row {
                 childConstraints = TO THE BOTTOM;
