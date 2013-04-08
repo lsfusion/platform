@@ -1075,8 +1075,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         if(!hasChanges())
             return true;
 
-        long l = System.currentTimeMillis();
-
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
             applyObject = addObject(sessionClass);
@@ -1107,9 +1105,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         startTransaction();
 
         try {
-            boolean result = recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
-            System.out.println("APPLIED " + (System.currentTimeMillis() - l));
-            return result;
+            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, onlyCheck);
         } catch (SQLException e) { // assert'им что последняя SQL комманда, работа с транзакцией
             apply.clear(sql);
             dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
