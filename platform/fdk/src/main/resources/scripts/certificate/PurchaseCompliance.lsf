@@ -49,7 +49,7 @@ FORM complianceInvoices 'Накладные сертификации'
     OBJECTS i=UserInvoice
     PROPERTIES (c, i) inComplianceInvoice
     PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
-    FILTERS inComplianceInvoice(c, i) OR c AS Compliance AND NOT complianceUserInvoice(i)
+    FILTERS inComplianceInvoice(c, i) OR c IS Compliance AND NOT complianceUserInvoice(i)
 
     FILTERGROUP filtersImporter
         FILTER 'Только получателя' 'F11' legalEntityCompliance(c)==customerUserInvoice(i) DEFAULT

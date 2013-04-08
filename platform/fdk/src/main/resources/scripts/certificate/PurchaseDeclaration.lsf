@@ -52,7 +52,7 @@ FORM declarationInvoices 'Накладные декларации'
     OBJECTS i=UserInvoice
     PROPERTIES (d, i) inDeclarationInvoice
     PROPERTIES (i) READONLY numberObject, seriesObject, dateUserInvoice, timeUserInvoice, nameSupplierUserInvoice, nameCustomerUserInvoice
-    FILTERS inDeclarationInvoice(d, i) OR d AS Declaration AND NOT declarationUserInvoice(i)
+    FILTERS inDeclarationInvoice(d, i) OR d IS Declaration AND NOT declarationUserInvoice(i)
 
     OBJECTS id=UserInvoiceDetail
     PROPERTIES(d, id) inDeclarationInvoiceDetail
