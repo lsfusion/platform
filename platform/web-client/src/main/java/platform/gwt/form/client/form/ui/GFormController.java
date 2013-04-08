@@ -476,6 +476,19 @@ public class GFormController extends ResizableSimplePanel {
         syncDispatch(new PasteExternalTable(properties, dataLine), new ServerResponseCallback());
     }
 
+    public void changePageSize(GGroupObject groupObject, int pageSize) {
+        dispatcher.execute(new ChangePageSize(groupObject.ID, pageSize), new ServerResponseCallback());
+    }
+
+    public void changePageSizeLater(final GGroupObject groupObject, final int pageSize) {
+        DeferredRunner.get().scheduleChangePageSize(groupObject, new DeferredRunner.AbstractCommand() {
+            @Override
+            public void execute() {
+                changePageSize(groupObject, pageSize);
+            }
+        });
+    }
+
     public void scrollToEnd(GGroupObject group, boolean toEnd) {
         syncDispatch(new ScrollToEnd(group.ID, toEnd), new ServerResponseCallback());
     }

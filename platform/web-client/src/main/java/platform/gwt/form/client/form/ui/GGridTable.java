@@ -60,6 +60,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private GGroupObjectController groupObjectController;
 
+    private int pageSize = 50;
+
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController) {
         super(iform);
 
@@ -593,6 +595,21 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             });
         } else {
             form.pasteExternalTable(propertiesAfterSelected, dataLine);
+        }
+    }
+
+    @Override
+    public void onResize() {
+        super.onResize();
+
+        int tableHeight = getOffsetHeight();
+        if (tableHeight == 0) {
+            return;
+        }
+        int newPageSize = tableHeight / getRowHeight() + 1;
+        if (newPageSize != pageSize) {
+            form.changePageSizeLater(groupObject, newPageSize);
+            pageSize = newPageSize;
         }
     }
 

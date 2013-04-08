@@ -83,6 +83,14 @@ public class DeferredRunner {
         return "groupObjectChange" + groupObject.ID;
     }
 
+    public void scheduleChangePageSize(GGroupObject groupObject, Command cmd) {
+        reschedule(changePageSizeCommandID(groupObject), cmd, 100);
+    }
+
+    private String changePageSizeCommandID(GGroupObject groupObject) {
+        return "changePageSize" + groupObject.ID;
+    }
+
     public interface Command {
         void execute();
 

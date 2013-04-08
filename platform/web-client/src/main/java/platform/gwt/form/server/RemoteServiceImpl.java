@@ -38,6 +38,7 @@ public class RemoteServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterfa
         registry.addHandler(new CalculateSumHandler(this));
         registry.addHandler(new SingleGroupReportHandler(this));
         registry.addHandler(new PasteExternalTableHandler(this));
+        registry.addHandler(new ChangePageSizeHandler(this));
     }
 
     public FormSessionManager getFormSessionManager() {

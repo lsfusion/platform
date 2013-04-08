@@ -1,14 +1,12 @@
 package platform.server.form.instance;
 
-import platform.base.BaseUtils;
-import platform.base.FunctionSet;
-import platform.base.OrderedMap;
-import platform.base.Pair;
+import platform.base.*;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.SFunctionSet;
 import platform.base.col.interfaces.immutable.*;
-import platform.base.col.interfaces.mutable.*;
+import platform.base.col.interfaces.mutable.MExclSet;
+import platform.base.col.interfaces.mutable.MOrderExclSet;
+import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
@@ -107,6 +105,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public void setPageSize(Integer pageSize) {
         if(entity.pageSize == null){
+            if (!pageSize.equals(this.pageSize)) {
+                updated |= UPDATED_PAGESIZE;
+            }
             this.pageSize = pageSize;
         }
     }
@@ -294,6 +295,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     public final static int UPDATED_ORDER = (1 << 5);
     public final static int UPDATED_FILTER = (1 << 6);
     public final static int UPDATED_EXPANDS = (1 << 7);
+    public final static int UPDATED_PAGESIZE = (1 << 8);
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_ORDER | UPDATED_FILTER;
 
@@ -642,7 +644,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 orderSeeks = new SeekObjects(false, currentObject);
             }
 
-            if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & UPDATED_OBJECT) != 0) { // скроллирование
+            if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
                 int keyNum = keys.indexOf(currentObject);
                 if (upKeys && keyNum < getPageSize()) { // если меньше PageSize осталось и сверху есть ключи
                     updateKeys = true;
