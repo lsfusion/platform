@@ -13,18 +13,25 @@ NAMESPACE Purchase;
 @defineDocumentInterfaceDetailPriceCustomPrefix (invoiceDetail, wholesale, ' (оптовая)');
 @defineDocumentInterfaceDetailMarkupCustomPrefix (invoiceDetail, wholesale, ' (оптовая)');
 
+overBasePriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;
+overBasePriceUserInvoiceDetail = ABSTRACT NUMERIC[14,2] (UserInvoiceDetail) PERSISTENT;
+overBasePriceInvoiceDetail (detail) += overBasePriceUserInvoiceDetail(detail);
+
+basePriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overBasePriceInvoiceDetail(detail) PERSISTENT;
+basePriceUserInvoiceDetail (detail) = priceUserInvoiceDetail(detail) OR overBasePriceUserInvoiceDetail(detail) PERSISTENT;
+
 wholesaleMarkupUserInvoiceDetail(detail) <- markupCalcPriceListTypeSku(wholesaleCalcPriceListTypeUserInvoiceDetail(detail), skuUserInvoiceDetail(detail))
     WHEN CHANGED(wholesaleCalcPriceListTypeUserInvoiceDetail(detail)) OR
          CHANGED(skuUserInvoiceDetail(detail));
 
-wholesalePriceUserInvoiceDetail(detail) <- roundPriceCurrency((priceUserInvoiceDetail(detail) * (wholesaleMarkupUserInvoiceDetail(detail) + 100)/ 100), currencyUserInvoiceDetail(detail))
-    WHEN CHANGED(priceUserInvoiceDetail(detail)) OR
+wholesalePriceUserInvoiceDetail(detail) <- roundPriceCurrency((basePriceUserInvoiceDetail(detail) * (wholesaleMarkupUserInvoiceDetail(detail) + 100)/ 100), currencyUserInvoiceDetail(detail))
+    WHEN CHANGED(basePriceUserInvoiceDetail(detail)) OR
          CHANGED(wholesaleMarkupUserInvoiceDetail(detail)) OR
          CHANGED(currencyUserInvoiceDetail(detail));
 
 calcWholesaleMarkupUserInvoiceDetail(detail)  = [round2((X/Y-1)*100)](
     wholesalePriceUserInvoiceDetail(detail),
-    priceUserInvoiceDetail(detail));
+    basePriceUserInvoiceDetail(detail));
 
 changeWholesalePriceUserInvoiceDetail = ACTION (detail) {
     REQUEST NUMERIC[14,2] INPUT;
@@ -38,7 +45,7 @@ changeWholesalePriceUserInvoiceDetail = ACTION (detail) {
 }
 
 calcWholesalePriceUserInvoiceDetail(detail)  = roundPriceCurrency([X*(Y+100)/100](
-    priceUserInvoiceDetail(detail),
+    basePriceUserInvoiceDetail(detail),
     wholesaleMarkupUserInvoiceDetail(detail)),currencyUserInvoiceDetail(detail));
 
 changeWholesaleMarkupUserInvoiceDetail = ACTION (detail) {

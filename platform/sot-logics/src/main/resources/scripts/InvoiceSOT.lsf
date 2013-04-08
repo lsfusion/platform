@@ -1,7 +1,7 @@
 MODULE InvoiceSOT;
 
 REQUIRE System, Integration, PurchaseInvoice, Certificate, PurchaseCompliance, PurchaseDeclaration, PurchaseSanitation, Warehouse,
-        PurchaseManufacturingPrice, PurchaseCertificateSOT, PurchaseInvoiceCharge;
+        PurchaseManufacturingPrice, PurchaseCertificateSOT, PurchaseInvoiceCharge, PurchaseInvoiceWholesalePrice;
 
 NAMESPACE PurchaseInvoice;
 
@@ -58,3 +58,6 @@ EXTEND FORM Purchase.userInvoice
     PROPERTIES (i) AFTER toShowWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoice
     PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail SHOWIF toShowRetailMarkupSkuUserInvoice(i) ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
 ;
+
+//-- Оптовая цена берется от цены изг. + трансп. расходы
+overBasePriceUserInvoiceDetail(detail) +=  manufacturingPriceUserInvoiceDetail(detail) (+) chargePriceUserInvoiceDetail(detail);
