@@ -85,7 +85,7 @@ EXTEND FORM compliance
 
 EXTEND DESIGN compliance {
     main {
-        headContainer {
+        propContainer {
             ADD PROPERTY(invoicesCompliance);
         }
 
@@ -215,14 +215,16 @@ EXTEND DESIGN compliance {
 
 EXTEND FORM compliances
 
-    PROPERTIES(c) FORCE GRID isPostedCompliance BEFORE objectClassName(c)
+    PROPERTIES(c) FORCE GRID isPostedCompliance BEFORE numberObject(c)
 
     OBJECTS cd=ComplianceDetail
     PROPERTIES(cd) READONLY numberComplianceDetail, invoicesComplianceDetail, nameComplianceComplianceDetail, quantityComplianceDetail,
                    nameSkuComplianceDetail, quantityCertificatedComplianceDetail, priceCertificatedComplianceDetail, sumDataCertificatedComplianceDetail
     FILTERS complianceComplianceDetail(cd)==c
 ;
-
+EXTEND FORM compliancesDialog
+    PROPERTIES(c) FORCE GRID isPostedCompliance BEFORE numberObject(c)
+;
 //--------------------------------------------- себестоимость --------------------------------------------------------//
 priceComplianceInvoiceDetail 'Сертификация (ед.)' = ABSTRACT NUMERIC[14,2](InvoiceDetail);
 priceComplianceUserInvoiceDetail 'Сертификация (ед.)' = DATA NUMERIC[14,2](UserInvoiceDetail);

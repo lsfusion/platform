@@ -9,11 +9,17 @@ CLASS CompliancePosted 'Проведенный сертификат' : Complianc
 
 @defineNumeratedObjectDefault(Compliance, 'Нумератор для сертификатов', 'СС');
 
-@defineDocumentHeaderTimePrefix(Compliance, ,' создания');
+@defineDocumentHeaderTimePrefix(Compliance, ,' документа');
 dateCertificate(certificate) += dateCompliance(certificate);
 timeCertificate(certificate) += timeCompliance(certificate);
 
-@defineDocumentHeaderTimePrefix(Compliance, to, ' действия');
+@defineDocumentHeaderTimePrefix(Compliance, from, ' с');
+fromDateCertificate(certificate) += fromDateCompliance(certificate);
+fromTimeCertificate(certificate) += fromTimeCompliance(certificate);
+
+toDateCompliance 'Дата по' = DATA DATE(Compliance);
+toTimeCompliance 'Время по' = DATA TIME(Compliance);
+toDateTimeCompliance 'Дата/время по'(compliance) = dateTimeToDateTime(toDateCompliance(compliance), toTimeCompliance(compliance));
 toDateCertificate(certificate) += toDateCompliance(certificate);
 toTimeCertificate(certificate) += toTimeCompliance(certificate);
 
@@ -27,9 +33,9 @@ sumCompliance 'Стоимость услуг' = DATA NUMERIC[14,3](Compliance);
 
 isCompliancedCountrySku 'Необходимость сертификации' = ABSTRACT BOOLEAN(Country, Sku);
 
-descriptionCompliance 'Сертификат соответствия' (compliance) =
-    [FORMULA STRING[100] ' \'Сертификат № \' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
-    (seriesNumberObject(compliance), dateCompliance(compliance), toDateCompliance(compliance));
+descriptionCompliance 'Сертификат соответствия' (compliance) = ustring3SP(string2SP('№', seriesNumberObject(compliance)),
+                                                 string2SP('от', fromDateCompliance(compliance)),
+                                                 string2SP('действует по', toDateCompliance(compliance)));
 
 @defineCertificateObjectBatch(compliance, 'Сертификат соответствия');
 
@@ -44,27 +50,45 @@ CONSTRAINT legalEntityCompliance(compliance) AND stockCompliance(compliance) AND
 
 FORM compliance 'Сертификат соответствия'
     OBJECTS c = Compliance FIXED PANEL
-    PROPERTIES(c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateCompliance, timeCompliance, toDateCompliance, toTimeCompliance,
+    PROPERTIES(c) objectClassName, nameNumeratorObject, numberObject, seriesObject, dateCompliance, timeCompliance,
+                  fromDateCompliance, fromTimeCompliance, toDateCompliance, toTimeCompliance,
                   nameLegalEntityCompliance, nameStockCompliance, sumCompliance
     EDIT Compliance OBJECT c
 ;
 
 DESIGN compliance FROM DEFAULT{
     main{
-        NEW headContainer {
-            childConstraints = TO THE RIGHTBOTTOM;
-            caption = 'Шапка документа';
-            ADD PROPERTY(objectClassName);
-            ADD PROPERTY(nameNumeratorObject);
-            ADD PROPERTY(seriesObject);
-            ADD PROPERTY(numberObject);
-            ADD PROPERTY(dateCompliance);
-            ADD PROPERTY(timeCompliance);
-            ADD PROPERTY(toDateCompliance);
-            ADD PROPERTY(toTimeCompliance);
-            ADD PROPERTY(nameLegalEntityCompliance);
-            ADD PROPERTY(nameStockCompliance);
-            ADD PROPERTY(sumCompliance);
+        NEW topContainer{
+            childConstraints = TO THE BOTTOM;
+            NEW headContainer {
+                caption = 'Шапка документа';
+                childConstraints = TO THE RIGHT;
+                ADD PROPERTY (objectClassName);
+                ADD PROPERTY (nameNumeratorObject);
+                ADD PROPERTY (numberObject);
+                ADD PROPERTY (seriesObject);
+                ADD PROPERTY (dateCompliance);
+                ADD PROPERTY (timeCompliance);
+
+            }
+            NEW row {
+                childConstraints = TO THE RIGHTBOTTOM;
+                NEW timeContainer{
+                    caption = 'Период действия';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY (fromDateCompliance);
+                    ADD PROPERTY (fromTimeCompliance);
+                    ADD PROPERTY (toDateCompliance);
+                    ADD PROPERTY (toTimeCompliance);
+                }
+                NEW propContainer{
+                    caption = 'Параметры документа';
+                    childConstraints = TO THE RIGHTBOTTOM;
+                    ADD PROPERTY(nameLegalEntityCompliance);
+                    ADD PROPERTY(nameStockCompliance);
+                    ADD PROPERTY(sumCompliance);
+                }
+            }
         }
     }
     ADD functions.box;
@@ -72,14 +96,17 @@ DESIGN compliance FROM DEFAULT{
 
 FORM compliances 'Сертификаты соответствия'
     OBJECTS c = Compliance
-    PROPERTIES(c) READONLY objectClassName, numberObject, seriesObject, dateCompliance, timeCompliance, toDateCompliance,
-                  toTimeCompliance, nameLegalEntityCompliance, nameStockCompliance, sumCompliance //, textCompliance
+    PROPERTIES(c) READONLY numberObject, seriesObject, dateCompliance, timeCompliance,
+                  fromDateCompliance, fromTimeCompliance, toDateCompliance, toTimeCompliance,
+                  nameLegalEntityCompliance, nameStockCompliance, sumCompliance, objectClassName
     PROPERTIES(c) ADDFORM, EDITFORM, delete
 ;
 
 FORM compliancesDialog 'Сертификаты соответствия'
     OBJECTS c = Compliance
-    PROPERTIES(c) READONLY seriesNumberObject, dateTimeCompliance, toDateTimeCompliance, nameLegalEntityCompliance, nameStockCompliance, sumCompliance//, textCompliance
+    PROPERTIES(c) READONLY numberObject, seriesObject, dateCompliance, timeCompliance,
+                  fromDateCompliance, fromTimeCompliance, toDateCompliance, toTimeCompliance,
+                  nameLegalEntityCompliance, nameStockCompliance, objectClassName
     PROPERTIES(c) ADDFORM, EDITFORM
     DIALOG Compliance OBJECT c
 ;

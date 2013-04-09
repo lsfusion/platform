@@ -5,16 +5,17 @@ REQUIRE Document, Stock;
 CLASS ABSTRACT Certificate 'Документ качества';
 TABLE certificate(Certificate);
 
-@defineDocumentAbstractHeaderTimePrefix(Certificate, ,' создания');
-@defineDocumentAbstractHeaderTimePrefix(Certificate, to, ' действия');
+@defineDocumentAbstractHeaderTimePrefix(Certificate, ,' документа');
+@defineDocumentAbstractHeaderTimePrefix(Certificate, from, ' с');
+@defineDocumentAbstractHeaderTimePrefix(Certificate, to, ' по');
 
 numberCertificate 'Номер' = ABSTRACT STRING[18] (Certificate) IN numberedGroup PERSISTENT MINCHARWIDTH 7;
 seriesCertificate 'Серия' = ABSTRACT STRING[2] (Certificate) IN numberedGroup PERSISTENT FIXEDCHARWIDTH 3;
 seriesNumberCertificate 'Серия/Номер' (certificate) = ustring2(seriesCertificate(certificate), numberCertificate(certificate)) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
 
-descriptionCertificate 'Документ качества' (certificate) =
-    [FORMULA STRING[100] ' \'№\' || CAST($1 AS TEXT) ||  \' от \' || CAST($2 AS TEXT)||  \' действует по \' || CAST($3 AS TEXT)']
-    (seriesNumberCertificate(certificate), dateCertificate(certificate), toDateCertificate(certificate));
+descriptionCertificate 'Документ качества' (certificate) = ustring3SP(string2SP('№ ', seriesNumberCertificate(certificate)),
+                                                 string2SP('от ', fromDateCertificate(certificate)),
+                                                 string2SP('действует по ', toDateCertificate(certificate)));
 
 // -------------------------- Подготовка документов под расширение сертификатами -------------------- //
 
