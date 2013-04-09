@@ -229,6 +229,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     // если колонка появилась через showif без обновления данных
                     if (!updatedProperties.containsKey(property)) {
                         updatedProperties.put(property, TRUE);
+                        dataUpdated = true; // если кроме появления этой колонки в гриде ничего не поменялось, всё равно нужно обновить данные и подсветки
                     }
                 }
 
