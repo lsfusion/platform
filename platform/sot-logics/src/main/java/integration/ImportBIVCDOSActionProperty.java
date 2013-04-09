@@ -515,7 +515,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         if (textCompliance == null || textCompliance.isEmpty())
                             textCompliance = extraCompliance;
                         else
-                            textCompliance += "\n" + extraCompliance;
+                            textCompliance += " " + extraCompliance;
                     }
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
