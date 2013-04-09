@@ -99,7 +99,6 @@ sessionObj() = DATA SESSION Object ();
 // [JOIN] (name | '[' propertyDefinition ']') (param1, ..., paramN)
 storeName 'Склад' (document) = JOIN name(store(document)) IN base;
 storeSizeName = name(storeSize(store)) IN base; // можем не указывать именованные параметры слева от '=', но все равно пользоваться ими
-objectIsStore = [IS Store](object);             // аналог: object IS Store
 
 // IS, AS
 // Expression syntax:
@@ -1168,7 +1167,23 @@ FORM newTestForm 'Test Exception'
  PROPERTIES(x) ADDOBJ, newtf, ottf
 ;
 
+CLASS MA : Named;
+CLASS MB : Named;
+
+MBforMA(ma) = DATA MB (MA);
+countMA(ma) = DATA INTEGER (MA);
+countMB(mb) = DATA INTEGER (MB);
+addMObj() = ACTION ADDOBJ MB WHERE a IS MA AND countMA(a) > 5 TO MBforMA(a);
+changeCl() = ACTION CHANGECLASS a TO MB WHERE countMA(a) > 6;
+
+FORM testMultipleA
+    OBJECTS a=MA, b=MB
+    PROPERTIES name(a), name(b), countMA(a), countMB(b), MBforMA(a), addMObj(), changeCl()
+;
+
+
 NAVIGATOR {
     ADD fibForm;
     ADD newTestForm;
+    ADD testMultipleA;
 }

@@ -1011,7 +1011,6 @@ contextIndependentPD[boolean innerPD] returns [LP property]
 	|	abstractActionDef=abstractActionPropertyDefinition { $property = $abstractActionDef.property; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; }
-	|	typeDef=typePropertyDefinition { $property = $typeDef.property; }
 	;
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property]
