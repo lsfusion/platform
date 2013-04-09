@@ -19,6 +19,9 @@ public class UserInvoiceDetail {
     public String supplierWarehouse;
     public Double price;
     public Double chargePrice;
+    public Double manufacturingPrice;
+    public Double wholesalePrice;
+    public Double wholesaleMarkup;
     public Double retailPrice;
     public Double retailMarkup;
     public String textCompliance;
@@ -27,8 +30,10 @@ public class UserInvoiceDetail {
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
                              Date date, String item, Double quantity, String supplier, String warehouse,
-                             String supplierWarehouse, Double price, Double chargePrice, Double retailPrice,
-                             Double retailMarkup, String textCompliance, String contractID) {
+                             String supplierWarehouse, Double price, Double chargePrice,
+                             Double manufacturingPrice,
+                             Double wholesalePrice, Double wholesaleMarkup,
+                             Double retailPrice, Double retailMarkup, String textCompliance, String contractID) {
         this.number = number;
         this.series = series;
         this.createPricing = createPricing;
@@ -42,6 +47,9 @@ public class UserInvoiceDetail {
         this.supplierWarehouse = supplierWarehouse;
         this.price = price;
         this.chargePrice = chargePrice;
+        this.manufacturingPrice = manufacturingPrice;
+        this.wholesalePrice = wholesalePrice;
+        this.wholesaleMarkup = wholesaleMarkup;
         this.retailPrice = retailPrice;
         this.retailMarkup = retailMarkup;
         this.textCompliance = textCompliance;

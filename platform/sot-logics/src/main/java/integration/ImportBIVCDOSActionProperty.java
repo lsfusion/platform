@@ -89,7 +89,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
                 importData.setImportUserInvoicesPosted(getLCP("importBIVCDOSUserInvoicesPosted").read(context) != null);
 
-                new ImportActionProperty(LM, importData, context).makeImport();
+                ImportActionProperty imp = new ImportActionProperty(LM, importData, context);
+                imp.showManufacturingPrice = true;
+                imp.showWholesalePrice = true;
+                imp.makeImport();
 
                 if (getLCP("importBIVCDOSMag2").read(context) != null)
                     importLegalEntityStock(context, path + "//MAGP");
@@ -283,6 +286,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String uomID = null;
         Date date = null;
         String name = null;
+        String nameID = null;
         String wareID = null;
         Double baseMarkup = null;
         Double retailVAT = null;
@@ -302,6 +306,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String dateField = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     date = dateField == null ? null : new Date(DateUtils.parseDate(dateField, new String[]{"ddmmyy"}).getTime());
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
+                    nameID = name;
                     packAmount = null;
                     Pattern rPack = Pattern.compile(".*(?:\\\\|\\/)(\\d+)(?:\\\\|\\/)?");
                     Matcher mPack = rPack.matcher(name);
@@ -335,7 +340,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         groupID = "0" + groupID;
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
-                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    String itemID = /*pnt13 + pnt48*/groupID + ":" + nameID + uomFullName;
                     if (!groupID.startsWith("929"))
                         itemsList.add(new Item(itemID, groupID, name,
                                 uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
@@ -365,6 +370,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
     private List<UserInvoiceDetail> importUserInvoices(String swtpPath, String ostPath, String sediPath, Date startDate, Integer numberOfItems,
                                                        ExecutionContext context) throws IOException, ParseException {
 
+        Set<String> suppliers = new HashSet<String>();
         Map<String, String[]> suppliersMap = new HashMap<String, String[]>();
         Map<String, String[]> suppliersFastMap = new HashMap<String, String[]>();
 
@@ -396,8 +402,10 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                             if (name.contains(ownership))
                                 name = name.replace(ownership, "");
                         }
-                        if (!suppliersMap.containsKey(name))
+                        if (!suppliers.contains(warehouseID)) {
+                            suppliers.add(warehouseID);
                             suppliersMap.put(name, new String[]{legalEntityID, "S" + warehouseID});
+                        }
                     }
                 }
             }
@@ -420,6 +428,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         Double quantity = null;
         Double price = null;
         Double chargePrice = null;
+        Double manufacturingPrice = null;
+        Double wholesalePrice = null;
+        Double wholesaleMarkup = null;
         String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && userInvoiceDetailsList.size() >= numberOfItems)
@@ -445,6 +456,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
                     String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
                     if (supplierString != null && !supplierString.isEmpty()) {
+                        textCompliance = supplierString;
                         supplierID = null;
                         supplierWarehouseID = null;
                         if (suppliersFastMap.containsKey(supplierString)) {
@@ -483,15 +495,28 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
                     sumPrice = sumPrice == null ? null : ((double) (Math.round(sumPrice * 100))) / 100;
-                    String chargePricePercent = splittedLine.length > 19 ? (splittedLine[19].endsWith(".00") ?
-                            splittedLine[19].substring(0, splittedLine[19].length() - 3) : splittedLine[19]) : "";
+
+                    Double chargePricePercent = splittedLine.length > 19 ? readPercent(splittedLine[19]) : 0.0;
                     try {
-                        chargePrice = chargePricePercent.trim().isEmpty() ? null : ((sumPrice * Double.parseDouble(chargePricePercent)) / (100 + Double.parseDouble(chargePricePercent))) /*sumPrice * Double.parseDouble(chargePricePercent) / 100*/;
-                        chargePrice = chargePrice == null ? null : ((double) (Math.round(chargePrice * 100))) / 100;
+                        chargePrice = (double) Math.round((sumPrice * chargePricePercent) / (100 + chargePricePercent) * 100) / 100;
                     } catch (NumberFormatException e) {
-                        chargePrice = null;
+                        chargePrice = 0.0;
                     }
-                    price = chargePricePercent.trim().isEmpty() ? sumPrice : (sumPrice - (chargePrice == null ? 0 : chargePrice));
+                    manufacturingPrice = sumPrice - chargePrice;
+
+                    Double manufacturingPercent = splittedLine.length > 17 ? readPercent(splittedLine[17]) : 0.0;
+                    price = manufacturingPrice * (100 - manufacturingPercent) / 100;
+
+                    wholesaleMarkup = splittedLine.length > 15 ? readPercent(splittedLine[15]) : 0.0;
+                    wholesalePrice = sumPrice * (100 + wholesaleMarkup) / 100;
+                } else if ("1".equals(extra)) {
+                    String extraCompliance = reader.readLine();
+                    if (extraCompliance != null && !extraCompliance.isEmpty()) {
+                        if (textCompliance == null || textCompliance.isEmpty())
+                            textCompliance = extraCompliance;
+                        else
+                            textCompliance += "\n" + extraCompliance;
+                    }
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
                     if (groupID.split(":")[0].length() == 2)
@@ -502,7 +527,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID)) {
                         userInvoiceDetailsList.add(new UserInvoiceDetail(supplierWarehouseID + "/" + warehouse + "/" + dateField,
                                 "AA", null, true, supplierWarehouseID + "/" + warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
-                                quantity, supplierID, warehouse, supplierWarehouseID, price, chargePrice, null, null,
+                                quantity, supplierID, warehouse, supplierWarehouseID, price, chargePrice, manufacturingPrice, wholesalePrice, wholesaleMarkup, null, null,
                                 textCompliance, null));
                         Double sum = ((double) (Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
                         Double subtotal = totalSumWarehouse.get(warehouse);
@@ -520,6 +545,18 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             message += entry.getKey() + ": " + NumberFormat.getNumberInstance().format(entry.getValue()) + "\r\n";
         context.requestUserInteraction(new MessageClientAction(message, "Общая сумма"));
         return userInvoiceDetailsList;
+    }
+
+    private Double readPercent(String percentString) {
+        if (percentString == null) return null;
+        if (percentString.endsWith(".00"))
+            percentString = percentString.substring(0, percentString.length() - 3);
+        Double result = 0.0;
+        try {
+            result = Double.parseDouble(percentString);
+        } catch (Exception e) {
+        }
+        return result;
     }
 
     private List<WarehouseGroup> importWarehouseGroups() {
@@ -779,8 +816,6 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
             props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(legalEntityKey)));
             props.add(new ImportProperty(warehouseIDField, LM.findLCPByCompoundName("sidExternalizable").getMapping(warehouseKey)));
-            props.add(new ImportProperty(legalEntityIDField, LM.findLCPByCompoundName("legalEntityStock").getMapping(warehouseKey),
-                    LM.object(LM.findClassByCompoundName("LegalEntity")).getMapping(legalEntityKey)));
             props.add(new ImportProperty(dataField, LM.findLCPByCompoundName("mag2LegalEntityStock").getMapping(legalEntityKey, warehouseKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(legalEntityIDField, warehouseIDField,

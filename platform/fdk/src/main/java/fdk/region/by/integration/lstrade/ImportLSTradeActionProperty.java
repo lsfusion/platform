@@ -341,7 +341,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
 
             if ((seriesNumber.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
                 data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
-                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null,
+                        quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null, null, null, null,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail, null, contractID.isEmpty() ? null : contractID));
         }
         return data;

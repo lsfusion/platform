@@ -31,7 +31,9 @@ REQUIRE System,
         WareInvoice,
         WareItem,
         WarePurchaseInvoice,
-        WriteOffItem;
+        WriteOffItem,
+        PurchaseInvoiceWholesalePrice,
+        PurchaseManufacturingPrice;
 
 EXTEND CLASS Bank : Externalizable;
 EXTEND CLASS Barcode : Externalizable;

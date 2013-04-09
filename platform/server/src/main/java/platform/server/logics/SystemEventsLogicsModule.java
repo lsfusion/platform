@@ -116,7 +116,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         quantityRemovedClassesSession = getLCPByName("quantityRemovedClassesSession");
         quantityChangedClassesSession = getLCPByName("quantityChangedClassesSession");
         changesSession = getLCPByName("changesSession");
-        baseLM.objectClassName.makeLoggable(this, true);
+//        baseLM.objectClassName.makeLoggable(this, true);
     }
 
     public void logException(BusinessLogics bl, String message, String errorType, String erTrace, DataObject user, String clientName, boolean client) throws SQLException {
