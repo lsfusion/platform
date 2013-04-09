@@ -429,9 +429,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             logger.info("Showing dependencies.");
             showDependencies();
 
-            logger.info("Finalizing properties.");
+            logger.info("Building check property list.");
             getPropertyList(true);
-            for(Property property : getPropertyList()) {
+            logger.info("Building property list.");
+            ImOrderSet<Property> propertyList = getPropertyList();
+            logger.info("Finalizing property list.");
+            for(Property property : propertyList) {
                 property.finalizeAroundInit();
             }
 
@@ -508,9 +511,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 if(property instanceof ListActionProperty && ((ListActionProperty)property).isAbstract())
                     property.finalizeInit();
 
-                ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
-                for(int i=0,size=change.size();i<size;i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                if(!((ActionProperty)property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+                    ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
+                    for(int i=0,size=change.size();i<size;i++) // вообще говоря DataProperty и IsClassProperty
+                        change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                }
             }
     }
 

@@ -1254,6 +1254,7 @@ specialPropertyName
 	| 	('CHANGED')
 	|   ('CHANGEDSET')
 	| 	('ASSIGNED')
+	| 	('DROPPED')
     | 	('CLASS')
 	;
 

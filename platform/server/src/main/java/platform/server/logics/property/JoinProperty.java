@@ -3,10 +3,7 @@ package platform.server.logics.property;
 import platform.base.SFunctionSet;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
-import platform.base.col.interfaces.immutable.ImCol;
-import platform.base.col.interfaces.immutable.ImMap;
-import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -341,5 +338,14 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 "drillDown" + capitalize(getSID()) + "Form",
                 getString("logics.property.drilldown.form.join"), this, BL
         );
+    }
+
+    @Override
+    public ActionPropertyMapImplement<?, Interface> getSetNotNullAction(boolean notNull) {
+        ImRevMap<T,Interface> identityMap = PropertyInterface.getIdentityMap(implement.mapping);
+        if(identityMap == null)
+            return super.getSetNotNullAction(notNull);
+
+        return implement.property.getSetNotNullAction(notNull).map(identityMap);
     }
 }

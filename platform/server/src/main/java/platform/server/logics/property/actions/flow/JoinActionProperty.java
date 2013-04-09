@@ -1,13 +1,10 @@
 package platform.server.logics.property.actions.flow;
 
-import platform.base.BaseUtils;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.MSet;
-import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.server.caches.IdentityInstanceLazy;
-import platform.server.caches.IdentityLazy;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -90,11 +87,10 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         if(action.property.hasFlow(ChangeFlowType.RETURN))
             return super.getList();
         
-        MAddSet<PropertyInterface> checked = SetFact.mAddSet();
-        for(CalcPropertyInterfaceImplement<PropertyInterface> propImplement : action.mapping.valueIt())
-            if(!(propImplement instanceof PropertyInterface && checked.add((PropertyInterface) propImplement)))
-                return super.getList();
+        ImRevMap<T, PropertyInterface> identityMap = PropertyInterface.getIdentityMap(action.mapping);
+        if(identityMap == null)
+            return super.getList();
 
-        return DerivedProperty.mapActionImplements(BaseUtils.<ImRevMap<T, PropertyInterface>>immutableCast(action.mapping), action.property.getList());
+        return DerivedProperty.mapActionImplements(identityMap, action.property.getList());
     }
 }

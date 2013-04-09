@@ -1,5 +1,6 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
 import platform.base.col.ListFact;
 import platform.base.col.MapFact;
 import platform.base.col.SetFact;
@@ -8,6 +9,7 @@ import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
 import platform.base.col.interfaces.mutable.MSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.identity.IdentityObject;
 import platform.server.caches.LazyInit;
 import platform.server.classes.ValueClass;
@@ -41,6 +43,14 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public PropertyInterface(int ID) {
         this.ID = ID;
+    }
+
+    public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, CalcPropertyInterfaceImplement<P>> mapping) {
+        MAddSet<PropertyInterface> checked = SetFact.mAddSet();
+        for(CalcPropertyInterfaceImplement<P> propImplement : mapping.valueIt())
+            if(!(propImplement instanceof PropertyInterface && !checked.add((PropertyInterface) propImplement)))
+                return null;
+        return BaseUtils.immutableCast(mapping.toRevExclMap());
     }
 
     public String toString() {
