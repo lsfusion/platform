@@ -10,7 +10,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormEnvironment;
-import platform.server.logics.property.actions.SystemEvent;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.session.DataSession;
 
@@ -49,7 +48,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, boolean changedSet, Event event, LCP<P> lp, Integer... mapping) {
-        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.LEFTCHANGE, event, lp, mapping);
+        setEventAction(lm, changedSet ? IncrementType.SET : IncrementType.SETCHANGED, event, lp, mapping);
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {

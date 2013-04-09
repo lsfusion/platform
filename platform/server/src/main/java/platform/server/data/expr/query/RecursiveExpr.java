@@ -173,7 +173,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             return NULL;
 
         RecursiveExpr expr = new RecursiveExpr(new Query(mapIterate, initial, step, cyclePossible), restGroup.result);
-        if(expr.getInnerJoin().getFullStepWhere().isFalse()) // чтобы кэшировалось
+        if(expr.getInnerJoin().isOnlyInitial()) // чтобы кэшировалось
             return GroupExpr.create(restGroup.result.keys().toMap(), initial, GroupType.SUM, restGroup.result);
 
         return BaseExpr.create(expr);

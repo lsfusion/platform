@@ -30,7 +30,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
     SET longitudePOI(POI) <- readLongitude();
 
 }
-WHEN SESSION (CHANGEDSET(countryPOI(POI)) OR CHANGEDSET(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
+WHEN SESSION (SETCHANGED(countryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
 
 // Показать на карте одну точку
 showOnMap 'Показать на карте'= ACTION CUSTOM 'fdk.utils.geo.ShowOnMapActionProperty';

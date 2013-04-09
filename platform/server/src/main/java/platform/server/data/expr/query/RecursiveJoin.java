@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.base.Result;
 import platform.base.TwinImmutableObject;
 import platform.base.col.MapFact;
@@ -8,6 +9,7 @@ import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.base.col.interfaces.immutable.ImSet;
+import platform.base.col.interfaces.mutable.add.MAddSet;
 import platform.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import platform.base.col.interfaces.mutable.mapvalue.GetValue;
 import platform.server.caches.AbstractOuterContext;
@@ -114,36 +116,44 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
         return where.getClassWhere().filterInclKeys(group.keys());
     }
 
-    @IdentityLazy
     public ClassExprWhere getClassWhere() {
-        return getInitialClassWhere().or(getClassWhere(getFullStepWhere()));
+        return getRecClassesStats().first.first;
     }
 
-    @IdentityLazy
-    public ClassExprWhere getInitialClassWhere() {
-        return getClassWhere(getInitialWhere());
+    public StatKeys<KeyExpr> getStatKeys() {
+        return getRecClassesStats().first.second;
+    }
+
+    public boolean isOnlyInitial() {
+        return getRecClassesStats().second;
     }
 
     private StatKeys<KeyExpr> getStatKeys(Where where) {
         return where.getStatKeys(group.keys());
     }
 
+    // теоретически можно было бы разными прогонами, но тогда функциональщиной пришлось бы заниматься, плюс непонятно как подставлять друг другу статистику / классы
     @IdentityLazy
-    public StatKeys<KeyExpr> getInitialStatKeys() {
-        return getStatKeys(getInitialWhere());
+    private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats() {
+        Pair<ClassExprWhere, StatKeys<KeyExpr>> recursive = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(getClassWhere(getInitialWhere()), getStatKeys(getInitialWhere()));
+        Pair<ClassExprWhere, StatKeys<KeyExpr>> result = recursive;
+
+        Where stepWhere = getStepWhere();
+        boolean onlyInitial = true;
+
+        MAddSet<Pair<ClassExprWhere, StatKeys<KeyExpr>>> mChecked = SetFact.mAddSet();
+
+        while(!recursive.first.isFalse() && !mChecked.add(recursive)) {
+            Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", new Result<ImRevMap<String, KeyExpr>>(),
+                    recursive.first, recursive.second).getWhere());
+            if(!recWhere.isFalse()) // значит будет еще итерация
+                onlyInitial = false;
+            recursive = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(getClassWhere(recWhere), getStatKeys(recWhere));
+            result = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(result.first.or(recursive.first), result.second.or(recursive.second));
+        }
+        return new Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean>(result, onlyInitial);
     }
 
-    @IdentityLazy
-    public StatKeys<KeyExpr> getStatKeys() {
-        return getInitialStatKeys().or(getStatKeys(getFullStepWhere()));
-    }
-
-    @IdentityLazy
-    public Where getFullStepWhere() {
-        return getStepWhere().and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", new Result<ImRevMap<String, KeyExpr>>(),
-                getInitialClassWhere(), getInitialStatKeys()).getWhere());
-    }
-    
     public Join<String> getRecJoin(ImMap<String, Type> props, String name, Result<ImRevMap<String, KeyExpr>> keys) {
         return getRecJoin(props, name, keys, getClassWhere(), getStatKeys());
     }

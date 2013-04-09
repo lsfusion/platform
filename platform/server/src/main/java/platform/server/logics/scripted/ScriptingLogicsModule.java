@@ -1558,9 +1558,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (propType.equals("PREV")) {
             newProp = addOldProp((LCP) property.property);
         } else if (propType.equals("CHANGED")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.CHANGE);
+            newProp = addCHProp((LCP) property.property, IncrementType.CHANGED);
         } else if (propType.equals("CHANGEDSET")) {
-            newProp = addCHProp((LCP) property.property, IncrementType.CHANGESET);
+            newProp = addCHProp((LCP) property.property, IncrementType.CHANGEDSET);
+        } else if (propType.equals("SETCHANGED")) {
+            newProp = addCHProp((LCP) property.property, IncrementType.SETCHANGED);
         } else if (propType.equals("ASSIGNED")) {
             newProp = addCHProp((LCP) property.property, IncrementType.SET);
         } else if (propType.equals("DROPPED")) {

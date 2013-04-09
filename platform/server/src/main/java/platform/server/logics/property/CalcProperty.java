@@ -286,7 +286,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         Where forceWhere;
         switch(incrementType) {
-            case CHANGESET:
+            case CHANGEDSET:
                 forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.getWhere().and(prevExpr.getWhere()).not());
                 break;
             case SET:
@@ -295,10 +295,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             case DROP:
                 forceWhere = newExpr.getWhere().not().and(prevExpr.getWhere());
                 break;
-            case CHANGE:
+            case CHANGED:
                 forceWhere = newExpr.getWhere().or(prevExpr.getWhere()).and(newExpr.compare(prevExpr, Compare.EQUALS).not());
                 break;
-            case LEFTCHANGE:
+            case SETCHANGED:
                 forceWhere = newExpr.getWhere().and(newExpr.compare(prevExpr, Compare.EQUALS).not());
                 break;
             case SUSPICION:
@@ -664,7 +664,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                         return value.mapChanged(incrementType);
                     }}).mergeCol(CalcPropertyMapImplement.filter(valueImplement.mapping.values()).mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
                     public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
-                        return value.mapChanged(IncrementType.CHANGE);
+                        return value.mapChanged(IncrementType.CHANGED);
                     }}));
 
         CalcPropertyMapImplement<?, T> where;

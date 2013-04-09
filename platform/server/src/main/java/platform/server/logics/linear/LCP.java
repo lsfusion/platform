@@ -167,7 +167,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         int intValue = valueProperty.listInterfaces.size();
         ImList<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
-        property.setEventChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.LEFTCHANGE, mapCalcImplement(valueProperty, defImplements.subList(0, intValue)),
+        property.setEventChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.SETCHANGED, mapCalcImplement(valueProperty, defImplements.subList(0, intValue)),
                 BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
                 BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())).getCol());
     }

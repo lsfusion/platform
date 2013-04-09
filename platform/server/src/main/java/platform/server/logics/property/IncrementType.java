@@ -1,5 +1,5 @@
 package platform.server.logics.property;
 
 public enum IncrementType {
-    SUSPICION, CHANGESET, SET, DROP, CHANGE, LEFTCHANGE
+    SUSPICION, CHANGEDSET, SET, DROP, CHANGED, SETCHANGED
 }
