@@ -61,7 +61,7 @@ FORM warehouse 'Склад'
 
     OBJECTS           w=Warehouse FIXED PANEL
     PROPERTIES(w)     name, nameWarehouseGroupWarehouse, addressWarehouse, nameLegalEntityWarehouse, nameWriteOffCommitteeStock,
-                      explicitBatchLedgerWarehouse, latitudePOI, longitudePOI, showOnMapPOI, quantityDaysCloseWarehouse
+                      explicitBatchLedgerWarehouse, latitudeWarehouse, longitudeWarehouse, showOnMapPOI, quantityDaysCloseWarehouse
     ORDER BY          name
 
     OBJECTS           e = Employee

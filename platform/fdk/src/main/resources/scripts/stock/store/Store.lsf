@@ -121,7 +121,7 @@ longitudeDepartmentStore 'Координата Y' (departmentStore) = longitudeS
 latitudePOI (departmentStore) += latitudeDepartmentStore(departmentStore);
 longitudePOI (departmentStore) += longitudeDepartmentStore(departmentStore);
 
-explicitBatchLedgerDepartmentStore 'Партионный учет' = DATA BOOLEAN (DepartmentStore);
+explicitBatchLedgerDepartmentStore 'Партионный учет' = DATA BOOLEAN (DepartmentStore)IN  bookkeepingGroup;
 explicitBatchLedgerStock(stock) += explicitBatchLedgerDepartmentStore(stock);
 
 regionStock(stock) += regionStore(storeDepartmentStore(stock));
@@ -148,7 +148,7 @@ inChainStoresStoreTypeStoreDepartmentStore (chainStores, storeType, store, depar
 FORM departmentStore 'Отдел магазина'
     OBJECTS d = DepartmentStore FIXED PANEL
     PROPERTIES(d) nameDep=name, nameStoreDepartmentStore, tradingSquareDepartmentStore, nameWriteOffCommitteeStock,
-                  explicitBatchLedgerStock, numberCashAccountDepartmentStore, quantityDaysCloseDepartmentStore
+                  explicitBatchLedgerDepartmentStore, numberCashAccountDepartmentStore, quantityDaysCloseDepartmentStore
 
     OBJECTS e = Employee
     PROPERTIES(e) READONLY firstNameContact, lastNameContact
@@ -224,7 +224,7 @@ DESIGN departmentStores FROM DEFAULT {
 FORM store 'Магазин'
     OBJECTS s=Store FIXED PANEL
     PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, numberBankAccountStore,
-                  nameRegionStore, latitudePOI, longitudePOI, showOnMapPOI
+                  nameRegionStore, latitudeStore, longitudeStore, showOnMapPOI
 
     OBJECTS d=DepartmentStore
     PROPERTIES(d) READONLY objectClassName, name, tradingSquareDepartmentStore
