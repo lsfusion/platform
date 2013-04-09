@@ -1233,13 +1233,13 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
 
     ON SESSION FORMS userInvoice PREVSTART pricePriceListTypeSkuStockDateTime, pricePriceListTypeBatchStockDateTime { // цены берем на начало сессии, а не этого event'а
         LOCAL changedPriceListType = BOOLEAN (###detail);
-        SET changedPriceListType(detail) <- TRUE IF priceListType###detail(detail) AND
-                                                    skuUserInvoiceDetail(detail) AND
-                                            (CHANGED(priceListType###detail(detail)) OR
-                                             CHANGED(batch###detail(detail)) OR
-                                             CHANGED(sku###detail(detail)) OR
-                                             CHANGED(stockProp###detail(detail)) OR
-                                             CHANGED(dateTime###detail(detail)));
+        SET changedPriceListType(d) <- TRUE IF priceListType###detail(d) AND
+                                               sku###detail(d) AND
+                                            (CHANGED(priceListType###detail(d)) OR
+                                             CHANGED(batch###detail(d)) OR
+                                             CHANGED(sku###detail(d)) OR
+                                             CHANGED(stockProp###detail(d)) OR
+                                             CHANGED(dateTime###detail(d)));
 
         FOR [GROUP MAX(changedPriceListType(detail)) BY priceListType###detail(detail)](priceListType) NOINLINE DO {
             SET price###detail(detail) <- prevListPriceMVAT###detail (priceListType, detail)

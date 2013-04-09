@@ -197,7 +197,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     @defineDocumentDetailInvoicePriceVATOnChange(userOrder);
 
     @defineDocumentInterfacePriceListType(order); // объявляем вид цены
-    @deriveDocumentDetailPriceListTypeAgreement(order); // записываем вид цены из соглашения
+    @deriveDocumentDetailPriceListTypeAgreement(userOrder); // записываем вид цены из соглашения
     @deriveDocumentDetailPricePriceListTypeVAT (userOrder, stockProp); // записываем цены с НДС и без НДС на основе priceListType
 
     // суммма без НДС

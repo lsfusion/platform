@@ -161,7 +161,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
     @defineDocumentDetailInvoicePriceVATOnChange(userInvoice);
 
     @defineDocumentInterfacePriceListType(invoice); // объявляем вид цены
-    @deriveDocumentDetailPriceListTypeAgreement(invoice); // записываем вид цены из соглашения
+    @deriveDocumentDetailPriceListTypeAgreement(userInvoice); // записываем вид цены из соглашения
 //    @deriveDocumentDetailPricePriceListTypeVAT (userInvoice, stockProp); // записываем цены с НДС и без НДС на основе priceListType
 
     @defineDocumentInterfaceDetailDataSum(invoice); // объявляем сумму без НДС

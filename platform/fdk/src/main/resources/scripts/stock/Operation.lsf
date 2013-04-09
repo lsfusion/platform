@@ -22,23 +22,26 @@ META defineOperation(postfix)
         EDIT Operation OBJECT o
     ;
 
-    DESIGN operation FROM DEFAULT{
-        NEW topContainer{
-            type = SPLITV;
-            NEW headContainer{
-                childConstraints = TO THE RIGHT;
-                NEW propertyContainer{
-                    childConstraints = TO THE BOTTOM;
-                    caption = 'Параметры';
-                    ADD PROPERTY(name);
+    DESIGN operation FROM DEFAULT {
+        main {
+            preferredSize = (1024, 768);
+            NEW topContainer{
+                type = SPLITV;
+                NEW headContainer{
+                    childConstraints = TO THE RIGHT;
+                    NEW propertyContainer{
+                        childConstraints = TO THE BOTTOM;
+                        caption = 'Параметры';
+                        ADD PROPERTY(name);
+                    }
+                    ADD o.historyGroup;
                 }
-                ADD o.historyGroup;
+                NEW tabContainer{
+                    type = TABBED;
+                }
             }
-            NEW tabContainer{
-                type = TABBED;
-            }
+            ADD functions.box;
         }
-        ADD functions.box;
     }
 
     FORM operations 'Операции' TITLE 'Операции'##postfix

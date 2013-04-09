@@ -37,9 +37,8 @@ changeWholesalePriceUserInvoiceDetail = ACTION (detail) {
     REQUEST NUMERIC[14,2] INPUT;
     IF requestedNumeric() THEN {
         SET wholesalePriceUserInvoiceDetail(detail) <- requestedNumeric();
-        SET wholesaleMarkupUserInvoiceDetail(detail) <- calcWholesaleMarkupUserInvoiceDetail(detail) WHERE calcWholesaleMarkupUserInvoiceDetail(detail);
-    }
-    ELSE {
+        SET wholesaleMarkupUserInvoiceDetail(detail) <- calcWholesaleMarkupUserInvoiceDetail(detail);
+    } ELSE {
         SET wholesalePriceUserInvoiceDetail(detail) <- NULL;
     }
 }
@@ -48,22 +47,11 @@ calcWholesalePriceUserInvoiceDetail(detail)  = roundPriceCurrency([X*(Y+100)/100
     basePriceUserInvoiceDetail(detail),
     wholesaleMarkupUserInvoiceDetail(detail)),currencyUserInvoiceDetail(detail));
 
-changeWholesaleMarkupUserInvoiceDetail = ACTION (detail) {
-    REQUEST NUMERIC[8,3] INPUT;
-    IF requestedNumeric() THEN {
-        SET wholesaleMarkupUserInvoiceDetail(detail) <- requestedNumeric();
-        SET wholesalePriceUserInvoiceDetail(detail) <- calcWholesalePriceUserInvoiceDetail(detail) WHERE calcWholesalePriceUserInvoiceDetail(detail);
-    }
-    ELSE {
-        SET wholesaleMarkupUserInvoiceDetail(detail) <- NULL;
-    }
-}
-
 backgroundWholesaleInvoice 'Цвет' (invoice) = RGB(238, 250, 200) IF invoice IS Invoice;
 
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundWholesaleInvoice(i) toShowWholesalePriceUserInvoice, nameWholesaleCalcPriceListTypeUserInvoice SHOWIF toShowWholesalePriceUserInvoice(i)
-    PROPERTIES(d) BACKGROUND backgroundWholesaleInvoice(i) SHOWIF toShowWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail ON CHANGE changeWholesaleMarkupUserInvoiceDetail(d),
+    PROPERTIES(d) BACKGROUND backgroundWholesaleInvoice(i) SHOWIF toShowWholesalePriceUserInvoice(i) BEFORE delete(d) wholesaleMarkupUserInvoiceDetail,
                   wholesalePriceUserInvoiceDetail ON CHANGE changeWholesalePriceUserInvoiceDetail(d)
 ;
 EXTEND FORM invoices

@@ -197,15 +197,16 @@ END
 
 
 META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
-       priceListType###user###detail(detail) <- IF agreement###user###object(object###detail(detail))
-                                                THEN priceListTypeAgreementSkuOver(agreement###user###object(object###detail(detail)), sku###user###detail(detail))
-                                                ELSE priceListType###user###object(object###detail(detail))
-       WHEN CHANGED(agreement###user###object(object###detail(detail))) OR
-            CHANGED(priceListType###user###object(object###detail(detail)));
-   END
-   META deriveDocumentDetailPriceListTypeAgreement (object)
-       @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
-   END
+    priceListType###detail(d) <- IF agreement###object(object###detail(d))
+                                THEN priceListTypeAgreementSkuOver(agreement###object(object###detail(d)), sku###detail(d))
+                                ELSE priceListType###object(object###detail(d))
+    WHEN CHANGED(agreement###object(object###detail(d))) OR
+        CHANGED(priceListType###object(object###detail(d))) OR
+        CHANGED(sku###detail(d));
+END
+META deriveDocumentDetailPriceListTypeAgreement (object)
+    @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
+END
 
 //--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
 META defineDocumentDoubleHeaderAgreement (object1, object2)
