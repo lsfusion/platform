@@ -872,14 +872,14 @@ public class GFormController extends ResizableSimplePanel {
             return;
         }
 
-        for (GGroupObjectController controller : controllers.values()) {
-            if (controller.focusFirstWidget()) {
+        for (GTreeGroupController treeController : treeControllers.values()) {
+            if (treeController.focusFirstWidget()) {
                 return;
             }
         }
 
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            if (treeController.focusFirstWidget()) {
+        for (GGroupObjectController controller : controllers.values()) { // в конце controllers лежит нулевой groupObject. его-то и следует оставить напоследок
+            if (controller.focusFirstWidget()) {
                 return;
             }
         }
