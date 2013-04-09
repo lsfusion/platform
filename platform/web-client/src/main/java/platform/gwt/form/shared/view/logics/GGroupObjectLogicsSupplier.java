@@ -1,9 +1,7 @@
 package platform.gwt.form.shared.view.logics;
 
-import platform.gwt.form.shared.view.GGroupObject;
-import platform.gwt.form.shared.view.GObject;
-import platform.gwt.form.shared.view.GOrder;
-import platform.gwt.form.shared.view.GPropertyDraw;
+import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.form.shared.view.*;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.reader.*;
 
@@ -28,4 +26,5 @@ public interface GGroupObjectLogicsSupplier {
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedProperty();
     Object getSelectedValue(GPropertyDraw property);
+    void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget);
 }

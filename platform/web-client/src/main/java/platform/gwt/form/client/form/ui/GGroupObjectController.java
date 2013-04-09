@@ -4,7 +4,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.form.ui.container.GAbstractFormContainer;
 import platform.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
@@ -23,7 +22,6 @@ import static platform.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     public GGroupObject groupObject;
-    private GFormLayout formLayout;
 
     private GGridController grid;
     private GShowTypeView showTypeView;
@@ -36,24 +34,23 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
 
-    public GGroupObjectController(GFormController iformController, GGroupObject igroupObject, GFormLayout iformLayout) {
-        super(iformController, iformLayout, igroupObject == null ? null : igroupObject.toolbar);
+    public GGroupObjectController(GFormController iformController, GGroupObject igroupObject) {
+        super(iformController, igroupObject == null ? null : igroupObject.toolbar);
         groupObject = igroupObject;
-        formLayout = iformLayout;
 
         if (groupObject != null) {
             grid = new GGridController(groupObject.grid, formController, this);
-            grid.addToLayout(formLayout);
+            grid.addToLayout(getFormLayout());
 
             GContainer gridContainer = groupObject.grid.container;
-            formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", true);
-            formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+            getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", true);
+            getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", false);
 
             showTypeView = new GShowTypeView(formController, groupObject);
-            showTypeView.addToLayout(formLayout);
+            showTypeView.addToLayout(getFormLayout());
             showTypeView.setBanClassViews(groupObject.banClassView);
 
-            GAbstractFormContainer gridParentParent = formLayout.getFormContainer(groupObject.grid.container.container);
+            GAbstractFormContainer gridParentParent = getFormLayout().getFormContainer(groupObject.grid.container.container);
             if (gridParentParent != null) {
                 gridParentParent.addDirectly(blankElement);
             }
@@ -324,10 +321,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         panel.addProperty(property);
     }
 
-    public void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        formLayout.add(filterGroup, filterWidget);
-    }
-
     private void updateGrid() {
         if (groupObject != null) {
             grid.update();
@@ -338,11 +331,11 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
             GContainer gridContainer = groupObject.grid.container;
             if (grid.isVisible()) {
-                formLayout.setTableCellSize(gridContainer.container, gridContainer, "100%", false);
-                formLayout.setTableCellSize(gridContainer.container, blankElement, "auto", false);
+                getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "100%", false);
+                getFormLayout().setTableCellSize(gridContainer.container, blankElement, "auto", false);
             } else {
-                formLayout.setTableCellSize(gridContainer.container, gridContainer, "auto", false);
-                formLayout.setTableCellSize(gridContainer.container, blankElement, "100%", false);
+                getFormLayout().setTableCellSize(gridContainer.container, gridContainer, "auto", false);
+                getFormLayout().setTableCellSize(gridContainer.container, blankElement, "100%", false);
             }
             if (showTypeView != null) {
                 showTypeView.setClassView(classViewType);

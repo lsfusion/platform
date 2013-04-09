@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GPanelController {
-    private final GFormLayout formLayout;
     private final GFormController form;
 
     private final List<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
@@ -22,9 +21,8 @@ public class GPanelController {
     private Object rowBackground;
     private Object rowForeground;
 
-    public GPanelController(GFormController iform, GFormLayout formLayout) {
+    public GPanelController(GFormController iform) {
         this.form = iform;
-        this.formLayout = formLayout;
     }
 
     public void addProperty(GPropertyDraw property) {
@@ -37,7 +35,7 @@ public class GPanelController {
 
     public void removeProperty(GPropertyDraw property) {
         if (containsProperty(property)) {
-            formLayout.remove(property);
+            form.formLayout.remove(property);
             properties.remove(property);
             propertyControllers.remove(property);
         }
@@ -187,15 +185,15 @@ public class GPanelController {
 
                 if (isViewVisible()) {
                     if (!addedToLayout) {
-                        formLayout.add(property, getView(), property.container.children.indexOf(property));
+                        form.formLayout.add(property, getView(), property.container.children.indexOf(property));
                         if (property.defaultComponent) {
-                            formLayout.addDefaultComponent(this);
+                            form.formLayout.addDefaultComponent(this);
                         }
                         addedToLayout = true;
                     }
                 } else {
                     if (addedToLayout) {
-                        formLayout.remove(property);
+                        form.formLayout.remove(property);
                         addedToLayout = false;
                     }
                 }

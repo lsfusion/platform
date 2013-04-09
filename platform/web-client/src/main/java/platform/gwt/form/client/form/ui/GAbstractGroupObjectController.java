@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.form.client.form.ui.filter.GFilterController;
 import platform.gwt.form.shared.view.GObject;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.GRegularFilterGroup;
 import platform.gwt.form.shared.view.GToolbar;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
@@ -21,15 +22,19 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
     protected GToolbarView toolbar;
     public GFilterController filter;
 
-    public GAbstractGroupObjectController(GFormController formController, GFormLayout formLayout, GToolbar iToolbar) {
+    public GAbstractGroupObjectController(GFormController formController, GToolbar iToolbar) {
         this.formController = formController;
 
-        panel = new GPanelController(formController, formLayout);
+        panel = new GPanelController(formController);
 
         toolbar = new GToolbarView();
         if (iToolbar != null && iToolbar.visible) {
-            formLayout.add(iToolbar, toolbar);
+            getFormLayout().add(iToolbar, toolbar);
         }
+    }
+
+    public GFormLayout getFormLayout() {
+        return formController.formLayout;
     }
 
     public boolean hasPanelProperty(GPropertyDraw property) {
@@ -72,6 +77,10 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
     @Override
     public List<GPropertyDraw> getPropertyDraws() {
         return formController.getPropertyDraws();
+    }
+
+    public void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
+        getFormLayout().add(filterGroup, filterWidget);
     }
 
     protected boolean showFilter() {

@@ -22,8 +22,8 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
 
     public GGroupObject lastGroupObject;
 
-    public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm, GFormLayout iFormLayout) {
-        super(iFormController, iFormLayout, iTreeGroup.toolbar);
+    public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
+        super(iFormController, iTreeGroup.toolbar);
         treeGroup = iTreeGroup;
         lastGroupObject = treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
 
@@ -41,9 +41,9 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
         treeTableView.setCellHeight(panel, "100%");
         treeTableView.setCellWidth(panel, "100%");
 
-        iFormLayout.add(treeGroup, treeTableView, 0);
+        getFormLayout().add(treeGroup, treeTableView, 0);
         if (treeGroup.defaultComponent) {
-            iFormLayout.addDefaultComponent(this);
+            getFormLayout().addDefaultComponent(this);
         }
 
         addFilterButton();

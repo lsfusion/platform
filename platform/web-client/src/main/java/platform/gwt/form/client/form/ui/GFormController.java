@@ -225,18 +225,21 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     private void addFilterComponent(GRegularFilterGroup filterGroup, Widget filterWidget) {
-        controllers.get(filterGroup.groupObject).addFilterComponent(filterGroup, filterWidget);
+        GGroupObjectLogicsSupplier logicsSupplier = getGroupObjectLogicsSupplier(filterGroup.groupObject);
+        if (logicsSupplier != null) {
+            logicsSupplier.addFilterComponent(filterGroup, filterWidget);
+        }
     }
 
     private void initializeControllers() {
         for (GTreeGroup treeGroup : form.treeGroups) {
-            GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form, formLayout);
+            GTreeGroupController treeController = new GTreeGroupController(treeGroup, this, form);
             treeControllers.put(treeGroup, treeController);
         }
 
         for (GGroupObject group : form.groupObjects) {
             if (group.parent == null) {
-                GGroupObjectController controller = new GGroupObjectController(this, group, formLayout);
+                GGroupObjectController controller = new GGroupObjectController(this, group);
                 controllers.put(group, controller);
             }
         }
@@ -247,7 +250,7 @@ public class GFormController extends ResizableSimplePanel {
                 hasColumnGroupObjects = true;
             }
             if (property.groupObject == null) {
-                controllers.put(null, new GGroupObjectController(this, null, formLayout));
+                controllers.put(null, new GGroupObjectController(this, null));
             }
         }
     }
