@@ -25,6 +25,8 @@ isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2
 
 isSubstring = FORMULA BOOLEAN 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';
 
+replace = FORMULA 'replace($1,$2,$3)';
+
 charLength = FORMULA INTEGER 'char_length($1)';
 // --------------------------------------------- Работа с числами --------------------------------- //
 
