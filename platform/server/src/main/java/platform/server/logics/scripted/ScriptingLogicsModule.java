@@ -1085,8 +1085,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, resultInterfaces);
     }
 
-    public LPWithParams addScriptedChangeClassAProp(List<String> context, LPWithParams param, String className, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedChangeClassAProp(" + context + ", " + param + ", " + className + ", " + whereProperty + ")");
+    public LPWithParams addScriptedChangeClassAProp(int oldContextSize, List<String> newContext, LPWithParams param, String className, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedChangeClassAProp(" + oldContextSize + ", " + newContext + ", " + param + ", " + className + ", " + whereProperty + ")");
         ValueClass cls = findClassByCompoundName(className);
         checkChangeClassActionClass(cls);
 
@@ -1100,17 +1100,22 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = new ArrayList<Integer>();
         for (int paramIndex : allParams) {
-            if (paramIndex >= context.size()) {
+            if (paramIndex >= oldContextSize) {
                 break;
             }
             resultInterfaces.add(paramIndex);
         }
+        boolean contextExtended = allParams.size() > resultInterfaces.size();
+
+        checkChangeClassWhere(contextExtended, param, whereProperty, newContext);
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        for (int resI : resultInterfaces) {
+            paramsList.add(new LPWithParams(null, asList(resI)));
+        }
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
-        boolean contextExtended = allParams.size() > resultInterfaces.size();
         List<Object> resultParams = getParamsPlainList(paramsList);
 
         LAP<?> res = addChangeClassAProp((ConcreteCustomClass) cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
@@ -2226,6 +2231,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkEventNoParameters(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property.interfaces.size() > 0) {
             errLog.emitEventNoParametersError(parser);
+        }
+    }
+
+    public void checkChangeClassWhere(boolean contextExtended, LPWithParams param, LPWithParams where, List<String> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        if (contextExtended && !where.usedParams.contains(param.usedParams.get(0))) {
+            errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1));
         }
     }
 

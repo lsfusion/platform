@@ -415,6 +415,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "ACTION EVAL expression should be string");
     }
 
+    public void emitChangeClassWhereError(ScriptParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, String.format("local param '%s' must be used in WHERE clause", paramName));
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

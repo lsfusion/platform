@@ -633,7 +633,7 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> mappedInterfaces = extendedContext ? innerInterfaces.removeOrderIncl(innerInterfaces.get(changeIndex)) : innerInterfaces;
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         CalcPropertyMapImplement<PropertyInterface, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<PropertyInterface, PropertyInterface>)
-                (conditional ? readImplements.get(0) : null);
+                (conditional ? readImplements.get(resInterfaces) : null);
 
         return addAProp(new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(genSID(), cls, false, innerInterfaces.getSet(),
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));

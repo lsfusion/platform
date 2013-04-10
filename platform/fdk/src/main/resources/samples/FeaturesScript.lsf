@@ -326,6 +326,30 @@ editActionTest(obj) = ACTION EDITFORM Store;
 // CHANGECLASS object TO className [WHERE expression]
 // built-in or abstract class names are forbidden
 
+CLASS CCA : Named;
+CLASS CCB : Named;
+
+CCBforCCA(a) = DATA CCB (CCA);
+countCCACCB(a, b) = DATA INTEGER (CCA, CCB);
+countCCA(a) = DATA INTEGER (CCA);
+countCCB(b) = DATA INTEGER (CCB);
+changeAWhenCountB 'countCCB > 5' (a, b) = ACTION CHANGECLASS a TO CCB WHERE countCCB(b) > 5;
+changeAWhenCountAB 'countCCACCB > 5' (a, b) = ACTION CHANGECLASS a TO CCB WHERE countCCACCB(a, b) > 5;
+changeA(a) = ACTION CHANGECLASS a TO CCB;
+changeAllA 'all where CCA > 5' () = ACTION CHANGECLASS a TO CCB WHERE countCCA(a) > 5;
+
+changeAllAWhenCountAB 'all count CCACCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCACCB(a, b) > 5;
+changeAllAWhenCountB 'all count CCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCB(b) > 5 AND a IS CCA;
+
+//addMObj() = ACTION ADDOBJ CCB WHERE a IS CCA AND countCCA(a) > 5 TO CCBforCCA(a);
+
+FORM testChangeClass
+    OBJECTS a=CCA, b=CCB
+    PROPERTIES name(a), name(b), countCCA(a), countCCB(b), CCBforCCA(a), countCCACCB(a, b)
+    PROPERTIES changeA(a), changeAllA(), changeAWhenCountB(a, b), changeAWhenCountAB(a, b)
+    PROPERTIES changeAllAWhenCountAB(b), changeAllAWhenCountB(b)
+;
+
 // File open/load action
 // statement syntax:
 // [OPENFILE | LOADFILE] propertyExpression
@@ -1167,23 +1191,9 @@ FORM newTestForm 'Test Exception'
  PROPERTIES(x) ADDOBJ, newtf, ottf
 ;
 
-CLASS MA : Named;
-CLASS MB : Named;
-
-MBforMA(ma) = DATA MB (MA);
-countMA(ma) = DATA INTEGER (MA);
-countMB(mb) = DATA INTEGER (MB);
-addMObj() = ACTION ADDOBJ MB WHERE a IS MA AND countMA(a) > 5 TO MBforMA(a);
-changeCl() = ACTION CHANGECLASS a TO MB WHERE countMA(a) > 6;
-
-FORM testMultipleA
-    OBJECTS a=MA, b=MB
-    PROPERTIES name(a), name(b), countMA(a), countMB(b), MBforMA(a), addMObj(), changeCl()
-;
-
 
 NAVIGATOR {
     ADD fibForm;
     ADD newTestForm;
-    ADD testMultipleA;
+    ADD testChangeClass;
 }

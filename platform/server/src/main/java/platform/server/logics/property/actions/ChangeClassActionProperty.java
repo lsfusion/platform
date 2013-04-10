@@ -107,7 +107,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          this.changeInterface = changeInterface;
          this.where = where;
 
-         assert where==null || this.mapInterfaces.valuesSet().addExcl(changeInterface).containsAll(where.mapping.valuesSet());
+         assert where==null || this.mapInterfaces.valuesSet().merge(changeInterface).containsAll(where.mapping.valuesSet());
      }
 
      protected boolean needDialog() {
@@ -141,7 +141,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
         boolean singleWhereNotNull = true;
         if(where==null || (innerKeys.isEmpty() && (singleWhereNotNull = where.read(context, innerValues)!=null))) {
             PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
-            DataObject object = innerValues.singleValue();
+            DataObject object = innerValues.get(changeInterface);
 
             DataObject nearObject = null; // после удаления выбираем соседний объект
             if (objectInstance != null && objectInstance instanceof ObjectInstance) {

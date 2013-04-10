@@ -1779,7 +1779,7 @@ changeClassActionPropertyDefinitionBody[List<String> context] returns [LPWithPar
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedChangeClassAProp(context, $param.property, $className.sid, condition);	
+		$property = self.addScriptedChangeClassAProp(context.size(), newContext, $param.property, $className.sid, condition);	
 	}
 }
 	:	'CHANGECLASS' param=singleParameter[newContext, true] 'TO' className=classId 
