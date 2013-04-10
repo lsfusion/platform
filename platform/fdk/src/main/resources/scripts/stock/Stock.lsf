@@ -708,10 +708,15 @@ END
 META defineDocumentLegalEntityStockAccess(objectClass, prefix, filter, form)
     prefix###objectClass(o) <- default###filter##Employee(currentUser()) IF countAccess###filter##Employee (currentUser()) == 1
         WHEN ASSIGNED(o IS objectClass);
-    WHEN SESSION FORMS form CHANGED(prefix###objectClass(o)) DO
-        prefix###stock###objectClass(o) <- defaultStockEmployeeLegalEntity(currentUser(), prefix###objectClass(o))
-            IF countAccessStockEmployeeLegalEntity (currentUser(), prefix###objectClass(o)) == 1;
+
+    // todo : вернуть обратно сессионные event'ы
+    prefix###stock###objectClass(o) <- defaultStockEmployeeLegalEntity(currentUser(), prefix###objectClass(o))
+        IF countAccessStockEmployeeLegalEntity (currentUser(), prefix###objectClass(o)) == 1
+        WHEN CHANGED(prefix###objectClass(o));
 END
+//    WHEN SESSION FORMS form CHANGED(prefix###objectClass(o)) DO
+//        prefix###stock###objectClass(o) <- defaultStockEmployeeLegalEntity(currentUser(), prefix###objectClass(o))
+//            IF countAccessStockEmployeeLegalEntity (currentUser(), prefix###objectClass(o)) == 1;
 
 META defineDocumentSupplierCustomerStockAccess (objectClass, supplierFilter, customerFilter, form)
     @defineDocumentLegalEntityStockAccess(objectClass, supplier, supplierFilter, form);
