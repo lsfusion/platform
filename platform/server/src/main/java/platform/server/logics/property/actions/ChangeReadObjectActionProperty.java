@@ -43,7 +43,7 @@ public class ChangeReadObjectActionProperty extends SystemActionProperty {
                         }
                     });
                 } else
-                    changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue);
+                    changeValue = context.requestUserData(((DataObjectInstance) objectInstance).getBaseClass(), oldValue.getValue());
                 if(changeValue!=null)
                     formInstance.changeObject(objectInstance, changeValue);
             }

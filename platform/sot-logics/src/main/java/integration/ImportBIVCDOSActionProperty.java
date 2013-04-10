@@ -82,7 +82,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         importWares(path + "//OST", path + "//SEDI") : null);
 
                 importData.setItemsList((getLCP("importBIVCDOSItems").read(context) != null) ?
-                        importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems) : null);
+                        importItems(path + "//OST", path + "//SEDI", path + "//PRC", numberOfItems, context) : null);
 
                 importData.setUserInvoicesList((getLCP("importBIVCDOSUserInvoices").read(context) != null) ?
                         importUserInvoices(path + "//SWTP", path + "//OST", path + "//SEDI", startDate, numberOfUserInvoices, context) : null);
@@ -255,7 +255,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return uomMap;
     }
 
-    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems) throws IOException, xBaseJException, ParseException {
+    private List<Item> importItems(String ostPath, String sediPath, String prcPath, Integer numberOfItems, ExecutionContext context) throws IOException, xBaseJException, ParseException {
 
         List<Item> itemsList = new ArrayList<Item>();
         Map<String, UOM> uomMap = getUOMMap(sediPath);
@@ -279,6 +279,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         String warePattern = "(\\d{8})\\s?(.*)";
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(ostPath), "cp866"));
+
+        Set<String> itemIDs = new HashSet<String>();
 
         String pnt13;
         String pnt48;
@@ -341,17 +343,21 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + nameID + uomFullName;
-                    if (!groupID.startsWith("929"))
+                    if (!groupID.startsWith("929") && !itemIDs.contains(itemID)) {
+                        itemIDs.add(itemID);
                         itemsList.add(new Item(itemID, groupID, name,
                                 uom == null ? null : uom.uomName, uom == null ? null : uom.uomShortName,
                                 uom == null ? null : uom.uomName, null, null, null, null, itemID, date, null,
                                 uom == null ? null : uom.netWeight, uom == null ? null : uom.grossWeight, null,
                                 retailVAT, wareID, null, null, null, baseMarkup, retailMarkups.get(markupID),
                                 itemID, packAmount));
+                    }
                 }
             }
         }
         reader.close();
+
+        context.requestUserInteraction(new MessageClientAction("Кол-во товаров :" + itemIDs.size(), "Импорт товаров"));
         return itemsList;
     }
 
@@ -540,7 +546,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
             }
         }
         reader.close();
-        String message = "";
+        String message = "Кол-во позиций :" + userInvoiceDetailsList.size() + "\r\n";
         for (Map.Entry<String, Double> entry : totalSumWarehouse.entrySet())
             message += entry.getKey() + ": " + NumberFormat.getNumberInstance().format(entry.getValue()) + "\r\n";
         context.requestUserInteraction(new MessageClientAction(message, "Общая сумма"));

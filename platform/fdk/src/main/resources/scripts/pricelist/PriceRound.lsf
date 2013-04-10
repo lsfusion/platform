@@ -171,8 +171,8 @@ loadDefaultPriceInterval  = ACTION (value, shortName, name) {
 }
 
 loadDefaultPriceIntervals 'Загрузить стандартные округления цен'  = ACTION () {
-    EXEC loadDefaultPriceInterval(2, 'BLR', 'До копеек');
     EXEC loadDefaultPriceInterval(0, 'BLR', 'До рублей');
+    EXEC loadDefaultPriceInterval(2, 'BLR', 'До копеек');
 
     LOCAL currency = Currency();
     SET currency() <- currencyShortName('BLR');
@@ -180,7 +180,6 @@ loadDefaultPriceIntervals 'Загрузить стандартные округ�
         SET currencyRoundCondition(p) <- currency();
         SET minPriceRoundCondition(p) <- 25;
         SET priceRoundRoundCondition(p) <- -1;
-        SET defaultRoundConditionCurrency(c) <- p WHERE c == currency();
         SET name(p) <- 'До 50 рублей';
         denominatorPriceRoundCondition(p) <- 50;
         FOR ADDOBJ i1 = PriceInterval DO {
