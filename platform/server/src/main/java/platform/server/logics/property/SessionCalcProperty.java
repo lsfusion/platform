@@ -15,6 +15,11 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
     public abstract OldProperty<T> getOldProperty();
 
     @Override
+    public boolean noOld() {
+        return false;
+    }
+
+    @Override
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         return SetFact.<SessionCalcProperty>singleton(this);
     }

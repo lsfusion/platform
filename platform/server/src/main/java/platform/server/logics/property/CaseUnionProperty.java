@@ -210,11 +210,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     private ClassWhere<Object> classValueWhere;
 
     @Override
-    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        if(isAbstract())
-            return SetFact.EMPTY();
-
-        return super.getSessionCalcDepends(events);
+    public boolean noOld() {
+        return isAbstract() || super.noOld();
     }
 
     @Override

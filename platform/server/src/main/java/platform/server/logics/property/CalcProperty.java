@@ -202,8 +202,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
     }
 
-    public boolean noOld() {
-        return getOldDepends().isEmpty();
+    public boolean noOld() { // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
+        for(CalcProperty<?> property : getDepends(false))
+            if(!property.noOld())
+                return false;
+        return true;
     }
     private OldProperty<T> old;
     public OldProperty<T> getOld() {
