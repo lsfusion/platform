@@ -25,6 +25,7 @@ NAMESPACE PurchaseReturn;
 @defineDocumentOperationPriceListType(userInvoice);
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
+@defineDocumentConstraintOperationRole(userInvoice);
 
 showPurchasePackUserInvoice (invoice) <- showPurchasePackOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));

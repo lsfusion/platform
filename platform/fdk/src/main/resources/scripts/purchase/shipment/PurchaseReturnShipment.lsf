@@ -17,6 +17,7 @@ NAMESPACE PurchaseReturn;
 @defineDocumentOperation(shipment, s);
 @defineDocumentOperationLegalEntity(userShipment, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userShipment, customer, 'Покупатель');
+@defineDocumentConstraintOperationRole(userShipment);
 
 createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));

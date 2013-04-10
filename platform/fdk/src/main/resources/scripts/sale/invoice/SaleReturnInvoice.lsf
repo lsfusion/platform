@@ -23,6 +23,7 @@ NAMESPACE SaleReturn;
 @defineDocumentOperationPriceListType(userInvoice);
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
+@defineDocumentConstraintOperationRole(userInvoice);
 
 showSalePackUserInvoice (invoice) <- showSalePackOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));

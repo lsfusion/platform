@@ -29,7 +29,7 @@ createInvoiceReceipt 'Создать накладную' = ACTION (receipt) {   
 }
 
 EXTEND FORM POS
-    PROPERTIES(r) createInvoiceReceipt
+    PROPERTIES(r) SHOWIF currentZReport() createInvoiceReceipt
 ;
 EXTEND DESIGN POS {
     eastContainer {

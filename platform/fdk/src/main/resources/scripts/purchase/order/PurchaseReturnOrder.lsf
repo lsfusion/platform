@@ -19,6 +19,7 @@ Order.operationOrder(order) += operationOrder(order);
 @defineDocumentOperationPriceListType(userOrder);
 @defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
+@defineDocumentConstraintOperationRole(userOrder);
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

@@ -138,3 +138,45 @@ META defineDocumentOperationLegalEntity(object, prop, caption)
         CHECKED BY prop###object
         MESSAGE caption##' должен совпадать с отмеченными в операции';
 END
+
+META defineOperationRole(dumb)
+
+    includeOperation 'Отм. для всех ролей' = DATA BOOLEAN (Operation);
+    includeDataUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
+
+    includeUserRoleOperation 'Отм' (role, operation) =
+        UNION OVERRIDE includeOperation(operation) AND role IS UserRole,
+                       includeDataUserRoleOperation(role, operation);
+
+    EXTEND FORM operation
+        PROPERTIES(o)  includeOperation
+
+        OBJECTS r = UserRole
+        PROPERTIES(r) READONLY name
+        PROPERTIES(r, o) includeUserRoleOperation
+
+        FILTERGROUP filtersRole
+                FILTER 'Показывать отмеченные' 'F8' includeDataUserRoleOperation(r, o)
+    ;
+
+    EXTEND DESIGN operation {
+        tabContainer {
+            NEW roleContainer{
+                childConstraints = TO THE BOTTOM;
+                type = SPLITV;
+                caption = 'Роли';
+                NEW roleContainer1 {
+                    ADD PROPERTY(includeOperation);
+                    caption = 'Для всех';
+                }
+                ADD r.box;
+            }
+        }
+    }
+
+END
+
+META defineDocumentConstraintOperationRole(object)
+    CONSTRAINT operation###object(object) AND NOT includeUserRoleOperation(mainRoleUser(currentUser()), operation###object(object))
+        CHECKED BY operation###object MESSAGE ' Роль должна совпадать с отмеченной в операции';
+END

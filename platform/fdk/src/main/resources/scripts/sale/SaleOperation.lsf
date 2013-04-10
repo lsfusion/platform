@@ -9,6 +9,7 @@ NAMESPACE Sale;
 @defineOperationPriceListType();
 @defineOperationLegalEntity(supplier, s, isCompanyLegalEntity, 'Поставщики');
 @defineOperationLegalEntity(customer, c, isBuyerLegalEntity, 'Покупатели');
+@defineOperationRole();
 
 createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (Operation) IN createGroup;
 createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (Operation) IN createGroup;
