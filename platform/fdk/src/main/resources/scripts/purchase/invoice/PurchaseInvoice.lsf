@@ -29,7 +29,7 @@ showPurchasePackUserInvoice (invoice) <- showPurchasePackOperation(operationUser
     WHEN CHANGED(operationUserInvoice(invoice));
 isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
-@defineDocumentConstraintOperationRole(userInvoice);
+@defineDocumentOperationRole(userInvoice);
 
 @defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
 

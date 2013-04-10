@@ -10,6 +10,7 @@ NAMESPACE Purchase;
 @defineOperationLegalEntity(supplier, s, isSellerLegalEntity, 'Поставщики');
 @defineOperationLegalEntity(customer, c, isCompanyLegalEntity, 'Покупатели');
 @defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
 
 createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (Operation) IN createGroup;
 createPurchaseWriteOffOperation 'Создавать акт списания' = DATA BOOLEAN (Operation) IN createGroup;

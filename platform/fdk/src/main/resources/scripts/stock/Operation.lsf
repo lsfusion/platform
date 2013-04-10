@@ -48,6 +48,12 @@ META defineOperation(postfix)
         OBJECTS o = Operation
         PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
         PROPERTIES(o) ADDFORM, EDITFORM, delete
+    ;
+
+    FORM dialogOperations 'Операции' TITLE 'Операции'##postfix
+        OBJECTS o = Operation
+        PROPERTIES(o) READONLY name, timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable
+        PROPERTIES(o) ADDFORM, EDITFORM, delete
 
         DIALOG Operation OBJECT o
     ;
@@ -148,6 +154,9 @@ META defineOperationRole(dumb)
         UNION OVERRIDE includeOperation(operation) AND role IS UserRole,
                        includeDataUserRoleOperation(role, operation);
 
+    countOperationsRole (role) = GROUP SUM 1 IF includeUserRoleOperation(role, operation) BY role;
+    defaultOperationRole 'Операция по умолчанию' (role)= GROUP MIN operation IF includeUserRoleOperation(role, operation) BY role;
+
     EXTEND FORM operation
         PROPERTIES(o)  includeOperation
 
@@ -176,7 +185,17 @@ META defineOperationRole(dumb)
 
 END
 
-META defineDocumentConstraintOperationRole(object)
-    CONSTRAINT operation###object(object) AND NOT includeUserRoleOperation(mainRoleUser(currentUser()), operation###object(object))
-        CHECKED BY operation###object MESSAGE ' Роль должна совпадать с отмеченной в операции';
+META extendFormFilterRole(concrete, form)
+//    includeCurrentUserRole###object (object)= includeUserRoleOperation(mainRoleUser(currentUser()), concrete);
+    EXTEND FORM form FILTERS includeUserRoleOperation(mainRoleUser(currentUser()), concrete);
+
 END
+
+META defineDocumentOperationRole(object, objectClass)
+    operation###object(o) <- defaultOperationRole(mainRoleUser(currentUser())) IF countOperationsRole(mainRoleUser(currentUser())) == 1
+        WHEN ASSIGNED(o IS objectClass);
+END
+META defineDocumentOperationRole(object)
+    @defineDocumentOperationRole(object, ###object);
+END
+

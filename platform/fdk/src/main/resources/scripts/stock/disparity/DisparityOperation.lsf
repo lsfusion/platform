@@ -3,6 +3,8 @@ MODULE DisparityOperation;
 REQUIRE Operation, Disparity;
 
 @defineOperation('(изменение сортности)');
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
 
 createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation) IN createGroup;
 
