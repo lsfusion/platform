@@ -1833,6 +1833,28 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
         PROPERTY(currentBalanceSkuStock) { background = #FFEEEE; }
     }
 END
+META extendFormDocumentSkuStockCustomAll(object, form, concrete)
+
+    form###all 'Весь остаток' = DATA SESSION BOOLEAN (Sku, Stock);
+
+    change###form###all= ACTION (sku, object, stock) {
+        REQUEST BOOLEAN INPUT;
+        IF requestedLogical() THEN {
+            SET requestedNumeric() <- NULL;
+            SET form###all (sku,stock) <- TRUE;
+            SET requestedNumeric() <- currentBalanceSkuStock(sku,stock) WHERE currentBalanceSkuStock(sku,stock);
+            EXEC changeQuantityValueSku###object###Stock(sku, object, stock);
+        } ELSE {
+            SET form###all (sku,stock) <- NULL;
+            SET requestedNumeric() <- NULL;
+            EXEC changeQuantityValueSku###object###Stock(sku, object, stock);
+        }
+    }
+
+    EXTEND FORM form
+        PROPERTIES AFTER currentBalanceSkuStock(s,st) form###all(s,st) ON CHANGE change###form###all(s, concrete, st)
+    ;
+END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара (один склад)---------------//
 
@@ -1938,6 +1960,28 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
 END
 META extendFormDocumentSku(object, form, concrete)
     @extendFormDocumentSkuCustom(object, form, concrete, sku, object##Detail);
+END
+META extendFormDocumentSkuAll(object, form, concrete)
+
+    form###all 'Весь остаток' = DATA SESSION BOOLEAN (Sku, ###object);
+
+    change###form###all= ACTION (sku, object) {
+        REQUEST BOOLEAN INPUT;
+        IF requestedLogical() THEN {
+            SET requestedNumeric() <- NULL;
+            SET form###all (sku,object) <- TRUE;
+            SET requestedNumeric() <- currentBalanceSku###object(sku,object) WHERE currentBalanceSku###object(sku,object);
+            EXEC changeQuantityValueSku###object(sku, object);
+        } ELSE {
+            SET form###all (sku,object) <- NULL;
+            SET requestedNumeric() <- NULL;
+            EXEC changeQuantityValueSku###object(sku, object);
+        }
+    }
+
+    EXTEND FORM form
+        PROPERTIES AFTER currentBalanceSku###object(s,concrete) form###all(s,concrete) ON CHANGE change###form###all(s, concrete)
+    ;
 END
 
 //----------- Изменение кол-ва для строки при изменении кол-ва для товара (несколько складов и несколько контрагентов(в колонках))---------------//

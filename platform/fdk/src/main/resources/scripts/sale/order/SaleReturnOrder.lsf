@@ -62,6 +62,7 @@ EXTEND FORM userOrder
 
 // Резервы
 @extendFormDocumentOrderLedgerStock(userOrder, userOrder, o);
+@extendFormDocumentOrderLedgerStockAll(userOrder, userOrder, o);
 
 //--------------------- Проводим по регистру резерва ------------------//
 @implementSaleOrderLedger(Order, sku, shipmentDateTime, supplierStock, customer);

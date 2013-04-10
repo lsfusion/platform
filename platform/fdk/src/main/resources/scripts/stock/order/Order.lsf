@@ -367,6 +367,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 //-- SKU
     @defineDocumentSkuStock(userOrder, sku, stockProp);
     @extendFormDocumentSkuStockCustom(userOrder, userOrder, o, legalEntityProp, stockProp);
+    @extendFormDocumentSkuStockCustomAll(userOrder, userOrder, o);
 
     addUserOrder 'Добавить' = ACTION ADDFORM UserOrder;
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM UserOrder;

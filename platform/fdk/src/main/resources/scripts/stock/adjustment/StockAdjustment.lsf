@@ -141,6 +141,7 @@ DESIGN userAdjustment FROM DEFAULT{
 //-- SKU
 @defineDocumentSkuSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
 @extendFormDocumentSku(userAdjustment, userAdjustment, i);
+@extendFormDocumentSkuAll(userAdjustment, userAdjustment, i);
 EXTEND FORM userAdjustment
 
     FILTERGROUP filter

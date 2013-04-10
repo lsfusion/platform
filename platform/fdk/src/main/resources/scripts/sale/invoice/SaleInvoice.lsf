@@ -148,6 +148,7 @@ EXTEND FORM userInvoice
 
 // Резервы
 @extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+@extendFormDocumentOrderLedgerAll(userInvoice, userInvoice, i);
 
 // --------------------------- Проведение по регистру продаж ------------------------------------ //
 @implementSaleLedger(Invoice, sku, supplierStock);

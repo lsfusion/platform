@@ -65,6 +65,7 @@ EXTEND FORM userInvoice
 
 // Резервы
 @extendFormDocumentOrderLedger(userInvoice, userInvoice, supplierStock, i);
+@extendFormDocumentOrderLedgerAll(userInvoice, userInvoice, i);
 
 NAVIGATOR {
     saleReturnNavigator {

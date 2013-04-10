@@ -513,6 +513,8 @@ DESIGN userRepricing FROM DEFAULT {
 //-- SKU
 @defineDocumentSkuSystemLedgerPriceListType(userRepricing, accountPriceListType, departmentStore);
 @extendFormDocumentSku(userRepricing, userRepricing, p);
+@extendFormDocumentSkuAll(userRepricing, userRepricing, p);
+
 EXTEND FORM userRepricing
 
     FILTERGROUP filter
@@ -520,30 +522,30 @@ EXTEND FORM userRepricing
         FILTER 'В документе ' 'F9' quantityUserRepricingDetailSkuUserRepricing(s, p)
 ;
 
-allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (Sku, UserRepricing);
-
-overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
-    REQUEST BOOLEAN INPUT;
-
-    IF requestedLogical() THEN {
-        SET allSkuUserRepricing(sku, userRepricing) <- TRUE;
-
-        IF currentBalanceSkuUserRepricing(sku, userRepricing) AND allSkuUserRepricing (sku, userRepricing) THEN {
-            SET requestedNumeric() <- currentBalanceSkuUserRepricing(sku, userRepricing) ;
-            EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
-        }
-    }ELSE {
-        SET allSkuUserRepricing(sku, userRepricing) <- NULL;
-        SET requestedNumeric() <- NULL;
-        EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
-    }
-}
-
-
-
-EXTEND FORM userRepricing
-    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
-;
+//allSkuUserRepricing 'Весь остаток' = DATA SESSION BOOLEAN (Sku, UserRepricing);
+//
+//overChangeAllSkuUserRepricing = ACTION (sku, userRepricing) {
+//    REQUEST BOOLEAN INPUT;
+//
+//    IF requestedLogical() THEN {
+//        SET allSkuUserRepricing(sku, userRepricing) <- TRUE;
+//
+//        IF currentBalanceSkuUserRepricing(sku, userRepricing) AND allSkuUserRepricing (sku, userRepricing) THEN {
+//            SET requestedNumeric() <- currentBalanceSkuUserRepricing(sku, userRepricing) ;
+//            EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
+//        }
+//    }ELSE {
+//        SET allSkuUserRepricing(sku, userRepricing) <- NULL;
+//        SET requestedNumeric() <- NULL;
+//        EXEC changeQuantityValueSkuUserRepricing(sku, userRepricing);
+//    }
+//}
+//
+//
+//
+//EXTEND FORM userRepricing
+//    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
+//;
 
 addUserRepricing 'Добавить' = ACTION ADDFORM UserRepricing;
 editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM UserRepricing;

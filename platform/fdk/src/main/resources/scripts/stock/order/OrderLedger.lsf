@@ -232,7 +232,7 @@ META extendFormDocumentOrderLedgerStock(object, form, concrete)
     reviewReserveBPurchaseSkuStock###object 'Резерв' (sku,stock, object) = ACTION FORM orderLedger OBJECTS t=shipmentDateTime###object(object), st=stock, sk = sku MODAL;
 
     EXTEND FORM form
-        PROPERTIES READONLY BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete)
+        PROPERTIES BEFORE currentBalanceSkuStock(s, st) availableQuantitySkuStock###object(s, st, concrete) READONLY
 
         PROPERTIES AFTER currentBalanceSkuStock(s, st)
                    currentReserveSaleSkuStock(s,st) ON CHANGE reviewReserveSaleSkuStock###object(s,st,concrete),
@@ -249,6 +249,29 @@ META extendFormDocumentOrderLedgerStock(object, form, concrete)
     }
 
 END
+META extendFormDocumentOrderLedgerStockAll(object, form, concrete)
+
+    available###form 'Доступное кол-во' = DATA SESSION BOOLEAN (Sku, Stock);
+
+    change###available###form= ACTION (sku, object, stock) {
+        REQUEST BOOLEAN INPUT;
+        IF requestedLogical() THEN {
+            SET requestedNumeric() <- NULL;
+            SET available###form (sku,stock) <- TRUE;
+            SET requestedNumeric() <- availableQuantitySkuStock###object(sku, stock, object) WHERE availableQuantitySkuStock###object(sku, stock, object);
+            EXEC changeQuantityValueSku###object###Stock(sku, object, stock);
+        } ELSE {
+            SET available###form (sku,stock) <- NULL;
+            SET requestedNumeric() <- NULL;
+            EXEC changeQuantityValueSku###object###Stock(sku, object, stock);
+        }
+    }
+
+    EXTEND FORM form
+        PROPERTIES AFTER availableQuantitySkuStock###object(s, st, concrete) available###form (s,st) ON CHANGE change###available###form(s,concrete,st)
+    ;
+END
+
 
 //---------------------Расширение закладки подбара формы накладной резервами ---------------//
 
@@ -284,5 +307,27 @@ META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
         PROPERTY(reserveBSaleSku###object) { background = #BDE3FF; }
     }
 
+END
+META extendFormDocumentOrderLedgerAll(object, form, concrete)
+
+    available###form 'Доступное кол-во' = DATA SESSION BOOLEAN (Sku, ###object);
+
+    change###available###form= ACTION (sku, object) {
+        REQUEST BOOLEAN INPUT;
+        IF requestedLogical() THEN {
+            SET requestedNumeric() <- NULL;
+            SET available###form (sku,object) <- TRUE;
+            SET requestedNumeric() <- availableQuantitySku###object(sku, object) WHERE availableQuantitySku###object(sku, object);
+            EXEC changeQuantityValueSku###object(sku, object);
+        } ELSE {
+            SET available###form (sku,object) <- NULL;
+            SET requestedNumeric() <- NULL;
+            EXEC changeQuantityValueSku###object(sku, object);
+        }
+    }
+
+    EXTEND FORM form
+        PROPERTIES AFTER availableQuantitySku###object(s, concrete) available###form (s,concrete) ON CHANGE change###available###form(s,concrete)
+    ;
 END
 

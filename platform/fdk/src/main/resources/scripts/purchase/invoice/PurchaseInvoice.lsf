@@ -107,6 +107,7 @@ EXTEND FORM userInvoice
 
 // Резервы
 @extendFormDocumentOrderLedger(userInvoice, userInvoice, customerStock, i);
+@extendFormDocumentOrderLedgerAll(userInvoice, userInvoice, i);
 
 // --------------- Проведение по регистру закупок ------------- //
 
