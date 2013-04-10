@@ -147,7 +147,7 @@ END
 
 META defineOperationRole(dumb)
 
-    includeOperation 'Отм. для всех ролей' = DATA BOOLEAN (Operation);
+    includeOperation 'Для всех ролей' = DATA BOOLEAN (Operation);
     includeDataUserRoleOperation 'Отм.' = DATA BOOLEAN (UserRole, Operation);
 
     includeUserRoleOperation 'Отм' (role, operation) =
@@ -172,7 +172,6 @@ META defineOperationRole(dumb)
         tabContainer {
             NEW roleContainer{
                 childConstraints = TO THE BOTTOM;
-                type = SPLITV;
                 caption = 'Роли';
                 NEW roleContainer1 {
                     ADD PROPERTY(includeOperation);
@@ -186,9 +185,7 @@ META defineOperationRole(dumb)
 END
 
 META extendFormFilterRole(concrete, form)
-//    includeCurrentUserRole###object (object)= includeUserRoleOperation(mainRoleUser(currentUser()), concrete);
     EXTEND FORM form FILTERS includeUserRoleOperation(mainRoleUser(currentUser()), concrete);
-
 END
 
 META defineDocumentOperationRole(object, objectClass)

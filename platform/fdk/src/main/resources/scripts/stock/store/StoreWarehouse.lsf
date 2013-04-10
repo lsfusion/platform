@@ -57,7 +57,7 @@ changeClassWarehouse 'Сделать магазином' = ACTION (warehouse) NE
             SET inEmployeeDivisionEmployee(warehouse, employee) <- r(employee);
         }
 
-        FORM departmentStore OBJECTS d=warehouse MODAL;
+        FORM store OBJECTS s=s MODAL;
         IF formResult() == FormResult.ok THEN
             EXEC apply();
     }
