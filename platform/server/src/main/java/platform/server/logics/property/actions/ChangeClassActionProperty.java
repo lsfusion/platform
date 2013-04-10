@@ -26,6 +26,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.actions.flow.ExtendContextActionProperty;
 import platform.server.logics.property.actions.flow.FlowResult;
 import platform.server.logics.property.actions.flow.ForActionProperty;
+import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.session.ClassChange;
 
 import java.sql.SQLException;
@@ -85,9 +86,10 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     @Override
     protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
-        if(where==null)
-            return IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
-        return where;
+        CalcPropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
+        if(where!=null)
+            result = DerivedProperty.createAnd(innerInterfaces, where, result);
+        return result;
     }
 
     public static ChangeClassActionProperty<PropertyInterface, PropertyInterface> create(ObjectClass valueClass, boolean forceDialog, BaseClass baseClass) {
