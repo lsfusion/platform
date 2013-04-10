@@ -221,9 +221,20 @@ DESIGN departmentStores FROM DEFAULT {
     }
 }
 
+changeStore = ACTION (store) {
+    REQUEST STRING[110] INPUT;
+    IF requestedString() THEN {
+        FOR storeDepartmentStore(dep) == store DO {
+            SET name(dep) <- replace(name(dep), name(store), requestedString());
+        }
+    }
+    SET name(store) <- requestedString();
+}
+
+
 FORM store 'Магазин'
     OBJECTS s=Store FIXED PANEL
-    PROPERTIES(s) name, addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, numberBankAccountStore,
+    PROPERTIES(s) name ON CHANGE changeStore(s), addressStore, nameStoreTypeStore, tradingSquareStore, nameLegalEntityStore, numberBankAccountStore,
                   nameRegionStore, latitudeStore, longitudeStore, showOnMapPOI
 
     OBJECTS d=DepartmentStore
