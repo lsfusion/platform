@@ -694,7 +694,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     // для OldProperty хранит изменения с предыдущего execute'а
     private IncrementTableProps sessionEventChangedOld = new IncrementTableProps();
     private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps();
-    private OverrideSessionModifier sessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
+    private OverrideSessionModifier sessionEventModifier;
+
+    // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
+    private OverrideSessionModifier commonSessionEventModifier = new OverrideSessionModifier(new OverrideIncrementProps(sessionEventChangedOld, sessionEventNotChangedOld), false, dataModifier);
+    private Set<OverrideSessionModifier> prevStartSessionEventModifiers = new HashSet<OverrideSessionModifier>();
+    private Map<ActionProperty, OverrideSessionModifier> mapPrevStartSessionEventModifiers = new HashMap<ActionProperty, OverrideSessionModifier>();
 
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException {
         if(!isInTransaction())
@@ -703,23 +708,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                     sessionEventChangedOld.add(old, old.property.readChangeTable(sql, getModifier(), baseClass, getQueryEnv()));
     }
 
-    private boolean inSessionEvent;
     private boolean isInSessionEvent() {
-        return inSessionEvent;
+        return sessionEventModifier!=null;
     }
 
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException {
 
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
+
             ExecutionEnvironment env = (form != null ? form : this);
 
-            inSessionEvent = true;
             for(ActionProperty<?> action : getActiveSessionEvents()) {
+                sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
+                if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
+
                 action.execute(env);
                 if(!isInSessionEvent())
                     return;
             }
-            inSessionEvent = false;
+            sessionEventModifier = null;
 
             // закидываем старые изменения
             for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
@@ -733,7 +740,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     public <T extends PropertyInterface> void resolve(ActionProperty<?> action) throws SQLException {
         IncrementChangeProps changes = new IncrementChangeProps();
-        for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends())
+        for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends(false))
             if(sessionCalcProperty instanceof ChangedProperty) // именно так, OldProperty нельзя подменять, так как предполагается что SET и DROPPED требуют разные значения PREV
                 changes.add(sessionCalcProperty, ((ChangedProperty)sessionCalcProperty).getFullChange(getModifier()));
         resolveModifier = new OverrideSessionModifier(changes, true, dataModifier);
@@ -925,9 +932,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         // тут есть assert что в increment+noUpdate не будет noDB, то есть не пересекется с NoEventModifier, то есть можно в любом порядке increment'ить
         IncrementTableProps increment = new IncrementTableProps(property, change);
-        IncrementChangeProps noUpdate = new IncrementChangeProps();
-        for(CalcProperty event : BL.getDataChangeEvents())
-            noUpdate.addNoChange(event);
+        IncrementChangeProps noUpdate = new IncrementChangeProps(BL.getDataChangeEvents());
 
         OverrideSessionModifier modifier = new OverrideSessionModifier(new OverrideIncrementProps(noUpdate, increment), emptyModifier);
 
@@ -1114,12 +1119,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     private IdentityHashMap<FormInstance, Object> activeForms = new IdentityHashMap<FormInstance, Object>();
-    public void registerForm(FormInstance form) {
+    public void registerForm(FormInstance form) throws SQLException {
         activeForms.put(form, true);
 
         dropFormCaches();
     }
-    public void unregisterForm(FormInstance form) {
+    public void unregisterForm(FormInstance<?> form) throws SQLException {
+        for(SessionModifier modifier : form.modifiers.values())
+            modifier.clean(sql);
+
         activeForms.remove(form);
         incrementChanges.remove(form);
         appliedChanges.remove(form);
@@ -1127,9 +1135,36 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
         dropFormCaches();
     }
-    private void dropFormCaches() {
+    private void dropFormCaches() throws SQLException {
+        // убираем все prevStart
+        for(OverrideSessionModifier modifier : prevStartSessionEventModifiers) {
+            for(FormInstance<?> activeForm : activeForms.keySet()) {
+                SessionModifier formModifier = activeForm.modifiers.remove(modifier);
+                if(formModifier!=null)
+                    formModifier.clean(sql);
+            }
+            modifier.clean(sql);
+        }
+        prevStartSessionEventModifiers.clear();
+        mapPrevStartSessionEventModifiers.clear();
+
         activeSessionEvents = null;
         sessionEventOldDepends = null;
+
+        final ImSet<OldProperty> eventOlds = getSessionEventOldDepends();
+        ImMap<ImSet<OldProperty>, ImSet<ActionProperty>> conflictActions = getActiveSessionEvents().getSet().mapValues(new GetValue<ImSet<OldProperty>, ActionProperty>() {
+            public ImSet<OldProperty> getMapValue(ActionProperty eventAction) {
+                return eventAction.getSessionEventOldStartDepends().filter(eventOlds);
+            }
+        }).groupValues();
+        for(int i=0,size=conflictActions.size();i<size;i++) {
+            ImSet<OldProperty> conflictPrevs = conflictActions.getKey(i);
+            if(!conflictPrevs.isEmpty()) {
+                OverrideSessionModifier conflictModifier = new OverrideSessionModifier(new IncrementChangeProps(conflictPrevs), commonSessionEventModifier);
+                prevStartSessionEventModifiers.add(conflictModifier);
+                MapFact.addJavaAll(mapPrevStartSessionEventModifiers, conflictActions.getValue(i).toMap(conflictModifier));
+            }
+        }
     }
     public Set<FormInstance> getActiveForms() {
         return activeForms.keySet();
@@ -1367,7 +1402,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
 
     public void cancel() throws SQLException {
         if(isInSessionEvent()) {
-            inSessionEvent = false;
+            sessionEventModifier = null;
         }
 
         if(isInTransaction()) {

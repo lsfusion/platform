@@ -1504,19 +1504,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return environmentIncrement;
     }
 
-    private Modifier createModifier() {
+    private SessionModifier createModifier() {
         FunctionSet<CalcProperty> noHints = getNoHints();
         return new OverrideSessionModifier(getEnvironmentIncrement(), noHints, noHints, entity.getHintsIncrementTable(), entity.getHintsNoUpdate(), session.getModifier());
     }
 
-    private MAddExclMap<SessionModifier, Modifier> modifiers = MapFact.mAddExclMap();
+    public Map<SessionModifier, SessionModifier> modifiers = new HashMap<SessionModifier, SessionModifier>();
     @ManualLazy
     public Modifier getModifier() {
         SessionModifier sessionModifier = session.getModifier();
-        Modifier modifier = modifiers.get(sessionModifier);
+        SessionModifier modifier = modifiers.get(sessionModifier);
         if (modifier == null) {
             modifier = createModifier();
-            modifiers.exclAdd(sessionModifier, modifier);
+            modifiers.put(sessionModifier, modifier);
         }
         return modifier;
     }

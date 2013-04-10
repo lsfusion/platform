@@ -3,8 +3,6 @@ package platform.server.logics.property;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImSet;
 
-import java.util.Collections;
-
 public abstract class SessionCalcProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
 
     public final CalcProperty<T> property;
@@ -17,7 +15,7 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
     public abstract OldProperty<T> getOldProperty();
 
     @Override
-    public ImSet<SessionCalcProperty> getSessionCalcDepends() {
+    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         return SetFact.<SessionCalcProperty>singleton(this);
     }
 }

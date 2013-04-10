@@ -19,6 +19,12 @@ public class IncrementChangeProps extends IncrementProps {
         add(property, table);
     }
 
+    // noUpdate конструктор
+    public <P extends PropertyInterface> IncrementChangeProps(ImSet<? extends CalcProperty> noUpdates) {
+        for(CalcProperty noUpdate : noUpdates)
+            addNoChange(noUpdate);
+    }
+
     private Map<CalcProperty, PropertyChange<PropertyInterface>> changes = MapFact.mAddRemoveMap(); // mutable поведение
 
     public ImSet<CalcProperty> getProperties() {
@@ -37,11 +43,6 @@ public class IncrementChangeProps extends IncrementProps {
         eventChanges(changes.keySet());
 
         changes.clear();
-    }
-
-    public <P extends PropertyInterface> void addNoChanges(Collection<CalcProperty> properties) {
-        for(CalcProperty property : properties)
-            addNoChange(property);
     }
 
     public <P extends PropertyInterface> void addNoChange(CalcProperty<P> property) {

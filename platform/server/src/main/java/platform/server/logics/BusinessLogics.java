@@ -12,6 +12,7 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
+import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -833,12 +834,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public List<CalcProperty> getDataChangeEvents() {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
-        for (Property property : getPropertyList())
+    public ImSet<CalcProperty> getDataChangeEvents() {
+        ImOrderSet<Property> propertyList = getPropertyList();
+        MSet<CalcProperty> mResult = SetFact.mSetMax(propertyList.size());
+        for (int i=0,size=propertyList.size();i<size;i++) {
+            Property property = propertyList.get(i);
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
-                result.add((((DataProperty) property).event).getWhere());
-        return result;
+                mResult.add((((DataProperty) property).event).getWhere());
+        }
+        return mResult.immutable();
     }
 
     private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, Map<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends) {

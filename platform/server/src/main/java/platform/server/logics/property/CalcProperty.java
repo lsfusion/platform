@@ -428,10 +428,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @IdentityLazy
-    public ImSet<SessionCalcProperty> getSessionCalcDepends() {
+    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionCalcProperty> mResult = SetFact.mSet();
-        for(CalcProperty<?> property : getDepends(false)) // derived'ы в общем то не интересуют так как используется в singleApply
-            mResult.addAll(property.getSessionCalcDepends());
+        for(CalcProperty<?> property : getDepends(events)) // derived'ы в общем то не интересуют так как используется в singleApply
+            mResult.addAll(property.getSessionCalcDepends(events));
         return mResult.immutable();
     }
 

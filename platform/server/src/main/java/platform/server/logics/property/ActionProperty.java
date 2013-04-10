@@ -16,7 +16,6 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.FormEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.actions.BaseEvent;
 import platform.server.logics.property.actions.FormEnvironment;
@@ -134,10 +133,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @IdentityLazy
-    public ImSet<SessionCalcProperty> getSessionCalcDepends() {
+    public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionCalcProperty> mResult = SetFact.mSet();
         for(CalcProperty property : getUsedProps())
-            mResult.addAll(property.getSessionCalcDepends());
+            mResult.addAll(property.getSessionCalcDepends(events));
         return mResult.immutable();
     }
 
@@ -304,6 +303,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return groupChangeActionProperty.getImplement(listInterfaces);
     }
 
+    @IdentityLazy
     public ImSet<OldProperty> getSessionEventOldDepends() { // фильтрует те свойства которые нужны не на
         assert getSessionEnv(SystemEvent.SESSION)!=null;
 
@@ -314,6 +314,13 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
                     return value.getOld();
                 }})));
         return result;
+    }
+
+    @IdentityLazy
+    public ImSet<OldProperty> getSessionEventOldStartDepends() {
+        assert getSessionEnv(SystemEvent.SESSION)!=null;
+
+        return getOldDepends(true).remove(getSessionEventOldDepends());
     }
 
 
