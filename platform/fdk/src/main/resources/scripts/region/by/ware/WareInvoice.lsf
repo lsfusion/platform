@@ -21,7 +21,7 @@ META defineInvoiceWare(NS)
                 SET invoicePriceUserInvoiceDetail(d) <- warePriceDate(NS.skuUserInvoiceDetail(d), NS.dateUserInvoiceDetail(d));
                 SET numberVATUserInvoiceDetail(d) <- numberRange(rangeWareDate(NS.skuUserInvoiceDetail(d), NS.dateUserInvoiceDetail(d)));
                 SET valueVATUserInvoiceDetail(d) <- valueRateRangeDate(rangeWareDate(NS.skuUserInvoiceDetail(d), NS.dateUserInvoiceDetail(d)), NS.dateUserInvoiceDetail(d));
-                SET priceUserInvoiceDetail(d) <- round2(invoicePriceUserInvoiceDetail(d)*100/(100+valueVATUserInvoiceDetail(d)));
+                SET priceUserInvoiceDetail(d) <- round2(invoicePriceUserInvoiceDetail(d)*100/(100+calcVATUserInvoiceDetail(d)));
             }
     }
 

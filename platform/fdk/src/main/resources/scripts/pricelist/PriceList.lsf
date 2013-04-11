@@ -1144,7 +1144,7 @@ META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
     prevListSkuPriceMVAT###detail (detail) =
         IF includeVATPriceListType(priceListType###detail(detail))
             THEN
-                prevListSkuPrice###detail(detail) * 100.0 /(100.0 + valueVAT###detail(detail))
+                prevListSkuPrice###detail(detail) * 100.0 /(100.0 + calcVAT###detail(detail))
             ELSE
                 prevListSkuPrice###detail(detail);
 
@@ -1153,7 +1153,7 @@ META deriveDocumentDetailPricePriceListTypeVATCustom (detail, stockProp)
             THEN
                 prevListSkuPrice###detail(detail)
             ELSE
-                prevListSkuPrice###detail(detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
+                prevListSkuPrice###detail(detail) * (100.0 + calcVAT###detail(detail)) / 100.0;
 
     price###detail(detail) <- prevListSkuPriceMVAT###detail (detail)
                             WHEN priceListType###detail(detail) AND
@@ -1212,7 +1212,7 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
     prevListPriceMVAT###detail (priceListType, detail) =
         IF includeVATPriceListType(priceListType)
             THEN
-                prevListPrice###detail(priceListType, detail) * 100.0 /(100.0 + valueVAT###detail(detail))
+                prevListPrice###detail(priceListType, detail) * 100.0 /(100.0 + calcVAT###detail(detail))
             ELSE
                 prevListPrice###detail(priceListType, detail);
 
@@ -1221,7 +1221,7 @@ META deriveDocumentDetailPricePriceListTypeVATBatchCustom (detail, stockProp)
             THEN
                 prevListPrice###detail(priceListType, detail)
             ELSE
-                prevListPrice###detail(priceListType, detail) * (100.0 + valueVAT###detail(detail)) / 100.0;
+                prevListPrice###detail(priceListType, detail) * (100.0 + calcVAT###detail(detail)) / 100.0;
 
 //    price###detail(detail) <- prevListPriceMVAT###detail (detail)
 //                            WHEN priceListType###detail(detail) AND
@@ -1306,10 +1306,10 @@ META defineDocumentDetailPriceVATOnChangeCustom (detail)
         IF requestedNumeric() THEN {
             IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
                 SET price###detail (detail) <- requestedNumeric();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
             } ELSE {
                 SET price###detail (detail) <- requestedNumeric();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcVAT###detail(detail))/100;
             }
         } ELSE {
             SET price###detail (detail) <- NULL;
@@ -1330,10 +1330,10 @@ META defineDocumentDetailNumberVATOnChangeCustom (detail, stockProp)
         IF formResult() == FormResult.ok THEN {
             IF rangeTypeRange(chosenObject('r')) == RangeType.units THEN {
                 SET VAT###detail (detail) <- requestedObject();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - valueVAT###detail(detail));
+                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
             } ELSE {
                 SET VAT###detail (detail) <- requestedObject();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + valueVAT###detail(detail))/100;
+                SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcVAT###detail(detail))/100;
             }
         } ELSE IF formResult() == FormResult.drop THEN {
             SET VAT###detail(detail) <- NULL;
@@ -1373,10 +1373,10 @@ META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
         IF requestedNumeric() THEN {
             IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
                 SET invoicePrice###detail (detail) <- requestedNumeric();
-                SET price###detail (detail) <- invoicePrice###detail (detail) * (100-valueVAT###detail(detail))/100;
+                SET price###detail (detail) <- invoicePrice###detail (detail) * (100-calcVAT###detail(detail))/100;
             } ELSE {
                 SET invoicePrice###detail (detail) <- requestedNumeric();
-                SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + valueVAT###detail(detail));
+                SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + calcVAT###detail(detail));
             }
         } ELSE {
             SET price###detail (detail) <- NULL;
