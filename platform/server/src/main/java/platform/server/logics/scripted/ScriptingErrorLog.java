@@ -419,6 +419,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, String.format("local param '%s' must be used in WHERE clause", paramName));
     }
 
+    public void emitAddObjToPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
+    }
+
     private void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
         String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);

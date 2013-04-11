@@ -304,7 +304,24 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 // Add object action
 // statement syntax:
 // ADDOBJ className [WHERE expression] [TO propertyName(param1, ..., paramN)]
-addObjectActionTest() = ACTION ADDOBJ Store;
+
+CLASS AOA : Named;
+CLASS AOB : Named;
+
+AOBforAOA(a) = DATA AOB (AOA);
+countAOAAOB(a, b) = DATA INTEGER (AOA, AOB);
+countAOA(a) = DATA INTEGER (AOA);
+
+addA() = ACTION ADDOBJ AOA;
+addB() = ACTION ADDOBJ AOB;
+
+addAllBTo() = ACTION ADDOBJ AOB WHERE countAOA(a) > 5 TO AOBforAOA(a);
+
+FORM testAddObject
+    OBJECTS a=AOA, b=AOB
+    PROPERTIES name(a), name(b), countAOA(a), addA(), addB(), addAllBTo(), AOBforAOA(a), countAOAAOB(a, b)
+;
+
 
 // Add/Edit form action
 // statement syntax:
@@ -340,8 +357,6 @@ changeAllA 'all where CCA > 5' () = ACTION CHANGECLASS a TO CCB WHERE countCCA(a
 
 changeAllAWhenCountAB 'all count CCACCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCACCB(a, b) > 5;
 changeAllAWhenCountB 'all count CCB > 5' (b) = ACTION CHANGECLASS a TO CCB WHERE countCCB(b) > 5 AND a IS CCA;
-
-//addMObj() = ACTION ADDOBJ CCB WHERE a IS CCA AND countCCA(a) > 5 TO CCBforCCA(a);
 
 FORM testChangeClass
     OBJECTS a=CCA, b=CCB
@@ -1196,4 +1211,5 @@ NAVIGATOR {
     ADD fibForm;
     ADD newTestForm;
     ADD testChangeClass;
+    ADD testAddObject;
 }

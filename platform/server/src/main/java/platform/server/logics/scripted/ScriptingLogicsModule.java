@@ -1040,7 +1040,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP toPropertyLP = findLPByCompoundName(toPropertyName);
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
-        List<Integer> resultInterfaces = getResultInterfaces(context, toProperty, fromProperty, whereProperty);
+        List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, fromProperty, whereProperty);
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
         for (int resI : resultInterfaces) {
@@ -1060,13 +1060,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedAddObjProp(" + className + ", " + toPropName + ", " + toPropMapping + ", " + whereProperty + ");");
         ValueClass cls = findClassByCompoundName(className);
         checkAddActionsClass(cls);
+        checkAddObjTOParams(context.size(), toPropMapping);
 
         LPWithParams toProperty = null;
         if (toPropName != null && toPropMapping != null) {
             toProperty = addScriptedJProp(findLPByCompoundName(toPropName), toPropMapping);
         }
 
-        List<Integer> resultInterfaces = getResultInterfaces(context, toProperty, whereProperty);
+        List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, whereProperty);
 
         List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
         for (int resI : resultInterfaces) {
@@ -1122,7 +1123,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res,  resultInterfaces);
     }
 
-    private List<Integer> getResultInterfaces(List<String> context, LPWithParams... params) {
+    private List<Integer> getResultInterfaces(int contextSize, LPWithParams... params) {
         List<LPWithParams> lpList = new ArrayList<LPWithParams>();
         for (LPWithParams lp : params) {
             if (lp != null) {
@@ -1134,7 +1135,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
         List<Integer> resultInterfaces = new ArrayList<Integer>();
         for (int paramIndex : allParams) {
-            if (paramIndex >= context.size()) {
+            if (paramIndex >= contextSize) {
                 break;
             }
             resultInterfaces.add(paramIndex);
@@ -2237,6 +2238,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkChangeClassWhere(boolean contextExtended, LPWithParams param, LPWithParams where, List<String> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (contextExtended && !where.usedParams.contains(param.usedParams.get(0))) {
             errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1));
+        }
+    }
+
+    public void checkAddObjTOParams(int contextSize, List<LPWithParams> toPropMapping) throws ScriptingErrorLog.SemanticErrorException {
+        if (toPropMapping != null) {
+            for (LPWithParams param : toPropMapping) {
+                if (param.usedParams.get(0) < contextSize) {
+                    errLog.emitAddObjToPropertyError(parser);
+                }
+            }
         }
     }
 
