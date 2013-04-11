@@ -24,7 +24,6 @@ toDateTimeAgreement 'Дата/время по'(agreement) = dateTimeToDateTime(t
 @defineDocumentHeaderCurrency(agreement);
 @defineDocumentHeaderDescription(Agreement, seriesNumberObject, 'Соглашение');
 //--
-inCustomerAgreement 'Отм' = DATA BOOLEAN (Agreement);
 
 TABLE agreementLegalEntityGroup (Agreement, LegalEntityGroup);
 inAgreementCustomerGroup 'Отм' = DATA BOOLEAN (Agreement, LegalEntityGroup);
@@ -41,13 +40,11 @@ nearestInAgreementCustomerGroup (agreement, legalEntityGroup) =
     inAgreementCustomerGroup(agreement, nearestParentLegalEntityCustomerGroup(agreement, legalEntityGroup));
 
 inAgreementCustomerGroupOver 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE inCustomerAgreement(agreement) AND legalEntityGroup IS LegalEntityGroup,
-                   nearestInAgreementCustomerGroup(agreement, legalEntityGroup),
+    UNION OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroup),
                    inAgreementCustomerGroup(agreement, legalEntityGroup);
 
 inAgreementCustomerOver 'Отм' (agreement, customer) =
-    UNION OVERRIDE inCustomerAgreement(agreement) AND customer IS LegalEntity,
-                   nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
+    UNION OVERRIDE nearestInAgreementCustomerGroup(agreement, legalEntityGroupLegalEntity(customer)),
                    inAgreementCustomer(agreement, customer) PERSISTENT;
 
 customerAgreement 'Покупатели' (agreement) = GROUP CONCAT name(customer) IF inAgreementCustomerOver(agreement, customer) , ', '
@@ -58,7 +55,6 @@ CONSTRAINT inAgreementCustomerOver(agreement, customer) AND NOT isBuyerLegalEnti
     MESSAGE 'Для соглашения выбрано в качестве покупателя организация, не являющеяся покупателем или компанией';
 
 //--
-inSupplierAgreement 'Отм' = DATA BOOLEAN (Agreement);
 
 inAgreementSupplierGroup 'Отм' = DATA BOOLEAN (Agreement, LegalEntityGroup);
 
@@ -73,13 +69,11 @@ nearestInAgreementSupplierGroup (agreement, legalEntityGroup) =
     inAgreementSupplierGroup(agreement, nearestParentLegalEntitySupplierGroup(agreement, legalEntityGroup)) PERSISTENT;
 
 inAgreementSupplierGroupOver 'Отм' (agreement, legalEntityGroup) =
-    UNION OVERRIDE inSupplierAgreement(agreement) AND legalEntityGroup IS LegalEntityGroup,
-                   nearestInAgreementSupplierGroup(agreement, legalEntityGroup),
+    UNION OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroup),
                    inAgreementSupplierGroup(agreement, legalEntityGroup);
 
 inAgreementSupplierOver 'Отм' (agreement, supplier) =
-    UNION OVERRIDE inSupplierAgreement(agreement) AND supplier IS LegalEntity,
-                   nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)),
+    UNION OVERRIDE nearestInAgreementSupplierGroup(agreement, legalEntityGroupLegalEntity(supplier)),
                    inAgreementSupplier(agreement, supplier);
 
 supplierAgreement 'Поставщики' (agreement) = GROUP CONCAT name(supplier) IF inAgreementSupplierOver(agreement, supplier) , ', '
@@ -302,10 +296,8 @@ FORM agreement 'Соглашение'
                   nameCurrencyAgreement, namePriceListTypeAgreement, nameGroupTypeAgreement, noteAgreement,
                   nameRRPPriceListTypeAgreement, nameCurrencyRRPPriceListTypeAgreement READONLY
 
-    TREE supplierGroupTree bb=STRING[3], f = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY OBJVALUE(bb), fTreeName = name(f)
-    FILTERS stringEqualsAll(bb)
-    PROPERTIES(a) inSupplierAgreement TODRAW bb FORCE GRID
+    TREE supplierGroupTree f = LegalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY fTreeName = name(f)
     PROPERTIES(a, f) inAgreementSupplierGroupOver
 
     OBJECTS cc = LegalEntity
@@ -316,10 +308,8 @@ FORM agreement 'Соглашение'
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F9' inAgreementSupplierOver (a, cc)
 
-    TREE customerGroupTree b=STRING[3], lg = LegalEntityGroup PARENT parentLegalEntityGroup
-    PROPERTIES READONLY OBJVALUE(b), lgTreeName = name(lg)
-    FILTERS stringEqualsAll(b)
-    PROPERTIES(a) inCustomerAgreement TODRAW b FORCE GRID
+    TREE customerGroupTree lg = LegalEntityGroup PARENT parentLegalEntityGroup
+    PROPERTIES READONLY lgTreeName = name(lg)
     PROPERTIES(a, lg) inAgreementCustomerGroupOver
 
     OBJECTS c = LegalEntity
@@ -451,11 +441,9 @@ copySessionAgreement 'Копировать' = ACTION (agreement) {
         SET noteAgreement(a) <- noteAgreement(agreement);
         SET groupTypeAgreement(a) <- groupTypeAgreement(agreement);
 
-        SET inCustomerAgreement(a) <- inCustomerAgreement(agreement);
         SET inAgreementCustomer(a, customer) <- inAgreementCustomer (agreement, customer);
         SET inAgreementCustomerGroup(a, legalEntityGroup) <- inAgreementCustomerGroup(agreement, legalEntityGroup);
 
-        SET inSupplierAgreement(a) <- inSupplierAgreement(agreement);
         SET inAgreementSupplier(a, customer) <- inAgreementSupplier (agreement, customer);
         SET inAgreementSupplierGroup(a, legalEntityGroup) <- inAgreementSupplierGroup(agreement, legalEntityGroup);
 
