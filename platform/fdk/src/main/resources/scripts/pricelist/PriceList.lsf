@@ -1412,14 +1412,14 @@ META defineOperationPriceListType(dumb)
 
 END
 
-META defineDocumentOperationPriceListType(object)
+META defineDocumentOperationPriceListType(object, caption)
     CONSTRAINT operation###object(object) AND priceListType###object(object)
                AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
         CHECKED BY priceListType###object
-        MESSAGE 'Вид цены для документа должен совпадать с отмеченными в операции';
+        MESSAGE 'Вид цены для '###caption###' должен совпадать с отмеченными в операции ';
 
-    CONSTRAINT operation###object##Detail(detail)
+    CONSTRAINT operation###object##Detail(detail) AND priceListType###object##Detail(detail)
                AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
         CHECKED BY priceListType###object##Detail
-        MESSAGE 'Вид цены для строки документа должен совпадать с отмеченными в операции';
+        MESSAGE 'Вид цены для строки '###caption###' должен совпадать с отмеченными в операции';
 END

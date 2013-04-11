@@ -231,7 +231,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
 
     FORM shipments 'Поставки' TITLE 'Поставки'###sign
         OBJECTS s = Shipment
-        PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+        PROPERTIES (s) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
                                 noteShipment, objectClassName,

@@ -18,7 +18,7 @@ NAMESPACE SaleReturn;
 
 @defineDocumentOperation(order, o);
 Order.operationOrder(order) += operationOrder(order);
-@defineDocumentOperationPriceListType(userOrder);
+@defineDocumentOperationPriceListType(userOrder, 'заказа (продажа-возврат)');
 @defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 @defineDocumentOperationRole(userOrder);

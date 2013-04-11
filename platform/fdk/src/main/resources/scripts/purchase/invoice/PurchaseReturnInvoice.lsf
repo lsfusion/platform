@@ -22,7 +22,7 @@ NAMESPACE PurchaseReturn;
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineDocumentOperation(invoice, i);
-@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка-возврат)');
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 @defineDocumentOperationRole(userInvoice);

@@ -16,7 +16,7 @@ NAMESPACE Sale;
 
 @defineDocumentOperation(order, o);
 Order.operationOrder(order) += operationOrder(order);
-@defineDocumentOperationPriceListType(userOrder);
+@defineDocumentOperationPriceListType(userOrder, 'заказа (продажа)');
 @defineDocumentOperationLegalEntity(userOrder, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userOrder, customer, 'Покупатель');
 @defineDocumentOperationRole(userOrder);

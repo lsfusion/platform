@@ -22,7 +22,7 @@ NAMESPACE Purchase;
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineDocumentOperation(invoice, i);
-@defineDocumentOperationPriceListType(userInvoice);
+@defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка)');
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 showPurchasePackUserInvoice (invoice) <- showPurchasePackOperation(operationUserInvoice(invoice))
