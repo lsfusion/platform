@@ -17,7 +17,7 @@ retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(u
 // Округление розничной цен (если указан расчетный вид цены, то от него, иначе от склада)
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
     IF retailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
-        THEN roundConditionCalcPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        THEN roundConditionPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
 @defineInvoicePricingAggregation(invoice, Invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );

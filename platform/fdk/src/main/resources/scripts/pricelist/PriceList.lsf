@@ -45,6 +45,13 @@ prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)'
 
 @defineDocumentAbstractHeaderCurrency(priceListType);
 
+roundConditionPriceListType 'Условие округления' = DATA RoundCondition (PriceListType) NOT NULL;
+nameRoundConditionPriceListType 'Условие округления' (priceListType) = name(roundConditionPriceListType(priceListType));
+
+CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) != currencyPriceListType(priceListType)
+           CHECKED BY roundConditionPriceListType
+           MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
+
 CLASS ABSTRACT BasePriceListType 'Базовый вид цены' : PriceListType;
 
 priceBasePriceListTypeSkuStockDateTime (type, sku, stock, dateTime) = ABSTRACT NUMERIC[14,2] (BasePriceListType, Sku, Stock, DATETIME);
@@ -436,7 +443,8 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
     IF formResult() == FormResult.ok THEN {
         IF TRUE AND NOT sumSelectedPriceList(userPriceList) THEN MESSAGE 'Выберите хотя бы одну позицию' ELSE
         SET priceUserPriceListDetailDataPriceListType(detail, t) <-
-                currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0
+                //currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0
+                roundPriceRoundCondition((currentPricePriceListDetailDataPriceListTypeStock(detail, chosenObject('t'), stock) * (chosenNumeric('n') + 100.0) / 100.0), roundConditionPriceListType(chosenObject('t2')))
                 WHERE isSelectedPriceListDetail(detail) AND userPriceListUserPriceListDetail(detail) == userPriceList AND t == chosenObject('t2');
     }
 }
@@ -740,12 +748,13 @@ markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPric
 TABLE calcPriceListTypeSku (CalcPriceListType, Sku);
 dataMarkupCalcPriceListTypeSku 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Sku);
 
-roundConditionCalcPriceListType 'Условие округления' = DATA RoundCondition (CalcPriceListType);
-nameRoundConditionCalcPriceListType 'Условие округления' (calcPriceListType) = name(roundConditionCalcPriceListType(calcPriceListType));
 
-CONSTRAINT currencyRoundCondition(roundConditionCalcPriceListType(calcPriceListType)) != currencyCalcPriceListType(calcPriceListType)
-           CHECKED BY roundConditionCalcPriceListType
-           MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
+//roundConditionCalcPriceListType 'Условие округления' = DATA RoundCondition (CalcPriceListType);
+//nameRoundConditionCalcPriceListType 'Условие округления' (calcPriceListType) = name(roundConditionCalcPriceListType(calcPriceListType));
+
+//CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) != currencyPriceListType(priceListType)
+//           CHECKED BY roundConditionPriceListType
+//           MESSAGE 'Валюта документа должна совпадать с валютой условия округления цены';
 
 levelParentMarkupGroup (calcPriceListType, group) = GROUP MIN levelGroupGroup(group, parent) IF markupCalcPriceListTypeGroup(calcPriceListType, parent)
                                                               BY calcPriceListType, group PERSISTENT;
@@ -763,9 +772,9 @@ markupCalcPriceListTypeSku 'Надбавка, %' (type, sku) =
 multiplierCalcPriceListTypeSku (type, sku) = (100 + markupCalcPriceListTypeSku(type, sku)) / 100 PERSISTENT;
 
 priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime) =
-    roundPriceRoundCondition(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypeSku(type, sku), roundConditionCalcPriceListType(type));
+    roundPriceRoundCondition(priceBasePriceListTypeSkuStockDateTime(basePriceListTypeCalcPriceListType(type), sku, stock, dateTime) * multiplierCalcPriceListTypeSku(type, sku), roundConditionPriceListType(type));
 priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime) =
-    roundPriceRoundCondition(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypeSku(type, skuBatch(batch)), roundConditionCalcPriceListType(type));
+    roundPriceRoundCondition(priceBasePriceListTypeBatchStockDateTime(basePriceListTypeCalcPriceListType(type), batch, stock, dateTime) * multiplierCalcPriceListTypeSku(type, skuBatch(batch)), roundConditionPriceListType(type));
 
 pricePriceListTypeSkuStockDateTime(type, sku, stock, dateTime) += priceCalcPriceListTypeSkuStockDateTime(type, sku, stock, dateTime);
 pricePriceListTypeBatchStockDateTime(type, batch, stock, dateTime) += priceCalcPriceListTypeBatchStockDateTime(type, batch, stock, dateTime);
@@ -778,7 +787,7 @@ editPriceListType 'Редактировать' = ABSTRACT ACTION (priceListType)
 
 FORM dataPriceListType 'Пользовательский вид цен'
     OBJECTS d = DataPriceListType FIXED PANEL
-    PROPERTIES(d) name, includeVATPriceListType, nameCurrencyDataPriceListType
+    PROPERTIES(d) name, includeVATPriceListType, nameCurrencyDataPriceListType, nameRoundConditionPriceListType
 
     EDIT DataPriceListType OBJECT d
 ;
@@ -788,6 +797,7 @@ DESIGN dataPriceListType FROM DEFAULT {
         ADD PROPERTY(name);
         ADD PROPERTY(includeVATPriceListType);
         ADD PROPERTY(nameCurrencyDataPriceListType);
+        ADD PROPERTY(nameRoundConditionPriceListType);
     }
 }
 
@@ -798,7 +808,7 @@ editPriceListType(priceListType) += editDataPriceListType(priceListType);
 FORM calcPriceListType 'Расчетный вид цен'
     OBJECTS c = CalcPriceListType FIXED PANEL
     PROPERTIES(c) name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameBasePriceListTypeCalcPriceListType,
-                  nameRoundConditionCalcPriceListType, nameGroupTypeCalcPriceListType
+                  nameRoundConditionPriceListType, nameGroupTypeCalcPriceListType
 
     TREE treeGroup g=Group PARENT parentGroup
     PROPERTIES READONLY name(g)
@@ -843,7 +853,7 @@ editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 FORM priceListType 'Вид цены'
     OBJECTS p = PriceListType
     PROPERTIES(p) READONLY name, nameCurrencyPriceListType
-    PROPERTIES(p) includeVATPriceListType
+    PROPERTIES(p) includeVATPriceListType, nameRoundConditionPriceListType
 
     DIALOG PriceListType OBJECT p
 ;
@@ -856,7 +866,7 @@ FORM priceListTypes 'Виды цен'
     PROPERTIES(s) SELECTOR name
 
     OBJECTS pt = PriceListType
-    PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
+    PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType, nameRoundConditionPriceListType
     PROPERTIES() TODRAW pt FORCE PANEL addDataPriceListType, addCalcPriceListType
     PROPERTIES(pt) editPriceListType, delete
     ORDER BY objectClassName

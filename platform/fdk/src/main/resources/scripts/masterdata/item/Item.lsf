@@ -150,7 +150,7 @@ FORM item 'Товар'
     PROPERTIES(st2) SELECTOR name
 
     OBJECTS ct = CalcPriceListType
-    PROPERTIES(ct) READONLY name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionCalcPriceListType,
+    PROPERTIES(ct) READONLY name, includeVATPriceListType, nameCurrencyCalcPriceListType, nameRoundConditionPriceListType,
                             nameBasePriceListTypeCalcPriceListType
     PROPERTIES(ct, i, st2) READONLY currentBasePricePriceListTypeSkuStock
     PROPERTIES(ct, i) markupCalcPriceListTypeSku

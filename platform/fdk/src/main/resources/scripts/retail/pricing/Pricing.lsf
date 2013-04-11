@@ -160,7 +160,7 @@ META deriveDocumentDetailPriceOnSessionPriceListType (idetail, prefix, prefixP, 
                 SET prefix###price###idetail(detail) <- roundPriceRoundCondition([X*(Y+100)*(Z+100)/10000](
                                                                         prefixP###price###idetail(detail),
                                                                         prefix###markup###idetail(detail),
-                                                                        value###prefix###VAT###idetail(detail)), roundConditionCalcPriceListType(priceListType))
+                                                                        value###prefix###VAT###idetail(detail)), roundConditionPriceListType(priceListType))
                                                              WHERE changedPriceListType(detail) AND prefix###priceListType###idetail(detail) == priceListType;
             } ELSE {
                 SET prefix###price###idetail(detail) <- prevPricePriceListTypeSkuStockDateTime(priceListType,
@@ -286,7 +286,7 @@ retailPriceListTypeUserPricingDetail(detail) <- retailPriceListTypeUserPricing(u
 // Округление
 roundConditionUserPricingDetail(userPricingDetail) =
     IF retailPriceListTypeUserPricingDetail(userPricingDetail) IS CalcPriceListType
-        THEN roundConditionCalcPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
+        THEN roundConditionPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
         ELSE roundConditionDepartmentStore(departmentStoreUserPricingDetail(userPricingDetail));
 
 // Поставщик

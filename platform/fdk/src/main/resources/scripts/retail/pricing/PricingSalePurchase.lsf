@@ -42,7 +42,7 @@ purchasePricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overP
 // Действия по измению цен и надбавок на форме
 purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
     IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
-        THEN roundConditionCalcPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
+        THEN roundConditionPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
 @changeDocumentDetailMarkupCustomPrefix(userInvoiceDetail, purchaseRetail, purchasePricing, purchaseRetail, purchaseRetail);
