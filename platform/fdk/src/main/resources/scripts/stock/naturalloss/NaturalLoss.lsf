@@ -206,11 +206,11 @@ CLASS NaturalLossPosted 'Проведенная ведомость естест�
 //countryNaturalLoss(naturalLoss) = countryLegalEntity(legalEntityStore(storeDepartmentStore(departmentStoreNaturalLoss(naturalLoss))));
 countryNaturalLossDetail(naturalLossDetail) = countryNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 
-dateFromNaturalLoss 'с' = DATA DATE (NaturalLoss) IN documentPrmGroup;
-dateToNaturalLoss 'по' = DATA DATE (NaturalLoss) IN documentPrmGroup;
+dateFromNaturalLoss 'Дата с' = DATA DATE (NaturalLoss) IN documentPrmGroup;
+dateToNaturalLoss 'Дата по' = DATA DATE (NaturalLoss) IN documentPrmGroup;
 
-dateFromNaturalLossDetail 'с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
-dateToNaturalLossDetail 'по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+dateFromNaturalLossDetail 'Дата с' (naturalLossDetail) = dateFromNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
+dateToNaturalLossDetail 'Дата по' (naturalLossDetail) = dateToNaturalLoss(naturalLossNaturalLossDetail(naturalLossDetail));
 
 subNaturalLossGroupNaturalLossDetail = DATA SubNaturalLossGroup (NaturalLossDetail);
 nameSubNaturalLossGroupNaturalLossDetail 'Группа естественной убыли' =
@@ -358,32 +358,64 @@ FORM naturalLosses 'Ведомости естественной убыли'
 ;
 @extendFormFilterAccess(NaturalLoss, s, naturalLosses, stock);
 
+//DESIGN naturalLosses FROM DEFAULT {
+//
+//    NEW topContainer{
+//        type = SPLITV;
+//        childConstraints = TO THE BOTTOM;
+//
+//        ADD s.box;
+//        ADD d.box;
+//    }
+//
+//    PROPERTY (delete(s)) {
+//        askConfirm = TRUE;
+//    }
+//
+//    ADD s.historyGroup{
+//        childConstraints = TO THE BOTTOM;
+//    }
+//
+//    ADD s.postedGroup{
+//        childConstraints = TO THE BOTTOM;
+//    }
+//
+//    POSITION s.postedGroup TO THE RIGHT s.historyGroup;
+//
+//    ADD functions.box;
+//}
 DESIGN naturalLosses FROM DEFAULT {
-
-    NEW topContainer{
-
-        type = SPLITV;
-        childConstraints = TO THE BOTTOM;
-
-        ADD s.box;
-        ADD d.box;
-    }
-
     PROPERTY (delete(s)) {
         askConfirm = TRUE;
     }
 
-    ADD s.historyGroup{
+    NEW documentContainer BEFORE functions.box {
+        type = SPLITV;
         childConstraints = TO THE BOTTOM;
+
+        ADD s.box { fillVertical = 2.0; }
+
+        NEW documentDetail {
+            type = TABBED;
+
+            ADD d.box {
+                title = 'Спецификация';
+            }
+            NEW documentHistory {
+                title = 'История';
+
+                ADD s.historyGroup;
+                ADD s.postedGroup;
+            }
+            NEW printTab {
+                title = 'Печатные формы';
+                NEW printContainer {
+                    title = 'Печать';
+                    childConstraints = TO THE BOTTOM;
+                }
+            }
+        }
     }
-
-    ADD s.postedGroup{
-        childConstraints = TO THE BOTTOM;
-    }
-
-    POSITION s.postedGroup TO THE RIGHT s.historyGroup;
-
-    ADD functions.box;
 }
 
 NAVIGATOR {

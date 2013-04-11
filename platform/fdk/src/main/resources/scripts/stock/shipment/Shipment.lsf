@@ -234,8 +234,7 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (s) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment,
                                 nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
                                 nameCurrencyShipment, countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
-                                noteShipment, objectClassName,
-                                toShowProp###shipment
+                                toShowProp###shipment, noteShipment, objectClassName
         PROPERTIES (s) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserShipment TODRAW s
@@ -336,9 +335,9 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (cs) READONLY name
 
         OBJECTS o = Order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, shippedOrderDetailOrder, sumOrderDetailOrder, toShowProp###userOrder
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, numberOrder, seriesOrder, dateOrder, timeOrder, nameSupplierOrder, nameSupplierStockOrder,
+                                nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, countOrderDetailOrder, quantityOrderDetailOrder,
+                                shippedOrderDetailOrder, sumOrderDetailOrder, toShowProp###userOrder, noteOrder, objectClassName
         FILTERS isPostedOrder(o),
                 inOrderSupplier(o, s),
                 customerOrder(o) == c,
@@ -497,12 +496,12 @@ META defineShipment(sign, stockProp, toShowProp, captionProp, NS)
         PROPERTIES (c) READONLY name
 
         OBJECTS i = Invoice
-        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
                                 nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice,
-                                nameCurrencyInvoice, noteInvoice,
-                                numberContractSkuInvoice, isCommissionInvoice,
+                                nameCurrencyInvoice, numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice, toShowProp###invoice
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice, toShowProp###invoice,
+                                noteInvoice, objectClassName
         FILTERS supplierInvoice(i) == s,
                 customerInvoice(i) == c,
                 isPostedInvoice(i)

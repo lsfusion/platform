@@ -239,11 +239,10 @@ FORM writeOffShipments 'Поставки'
     PROPERTIES (st) READONLY name
 
     OBJECTS s = Shipment
-    PROPERTIES (s) READONLY isPostedShipment FORCE GRID, objectClassName, numberShipment, seriesShipment, dateShipment, timeShipment,
+    PROPERTIES (s) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment,
                             nameSupplierShipment, nameSupplierStockShipment, nameCustomerShipment, nameCustomerStockShipment,
-                            nameCurrencyShipment, noteShipment,
-                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment
-
+                            nameCurrencyShipment, countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
+                            noteShipment, objectClassName
     OBJECTS d = ShipmentDetail
     PROPERTIES (d) indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                             quantityShipmentDetail, priceShipmentDetail, sumShipmentDetail,

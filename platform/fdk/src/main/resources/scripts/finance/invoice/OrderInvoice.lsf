@@ -82,9 +82,10 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES() nameSupplierInvoiceOrder, nameSupplierStockInvoiceOrder, nameCustomerInvoiceOrder, nameCustomerStockInvoiceOrder, nameOperationInvoiceOrder
 
         OBJECTS o = Order
-        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, objectClassName, numberOrder, seriesOrder, dateOrder, timeOrder,
-                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder, noteOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order
+        PROPERTIES (o) READONLY isPostedOrder FORCE GRID, numberOrder, seriesOrder, dateOrder, timeOrder,
+                                nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order,
+                                noteOrder, objectClassName
         FILTERS isPostedOrder(o),
                 (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS Order AND NOT supplierInvoiceOrder()),
                 customerOrder(o) == customerInvoiceOrder() OR (o IS Order AND NOT customerInvoiceOrder()),

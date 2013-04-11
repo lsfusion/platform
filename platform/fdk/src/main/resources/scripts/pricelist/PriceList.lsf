@@ -866,7 +866,7 @@ FORM priceListTypes 'Виды цен'
     PROPERTIES(s) SELECTOR name
 
     OBJECTS pt = PriceListType
-    PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, nameRoundConditionPriceListType, objectClassName
     PROPERTIES() TODRAW pt FORCE PANEL addDataPriceListType, addCalcPriceListType
     PROPERTIES(pt) editPriceListType, delete
     ORDER BY objectClassName
@@ -964,9 +964,9 @@ addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
 EXTEND FORM legalEntity
 
     OBJECTS p = UserPriceList
-    PROPERTIES(p) READONLY objectClassName, numberObject, seriesObject, fromDateTimeUserPriceList, toDateTimeUserPriceList,
-                           nameCurrencyUserPriceList, nameCompanyUserPriceList, noteUserPriceList, priceListTypesPriceList,
-                           stocksPriceList
+    PROPERTIES(p) READONLY numberObject, seriesObject, fromDateTimeUserPriceList, toDateTimeUserPriceList,
+                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList,
+                           stocksPriceList, noteUserPriceList, objectClassName
     PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL
     PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
@@ -1399,7 +1399,7 @@ META defineOperationPriceListType(dumb)
     EXTEND FORM operation
         OBJECTS pt = PriceListType
         PROPERTIES(pt, o) isPriceListType###operation
-        PROPERTIES(pt) READONLY objectClassName, name, nameCurrencyPriceListType
+        PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
         FILTERGROUP filters
             FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
     ;

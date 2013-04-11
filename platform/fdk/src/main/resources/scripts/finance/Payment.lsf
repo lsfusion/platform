@@ -150,8 +150,8 @@ FORM payments 'Платежи'
     PROPERTIES() namePartyA, namePartyB
 
     OBJECTS p = Payment
-    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY objectClassName, numberObject, seriesObject, datePayment,
-                                                                  timePayment, namePayerPayment, nameBeneficiaryPayment, notePayment
+    PROPERTIES(p) BACKGROUND backgroundPaymentDate(p, d) READONLY numberObject, seriesObject, datePayment, timePayment,
+                  namePayerPayment, nameBeneficiaryPayment, notePayment, objectClassName
 
     PROPERTIES(p) ADDFORM, EDITFORM, delete
 

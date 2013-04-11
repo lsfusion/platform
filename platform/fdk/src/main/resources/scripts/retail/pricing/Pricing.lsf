@@ -806,11 +806,12 @@ META defineInvoicePricingRelation(sign, stockProp)
         PROPERTIES (c) READONLY name
 
         OBJECTS i = Invoice
-        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice, nameCurrencyInvoice, noteInvoice,
+        PROPERTIES (i) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
+                                nameSupplierInvoice, nameSupplierStockInvoice, nameCustomerInvoice, nameCustomerStockInvoice, nameCurrencyInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, ordersInvoice,
+                                noteInvoice, objectClassName
         FILTERS supplierInvoice(i) == s,
                 stockProp###invoice(i) == c,
                 isPostedInvoice(i)

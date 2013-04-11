@@ -23,9 +23,9 @@ FORM invoiceInvoices 'Накладные'
     PROPERTIES(t) OBJVALUE
 
     OBJECTS o = Invoice
-    PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, objectClassName, numberInvoice, seriesInvoice, dateInvoice, timeInvoice,
-                            nameCurrencyInvoice, noteInvoice,
-                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, showSalePackInvoice
+    PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice, nameCurrencyInvoice,
+                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, showSalePackInvoice,
+                            noteInvoice, objectClassName
     FILTERS supplierInvoice(o) == s,
             customerInvoice(o) == c,
             supplierStockInvoice(o) == ss,

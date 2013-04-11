@@ -121,9 +121,10 @@ FORM outputOrders 'Производственные заказы'
     OBJECTS s = Stock FIXED PANEL
 
     OBJECTS o = Order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
-                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, numberObject, seriesObject, dateOrder, timeOrder,
+                  nameComponentsStockOrder, nameProductsStockOrder, fromDateOrder, toDateOrder, quantityProductDetailOrder,
+                  productsSumProductDetailOrder, quantityProductDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder, noteOrder, objectClassName
     FILTERS isPostedOrder(o),
             componentsStockOrder(o) == s,
             toOutputProductDetailOrder(o)
@@ -435,9 +436,9 @@ createShipmentOutput 'Создать поставку для ГП' = ACTION (out
 
 FORM outputs 'Производство'
     OBJECTS o = Output
-    PROPERTIES (o) READONLY isPostedOutput FORCE GRID, objectClassName, numberOutput, seriesOutput, dateOutput, timeOutput,
-                            nameStockOutput, nameCurrencyOutput, namePriceListTypeOutput, noteOutput,
-                            countOutputDetailOutput, quantityOutputDetailOutput, sumOutputDetailOutput
+    PROPERTIES (o) READONLY isPostedOutput FORCE GRID, numberOutput, seriesOutput, dateOutput, timeOutput,
+                            nameStockOutput, nameCurrencyOutput, namePriceListTypeOutput, countOutputDetailOutput,
+                            quantityOutputDetailOutput, sumOutputDetailOutput, noteOutput, objectClassName
     PROPERTIES (o) createShipmentOutput
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed

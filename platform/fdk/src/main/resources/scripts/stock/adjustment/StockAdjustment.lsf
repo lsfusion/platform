@@ -168,9 +168,9 @@ EXTEND FORM userAdjustment
 
 FORM adjustments 'Изменения остатков'
     OBJECTS i = Adjustment
-    PROPERTIES (i) READONLY isPostedAdjustment FORCE GRID, objectClassName, numberAdjustment, seriesAdjustment, dateAdjustment, timeAdjustment,
-                            nameStockAdjustment, nameCurrencyAdjustment, noteAdjustment,
-                            countAdjustmentDetailAdjustment, quantityAdjustmentDetailAdjustment, sumAdjustmentDetailAdjustment
+    PROPERTIES (i) READONLY isPostedAdjustment FORCE GRID, numberAdjustment, seriesAdjustment, dateAdjustment, timeAdjustment,
+                            nameStockAdjustment, nameCurrencyAdjustment, countAdjustmentDetailAdjustment, quantityAdjustmentDetailAdjustment,
+                            sumAdjustmentDetailAdjustment, noteAdjustment, objectClassName
 
     PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 

@@ -305,7 +305,7 @@ EXTEND DESIGN declaration {
 }
 
 EXTEND FORM declarations
-    PROPERTIES(d) FORCE GRID isPostedDeclaration BEFORE objectClassName(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
+    PROPERTIES(d) FORCE GRID isPostedDeclaration BEFORE numberObject(d), sumRateDeclaration, sumRegistrationDeclaration, sumRateDutyDeclaration, sumRateVATDeclaration
 
     OBJECTS dd=DeclarationDetail
     PROPERTIES(dd) READONLY numberDeclarationDetail, nameCustomsDeclarationDetail, nameCountryDeclarationDetail, sumNetWeightDeclarationDetail,

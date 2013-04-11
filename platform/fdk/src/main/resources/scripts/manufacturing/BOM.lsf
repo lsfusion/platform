@@ -455,7 +455,7 @@ FORM BOMs 'Спецификации'
 
     OBJECTS b=BOM
 
-    PROPERTIES(b) READONLY objectClassName, name, numberObject, seriesObject, noteBOM, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM
+    PROPERTIES(b) READONLY name, numberObject, seriesObject, quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM, noteBOM, objectClassName
     PROPERTIES (b) ADDFORM, EDITFORM, copyBOM, delete FORCE PANEL TOOLBAR
     PROPERTIES (b) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 

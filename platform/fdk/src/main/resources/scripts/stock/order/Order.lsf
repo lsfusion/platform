@@ -406,8 +406,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                                 nameAgreementOrder, namePriceListTypeOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                                 VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, closeDateOrder,
-                                noteOrder, objectClassName,
-                                toShowProp###order
+                                toShowProp###order, noteOrder, objectClassName
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 

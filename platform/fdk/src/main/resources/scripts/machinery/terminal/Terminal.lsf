@@ -21,7 +21,7 @@ FORM terminalModel 'Модель ТСД'
 
 FORM terminalModels 'Модели ТСД'
     OBJECTS m=TerminalModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) READONLY name, maxProductModel, handlerModel, noteModel, objectClassName
     PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 

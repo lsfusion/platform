@@ -216,9 +216,10 @@ EXTEND FORM contractLedger
     PROPERTIES(ic, d) FORCE PANEL TOOLBAR payPaymentConditionInContractLedgerDate
 
     OBJECTS pm = Payment
-    PROPERTIES(pm) READONLY objectClassName BACKGROUND backgroundOutContractLedgerDate(pm, d),
-                            dateTimePayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
-                            seriesNumberObject BACKGROUND backgroundOutContractLedgerDate(pm, d),
+    PROPERTIES(pm) READONLY numberObject BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            seriesObject BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            datePayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            timePayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             namePayerPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             nameBeneficiaryPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             nameCurrencyContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
@@ -226,11 +227,13 @@ EXTEND FORM contractLedger
                             rateExchangeContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             sumContractPayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
                             costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(pm, d),
-                            notePayment BACKGROUND backgroundOutContractLedgerDate(pm, d)
+                            notePayment BACKGROUND backgroundOutContractLedgerDate(pm, d),
+                            objectClassName BACKGROUND backgroundOutContractLedgerDate(pm, d)
+
     PROPERTIES(pm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO, writeOutContractLedgerLIFO
     PROPERTIES addContractPayment(c) TODRAW pm FORCE PANEL TOOLBAR
     PROPERTIES(pm) EDITFORM, delete
-    ORDER BY dateTimePayment
+    ORDER BY datePayment, timePayment
 
     FILTERS contractPayment(pm) == c
 ;

@@ -384,9 +384,8 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                                 nameCurrencyInvoice, nameAgreementInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice,
-                                noteInvoice, objectClassName,
-                                toShowProp###invoice
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, toShowProp###invoice,
+                                noteInvoice, objectClassName
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
         PROPERTIES ()  addUserInvoice TODRAW i

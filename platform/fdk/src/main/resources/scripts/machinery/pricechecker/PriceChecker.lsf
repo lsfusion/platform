@@ -19,7 +19,7 @@ FORM priceCheckerModel 'Модель прайс чекера'
 
 FORM priceCheckerModels 'Модели прайс чекеров'
     OBJECTS m=PriceCheckerModel
-    PROPERTIES(m) READONLY objectClassName, name, maxProductModel, noteModel, handlerModel
+    PROPERTIES(m) READONLY name, maxProductModel, handlerModel, noteModel, objectClassName
     PROPERTIES(m) ADDFORM, EDITFORM, delete
 ;
 

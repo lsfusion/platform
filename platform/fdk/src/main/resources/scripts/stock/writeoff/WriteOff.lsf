@@ -263,9 +263,9 @@ editUserWriteOff 'Редактировать'  = ACTION EDITFORM UserWriteOff;
 
 FORM writeOffs 'Списания'
     OBJECTS w=WriteOff
-    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, objectClassName, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
-                            nameReasonWriteOff, noteWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
-                            sumWriteOffDetailWriteOff, nameWriteOffCommitteeWriteOff
+    PROPERTIES (w) READONLY isPostedWriteOff FORCE GRID, numberWriteOff, seriesWriteOff, dateWriteOff, timeWriteOff, nameStockWriteOff,
+                            nameReasonWriteOff, quantityWriteOffDetailWriteOff, countWriteOffDetailWriteOff,
+                            sumWriteOffDetailWriteOff, noteWriteOff, objectClassName
 
     PROPERTIES (w) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES ()  addUserWriteOff TODRAW w

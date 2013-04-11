@@ -1150,8 +1150,8 @@ DESIGN inventory FROM DEFAULT {
 
 FORM inventories 'Инвентаризации'
     OBJECTS in=Inventory
-    PROPERTIES(in) READONLY             isBatchInventory, objectClassName, numberObject, seriesObject, dateInventory, timeInventory,
-                                        nameStockInventory, nameInventory, noteInventory
+    PROPERTIES(in) READONLY             isPostedInventory FORCE GRID, isBatchInventory, numberObject, seriesObject, dateInventory, timeInventory,
+                                        nameStockInventory, nameInventory, noteInventory, objectClassName
     PROPERTIES(in) FORCE PANEL READONLY nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
     PROPERTIES(in)                      ADDFORM, EDITFORM SHOWIF isDraftInventory(in), delete FORCE PANEL TOOLBAR SHOWIF isDraftInventory(in),
                                         postInventory SHOWIF isDraftInventory(in), unpostInventory SHOWIF isPostedInventory(in)

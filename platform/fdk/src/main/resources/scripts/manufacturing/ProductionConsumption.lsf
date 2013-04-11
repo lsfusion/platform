@@ -133,9 +133,9 @@ FORM consumptionOrders 'Производственные заказы'
 //    PROPERTIES (s) READONLY name
 
     OBJECTS o = Order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
-                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, numberObject, seriesObject, dateOrder, timeOrder, nameComponentsStockOrder, nameProductsStockOrder,
+                  fromDateOrder, toDateOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder, noteOrder, objectClassName
     FILTERS isPostedOrder(o),
             componentsStockOrder(o) == s,
             toConsumeComponentDetailOrder(o)
@@ -420,9 +420,10 @@ createShipmentConsumption 'Создать поставку для Сырья' = 
 
 FORM consumptions 'Списания сырья'
     OBJECTS o = Consumption
-    PROPERTIES (o) READONLY isPostedConsumption FORCE GRID, objectClassName, numberConsumption, seriesConsumption, dateConsumption, timeConsumption,
-                            nameStockConsumption, nameCurrencyConsumption, namePriceListTypeConsumption, noteConsumption,
-                            countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption, ordersConsumption
+    PROPERTIES (o) READONLY isPostedConsumption FORCE GRID, numberConsumption, seriesConsumption, dateConsumption, timeConsumption,
+                            nameStockConsumption, nameCurrencyConsumption, namePriceListTypeConsumption,
+                            countConsumptionDetailConsumption, quantityConsumptionDetailConsumption, sumConsumptionDetailConsumption, ordersConsumption,
+                            noteConsumption, objectClassName
     PROPERTIES (o) createShipmentConsumption
 
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed

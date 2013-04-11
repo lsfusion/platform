@@ -9,9 +9,10 @@ REQUIRE Menu,
 FORM menuOrders 'Производственные заказы'
 
     OBJECTS o = Order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityProductDetailOrder,
-                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, numberObject, seriesObject, dateOrder, timeOrder,
+                  nameComponentsStockOrder, nameProductsStockOrder, fromDateOrder, toDateOrder, quantityProductDetailOrder,
+                  productsSumProductDetailOrder, quantityProductDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder, noteOrder, objectClassName
     FILTERS isPostedOrder(o)
 
     OBJECTS pd=ProductDetail

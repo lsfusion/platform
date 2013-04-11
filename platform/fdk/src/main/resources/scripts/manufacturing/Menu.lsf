@@ -233,8 +233,9 @@ copyMenu 'Копировать' = ACTION (userMenu) NEWSESSION {
 
 FORM menus 'Меню'
     OBJECTS m = Menu
-    PROPERTIES (m) READONLY isPostedMenu FORCE GRID, objectClassName, numberMenu, seriesMenu, dateMenu, timeMenu,
-                            nameStockMenu, nameCurrencyMenu, namePriceListTypeMenu, noteMenu, countMenuDetailMenu
+    PROPERTIES (m) READONLY isPostedMenu FORCE GRID, numberMenu, seriesMenu, dateMenu, timeMenu,
+                            nameStockMenu, nameCurrencyMenu, namePriceListTypeMenu, countMenuDetailMenu,
+                            noteMenu, objectClassName
 
     PROPERTIES (m) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 

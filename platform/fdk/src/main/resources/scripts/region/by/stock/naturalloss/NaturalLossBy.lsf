@@ -26,11 +26,7 @@ EXTEND FORM naturalLosses
 ;
 
 EXTEND DESIGN naturalLosses {
-
-    ADD s.printGroup BEFORE functions.box{
-        childConstraints = TO THE BOTTOM;
+    printContainer {
+        ADD s.printGroup;
     }
-
-    POSITION s.printGroup TO THE RIGHT s.postedGroup;
-    //POSITION s.printGroup TO THE BOTTOM s.historyGroup;
 }

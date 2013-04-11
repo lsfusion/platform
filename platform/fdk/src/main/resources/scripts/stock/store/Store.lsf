@@ -238,7 +238,7 @@ FORM store 'Магазин'
                   nameRegionStore, latitudeStore, longitudeStore, showOnMapPOI
 
     OBJECTS d=DepartmentStore
-    PROPERTIES(d) READONLY objectClassName, name, tradingSquareDepartmentStore
+    PROPERTIES(d) READONLY name, tradingSquareDepartmentStore, objectClassName
     PROPERTIES(d)          ADDSESSIONFORM, EDITSESSIONFORM, delete
     FILTERS inStoreDepartment(s, d)
 
@@ -262,7 +262,7 @@ FORM stores 'Магазины'
     FILTERS inChainStoresStoreTypeStore(t, st, s)
 
     OBJECTS d=DepartmentStore
-    PROPERTIES(d) READONLY objectClassName, name
+    PROPERTIES(d) READONLY name, objectClassName
     FILTERS inStoreDepartment(s, d)
 ;
 

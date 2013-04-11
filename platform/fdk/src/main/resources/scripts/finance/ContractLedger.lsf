@@ -573,25 +573,30 @@ FORM contractLedger 'Управление задолженностями'
     FILTERS isPostedContractALedger(cal)
 
     OBJECTS pr = PaymentRequest
-    PROPERTIES(pr) READONLY objectClassName BACKGROUND backgroundPaymentRequestDate(pr, d),
-                            dateTimePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
-                            seriesNumberObject BACKGROUND backgroundPaymentRequestDate(pr, d),
+    PROPERTIES(pr) READONLY numberObject BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            seriesObject BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            datePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            timePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
                             sumPaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
-                            notePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d)
+                            notePaymentRequest BACKGROUND backgroundPaymentRequestDate(pr, d),
+                            objectClassName BACKGROUND backgroundPaymentRequestDate(pr, d)
     PROPERTIES(pr) ADDFORM, EDITFORM, delete
-    ORDER BY dateTimePaymentRequest
+    ORDER BY datePaymentRequest, timePaymentRequest
 
     OBJECTS cm = CreditMemo
-    PROPERTIES(cm) READONLY objectClassName BACKGROUND backgroundOutContractLedgerDate(cm, d),
-                            dateTimeCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
-                            seriesNumberObject BACKGROUND backgroundOutContractLedgerDate(cm, d),
+    PROPERTIES(cm) READONLY numberObject BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            seriesObject BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            dateCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            timeCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
                             sumCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
-                            noteCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d)
+                            noteCreditMemo BACKGROUND backgroundOutContractLedgerDate(cm, d),
+                            objectClassName BACKGROUND backgroundOutContractLedgerDate(cm, d)
+
     PROPERTIES(cm) FORCE GRID READONLY costedInContractLedgerOutContractLedger BACKGROUND backgroundOutContractLedgerDate(cm, d) SHOWIF isOutContractLedger(cm)
     PROPERTIES(cm) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(cm),
                                              writeOutContractLedgerLIFO SHOWIF isOutContractLedger(cm)
     PROPERTIES(cm) ADDFORM, EDITFORM, delete
-    ORDER BY dateTimeCreditMemo
+    ORDER BY dateCreditMemo, timeCreditMemo
 
 
     OBJECTS ic = InContractLedger

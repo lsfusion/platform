@@ -552,11 +552,11 @@ editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM
 
 FORM repricings 'Акты переоценки' TITLE 'Акты переоценки'
     OBJECTS p = Repricing
-    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, objectClassName, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, beforeDateRepricing,
+    PROPERTIES (p) READONLY isPostedRepricing FORCE GRID, numberRepricing, seriesRepricing, dateRepricing, timeRepricing, beforeDateRepricing,
                nameDepartmentStoreRepricing, countRepricingDetailRepricing,
                diffSumRepricingDetailRepricing, diffMarkupSumRepricingDetailRepricing, diffVATSumRepricingDetailRepricing,
                diffRetailSumRepricingDetailRepricing,
-               numberDisposalRepricing, nameRepricingCommitteeRepricing, skipChangeLedgerRepricing,
+               numberDisposalRepricing, skipChangeLedgerRepricing,
                noteRepricing, objectClassName
 
     PROPERTIES (p) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed

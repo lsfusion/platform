@@ -170,9 +170,9 @@ DESIGN disparity FROM DEFAULT {
 FORM disparities 'Изменения сортности'
 
     OBJECTS dis=Disparity
-    PROPERTIES(dis)  READONLY objectClassName, numberObject, seriesObject, nameStockDisparity, dateDisparity, timeDisparity,
+    PROPERTIES(dis)  READONLY isPostedDisparity FORCE GRID, numberObject, seriesObject, dateDisparity, timeDisparity, nameStockDisparity,
                               countDisparityDetailDisparity, quantityDisparityDetailDisparity, sumDisparityDetailDisparity,
-                              inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity
+                              inputQuantityDisparityDetailDisparity, inputSumDisparityDetailDisparity, noteDisparity, objectClassName
 
     PROPERTIES(dis)  READONLY FORCE PANEL timeCreatedHistorizable, nameUserCreatedHistorizable, hostnameComputerCreatedHistorizable, timeClosed, nameUserClosed, hostnameComputerClosed
 

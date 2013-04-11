@@ -632,9 +632,9 @@ WHEN SESSION FORMS order CHANGED(calcPriceListTypeProductDetail(detail)) OR
 FORM orders 'Производственные заказы'
 
     OBJECTS o = Order
-    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, objectClassName, nameComponentsStockOrder, nameProductsStockOrder, nameNumeratorObject, numberObject, seriesObject,
-                  dateOrder, timeOrder, fromDateOrder, toDateOrder, noteOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
-                  nameCalcPriceListTypeOrder, namePriceListTypeOrder
+    PROPERTIES(o) READONLY isPostedOrder FORCE GRID, numberObject, seriesObject, dateOrder, timeOrder, nameComponentsStockOrder, nameProductsStockOrder,
+                  fromDateOrder, toDateOrder, quantityProductDetailOrder, productsSumProductDetailOrder, quantityComponentDetailOrder,
+                  nameCalcPriceListTypeOrder, namePriceListTypeOrder, noteOrder, objectClassName
 
     PROPERTIES(o) ADDFORM, EDITFORM, copyOrder, delete FORCE PANEL TOOLBAR
     PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed

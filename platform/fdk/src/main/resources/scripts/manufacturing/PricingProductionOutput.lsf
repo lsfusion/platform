@@ -98,7 +98,7 @@ EXTEND DESIGN order {
 }
 
 EXTEND FORM orders
-    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOrder(o) createPricingOrder, namePricingCommitteeOrder
+    PROPERTIES(o) READONLY BACKGROUND backgroundRetailOrder(o) createPricingOrder
     PROPERTIES(pd) BACKGROUND backgroundRetailOrder(o) SHOWIF createPricingOrder(o) READONLY BEFORE outputProductsSumProductDetail
                    componentsSumProductDetail, retailMarkupProductDetail, retailMarkupSumProductDetail, retailVATSumProductDetail
 ;

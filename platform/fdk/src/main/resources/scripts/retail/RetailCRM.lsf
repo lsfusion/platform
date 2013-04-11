@@ -174,11 +174,11 @@ TABLE promotionCondition (PromotionCondition);
 
 GROUP retailCRMGroup 'Реквизиты' : recognize;
 
-dateFromPromotion 'ОТ:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
-dateToPromotion 'ДО:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
+dateFromPromotion 'ДАТА ОТ:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
+dateToPromotion 'ДАТА ДО:' = DATA DATE (Promotion) IN retailCRMGroup NOT NULL;
 
-timeOfFromPromotion 'ОТ:' =  DATA TIME (Promotion) IN retailCRMGroup;
-timeOfToPromotion 'ДО:' =  DATA TIME (Promotion) IN retailCRMGroup;
+timeOfFromPromotion 'ВРЕМЯ ОТ:' =  DATA TIME (Promotion) IN retailCRMGroup;
+timeOfToPromotion 'ВРЕМЯ ДО:' =  DATA TIME (Promotion) IN retailCRMGroup;
 
 TABLE promotionDOW (Promotion, DOW);
 skipPromotionDOW 'Исключить' = DATA BOOLEAN (Promotion, DOW);

@@ -108,15 +108,16 @@ DESIGN declaration FROM DEFAULT{
 
 FORM declarations 'Таможенные декларации'
     OBJECTS d = Declaration
-    PROPERTIES(d) READONLY objectClassName, numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
-                  nameHomeCurrencyDeclaration, nameCurrencyDeclaration, rateExchangeDeclaration, nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration
+    PROPERTIES(d) READONLY numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration,
+                  nameHomeCurrencyDeclaration, nameCurrencyDeclaration, rateExchangeDeclaration,
+                  nameCurrencyCustomsZoneDeclaration, rateExchangeCustomsZoneDeclaration, objectClassName
     PROPERTIES(d) ADDFORM, EDITFORM, delete
 ;
 
 FORM declarationsDialog 'Таможенные декларация'
     OBJECTS d = Declaration
-    PROPERTIES(d) READONLY seriesNumberObject, dateTimeDeclaration, nameLegalEntityDeclaration, nameCurrencyDeclaration,
-                  nameHomeCurrencyDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration
+    PROPERTIES(d) READONLY numberObject, seriesObject, dateDeclaration, timeDeclaration, nameLegalEntityDeclaration, nameCurrencyDeclaration,
+                  nameHomeCurrencyDeclaration, nameTypeExchangeDeclaration, rateExchangeDeclaration, objectClassName
 
     DIALOG Declaration OBJECT d
 ;

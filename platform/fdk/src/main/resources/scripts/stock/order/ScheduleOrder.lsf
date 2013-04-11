@@ -476,14 +476,14 @@ filterCompanyCustomer(legalEntity, customer) = (isCompanyLegalEntity(legalEntity
 EXTEND FORM legalEntity
 
     OBJECTS ss=ScheduleOrder
-    PROPERTIES(ss) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
+    PROPERTIES(ss) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder, objectClassName
     PROPERTIES(ss) delete, editScheduleOrder
 
     FILTERS filterCompanySupplier(l, s)
     FILTERS supplierScheduleOrder(ss) == s, customerScheduleOrder(ss) == l
 
     OBJECTS sc=ScheduleOrder
-    PROPERTIES(sc) READONLY objectClassName, startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder
+    PROPERTIES(sc) READONLY startDateScheduleOrder, endDateScheduleOrder, nameTypeScheduleOrder, objectClassName
     PROPERTIES(sc) delete, editScheduleOrder
 
     FILTERS filterCompanyCustomer(l, c)
