@@ -42,7 +42,7 @@ nameCustomerInvoiceWHOut 'Покупатель' (invoice) = name(customerInvoice
 @defineDocumentDetailQuantity(invoiceWHOut);
 
 @defineDocumentDetailGrossWeight(invoiceWHOut, sku);
-@defineDocumentDetailQuantityPack(invoiceWHOut, sku);
+@defineDocumentDetailPackQuantity(invoiceWHOut, sku);
 
 @defineDocumentDetailSkuBalance(invoiceWHOut, sku, warehouse);
 
@@ -219,7 +219,7 @@ sumVATConsignmentDetail (consignmentDetail) +=  sumVATInvoiceWHOutDetail(consign
 sumInvoiceConsignmentDetail (consignmentDetail) += sumInvoiceInvoiceWHOutDetail(consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightInvoiceWHOutDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += quantityPackInvoiceWHOutDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityInvoiceWHOutDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMInvoiceWHOutDetail (consignmentDetail);
 
 noteInvoiceWHOutDetail (invoiceWHOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](

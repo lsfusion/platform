@@ -96,7 +96,7 @@ skipSkuLedger (ledger) += skipSkuLedgerTransferOutDetail(ledger);
 
 // Товарные накладные
 @defineDocumentDetailGrossWeight(transferOutBatch, sku);
-@defineDocumentDetailQuantityPack(transferOutBatch, sku);
+@defineDocumentDetailPackQuantity(transferOutBatch, sku);
 
 @defineConsignmentHeader(transferOut);
 @implementConsignmentHeader(TransferOut);
@@ -140,7 +140,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isStockToStockTransferOutB
     ELSE retailPriceTransferOutDetail(transferOutDetailTransferOutBatchDetail(consignmentDetail)) * quantityTransferOutBatchDetail (consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightTransferOutBatchDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += quantityPackTransferOutBatchDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityTransferOutBatchDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMTransferOutBatchDetail (consignmentDetail);
 
 @defineDocumentFormTransferOutConsignment(transfer, t);

@@ -42,8 +42,7 @@ CLASS ABSTRACT InvoiceDetail 'Строка накладной' : DocumentDetail;
 
 @defineDocumentAbstractDetailQuantity(invoice);
 @defineDocumentDetailGrossWeight(invoice, sku);
-//@defineDocumentDetailQuantityPack (invoice, sku);
-@defineDocumentDetailAbstractDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
+@defineDocumentAbstractDetailQuantityPrefix(invoice, pack, ' (упаковок)');
 @defineDocumentHeaderSkuQuantity(invoice, sku);
 
 @defineDocumentHeaderGrossWeight(invoice);
@@ -68,7 +67,7 @@ countryInvoiceDetail(invoiceDetail) = countryStock(customerStockInvoice(invoiceI
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
+META defineInvoice(sign, stockProp)
 
     CLASS ABSTRACT Invoice 'Накладная'###sign : Invoice.Invoice;
     CLASS ABSTRACT InvoiceDetail 'Строка накладной'###sign : Invoice.InvoiceDetail;
@@ -189,17 +188,6 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
     countInvoiceDetailStockInvoice (stock, invoice) = GROUP SUM 1 BY stockProp###invoiceDetail(invoiceDetail), invoiceInvoiceDetail(invoiceDetail);
 
-//-- Упаковка
-    @defineDocumentInterfaceCreate (invoice, toShowProp, captionProp);
-
-    @defineDocumentInterfaceBarcodeSkuPrefix (invoice, sku, , );
-    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (invoiceDetail, , ' упаковок');
-    @deriveDocumentDetailQuantityBarcodeCustom (userInvoiceDetail, sku, NS, toShowProp);
-    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userInvoiceDetail);
-    @deriveDocumentQuantityDetailOnAmountPack(userInvoiceDetail);
-    @deriveDocumentQuantityDetailOnChangeQuantityPack (userInvoiceDetail);
-    Invoice.quantityPackInvoiceDetail(detail) += quantityPackInvoiceDetail(detail);
-
     @implementDocumentSupplierCustomer(invoice);
 
 //    fillDocumentInvoice 'Подбор документа' = ACTION (userInvoice) {
@@ -229,13 +217,10 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                        numberContractSkuUserInvoice, isCommissionUserInvoice
         PROPERTIES (i) countUserInvoiceDetailUserInvoice, quantityUserInvoiceDetailUserInvoice, sumUserInvoiceDetailUserInvoice,
                        VATSumUserInvoiceDetailUserInvoice, invoiceSumUserInvoiceDetailUserInvoice
-        PROPERTIES (i) toShowProp###userInvoice//, fillDocumentInvoice
 
         OBJECTS d = UserInvoiceDetail
         PROPERTIES (d) indexUserInvoiceDetail, idBarcodeSkuUserInvoiceDetail, nameSkuUserInvoiceDetail, shortNameUOMSkuUserInvoiceDetail
-        PROPERTIES (d) SHOWIF toShowProp###userInvoice(i) idBarcodePackUserInvoiceDetail, shortNameUOMPackUserInvoiceDetail,
-                       amountPackUserInvoiceDetail ON CHANGE changeAmountPackUserInvoiceDetail(d), quantityPackUserInvoiceDetail ON CHANGE changeQuantityPackUserInvoiceDetail(d)
-        PROPERTIES (d) quantityUserInvoiceDetail ON CHANGE changeQuantityUserInvoiceDetail(d), namePriceListTypeUserInvoiceDetail,
+        PROPERTIES (d) quantityUserInvoiceDetail, namePriceListTypeUserInvoiceDetail,
                        priceUserInvoiceDetail ON CHANGE changePriceUserInvoiceDetail(d), sumUserInvoiceDetail,
                        numberVATUserInvoiceDetail ON CHANGE changeNumberVATUserInvoiceDetail(d),
                        valueVATUserInvoiceDetail ON CHANGE changeValueVATUserInvoiceDetail(d),
@@ -311,15 +296,18 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                             childConstraints = TO THE BOTTOM;
                             ADD i.documentPrmGroup {
                                 childConstraints = TO THE RIGHTBOTTOM;
-                                ADD PROPERTY(toShowProp###userInvoice);
                             }
+                        }
+                        NEW headerExtraParams {
+                            title = 'Дополнительные параметры';
+                            minimumSize = (400, -1);
                         }
                         NEW headerCreateDetail {
                             title = 'Основание';
                         }
                         NEW headerCreateDocuments {
                             title = 'Производные документы';
-                            minimumSize = (300, -1);
+                            minimumSize = (400, -1);
                         }
                      }
                 }
@@ -357,7 +345,6 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
             SET priceListTypeUserInvoice(i) <- priceListTypeInvoice(invoice);
             SET noteUserInvoice(i) <- noteInvoice(invoice);
             //SET createShipmentUserInvoice(i) <- createShipmentUserInvoice(invoice);
-            SET toShowProp###userInvoice(i) <- toShowProp###invoice(invoice);
 
             EXEC overCopyInvoice(invoice, i);
 
@@ -384,7 +371,7 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
                                 nameCurrencyInvoice, nameAgreementInvoice,
                                 numberContractSkuInvoice, isCommissionInvoice,
                                 countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
-                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice, toShowProp###invoice,
+                                VATSumInvoiceDetailInvoice, invoiceSumInvoiceDetailInvoice,
                                 noteInvoice, objectClassName
         PROPERTIES (i) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -394,8 +381,6 @@ META defineInvoice(sign, stockProp, toShowProp, captionProp, NS)
 
         OBJECTS d = InvoiceDetail
         PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp##Invoice(i) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail,
-                       amountPackInvoiceDetail, quantityPackInvoiceDetail
         PROPERTIES (d) READONLY quantityInvoiceDetail, namePriceListTypeInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail,
                        numberVATInvoiceDetail, valueVATInvoiceDetail, VATSumInvoiceDetail, invoiceSumInvoiceDetail
 
@@ -570,62 +555,8 @@ META defineInvoiceStockDestination(fromStock, toStock)
     Invoice.dataToStockInvoiceDetail(detail) += data###toStock##InvoiceDetail(detail);
 END
 
-//-- Расширение формы подбора упаковкой (один склад)
-META defineDocumentPackSkuCustom(object, detail, skuProp, stockProp, NS)
-    quantityPackSku###object 'Кол-во упаковок в документе' (sku, object) = GROUP SUM quantityPack###detail(detail)
-        BY skuProp###detail(detail), object###detail(detail);
-
-    changeQuantityPackSku###object = ACTION (sku, object) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF detail###Sku###object(sku, object) THEN {
-            IF requestedNumeric() THEN {
-                SET quantityPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object(sku, object);
-            } ELSE {
-                EXEC delete(detail###Sku###object(sku, object));
-
-            }
-        } ELSE {
-            IF requestedNumeric() THEN
-                FOR ADDOBJ d = ###detail DO {
-                SET object###detail(d) <- object;
-                SET stockProp###detail (d) <- stockProp###object(object);
-                SET skuProp###detail(d) <- sku;
-                SET quantityPack###detail (d) <- requestedNumeric();
-            }
-        }
-    }
-    changeAmountPackSku###object = ACTION (sku, object) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF detail###Sku###object(sku, object) THEN {
-            IF requestedNumeric() THEN {
-                SET amountPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object(sku, object);
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object(sku, object) AND quantityPack###detail(detail);
-            } ELSE {
-                SET amountPack###detail(detail) <- NULL WHERE detail == detail###Sku###object(sku, object);
-            }
-
-        }
-        EXEC NS.changeValuePackSku(sku);
-    }
-
-END
-META defineDocumentPackSku(object, skuProp, stockProp, NS)
-    @defineDocumentPackSkuCustom(object, object##Detail, skuProp, stockProp, NS);
-END
-
-
-META extendFormDocumentPackSkuCustom(object, form, concrete, toShowProp, NS)
-
-    EXTEND FORM form
-        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantity###object##Detail###sku###object(s, concrete) NS.idBarcodePackSku(s) READONLY,
-                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE changeAmountPackSku###object(s, concrete),
-                   quantityPackSku###object(s, concrete) ON CHANGE changeQuantityPackSku###object(s, concrete)
-    ;
-END
-
 // вторая валюта
-META defineHomeCurrencyInvoice(invoice)
+META defineInvoiceHomeCurrency(invoice)
     isHomeCurrency 'Конвертация' = DATA BOOLEAN(###invoice) IN documentPrmGroup;
 
     homeCurrencyInvoice = ABSTRACT Currency(###invoice);
@@ -670,17 +601,17 @@ META defineHomeCurrencyInvoice(invoice)
     sumHomeInvoiceDetail 'Сумма (пост.)' (invoice##Detail) = quantityInvoiceDetail(invoice##Detail) * homePriceInvoiceDetail(invoice##Detail);
 
     EXTEND FORM userInvoice
-        PROPERTIES(i) isHomeCurrency BEFORE nameAgreementUserInvoice
+        PROPERTIES(i)                          isHomeCurrency BEFORE nameAgreementUserInvoice
         PROPERTIES(i) SHOWIF isHomeCurrency(i) nameHomeCurrencyInvoice, nameTypeExchangeInvoice, dateRateExchangeInvoice, rateExchangeInvoice
-        PROPERTIES(d) sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrency(i)
-        PROPERTIES(d) homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d)                          sumHomeInvoiceDetail AFTER sumUserInvoiceDetail SHOWIF isHomeCurrency(i)
+        PROPERTIES(d)                          homePriceUserInvoiceDetail AFTER sumHomeInvoiceDetail SHOWIF isHomeCurrency(i)
     ;
 
     EXTEND DESIGN userInvoice {
-        headerMainParams {
+        headerExtraParams {
             NEW headerHomeCurrency {
                 title = 'Конвертация';
-                childConstraints = TO THE RIGHT;
+                ADD PROPERTY(isHomeCurrency);
                 ADD PROPERTY(nameHomeCurrencyInvoice);
                 ADD PROPERTY(nameTypeExchangeInvoice);
                 ADD PROPERTY(dateRateExchangeInvoice);

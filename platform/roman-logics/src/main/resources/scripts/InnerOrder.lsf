@@ -36,7 +36,7 @@ CLASS InnerOrderDetail 'Строка внутреннего заказа';
 @defineDocumentDetailQuantity(innerOrder);
 
 @defineDocumentDetailGrossWeight(innerOrder, sku);
-@defineDocumentDetailQuantityPack(innerOrder, sku);
+@defineDocumentDetailPackQuantity(innerOrder, sku);
 
 @defineDocumentDetailSkuBalance(innerOrder, sku, stock);
 

@@ -5,7 +5,7 @@ REQUIRE Utils, PurchaseOrder, OrderInvoice, PurchaseOperation, CustomsGroup;
 NAMESPACE Purchase;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', Purchase);
+@defineInvoice(' (закупка)', customerStock);
 
 @defineInvoiceBatch(customerStock);
 
@@ -13,7 +13,7 @@ NAMESPACE Purchase;
 @defineInvoiceStockDestination(supplierStock, customerStock);
 
 // вторая валюта
-@defineHomeCurrencyInvoice(invoice);
+@defineInvoiceHomeCurrency(invoice);
 
 @deriveDocumentDetailVAT (userInvoice, , date,  sku, customerStock); // записываем ставку
 @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
@@ -25,13 +25,11 @@ NAMESPACE Purchase;
 @defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка)');
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
-showPurchasePackUserInvoice (invoice) <- showPurchasePackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
 @defineDocumentOperationRole(userInvoice);
 
-@defineOrderInvoice(' (закупка)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
+@defineOrderInvoice(' (закупка)', customerStock);
 
 //isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(Invoice) IN documentPrmGroup;
 
@@ -81,14 +79,30 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(custome
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackSku(userInvoice, sku, customerStock, Purchase);
-@extendFormDocumentPackSkuCustom(userInvoice, userInvoice, i, showPurchasePack, Purchase);
-
-overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
-    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
-        SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+@defineDocumentPack(invoice, i);
+Invoice.packQuantityInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserInvoice);
+        }
     }
 }
+
+@defineOrderInvoicePack(showPack);
+
+@defineDocumentPackSku(userInvoice, sku, customerStock);
+@extendFormDocumentPackSku(userInvoice, userInvoice, i);
+
+//overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+//    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+//        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+//    }
+//}
+
+showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 //------------------------------ Расширение формы -----------------------------//
 

@@ -146,7 +146,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionReturnOutDetai
     ELSE supplierSumReturnOutDetailS(consignmentDetail) (+) sumVATReturnOutDetailS(consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightReturnOutDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += quantityPackReturnOutDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantityReturnOutDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMReturnOutDetail (consignmentDetail);
 
 noteReturnOutDetail (returnOutDetail) = [FORMULA STRING[30] '\'Цена импортера:\' ||  \' \' || CAST($1 AS TEXT)'](

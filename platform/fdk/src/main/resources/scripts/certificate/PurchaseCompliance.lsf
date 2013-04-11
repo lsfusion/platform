@@ -266,6 +266,14 @@ EXTEND FORM userInvoice
     PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) isComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isComplianceUserInvoice(i)
     PROPERTIES(d) BACKGROUND backgroundCompliancedInvoice(i) priceComplianceUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isComplianceUserInvoice(i)
 ;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerCompliance {
+            title = 'Сертификация';
+            ADD PROPERTY(isComplianceUserInvoice);
+        }
+    }
+}
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundCompliancedInvoice(i) isComplianceInvoice FORCE GRID

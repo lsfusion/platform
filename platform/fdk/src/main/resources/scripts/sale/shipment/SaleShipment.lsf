@@ -1,16 +1,20 @@
 MODULE SaleShipment;
 
-REQUIRE Shipment, SaleInvoice, SaleOperation;
+REQUIRE Shipment, SaleInvoice, SaleOperation, OrderShipment, InvoiceShipment;
 
 NAMESPACE Sale;
 
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа)', supplierStock, showSalePack, 'Упаковка', Sale);
+@defineShipment(' (продажа)', supplierStock);
 @defineShipmentBatch(supplierStock);
 
 @defineShipmentStockDestination(supplierStock, customerStock);
+
+@defineOrderShipment(' (продажа)', supplierStock);
+@defineInvoiceShipment(' (продажа)', supplierStock);
+@defineInvoiceShipmentBatch();
 
 //------------------------------------------------- Операции ------------------------------------------------------//
 
@@ -28,6 +32,14 @@ CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(suppl
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Ввод в упаковках -----------------------------//
+
+@defineDocumentPack(shipment, s);
+Shipment.packQuantityShipmentDetail(detail) += packQuantityShipmentDetail(detail);
+
+@defineOrderShipmentPack();
+@defineInvoiceShipmentPack();
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 

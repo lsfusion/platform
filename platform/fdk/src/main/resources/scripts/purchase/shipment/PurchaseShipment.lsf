@@ -1,15 +1,19 @@
 MODULE PurchaseShipment;
 
-REQUIRE Shipment, PurchaseInvoice, PurchaseOperation;
+REQUIRE Shipment, PurchaseInvoice, PurchaseOperation, OrderShipment, InvoiceShipment;
 
 NAMESPACE Purchase;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (закупка)', customerStock, showPurchasePack, 'Упаковка', Purchase);
+@defineShipment(' (закупка)', customerStock);
 @defineShipmentBatch(customerStock);
 
 @defineShipmentStockDestination(supplierStock, customerStock);
+
+@defineOrderShipment(' (закупка)', customerStock);
+@defineInvoiceShipment(' (закупка)', customerStock);
+@defineInvoiceShipmentBatch();
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
@@ -27,6 +31,14 @@ CONSTRAINT supplierUserShipment(userShipment) AND NOT isSupplierLegalEntity(supp
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся поставщиком: закупка';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся компанией: закупка';
+
+//------------------------------ Ввод в упаковках -----------------------------//
+
+@defineDocumentPack(shipment, s);
+Shipment.packQuantityShipmentDetail(detail) += packQuantityShipmentDetail(detail);
+
+@defineOrderShipmentPack();
+@defineInvoiceShipmentPack();
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 

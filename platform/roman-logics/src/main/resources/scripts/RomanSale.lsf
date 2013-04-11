@@ -93,7 +93,7 @@ skipSkuLedger (ledger) += skipSkuLedgerSaleOutDetail(ledger);
 
 // Товарные накладные
 @defineDocumentDetailGrossWeight(saleOutBatch, sku);
-@defineDocumentDetailQuantityPack(saleOutBatch, sku);
+@defineDocumentDetailPackQuantity(saleOutBatch, sku);
 
 @defineConsignmentHeader(saleOut);
 isCommissionSaleOutBatchDetail 'Продажа на комиссию' (saleOutBatchDetail) = isCommissionSaleOut(saleOutSaleOutBatchDetail(saleOutBatchDetail));
@@ -138,7 +138,7 @@ sumInvoiceConsignmentDetail (consignmentDetail) += IF isCommissionSaleOutBatchDe
     ELSE supplierSumSaleOutBatchDetailS(consignmentDetail) (+) sumVATSaleOutBatchDetailS(consignmentDetail);
 
 grossWeightConsignmentDetail (consignmentDetail) += grossWeightSaleOutBatchDetail (consignmentDetail);
-quantityPackConsignmentDetail (consignmentDetail) += quantityPackSaleOutBatchDetail (consignmentDetail);
+packQuantityConsignmentDetail (consignmentDetail) += packQuantitySaleOutBatchDetail (consignmentDetail);
 //shortNameUOMConsignmentDetail (consignmentDetail) += shortNameUOMSaleOutBatchDetail (consignmentDetail);
 
 

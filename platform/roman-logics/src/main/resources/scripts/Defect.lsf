@@ -105,7 +105,7 @@ repairShopRepairDetail (detail) = repairShopRepair(repairRepairDetail(detail));
 @defineDocumentDetailQuantity(repair);
 
 @defineDocumentDetailGrossWeight(repair, sku);
-@defineDocumentDetailQuantityPack(repair, sku);
+@defineDocumentDetailPackQuantity(repair, sku);
 
 @defineDocumentDetailSkuBalance(repair, sku, stock);
 
@@ -558,7 +558,7 @@ cleaningStockDryCleaningDetail (detail) = cleaningStockDryCleaning(dryCleaningDr
 @defineDocumentDetailQuantity(dryCleaning);
 
 @defineDocumentDetailGrossWeight(dryCleaning, sku);
-@defineDocumentDetailQuantityPack(dryCleaning, sku);
+@defineDocumentDetailPackQuantity(dryCleaning, sku);
 
 @defineDocumentDetailSkuBalance(dryCleaning, sku, stock);
 

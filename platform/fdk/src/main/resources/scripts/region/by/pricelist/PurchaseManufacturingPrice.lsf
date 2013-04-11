@@ -4,7 +4,7 @@ REQUIRE PurchaseInvoice, PricingPurchase, PricingManufacturingPrice, RepricingMa
 
 NAMESPACE Purchase;
 
-@defineDocumentInterfaceCreate (invoice, toShowManufacturingPrice, 'Цена изг.');
+@defineDocumentInterfaceCreate (invoice, toShowManufacturingPrice, 'Цена изготовителя');
 @defineDocumentInterfaceDetailPriceCustomPrefix(invoiceDetail, manufacturing, ' изготовителя');
 
 EXTEND CLASS SystemLedgerPriceListType { manufacturingPriceStockPriceListType 'Изготовителя (последняя по складу)' }
@@ -30,6 +30,14 @@ EXTEND FORM userInvoice
     PROPERTIES(d) SHOWIF toShowManufacturingPriceUserInvoice(i) manufacturingPriceUserInvoiceDetail ON CHANGE changeManufacturingPriceUserInvoiceDetail(d)  AFTER invoiceSumUserInvoiceDetail
     PROPERTIES(d) BACKGROUND backgroundCurInvoice(i) SHOWIF toShowRepricingPriceInvoice(i) curManufacturingPriceUserInvoiceDetail ON CHANGE changeCurManufacturingPriceUserInvoiceDetail(d) BEFORE curPriceUserInvoiceDetail
 ;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerManufacturing {
+            title = 'Цена изготовителя';
+            ADD PROPERTY(toShowManufacturingPriceUserInvoice);
+        }
+    }
+}
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY toShowManufacturingPriceInvoice

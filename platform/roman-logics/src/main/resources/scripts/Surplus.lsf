@@ -46,7 +46,7 @@ nameCustomerSurplusOut 'Покупатель' (surplus) = name(customerSurplusOu
 @defineDocumentDetailQuantity(surplusOut);
 
 @defineDocumentDetailGrossWeight(surplusOut, sku);
-@defineDocumentDetailQuantityPack(surplusOut, sku);
+@defineDocumentDetailPackQuantity(surplusOut, sku);
 
 @defineDocumentDetailSkuBalance(surplusOut, sku, stock);
 

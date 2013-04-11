@@ -47,7 +47,7 @@
 	<field name="downtimeConsignment" class="java.lang.String"/>
 	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
@@ -72,7 +72,7 @@
 	<field name="vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetail" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetail" class="java.lang.Double"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
@@ -358,7 +358,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{quantityPackConsignmentDetailConsignment}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetailConsignment}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.######" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" x="460" y="0" width="30" height="14" backcolor="#FFFFFF"/>
@@ -513,7 +513,7 @@
 					<textElement>
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.Words.toString($F{quantityPackConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="1" height="20"/>
@@ -1023,7 +1023,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{quantityPackConsignmentDetail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{packQuantityConsignmentDetail}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.######" isBlankWhenNull="true">
 				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="460" y="0" width="30" height="12"/>

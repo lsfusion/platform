@@ -152,7 +152,7 @@ sumVATConsignmentDetail 'Сумма НДС' (consignmentDetail) = ABSTRACT NUMER
 
 sumInvoiceConsignmentDetail 'Сумма с НДС' (consignmentDetail) = ABSTRACT NUMERIC[16,2] (ConsignmentDetail);
 
-quantityPackConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
+packQuantityConsignmentDetail 'Количество грузовых мест' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
 
 grossWeightConsignmentDetail 'Масса груза, кг.' (consignmentDetail) = ABSTRACT NUMERIC[14,3] (ConsignmentDetail);
 grossWeightTonConsignmentDetail 'Масса груза, т.' (consignmentDetail) = round6(grossWeightConsignmentDetail(consignmentDetail) / 1000);
@@ -166,7 +166,7 @@ countConsignmentDetailConsignment 'Количество строк' (consignment
 quantityConsignmentDetailConsignment 'Количество (всего)' (consignment) = GROUP SUM quantityConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
-quantityPackConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM quantityPackConsignmentDetail(consignmentDetail)
+packQuantityConsignmentDetailConsignment 'Общее количество грузовых мест' (consignment) = GROUP SUM packQuantityConsignmentDetail(consignmentDetail)
                                                             BY consignmentConsignmentDetail(consignmentDetail) IN sumConsignmentGroup;
 
 grossWeightTonConsignmentDetailConsignment 'Общая масса груза, т.' (consignment) = GROUP SUM grossWeightTonConsignmentDetail(consignmentDetail)
@@ -251,7 +251,7 @@ META defineConsignmentForm(form, caption)
                        forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                        nameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                        arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                       quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
+                       quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment, grossWeightConsignmentDetailConsignment,
                        sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                        countConsignmentDetailConsignment, wareSumConsignmentDetailConsignment, supplierSumConsignmentDetailConsignment,
                        seriesObject, numberObject, isWareConsignment, isCustomsFlowConsignment, isCurrencyConsignment, noteConsignment, documentNameCurrencyConsignment
@@ -260,7 +260,7 @@ META defineConsignmentForm(form, caption)
 
         PROPERTIES(d) nameSkuConsignmentDetail, shortNameUOMConsignmentDetail, quantityConsignmentDetail, priceConsignmentDetail,
                       sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                      quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail, extraDescriptionConsignmentDetail,
+                      packQuantityConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail, extraDescriptionConsignmentDetail,
                       nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                       wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                       wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -287,7 +287,7 @@ FORM consignment 'Атрибуты накладной'
                    forwarderConsignment, warrantConsignment, warrantHolderConsignment, goodsAcceptedConsignment,
                    nameLoadingExecuterConsignment, nameWayOfLoadingConsignment, codeLoadingConsignment,
                    arrivalTimeConsignment, departureTimeConsignment, downtimeConsignment, raceQuantityConsignment,
-                   quantityConsignmentDetailConsignment, quantityPackConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
+                   quantityConsignmentDetailConsignment, packQuantityConsignmentDetailConsignment, grossWeightTonConsignmentDetailConsignment,
                    sumConsignmentDetailConsignment, sumVATConsignmentDetailConsignment, sumInvoiceConsignmentDetailConsignment,
                    countConsignmentDetailConsignment, noteConsignment, shortNameCurrencyConsignment//, SHOWIF isCustomsFlowConsignment(c)
 
@@ -296,7 +296,7 @@ FORM consignment 'Атрибуты накладной'
 
     PROPERTIES(d) nameSkuConsignmentDetail READONLY, shortNameUOMConsignmentDetail READONLY, quantityConsignmentDetail, priceConsignmentDetail,
                   sumConsignmentDetail, vatConsignmentDetail, sumVATConsignmentDetail, sumInvoiceConsignmentDetail,
-                  quantityPackConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail READONLY, extraDescriptionConsignmentDetail READONLY,
+                  packQuantityConsignmentDetail, grossWeightTonConsignmentDetail, noteConsignmentDetail READONLY, extraDescriptionConsignmentDetail READONLY,
                   nameWareConsignmentDetail, warePriceConsignmentDetail, valueWareRangeConsignmentDetail,
                   wareSupplierPriceConsignmentDetail, wareSumConsignmentDetail, wareSupplierSumConsignmentDetail,
                   wareVATSumConsignmentDetail, wareSumConsignmentDetail
@@ -334,7 +334,7 @@ DESIGN consignment FROM DEFAULT {
                             childConstraints = TO THE RIGHT;
                             ADD PROPERTY(countConsignmentDetailConsignment);
                             ADD PROPERTY(quantityConsignmentDetailConsignment);
-                            ADD PROPERTY(quantityPackConsignmentDetailConsignment);
+                            ADD PROPERTY(packQuantityConsignmentDetailConsignment);
                             ADD PROPERTY(grossWeightTonConsignmentDetailConsignment);
                         }
                         NEW wor22 {
@@ -703,7 +703,7 @@ META implementConsignmentDetailInner (concrete, concreteClass, skuProp)
     skuConsignmentDetail (consignmentDetail) += skuProp###concrete##Detail (consignmentDetail);
     quantityConsignmentDetail (consignmentDetail) += quantity###concrete##Detail (consignmentDetail);
 
-    quantityPackConsignmentDetail (consignmentDetail) += quantityPack###concrete##Detail (consignmentDetail);
+    packQuantityConsignmentDetail (consignmentDetail) += packQuantity###concrete##Detail (consignmentDetail);
     grossWeightConsignmentDetail (consignmentDetail) += grossWeight###concrete##Detail (consignmentDetail);
 END
 META implementConsignmentDetail (concrete)

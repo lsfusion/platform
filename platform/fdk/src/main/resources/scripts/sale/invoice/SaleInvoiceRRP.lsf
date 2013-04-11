@@ -35,6 +35,15 @@ EXTEND FORM userInvoice
     PROPERTIES(i) toShowRRPPriceUserInvoice
     PROPERTIES(d) SHOWIF toShowRRPPriceUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
 ;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerRRP {
+            title = 'RRP';
+            ADD PROPERTY(toShowRRPPriceUserInvoice);
+        }
+    }
+}
+
 EXTEND FORM invoices
     PROPERTIES(i) READONLY toShowRRPPriceInvoice
     PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail

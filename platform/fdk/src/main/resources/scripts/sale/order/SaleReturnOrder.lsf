@@ -6,7 +6,7 @@ PRIORITY Sale, Operation;
 
 NAMESPACE SaleReturn;
 
-@defineOrder(' (продажа-возврат)', supplier, supplierStock, Sale, showSalePack, 'Упаковка');
+@defineOrder(' (продажа-возврат)', supplier, supplierStock);
 
 @defineOrderStockDestination(customerStock, supplierStock);
 
@@ -36,12 +36,15 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackSkuStock(userOrder, sku, supplierStock, Sale);
-@extendFormDocumentPackSkuStockCustom(userOrder, userOrder, o, supplierStock, showSalePack, Sale);
+@defineDocumentPack(order, o);
+Order.packQuantityOrderDetail(detail) += packQuantityOrderDetail(detail);
+
+@defineDocumentPackSkuStock(userOrder, sku, supplierStock);
+@extendFormDocumentPackSkuStock(userOrder, userOrder, o, supplierStock);
 
 overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
     IF  packBarcodeSku(skuUserOrderDetail(detail)) THEN {
-        SET quantityPackUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
+        SET packQuantityUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
     }
 }
 

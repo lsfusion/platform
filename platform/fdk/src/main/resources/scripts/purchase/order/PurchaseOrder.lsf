@@ -4,7 +4,7 @@ REQUIRE Order, PurchaseOperation, PurchasePack;
 
 NAMESPACE Purchase;
 
-@defineOrder(' (закупка)', customer, customerStock, Purchase, showPurchasePack, 'Упаковка');
+@defineOrder(' (закупка)', customer, customerStock);
 
 @defineOrderStockDestination(supplierStock, customerStock);
 
@@ -36,12 +36,15 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCompanyLegalEntity(customerUse
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackSkuStock(userOrder, sku, customerStock, Purchase);
-@extendFormDocumentPackSkuStockCustom(userOrder, userOrder, o, customerStock, showPurchasePack, Purchase);
+@defineDocumentPack(order, o);
+Order.packQuantityOrderDetail(detail) += packQuantityOrderDetail(detail);
+
+@defineDocumentPackSkuStock(userOrder, sku, customerStock);
+@extendFormDocumentPackSkuStock(userOrder, userOrder, o, customerStock);
 
 overChangeQuantityValueSkuUserOrderDetail(detail) += ACTION (detail) {
-    IF  packBarcodeSku(skuUserOrderDetail(detail)) THEN {
-        SET quantityPackUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
+    IF packBarcodeSku(skuUserOrderDetail(detail)) THEN {
+        SET packQuantityUserOrderDetail(detail) <- quantityUserOrderDetail(detail)/amountPackUserOrderDetail(detail);
     }
 }
 

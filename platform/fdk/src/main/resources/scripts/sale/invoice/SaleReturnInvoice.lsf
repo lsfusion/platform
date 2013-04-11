@@ -7,8 +7,8 @@ PRIORITY Sale, Operation;
 NAMESPACE SaleReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
-@defineInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Упаковка', Sale);
-@defineOrderInvoice(' (продажа-возврат)', supplierStock, showSalePack, 'Упаковка', salePack);
+@defineInvoice(' (продажа-возврат)', supplierStock);
+@defineOrderInvoice(' (продажа-возврат)', supplierStock);
 @defineInvoiceBatch(supplierStock);
 
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
@@ -25,8 +25,6 @@ NAMESPACE SaleReturn;
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 @defineDocumentOperationRole(userInvoice);
 
-showSalePackUserInvoice (invoice) <- showSalePackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(supplierUserInvoice(userInvoice))
@@ -40,14 +38,30 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCustomerLegalEntity(custom
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackSku(userInvoice, sku, supplierStock, Sale);
-@extendFormDocumentPackSkuCustom(userInvoice, userInvoice, i, showSalePack, Sale);
+@defineDocumentPack(invoice, i);
+Invoice.packQuantityInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserInvoice);
+        }
+    }
+}
+
+@defineOrderInvoicePack(showPack);
+
+@defineDocumentPackSku(userInvoice, sku, supplierStock);
+@extendFormDocumentPackSku(userInvoice, userInvoice, i);
 
 overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
     IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
-        SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
     }
 }
+
+showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 //------------------------------ Расширение формы -----------------------------//
 

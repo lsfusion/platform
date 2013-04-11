@@ -96,10 +96,10 @@ Purchase.valueVATOrderDetail(orderDetail) += valueVATOrderDetail(orderDetailPurc
 Purchase.VATSumOrderDetail(orderDetail) += VATSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 Purchase.invoiceSumOrderDetail(orderDetail) += invoiceSumOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 
-Purchase.showPurchasePackOrder(order) +=  showSalePackOrder(orderPurchaseOrder(order));
+Purchase.showPackOrder(order) +=  showPackOrder(orderPurchaseOrder(order));
 Purchase.barcodePackOrderDetail(orderDetail) +=  barcodePackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 Purchase.amountPackOrderDetail(orderDetail) +=  amountPackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
-Purchase.quantityPackOrderDetail(orderDetail) +=  quantityPackOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
+Purchase.packQuantityOrderDetail(orderDetail) +=  packQuantityOrderDetail(orderDetailPurchaseOrderDetail(orderDetail));
 
 Purchase.editOrder(order) += ACTION EXEC editOrder(orderPurchaseOrder(order));
 

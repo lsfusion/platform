@@ -53,6 +53,7 @@ closeDateOrder 'Дата автоматического закрытия' = ABST
 
 @defineDocumentAbstractDetailQuantity(order);
 @defineDocumentDetailGrossWeight(order, sku);
+@defineDocumentAbstractDetailQuantityPrefix(order, pack, ' (упаковок)');
 @defineDocumentHeaderSkuQuantity(order, sku);
 
 @defineDocumentHeaderQuantity(order);
@@ -75,7 +76,7 @@ editOrder 'Редактировать' = ABSTRACT ACTION (order) IMAGE 'edit.png
 
 //----------------------------------------------- Заказ ---------------------------------------------------//
 
-META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
+META defineOrder(sign, legalEntityProp, stockProp)
 
     CLASS ABSTRACT Order 'Заказ'###sign : Order.Order;
     CLASS ABSTRACT OrderDetail 'Строка заказа'###sign : Order.OrderDetail, Named;
@@ -228,15 +229,6 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
     countOrderDetailStockOrder 'Кол-во строк по складу '(stock, order) = GROUP SUM 1 BY stockProp###orderDetail(orderDetail), orderOrderDetail(orderDetail);
 
-//-- Упаковка
-    @defineDocumentInterfaceCreate (order, toShowProp, captionProp);
-    @defineDocumentInterfaceBarcodeSkuPrefix (order, sku, , );
-    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (orderDetail, , ' упаковок');
-    @deriveDocumentDetailQuantityBarcodeCustom (userOrderDetail, sku, NS, toShowProp);
-    @deriveDocumentQuantityPackageDetailOnChangeQuantity(userOrderDetail);
-    @deriveDocumentQuantityDetailOnAmountPack(userOrderDetail);
-    @deriveDocumentQuantityDetailOnChangeQuantityPack (userOrderDetail);
-
 //-- Дата следующей поставки
     @defineDocumentInterfaceDatePrefix (order, nextShipment, ' следующей поставки');
     quantityDaysNextShipmentUserOrder 'Кол-во дней до след. поставки' (userOrder) =  subtractInteger(nextShipmentDateUserOrder(userOrder), dateUserOrder(userOrder)) + 1;
@@ -257,13 +249,11 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                        countUserOrderDetailUserOrder, quantityUserOrderDetailUserOrder, sumUserOrderDetailUserOrder,
                        VATSumUserOrderDetailUserOrder, invoiceSumUserOrderDetailUserOrder,
                        shipmentDateUserOrder, shipmentTimeUserOrder, closeDateUserOrder, nextShipmentDateUserOrder,
-                       quantityDaysNextShipmentUserOrder READONLY, toShowProp###userOrder
+                       quantityDaysNextShipmentUserOrder READONLY
 
         OBJECTS d = UserOrderDetail
         PROPERTIES (d) indexUserOrderDetail, idBarcodeSkuUserOrderDetail, nameSkuUserOrderDetail, shortNameUOMSkuUserOrderDetail
-        PROPERTIES (d) SHOWIF toShowProp###userOrder(o) idBarcodePackUserOrderDetail, shortNameUOMPackUserOrderDetail,
-                       amountPackUserOrderDetail ON CHANGE changeAmountPackUserOrderDetail(d), quantityPackUserOrderDetail ON CHANGE changeQuantityPackUserOrderDetail(d)
-        PROPERTIES (d) quantityUserOrderDetail  ON CHANGE changeQuantityUserOrderDetail(d), namePriceListTypeUserOrderDetail,
+        PROPERTIES (d) quantityUserOrderDetail, namePriceListTypeUserOrderDetail,
                        priceUserOrderDetail ON CHANGE changePriceUserOrderDetail(d), sumUserOrderDetail,
                        numberVATUserOrderDetail ON CHANGE changeNumberVATUserOrderDetail(d),
                        valueVATUserOrderDetail ON CHANGE changeValueVATUserOrderDetail(d),
@@ -336,7 +326,6 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                         childConstraints = TO THE RIGHTBOTTOM;
                         ADD o.documentPrmGroup {
                             childConstraints = TO THE RIGHTBOTTOM;
-                            ADD PROPERTY(toShowProp###userOrder);
                         }
                         NEW documentShipmentGroup {
                             title = 'Исполнение';
@@ -373,24 +362,26 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
     editUserOrder 'Редактировать' (userOrder) = ACTION EDITFORM UserOrder;
     editOrder(order) += editUserOrder(order);
 
-    copyOrder 'Копировать' = ACTION (userOrder) NEWSESSION {
+    overCopyOrder = ABSTRACT ACTION (s, d);
+    copyOrder 'Копировать' = ACTION (order) NEWSESSION {
         FOR ADDOBJ o = UserOrder DO {
-            SET supplierUserOrder(o) <- supplierUserOrder(userOrder);
-            SET supplierStockUserOrder(o) <- supplierStockUserOrder(userOrder);
-            SET customerUserOrder(o) <- customerUserOrder(userOrder);
-            SET customerStockUserOrder(o) <- customerStockUserOrder(userOrder);
-            SET currencyUserOrder(o) <- currencyUserOrder(userOrder);
-            SET agreementUserOrder(o) <- agreementUserOrder(userOrder);
-            SET priceListTypeUserOrder(o) <- priceListTypeUserOrder(userOrder);
-            SET noteUserOrder(o) <- noteUserOrder(userOrder);
-            SET toShowProp###userOrder(o) <- toShowProp###userOrder(userOrder);
+            SET supplierUserOrder(o) <- supplierOrder(order);
+            SET supplierStockUserOrder(o) <- supplierStockOrder(order);
+            SET customerUserOrder(o) <- customerOrder(order);
+            SET customerStockUserOrder(o) <- customerStockOrder(order);
+            SET currencyUserOrder(o) <- currencyOrder(order);
+            SET agreementUserOrder(o) <- agreementOrder(order);
+            SET priceListTypeUserOrder(o) <- priceListTypeOrder(order);
+            SET noteUserOrder(o) <- noteOrder(order);
 
-            FOR userOrderUserOrderDetail(userOrderDetail) == userOrder DO {
+            EXEC overCopyOrder(order, o);
+
+            FOR orderOrderDetail(orderDetail) == order DO {
                 FOR ADDOBJ d=UserOrderDetail DO {
                     SET userOrderUserOrderDetail(d) <- o;
-                    SET skuUserOrderDetail(d) <- skuUserOrderDetail(userOrderDetail);
-                    SET quantityOrderDetail(d) <- quantityUserOrderDetail(userOrderDetail);
-                    SET data###stockProp###userOrderDetail(d) <- data###stockProp###userOrderDetail(userOrderDetail);
+                    SET skuUserOrderDetail(d) <- skuOrderDetail(orderDetail);
+                    SET quantityOrderDetail(d) <- quantityOrderDetail(orderDetail);
+                    SET data###stockProp###userOrderDetail(d) <- data###stockProp###orderDetail(orderDetail);
                 }
             }
 
@@ -406,7 +397,7 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
                                 nameAgreementOrder, namePriceListTypeOrder,
                                 countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                                 VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, closeDateOrder,
-                                toShowProp###order, noteOrder, objectClassName
+                                noteOrder, objectClassName
 
         PROPERTIES (o) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable, nameUserClosed, timeClosed, hostnameComputerClosed
 
@@ -417,8 +408,6 @@ META defineOrder(sign, legalEntityProp, stockProp, NS, toShowProp, captionProp)
 
         OBJECTS d=OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
-                       amountPackOrderDetail, quantityPackOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, namePriceListTypeOrderDetail, priceOrderDetail, sumOrderDetail,
                        numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                        name###stockProp###orderDetail, shipmentDateOrderDetail, shipmentTimeOrderDetail
@@ -469,102 +458,3 @@ META defineOrderStockDestination(fromStock, toStock)
     Order.dataFromStockOrderDetail(detail) += data###fromStock##OrderDetail(detail);
     Order.dataToStockOrderDetail(detail) += data###toStock##OrderDetail(detail);
 END
-
-
-META deriveDocumentQuantityPackageDetailOnChangeQuantity (detail);
-    changeQuantity###detail = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF requestedNumeric() THEN {
-            SET quantity###detail(detail) <- requestedNumeric();
-
-            IF  barcodePack###detail(detail) THEN {
-                SET quantityPack###detail(detail) <- quantity###detail(detail)/amountPack###detail(detail);
-            }
-        } ELSE {
-            EXEC delete(detail);
-        }
-    }
-END
-META deriveDocumentQuantityDetailOnAmountPack (detail);
-    changeAmountPack###detail = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF requestedNumeric() THEN {
-            SET amountPack###detail(detail) <- requestedNumeric();
-
-            IF  barcodePack###detail(detail) THEN {
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail);
-            }
-        } ELSE {
-            EXEC delete(detail);
-        }
-    }
-END
-
-//-- Расширение формы подбора упаковкой (несколько складов)
-META defineDocumentPackSkuStockCustom(object, detail, skuProp, stockProp, NS)
-    quantityPackSku###object###stockProp 'Кол-во упаковок в документе' (sku, object, stock) = GROUP SUM quantityPack###detail(detail)
-        BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
-
-    changeQuantityPackSku###object###Stock = ACTION (sku, object, stock) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF detail###Sku###object###stockProp(sku, object, stock) THEN {
-            IF requestedNumeric() THEN {
-                SET quantityPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-
-            } ELSE {
-                EXEC delete(detail###Sku###object###stockProp(sku, object, stock));
-
-            }
-        } ELSE {
-            IF requestedNumeric() THEN  {
-                FOR ADDOBJ d = ###detail DO {
-                   SET object###detail(d) <- object;
-                   SET data###stockProp###detail (d) <- stock;
-                   SET skuProp###detail(d) <- sku;
-                   SET quantityPack###detail (d) <- requestedNumeric();
-                   SET shipmentDataDate###detail (d) <- shipmentDate###object(object);
-                   SET shipmentDataTime###detail (d) <- shipmentTime###object(object);
-                }
-            }
-        }
-    }
-
-    changeAmountPackSku###object###Stock = ACTION (sku, object, stock) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF detail###Sku###object###stockProp(sku, object, stock) THEN {
-            IF requestedNumeric() THEN {
-                SET amountPack###detail(detail) <- requestedNumeric() WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail) WHERE detail == detail###Sku###object###stockProp(sku, object, stock) AND quantityPack###detail(detail);
-            } ELSE {
-                SET amountPack###detail(detail) <- NULL WHERE detail == detail###Sku###object###stockProp(sku, object, stock);
-            }
-
-        }
-        EXEC NS.changeValuePackSku(sku);
-    }
-
-END
-META defineDocumentPackSkuStock(object, skuProp, stockProp, NS)
-    @defineDocumentPackSkuStockCustom(object, object##Detail, skuProp, stockProp, NS);
-END
-
-
-META extendFormDocumentPackSkuStockCustom(object, form, concrete, stockProp, toShowProp, NS)
-
-    EXTEND FORM form
-        PROPERTIES SHOWIF toShowProp###object(concrete)  BEFORE quantitySku###object###stockProp(s, concrete, st) NS.idBarcodePackSku(s) READONLY,
-                   NS.shortNameUOMPackSku(s) READONLY, NS.amountPackSku(s) ON CHANGE changeAmountPackSku###object###Stock(s, concrete, st),
-                   quantityPackSku###object###stockProp(s, concrete, st) ON CHANGE changeQuantityPackSku###object###Stock(s, concrete, st)
-    ;
-END
-
-//numberDocument(order) += numberOrder(order);
-//seriesDocument(order) += seriesOrder(order);
-//dateDocument(order) += dateOrder(order);
-//
-//skuDocumentDetail(orderDetail) += skuOrderDetail(orderDetail);
-//quantityDocumentDetail(orderDetail) += quantityOrderDetail(orderDetail);
-//priceDocumentDetail(orderDetail) += priceOrderDetail(orderDetail);
-//
-//documentDocumentDetail(orderDetail) += orderOrderDetail(orderDetail);

@@ -145,37 +145,37 @@ EXTEND FORM costSkuLedger
 
 // ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
 
-META defineDocumentDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
-    prefix###quantityPack###detail 'Кол-во грузовых мест'###caption (detail) = round0(quantity###detail(detail) / quantityPackSku(skuProp###detail(detail))) PERSISTENT;
+META defineDocumentDetailPackQuantityCustomPrefix (detail, skuProp, prefix, caption)
+    prefix###packQuantity###detail 'Кол-во грузовых мест'###caption (detail) = round0(quantity###detail(detail) / packQuantitySku(skuProp###detail(detail))) PERSISTENT;
 END
-META defineDocumentInterfaceDetailQuantityPackCustomPrefix (detail, skuProp, prefix, caption)
-    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, prefix, caption);
-    @defineDocumentDetailQuantityPackCustomPrefix (user###detail, skuProp, prefix, caption);
-    prefix###quantityPack###detail (detail) += prefix###quantityPack###user###detail(detail);
-END
-
-META defineDocumentDetailQuantityPackCustom (detail, skuProp)
-    @defineDocumentDetailQuantityPackCustomPrefix(detail, skuProp, , );
-END
-META defineDocumentInterfaceDetailQuantityPackCustom (detail, skuProp)
-    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(detail, skuProp, , );
+META defineDocumentInterfaceDetailPackQuantityCustomPrefix (detail, skuProp, prefix, caption)
+    @defineDocumentDetailPackQuantityCustomPrefix(detail, skuProp, prefix, caption);
+    @defineDocumentDetailPackQuantityCustomPrefix (user###detail, skuProp, prefix, caption);
+    prefix###packQuantity###detail (detail) += prefix###packQuantity###user###detail(detail);
 END
 
-META defineDocumentDetailQuantityPackPrefix (object, skuProp, prefix, caption)
-    @defineDocumentDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
+META defineDocumentDetailPackQuantityCustom (detail, skuProp)
+    @defineDocumentDetailPackQuantityCustomPrefix(detail, skuProp, , );
 END
-META defineDocumentInterfaceDetailQuantityPackPrefix (object, skuProp, prefix, caption)
-    @defineDocumentInterfaceDetailQuantityPackCustomPrefix(object##Detail, skuProp, prefix, caption);
-END
-
-META defineDocumentDetailQuantityPack (object, skuProp)
-    @defineDocumentDetailQuantityPackPrefix(object, skuProp, , );
-END
-META defineDocumentInterfaceDetailQuantityPack (object, skuProp)
-    @defineDocumentInterfaceDetailQuantityPackPrefix(object, skuProp, , );
+META defineDocumentInterfaceDetailPackQuantityCustom (detail, skuProp)
+    @defineDocumentInterfaceDetailPackQuantityCustomPrefix(detail, skuProp, , );
 END
 
-quantityPackSku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (Sku);
+META defineDocumentDetailPackQuantityPrefix (object, skuProp, prefix, caption)
+    @defineDocumentDetailPackQuantityCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+META defineDocumentInterfaceDetailPackQuantityPrefix (object, skuProp, prefix, caption)
+    @defineDocumentInterfaceDetailPackQuantityCustomPrefix(object##Detail, skuProp, prefix, caption);
+END
+
+META defineDocumentDetailPackQuantity (object, skuProp)
+    @defineDocumentDetailPackQuantityPrefix(object, skuProp, , );
+END
+META defineDocumentInterfaceDetailPackQuantity (object, skuProp)
+    @defineDocumentInterfaceDetailPackQuantityPrefix(object, skuProp, , );
+END
+
+packQuantitySku 'Количество в грузовом месте' = DATA NUMERIC[9,3] (Sku);
 Stock.netWeightSku(sku) += RomanLogicsModule.netWeightSku(sku);
 
 FORM batchADialogForm 'Партия'

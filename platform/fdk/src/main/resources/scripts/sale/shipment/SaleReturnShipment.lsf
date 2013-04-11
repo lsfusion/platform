@@ -1,6 +1,6 @@
 MODULE SaleReturnShipment;
 
-REQUIRE Shipment, SaleReturnInvoice;
+REQUIRE Shipment, SaleReturnInvoice, OrderShipment, InvoiceShipment;
 
 PRIORITY Sale, Operation;
 
@@ -9,10 +9,14 @@ NAMESPACE SaleReturn;
 
 //----------------------------------------------- Поставка ---------------------------------------------------//
 
-@defineShipment(' (продажа-возврат)', supplierStock, showSalePack, 'Упаковка', Sale);
+@defineShipment(' (продажа-возврат)', supplierStock);
 @defineShipmentBatch(supplierStock);
 
 @defineShipmentStockDestination(customerStock, supplierStock);
+
+@defineOrderShipment(' (продажа-возврат)', supplierStock);
+@defineInvoiceShipment(' (продажа-возврат)', supplierStock);
+@defineInvoiceShipmentBatch();
 
 //------------------------------------------------- Операции ------------------------------------------------------//
 
@@ -30,6 +34,14 @@ CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(suppl
     CHECKED BY supplierUserShipment MESSAGE 'Для поставки выбрано в качестве поставщика организация, не являющаяся компанией';
 CONSTRAINT customerUserShipment(userShipment) AND NOT isCustomerLegalEntity(customerUserShipment(userShipment))
     CHECKED BY customerUserShipment MESSAGE 'Для поставки выбрано в качестве покупателя организация, не являющаяся покупателем';
+
+//------------------------------ Ввод в упаковках -----------------------------//
+
+@defineDocumentPack(shipment, s);
+Shipment.packQuantityShipmentDetail(detail) += packQuantityShipmentDetail(detail);
+
+@defineOrderShipmentPack();
+@defineInvoiceShipmentPack();
 
 //------------------------------ Автоматическое проставление свойств -----------------------------//
 

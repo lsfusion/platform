@@ -248,60 +248,46 @@ EXTEND FORM batches
     PROPERTIES(bt) READONLY idBarcodeSkuBatch AFTER nameSkuBatch
 ;
 
-// Barcode
+// ------------------------------------------ Объявление штрих-кода в документе ------------------------------------ //
+
 META defineDocumentDetailBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
     prefixB###barcodePack###detail = DATA Barcode (###detail);
-    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
-    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail));
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail));
     prefixB###amountPack###detail 'Кол-во в упаковке' = DATA NUMERIC[14,3] (###detail) IN recognize;
-
-//    prefixB###amountPack###detail(detail) <- amountBarcode(prefixB###barcodePack###detail(detail)) WHEN CHANGED(prefixB###barcodePack###detail(detail));
 
     CONSTRAINT skuBarcode(prefixB###barcodePack###detail(detail)) != prefixS###skuProp###detail(detail) CHECKED BY prefixB###barcodePack###detail
         MESSAGE 'Выбран штрих-кода не соответствующий sku';
 END
+
 META defineDocumentAbstractDetailBarcodeCustomPrefix (detail, prefixB)
     prefixB###barcodePack###detail = ABSTRACT Barcode (###detail);
-    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
-    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail)) IN recognize;
+    prefixB###idBarcodePack###detail 'Штрих-код упаковки' (detail) = idBarcode(prefixB###barcodePack###detail(detail));
+    prefixB###shortNameUOMPack###detail 'Ед. изм. упаковки' = shortNameUOMBarcode(prefixB###barcodePack###detail(detail));
     prefixB###amountPack###detail 'Кол-во в упаковке' = ABSTRACT NUMERIC[14,3] (###detail) IN recognize;
 END
-META defineDocumentInterfaceBarcodeSkuCustomPrefix (detail, skuProp, prefixB, prefixS)
+
+META defineDocumentInterfaceBarcodeCustomPrefix (detail, skuProp, prefixB, prefixS)
     @defineDocumentAbstractDetailBarcodeCustomPrefix(detail, prefixB);
     @defineDocumentDetailBarcodeCustomPrefix(user###detail, skuProp, prefixB, prefixS);
     prefixB###barcodePack###detail(detail) += prefixB###barcodePack###user###detail(detail);
     prefixB###amountPack###detail(detail) += prefixB###amountPack###user###detail(detail);
 END
 
-META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prefixB, prefixS)
-    @defineDocumentInterfaceBarcodeSkuCustomPrefix(object###Detail, skuProp, prefixB, prefixS);
+META defineDocumentInterfaceBarcodePrefix (object, skuProp, prefixB, prefixS)
+    @defineDocumentInterfaceBarcodeCustomPrefix(object###Detail, skuProp, prefixB, prefixS);
 END
-META defineDocumentInterfaceBarcodeSkuPrefix (object, skuProp, prefixB)
-    @defineDocumentInterfaceBarcodeSkuPrefix(object, skuProp, prefixB, );
+META defineDocumentInterfaceBarcodePrefix (object, skuProp, prefixB)
+    @defineDocumentInterfaceBarcodePrefix(object, skuProp, prefixB, );
 END
 
-META deriveDocumentDetailQuantityBarcodeCustom (detail, skuProp, NS, toShowProp)
-    barcodePack###detail(detail) <- NS.packBarcodeSku(skuProp###detail(detail)) IF toShowProp###detail(detail)
+// ------------------------------------------ Автоматическое проставление штрих-кода ------------------------------------ //
+
+META deriveDocumentDetailBarcodeCustom (detail, skuProp, toShowProp)
+    barcodePack###detail(detail) <- packBarcodeSku(skuProp###detail(detail)) IF toShowProp###detail(detail)
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
-    amountPack###detail(detail) <- amountBarcode(NS.packBarcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
+    amountPack###detail(detail) <- amountBarcode(packBarcodeSku(skuProp###detail(detail))) IF toShowProp###detail(detail)
         WHEN CHANGED(skuProp###detail(detail)) OR CHANGED(toShowProp###detail(detail));
-    quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail)
-        WHEN CHANGED(quantityPack###detail(detail)) OR CHANGED(amountPack###detail(detail));
-END
-
-META deriveDocumentQuantityDetailOnChangeQuantityPack (detail);
-    changeQuantityPack###detail = ACTION (detail) {
-        REQUEST NUMERIC[14,3] INPUT;
-        IF requestedNumeric() THEN {
-            SET quantityPack###detail(detail) <- requestedNumeric();
-
-            IF  barcodePack###detail(detail) THEN {
-                SET quantity###detail(detail) <- quantityPack###detail(detail)*amountPack###detail(detail);
-            }
-        } ELSE {
-            EXEC delete(detail);
-        }
-    }
 END
 
 

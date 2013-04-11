@@ -118,10 +118,10 @@ Purchase.sumShipmentDetail(shipmentDetail) += sumShipmentDetail(shipmentDetailPu
 
 Purchase.editShipment(shipment) += ACTION EXEC editShipment(shipmentPurchaseShipment(shipment));
 
-Purchase.showPurchasePackShipment(shipment) +=  showSalePackShipment(shipmentPurchaseShipment(shipment));
+Purchase.showPackShipment(shipment) +=  showPackShipment(shipmentPurchaseShipment(shipment));
 Purchase.barcodePackShipmentDetail(shipmentDetail) += barcodePackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 Purchase.amountPackShipmentDetail(shipmentDetail) +=  amountPackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
-Purchase.quantityPackShipmentDetail(shipmentDetail) +=  quantityPackShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
+Purchase.packQuantityShipmentDetail(shipmentDetail) +=  packQuantityShipmentDetail(shipmentDetailPurchaseShipmentDetail(shipmentDetail));
 
 shipmentDetailShipmentDetail(shipmentDetail) += shipmentDetailPurchaseShipmentDetail(shipmentDetail);
 
@@ -140,7 +140,7 @@ FORM shipmentShipments 'Поставки'
 
     OBJECTS o = Shipment
     PROPERTIES (o) READONLY isPostedShipment FORCE GRID, numberShipment, seriesShipment, dateShipment, timeShipment, nameCurrencyShipment,
-                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment, showSalePackShipment,
+                            countShipmentDetailShipment, quantityShipmentDetailShipment, sumShipmentDetailShipment,
                             noteShipment, objectClassName
     FILTERS supplierShipment(o) == s,
             customerShipment(o) == c,
@@ -152,7 +152,7 @@ FORM shipmentShipments 'Поставки'
 
     PROPERTIES (d) READONLY indexShipmentDetail, idBarcodeSkuShipmentDetail, nameSkuShipmentDetail, shortNameUOMSkuShipmentDetail,
                             quantityShipmentDetail
-    PROPERTIES (d) READONLY SHOWIF showSalePackShipment(o) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail, amountPackShipmentDetail, quantityPackShipmentDetail
+    PROPERTIES (d) READONLY SHOWIF showPackShipment(o) idBarcodePackShipmentDetail, shortNameUOMPackShipmentDetail, amountPackShipmentDetail, packQuantityShipmentDetail
     PROPERTIES (d) READONLY priceShipmentDetail, sumShipmentDetail,
                             nameSupplierStockShipmentDetail, toShipShipmentDetail BACKGROUND backgroundPurchaseShipment(o)
     FILTERS shipmentShipmentDetail(d) == o
@@ -219,7 +219,7 @@ fillShipmentUserShipment 'Заполнить на основе поставки'
 
             SET Purchase.barcodePackUserShipmentDetail(d) <- barcodePackShipmentDetail(shipmentDetail);
             SET Purchase.amountPackUserShipmentDetail(d) <- amountPackShipmentDetail(shipmentDetail);
-            SET Purchase.quantityPackUserShipmentDetail(d) <- quantityPackShipmentDetail(shipmentDetail);
+            SET Purchase.packQuantityUserShipmentDetail(d) <- packQuantityShipmentDetail(shipmentDetail);
         }
     }
 } IN shipmentGroup;

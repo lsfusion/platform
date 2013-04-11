@@ -8,8 +8,9 @@ NAMESPACE PurchaseReturn;
 
 //----------------------------------------------- Накладная ---------------------------------------------------//
 
-@defineInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Упаковка', Purchase);
-@defineOrderInvoice(' (закупка-возврат)', customerStock, showPurchasePack, 'Упаковка', purchasePack);
+@defineInvoice(' (закупка-возврат)', customerStock);
+@defineOrderInvoice(' (закупка-возврат)', customerStock);
+
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
@@ -17,7 +18,7 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
 // вторая валюта
-@defineHomeCurrencyInvoice(invoice);
+@defineInvoiceHomeCurrency(invoice);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
@@ -27,8 +28,6 @@ NAMESPACE PurchaseReturn;
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
 @defineDocumentOperationRole(userInvoice);
 
-showPurchasePackUserInvoice (invoice) <- showPurchasePackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
 //------------------------------ Ограничение на выбор поставщиков -----------------------------//
@@ -44,14 +43,30 @@ CONSTRAINT customerUserInvoice(userInvoice) AND NOT isCompanyLegalEntity(custome
 
 //------------------------------ Ввод в упаковках -----------------------------//
 
-@defineDocumentPackSku(userInvoice, sku, customerStock, Purchase);
-@extendFormDocumentPackSkuCustom(userInvoice, userInvoice, i, showPurchasePack, Purchase);
-
-overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
-    IF  packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
-        SET quantityPackUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+@defineDocumentPack(invoice, i);
+Invoice.packQuantityInvoiceDetail(detail) += packQuantityInvoiceDetail(detail);
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserInvoice);
+        }
     }
 }
+
+@defineOrderInvoicePack(showPack);
+
+@defineDocumentPackSku(userInvoice, sku, customerStock);
+@extendFormDocumentPackSku(userInvoice, userInvoice, i);
+
+overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
+    IF packBarcodeSku(skuUserInvoiceDetail(detail)) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
+
+showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));
 
 //------------------------------ Расширение формы -----------------------------//
 

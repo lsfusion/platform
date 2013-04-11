@@ -15,7 +15,7 @@ quantityOrderInvoice (order, invoice) = GROUP SUM quantityInvoiceDetail(invoiceD
 
 //--  Связь с заказом
 
-META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
+META defineOrderInvoice(sign, stockProp)
 
     orderInvoiceDetail = ABSTRACT Order (InvoiceDetail) PERSISTENT;
     Invoice.orderInvoiceDetail (invoiceDetail) += orderInvoiceDetail(invoiceDetail);
@@ -84,7 +84,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, toShowProp###order,
+                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder, VATSumOrderDetailOrder, invoiceSumOrderDetailOrder,
                                 noteOrder, objectClassName
         FILTERS isPostedOrder(o),
                 (TRUE IF inOrderSupplier(o, supplierInvoiceOrder())) OR (o IS Order AND NOT supplierInvoiceOrder()),
@@ -98,8 +98,6 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
 
         OBJECTS d = OrderDetail
         PROPERTIES (d) READONLY indexOrderDetail, idBarcodeSkuOrderDetail, nameSkuOrderDetail, shortNameUOMSkuOrderDetail
-        PROPERTIES (d) READONLY SHOWIF toShowProp###order(o) idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
-                       amountPackOrderDetail, quantityPackOrderDetail
         PROPERTIES (d) READONLY quantityOrderDetail, invoicedOrderDetail, priceOrderDetail, sumOrderDetail,
                         numberVATOrderDetail, valueVATOrderDetail, VATSumOrderDetail, invoiceSumOrderDetail,
                         name###stockProp###orderDetail, toInvoiceOrderDetail
@@ -153,6 +151,7 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
     inOrderDetailUserInvoice (orderDetail, userInvoice) = (orderDetail IS OrderDetail AND userInvoice IS UserInvoice AND NOT supplierStockUserInvoice(userInvoice)) OR
                                                            supplierStockOrderDetail(orderDetail)==supplierStockUserInvoice(userInvoice);
 
+    overCreateDetailUserInvoiceDetailOrderDetail = ABSTRACT ACTION (UserInvoiceDetail, OrderDetail);
     createDetailUserInvoiceOrder = ACTION (userInvoice, order) {
         IF useExplicitBatchDetailUserInvoiceOrder(userInvoice, order) AND explicitBatchLedgerStock(stockProp##Order(order)) THEN {
             EXEC createExplicitBatchDetailUserInvoiceOrder(userInvoice, order);
@@ -164,9 +163,6 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     SET userInvoiceUserInvoiceDetail(d) <- userInvoice;
                     SET orderUserInvoiceDetail(d) <- order;
                     SET skuUserInvoiceDetail(d) <- skuOrderDetail(orderDetail);
-                    SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
-                    SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
-                    SET quantityPackUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
                     SET quantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail);
                     SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
                     SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
@@ -175,6 +171,8 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
                     SET invoicePriceUserInvoiceDetail (d) <- invoicePriceOrderDetail(orderDetail);
                     SET sumUserInvoiceDetail (d) <- sumOrderDetail(orderDetail);
                     SET data###stockProp###userInvoiceDetail (d) <- data###stockProp###orderDetail(orderDetail);
+
+                    EXEC overCreateDetailUserInvoiceDetailOrderDetail(d, orderDetail);
             }
     }
 
@@ -269,5 +267,21 @@ META defineOrderInvoice(sign, stockProp, toShowProp, captionProp, prop)
         PROPERTIES (i)  READONLY ordersInvoice AFTER invoiceSumInvoiceDetailInvoice(i)
         PROPERTIES (d)  READONLY descriptionOrderInvoiceDetail AFTER invoiceSumInvoiceDetail(d)
     ;
+
+END
+
+META defineOrderInvoicePack (showPackage)
+
+    EXTEND FORM orders
+        PROPERTIES (d) READONLY SHOWIF showPackage###order(o) BEFORE quantityOrderDetail
+                       idBarcodePackOrderDetail, shortNameUOMPackOrderDetail,
+                       amountPackOrderDetail, packQuantityOrderDetail
+    ;
+
+    overCreateDetailUserInvoiceDetailOrderDetail(i, o) += ACTION (i, o) {
+        SET barcodePackUserInvoiceDetail(i) <- barcodePackOrderDetail(o);
+        SET amountPackUserInvoiceDetail(i) <- amountPackOrderDetail(o);
+        SET packQuantityUserInvoiceDetail (i) <- toInvoiceOrderDetail(o)/amountPackOrderDetail(o);
+    }
 
 END

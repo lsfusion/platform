@@ -1340,23 +1340,6 @@ META defineDocumentInterfaceDetailGrossWeight (object, skuProp)
     @defineDocumentInterfaceDetailGrossWeightPrefix(object, skuProp, , );
 END
 
-// ------------------------------------------------- Кол-во в грузовом месте ----------------------------------- //
-
-META defineDocumentDetailDataQuantityPackCustomPrefix (detail, prefix, caption)
-    prefix###quantityPack###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (###detail);
-END
-META defineDocumentDetailAbstractDataQuantityPackCustomPrefix (detail, prefix, caption)
-    prefix###quantityPack###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
-END
-META defineDocumentDetailInterfaceDataQuantityPackCustomPrefix (detail, prefix, caption)
-    @defineDocumentDetailAbstractDataQuantityPackCustomPrefix(detail, prefix, caption);
-    @defineDocumentDetailDataQuantityPackCustomPrefix (user###detail, prefix, caption);
-    prefix###quantityPack###detail (detail) += prefix###quantityPack###user###detail(detail);
-END
-META defineDocumentDetailInterfaceDataQuantityPack (object)
-    @defineDocumentDetailInterfaceDataQuantityPackCustomPrefix(object##Detail, , );
-END
-
 //--------------------------------------------------Партия для Detail--------------------------------------//
 META defineDocumentDetailBatchCustomPrefix(detail, batchProp, prefix)
     @defineDocumentDetailBatchCustomPrefixInner(detail, batchProp, ###batchProp, prefix);

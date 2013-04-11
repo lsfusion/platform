@@ -35,7 +35,7 @@
 	<field name="downtimeConsignment" class="java.lang.String"/>
 	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
@@ -62,7 +62,7 @@
 	<field name="vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetail" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetail" class="java.lang.Double"/>
 	<summary>
 		<band height="518">
@@ -71,7 +71,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{quantityPackConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{quantityPackConsignmentDetailConsignment}) + " мест":"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{packQuantityConsignmentDetailConsignment}!=null?platform.base.Words.toString($F{packQuantityConsignmentDetailConsignment}) + " мест":"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="132" y="82" width="273" height="24"/>

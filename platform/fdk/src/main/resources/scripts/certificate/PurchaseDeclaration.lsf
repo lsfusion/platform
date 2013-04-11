@@ -365,15 +365,24 @@ setPriceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACT
 EXTEND FORM userInvoice
     PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
     PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-                  priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-                  priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
+                                                          priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
+                                                          priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
 ;
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerCustoms {
+            title = 'Таможенные платежи';
+            ADD PROPERTY(isCustomUserInvoice);
+        }
+    }
+}
+
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice FORCE GRID
     PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
-                  priceDutyInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
-                  priceRegistrationInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i)
+                                                                   priceDutyInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
+                                                                   priceRegistrationInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i)
 ;
 
 EXTEND FORM declaration

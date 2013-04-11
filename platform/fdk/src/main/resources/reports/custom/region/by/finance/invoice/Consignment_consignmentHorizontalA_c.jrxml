@@ -58,7 +58,7 @@
 	<field name="downtimeConsignment" class="java.lang.String"/>
 	<field name="raceQuantityConsignment" class="java.lang.Integer"/>
 	<field name="quantityConsignmentDetailConsignment" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetailConsignment" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumConsignmentDetailConsignment" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetailConsignment" class="java.lang.Double"/>
@@ -86,7 +86,7 @@
 	<field name="vatConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumVATConsignmentDetail" class="java.lang.Double"/>
 	<field name="sumInvoiceConsignmentDetail" class="java.lang.Double"/>
-	<field name="quantityPackConsignmentDetail" class="java.lang.Double"/>
+	<field name="packQuantityConsignmentDetail" class="java.lang.Double"/>
 	<field name="grossWeightTonConsignmentDetail" class="java.lang.Double"/>
 	<field name="noteConsignmentDetail" class="java.lang.String"/>
 	<field name="nameWareConsignmentDetail" class="java.lang.String"/>
@@ -156,7 +156,7 @@
 					<textElement textAlignment="Right">
 						<font size="9"/>
 					</textElement>
-					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityPackConsignmentDetailConsignment},0)]]></textFieldExpression>
+					<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{packQuantityConsignmentDetailConsignment},0)]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="219" y="0" width="32" height="14" backcolor="#FFFFFF"/>
@@ -719,7 +719,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{quantityPackConsignmentDetail},0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[platform.base.BaseUtils.nvl($F{packQuantityConsignmentDetail},0)]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" mode="Transparent" x="251" y="0" width="49" height="18"/>

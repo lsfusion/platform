@@ -24,7 +24,7 @@ toShowManufacturingPriceOperation 'Показывать цену изготов�
 toShowWholesalePriceOperation 'Показывать отпускную оптовую цену' = DATA BOOLEAN (Operation) IN toShowGroup;
 wholesaleCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
 nameWholesaleCalcPriceListTypeOperation 'Вид цен (надбавка) оптовая' (operation) = name(wholesaleCalcPriceListTypeOperation(operation));
-showPurchasePackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
+showPackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
 toShowRRPPriceOperation 'Показывать RRP' = DATA BOOLEAN (Operation) IN toShowGroup;
 isHomeCurrencyOperation 'Показывать конвертацию' = DATA BOOLEAN (Operation) IN toShowGroup;
 isComplianceOperation 'Показывать сертификацию' = DATA BOOLEAN (Operation) IN toShowGroup;
@@ -35,7 +35,7 @@ EXTEND FORM operation
                   createCreditNoteOperation, createPricingOperation, namePricingPriceListTypeOperation,
                   createRepricingOperation,
                   toShowManufacturingPriceOperation, toShowWholesalePriceOperation, nameWholesaleCalcPriceListTypeOperation,
-                  toShowRRPPriceOperation, showPurchasePackOperation, isHomeCurrencyOperation, isComplianceOperation,
+                  toShowRRPPriceOperation, showPackOperation, isHomeCurrencyOperation, isComplianceOperation,
                   isCustomOperation
 
 ;
@@ -57,7 +57,7 @@ EXTEND DESIGN operation{
             ADD PROPERTY(toShowWholesalePriceOperation);
             ADD PROPERTY(nameWholesaleCalcPriceListTypeOperation);
             ADD PROPERTY(toShowRRPPriceOperation);
-            ADD PROPERTY(showPurchasePackOperation);
+            ADD PROPERTY(showPackOperation);
             ADD PROPERTY(isHomeCurrencyOperation);
             ADD PROPERTY(isComplianceOperation);
             ADD PROPERTY(isCustomOperation);

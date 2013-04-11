@@ -24,7 +24,7 @@ FORM invoiceInvoices 'Накладные'
 
     OBJECTS o = Invoice
     PROPERTIES (o) READONLY isPostedInvoice FORCE GRID, numberInvoice, seriesInvoice, dateInvoice, timeInvoice, nameCurrencyInvoice,
-                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice, showSalePackInvoice,
+                            countInvoiceDetailInvoice, quantityInvoiceDetailInvoice, sumInvoiceDetailInvoice,
                             noteInvoice, objectClassName
     FILTERS supplierInvoice(o) == s,
             customerInvoice(o) == c,
@@ -38,7 +38,7 @@ FORM invoiceInvoices 'Накладные'
     OBJECTS d = InvoiceDetail
 
     PROPERTIES (d) READONLY indexInvoiceDetail, idBarcodeSkuInvoiceDetail, nameSkuInvoiceDetail, shortNameUOMSkuInvoiceDetail
-    PROPERTIES (d) READONLY SHOWIF showSalePackInvoice(o) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail, amountPackInvoiceDetail, quantityPackInvoiceDetail
+    PROPERTIES (d) READONLY SHOWIF showPackInvoice(o) idBarcodePackInvoiceDetail, shortNameUOMPackInvoiceDetail, amountPackInvoiceDetail, packQuantityInvoiceDetail
     PROPERTIES (d) READONLY quantityInvoiceDetail, priceInvoiceDetail, sumInvoiceDetail, numberVATInvoiceDetail, valueVATInvoiceDetail,
                             VATSumInvoiceDetail, invoiceSumInvoiceDetail, nameSupplierStockInvoiceDetail
 
@@ -105,7 +105,7 @@ fillInvoiceUserInvoice 'Заполнить на основе накладной'
             SET Purchase.batchUserInvoiceDetail(d) <- batchInvoiceDetail(invoiceDetail);
             SET Purchase.barcodePackUserInvoiceDetail(d) <- barcodePackInvoiceDetail(invoiceDetail);
             SET Purchase.amountPackUserInvoiceDetail(d) <- amountPackInvoiceDetail(invoiceDetail);
-            SET Purchase.quantityPackUserInvoiceDetail(d) <- quantityPackInvoiceDetail(invoiceDetail);
+            SET Purchase.packQuantityUserInvoiceDetail(d) <- packQuantityInvoiceDetail(invoiceDetail);
             SET Purchase.quantityUserInvoiceDetail (d) <- quantityInvoiceDetail(invoiceDetail);
             SET Purchase.VATUserInvoiceDetail(d) <- VATInvoiceDetail(invoiceDetail);
             SET Purchase.valueVATUserInvoiceDetail(d) <- valueVATInvoiceDetail(invoiceDetail);
@@ -256,10 +256,10 @@ Purchase.invoiceSumInvoiceDetail(invoiceDetail) += invoiceSumInvoiceDetail(invoi
 
 Purchase.editInvoice(invoice) += ACTION EXEC editInvoice(invoicePurchaseInvoice(invoice));
 
-Purchase.showPurchasePackInvoice(invoice) +=  showSalePackInvoice(invoicePurchaseInvoice(invoice));
+Purchase.showPackInvoice(invoice) +=  showPackInvoice(invoicePurchaseInvoice(invoice));
 Purchase.barcodePackInvoiceDetail(invoiceDetail) += barcodePackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 Purchase.amountPackInvoiceDetail(invoiceDetail) +=  amountPackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
-Purchase.quantityPackInvoiceDetail(invoiceDetail) +=  quantityPackInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
+Purchase.packQuantityInvoiceDetail(invoiceDetail) +=  packQuantityInvoiceDetail(invoiceDetailPurchaseInvoiceDetail(invoiceDetail));
 
 invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(invoiceDetail);
 

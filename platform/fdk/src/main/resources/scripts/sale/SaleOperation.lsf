@@ -22,14 +22,14 @@ namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(
 createPurchaseShipmentOperation 'Создавать поставку (закупка)' = DATA BOOLEAN (Operation) IN createGroup;
 
 toShowManufacturingPriceOperation 'Показывать цену изготовителя' = DATA BOOLEAN (Operation) IN toShowGroup;
-showSalePackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
+showPackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
 toShowRRPPriceOperation 'Показывать RRP' = DATA BOOLEAN (Operation) IN toShowGroup;
 
 EXTEND FORM operation
     PROPERTIES(o) createShipmentOperation, createPricingOperation, createCreditNoteOperation,
                   createPurchaseInvoiceOperation, createPurchasePricingOperation, namePurchaseRetailPriceListTypeOperation,
                   createPurchaseShipmentOperation,
-                  toShowManufacturingPriceOperation, showSalePackOperation, toShowRRPPriceOperation
+                  toShowManufacturingPriceOperation, showPackOperation, toShowRRPPriceOperation
 ;
 
 EXTEND DESIGN operation{
@@ -48,7 +48,7 @@ EXTEND DESIGN operation{
             caption = 'Отображение свойств';
             ADD PROPERTY(toShowManufacturingPriceOperation);
             ADD PROPERTY(toShowRRPPriceOperation);
-            ADD PROPERTY(showSalePackOperation);
+            ADD PROPERTY(showPackOperation);
         }
     }
 }
