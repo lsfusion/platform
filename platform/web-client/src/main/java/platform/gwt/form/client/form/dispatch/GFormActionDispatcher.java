@@ -9,12 +9,19 @@ import platform.gwt.form.client.log.GLog;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.classes.GObjectClass;
+import platform.gwt.form.shared.view.grid.EditEvent;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;
 
+    private EditEvent latestEditEvent;
+
     public GFormActionDispatcher(GFormController form) {
         this.form = form;
+    }
+
+    public void setLatestEditEvent(EditEvent latestEditEvent) {
+        this.latestEditEvent = latestEditEvent;
     }
 
     @Override
@@ -57,7 +64,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GDialogAction action) {
         pauseDispatching();
-        form.showModalDialog(action.dialog, new WindowHiddenHandler() {
+        form.showModalDialog(action.dialog, latestEditEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 continueDispatching();

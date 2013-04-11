@@ -619,6 +619,17 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         groupObjectController.quickEditFilter(event);
     }
 
+    public void selectProperty(GPropertyDraw propertyDraw) {
+        if (propertyDraw == null) {
+            return;
+        }
+
+        int ind = getMinPropertyIndex(propertyDraw);
+        if (ind != -1) {
+            setKeyboardSelectedColumn(ind, false);
+        }
+    }
+
     public void setValueAt(Cell.Context context, Object value) {
         GridDataRecord rowRecord = (GridDataRecord) context.getRowValue();
         GridColumn column = (GridColumn) getColumn(context.getColumn());

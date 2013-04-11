@@ -49,6 +49,7 @@ import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
+import platform.gwt.form.shared.view.grid.EditEvent;
 import platform.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import platform.gwt.form.shared.view.panel.PanelRenderer;
 import platform.gwt.form.shared.view.window.GModalityType;
@@ -448,8 +449,8 @@ public class GFormController extends ResizableSimplePanel {
         });
     }
 
-    public void showModalDialog(GForm form, final WindowHiddenHandler handler) {
-        GResizableModalDialog.showDialog(formsController, form, handler);
+    public void showModalDialog(GForm form, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+        GResizableModalDialog.showDialog(formsController, form, initFilterEvent, handler);
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -704,6 +705,25 @@ public class GFormController extends ResizableSimplePanel {
         dispatcher.execute(new SetUserFilters(filters), new ServerResponseCallback());
     }
 
+    public void quickFilter(EditEvent event, int initialFilterPropertyID) {
+        GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            selectProperty(initialFilterPropertyID);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw);
+        }
+    }
+
+    public void getInitialFilterProperty(final AsyncCallbackEx<NumberResult> callback) {
+        dispatcher.execute(new GetInitialFilterProperty(), callback);
+    }
+
+    public void selectProperty(int propertyDrawId) {
+        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            controllers.get(propertyDraw.groupObject).selectProperty(propertyDraw);
+        }
+    }
+
     public void countRecords(final GGroupObject groupObject) {
         dispatcher.execute(new CountRecords(groupObject.ID), new AsyncCallbackEx<NumberResult>() {
             @Override
@@ -766,6 +786,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void hideForm() {
+        setFiltersVisible(false);
         dispatcher.execute(new FormHidden(), new ErrorHandlingCallback<VoidResult>());
     }
 
@@ -820,14 +841,16 @@ public class GFormController extends ResizableSimplePanel {
         return objects;
     }
 
-    public void setSelected(boolean selected) {
+    public void setFiltersVisible(boolean visible) {
         for (GGroupObjectController goc : controllers.values()) {
-            goc.setFilterVisible(selected);
+            goc.setFilterVisible(visible);
         }
         for (GTreeGroupController tgc : treeControllers.values()) {
-            tgc.setFilterVisible(selected);
+            tgc.setFilterVisible(visible);
         }
+    }
 
+    public void setSelected(boolean selected) {
         if (selected) {
             if (!initialResizeProcessed) { // до чего-нибудь мог не успеть дойти onResize() при открытии (открытие сразу нескольких форм)
                 relayoutTables(formLayout.getMainKey());

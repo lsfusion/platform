@@ -155,6 +155,8 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
             //убираем фокус, чтобы не ловить последующие нажатия
             setFocus(false);
+
+            editDispatcher.setLatestEditEvent(editEvent);
             editDispatcher.executePropertyEditAction(property, columnKey, actionSID, oldValue);
         }
     }

@@ -112,6 +112,10 @@ public class GGridController implements DefaultFocusReceiver {
         table.changeOrder(property, modiType);
     }
 
+    public void selectProperty(GPropertyDraw propertyDraw) {
+        table.selectProperty(propertyDraw);
+    }
+
     @Override
     public boolean focus() {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {

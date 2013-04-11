@@ -441,4 +441,8 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             super.setFilterVisible(visible);
         }
     }
+
+    public void selectProperty(GPropertyDraw propertyDraw) {
+        grid.selectProperty(propertyDraw);
+    }
 }

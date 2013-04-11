@@ -10,10 +10,12 @@ public class GResizableModalForm extends GResizableModalWindow {
 
     protected final ResizeLayoutPanel mainPane;
 
+    protected GFormController editorForm;
+
     public GResizableModalForm(FormsController formsController, GForm form, final WindowHiddenHandler hiddenHandler) {
         super(form.caption, hiddenHandler);
 
-        GFormController editorForm = new GFormController(formsController, form, true) {
+        editorForm = new GFormController(formsController, form, true) {
             @Override
             public void hideForm() {
                 super.hideForm();
@@ -29,6 +31,7 @@ public class GResizableModalForm extends GResizableModalWindow {
                     center();
                 }
                 super.onInitialFormChangesReceived();
+                initialFormChangesReceived();
             }
         };
 
@@ -49,5 +52,8 @@ public class GResizableModalForm extends GResizableModalWindow {
         GResizableModalForm modalForm = new GResizableModalForm(formsController, form, hiddenHandler);
         modalForm.center();
         return modalForm;
+    }
+
+    public void initialFormChangesReceived() {
     }
 }

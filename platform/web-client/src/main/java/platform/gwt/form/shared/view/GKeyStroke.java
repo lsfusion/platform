@@ -24,6 +24,7 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_F11 = KEY_F1 + 10;
     public static final int KEY_F12 = KEY_F1 + 11;
 
+    public static final int KEY_SPACE = 32;
     public static final int KEY_INSERT = 45;
 
     public static final int KEY_C = 67;
@@ -115,6 +116,10 @@ public class GKeyStroke implements Serializable {
         return new GKeyStroke(e.getKeyCode(), e.getAltKey(), e.getCtrlKey(), e.getShiftKey());
     }
 
+    public static boolean isSpaceKeyEvent(NativeEvent event) {
+        return event.getKeyCode() == KEY_SPACE;
+    }
+
     public static boolean isCommonEditKeyEvent(NativeEvent event) {
         if (event.getCtrlKey() || event.getAltKey() || event.getMetaKey()) {
             return false;
@@ -123,7 +128,8 @@ public class GKeyStroke implements Serializable {
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYPRESS.equals(eventType)) {
-            return isChangeKeyCode(keyCode);
+            return isChangeKeyCode(keyCode) ||
+                    (event.getCharCode() != 0 && keyCode != KEY_ENTER); // смотрим и на чаркод, т.к. в хроме получаем пересечение с символами '!', '%', '(', '#' и пр.
         } else if (KEYDOWN.equals(eventType)) {
             return keyCode == KeyCodes.KEY_DELETE;
         }
@@ -142,7 +148,8 @@ public class GKeyStroke implements Serializable {
                     keyCode == KEY_ENTER||
                     (KEY_F1 <= keyCode && keyCode <= KEY_F12);
         } else if (KEYPRESS.equals(eventType)) {
-            return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() && isChangeKeyCode(keyCode);
+            return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
+                    (isChangeKeyCode(keyCode) || (event.getCharCode() != 0 && keyCode != KEY_ENTER));
         }
         return false;
     }
