@@ -367,7 +367,7 @@ calcPremiumComponentsPriceProductDetail 'Цена компонентов с на
     BY product, order](productProductDetail(productDetail), orderProductDetail(productDetail));
 
 calcPremiumPriceProductDetail 'Цена расчетная (с надбавками)' (productDetail) =
-    IF calcPriceListTypeProductDetail(productDetail) THEN
+    IF roundConditionPriceListType(calcPriceListTypeProductDetail(productDetail)) THEN
         toNumeric14p2(roundPriceRoundCondition(calcPremiumComponentsPriceProductDetail(productDetail) * multiplierCalcProductDetail(productDetail),
                                                roundConditionPriceListType(calcPriceListTypeProductDetail(productDetail))))
     ELSE

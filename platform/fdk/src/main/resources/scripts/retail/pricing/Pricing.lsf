@@ -285,7 +285,7 @@ retailPriceListTypeUserPricingDetail(detail) <- retailPriceListTypeUserPricing(u
 
 // Округление
 roundConditionUserPricingDetail(userPricingDetail) =
-    IF retailPriceListTypeUserPricingDetail(userPricingDetail) IS CalcPriceListType
+    IF roundConditionPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
         THEN roundConditionPriceListType(retailPriceListTypeUserPricingDetail(userPricingDetail))
         ELSE roundConditionDepartmentStore(departmentStoreUserPricingDetail(userPricingDetail));
 

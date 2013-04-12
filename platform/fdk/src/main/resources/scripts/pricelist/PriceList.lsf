@@ -853,7 +853,7 @@ editPriceListType(priceListType) += editCalcPriceListType(priceListType);
 FORM priceListType 'Вид цены'
     OBJECTS p = PriceListType
     PROPERTIES(p) READONLY name, nameCurrencyPriceListType
-    PROPERTIES(p) includeVATPriceListType, nameRoundConditionPriceListType
+    PROPERTIES(p) READONLY includeVATPriceListType, nameRoundConditionPriceListType
 
     DIALOG PriceListType OBJECT p
 ;

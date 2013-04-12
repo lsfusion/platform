@@ -41,7 +41,7 @@ purchasePricingPriceInvoiceDetail (detail) = priceInvoiceDetail(detail) OR overP
 
 // Действия по измению цен и надбавок на форме
 purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
-    IF purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
+    IF roundConditionPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         THEN roundConditionPriceListType(purchaseRetailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 

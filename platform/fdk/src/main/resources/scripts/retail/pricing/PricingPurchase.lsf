@@ -16,7 +16,7 @@ retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(u
 
 // Округление розничной цен (если указан расчетный вид цены, то от него, иначе от склада)
 roundConditionUserInvoiceDetail(userInvoiceDetail) =
-    IF retailPriceListTypeUserInvoiceDetail(userInvoiceDetail) IS CalcPriceListType
+    IF roundConditionPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         THEN roundConditionPriceListType(retailPriceListTypeUserInvoiceDetail(userInvoiceDetail))
         ELSE roundConditionDepartmentStore(customerStockUserInvoiceDetail(userInvoiceDetail));
 
