@@ -1222,7 +1222,12 @@ recursivePropertyDefinition[List<String> context, boolean dynamic] returns [LPWi
 		  	recursiveContext = new ArrayList<String>(context);
 		}
 		nextStep=propertyExpression[recursiveContext, dynamic]
-		('CYCLES' { cycleType = Cycle.YES; } ('IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; })? )?
+		('CYCLES' 
+			(	'YES' { cycleType = Cycle.YES; }
+			|	'NO' { cycleType = Cycle.NO; } 
+			|	'IMPOSSIBLE' { cycleType = Cycle.IMPOSSIBLE; }
+			)
+		)?
 	;
 
 structCreationPropertyDefinition[List<String> context, boolean dynamic] returns [LPWithParams property] 

@@ -250,6 +250,7 @@
       <keyword name="WINDOW" />
       <keyword name="WORDFILE" />
       <keyword name="XOR" />
+      <keyword name="YES" />
     </keywords>
     <keywords2>
       <keyword name="$1" />
