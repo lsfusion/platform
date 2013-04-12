@@ -1609,8 +1609,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvent(" + whenProp + ", " + event + ", " + orders + ", " + descending + ", " + baseEvent + ");");
         checkActionProperty(event.property);
-        List<Object> params = getParamsPlainList(asList(whenProp), orders);
-        ((LAP)event.property).setEventAction(this, baseEvent, descending, false, params.toArray());
+        List<Object> params = getParamsPlainList(asList(event, whenProp), orders);
+        addEventAction(baseEvent, descending, false, params.toArray());
     }
 
     public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, String showDep, List<String> sPrevStarts) throws ScriptingErrorLog.SemanticErrorException {
