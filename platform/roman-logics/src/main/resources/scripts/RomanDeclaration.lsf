@@ -227,7 +227,7 @@ inDeclarationInnerInvoice 'Инвойс в декларации' (declaration, i
 CONSTRAINT declarationInnerInvoice(innerInvoice) AND NOT(freightInnerInvoice(innerInvoice) IS FreightArrived)
     MESSAGE 'Инвойс используется в декларации';
 
-forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration AS Declaration AND NOT declarationInnerInvoice(innerInvoice);
+forDeclaration(declaration, innerInvoice) = inDeclarationInnerInvoice(declaration, innerInvoice) OR declaration IS Declaration AND NOT declarationInnerInvoice(innerInvoice);
 
 CONSTRAINT declarationInnerInvoice(innerInvoice1) == declarationInnerInvoice(innerInvoice2) AND
            contractInnerInvoice(innerInvoice1) != contractInnerInvoice(innerInvoice2) CHECKED

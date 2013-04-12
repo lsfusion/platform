@@ -302,6 +302,12 @@ FORM agreements 'Соглашения'
     PROPERTIES(a) ADDFORM, EDITFORM, delete
 ;
 
+NAVIGATOR {
+    priceListDocuments {
+        ADD agreements;
+    }
+}
+
 // ---------------------------------------------- Копирование соглащений --------------------------------------- //
 
 copyPropertiesAgreement = ACTION (s, d) {
@@ -487,18 +493,17 @@ END
 
 META deriveDocumentHeaderAgreement (object, supplier, customer)
 
-    agreement###object (object) <- defaultAgreementSupplierCustomer(supplier(object), customer(object))
-        IF currency###object(object) == currencyAgreement(defaultAgreementSupplierCustomer(supplier(object), customer(object)))
-    WHEN CHANGED(currency###object(object)) OR
-         CHANGED(customer(object)) OR
-         CHANGED(supplier(object));
+    agreement###object (o) <- defaultAgreementSupplierCustomer(supplier(o), customer(o))
+        IF currency###object(o) == currencyAgreement(defaultAgreementSupplierCustomer(supplier(o), customer(o)))
+    WHEN CHANGED(currency###object(o)) OR
+         CHANGED(customer(o)) OR
+         CHANGED(supplier(o));
 
-    CONSTRAINT currency###object(object) != currencyAgreement(agreement###object(object))
+    CONSTRAINT currency###object(o) != currencyAgreement(agreement###object(o))
                CHECKED BY agreement###object
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT agreement###object(object)
-               AND NOT inAgreementSupplier(agreement###object(object), supplier(object))
+    CONSTRAINT agreement###object(o) AND NOT inAgreementSupplier(agreement###object(o), supplier(o))
                CHECKED BY agreement###object
                MESSAGE 'Соглашение должно быть между заданными организациями';
 
@@ -512,53 +517,43 @@ END
 
 META deriveDocumentDetailPriceListTypeAgreementCustom (object, detail)
     priceListType###detail(d) <- IF agreement###object(object###detail(d))
-                                THEN priceListTypeAgreementSku(agreement###object(object###detail(d)), sku###detail(d))
-                                ELSE priceListType###object(object###detail(d))
+                                 THEN priceListTypeAgreementSku(agreement###object(object###detail(d)), sku###detail(d))
+                                 ELSE priceListType###object(object###detail(d))
     WHEN CHANGED(agreement###object(object###detail(d))) OR
-        CHANGED(priceListType###object(object###detail(d))) OR
-        CHANGED(sku###detail(d));
+         CHANGED(priceListType###object(object###detail(d))) OR
+         CHANGED(sku###detail(d));
 END
 META deriveDocumentDetailPriceListTypeAgreement (object)
     @deriveDocumentDetailPriceListTypeAgreementCustom(object, object###detail);
 END
 
 //--------------------------------------- Для двух объектов (object1 - документ)----------------------------------------------------------//
-META defineDocumentDoubleHeaderAgreement (object1, object2)
+META defineDocumentHeaderAgreement (object1, object2)
     agreement###object1###object2 (object1, object2) = DATA Agreement (###object1, ###object2);
     nameAgreement###object1###object2 'Соглашение' (object1, object2)= name(agreement###object1###object2 (object1, object2)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;
     defaultPriceListType###object1###object2 (object1, object2) = priceListTypeAgreement(agreement###object1###object2 (object1, object2));
 END
 
-META defineDocumentDoubleInterfaceHeaderAgreement(object1, object2, supplierProp, customerProp)
-    @defineDocumentDoubleInterfaceHeaderAgreementInner(object1, object2, ###object2, supplierProp, customerProp);
-END
+META defineDocumentInterfaceHeaderAgreement(object1Class, object2Class, supplierProp, customerProp)
+    @defineDocumentHeaderAgreement(object1Class, object2Class);
+    agreement###object1Class###object2Class (o1, o2) <- agreement###object1Class(o1)
+        IF currency###object1Class(o1) == currencyAgreement(agreement###object1Class(o1))
+        AND in###object1Class###object2Class(o1, o2)
+    WHEN CHANGED(currency###object1Class(o1)) AND o2 IS object2Class OR
+         CHANGED(agreement###object1Class(o1)) AND o2 IS object2Class OR
+         CHANGED(in###object1Class###object2Class(o1, o2));
 
-META defineDocumentDoubleInterfaceHeaderAgreementInner(object1, object2, object2Class, supplierProp, customerProp)
-    @defineDocumentDoubleHeaderAgreement(object1, object2);
-    agreement###object1###object2 (object1, object2) <- agreement###object1(object1)
-        IF currency###object1(object1) == currencyAgreement(agreement###object1(object1))
-        AND in###object1###object2(object1, object2)
-    WHEN CHANGED(currency###object1(object1)) AND object2 IS object2Class OR
-         CHANGED(agreement###object1(object1)) AND object2 IS object2Class OR
-         CHANGED(in###object1###object2(object1, object2));
-
-    CONSTRAINT currency###object1(object1) != currencyAgreement(agreement###object1###object2(object1, object2))
-               CHECKED BY agreement###object1###object2
+    CONSTRAINT currency###object1Class(o1) != currencyAgreement(agreement###object1Class###object2Class(o1, o2))
+               CHECKED BY agreement###object1Class###object2Class
                MESSAGE 'Валюта документа должны совпадать с валютой соглашения';
 
-    CONSTRAINT agreement###object1###object2(object1, object2)
-               AND NOT inAgreementSupplier(agreement###object1###object2(object1, object2), supplierProp###object1(object1))
-               CHECKED BY agreement###object1###object2
+    CONSTRAINT agreement###object1Class###object2Class(o1, o2)
+               AND NOT inAgreementSupplier(agreement###object1Class###object2Class(o1, o2), supplierProp###object1Class(o1))
+               CHECKED BY agreement###object1Class###object2Class
                MESSAGE 'Соглашение должно быть между заданными организациями';
 
-    CONSTRAINT agreement###object1###object2(object1, object2)
-               AND NOT inAgreementCustomer(agreement###object1###object2(object1, object2), customerProp###object1(object1))
-               CHECKED BY agreement###object1###object2
+    CONSTRAINT agreement###object1Class###object2Class(o1, o2)
+               AND NOT inAgreementCustomer(agreement###object1Class###object2Class(o1, o2), customerProp###object1Class(o1))
+               CHECKED BY agreement###object1Class###object2Class
                MESSAGE 'Соглашение должно быть между заданными организациями';
 END
-
-NAVIGATOR {
-    priceListDocuments {
-        ADD agreements;
-    }
-}

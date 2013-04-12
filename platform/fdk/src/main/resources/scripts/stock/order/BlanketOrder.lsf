@@ -55,7 +55,7 @@ META defineBlanketOrder(sign)
     @defineDocumentHeaderAgreement (blanketOrder);
     @deriveDocumentHeaderAgreement (blanketOrder, supplierBlanketOrder, customerBlanketOrder);
 
-    @defineDocumentDoubleInterfaceHeaderAgreement (blanketOrder, stock, supplier, customer);
+    @defineDocumentInterfaceHeaderAgreement (BlanketOrder, Stock, supplier, customer);
 
     priceListTypeBlanketOrderStock (blanketOrder, stock) = DATA PriceListType (BlanketOrder, Stock);
     namePriceListTypeBlanketOrderStock 'Вид цены' (blanketOrder, stock) = name(priceListTypeBlanketOrderStock (blanketOrder, stock)) IN documentPrmGroup MINCHARWIDTH 5 PREFCHARWIDTH 10;

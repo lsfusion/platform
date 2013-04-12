@@ -199,6 +199,7 @@ descriptionCommercialInvoice 'Название документа' (commercialIn
 @implementContractLedger(a, commercialInvoice, contract);
 sumContractALedger(contractALedger) += sumCommercialInvoice(contractALedger);
 
+paymentConditionCommercialInvoice = DATA PaymentCondition (CommercialInvoice);
 @implementContractPrepaymentLedger(commercialInvoice, sumCommercialInvoice, contract);
 //sumContractLedger(commercialInvoiceContractLedger) += sumCommercialInvoice(commercialInvoiceCommercialInvoiceContractLedger(commercialInvoiceContractLedger));
 
