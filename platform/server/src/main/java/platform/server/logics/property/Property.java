@@ -528,4 +528,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
         return null;
     }
+
+    public Property showDep; // assert что не null когда events не isEmpty
 }

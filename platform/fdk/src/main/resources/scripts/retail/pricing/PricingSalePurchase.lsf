@@ -91,7 +91,7 @@ EXTEND FORM userInvoice
                   purchaseRetailSumUserInvoiceDetail
     PROPERTIES(d) purchasePricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPurchasePricingInvoice(i) BACKGROUND backgroundPurchaseRetailInvoice(i)
 
-    HINTTABLE LIST purchaseRetailMarkupUserInvoiceDetail, valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailPriceUserInvoiceDetail
+//    HINTTABLE LIST purchaseRetailMarkupUserInvoiceDetail, valuePurchaseRetailVATUserInvoiceDetail, purchaseRetailPriceUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerCreateDocuments {

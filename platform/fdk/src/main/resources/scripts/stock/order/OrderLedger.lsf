@@ -291,9 +291,9 @@ META extendFormDocumentOrderLedger(object, form, stockProp, concrete)
     reviewReserveBPurchaseSku###object 'Резерв' (sku, object) = ACTION FORM orderLedger OBJECTS t=dateTime###object(object), st=stockProp###object(object), sk = sku MODAL;
 
     EXTEND FORM form
-        PROPERTIES READONLY BEFORE currentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)
+        PROPERTIES READONLY BEFORE prevCurrentBalanceSku###object(s, concrete) availableQuantitySku###object(s, concrete)
 
-        PROPERTIES AFTER currentBalanceSku###object(s, concrete)
+        PROPERTIES AFTER prevCurrentBalanceSku###object(s, concrete)
                    currentReserveSaleSku###object(s,concrete) ON CHANGE reviewReserveSaleSku###object(s,concrete),
                    currentReservePurchaseSku###object(s,concrete) ON CHANGE reviewReservePurchaseSku###object(s,concrete),
                    reserveBSaleSku###object(s, concrete) ON CHANGE reviewReserveBSaleSku###object(s,concrete),

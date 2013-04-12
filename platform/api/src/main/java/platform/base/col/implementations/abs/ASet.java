@@ -16,18 +16,18 @@ import java.util.*;
 
 public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
 
-    public boolean intersect(ImSet<K> ks) {
-        if(size()>ks.size()) return ks.intersect(this);
+    public boolean intersect(ImSet<? extends K> ks) {
+        if(size()>ks.size()) return ((ImSet<K>)ks).intersect(this);
 
         for(int i=0,size=size();i<size;i++)
-            if(ks.contains(get(i)))
+            if(((ImSet<K>)ks).contains(get(i)))
                 return true;
         return false;
     }
 
-    public boolean intersect(FunctionSet<K> set) {
+    public boolean intersect(FunctionSet<? extends K> set) {
         if(set instanceof ImSet)
-            return intersect((ImSet<K>)set);
+            return intersect((ImSet<? extends K>)set);
 
         if(set.isEmpty() || isEmpty())
             return false;
@@ -36,7 +36,7 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
             return true;
 
         for(int i=0,size=size();i<size;i++)
-            if(set.contains(get(i)))
+            if(((FunctionSet<K>)set).contains(get(i)))
                 return true;
         return false;
     }

@@ -517,6 +517,7 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
 
     currentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) =
         GROUP SUM signedQuantityActive##postfix##SkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
+    prevCurrentBalance##postfix##SkuStock 'Текущий остаток'###caption (sku, stock) = PREV(currentBalance##postfix##SkuStock(sku, stock));
     countLedger##postfix##SkuStock 'Кол-во движений'###caption (sku, stock) =
         GROUP SUM 1 AND signedQuantityActive##postfix##SkuLedger(ledger) BY skuSkuLedger(ledger), stockSkuLedger(ledger) PERSISTENT;
 
@@ -1860,6 +1861,7 @@ META defineDocumentSkuInner(object, detail, detailClass, skuProp, stockProp)
     detail###Sku###object (sku, object) = detail###Sku###object###stockProp(sku, object, stockProp###object(object));
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
+    prevCurrentBalanceSku###object 'Остаток' (sku, object) = prevCurrentBalanceSkuStock(sku, stockProp###object(object));
     backgroundQuantitySku###object 'Цвет' (sku, object) = RGB(255,128,128) IF quantity###detail###skuProp###object(sku, object) AND NOT
         (quantity###detail###skuProp###object(sku, object) <= currentBalanceSku###object(sku, object));
 
@@ -1910,7 +1912,8 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         OBJECTS s=Sku
         PROPERTIES             READONLY    inputName = nameSku(s)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
-        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete), currentBalanceSku###object READONLY, priceSku###object READONLY
+        PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete),
+                                prevCurrentBalanceSku###object READONLY, priceSku###object READONLY
 
         FILTERS                isParentSkuGroupSku(sk, s)
 
@@ -1935,7 +1938,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
                 }
             }
         }
-        PROPERTY(currentBalanceSku###object) { background = #FFEEEE; }
+        PROPERTY(prevCurrentBalanceSku###object) { background = #FFEEEE; }
     }
 END
 META extendFormDocumentSku(object, form, concrete)
@@ -1960,7 +1963,7 @@ META extendFormDocumentSkuAll(object, form, concrete)
     }
 
     EXTEND FORM form
-        PROPERTIES AFTER currentBalanceSku###object(s,concrete) form###all(s,concrete) ON CHANGE change###form###all(s, concrete)
+        PROPERTIES AFTER prevCurrentBalanceSku###object(s,concrete) form###all(s,concrete) ON CHANGE change###form###all(s, concrete)
     ;
 END
 
@@ -2050,7 +2053,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
         FILTERS in###object###stock(concrete,cc)
 
         FILTERGROUP filtr2
-            FILTER 'С остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+            FILTER 'С остатком' 'F10' prevCurrentBalanceSkuStock(s, st) DEFAULT
             FILTER 'В заказе' 'F9' quantitySku###object###fromStock(s, concrete, st)
 
 
@@ -2087,6 +2090,7 @@ END
 META defineDocumentInSkuStockCustom(object, detail, skuProp, stockProp)
 
     currentBalanceSku###object 'Остаток' (sku, object) = currentBalanceSkuStock(sku, stockProp###object(object));
+    prevCurrentBalanceSku###object 'Остаток' (sku, object) = prevCurrentBalanceSkuStock(sku, stockProp###object(object));
     detail###sku###object(sku, object) = GROUP SUM 1 BY skuProp###detail(detail), object###detail(detail);
 
     inSku###object 'Отм.' (sku, object) = TRUE IF detail###sku###object(sku, object);
@@ -2133,7 +2137,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         ORDER BY inputName
 
         FILTERGROUP filterBalance
-            FILTER 'С остатком' 'F11' currentBalanceSku###object(s, concrete)
+            FILTER 'С остатком' 'F11' prevCurrentBalanceSku###object(s, concrete)
 
     ;
 

@@ -654,7 +654,7 @@ META defineInvoicePricingAggregation(concrete, concreteClass, sign, caption, cap
                       retailSumUserInvoiceDetail
         PROPERTIES(d) pricingQuantityUserInvoiceDetail AFTER quantityUserInvoiceDetail SHOWIF toShowPricingInvoice(i) BACKGROUND backgroundRetailInvoice(i)
 
-        HINTTABLE LIST retailMarkupUserInvoiceDetail, valueRetailVATUserInvoiceDetail, retailPriceUserInvoiceDetail
+//        HINTTABLE LIST retailMarkupUserInvoiceDetail, valueRetailVATUserInvoiceDetail, retailPriceUserInvoiceDetail
     ;
     EXTEND DESIGN userInvoice {
         headerCreateDocuments {

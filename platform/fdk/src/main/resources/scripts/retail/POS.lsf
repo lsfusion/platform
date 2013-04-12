@@ -214,12 +214,12 @@ FORM searchSkuSaleReceipt 'Поиск SKU'
     FILTERS           isParentSkuGroupSku(sk, s)
     ORDER BY          nameSkuStock
 
-    PROPERTIES(s, st) READONLY currentBalanceSkuStock HINTNOUPDATE
+    PROPERTIES(s, st) READONLY prevCurrentBalanceSkuStock
 
     PROPERTIES(s, r)  READONLY currentPOSPriceSkuReceipt
 
     FILTERGROUP filters
-        FILTER 'Товары с остатком' 'F10' currentBalanceSkuStock(s, st) DEFAULT
+        FILTER 'Товары с остатком' 'F10' prevCurrentBalanceSkuStock(s, st) DEFAULT
 
     HINTTABLE LIST POSPriceListTypeReceipt, departmentStoreReceipt, groupCashRegisterReceipt
 ;

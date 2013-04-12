@@ -19,7 +19,7 @@ ON SESSION FORMS userInvoice {
     IF usePurchaseBatchAutoSet() THEN 
         FOR CHANGED(skuUserInvoiceDetail(detail)) OR
             CHANGED(shipmentPriceUserInvoiceDetail(detail)) OR
-            CHANGED(certificateTextUserInvoiceDetail(detail)) NOINLINE DO
+            CHANGED(certificateTextUserInvoiceDetail(detail)) INLINE DO
                 SET batchUserInvoiceDetail (detail) <-
                     prevNecessaryBatchUserInvoiceDetail(detail) AND detail != prevNecessaryBatchUserInvoiceDetail(detail);
                    // necessaryBatchPriceCertificateText (skuUserInvoiceDetail(detail), shipmentPriceUserInvoiceDetail(detail), toText('') IF detail IS UserInvoiceDetail OR certificateTextUserInvoiceDetail(detail));

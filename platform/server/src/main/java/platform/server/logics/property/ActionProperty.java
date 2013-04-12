@@ -193,7 +193,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return getEvents().get(event);
     }
 
-    public Property showDep; // assert что не null когда events не isEmpty
     public boolean singleApply = false;
     public ImSet<CalcProperty> prevStart;
     public boolean resolve = false;

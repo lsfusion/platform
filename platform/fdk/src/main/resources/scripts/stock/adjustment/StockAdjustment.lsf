@@ -163,7 +163,7 @@ changeActualQuantitySkuUserAdjustment = ACTION (sku, userAdjustment) {
 }
 
 EXTEND FORM userAdjustment
-    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE changeActualQuantitySkuUserAdjustment(s, i) BEFORE currentBalanceSkuUserAdjustment(s,i)
+    PROPERTIES actualBalanceSkuUserAdjustment(s,i) ON CHANGE changeActualQuantitySkuUserAdjustment(s, i) BEFORE prevCurrentBalanceSkuUserAdjustment(s,i)
 ;
 
 FORM adjustments 'Изменения остатков'

@@ -70,7 +70,7 @@ inUserInvoiceSku (userInvoice, sku)= inCustomerSku(customerUserInvoice(userInvoi
 EXTEND FORM userInvoice
 
     FILTERGROUP filter
-        FILTER 'С остатком ' 'F10' currentBalanceSkuUserInvoice(s, i)
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(s, i)
         FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
 
     FILTERGROUP filter2

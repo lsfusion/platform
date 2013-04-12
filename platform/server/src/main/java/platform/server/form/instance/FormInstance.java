@@ -27,6 +27,7 @@ import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
 import platform.server.context.ThreadLocalContext;
+import platform.server.data.LogTime;
 import platform.server.data.Modify;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
@@ -1117,6 +1118,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Message("message.form.end.apply")
+    @LogTime
     public FormChanges endApply() throws SQLException {
 
         assert interactive;

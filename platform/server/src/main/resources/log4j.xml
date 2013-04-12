@@ -145,7 +145,7 @@
         <appender-ref ref="maillog"/>
     </category>
 
-    <category name="SQLLogger" additivity="false">
+    <category name="SQLLogger">
         <priority value="INFO"/>
         <appender-ref ref="sqllog"/>
     </category>

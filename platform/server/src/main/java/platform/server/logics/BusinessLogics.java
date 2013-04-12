@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static platform.base.BaseUtils.isRedundantString;
+import static platform.base.BaseUtils.systemLogger;
 import static platform.server.logics.ServerResourceBundle.getString;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
@@ -687,7 +688,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return proceeded;
     }
 
-    private static boolean findDependency(Property<?> property, Property<?> with, HSet<Property> proceeded, Stack<Link> path) {
+    private static boolean findDependency(Property<?> property, Property<?> with, HSet<Property> proceeded, Stack<Link> path, LinkType desiredType) {
         if (property.equals(with))
             return true;
 
@@ -696,7 +697,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         for (Link link : property.getLinks()) {
             path.push(link);
-            if (findDependency(link.to, with, proceeded, path))
+            if (link.type.getNum() <= desiredType.getNum() && findDependency(link.to, with, proceeded, path, desiredType))
                 return true;
             path.pop();
         }
@@ -711,15 +712,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private static String findDependency(Property<?> property1, Property<?> property2) {
+    private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
         String result = "";
 
         Stack<Link> forward = new Stack<Link>();
-        if (findDependency(property1, property2, new HSet<Property>(), forward))
+        if (findDependency(property1, property2, new HSet<Property>(), forward, desiredType))
             result += outDependency("FORWARD", property1, forward) + '\n';
 
         Stack<Link> backward = new Stack<Link>();
-        if (findDependency(property2, property1, new HSet<Property>(), backward))
+        if (findDependency(property2, property1, new HSet<Property>(), backward, desiredType))
             result += outDependency("BACKWARD", property2, backward) + '\n';
 
         if (result.isEmpty())
@@ -731,10 +732,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void showDependencies() {
         String show = "";
         for (Property property : getOrderProperties())
-            if (property instanceof ActionProperty && ((ActionProperty) property).showDep != null)
-                show += findDependency(property, ((ActionProperty) property).showDep);
+            if (property.showDep != null)
+                show += findDependency(property, property.showDep, LinkType.DEPEND);
         if (!show.isEmpty()) {
-            debuglogger.debug("Dependencies: " + show);
+            systemLogger.debug("Dependencies: " + show);
         }
     }
 

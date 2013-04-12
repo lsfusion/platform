@@ -57,7 +57,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> {
             Type type = objectClass.getType();
             String result = type.getString(object, compile.syntax);
             if(!type.isSafeType(object))
-                result = type.getCast(result, compile.syntax, true); // cast часто rtrim делает и глотает проблемы
+                result = type.getCast(result, compile.syntax, type.needPadding(object)); // cast часто rtrim делает и глотает пробелы (важно если ' ' строка), с другой стороны lpad возвращает text и при join'е с char'ом не использует индексы
             return result;
         }
     }

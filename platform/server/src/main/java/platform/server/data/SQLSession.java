@@ -202,7 +202,6 @@ public class SQLSession extends MutableObject {
     }
 
     public void createTable(String table, ImOrderSet<KeyField> keys) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.table.creation") + " " + table + "... ");
         if (keys.size() == 0)
             keys = SetFact.singletonOrder(KeyField.dumb);
         String createString = keys.toString(this.<KeyField>getDeclare(), ",");
@@ -211,19 +210,14 @@ public class SQLSession extends MutableObject {
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table + " (" + createString + ")");
         addExtraIndices(table, keys);
-        logger.info(" Done");
     }
 
     public void renameTable(String oldTableName, String newTableName) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.table.renaming") + oldTableName + " -> " + newTableName + "... ");
         executeDDL("ALTER TABLE " + oldTableName + " RENAME TO " + newTableName);
-        logger.info(" Done");
     }
 
     public void dropTable(String table) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.table.deletion") + " " + table + "... ");
         executeDDL("DROP TABLE " + table);
-        logger.info(" Done");
     }
 
     static String getIndexName(String table, ImOrderMap<String, Boolean> fields) {
@@ -242,14 +236,12 @@ public class SQLSession extends MutableObject {
     }
 
     public void addIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.index.creation") + " " + getIndexName(table, fields) + "... ");
         String columns = fields.toString(new GetKeyValue<String, String, Boolean>() {
             public String getMapValue(String key, Boolean value) {
                 return key + " ASC" + (value?"":" NULLS FIRST");
             }}, ",");
 
         executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
-        logger.info(" Done");
     }
 
     public void dropIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
@@ -257,9 +249,7 @@ public class SQLSession extends MutableObject {
     }
     
     public void dropIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.index.deletion") + " " + getIndexName(table, fields) + "... ");
         executeDDL("DROP INDEX " + getIndexName(table, fields));
-        logger.info(" Done");
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
@@ -289,38 +279,28 @@ public class SQLSession extends MutableObject {
     }*/
 
     public void addColumn(String table, PropertyField field) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.column.adding") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN
-        logger.info(" Done");
     }
 
     public void dropColumn(String table, String field) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.column.deletion") + " " + table + "." + field + "... ");
         executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field);
-        logger.info(" Done");
     }
 
     public void renameColumn(String table, String columnName, String newColumnName) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.column.renaming") + " " + table + "." + columnName + " -> " + newColumnName + "... ");
         executeDDL("ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName);
-        logger.info(" Done");
     }
 
     public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.column.type.changing") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
                 field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name));
-        logger.info(" Done");
     }
 
     public void packTable(Table table) throws SQLException {
-        logger.info(ServerResourceBundle.getString("data.table.packing")+" " + table + "... ");
         String dropWhere = table.properties.toString(new GetValue<String, PropertyField>() {
             public String getMapValue(PropertyField value) {
                 return value.name + " IS NULL";
             }}, " AND ");
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere));
-        logger.info(" Done");
     }
 
     private SQLTemporaryPool temporaryPool = new SQLTemporaryPool();
@@ -431,8 +411,6 @@ public class SQLSession extends MutableObject {
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        logger.debug(DDL);
-
         env.before(this, connection, DDL);
 
         Statement statement = createSingleStatement(connection);
@@ -478,18 +456,16 @@ public class SQLSession extends MutableObject {
     private int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env) throws SQLException {
         Connection connection = getConnection();
 
-        logger.debug(command);
-
         env.before(this, connection, command);
 
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
+        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, BUFFERS, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax);
 
         int result = 0;
         try {
             if(explainAnalyzeMode) {
                 PreparedStatement explainStatement = statement;
                 if(explainNoAnalyze)
-                    explainStatement = getStatement("EXPLAIN " + command, paramObjects, connection, syntax);
+                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax);
                 systemLogger.info(explainStatement.toString());
                 executeExplain(explainStatement);
                 result = 100;
@@ -514,8 +490,6 @@ public class SQLSession extends MutableObject {
     private int executeDML(@ParamMessage String command) throws SQLException {
         Connection connection = getConnection();
 
-        logger.debug(command);
-
         int result = 0;
         Statement statement = createSingleStatement(connection);
         try {
@@ -534,8 +508,6 @@ public class SQLSession extends MutableObject {
     @Message("message.sql.execute")
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, ImMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
-
-        logger.debug(select);
 
         env.before(this, connection, select);
 
@@ -787,8 +759,6 @@ public class SQLSession extends MutableObject {
 
         Connection connection = getConnection();
 
-        logger.debug(select);
-
         Statement statement = createSingleStatement(connection);
         try {
             ResultSet result = statement.executeQuery(select);
@@ -924,8 +894,6 @@ public class SQLSession extends MutableObject {
             i = i + charParsed;
         }
         parsedString = parsedString + new String(parsed, 0, num);
-
-        logger.debug(parsedString);
 
         PreparedStatement statement = connection.prepareStatement(parsedString);
         paramNum = 1;

@@ -144,4 +144,8 @@ public class StringClass extends DataClass<String> {
                 return "trim(" + castString + ")";
         return castString;
     }
+
+    public boolean needPadding(Object value) {
+        return ((String)value).trim().length() != length;
+    }
 }

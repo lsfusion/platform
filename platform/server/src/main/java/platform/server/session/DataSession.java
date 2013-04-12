@@ -719,12 +719,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
             ExecutionEnvironment env = (form != null ? form : this);
 
             for(ActionProperty<?> action : getActiveSessionEvents()) {
-                sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
-                if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
+                if(sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends())) { // оптимизация аналогичная верхней
+                    sessionEventModifier = mapPrevStartSessionEventModifiers.get(action); // перегружаем modifier своим если он есть
+                    if(sessionEventModifier==null) sessionEventModifier = commonSessionEventModifier;
 
-                action.execute(env);
-                if(!isInSessionEvent())
-                    return;
+                    action.execute(env);
+                    if(!isInSessionEvent())
+                        return;
+                }
             }
             sessionEventModifier = null;
 

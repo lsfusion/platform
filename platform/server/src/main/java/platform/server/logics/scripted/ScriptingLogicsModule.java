@@ -1630,6 +1630,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         addBaseEvent(action, baseEvent, false, single, prevStart);
     }
 
+    public void addScriptedShowDep(String property, String propFrom) throws ScriptingErrorLog.SemanticErrorException {
+        findLPByCompoundName(property).property.showDep = findLPByCompoundName(propFrom).property;
+    }
+
     public void addScriptedAspect(String mainPropName, List<String> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAspect(" + mainPropName + ", " + mainPropParams + ", " + actionProp + ", " + before + ");");
         LP mainProp = findLPByCompoundName(mainPropName);

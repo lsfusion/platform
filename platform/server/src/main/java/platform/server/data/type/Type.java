@@ -24,6 +24,7 @@ public interface Type<T> extends ClassReader<T> {
     }
 
     String getCast(String value, SQLSyntax syntax, boolean needLength);
+    boolean needPadding(Object value);
     String getBinaryCast(String value, SQLSyntax syntax, boolean needLength);
     
     String getDB(SQLSyntax syntax);

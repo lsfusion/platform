@@ -269,9 +269,9 @@ META defineOrder(sign, legalEntityProp, stockProp)
         EVENTS
             ON OK prePostUserOrder(o)
 
-        HINTTABLE LIST dateTimeUserOrderDetail, skuUserOrderDetail, supplierStockUserOrderDetail, customerStockUserOrderDetail,
-                       priceListTypeUserOrderDetail, currencyUserOrderDetail,
-                       priceUserOrderDetail, VATUserOrderDetail, valueVATUserOrderDetail, invoicePriceUserOrderDetail
+//        HINTTABLE LIST dateTimeUserOrderDetail, skuUserOrderDetail, supplierStockUserOrderDetail, customerStockUserOrderDetail,
+//                       priceListTypeUserOrderDetail, currencyUserOrderDetail,
+//                       priceUserOrderDetail, VATUserOrderDetail, valueVATUserOrderDetail, invoicePriceUserOrderDetail
 
         EDIT UserOrder OBJECT o
     ;

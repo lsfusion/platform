@@ -12,6 +12,10 @@ public abstract class AbstractType<T> implements Type<T> {
         return "CAST(" + value + " AS " + getDB(syntax) + ")";
     }
 
+    public boolean needPadding(Object value) {
+        return false;
+    }
+
     public String getBinaryCast(String value, SQLSyntax syntax, boolean needLength) {
         int typeLength = getBinaryLength(syntax.isBinaryString());
         String castString = "CAST(" + value + " AS " + syntax.getBinaryType(typeLength) + ")";

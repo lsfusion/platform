@@ -24,16 +24,21 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, select);
     }
 
+    private static long runningTotal = 0;
+
     private Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
+        boolean loggingEnabled = sqlLogger.isDebugEnabled();
+
         long startTime = 0;
-        if (sqlLogger.isDebugEnabled())
+        if (loggingEnabled)
             startTime = System.currentTimeMillis();
 
         Object result = thisJoinPoint.proceed();
 
-        if (sqlLogger.isDebugEnabled()) {
+        if (loggingEnabled) {
             long runTime = System.currentTimeMillis() - startTime;
-            sqlLogger.debug(String.format("Executed query (time: %1$d ms.): %2$s", runTime, queryString));
+            runningTotal += runTime;
+            sqlLogger.debug(String.format("Executed query (time: %1$d ms., running total: %3$d): %2$s", runTime, queryString, runningTotal));
         }
 
         return result;

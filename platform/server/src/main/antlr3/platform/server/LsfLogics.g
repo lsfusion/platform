@@ -204,6 +204,7 @@ statement
 		|	followsStatement
 		|	writeWhenStatement
 		|	eventStatement
+		|   showDepStatement
 		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
@@ -2124,7 +2125,23 @@ baseEvent returns [Event event]
 	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
 	    ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 	;
-	
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// SHOWDEP STATEMENT //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+showDepStatement
+@after {
+    if (inPropParseState()) {
+        self.addScriptedShowDep($property.text, $propFrom.text);
+    }
+}
+    :	'SHOWDEP'
+        property=ID
+        'FROM'
+        propFrom=ID
+        ';'
+    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// ASPECT STATEMENT //////////////////////////////
