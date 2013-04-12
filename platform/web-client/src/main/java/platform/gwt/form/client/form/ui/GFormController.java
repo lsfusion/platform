@@ -712,7 +712,7 @@ public class GFormController extends ResizableSimplePanel {
         }
     }
 
-    public void getInitialFilterProperty(final AsyncCallbackEx<NumberResult> callback) {
+    public void getInitialFilterProperty(ErrorHandlingCallback<NumberResult> callback) {
         dispatcher.execute(new GetInitialFilterProperty(), callback);
     }
 
