@@ -1698,6 +1698,9 @@ META deriveDocumentDetailSkuBalance (object, skuProp, stockProp)
     @deriveDocumentDetailSkuBalanceCustom(object##Detail, skuProp, stockProp);
 END
 
+editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+addSku 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
+
 // ---------------------------------------------- Остатки или партия или товар -------------------------------------------- //
 
 META defineDocumentDetailSkuBatchBalance (object, skuProp, stockProp)
@@ -1774,6 +1777,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
 
         OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
+        PROPERTIES        addSku() TODRAW sts, editSku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
@@ -1914,6 +1918,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete),
                                 prevCurrentBalanceSku###object READONLY, priceSku###object READONLY
+        PROPERTIES              addSku() TODRAW s, editSku(s)
 
         FILTERS                isParentSkuGroupSku(sk, s)
 
@@ -2034,7 +2039,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
 
         OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
-
+        PROPERTIES        addSku() TODRAW sts, editSku(s)
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
                           st == fromStock###object(concrete) AND NOT sg AND NOT ts
@@ -2130,6 +2135,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         PROPERTIES             inSku###object(s,concrete) ON CHANGE changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete)currentBalanceSku###object READONLY
+        PROPERTIES             addSku() TODRAW s, editSku(s)
 
         FILTERS                isParentGroupSku(gg, s) OR s IS Sku AND NOT gg
 
@@ -2224,8 +2230,6 @@ DESIGN stocks FROM DEFAULT {
     }
 }
 
-editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
-addSku 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
 
 FORM skus 'Sku'
     TREE skuTree sg = SkuGroup PARENT parentSkuGroup
@@ -2800,6 +2804,8 @@ META defineDialogSku (form)
         OBJECTS s=Sku                                 //form###nameSku 'Наименование' (sku) = IF form###stock() THEN nameSkuStock(sku, form###stock()) ELSE nameSku(sku);
         PROPERTIES READONLY    inputName = nameSku(s) //form###nameSku(s)
         PROPERTIES(s)          form###quantity
+        PROPERTIES             editSku(s)
+
         FILTERS                isParentSkuGroupSku(sk, s)
         ORDER BY inputName
 
