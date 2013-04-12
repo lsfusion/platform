@@ -46,9 +46,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 import static platform.base.BaseUtils.nvl;
@@ -60,6 +58,8 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
     private static final String javaExe = System.getProperty("java.home") + "/bin/java";
 
     private final ChannelGroup openChannels = new DefaultChannelGroup();
+
+    private final AppManagerProcessDestroyer appManagerProcessDestroyer = new AppManagerProcessDestroyer(this);
 
     private ChannelFactory channelFactory;
 
@@ -160,6 +160,9 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
             return;
         }
 
+        //сначала завершаем все managed-логики, чтобы они ещё могли сообщить об этом
+        appManagerProcessDestroyer.shutdown();
+
         ChannelGroupFuture future = openChannels.close();
         future.awaitUninterruptibly();
         channelFactory.releaseExternalResources();
@@ -241,7 +244,7 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
 
         ImOrderMap<ImMap<String,Object>, ImMap<String, Object>> values = q.execute(session.sql);
 
-        //подготавливаем файлы для заупска
+        //подготавливаем файлы для запуска
         File tempProjectDir = IOUtils.createTempDirectory("paas-project");
         File tempModulesDir = new File(tempProjectDir, "paasmodules");
         tempModulesDir.mkdir();
@@ -255,15 +258,15 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         executeScriptedBL((Integer) confObj.object, exportPort, dbName, tempProjectDir, moduleFilePaths);
     }
 
-    private void executeScriptedBL(int configurationId, int exportPort, String dbName, File tempProjectDir, List<String> scriptFilePaths) throws IOException, InterruptedException {
+    private void executeScriptedBL(int configurationId, int configurationPort, String dbName, File tempProjectDir, List<String> scriptFilePaths) throws IOException, InterruptedException {
         Properties properties = new Properties();
         properties.setProperty("db.server", dbServer);
         properties.setProperty("db.name", dbName);
         properties.setProperty("db.user", dbUser);
         properties.setProperty("db.password", dbPassword);
-        properties.setProperty("rmi.exportPort", String.valueOf(exportPort));
+        properties.setProperty("rmi.exportPort", String.valueOf(configurationPort));
         properties.setProperty("logics.overridingModulesList", "");
-        properties.setProperty("logics.includedPaths", "paasmodules");
+        properties.setProperty("logics.includedPaths", "paasmodules/");
         properties.setProperty("logics.excludedPaths", "");
         properties.setProperty("paas.manager.host", "localhost");
         properties.setProperty("paas.manager.port", String.valueOf(acceptPort));
@@ -280,9 +283,11 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         commandLine.addArgument(BusinessLogicsBootstrap.class.getName());
 
         Executor executor = new DefaultExecutor();
+        executor.setProcessDestroyer(appManagerProcessDestroyer);
         executor.setStreamHandler(new PumpStreamHandler(new NullOutputStream(), new NullOutputStream()));
         executor.setExitValue(0);
-        executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId));
+
+        executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId, configurationPort));
     }
 
     private String createTemporaryScriptFile(File tempModulesDir, String moduleSource) throws IOException {
@@ -316,13 +321,26 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
 
     private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {
         private final int configurationId;
+        private final int configurationPort;
 
-        public ManagedLogicsExecutionHandler(int configurationId) {
+        public ManagedLogicsExecutionHandler(int configurationId, int configurationPort) {
             this.configurationId = configurationId;
+            this.configurationPort = configurationPort;
+
+            appManagerProcessDestroyer.addPort(configurationPort);
+        }
+
+        @Override
+        public void onProcessComplete(int exitValue) {
+            appManagerProcessDestroyer.removePort(configurationPort);
+
+            super.onProcessComplete(exitValue);
         }
 
         @Override
         public void onProcessFailed(ExecuteException e) {
+            appManagerProcessDestroyer.removePort(configurationPort);
+
             super.onProcessFailed(e);
 
             logger.error("Error executing process: " + e.getMessage(), e.getCause());

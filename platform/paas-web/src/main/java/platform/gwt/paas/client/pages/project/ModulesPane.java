@@ -5,9 +5,7 @@ import com.smartgwt.client.widgets.tab.Tab;
 import com.smartgwt.client.widgets.tab.TabSet;
 import com.smartgwt.client.widgets.tab.events.CloseClickHandler;
 import com.smartgwt.client.widgets.tab.events.TabCloseClickEvent;
-import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import paas.api.gwt.shared.dto.ModuleDTO;
-import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.data.ModuleRecord;
 import platform.gwt.paas.shared.actions.UpdateModulesAction;
 
@@ -15,8 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class ModulesPane extends HLayout {
-    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
-
     private HashMap<Integer, ModuleTab> idToTab = new HashMap<Integer, ModuleTab>();
     private TabSet tabSet;
 

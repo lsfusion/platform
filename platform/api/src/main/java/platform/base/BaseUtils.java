@@ -2235,11 +2235,7 @@ public class BaseUtils {
         new Thread("runLater-thread") {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    Throwables.propagate(e);
-                }
+                SystemUtils.sleep(delay);
                 runnable.run();
             }
         }.start();

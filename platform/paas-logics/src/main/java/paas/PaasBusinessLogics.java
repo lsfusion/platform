@@ -34,10 +34,10 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
     protected void onStarted(LifecycleEvent event) {
         super.onStarted(event);
 
-        logger.info("Удаление БД для удалённых конфигураций...");
+        logger.info("Removing databases of deleted configurations.");
         cleanDatabases();
 
-        logger.info("Обновление статусов конфигураций...");
+        logger.info("Updating configurations statuses.");
         refreshConfigurationStatuses(null);
     }
 

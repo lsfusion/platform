@@ -15,6 +15,8 @@ public class BusinessLogicsBootstrap {
 
     private static LogicsInstance logicsInstance;
 
+    private static volatile boolean stopped = true;
+
     public static void start() {
         SystemProperties.enableMailEncodeFileName();
 
@@ -35,12 +37,27 @@ public class BusinessLogicsBootstrap {
         if (instanceCreated) {
             try {
                 logicsInstance.start();
+
+                registerShutdownHook();
+
+                stopped = false;
+
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
                 logger.info("Error starting server, server will be stopped.");
                 stop();
             }
         }
+    }
+
+    private static void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                logger.info("Executing shutdown hook.");
+                BusinessLogicsBootstrap.stop();
+            }
+        });
     }
 
     private static void initLRUCaches() {
@@ -51,15 +68,19 @@ public class BusinessLogicsBootstrap {
     }
 
     public static void stop() {
-        logger.info("Server is stopping...");
+        if (!stopped) {
+            logger.info("Server is stopping...");
 
-        logicsInstance.stop();
+            logicsInstance.stop();
 
-        // иногда не удаётся нормально убрать все RMI ссылки,
-        // поэтому убиваем RMI поток сами, а то зависает
-        SystemUtils.killRmiThread();
+            stopped = true;
 
-        logger.info("Server has stopped...");
+            // иногда не удаётся нормально убрать все RMI ссылки,
+            // поэтому убиваем RMI поток сами, а то зависает
+            SystemUtils.killRmiThread();
+
+            logger.info("Server has stopped...");
+        }
    }
 
     // -------------------------------
