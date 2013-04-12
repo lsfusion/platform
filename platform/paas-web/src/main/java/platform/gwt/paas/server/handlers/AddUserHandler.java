@@ -1,31 +1,26 @@
 package platform.gwt.paas.server.handlers;
 
-import com.gwtplatform.dispatch.server.ExecutionContext;
-import com.gwtplatform.dispatch.shared.ActionException;
 import com.octo.captcha.service.CaptchaServiceException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 import org.springframework.web.context.request.RequestContextHolder;
 import paas.api.remote.PaasRemoteInterface;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.captcha.CaptchaServiceSingleton;
-import platform.gwt.base.server.spring.BusinessLogicsProvider;
-import platform.gwt.paas.shared.actions.AddUserResult;
+import platform.gwt.base.server.dispatch.SimpleActionHandlerEx;
+import platform.gwt.paas.server.spring.PaasDispatchServlet;
 import platform.gwt.paas.shared.actions.AddUserAction;
+import platform.gwt.paas.shared.actions.AddUserResult;
 
 import java.rmi.RemoteException;
 
-@Component
-public class AddUserHandler extends SimpleActionHandlerEx<AddUserAction, AddUserResult> {
-    @Autowired
-    private BusinessLogicsProvider<PaasRemoteInterface> blProvider;
-
-    public AddUserHandler() {
-        super(AddUserAction.class);
+public class AddUserHandler extends SimpleActionHandlerEx<AddUserAction, AddUserResult, PaasRemoteInterface> {
+    public AddUserHandler(PaasDispatchServlet servlet) {
+        super(servlet);
     }
 
     @Override
-    public AddUserResult executeEx(final AddUserAction action, final ExecutionContext context) throws ActionException, RemoteException {
+    public AddUserResult executeEx(final AddUserAction action, final ExecutionContext context) throws DispatchException, RemoteException {
         String captchaResponse = action.captchaText.toUpperCase();
         boolean isResponseCorrect;
         String captchaId = RequestContextHolder.currentRequestAttributes().getSessionId() + action.captchaSalt;
@@ -37,6 +32,6 @@ public class AddUserHandler extends SimpleActionHandlerEx<AddUserAction, AddUser
         if (!isResponseCorrect) {
             return new AddUserResult("wrongCaptcha");
         }
-        return new AddUserResult(blProvider.getLogics().addUser(action.username, action.email, action.password, action.firstName, action.lastName, ServerUtils.getLocaleLanguage()));
+        return new AddUserResult(servlet.getLogics().addUser(action.username, action.email, action.password, action.firstName, action.lastName, ServerUtils.getLocaleLanguage()));
     }
 }

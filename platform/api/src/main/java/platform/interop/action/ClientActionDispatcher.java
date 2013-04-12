@@ -47,7 +47,9 @@ public interface ClientActionDispatcher {
 
     public void execute(EditNotPerformedClientAction action);
 
-    public void execute(AsyncResultClientAction action);
+    public void execute(UpdateEditValueClientAction action);
+
+    public void execute(AsyncGetRemoteChangesClientAction action);
 
     public void execute(LogOutClientAction action);
 }

@@ -8,7 +8,7 @@ import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.GEditBindingMap;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.GUserInputResult;
-import platform.gwt.form.shared.view.actions.GAsyncResultAction;
+import platform.gwt.form.shared.view.actions.GUpdateEditValueAction;
 import platform.gwt.form.shared.view.actions.GRequestUserInputAction;
 import platform.gwt.form.shared.view.changes.GGroupObjectValue;
 import platform.gwt.form.shared.view.classes.GType;
@@ -139,7 +139,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     }
 
     @Override
-    public void execute(GAsyncResultAction action) {
+    public void execute(GUpdateEditValueAction action) {
         editHandler.updateEditValue(action.value);
     }
 }

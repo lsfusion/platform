@@ -1,6 +1,6 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.Result;
 
 public class GetModuleTextResult implements Result {
     public String text;

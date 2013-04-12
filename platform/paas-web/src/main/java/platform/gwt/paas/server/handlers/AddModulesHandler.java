@@ -1,26 +1,25 @@
 package platform.gwt.paas.server.handlers;
 
-import com.gwtplatform.dispatch.server.ExecutionContext;
-import com.gwtplatform.dispatch.shared.ActionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 import paas.api.remote.PaasRemoteInterface;
-import platform.gwt.base.server.spring.BusinessLogicsProvider;
+import platform.gwt.base.server.dispatch.SecuredActionHandler;
+import platform.gwt.paas.server.spring.PaasDispatchServlet;
 import platform.gwt.paas.shared.actions.AddModulesAction;
 import platform.gwt.paas.shared.actions.GetModulesResult;
 
 import java.rmi.RemoteException;
 
-@Component
-public class AddModulesHandler extends SimpleActionHandlerEx<AddModulesAction, GetModulesResult> {
+public class AddModulesHandler extends SecuredActionHandler<AddModulesAction, GetModulesResult, PaasRemoteInterface> {
 
-    @Autowired
-    private BusinessLogicsProvider<PaasRemoteInterface> blProvider;
+    public AddModulesHandler(PaasDispatchServlet servlet) {
+        super(servlet);
+    }
 
     @Override
-    public GetModulesResult executeEx(final AddModulesAction action, final ExecutionContext context) throws ActionException, RemoteException {
+    public GetModulesResult executeEx(final AddModulesAction action, final ExecutionContext context) throws DispatchException, RemoteException {
         return new GetModulesResult(
-                blProvider.getLogics().addModules(
+                servlet.getLogics().addModules(
                         getAuthentication().getName(), action.projectId, action.moduleIds));
     }
 }

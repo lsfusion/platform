@@ -1,6 +1,5 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -15,8 +14,8 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
-import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.ErrorHandlingCallback;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.WrapperAsyncCallbackEx;
 import platform.gwt.base.client.jsni.Function2;
 import platform.gwt.base.client.jsni.NativeHashMap;
@@ -294,7 +293,7 @@ public class GFormController extends ResizableSimplePanel {
         return form.getGroupObject(groupID);
     }
 
-    public void processRemoteChanges() {
+    public void getRemoteChanges() {
         dispatcher.execute(new GetRemoteChanges(), new ServerResponseCallback());
     }
 
@@ -725,7 +724,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void countRecords(final GGroupObject groupObject) {
-        dispatcher.execute(new CountRecords(groupObject.ID), new AsyncCallbackEx<NumberResult>() {
+        dispatcher.execute(new CountRecords(groupObject.ID), new ErrorHandlingCallback<NumberResult>() {
             @Override
             public void success(NumberResult result) {
                 controllers.get(groupObject).showRecordQuantity((Integer) result.value);
@@ -734,7 +733,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void calculateSum(final GGroupObject groupObject, final GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new AsyncCallbackEx<NumberResult>() {
+        dispatcher.execute(new CalculateSum(propertyDraw.ID, columnKey), new ErrorHandlingCallback<NumberResult>() {
             @Override
             public void success(NumberResult result) {
                 controllers.get(groupObject).showSum(result.value, propertyDraw);
@@ -743,7 +742,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void runSingleGroupReport(int groupObjectID, final boolean toExcel) {
-        syncDispatch(new SingleGroupReport(groupObjectID, toExcel), new AsyncCallbackEx<StringResult>() {
+        syncDispatch(new SingleGroupReport(groupObjectID, toExcel), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 openReportWindow(result.get());
@@ -752,7 +751,7 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     public void openReportWindow(String fileName) {
-        String reportUrl = GWT.getHostPageBaseURL() + "downloadFile?name=" + fileName;
+        String reportUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + fileName;
         Window.open(reportUrl, "Report", "");
     }
 

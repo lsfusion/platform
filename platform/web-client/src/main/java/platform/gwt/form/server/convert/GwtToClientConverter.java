@@ -50,7 +50,7 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GDateDTO.class)
     public java.sql.Date convertDate(GDateDTO dateDTO) {
         BaseCalendar calendar = CalendarSystem.getGregorianCalendar();
-        BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(ServerUtils.timeZone);
+        BaseCalendar.Date date = (BaseCalendar.Date) calendar.newCalendarDate(ServerUtils.timeZone.get());
         date = date.setNormalizedDate(dateDTO.year + 1900, dateDTO.month + 1, dateDTO.day);
         return new java.sql.Date(calendar.getTime(date));
     }

@@ -58,7 +58,7 @@ public class AppManagerNotifier extends LifecycleAdapter implements Initializing
     protected void onInit(LifecycleEvent event) {
         channelFactory = new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool(new DaemonThreadFactory())
+                Executors.newCachedThreadPool(new DaemonThreadFactory("-app-manager-notifier-"))
         );
 
         bootstrap = new ClientBootstrap(channelFactory);

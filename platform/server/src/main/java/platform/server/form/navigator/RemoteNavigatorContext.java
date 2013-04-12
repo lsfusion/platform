@@ -44,7 +44,7 @@ public class RemoteNavigatorContext extends AbstractContext {
         return new FormInstance(formEntity, navigator.logicsInstance,
                                    sessionScope.isNewSession() ? session.createSession() : session,
                                    navigator.securityPolicy, navigator, navigator,
-                                   navigator.computer, navigator.connection, mapObjects, isModal, sessionScope.isManageSession(),
+                                   navigator.getComputer(), navigator.getConnection(), mapObjects, isModal, sessionScope.isManageSession(),
                                    checkOnOk, showDrop, interactive, null);
     }
 

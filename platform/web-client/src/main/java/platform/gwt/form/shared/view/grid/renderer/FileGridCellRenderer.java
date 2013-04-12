@@ -8,6 +8,9 @@ import com.google.gwt.dom.client.Style;
 import platform.gwt.cellview.client.cell.Cell;
 
 public class FileGridCellRenderer extends AbstractGridCellRenderer {
+    private final String ICON_EMPTY = "empty.png";
+    private final String ICON_FILE = "file.png";
+
     @Override
     public void renderDom(Cell.Context context, DivElement cellElement, Object value) {
         cellElement.setAttribute("align", "center");
@@ -25,6 +28,7 @@ public class FileGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     private void setImageSrc(ImageElement image, Object value) {
-        image.setSrc(value != null ? GWT.getModuleBaseURL() + "images/file.png" : GWT.getHostPageBaseURL() + "images/empty.png");
+        String imagePath = value == null ? ICON_EMPTY : ICON_FILE;
+        image.setSrc(GWT.getModuleBaseURL() + "images/" + imagePath);
     }
 }

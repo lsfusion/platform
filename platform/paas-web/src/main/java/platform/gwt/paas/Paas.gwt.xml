@@ -14,7 +14,9 @@
 
     <!-- Other module inherits                                      -->
     <inherits name='com.gwtplatform.mvp.Mvp'/>
-    <inherits name='com.gwtplatform.dispatch.Dispatch'/>
+
+    <!--  GWT dispatch -->
+    <inherits name='net.customware.gwt.dispatch.Dispatch' />
 
     <inherits name="com.smartgwt.tools.SmartGwtTools"/>
 

@@ -1,30 +1,25 @@
 package platform.gwt.paas.server.handlers;
 
-import com.gwtplatform.dispatch.server.ExecutionContext;
-import com.gwtplatform.dispatch.shared.ActionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 import paas.api.remote.PaasRemoteInterface;
-import platform.gwt.base.server.spring.BusinessLogicsProvider;
+import platform.gwt.base.server.dispatch.SecuredActionHandler;
+import platform.gwt.paas.server.spring.PaasDispatchServlet;
 import platform.gwt.paas.shared.actions.GetConfigurationsResult;
 import platform.gwt.paas.shared.actions.UpdateConfigurationAction;
 
 import java.rmi.RemoteException;
 
-@Component
-public class UpdateConfigurationHandler extends SimpleActionHandlerEx<UpdateConfigurationAction, GetConfigurationsResult> {
+public class UpdateConfigurationHandler extends SecuredActionHandler<UpdateConfigurationAction, GetConfigurationsResult, PaasRemoteInterface> {
 
-    @Autowired
-    private BusinessLogicsProvider<PaasRemoteInterface> blProvider;
-
-    public UpdateConfigurationHandler() {
-        super(UpdateConfigurationAction.class);
+    public UpdateConfigurationHandler(PaasDispatchServlet servlet) {
+        super(servlet);
     }
 
     @Override
-    public GetConfigurationsResult executeEx(final UpdateConfigurationAction action, final ExecutionContext context) throws ActionException, RemoteException {
+    public GetConfigurationsResult executeEx(final UpdateConfigurationAction action, final ExecutionContext context) throws DispatchException, RemoteException {
         return new GetConfigurationsResult(
-                blProvider.getLogics().updateConfiguration(
+                servlet.getLogics().updateConfiguration(
                         getAuthentication().getName(), action.configuration));
     }
 }

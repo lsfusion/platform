@@ -15,13 +15,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public abstract ClientFormController getFormController();
 
     @Override
-    protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
-        assert !serverResponse.resumeInvocation;
-        if(serverResponse.pendingRemoteChanges)
-            getFormController().processRemoteChanges(true);
-    }
-
-    @Override
     protected Container getDialogParentContainer() {
         return getFormController().getComponent();
     }
@@ -81,5 +74,14 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(UpdateCurrentClassClientAction action) {
         getFormController().updateCurrentClass(action.currentClassId);
+    }
+
+    @Override
+    public void execute(AsyncGetRemoteChangesClientAction action) {
+        try {
+            getFormController().getRemoteChanges(true);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
     }
 }

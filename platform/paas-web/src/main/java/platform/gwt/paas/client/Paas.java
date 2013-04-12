@@ -4,11 +4,12 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.Window;
 import com.gwtplatform.mvp.client.DelayedBindRegistry;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.paas.client.gin.PaasGinjector;
 import platform.gwt.paas.client.login.LoginAuthenticatedEvent;
@@ -21,9 +22,8 @@ public class Paas implements EntryPoint {
         CssResource css();
     }
 
-//    private static PaasConstants constants;
-
     public final static PaasGinjector ginjector = GWT.create(PaasGinjector.class);
+    public final static StandardDispatchAsync dispatcher = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private long startTimeMillis;
 
@@ -73,23 +73,10 @@ public class Paas implements EntryPoint {
         }
     }
 
-    public String initializeLoggedInUser() {
-        try {
-            Dictionary dict = Dictionary.getDictionary("parameters");
-            if (dict != null) {
-                String username = dict.get("username");
-                if (username != null) {
-                    LoginAuthenticatedEvent.fire(ginjector.getEventBus(), username);
-                }
-            }
-        } catch (Exception ignored) {
+    public void initializeLoggedInUser() {
+        String username = GwtClientUtils.getPageSetupArgument("username");
+        if (username != null) {
+            LoginAuthenticatedEvent.fire(ginjector.getEventBus(), username);
         }
-
-        return null;
     }
-
-
-//    public static PaasConstants getConstants() {
-//        return constants;
-//    }
 }

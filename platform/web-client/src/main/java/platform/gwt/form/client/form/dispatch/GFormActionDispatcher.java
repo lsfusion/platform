@@ -25,13 +25,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    protected void postDispatchResponse(ServerResponseResult response) {
-        if (response.pendingRemoteChanges) {
-            form.processRemoteChanges();
-        }
-    }
-
-    @Override
     protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
         form.continueServerInvocation(actionResults, callback);
     }
@@ -120,5 +113,10 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GProcessFormChangesAction action) {
         form.applyRemoteChanges(action.formChanges);
+    }
+
+    @Override
+    public void execute(GAsyncGetRemoteChangesAction action) {
+        form.getRemoteChanges();
     }
 }

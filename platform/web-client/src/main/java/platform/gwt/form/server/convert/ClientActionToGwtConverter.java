@@ -3,10 +3,10 @@ package platform.gwt.form.server.convert;
 import platform.client.logics.ClientFormChanges;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.gwt.base.server.LogicsDispatchServlet;
+import platform.gwt.base.server.LogicsAwareDispatchServlet;
 import platform.gwt.form.server.FileUtils;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
-import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.view.actions.*;
 import platform.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import platform.gwt.form.shared.view.classes.GObjectClass;
@@ -15,7 +15,6 @@ import platform.gwt.form.shared.view.window.GModalityType;
 import platform.interop.ModalityType;
 import platform.interop.action.*;
 
-import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -65,12 +64,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = DialogClientAction.class)
-    public GDialogAction convertAction(DialogClientAction action, RemoteServiceImpl servlet) throws IOException {
+    public GDialogAction convertAction(DialogClientAction action, FormDispatchServlet servlet) throws IOException {
         return new GDialogAction(servlet.getFormSessionManager().createForm(action.dialog, servlet));
     }
 
     @Converter(from = FormClientAction.class)
-    public GFormAction convertAction(FormClientAction action, RemoteServiceImpl servlet) throws IOException {
+    public GFormAction convertAction(FormClientAction action, FormDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.remoteForm, servlet));
     }
@@ -87,12 +86,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = HideFormClientAction.class)
-    public GHideFormAction convertAction(HideFormClientAction action, LogicsDispatchServlet servlet) throws IOException {
+    public GHideFormAction convertAction(HideFormClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
         return new GHideFormAction();
     }
 
     @Converter(from = LogMessageClientAction.class)
-    public GLogMessageAction convertAction(LogMessageClientAction action, LogicsDispatchServlet servlet) throws IOException {
+    public GLogMessageAction convertAction(LogMessageClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<ArrayList<String>>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<String>(row));
@@ -143,9 +142,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GReportAction(FileUtils.exportReport(true, form.remoteForm.getReportData(-1, null, true, null)));
     }
 
-    @Converter(from = AsyncResultClientAction.class)
-    public GAsyncResultAction convertAction(AsyncResultClientAction action, HttpSession session, FormSessionObject form) throws IOException {
-        return new GAsyncResultAction(deserializeServerValue(action.value));
+    @Converter(from = UpdateEditValueClientAction.class)
+    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action) throws IOException {
+        return new GUpdateEditValueAction(deserializeServerValue(action.value));
+    }
+
+    @Converter(from = AsyncGetRemoteChangesClientAction.class)
+    public GAsyncGetRemoteChangesAction convertAction(AsyncGetRemoteChangesClientAction action) throws IOException {
+        return new GAsyncGetRemoteChangesAction();
     }
 
     @Converter(from = LogOutClientAction.class)

@@ -1,6 +1,5 @@
 package platform.gwt.paas.client.pages.project;
 
-import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.ViewLoader;
@@ -9,17 +8,18 @@ import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
+import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.codemirror.client.CodeMirror;
 import platform.gwt.paas.client.Paas;
-import platform.gwt.paas.client.common.ErrorHandlingCallback;
+import platform.gwt.paas.client.common.PaasCallback;
 import platform.gwt.paas.client.widgets.Toolbar;
 import platform.gwt.paas.shared.actions.GetModuleTextAction;
 import platform.gwt.paas.shared.actions.GetModuleTextResult;
 import platform.gwt.paas.shared.actions.UpdateModulesAction;
-import platform.gwt.paas.shared.actions.VoidResult;
 
 public class ModuleEditor extends HLayout {
-    private final DispatchAsync dispatcher = Paas.ginjector.getDispatchAsync();
+    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
 
     private Toolbar toolbar;
 
@@ -70,7 +70,7 @@ public class ModuleEditor extends HLayout {
     }
 
     private void saveModule() {
-        dispatcher.execute(new UpdateModulesAction(moduleId, getCurrentText()), new ErrorHandlingCallback<VoidResult>() {
+        dispatcher.execute(new UpdateModulesAction(moduleId, getCurrentText()), new PaasCallback<VoidResult>() {
             @Override
             public void success(VoidResult result) {
                 SC.say("Saved successfully!");
@@ -98,7 +98,7 @@ public class ModuleEditor extends HLayout {
 
     public void updateModuleText() {
         showLoader();
-        dispatcher.execute(new GetModuleTextAction(moduleId), new ErrorHandlingCallback<GetModuleTextResult>() {
+        dispatcher.execute(new GetModuleTextAction(moduleId), new PaasCallback<GetModuleTextResult>() {
             @Override
             public void preProcess() {
                 hideLoader();

@@ -36,10 +36,6 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.getLogMessage();
     }
 
-    public void delayRemoteChanges() {
-        form.delayRemoteChanges();
-    }
-
     public void delayUserInteraction(ClientAction action) {
         form.delayUserInteraction(action);
     }

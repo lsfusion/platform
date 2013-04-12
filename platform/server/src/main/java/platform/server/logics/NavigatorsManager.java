@@ -53,7 +53,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private DBManager dbManager;
 
-    private ScheduledExecutorService scheduler;
+    private ScheduledExecutorService executor;
 
     private final Map<Pair<String, Integer>, RemoteNavigator> navigators = Collections.synchronizedMap(new HashMap<Pair<String, Integer>, RemoteNavigator>());
 
@@ -99,7 +99,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
     @Override
     protected void onInit(LifecycleEvent event) {
         baseLM = businessLogics.LM;
-        scheduler = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(logicsInstance.getContext()));
+        executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "-navigator-manager-daemon-"));
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) {
@@ -145,7 +145,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                     navigator = null;
                 } else {
                     navigator.invalidate();
-                    if (navigator.isBusy()) {
+                    if (navigator.hasLinkedThreads()) {
                         navigator = null;
                         removeNavigator(loginKey);
                     }
@@ -211,6 +211,10 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
+    public void removeNavigator(RemoteNavigator navigator) {
+        removeNavigators(NavigatorFilter.single(navigator));
+    }
+
     public void removeNavigators(NavigatorFilter filter) {
         try {
             DataSession session = dbManager.createSession();
@@ -235,7 +239,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private synchronized void scheduleRemoveExpired() {
         if (removeExpiredScheduled.compareAndSet(false, true)) {
-            scheduler.schedule(new Runnable() {
+            executor.schedule(new Runnable() {
                 @Override
                 public void run() {
                     removeNavigators(NavigatorFilter.FALSE);
@@ -259,16 +263,10 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             if (navigator != null) {
                 navigator.getClientCallBack().cutOff();
                 removeNavigator(key);
-
-                if (navigator.isBusy()) {
-                    Thread.sleep(navigator.getUpdateTime() * 3); //ожидаем, пока пройдёт пинг и убъётся сокет. затем грохаем поток. чтобы не словить ThreadDeath на клиенте.
-                    navigator.killThreads();
-                }
+                navigator.unexportLater();
             }
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
     }
 

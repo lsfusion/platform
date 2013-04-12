@@ -12,10 +12,77 @@
     <packaging>jar</packaging>
     <name>Paas Web</name>
 
+    <properties>
+        <war.finalName>paas</war.finalName>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>gwtPaas</id>
+            <activation>
+                <property>
+                    <name>gwtPaas</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>gwt-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <force>true</force>
+                            <draftCompile>true</draftCompile>
+                            <optimizationLevel>1</optimizationLevel>
+                            <style>DETAILED</style>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <warName>${war.finalName}</warName>
+                    <webResources>
+                        <resource>
+                            <directory>../desktop-client/target</directory>
+                            <includes>
+                                <include>client.jar</include>
+                            </includes>
+                            <targetPath>jnlp</targetPath>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>web-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>web-client</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
@@ -29,7 +96,6 @@
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -76,14 +142,8 @@
         </dependency>
 
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.gwtplatform</groupId>
-            <artifactId>gwtp-dispatch-server-spring</artifactId>
+            <groupId>org.tuckey</groupId>
+            <artifactId>urlrewritefilter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.gwtplatform</groupId>
@@ -94,38 +154,8 @@
             <artifactId>gwtp-clients-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.gwtplatform</groupId>
-            <artifactId>gwtp-dispatch-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.gwt.inject</groupId>
             <artifactId>gin</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>../desktop-client/target</directory>
-                            <includes>
-                                <include>client.jar</include>
-                            </includes>
-                            <targetPath>jnlp</targetPath>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

@@ -98,9 +98,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     protected void postDispatchResponse(ServerResponse serverResponse) throws IOException {
-        assert !serverResponse.resumeInvocation && !serverResponse.pendingRemoteChanges;
+        assert !serverResponse.resumeInvocation;
     }
-
 
     protected void handleDispatchException(Exception e) throws IOException {
         Throwables.propagateIfPossible(e, IOException.class);
@@ -415,7 +414,12 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(EditNotPerformedClientAction action) {
     }
 
-    public void execute(AsyncResultClientAction action) {
+    public void execute(UpdateEditValueClientAction action) {
+    }
+
+    @Override
+    public void execute(AsyncGetRemoteChangesClientAction action) {
+        assert false;
     }
 
     public void execute(LogOutClientAction action) {

@@ -1,7 +1,9 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.smartgwt.client.types.*;
+import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.ListGridFieldType;
+import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IButton;
@@ -16,11 +18,11 @@ import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.actions.VoidResult;
-import platform.gwt.sgwtbase.client.ui.VLayout100;
+import platform.gwt.sgwtbase.client.SGWTErrorHandlingCallback;
 import platform.gwt.sgwtbase.client.ui.DateCellFormatter;
+import platform.gwt.sgwtbase.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
@@ -250,7 +252,7 @@ public class VotePanel extends VLayout100 {
                     disable();
                     setIcon("loading.gif");
 
-                    expertProfileService.execute(new SentVoteDocuments(voteInfo.voteId), new AsyncCallbackEx<VoidResult>() {
+                    expertProfileService.execute(new SentVoteDocuments(voteInfo.voteId), new SGWTErrorHandlingCallback<VoidResult>() {
                         @Override
                         public void failure(Throwable caught) {
                             SC.warn(messages.sentFailedMessage());

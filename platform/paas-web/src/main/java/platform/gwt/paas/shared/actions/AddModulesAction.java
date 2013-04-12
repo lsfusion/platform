@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class AddModulesAction extends UnsecuredActionImpl<GetModulesResult> {
+public class AddModulesAction implements Action<GetModulesResult> {
     public int projectId;
     public int[] moduleIds;
 

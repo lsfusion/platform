@@ -15,14 +15,13 @@ import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import paas.PaasUtils;
 import paas.manager.common.NotificationData;
+import paas.terminal.ApplicationTerminal;
 import platform.base.IOUtils;
 import platform.base.NullOutputStream;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
 import platform.base.col.interfaces.immutable.ImRevMap;
-import paas.terminal.ApplicationTerminal;
 import platform.server.ServerLoggers;
 import platform.server.context.Context;
 import platform.server.context.ContextAwareDaemonThreadFactory;
@@ -133,7 +132,7 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         }
         channelFactory = new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(instanceContext)));
+                Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(instanceContext, "-app-manager-daemon-")));
 
         ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
 
@@ -172,11 +171,15 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
     }
 
     public String getStatus(int port) {
+        if (isPortAvailable(port)) {
+            return "stopped";
+        }
+
         try {
             getManagedAppTerminal(port);
             return "started";
         } catch (Exception e) {
-            return isPortAvailable(port) ? "stopped" : "busyPort";
+            return "busyPort";
         }
     }
 
@@ -234,11 +237,9 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         q.and(
                 paasLM.moduleInProject.getExpr(session.getModifier(), projExpr, moduleExpr).getWhere()
         );
-        q.addProperty("moduleOrder", paasLM.moduleOrder.getExpr(session.getModifier(), projExpr, moduleExpr));
         q.addProperty("moduleSource", paasLM.moduleSource.getExpr(session.getModifier(), moduleExpr));
 
-        ImOrderMap<String, Boolean> orders = MapFact.singletonOrder("moduleOrder", false);
-        ImOrderMap<ImMap<String,Object>, ImMap<String, Object>> values = q.execute(session.sql, orders);
+        ImOrderMap<ImMap<String,Object>, ImMap<String, Object>> values = q.execute(session.sql);
 
         //подготавливаем файлы для заупска
         File tempProjectDir = IOUtils.createTempDirectory("paas-project");
@@ -272,24 +273,15 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         out.close();
 
         CommandLine commandLine = new CommandLine(javaExe);
-        commandLine.addArgument("-Dplatform.server.settingsPath=conf/scripted/settings.xml");
 //        commandLine.addArgument("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005");
-
-        String rmiServerHostname = System.getProperty("java.rmi.server.hostname");
-        if (rmiServerHostname != null) {
-            commandLine.addArgument("-Djava.rmi.server.hostname=" + rmiServerHostname);
-        }
-
+        commandLine.addArgument("-Dplatform.server.settingsPath=conf/scripted/settings.xml");
         commandLine.addArgument("-cp");
         commandLine.addArgument(tempProjectDir.getAbsolutePath() + System.getProperty("path.separator") + System.getProperty("java.class.path"));
         commandLine.addArgument(BusinessLogicsBootstrap.class.getName());
-        System.out.println(commandLine.toString());
 
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(new NullOutputStream(), new NullOutputStream()));
-//        executor.setStreamHandler(new PumpStreamHandler());
         executor.setExitValue(0);
-
         executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId));
     }
 
@@ -301,18 +293,6 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         ps.close();
 
         return moduleFile.getAbsolutePath();
-    }
-
-    private String toParameters(List<String> strings) {
-        StringBuilder result = new StringBuilder(strings.size() * 30);
-        for (String string : strings) {
-            if (result.length() != 0) {
-                result.append(";");
-            }
-            result.append(string);
-        }
-
-        return result.toString();
     }
 
     public void notificationReceived(NotificationData notificationData) {

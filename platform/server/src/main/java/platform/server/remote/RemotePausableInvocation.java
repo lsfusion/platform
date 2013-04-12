@@ -3,7 +3,9 @@ package platform.server.remote;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import platform.base.ExceptionUtils;
+import platform.interop.action.AsyncGetRemoteChangesClientAction;
 import platform.interop.action.ClientAction;
+import platform.interop.action.HideFormClientAction;
 import platform.interop.action.LogMessageClientAction;
 import platform.interop.form.ServerResponse;
 
@@ -32,7 +34,10 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     private ServerResponse invocationResult = null;
 
     protected List<ClientAction> delayedActions = new ArrayList<ClientAction>();
-    protected boolean delayRemoteChanges = false;
+
+    protected boolean delayedGetRemoteChanges = false;
+    protected boolean delayedHideForm = false;
+
     private int neededActionResultsCnt = -1;
 
     private Object[] actionResults;
@@ -56,16 +61,11 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             logger.debug("Interaction " + sid + " called delayUserInteraction: " + action);
         }
         delayedActions.add(action);
-    }
-
-    /**
-     * рабочий поток
-     */
-    public final void delayRemoteChanges() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Interaction " + sid + " called delayRemoteChanges");
+        if (action instanceof AsyncGetRemoteChangesClientAction) {
+            delayedGetRemoteChanges = true;
+        } else if (action instanceof HideFormClientAction) {
+            delayedHideForm = true;
         }
-        delayRemoteChanges = true;
     }
 
     /**
@@ -123,11 +123,11 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * @throws Throwable
      */
     protected void runInvocation() throws Throwable {
-        remoteObject.threads.add(Thread.currentThread());
+        remoteObject.addLinkedThread(Thread.currentThread());
         try {
             invocationResult = callInvocation();
         } finally {
-            remoteObject.threads.remove(Thread.currentThread());
+            remoteObject.removeLinkedThread(Thread.currentThread());
         }
     }
 

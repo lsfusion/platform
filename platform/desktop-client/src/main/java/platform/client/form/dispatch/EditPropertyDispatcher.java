@@ -8,7 +8,7 @@ import platform.client.form.EditPropertyHandler;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientType;
-import platform.interop.action.AsyncResultClientAction;
+import platform.interop.action.UpdateEditValueClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.action.RequestUserInputClientAction;
 import platform.interop.form.ServerResponse;
@@ -160,7 +160,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
     }
 
     @Override
-    public void execute(AsyncResultClientAction action) {
+    public void execute(UpdateEditValueClientAction action) {
         try {
             handler.updateEditValue(deserializeObject(action.value));
         } catch (IOException e) {

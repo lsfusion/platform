@@ -73,12 +73,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         setContext(new RemoteFormContext(this));
 
-        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(getContext(), "-pausable-daemon-"));
-
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
         this.reportManager = new FormReportManager(form);
         this.requestLock = new SequentialRequestLock();
+
+        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(getContext(), getSID() + "-pausable-daemon-"));
 
         this.weakRemoteFormListener = new WeakReference<RemoteFormListener>(remoteFormListener);
         if (remoteFormListener != null) {
@@ -164,31 +164,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 //ничего не делаем, просто даём по завершению выполниться prepareRemoteChangesResponse
             }
         });
-    }
-
-    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions, boolean delayRemoteChanges) {
-        if (numberOfFormChangesRequests.get() > 1 || delayRemoteChanges) {
-            //todo: возможно стоит сохранять количество пропущенных изменений, и высылать таки их, если пропустили слишком много
-            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false, delayRemoteChanges);
-        }
-
-        byte[] formChanges = getFormChangesByteArray();
-
-        List<ClientAction> resultActions = new ArrayList<ClientAction>();
-        resultActions.add(new ProcessFormChangesClientAction(formChanges));
-
-        if (updateCurrentClass != null) {
-            ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
-            RemoteFormListener remoteFormListener = getRemoteFormListener();
-            if (currentClass != null && remoteFormListener != null && remoteFormListener.currentClassChanged(currentClass)) {
-                resultActions.add(new UpdateCurrentClassClientAction(currentClass.ID));
-            }
-
-            updateCurrentClass = null;
-        }
-
-        resultActions.addAll(pendingActions);
-        return new ServerResponse(resultActions.toArray(new ClientAction[resultActions.size()]), false);
     }
 
     private ImMap<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
@@ -583,7 +558,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             protected ServerResponse callInvocation() throws Throwable {
                 runnable.run();
-                return prepareRemoteChangesResponse(delayedActions, delayRemoteChanges);
+                return prepareRemoteChangesResponse(delayedActions, delayedGetRemoteChanges, delayedHideForm);
             }
 
             @Override
@@ -605,6 +580,35 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 requestLock.releaseRequestLock(getSID(), requestIndex);
             }
         });
+    }
+
+    private ServerResponse prepareRemoteChangesResponse(List<ClientAction> pendingActions, boolean delayedGetRemoteChanges, boolean delayedHideForm) {
+        if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
+            return new ServerResponse(pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
+        }
+
+        byte[] formChanges = getFormChangesByteArray();
+
+        List<ClientAction> resultActions = new ArrayList<ClientAction>();
+        resultActions.add(new ProcessFormChangesClientAction(formChanges));
+
+        if (updateCurrentClass != null) {
+            ConcreteCustomClass currentClass = form.getObjectClass(updateCurrentClass);
+            RemoteFormListener remoteFormListener = getRemoteFormListener();
+            if (currentClass != null && remoteFormListener != null && remoteFormListener.currentClassChanged(currentClass)) {
+                resultActions.add(new UpdateCurrentClassClientAction(currentClass.ID));
+            }
+
+            updateCurrentClass = null;
+        }
+
+        resultActions.addAll(pendingActions);
+
+        if (delayedHideForm) {
+            unexportLater();
+        }
+
+        return new ServerResponse(resultActions.toArray(new ClientAction[resultActions.size()]), false);
     }
 
     private String generateInvocationSid(long requestIndex) {
@@ -637,15 +641,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.getLogMessage();
     }
 
-    void delayRemoteChanges() {
-        currentInvocation.delayRemoteChanges();
-    }
-
     void delayUserInteraction(ClientAction action) {
         currentInvocation.delayUserInteraction(action);
     }
 
     Object[] requestUserInteraction(ClientAction... actions) {
         return currentInvocation.pauseForUserInteraction(actions);
+    }
+
+    @Override
+    public void unexportNow() {
+        RemoteFormListener listener = getRemoteFormListener();
+        if (listener != null) {
+            listener.formDestroyed(this);
+        }
+        super.unexportNow();
     }
 }

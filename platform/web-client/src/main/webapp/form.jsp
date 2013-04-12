@@ -49,6 +49,12 @@
         </style>
     </head>
     <body>
+        <script language="JavaScript">
+            var pageSetup = {
+                webAppRoot: "<%= request.getContextPath() + "/" %>"
+            };
+        </script>
+
         <div id="loadingWrapper">
             <div id="loading">
                 <div class="loadingIndicator">
@@ -59,6 +65,6 @@
             </div>
         </div>
         <script type="text/javascript" language="javascript"
-                src="platform.gwt.form.Form/platform.gwt.form.Form.nocache.js"></script>
+                src="form/form.nocache.js"></script>
     </body>
 </html>

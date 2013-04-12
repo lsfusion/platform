@@ -4,8 +4,8 @@ import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.form.TableTransferHandler;
 import platform.client.logics.classes.*;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
-import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.PasteExternalTable;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PasteExternalTableHandler extends ServerResponseActionHandler<PasteExternalTable> {
-    public PasteExternalTableHandler(RemoteServiceImpl servlet) {
+    public PasteExternalTableHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

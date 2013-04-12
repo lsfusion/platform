@@ -3,8 +3,8 @@ package platform.gwt.form.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.base.BaseUtils;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
-import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.gwt.form.shared.actions.form.SetUserFilters;
 import platform.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFilters> {
-    public SetUserFiltersHandler(RemoteServiceImpl servlet) {
+    public SetUserFiltersHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

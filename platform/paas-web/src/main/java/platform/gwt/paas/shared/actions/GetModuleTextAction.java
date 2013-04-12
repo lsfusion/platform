@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class GetModuleTextAction extends UnsecuredActionImpl<GetModuleTextResult> {
+public class GetModuleTextAction implements Action<GetModuleTextResult> {
     public int moduleId;
 
     public GetModuleTextAction() {

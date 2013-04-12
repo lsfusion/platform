@@ -1,5 +1,9 @@
 package platform.interop.remote;
 
+import com.google.common.base.Throwables;
+import platform.base.BaseUtils;
+
+import java.rmi.NoSuchObjectException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -27,5 +31,22 @@ public class RemoteObject implements Remote {
 
     public int getExportPort() {
         return exportPort;
+    }
+
+    public void unexportNow() {
+        try {
+            UnicastRemoteObject.unexportObject(this, true);
+        } catch (NoSuchObjectException e) {
+            Throwables.propagate(e);
+        }
+    }
+
+    public void unexportLater() {
+        BaseUtils.runLater(15000, new Runnable() {
+            @Override
+            public void run() {
+                unexportNow();
+            }
+        });
     }
 }

@@ -10,7 +10,7 @@
     <p>
         Доступ к странице ограничен. Вы можете выйти и попробовать войти под другим именем.
         </p>
-        <a href="logout.jsp?targetUrl=<%=URLEncoder.encode(request.getAttribute(AccessDeniedHandlerImpl.ACCESS_DENIED_RESOURCE_URL).toString(), "UTF-8")%>">
+        <a href="logout?targetUrl=<%=URLEncoder.encode(request.getAttribute(AccessDeniedHandlerImpl.ACCESS_DENIED_RESOURCE_URL).toString(), "UTF-8")%>">
             Выйти
         </a>
     </p>

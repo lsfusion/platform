@@ -89,11 +89,6 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public void delayRemoteChanges() {
-        throw new UnsupportedOperationException("delayRemoteChanges is not supported");
-    }
-
-    @Override
     public void delayUserInteraction(ClientAction action) {
         throw new UnsupportedOperationException("delayUserInteraction is not supported");
     }

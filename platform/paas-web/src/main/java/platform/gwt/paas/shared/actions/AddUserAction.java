@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class AddUserAction extends UnsecuredActionImpl<AddUserResult> {
+public class AddUserAction implements Action<AddUserResult> {
     public String username;
     public String email;
     public String password;

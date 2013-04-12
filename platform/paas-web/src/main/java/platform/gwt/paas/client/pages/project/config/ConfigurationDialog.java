@@ -1,7 +1,5 @@
 package platform.gwt.paas.client.pages.project.config;
 
-import com.gwtplatform.dispatch.shared.Action;
-import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
@@ -23,9 +21,11 @@ import com.smartgwt.client.widgets.grid.events.SelectionEvent;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
+import net.customware.gwt.dispatch.shared.Action;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import platform.gwt.paas.client.Paas;
-import platform.gwt.paas.client.common.ErrorHandlingCallback;
+import platform.gwt.paas.client.common.PaasCallback;
 import platform.gwt.paas.client.data.ConfigurationRecord;
 import platform.gwt.paas.client.widgets.SpacerItem;
 import platform.gwt.paas.client.widgets.Toolbar;
@@ -34,7 +34,7 @@ import platform.gwt.paas.shared.actions.*;
 import java.util.LinkedHashMap;
 
 public class ConfigurationDialog extends Window {
-    private final DispatchAsync dispatcher = Paas.ginjector.getDispatchAsync();
+    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
 
     private int project;
     @SuppressWarnings({"UnusedDeclaration"})
@@ -363,7 +363,7 @@ public class ConfigurationDialog extends Window {
         return wl;
     }
 
-    private class GetConfigurationsCallback extends ErrorHandlingCallback<GetConfigurationsResult> {
+    private class GetConfigurationsCallback extends PaasCallback<GetConfigurationsResult> {
         @Override
         public void preProcess() {
             hideLoading();

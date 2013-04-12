@@ -80,7 +80,7 @@ public class ImageButton extends Button {
     }
 
     public void setAppImagePath(String imagePath) {
-        setAbsoluteImagePath(imagePath == null ? null : GWT.getHostPageBaseURL() + imagePath);
+        setAbsoluteImagePath(imagePath == null ? null : GwtClientUtils.getWebAppBaseURL() + imagePath);
     }
 
     public void setAbsoluteImagePath(String imagePath) {

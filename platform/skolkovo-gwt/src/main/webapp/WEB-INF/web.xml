@@ -22,38 +22,38 @@
     </context-param>
 
     <servlet>
-        <servlet-name>ExpertService</servlet-name>
-        <servlet-class>skolkovo.gwt.expert.server.ExpertServiceImpl</servlet-class>
+        <servlet-name>expertPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExpertService</servlet-name>
+        <servlet-name>expertPageDispatch</servlet-name>
         <url-pattern>/skolkovo.gwt.expert.Expert/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>ExpertProfileService</servlet-name>
-        <servlet-class>skolkovo.gwt.expertprofile.server.ExpertProfileServiceImpl</servlet-class>
+        <servlet-name>expertProfilePageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExpertProfileService</servlet-name>
+        <servlet-name>expertProfilePageDispatch</servlet-name>
         <url-pattern>/skolkovo.gwt.expertprofile.ExpertProfile/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>ClaimerService</servlet-name>
-        <servlet-class>skolkovo.gwt.claimer.server.ClaimerServiceImpl</servlet-class>
+        <servlet-name>claimerPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ClaimerService</servlet-name>
+        <servlet-name>claimerPageDispatch</servlet-name>
         <url-pattern>/skolkovo.gwt.claimer.Claimer/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>LoginService</servlet-name>
-        <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
+        <servlet-name>loginPageDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>LoginService</servlet-name>
+        <servlet-name>loginPageDispatch</servlet-name>
         <url-pattern>/skolkovo.gwt.login.Login/dispatch</url-pattern>
     </servlet-mapping>
 
@@ -76,11 +76,11 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>captchaService</servlet-name>
-        <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
+        <servlet-name>captchaHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>captchaService</servlet-name>
+        <servlet-name>captchaHandler</servlet-name>
         <url-pattern>/jcaptcha</url-pattern>
     </servlet-mapping>
 
@@ -101,6 +101,11 @@
         <!--<servlet-name>uploadServlet</servlet-name>-->
         <!--<url-pattern>*.gupld</url-pattern>-->
     <!--</servlet-mapping>-->
+
+    <!-- Init RMI Listener -->
+    <listener>
+        <listener-class>platform.gwt.base.server.spring.InitRMIContextListener</listener-class>
+    </listener>
 
     <!-- Spring security configuration -->
     <context-param>

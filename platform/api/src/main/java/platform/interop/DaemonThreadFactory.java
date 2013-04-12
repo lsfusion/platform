@@ -9,10 +9,6 @@ public class DaemonThreadFactory implements ThreadFactory {
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
 
-    public DaemonThreadFactory() {
-        this("-daemon-");
-    }
-
     public DaemonThreadFactory(String threadNamePrefix) {
         SecurityManager s = System.getSecurityManager();
         group = s != null

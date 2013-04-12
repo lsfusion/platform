@@ -20,6 +20,7 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
     private ToolStripButton btnStop;
     private ToolStripButton btnRestart;
     private ToolStripButton btnConnect;
+    private ToolStripButton btnLink;
     private DynamicForm configurationsForm;
     private ConfigurationsDataSource configurationDS;
 
@@ -81,6 +82,16 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
             }
         });
 
+        btnLink = addToolStripButton("link.png", "Open in new window", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                ListGridRecord selected = cbConfigurations.getSelectedRecord();
+                if (selected != null) {
+                    uiHandlers.openConfiguration((ConfigurationRecord) selected);
+                }
+            }
+        });
+
         btnConnect = addToolStripButton("connect.png", "Download JNLP-file to connect", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -90,8 +101,6 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
                 }
             }
         });
-
-        updateConfigButtons(null);
 
         addToolStripButton("configuration.png", "Setup configurations", new ClickHandler() {
             @Override
@@ -107,6 +116,8 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         addConsoleButton();
 
         addLogoutButton();
+
+        updateConfigButtons(null);
     }
 
     private void addConfigurationsComboBox() {
@@ -137,10 +148,11 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
     }
 
     private void updateConfigButtons(ConfigurationRecord record) {
-        btnStart.setVisible(record != null && !"started".equals(record.getStatus()));
-        btnRestart.setVisible(record != null && !"stopped".equals(record.getStatus()));
-        btnStop.setVisible(record != null && !"stopped".equals(record.getStatus()));
-        btnConnect.setVisible(record != null);
+        btnStart.setDisabled(record == null || "started".equals(record.getStatus()));
+        btnRestart.setDisabled(record == null || "stopped".equals(record.getStatus()));
+        btnStop.setDisabled(record == null || "stopped".equals(record.getStatus()));
+        btnLink.setDisabled(record == null || !"started".equals(record.getStatus()));
+        btnConnect.setDisabled(record == null);
     }
 
     public void setConfigurations(ConfigurationDTO[] configurations) {

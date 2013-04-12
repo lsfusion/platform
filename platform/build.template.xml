@@ -25,7 +25,7 @@
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
-            <arg value="-DgwtCompile"/>
+            <arg value="-D${gwtProfile}"/>
             <arg value="-Dnodesktop"/>
             <arg value="--also-make" />
             <arg value="--projects" />

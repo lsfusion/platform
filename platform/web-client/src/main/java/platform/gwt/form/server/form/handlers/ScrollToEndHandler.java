@@ -2,8 +2,8 @@ package platform.gwt.form.server.form.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
-import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.shared.actions.form.ScrollToEnd;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
 import platform.interop.Scroll;
@@ -11,7 +11,7 @@ import platform.interop.Scroll;
 import java.io.IOException;
 
 public class ScrollToEndHandler extends ServerResponseActionHandler<ScrollToEnd> {
-    public ScrollToEndHandler(RemoteServiceImpl servlet) {
+    public ScrollToEndHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

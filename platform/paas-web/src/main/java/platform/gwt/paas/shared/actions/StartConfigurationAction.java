@@ -1,9 +1,9 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 
-public class StartConfigurationAction extends UnsecuredActionImpl<GetConfigurationsResult> {
+public class StartConfigurationAction implements Action<GetConfigurationsResult> {
     public ConfigurationDTO configuration;
 
     public StartConfigurationAction() {

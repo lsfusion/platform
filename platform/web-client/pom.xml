@@ -54,10 +54,10 @@
             </build>
         </profile>
         <profile>
-            <id>gwtCompile</id>
+            <id>gwtWebClient</id>
             <activation>
                 <property>
-                    <name>gwtCompile</name>
+                    <name>gwtWebClient</name>
                 </property>
             </activation>
             <build>
@@ -66,7 +66,6 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <executions>
-                            <!-- GWT version detected from dependencyManagement -->
                             <execution>
                                 <phase>compile</phase>
                                 <goals>
@@ -128,7 +127,6 @@
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.smartgwt</groupId>
@@ -143,16 +141,16 @@
             <artifactId>colorpicker</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.bfr.client</groupId>
+            <artifactId>gwt-selection</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.moxieapps.gwt.uploader</groupId>
             <artifactId>uploader</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.samaxes.filter</groupId>
-            <artifactId>cachefilter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.bfr.client</groupId>
-            <artifactId>gwt-selection</artifactId>
+            <groupId>org.tuckey</groupId>
+            <artifactId>urlrewritefilter</artifactId>
         </dependency>
 
         <dependency>
@@ -186,10 +184,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
         </dependency>
 
         <dependency>

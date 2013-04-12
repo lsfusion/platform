@@ -1,6 +1,5 @@
 package platform.gwt.sgwtbase.client.ui.login;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.*;
 import com.google.gwt.user.client.Window;
 import com.smartgwt.client.util.SC;
@@ -9,7 +8,7 @@ import platform.gwt.base.client.GwtClientUtils;
 
 public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
     private static final BaseMessages messages = BaseMessages.Instance.get();
-    private static final String LOGIN_FAILED_STRING = "7698a602e3376d89c2329cf84f9dc779"; //=md5("Login failed!!!");
+    private static final String LOGIN_SUCCESS_STRING = "97afd752ecc187ba1dca4aa39d2bbd3a"; //=md5("Login success!!!");
 
     private final LoginBox loginBox;
 
@@ -19,7 +18,7 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
 
     @Override
     public void login() {
-        String loginUrl = GWT.getHostPageBaseURL() + "j_spring_security_check";
+        String loginUrl = GwtClientUtils.getWebAppBaseURL() + "login_check";
 
         String postData = URL.encode("j_username") + "=" + URL.encode(loginBox.getUserName()) +
                           "&" +
@@ -31,16 +30,19 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
             builder.sendRequest(postData, new RequestCallback() {
                 @Override
                 public void onResponseReceived(Request request, Response response) {
-                    //эта строка должна совпадать с содержимым loginFailed.txt
-                    if (LOGIN_FAILED_STRING.equals(response.getText())) {
-                        onLoginFailed();
-                    } else {
+                    if (response.getStatusCode() == Response.SC_FORBIDDEN) {
+                        onAccessRestricted();
+                    } else if (LOGIN_SUCCESS_STRING.equals(response.getText())) {
                         onLoginSucceded();
+                    } else {
+                        onLoginFailed();
                     }
+                    loginBox.getLoginButton().clearValue();
                 }
 
                 @Override
                 public void onError(Request request, Throwable exception) {
+                    loginBox.getLoginButton().clearValue();
                     onLoginFailed();
                 }
             });
@@ -85,6 +87,10 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
 
     protected void onLoginFailed() {
         showError(messages.loginFailed());
+    }
+
+    protected void onAccessRestricted() {
+        showError(messages.accessRestricted());
     }
 
     protected void showError(String errorMessage) {

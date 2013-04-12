@@ -24,4 +24,6 @@ public interface ProjectPageUIHandlers extends UiHandlers {
     void restartConfiguration(ConfigurationRecord selected);
 
     void downloadJnlp(ConfigurationRecord selected);
+
+    void openConfiguration(ConfigurationRecord selected);
 }

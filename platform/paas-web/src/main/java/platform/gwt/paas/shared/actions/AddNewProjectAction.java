@@ -1,9 +1,9 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 import paas.api.gwt.shared.dto.ProjectDTO;
 
-public class AddNewProjectAction extends UnsecuredActionImpl<GetProjectsResult> {
+public class AddNewProjectAction implements Action<GetProjectsResult> {
     public ProjectDTO project;
 
     public AddNewProjectAction() {

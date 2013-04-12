@@ -239,11 +239,6 @@ public class ExecutionContext<P extends PropertyInterface> {
         DialogInstance createDialog() throws SQLException;
     }
 
-    // предполагается, что например при помощи delayUserInteraction пользователь получит обновление клиента, и можно не делать remoteChanges
-    public void delayRemoteChanges() {
-        ThreadLocalContext.delayRemoteChanges();
-    }
-
     public void delayUserInteraction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
     }

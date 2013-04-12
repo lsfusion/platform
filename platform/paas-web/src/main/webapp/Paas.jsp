@@ -56,7 +56,8 @@
         </noscript>
 
         <script language="JavaScript">
-            var parameters = {
+            var pageSetup = {
+                webAppRoot: "<%= request.getContextPath() + "/" %>",
                 username: <%=
                             SecurityContextHolder.getContext().getAuthentication() != null
                                 ? "\"" + SecurityContextHolder.getContext().getAuthentication().getName() + "\""

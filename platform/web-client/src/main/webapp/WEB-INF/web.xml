@@ -29,18 +29,13 @@
     </listener>
 
     <servlet>
-        <servlet-name>RemoteGwtService</servlet-name>
-        <servlet-class>platform.gwt.form.server.RemoteServiceImpl</servlet-class>
-        <init-param>
-            <description>Разрешает RPC-вызовы GWT используя GET вместо POST (лучше отключать в production).</description>
-            <param-name>useGETForGwtRPC</param-name>
-            <param-value>true</param-value>
-        </init-param>
+        <servlet-name>formDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>RemoteGwtService</servlet-name>
-        <url-pattern>/platform.gwt.form.Form/dispatch</url-pattern>
+        <servlet-name>formDispatch</servlet-name>
+        <url-pattern>/form/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -89,13 +84,42 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>captchaService</servlet-name>
-        <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
+        <servlet-name>captchaHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>captchaService</servlet-name>
+        <servlet-name>captchaHandler</servlet-name>
         <url-pattern>/jcaptcha</url-pattern>
     </servlet-mapping>
+
+    <!-- Init RMI Listener -->
+    <listener>
+        <listener-class>platform.gwt.base.server.spring.InitRMIContextListener</listener-class>
+    </listener>
+
+    <!-- UrlRewrite configuration -->
+    <filter>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+
+        <!-- you can change status path (defaults to /rewrite-status), must start with / -->
+        <init-param>
+            <param-name>statusPath</param-name>
+            <param-value>/rewrite-status</param-value>
+        </init-param>
+
+        <!-- you can disable status page if desired can be: true, false (default true) -->
+        <init-param>
+            <param-name>statusEnabled</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <!--<dispatcher>FORWARD</dispatcher>-->
+    </filter-mapping>
 
     <!-- Spring configuration -->
     <context-param>
@@ -135,30 +159,4 @@
         <filter-name>springRequestContextFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-    <filter>
-        <filter-name>imagesCache</filter-name>
-        <filter-class>com.samaxes.filter.CacheFilter</filter-class>
-        <init-param>
-            <param-name>static</param-name>
-            <param-value>true</param-value>
-        </init-param>
-        <init-param>
-            <param-name>expirationTime</param-name>
-            <param-value>2592000</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>imagesCache</filter-name>
-        <url-pattern>/images/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>imagesCache</filter-name>
-        <url-pattern>/platform.gwt.form.Form/images/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>imagesCache</filter-name>
-        <url-pattern>/platform.gwt.form.Form/theme/clean/images/*</url-pattern>
-    </filter-mapping>
-
 </web-app>

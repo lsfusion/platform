@@ -23,16 +23,16 @@ public class RemoteContextAspect {
     @Before(remotePointCut)
     public void beforeCall(ContextAwarePendingRemoteObject remoteObject) {
         if (!(Thread.currentThread() instanceof ContextAwareThread)) {
-            ThreadLocalContext.set(remoteObject.getContext()); // вообще должен быть null, но в силу thread pooling'а не всегда
-            remoteObject.threads.add(Thread.currentThread());
+            ThreadLocalContext.set(remoteObject.getContext());
         }
+        remoteObject.addLinkedThread(Thread.currentThread());
     }
 
     @AfterReturning(remotePointCut)
     public void afterReturn(ContextAwarePendingRemoteObject remoteObject) {
         if (!(Thread.currentThread() instanceof ContextAwareThread)) {
-            ThreadLocalContext.set(null); // чтобы ссылка не зависла
-            remoteObject.threads.remove(Thread.currentThread());
+            ThreadLocalContext.set(null);
         }
+        remoteObject.removeLinkedThread(Thread.currentThread());
     }
 }

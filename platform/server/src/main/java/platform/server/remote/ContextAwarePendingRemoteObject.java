@@ -1,17 +1,17 @@
 package platform.server.remote;
 
 import platform.interop.remote.PendingRemoteObject;
-import platform.server.Settings;
 import platform.server.context.Context;
 import platform.server.context.ThreadLocalContext;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject {
 
-    public final List<Thread> threads = new ArrayList<Thread>();
+    private final List<Thread> threads = Collections.synchronizedList(new ArrayList<Thread>());
 
     protected Context context;
 
@@ -39,10 +39,25 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return ThreadLocalContext.getActionMessage();
     }
 
-    public void killThreads() {
-        if (Settings.get().getKillThread())
+    public void addLinkedThread(Thread thread) {
+        threads.add(thread);
+    }
+
+    public void removeLinkedThread(Thread thread) {
+        threads.remove(thread);
+    }
+
+    public boolean hasLinkedThreads() {
+        return threads.isEmpty();
+    }
+
+    @Override
+    public void unexportNow() {
+        synchronized (threads) {
             for (Thread thread : threads) {
                 thread.stop();
             }
+        }
+        super.unexportNow();
     }
 }

@@ -10,14 +10,16 @@
                                  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
     <config:annotation-config />
 
+    <!-- Security configuration -->
     <http auto-config="true" use-expressions="true" entry-point-ref="entryPoint">
         <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
-        <intercept-url pattern="/platform.gwt.form.Form/*" access="isAuthenticated()"/>
+        <intercept-url pattern="/form/*" access="isAuthenticated()"/>
 
-        <form-login authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
-        <anonymous enabled="false" />
+        <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
         <access-denied-handler ref="accessDeniedHandler" />
-        <logout invalidate-session="true" logout-url="/logout.jsp" success-handler-ref="successLogoutHandler"/>
+        <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
+
+        <anonymous enabled="false" />
 
         <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
         <custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
@@ -55,7 +57,7 @@
 
     <!-- Authentication configuration -->
     <authentication-manager>
-        <authentication-provider ref ="authenticationProvider"/>
+        <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 
     <b:bean id="authenticationProvider" class="platform.gwt.base.server.spring.GwtAuthenticationProvider">
@@ -68,22 +70,29 @@
     </b:bean>
 
     <!-- Custom beans -->
-    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl" />
+    <b:bean id="blProvider" class="platform.gwt.base.server.spring.ContextBusinessLogicsProvider" />
 
-    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false"/>
+    <b:bean id="navigatorProvider" scope="session" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
+        <aop:scoped-proxy proxy-target-class="false" />
+        <b:constructor-arg ref="blProvider"/>
     </b:bean>
 
-    <b:bean scope="session" id="formManager" class="platform.gwt.form.server.FormSessionManager" />
+    <b:bean id="formManager" scope="session" class="platform.gwt.form.server.FormSessionManagerImpl">
+        <aop:scoped-proxy proxy-target-class="false" />
+    </b:bean>
 
     <!-- Custom request handlers -->
-    <b:bean id="readFileHandler" class="platform.gwt.base.server.handlers.ReadFileRequestHandler"/>
+    <b:bean id="formDispatch" class="platform.gwt.form.server.FormDispatchServlet"/>
 
-    <b:bean id="propertyImageHandler" class="platform.gwt.base.server.handlers.GetPropertyImageRequestHandler" />
+    <b:bean id="captchaHandler" class="platform.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 
-    <b:bean id="fileUploadHandler" class="platform.gwt.base.server.handlers.UploadFileHandler" />
+    <b:bean id="readFileHandler" class="platform.gwt.base.server.spring.ReadFileRequestHandler"/>
 
-    <b:bean id="fileDownloadHandler" class="platform.gwt.base.server.handlers.DownloadFileHandler" />
+    <b:bean id="propertyImageHandler" class="platform.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 
-    <b:bean id="jnlpHandler" class="platform.gwt.base.server.handlers.JNLPRequestHandler" />
+    <b:bean id="fileUploadHandler" class="platform.gwt.base.server.spring.UploadFileRequestHandler" />
+
+    <b:bean id="fileDownloadHandler" class="platform.gwt.base.server.spring.DownloadFileRequestHandler" />
+
+    <b:bean id="jnlpHandler" class="platform.gwt.base.server.spring.ClientJNLPRequestHandler" />
 </b:beans>

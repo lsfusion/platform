@@ -2,7 +2,6 @@ package skolkovo.server.spring;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 import platform.base.ExceptionUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Component("confVoteHandler")
 public class ConfVoteReqestHandler implements HttpRequestHandler {
     protected final static Logger logger = Logger.getLogger(ConfVoteReqestHandler.class);
 

@@ -346,16 +346,6 @@ public class Settings {
         this.barcodeLength = barcodeLength;
     }
 
-    private boolean killThread = true;
-
-    public boolean getKillThread() {
-        return killThread;
-    }
-
-    public void setKillThread(boolean killThread) {
-        this.killThread = killThread;
-    }
-
     private boolean useUniPass;
 
     public void setUseUniPass(boolean useUniPass) {

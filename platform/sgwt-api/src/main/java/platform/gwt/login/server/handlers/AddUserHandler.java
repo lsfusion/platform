@@ -6,15 +6,15 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.captcha.CaptchaServiceSingleton;
-import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
+import platform.gwt.base.server.dispatch.SimpleActionHandlerEx;
+import platform.gwt.login.server.LoginDispatchServlet;
 import platform.gwt.login.shared.actions.AddUser;
-import platform.gwt.login.server.LoginServiceImpl;
 import platform.interop.RemoteLogicsInterface;
 
 import java.io.IOException;
 
 public class AddUserHandler extends SimpleActionHandlerEx<AddUser, StringResult, RemoteLogicsInterface> {
-    public AddUserHandler(LoginServiceImpl servlet) {
+    public AddUserHandler(LoginDispatchServlet servlet) {
         super(servlet);
     }
 

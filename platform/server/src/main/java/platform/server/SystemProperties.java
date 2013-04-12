@@ -21,8 +21,8 @@ public class SystemProperties {
         }
     }
 
-    public static void setDGCLeaseValue(String value) {
-        System.setProperty(DGC_LEASE_VALUE, "120000");
+    public static void setDGCLeaseValue() {
+        System.setProperty(DGC_LEASE_VALUE, "30000");
     }
 
     public static void enableMailEncodeFileName() {

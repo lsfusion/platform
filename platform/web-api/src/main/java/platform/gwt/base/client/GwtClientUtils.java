@@ -14,10 +14,12 @@ import com.google.gwt.user.client.ui.Widget;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 
 public class GwtClientUtils {
     public static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
     public static final String TARGET_PARAM = "targetUrl";
+    public static final String GWT_DEVMODE_PARAM = "gwt.codesvr";
 
     public static final BaseMessages baseMessages = BaseMessages.Instance.get();
 
@@ -86,7 +88,7 @@ public class GwtClientUtils {
     }
 
     public static String getLogoutUrl() {
-        return getPageUrlPreservingParameters("logout.jsp", TARGET_PARAM, getCurrentUrlEncoded());
+        return getPageUrlPreservingParameters("logout", TARGET_PARAM, getCurrentUrlEncoded());
     }
 
     public static String getLoginUrl() {
@@ -139,6 +141,33 @@ public class GwtClientUtils {
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Возвращает значение аргумента на странице, которое можно настроить на сервере.
+     * Делается через определение статического javascript объекта на странице с предопределённым именем: pageSetup
+     */
+    public static String getPageSetupArgument(String argumentName) {
+        Dictionary setupDict = Dictionary.getDictionary("pageSetup");
+        try {
+            return setupDict != null ? setupDict.get(argumentName) : null;
+        } catch (MissingResourceException e) {
+            //если аргумент не найден, то возвращаем null
+            return null;
+        }
+    }
+
+    public static String getWebAppBaseURL() {
+        String webAppRoot = getPageSetupArgument("webAppRoot");
+        return webAppRoot != null ? webAppRoot : GWT.getHostPageBaseURL();
+    }
+
+    public static String getAbsoluteUrl(String relativeUrl) {
+        String absoluteUrl = GwtClientUtils.getWebAppBaseURL() + relativeUrl;
+        if (!GWT.isScript()) {
+            absoluteUrl += "?" + GWT_DEVMODE_PARAM + "=" + Window.Location.getParameter(GWT_DEVMODE_PARAM);
+        }
+        return absoluteUrl;
     }
 
     public static void stopPropagation(NativeEvent event) {

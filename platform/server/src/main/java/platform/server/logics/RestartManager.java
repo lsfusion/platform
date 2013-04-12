@@ -16,7 +16,7 @@ public class RestartManager implements InitializingBean {
 
     private static final int restartDelayMinutes = 15;
 
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("-restart-daemon-"));
 
     private NavigatorsManager navigatorsManager;
     private BusinessLogics businessLogics;

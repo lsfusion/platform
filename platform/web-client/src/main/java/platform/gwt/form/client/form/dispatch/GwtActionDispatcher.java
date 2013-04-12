@@ -1,7 +1,6 @@
 package platform.gwt.form.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import platform.gwt.base.client.ErrorHandlingCallback;
@@ -78,7 +77,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     protected void postDispatchResponse(ServerResponseResult response) {
-        assert !response.resumeInvocation && !response.pendingRemoteChanges;
+        assert !response.resumeInvocation;
     }
 
     protected void handleDispatchException(Exception e) {
@@ -157,7 +156,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GAsyncResultAction action) {
+    public void execute(GUpdateEditValueAction action) {
+    }
+
+    @Override
+    public void execute(GAsyncGetRemoteChangesAction action) {
+        assert false;
     }
 
     @Override
@@ -190,7 +194,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private void downloadFile(String filePath) {
         if (filePath != null) {
-            String fileUrl = GWT.getHostPageBaseURL() + "downloadFile?name=" + filePath;
+            String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + filePath;
             Window.open(fileUrl, filePath, "");
         }
     }

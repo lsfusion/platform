@@ -5,8 +5,8 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientAbstractWindow;
 import platform.client.navigator.ClientNavigatorWindow;
-import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
-import platform.gwt.form.server.RemoteServiceImpl;
+import platform.gwt.base.server.dispatch.SimpleActionHandlerEx;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.convert.ClientNavigatorToGwtConverter;
 import platform.gwt.form.shared.actions.navigator.GetNavigatorInfo;
 import platform.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorInfo, GetNavigatorInfoResult, RemoteLogicsInterface> {
 
-    public GetNavigatorInfoHandler(RemoteServiceImpl servlet) {
+    public GetNavigatorInfoHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

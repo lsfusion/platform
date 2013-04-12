@@ -1,8 +1,9 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
+import platform.gwt.base.shared.actions.VoidResult;
 
-public class RemindPasswordAction extends UnsecuredActionImpl<VoidResult> {
+public class RemindPasswordAction implements Action<VoidResult> {
     public String email;
     
     public RemindPasswordAction() {}

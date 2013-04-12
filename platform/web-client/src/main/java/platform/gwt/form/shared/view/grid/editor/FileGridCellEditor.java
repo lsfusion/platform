@@ -51,7 +51,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
         newVersionUploader = new Uploader();
 
-        newVersionUploader.setUploadURL(GWT.getHostPageBaseURL() + "uploadFile")
+        newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
                 .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px;\">Выбрать файл" + (multiple ? "ы" : "") + "</button>")
                 .setButtonWidth(133)
                 .setButtonHeight(31)
@@ -97,7 +97,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
                 .setUploadStartHandler(new UploadStartHandler() {
                     @Override
                     public boolean onUploadStart(UploadStartEvent uploadStartEvent) {
-                        newVersionUploader.setUploadURL(GWT.getHostPageBaseURL() + "uploadFile?sid=" + filePrefixes.get(uploadStartEvent.getFile().getId()));
+                        newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile?sid=" + filePrefixes.get(uploadStartEvent.getFile().getId()));
                         return true;
                     }
                 })
@@ -142,7 +142,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         addUploader  = new Uploader();
 
         if (multiple) {
-            addUploader.setUploadURL(GWT.getHostPageBaseURL() + "uploadFile")
+            addUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
                     .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px\">Добавить файлы</button>")
                     .setButtonWidth(133)
                     .setButtonHeight(31)

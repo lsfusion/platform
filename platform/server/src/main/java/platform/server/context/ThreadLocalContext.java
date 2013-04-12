@@ -94,10 +94,6 @@ public class ThreadLocalContext {
         return get().getLogMessage();
     }
 
-    public static void delayRemoteChanges() {
-        get().delayRemoteChanges();
-    }
-
     public static void delayUserInteraction(ClientAction action) {
         get().delayUserInteraction(action);
     }

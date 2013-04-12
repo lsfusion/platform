@@ -15,19 +15,13 @@ public class ServerResponse implements Serializable {
 
     public final ClientAction[] actions;
     public final boolean resumeInvocation;
-    public final boolean pendingRemoteChanges;
 
     public ServerResponse(ClientAction[] actions) {
         this(actions, true);
     }
 
     public ServerResponse(ClientAction[] actions, boolean resumeInvocation) {
-        this(actions, resumeInvocation, false);
-    }
-
-    public ServerResponse(ClientAction[] actions, boolean resumeInvocation, boolean pendingRemoteChanges) {
         this.actions = actions;
         this.resumeInvocation = resumeInvocation;
-        this.pendingRemoteChanges = pendingRemoteChanges;
     }
 }

@@ -2,8 +2,8 @@ package platform.gwt.form.server.form.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.FormSessionObject;
-import platform.gwt.form.server.RemoteServiceImpl;
 import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.shared.actions.form.ExpandGroupObject;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
@@ -13,7 +13,7 @@ import java.io.IOException;
 public class ExpandGroupObjectHandler extends ServerResponseActionHandler<ExpandGroupObject> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ExpandGroupObjectHandler(RemoteServiceImpl servlet) {
+    public ExpandGroupObjectHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

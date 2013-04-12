@@ -3,12 +3,10 @@ package platform.gwt.base.server.spring;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import platform.base.SystemUtils;
-import platform.gwt.base.server.ServerUtils;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteLogicsLoaderInterface;
 
 import javax.servlet.ServletContext;
-import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -63,7 +61,7 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
         invlidateListeners.remove(listener);
     }
 
-    public static RemoteLogicsInterface createRemoteLogics(ServletContext context) {
+    private static RemoteLogicsInterface createRemoteLogics(ServletContext context) {
         try {
             String serverHost = nvl(context.getInitParameter("serverHost"), DEFAULT_HOST);
             String serverPort = nvl(context.getInitParameter("serverPort"), DEFAULT_PORT);
@@ -74,22 +72,10 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
             //todo: setup dbName
             RemoteLogicsLoaderInterface loader = (RemoteLogicsLoaderInterface) registry.lookup("default/RemoteLogicsLoader");
 
-            ServerUtils.timeZone = loader.getLogics().getTimeZone();
-
             return loader.getLogics();
         } catch (Exception e) {
             logger.error("Ошибка при получении объекта логики: ", e);
             throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
         }
     }
-
-    static {
-        try {
-            SystemUtils.initRMICompressedSocketFactory();
-        } catch (IOException e) {
-            logger.error("Ошибка при инициализации RMISocketFactory: ", e);
-            throw new RuntimeException("Произошла ошибка при инициализации RMI.", e);
-        }
-    }
-
 }

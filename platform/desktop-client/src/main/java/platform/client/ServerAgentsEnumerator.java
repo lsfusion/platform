@@ -29,7 +29,7 @@ public class ServerAgentsEnumerator extends SwingWorker<Void, ServerInfo> {
     protected Void doInBackground() throws Exception {
         serverHostModel.addElement(waitMessage);
 
-        DatagramChannelFactory dcf = new NioDatagramChannelFactory(Executors.newCachedThreadPool(new DaemonThreadFactory()));
+        DatagramChannelFactory dcf = new NioDatagramChannelFactory(Executors.newCachedThreadPool(new DaemonThreadFactory("-server-enumerator-worker-")));
         ConnectionlessBootstrap cb = new ConnectionlessBootstrap(dcf);
 
         cb.setPipelineFactory(new ChannelPipelineFactory() {

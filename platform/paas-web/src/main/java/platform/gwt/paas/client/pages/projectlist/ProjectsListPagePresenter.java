@@ -1,20 +1,24 @@
 package platform.gwt.paas.client.pages.projectlist;
 
-import com.google.web.bindery.event.shared.EventBus;
 import com.google.inject.Inject;
-import com.gwtplatform.dispatch.shared.DispatchAsync;
+import com.google.web.bindery.event.shared.EventBus;
 import com.gwtplatform.mvp.client.HasUiHandlers;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
 import com.gwtplatform.mvp.client.annotations.NameToken;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
-import com.gwtplatform.mvp.client.proxy.*;
+import com.gwtplatform.mvp.client.proxy.Place;
+import com.gwtplatform.mvp.client.proxy.PlaceRequest;
+import com.gwtplatform.mvp.client.proxy.Proxy;
+import com.gwtplatform.mvp.client.proxy.RevealRootContentEvent;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import paas.api.gwt.shared.dto.ProjectDTO;
 import platform.gwt.paas.client.NameTokens;
+import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.PaasPlaceManager;
-import platform.gwt.paas.client.common.ErrorHandlingCallback;
+import platform.gwt.paas.client.common.PaasCallback;
 import platform.gwt.paas.client.data.ProjectRecord;
 import platform.gwt.paas.client.pages.projectlist.edit.EditProjectDialog;
 import platform.gwt.paas.client.pages.projectlist.edit.EditProjectUIHandlers;
@@ -24,8 +28,8 @@ import static platform.gwt.paas.client.Parameters.PROJECT_ID_PARAM;
 
 public class ProjectsListPagePresenter extends Presenter<ProjectsListPagePresenter.MyView, ProjectsListPagePresenter.MyProxy> implements ProjectsListPageUIHandlers {
 
-    @Inject
-    private DispatchAsync dispatcher;
+    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
+
     @Inject
     private PaasPlaceManager placeManager;
 
@@ -112,7 +116,7 @@ public class ProjectsListPagePresenter extends Presenter<ProjectsListPagePresent
         RevealRootContentEvent.fire(this, this);
     }
 
-    private class GetProjectsCallback extends ErrorHandlingCallback<GetProjectsResult> {
+    private class GetProjectsCallback extends PaasCallback<GetProjectsResult> {
         @Override
         public void success(GetProjectsResult result) {
             getView().setProjects(result.projects);

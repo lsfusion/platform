@@ -53,15 +53,16 @@
         <cglib.version>2.2.2</cglib.version>
         <aspectj.version>1.6.11</aspectj.version>
 
-        <servlet.api.version>2.3</servlet.api.version>
+        <servlet.api.version>2.5</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <cachefilter.version>2.0</cachefilter.version>
+        <url.rewriter.version>4.0.3</url.rewriter.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.5.0-patched-3</gwt.version>
+        <gwt.version>2.5.0-patched-4</gwt.version>
 
         <gwt.plugin.version>2.5.0</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
@@ -641,6 +642,7 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>${servlet.api.version}</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>com.octo.captcha</groupId>
@@ -673,6 +675,11 @@
                 <artifactId>cachefilter</artifactId>
                 <version>${cachefilter.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.tuckey</groupId>
+                <artifactId>urlrewritefilter</artifactId>
+                <version>${url.rewriter.version}</version>
+            </dependency>
 
             <!-- GWT-related libraries -->
             <dependency>
@@ -684,12 +691,13 @@
                 <groupId>com.google.gwt</groupId>
                 <artifactId>gwt-user</artifactId>
                 <version>${gwt.version}</version>
-                <scope>provided</scope>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.gwt</groupId>
                 <artifactId>gwt-dev</artifactId>
                 <version>${gwt.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.smartgwt</groupId>

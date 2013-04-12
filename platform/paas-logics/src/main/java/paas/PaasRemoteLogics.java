@@ -7,7 +7,6 @@ import paas.api.gwt.shared.dto.ModuleDTO;
 import paas.api.gwt.shared.dto.ProjectDTO;
 import paas.api.remote.PaasRemoteInterface;
 import paas.manager.server.AppManager;
-import platform.base.col.MapFact;
 import platform.base.col.SetFact;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderMap;
@@ -31,6 +30,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
     @Override
     public void lifecycleEvent(LifecycleEvent event) {
+        super.lifecycleEvent(event);
         if (LifecycleEvent.INIT.equals(event.getType())) {
             this.paasLM = businessLogics.paasLM;
         }
@@ -159,10 +159,9 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
                 q.and(paasLM.moduleInProject.getExpr(projExpr, moduleExpr).getWhere());
 
-                q.addProperty("order", paasLM.moduleOrder.getExpr(projExpr, moduleExpr));
                 q.addProperty("name", baseLM.name.getExpr(moduleExpr));
 
-                return getModuleDTOs(q.execute(session.sql, MapFact.singletonOrder("order", false)));
+                return getModuleDTOs(q.execute(session.sql));
             } finally {
                 session.close();
             }
@@ -622,14 +621,18 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
     @Override
     public ConfigurationDTO getConfiguration(String userLogin, int configurationId) throws RemoteException {
-        assert userLogin != null;
         try {
             DataSession session = createSession();
             try {
                 DataObject confObj = new DataObject(configurationId, paasLM.configuration);
 
+                //todo: check if configuration exists
+
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
-                checkProjectPermission(userLogin, projId);
+                if (userLogin != null) {
+                    //если userLogin == null, то мы запрашиваем информацию о конфигурации для внутренних целей (для соединения с запущенной конфигурацией)
+                    checkProjectPermission(userLogin, projId);
+                }
 
                 Integer port = (Integer) paasLM.configurationPort.read(session, confObj);
                 if (port == null) {

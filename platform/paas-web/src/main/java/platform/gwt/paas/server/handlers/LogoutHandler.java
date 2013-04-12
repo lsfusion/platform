@@ -1,26 +1,27 @@
 package platform.gwt.paas.server.handlers;
 
-import com.gwtplatform.dispatch.server.ExecutionContext;
-import com.gwtplatform.dispatch.shared.ActionException;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import paas.api.remote.PaasRemoteInterface;
+import platform.gwt.base.server.dispatch.SecuredActionHandler;
+import platform.gwt.base.shared.actions.VoidResult;
+import platform.gwt.paas.server.spring.PaasDispatchServlet;
 import platform.gwt.paas.shared.actions.LogoutAction;
-import platform.gwt.paas.shared.actions.VoidResult;
 
 import javax.servlet.http.HttpSession;
 import java.rmi.RemoteException;
 
-@Component
-public class LogoutHandler extends SimpleActionHandlerEx<LogoutAction, VoidResult> {
+public class LogoutHandler extends SecuredActionHandler<LogoutAction, VoidResult, PaasRemoteInterface> {
     @Autowired
     private HttpSession httpSession;
 
-    public LogoutHandler() {
-        super(LogoutAction.class);
+    public LogoutHandler(PaasDispatchServlet servlet) {
+        super(servlet);
     }
 
     @Override
-    public VoidResult executeEx(final LogoutAction action, final ExecutionContext context) throws ActionException, RemoteException {
+    public VoidResult executeEx(final LogoutAction action, final ExecutionContext context) throws DispatchException, RemoteException {
         if (httpSession != null) {
             httpSession.invalidate();
         }

@@ -20,7 +20,6 @@ import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.context.ContextAwareDaemonThreadFactory;
-import platform.server.context.ThreadLocalContext;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
@@ -69,6 +68,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     SQLSession sql;
 
     final LogicsInstance logicsInstance;
+    private final NavigatorsManager navigatorManager;
     private final BusinessLogics businessLogics;
     private final SecurityManager securityManager;
     private final DBManager dbManager;
@@ -76,17 +76,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
 
-    DataObject user;
+    //используется для RelevantClassNavigator
+    private CustomClass currentClass;
 
-    DataObject computer;
+    private DataObject user;
 
-    DataObject connection;
+    private DataObject computer;
+
+    private DataObject connection;
 
     private int updateTime;
 
     private String remoteAddress;
 
-    WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
+    private final WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
 
     private final boolean isFullClient;
 
@@ -94,15 +97,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     private final ExecutorService pausablesExecutor;
     private RemotePausableInvocation currentInvocation = null;
-
-    private Map<FormEntity, RemoteForm> openForms = MapFact.mAddRemoveMap();
-    private Map<FormEntity, RemoteForm> invalidatedForms = MapFact.mAddRemoveMap();
+    
+    private final Map<RemoteForm, Boolean> createdForms = Collections.synchronizedMap(new WeakHashMap<RemoteForm, Boolean>());
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, String remoteAddress, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(port);
 
         this.logicsInstance = logicsInstance;
+        this.navigatorManager = logicsInstance.getNavigatorsManager();
         this.businessLogics = logicsInstance.getBusinessLogics();
         this.securityManager = logicsInstance.getSecurityManager();
         this.dbManager = logicsInstance.getDbManager();
@@ -111,7 +114,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         setContext(new RemoteNavigatorContext(this));
 
-        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(context));
+        pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(context, "-navigator-daemon-"));
 
         this.client = new ClientCallBackController(port);
         this.classCache = new ClassCache();
@@ -199,12 +202,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    @Override
-    public void unreferenced() {
-        ThreadLocalContext.set(context);
-        killThreads();
-    }
-
     @Aspect
     private static class RemoteNavigatorUsageAspect {
         @Around("execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)) && target(remoteNavigator)")
@@ -214,7 +211,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private long lastUsedTime;
+    private volatile long lastUsedTime;
 
     public void updateLastUsedTime() {
         //забиваем на синхронизацию, потому что для времени использования совсем неактуально
@@ -258,7 +255,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private DataSession createSession() throws SQLException {
         DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this));
         sessions.add(session);
         return session;
@@ -332,21 +329,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void gainedFocus(FormInstance<T> form) {
         weakCurrentForm = new WeakReference<FormInstance<T>>(form);
-    }
-
-    //используется для RelevantClassNavigator
-    CustomClass currentClass;
-
-    public boolean currentClassChanged(ConcreteCustomClass customClass) {
-        if (currentClass != null && currentClass.equals(customClass)) return false;
-
-        currentClass = customClass;
-        return true;
-    }
-
-    @Override
-    public void formCreated(RemoteForm form) {
-        updateOpenFormCount(form.getSID());
     }
 
     private void updateOpenFormCount(String sid) {
@@ -438,18 +420,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean interactive) {
+        //todo: вернуть, когда/если починиться механизм восстановления сессии
+//        try {
+//            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
+//            if (remoteForm == null) {
+//                remoteForm = context.createRemoteForm(
+//                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, false, interactive)
+//                );
+//            }
+//            return remoteForm;
+//        } catch (Exception e) {
+//            throw Throwables.propagate(e);
+//        }
         try {
-            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
-            if (remoteForm == null) {
-
-                remoteForm = context.createRemoteForm(
-                        context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, false, interactive)
-                );
-            }
-            openForms.put(formEntity, remoteForm);
-
-            return remoteForm;
-        } catch (Exception e) {
+            return context.createRemoteForm(
+                    context.createFormInstance(formEntity, MapFact.<ObjectEntity, DataObject>EMPTY(), createSession(), isModal, FormSessionScope.NEWSESSION, false, false, interactive)
+            );
+        } catch (SQLException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -508,15 +495,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.connection = connection;
     }
 
-    public void close() throws RemoteException {
-        try {
-            logicsInstance.getNavigatorsManager().removeNavigators(NavigatorFilter.single(this));
-            sql.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void setUpdateTime(int updateTime) {
         this.updateTime = updateTime;
     }
@@ -529,25 +507,28 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return remoteAddress;
     }
 
+    //todo: вернуть, когда/если починиться механизм восстановления сессии
+//    private Map<FormEntity, RemoteForm> openForms = MapFact.mAddRemoveMap();
+//    private Map<FormEntity, RemoteForm> invalidatedForms = MapFact.mAddRemoveMap();
     public synchronized void invalidate() throws SQLException {
-        if (client != null) {
-            client.disconnect();
-        }
-
-        try {
-            client = new ClientCallBackController(getExportPort());
-        } catch (RemoteException ignore) {
-            client = null;
-        }
-
-//        invalidatedForms.clear();
-
-        invalidatedForms.putAll(openForms);
-        openForms.clear();
-
-        for (RemoteForm form : invalidatedForms.values()) {
-            form.invalidate();
-        }
+//        if (client != null) {
+//            client.disconnect();
+//        }
+//
+//        try {
+//            client = new ClientCallBackController(getExportPort());
+//        } catch (RemoteException ignore) {
+//            client = null;
+//        }
+//
+////        invalidatedForms.clear();
+//
+//        invalidatedForms.putAll(openForms);
+//        openForms.clear();
+//
+//        for (RemoteForm form : invalidatedForms.values()) {
+//            form.invalidate();
+//        }
     }
 
     public synchronized ClientCallBackController getClientCallBack() throws RemoteException {
@@ -650,7 +631,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
                 session.apply(businessLogics);
                 session.close();
-                assert !delayRemoteChanges; // тут не должно быть никаких delayRemote
+                assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }
         };
@@ -668,37 +649,65 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.resumeWithException(clientException);
     }
 
-    public boolean isBusy() {
-        if (!threads.isEmpty()) {
+    public void close() throws RemoteException {
+        try {
+            navigatorManager.removeNavigator(this);
+            sql.close();
+        } catch (SQLException e) {
+            Throwables.propagate(e);
+        }
+
+        unexportLater();
+    }
+
+    public boolean currentClassChanged(ConcreteCustomClass customClass) {
+        if (currentClass != null && currentClass.equals(customClass)) return false;
+
+        currentClass = customClass;
+        return true;
+    }
+
+    @Override
+    public void formCreated(RemoteForm form) {
+        updateOpenFormCount(form.getSID());
+        createdForms.put(form, Boolean.TRUE);
+    }
+
+    @Override
+    public void formDestroyed(RemoteForm form) {
+        createdForms.remove(form);
+    }
+
+    @Override
+    public void unreferenced() {
+        unexportNow();
+    }
+
+    @Override
+    public void unexportNow() {
+        //form.unexport изменяет createdForms, поэтому работает с копией, чтобы не было ConcurrentModificationException
+        Set<RemoteForm> formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
+        for (RemoteForm form : formsCopy) {
+            if (form != null) {
+                form.unexportNow();
+            }
+        }
+
+        super.unexportNow();
+    }
+
+    @Override
+    public boolean hasLinkedThreads() {
+        if (super.hasLinkedThreads()) {
             return true;
         }
 
-        for (RemoteForm form : openForms.values()) {
-            if (!form.threads.isEmpty()) {
+        for (RemoteForm form : createdForms.keySet()) {
+            if (form!= null && form.hasLinkedThreads()) {
                 return true;
             }
         }
-        for (RemoteForm form : invalidatedForms.values()) {
-            if (!form.threads.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    public void killThreads() {
-        if (!threads.isEmpty()) {
-            super.killThreads();
-        }
-        for (RemoteForm form : openForms.values()) {
-            if (!form.threads.isEmpty()) {
-                form.killThreads();
-            }
-        }
-        for (RemoteForm form : invalidatedForms.values()) {
-            if (!form.threads.isEmpty()) {
-                form.killThreads();
-            }
-        }
+        return false;
     }
 }

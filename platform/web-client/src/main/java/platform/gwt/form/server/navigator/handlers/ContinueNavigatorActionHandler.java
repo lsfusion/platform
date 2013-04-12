@@ -2,7 +2,7 @@ package platform.gwt.form.server.navigator.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import platform.gwt.form.server.RemoteServiceImpl;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.server.convert.GwtToClientConverter;
 import platform.gwt.form.server.form.handlers.ServerResponseActionHandler;
 import platform.gwt.form.shared.actions.form.ServerResponseResult;
@@ -13,7 +13,7 @@ import java.io.IOException;
 public class ContinueNavigatorActionHandler extends ServerResponseActionHandler<ContinueNavigatorAction> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ContinueNavigatorActionHandler(RemoteServiceImpl servlet) {
+    public ContinueNavigatorActionHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

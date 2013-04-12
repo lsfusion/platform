@@ -34,7 +34,7 @@ public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private DataFilterValueEditableCell cell;
 
     public interface GDataFilterValueViewTableResource extends Resources {
-        @Source("../GSinglePropertyTable.css")
+        @Source("platform/gwt/form/client/form/ui/GGridPropertyTable.css")
         GDataFilterValueViewTableStyle style();
     }
 

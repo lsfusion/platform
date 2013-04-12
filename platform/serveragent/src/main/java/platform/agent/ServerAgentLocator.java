@@ -25,7 +25,7 @@ public final class ServerAgentLocator {
     }
 
     public void start() {
-        DatagramChannelFactory dcf = new NioDatagramChannelFactory(Executors.newCachedThreadPool(new DaemonThreadFactory()));
+        DatagramChannelFactory dcf = new NioDatagramChannelFactory(Executors.newCachedThreadPool(new DaemonThreadFactory("-server-locator-daemon")));
         ConnectionlessBootstrap cb = new ConnectionlessBootstrap(dcf);
 
 

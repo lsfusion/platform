@@ -32,7 +32,6 @@ public interface Context {
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     String getLogMessage();
-    void delayRemoteChanges();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
     Object[] requestUserInteraction(ClientAction... actions);

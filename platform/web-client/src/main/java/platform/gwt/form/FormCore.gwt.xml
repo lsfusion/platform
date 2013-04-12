@@ -1,0 +1,28 @@
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.0//EN"
+        "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
+<module>
+    <inherits name='com.google.gwt.user.User'/>
+    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="platform.gwt.cellview.CellView"/>
+
+    <!--  GWT dispatch -->
+    <inherits name='net.customware.gwt.dispatch.Dispatch' />
+
+    <!--  Color Picker -->
+    <inherits name="net.auroris.ColorPicker.client"/>
+
+    <!-- GWT DnD -->
+    <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd'/>
+
+    <!-- GWT modified theme -->
+    <stylesheet src="theme/clean/clean-reduced.css"/>
+
+    <!-- GWT file upload -->
+    <inherits name="org.moxieapps.gwt.uploader.Uploader"/>
+
+    <!-- GWT browser selection -->
+    <inherits name='com.bfr.client.Selection'/>
+
+    <source path='client'/>
+    <source path='shared'/>
+</module>

@@ -180,7 +180,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             propertyQuery.and(businessLogics.schedulerLM.activeScheduledTaskProperty.getExpr(scheduledTaskExpr, propertyExpr).getWhere());
             propertyQuery.and(scheduledTaskExpr.compare(currentScheduledTaskObject, Compare.EQUALS));
 
-            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext()));
+            ScheduledExecutorService daemonTasksExecutor = Executors.newScheduledThreadPool(1, new ContextAwareDaemonThreadFactory(new SchedulerContext(), "-scheduler-daemon-"));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session.sql);

@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class AddNewConfigurationAction extends UnsecuredActionImpl<GetConfigurationsResult> {
+public class AddNewConfigurationAction implements Action<GetConfigurationsResult> {
     public int projectId;
 
     public AddNewConfigurationAction() {

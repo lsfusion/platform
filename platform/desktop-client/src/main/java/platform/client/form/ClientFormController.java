@@ -164,7 +164,7 @@ public class ClientFormController implements AsyncListener {
 
         initializeDefaultOrders();
 
-        processRemoteChanges(false);
+        getRemoteChanges(false);
     }
 
     public List<ClientPropertyDraw> getPropertyDraws() {
@@ -360,7 +360,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeDefaultOrders() throws IOException {
-        processRemoteChanges(false);
+        getRemoteChanges(false);
         try {
             //применяем все свойства по умолчанию
             applyOrders(form.defaultOrders);
@@ -419,7 +419,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void processRemoteChanges(boolean async) throws IOException {
+    public void getRemoteChanges(boolean async) throws IOException {
         rmiQueue.syncRequestWithTimeOut(async ? 0 : RmiQueue.FOREVER, new ProcessServerResponseRmiRequest() {
             @Override
             protected ServerResponse doRequest(long requestIndex) throws Exception {

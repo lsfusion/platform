@@ -1,6 +1,5 @@
 package platform.gwt.paas.client.pages.project.add;
 
-import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.MultipleAppearance;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
@@ -16,8 +15,9 @@ import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
 import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.paas.client.Paas;
-import platform.gwt.paas.client.common.ErrorHandlingCallback;
+import platform.gwt.paas.client.common.PaasCallback;
 import platform.gwt.paas.client.data.ModuleRecord;
 import platform.gwt.paas.client.data.ModulesDataSource;
 import platform.gwt.paas.shared.FieldVerifier;
@@ -25,7 +25,7 @@ import platform.gwt.paas.shared.actions.GetAvailableModulesAction;
 import platform.gwt.paas.shared.actions.GetModulesResult;
 
 public class AddNewModuleDialog extends Window {
-    private final DispatchAsync dispatcher = Paas.ginjector.getDispatchAsync();
+    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
     private ButtonItem btnNew;
     private TextItem newItemName;
     private SelectItem modulesList;
@@ -97,7 +97,7 @@ public class AddNewModuleDialog extends Window {
     }
 
     private void fillValues() {
-        dispatcher.execute(new GetAvailableModulesAction(currentProject), new ErrorHandlingCallback<GetModulesResult>() {
+        dispatcher.execute(new GetAvailableModulesAction(currentProject), new PaasCallback<GetModulesResult>() {
             @Override
             public void success(GetModulesResult result) {
                 if (result.modules.length == 0) {

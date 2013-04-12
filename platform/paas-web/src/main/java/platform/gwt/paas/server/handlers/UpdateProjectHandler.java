@@ -1,30 +1,25 @@
 package platform.gwt.paas.server.handlers;
 
-import com.gwtplatform.dispatch.server.ExecutionContext;
-import com.gwtplatform.dispatch.shared.ActionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 import paas.api.remote.PaasRemoteInterface;
-import platform.gwt.base.server.spring.BusinessLogicsProvider;
+import platform.gwt.base.server.dispatch.SecuredActionHandler;
+import platform.gwt.paas.server.spring.PaasDispatchServlet;
 import platform.gwt.paas.shared.actions.GetProjectsResult;
 import platform.gwt.paas.shared.actions.UpdateProjectAction;
 
 import java.rmi.RemoteException;
 
-@Component
-public class UpdateProjectHandler extends SimpleActionHandlerEx<UpdateProjectAction, GetProjectsResult> {
+public class UpdateProjectHandler extends SecuredActionHandler<UpdateProjectAction, GetProjectsResult, PaasRemoteInterface> {
 
-    @Autowired
-    private BusinessLogicsProvider<PaasRemoteInterface> blProvider;
-
-    public UpdateProjectHandler() {
-        super(UpdateProjectAction.class);
+    public UpdateProjectHandler(PaasDispatchServlet servlet) {
+        super(servlet);
     }
 
     @Override
-    public GetProjectsResult executeEx(final UpdateProjectAction action, final ExecutionContext context) throws ActionException, RemoteException {
+    public GetProjectsResult executeEx(final UpdateProjectAction action, final ExecutionContext context) throws DispatchException, RemoteException {
         return new GetProjectsResult(
-                blProvider.getLogics().updateProject(
+                servlet.getLogics().updateProject(
                         getAuthentication().getName(), action.project));
     }
 }

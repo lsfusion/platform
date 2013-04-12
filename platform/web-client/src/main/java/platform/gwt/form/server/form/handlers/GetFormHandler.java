@@ -3,14 +3,14 @@ package platform.gwt.form.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import platform.base.BaseUtils;
-import platform.gwt.form.server.RemoteServiceImpl;
+import platform.gwt.form.server.FormDispatchServlet;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
 
 import java.io.IOException;
 
 public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> {
-    public GetFormHandler(RemoteServiceImpl servlet) {
+    public GetFormHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
 

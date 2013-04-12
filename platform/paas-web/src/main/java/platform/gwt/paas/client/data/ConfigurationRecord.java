@@ -1,8 +1,8 @@
 package platform.gwt.paas.client.data;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
+import platform.gwt.base.client.GwtClientUtils;
 
 public class ConfigurationRecord extends BasicRecord {
     public static final String JNLP_SERVLET_PREFIX = "jnlp/client.jnlp?confId=";
@@ -22,7 +22,7 @@ public class ConfigurationRecord extends BasicRecord {
 
         setPort(port);
         setStatus(status);
-        setJnlp(GWT.getHostPageBaseURL() + JNLP_SERVLET_PREFIX + id);
+        setJnlp(GwtClientUtils.getWebAppBaseURL() + JNLP_SERVLET_PREFIX + id);
     }
 
     private void setJnlp(String jnlp) {

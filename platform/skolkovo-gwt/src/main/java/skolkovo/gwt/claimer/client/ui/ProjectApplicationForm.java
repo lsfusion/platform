@@ -1,6 +1,5 @@
 package skolkovo.gwt.claimer.client.ui;
 
-import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.FormItemIfFunction;
@@ -10,6 +9,7 @@ import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.form.fields.events.FormItemInitHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
 import gwtupload.client.*;
+import platform.gwt.base.client.GwtClientUtils;
 import skolkovo.gwt.claimer.client.ClaimerMessages;
 
 import java.util.ArrayList;
@@ -302,7 +302,7 @@ public class ProjectApplicationForm extends DynamicForm {
     }
 
     private String makeTemplateLink() {
-        return "<a href=" + GWT.getHostPageBaseURL() + DOC_TEMPLATE_URL + ">" + messages.documentsTemplate() + "</a>";
+        return "<a href=" + GwtClientUtils.getWebAppBaseURL() + DOC_TEMPLATE_URL + ">" + messages.documentsTemplate() + "</a>";
     }
 
     private boolean isChecked(CheckboxItem cb) {

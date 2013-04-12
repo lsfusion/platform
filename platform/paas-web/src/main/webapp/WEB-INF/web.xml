@@ -25,12 +25,22 @@
     </context-param>
 
     <servlet>
-        <servlet-name>gwtpDispatch</servlet-name>
+        <servlet-name>paasDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>gwtpDispatch</servlet-name>
-        <url-pattern>/dispatch/*</url-pattern>
+        <servlet-name>paasDispatch</servlet-name>
+        <url-pattern>/paas/dispatch</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>formDispatch</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>formDispatch</servlet-name>
+        <url-pattern>/form/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -52,15 +62,49 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>captchaService</servlet-name>
-        <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
+        <servlet-name>captchaHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>captchaService</servlet-name>
+        <servlet-name>captchaHandler</servlet-name>
         <url-pattern>/jcaptcha</url-pattern>
     </servlet-mapping>
 
-    <!-- Spring security configuration -->
+    <!-- App RMI Listener -->
+    <listener>
+        <listener-class>platform.gwt.form.server.AppContextListener</listener-class>
+    </listener>
+
+    <!-- Init RMI Listener -->
+    <listener>
+        <listener-class>platform.gwt.base.server.spring.InitRMIContextListener</listener-class>
+    </listener>
+
+    <!-- UrlRewrite configuration -->
+    <filter>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+
+        <!-- you can change status path (defaults to /rewrite-status), must start with / -->
+        <init-param>
+            <param-name>statusPath</param-name>
+            <param-value>/rewrite-status</param-value>
+        </init-param>
+
+        <!-- you can disable status page if desired can be: true, false (default true) -->
+        <init-param>
+            <param-name>statusEnabled</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+
+    <!-- Spring configuration -->
     <context-param>
         <param-name>log4jConfigLocation</param-name>
         <param-value>/WEB-INF/web-log4j.xml</param-value>
@@ -75,14 +119,12 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/spring/applicationContext-security.xml</param-value>
+        <param-value>
+            /WEB-INF/spring/applicationContext-security.xml
+        </param-value>
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
-    <listener>
-        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
 
     <filter>

@@ -1,6 +1,5 @@
 package platform.gwt.paas.client.pages.projectlist.edit;
 
-import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
@@ -16,12 +15,9 @@ import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import paas.api.gwt.shared.dto.ProjectDTO;
-import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.data.ProjectRecord;
 
 public class EditProjectDialog extends Window {
-    private final DispatchAsync dispatcher = Paas.ginjector.getDispatchAsync();
-
     private final boolean isNew;
     private ProjectRecord project;
     private final EditProjectUIHandlers uiHandlers;

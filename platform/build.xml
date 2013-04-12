@@ -25,7 +25,7 @@
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
-            <arg value="-DgwtCompile"/>
+            <arg value="-D${gwtProfile}"/>
             <arg value="-Dnodesktop"/>
             <arg value="--also-make" />
             <arg value="--projects" />
@@ -277,6 +277,7 @@
     <target name="web-client-recursiveCompileWithGwt">
         <antcall target="recursiveCompileWithGwt">
             <param name="artifactId" value="web-client"/>
+            <param name="gwtProfile" value="gwtWebClient"/>
         </antcall>
     </target>
 
@@ -325,6 +326,13 @@
     <target name="paas-web-quickCompile">
         <antcall target="quickCompile">
             <param name="artifactId" value="paas-web"/>
+        </antcall>
+    </target>
+
+    <target name="paas-web-recursiveCompileWithGwt">
+        <antcall target="recursiveCompileWithGwt">
+            <param name="artifactId" value="paas-web"/>
+            <param name="gwtProfile" value="gwtPaas"/>
         </antcall>
     </target>
 

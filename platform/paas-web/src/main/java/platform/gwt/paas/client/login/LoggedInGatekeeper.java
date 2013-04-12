@@ -1,22 +1,22 @@
 package platform.gwt.paas.client.login;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.web.bindery.event.shared.EventBus;
 import com.google.inject.Inject;
-import com.gwtplatform.dispatch.shared.DispatchAsync;
+import com.google.web.bindery.event.shared.EventBus;
 import com.gwtplatform.mvp.client.proxy.Gatekeeper;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.AsyncCallbackEx;
+import platform.gwt.base.shared.actions.VoidResult;
+import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.PaasPlaceManager;
 import platform.gwt.paas.shared.actions.LogoutAction;
-import platform.gwt.paas.shared.actions.VoidResult;
 
 public class LoggedInGatekeeper implements Gatekeeper {
 
-    @Inject
-    private PaasPlaceManager placeManager;
+    private StandardDispatchAsync dispatcher = Paas.dispatcher;
 
     @Inject
-    DispatchAsync dispatcher;
+    private PaasPlaceManager placeManager;
 
     private CurrentUser currentUser = null;
 

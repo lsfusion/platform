@@ -65,10 +65,6 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getLogMessage();
     }
 
-    public void delayRemoteChanges() {
-        wrappedContext.delayRemoteChanges();
-    }
-
     public void delayUserInteraction(ClientAction action) {
         wrappedContext.delayUserInteraction(action);
     }

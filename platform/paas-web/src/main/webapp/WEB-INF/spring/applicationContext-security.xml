@@ -1,61 +1,165 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--suppress DuplicatedBeanNamesInspection -->
-<b:beans xmlns="http://www.springframework.org/schema/security"
-         xmlns:b="http://www.springframework.org/schema/beans"
-         xmlns:context="http://www.springframework.org/schema/context"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:s="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:config="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                                  http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.3.xsd
-                                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+                                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <config:annotation-config/>
 
-    <context:component-scan base-package="platform.gwt.paas.server"/>
-    <context:component-scan base-package="platform.server.jnlp"/>
+    <!-- Security namespace configuration is expanded: http://blog.springsource.org/2010/03/06/behind-the-spring-security-namespace/ -->
 
-    <b:bean id="logger" class="com.gwtplatform.dispatch.server.spring.LoggerFactoryBean">
-        <b:constructor-arg>
-            <b:bean class="java.util.logging.Logger" factory-method="getAnonymousLogger">
-                <b:property name="level" value="FINEST"/>
-            </b:bean>
-        </b:constructor-arg>
-    </b:bean>
+    <!-- Authentication configuration ====================================================================================================================== -->
+    <s:authentication-manager alias="authenticationManager">
+        <s:authentication-provider ref="authenticationProvider"/>
+    </s:authentication-manager>
 
+    <bean id="authenticationProvider" class="platform.gwt.base.server.spring.GwtAuthenticationProvider">
+        <property name="passwordEncoder">
+            <bean class="platform.gwt.base.server.spring.Base64ShaPasswordEncoder"/>
+        </property>
+        <property name="userDetailsService">
+            <bean class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
+                <property name="businessLogicProvider" ref="threadLocalBlProvider"/>
+            </bean>
+        </property>
+    </bean>
 
-    <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
-        <form-login authentication-failure-url="/loginFailed.txt"/>
+    <!-- Filter chain configuration ======================================================================================================================== -->
+    <bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
+        <s:filter-chain-map path-type="regex">
+            <s:filter-chain pattern=".*/logout"
+                            filters="
+                                    sessionSetupFilter,
+                                    logoutFilter
+                                "
+                    />
+            <s:filter-chain pattern=".*/login\.jsp(\?.*)?"
+                            filters="
+                                    sessionSetupFilter,
+                                    forwardDynamicsFilter
+                                "
+                    />
+            <s:filter-chain pattern="/.*"
+                            filters="
+                                    sessionSetupFilter,
+                                requestContextFilter,
+                                    blSetupFilter,
+                                securityContextFilter,
+                                logoutFilter,
+                                    formLoginFilter,
+                                requestCacheFilter,
+                                servletApiProvisionFilter,
+                                    expiredSessionFilter,
+                                exceptionTranslationFilter,
+                                filterSecurityInterceptor,
+                                    propertyReadAccessFilter,
+                                    forwardDynamicsFilter
+                                "
+                    />
+        </s:filter-chain-map>
+    </bean>
 
-        <anonymous enabled="false"/>
+    <bean id="securityContextFilter" class="org.springframework.security.web.context.SecurityContextPersistenceFilter" />
 
-        <logout logout-url="/logout.jsp" logout-success-url="/Paas.jsp"/>
+    <bean id="logoutFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationLogoutFilter"/>
 
-        <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
+    <bean id="formLoginFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationUsernamePasswordAuthenticationFilter">
+        <property name="authenticationManager" ref="authenticationManager"/>
+    </bean>
 
-        <custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
-    </http>
+    <bean id="requestCacheFilter" class="org.springframework.security.web.savedrequest.RequestCacheAwareFilter" />
 
-    <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
+    <bean id="servletApiProvisionFilter" class="org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter" />
+
+    <bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+        <property name="authenticationEntryPoint">
+            <bean class="platform.gwt.paas.server.spring.filters.ConfigurationAuthenticationEntryPoint"/>
+        </property>
+    </bean>
+
+    <bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+        <property name="authenticationManager" ref="authenticationManager" />
+        <property name="securityMetadataSource">
+            <s:filter-security-metadata-source path-type="regex" use-expressions="true">
+                <s:intercept-url pattern="/form/.*" access="denyAll"/>
+                <s:intercept-url pattern="/configurations/(\d+)/.*" access="isAuthenticated()" />
+            </s:filter-security-metadata-source>
+        </property>
+        <property name="accessDecisionManager">
+            <bean class="org.springframework.security.access.vote.AffirmativeBased">
+                <property name="decisionVoters">
+                    <list>
+                        <bean class="org.springframework.security.web.access.expression.WebExpressionVoter"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- For use in JSP pages -->
+    <bean id="webPrivilegeEvaluator" class="org.springframework.security.web.access.DefaultWebInvocationPrivilegeEvaluator">
+        <constructor-arg ref="filterSecurityInterceptor" />
+    </bean>
+
+    <!-- Custom filters ==================================================================================================================================== -->
+    <bean id="sessionSetupFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationSessionSetupFilter"/>
+
+    <bean id="blSetupFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationBLSetupFilter"/>
+
+    <bean id="requestContextFilter" class="org.springframework.web.filter.RequestContextFilter"/>
+
+    <bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к dispatch-сервису -->
-        <b:property name="urlPattern" value="/dispatch.*"/>
-    </b:bean>
+        <property name="urlPattern" value="/dispatch.*"/>
+    </bean>
 
-    <b:bean id="readFileHandler" class="platform.gwt.base.server.handlers.ReadFileRequestHandler"/>
+    <bean id="forwardDynamicsFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationForwardDynamicsFilter"/>
 
-    <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
-        <b:property name="URI" value="/readFile"/>
-    </b:bean>
+    <bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
+        <property name="URI" value="/readFile"/>
+    </bean>
 
-    <b:bean id="loginUrlAuthenticationEntryPoint"
-            class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-        <b:property name="useForward" value="true"/>
-        <b:property name="loginFormUrl" value="/Paas.jsp#login"/>
-    </b:bean>
+    <!-- Custom beans ====================================================================================================================================== -->
+    <bean id="threadLocalBlProvider" class="platform.gwt.paas.server.spring.ConfigurationBLProviderImpl">
+        <property name="serverHost" value="localhost"/>
+        <property name="paasProvider" ref="paasProvider"/>
+    </bean>
 
-    <authentication-manager>
-        <authentication-provider user-service-ref="logicsUserService"/>
-    </authentication-manager>
+    <bean id="paasProvider" autowire-candidate="false" class="platform.gwt.base.server.spring.ContextBusinessLogicsProvider"/>
 
-    <b:bean name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService" />
+    <bean id="navigatorProvider" scope="session" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
+        <aop:scoped-proxy proxy-target-class="false"/>
+        <constructor-arg ref="threadLocalBlProvider"/>
+    </bean>
 
-    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl" />
+    <bean id="formManager" scope="session" class="platform.gwt.form.server.FormSessionManagerImpl">
+        <aop:scoped-proxy proxy-target-class="false"/>
+    </bean>
 
-    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl" />
-</b:beans>
+    <!-- Custom request handlers =========================================================================================================================== -->
+    <bean id="paasDispatch" class="platform.gwt.paas.server.spring.PaasDispatchServlet">
+        <property name="blProvider" ref="paasProvider"/>
+    </bean>
+
+    <bean id="jnlpHandler" class="platform.gwt.paas.server.spring.ConfigurationJNLPReqestHandler">
+        <property name="blProvider" ref="paasProvider"/>
+    </bean>
+
+    <bean id="formDispatch" class="platform.gwt.form.server.FormDispatchServlet">
+        <property name="rpcPolicyLocation" value="/form"/>
+    </bean>
+
+    <bean id="captchaHandler" class="platform.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
+
+    <bean id="readFileHandler" class="platform.gwt.base.server.spring.ReadFileRequestHandler"/>
+
+    <bean id="propertyImageHandler" class="platform.gwt.base.server.spring.GetPropertyImageRequestHandler"/>
+
+    <bean id="fileUploadHandler" class="platform.gwt.base.server.spring.UploadFileRequestHandler"/>
+
+    <bean id="fileDownloadHandler" class="platform.gwt.base.server.spring.DownloadFileRequestHandler"/>
+</beans>

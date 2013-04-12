@@ -1,10 +1,9 @@
 package platform.gwt.paas.client.pages.project;
 
-import com.google.web.bindery.event.shared.EventBus;
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
-import com.gwtplatform.dispatch.shared.Action;
-import com.gwtplatform.dispatch.shared.DispatchAsync;
+import com.google.web.bindery.event.shared.EventBus;
 import com.gwtplatform.mvp.client.HasUiHandlers;
 import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
@@ -15,11 +14,16 @@ import com.gwtplatform.mvp.client.proxy.Proxy;
 import com.gwtplatform.mvp.client.proxy.RevealRootContentEvent;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
+import net.customware.gwt.dispatch.shared.Action;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.gwt.shared.dto.ModuleDTO;
+import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.paas.client.NameTokens;
+import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.PaasPlaceManager;
-import platform.gwt.paas.client.common.ErrorHandlingCallback;
+import platform.gwt.paas.client.common.PaasCallback;
 import platform.gwt.paas.client.data.BasicRecord;
 import platform.gwt.paas.client.data.ConfigurationRecord;
 import platform.gwt.paas.client.data.ModuleRecord;
@@ -32,10 +36,11 @@ import platform.gwt.paas.shared.actions.*;
 import static platform.gwt.paas.client.Parameters.PROJECT_ID_PARAM;
 
 public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView, ProjectPagePresenter.MyProxy> implements ProjectPageUIHandlers {
+    private final StandardDispatchAsync dispatcher = Paas.dispatcher;
+
     @Inject
     private PaasPlaceManager placeManager;
-    @Inject
-    private DispatchAsync dispatcher;
+
     private int currentProject = -1;
 
     @ProxyCodeSplit
@@ -69,7 +74,6 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         getView().getModulesPane().openModuleTab(record);
     }
 
-
     @Override
     public void addNewModuleButtonClicked() {
         AddNewModuleDialog.showDialog(currentProject, new AddNewModuleUIHandlers() {
@@ -87,7 +91,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     public void saveAllButtonClicked() {
-        dispatcher.execute(getView().getModulesPane().prepareSaveModuleAction(), new ErrorHandlingCallback<VoidResult>() {
+        dispatcher.execute(getView().getModulesPane().prepareSaveModuleAction(), new PaasCallback<VoidResult>() {
             @Override
             public void success(VoidResult result) {
                 SC.say("Saved successfully!");
@@ -139,6 +143,13 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         Window.open(record.getJnlp(), "", "");
     }
 
+    @Override
+    public void openConfiguration(ConfigurationRecord record) {
+        String configurationAppUrl = GwtClientUtils.getAbsoluteUrl("configurations/" + record.getId() + "/form.jsp");
+        //явный name (вместо _blank) заставит использовать одно и то же окно для одной и той же конфигурации
+        Window.open(configurationAppUrl, "configuration_app_" + record.getId(), "");
+    }
+
     private void showLoading() {
         getView().showLoading();
     }
@@ -183,14 +194,14 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         RevealRootContentEvent.fire(this, this);
     }
 
-    private class GetModulesCallback extends ErrorHandlingCallback<GetModulesResult> {
+    private class GetModulesCallback extends PaasCallback<GetModulesResult> {
         @Override
         public void success(GetModulesResult result) {
             getView().setModules(result.modules);
         }
     }
 
-    private class GetConfigurationsCallback extends ErrorHandlingCallback<GetConfigurationsResult> {
+    private class GetConfigurationsCallback extends PaasCallback<GetConfigurationsResult> {
         @Override
         public void preProcess() {
             hideLoading();

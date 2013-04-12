@@ -20,7 +20,7 @@
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
-                              action="j_spring_security_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
+                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
                             <fieldset>
                                 <p>
                                     <label for="j_username">login</label>

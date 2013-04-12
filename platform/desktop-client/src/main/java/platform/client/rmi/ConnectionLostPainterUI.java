@@ -23,7 +23,7 @@ public class ConnectionLostPainterUI extends LockableUI implements Runnable {
     public void lockAndPing(boolean isLocked) {
         setLocked(isLocked);
         if (isLocked) {
-            executorService = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
+            executorService = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("-connection-lost-daemon-"));
             String pingDelay = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_PING_DELAY, "3000");
             Integer delay = Integer.valueOf(pingDelay);
             executorService.scheduleWithFixedDelay(this, delay, delay, TimeUnit.MILLISECONDS);

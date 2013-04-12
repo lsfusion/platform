@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class StopConfigurationAction extends UnsecuredActionImpl<GetConfigurationsResult> {
+public class StopConfigurationAction implements Action<GetConfigurationsResult> {
     public int configurationId;
 
     public StopConfigurationAction() {

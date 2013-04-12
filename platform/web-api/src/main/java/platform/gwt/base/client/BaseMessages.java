@@ -54,6 +54,8 @@ public interface BaseMessages extends Messages {
 
     String loginFailed();
 
+    String accessRestricted();
+
     String cancel();
 
     String emailPrompt();

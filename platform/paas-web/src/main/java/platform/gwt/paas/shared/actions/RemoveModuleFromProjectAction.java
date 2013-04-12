@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class RemoveModuleFromProjectAction extends UnsecuredActionImpl<GetModulesResult> {
+public class RemoveModuleFromProjectAction implements Action<GetModulesResult> {
     public int projectId;
     public int moduleId;
 

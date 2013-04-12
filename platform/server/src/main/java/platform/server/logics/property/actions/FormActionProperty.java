@@ -97,11 +97,6 @@ public class FormActionProperty extends SystemActionProperty {
             }
 
             final FormInstance thisFormInstance = context.getFormInstance();
-            if (thisFormInstance != null) {
-                if (form instanceof SelfInstancePostProcessor) {
-                    ((SelfInstancePostProcessor) form).postProcessSelfInstance(context.getKeys(), thisFormInstance, newFormInstance);
-                }
-            }
 
             if (startAction != null) {
                 newFormInstance.instanceFactory.getInstance(startAction).execute(newFormInstance);
@@ -163,9 +158,5 @@ public class FormActionProperty extends SystemActionProperty {
                 }
             }
         }
-    }
-
-    public static interface SelfInstancePostProcessor {
-        public void postProcessSelfInstance(ImMap<ClassPropertyInterface, DataObject> keys, FormInstance executeForm, FormInstance selfFormInstance);
     }
 }

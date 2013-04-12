@@ -1,10 +1,10 @@
 package platform.gwt.form.shared.view.grid.renderer;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.cellview.client.cell.Cell;
 
 public class ImageGridCellRenderer extends AbstractGridCellRenderer {
@@ -28,6 +28,6 @@ public class ImageGridCellRenderer extends AbstractGridCellRenderer {
     }
 
     private String imageSrc(Object value) {
-        return GWT.getHostPageBaseURL() + "propertyImage?sid=" + value;
+        return GwtClientUtils.getWebAppBaseURL() + "propertyImage?sid=" + value;
     }
 }

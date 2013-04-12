@@ -1,6 +1,6 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.Result;
+import net.customware.gwt.dispatch.shared.Result;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 
 public class GetConfigurationsResult implements Result {

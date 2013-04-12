@@ -1,8 +1,8 @@
 package platform.gwt.paas.shared.actions;
 
-import com.gwtplatform.dispatch.shared.UnsecuredActionImpl;
+import net.customware.gwt.dispatch.shared.Action;
 
-public class GetProjectsAction extends UnsecuredActionImpl<GetProjectsResult> {
+public class GetProjectsAction implements Action<GetProjectsResult> {
     public GetProjectsAction() {
 
     }

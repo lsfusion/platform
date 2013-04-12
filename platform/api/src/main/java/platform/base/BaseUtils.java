@@ -1,5 +1,6 @@
 package platform.base;
 
+import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import platform.base.col.MapFact;
@@ -2228,5 +2229,19 @@ public class BaseUtils {
                ? -1
                : a > b
                  ? 1 : 0;
+    }
+
+    public static void runLater(final int delay, final Runnable runnable) {
+        new Thread("runLater-thread") {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Throwables.propagate(e);
+                }
+                runnable.run();
+            }
+        }.start();
     }
 }

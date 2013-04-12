@@ -6,7 +6,8 @@ import platform.base.col.MapFact;
 import platform.base.col.interfaces.immutable.ImList;
 import platform.base.col.interfaces.immutable.ImMap;
 import platform.base.col.interfaces.immutable.ImOrderSet;
-import platform.interop.action.AsyncResultClientAction;
+import platform.interop.action.AsyncGetRemoteChangesClientAction;
+import platform.interop.action.UpdateEditValueClientAction;
 import platform.interop.action.EditNotPerformedClientAction;
 import platform.interop.form.ServerResponse;
 import platform.server.classes.DataClass;
@@ -102,11 +103,11 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
                         );
 
                         try {
-                            context.delayUserInteraction(new AsyncResultClientAction(BaseUtils.serializeObject(updatedValue)));
+                            context.delayUserInteraction(new UpdateEditValueClientAction(BaseUtils.serializeObject(updatedValue)));
                         } catch (IOException e) {
                             Throwables.propagate(e);
                         }
-                        context.delayRemoteChanges();
+                        context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
                     }
                 } else {
                     throw new RuntimeException("not supported");
