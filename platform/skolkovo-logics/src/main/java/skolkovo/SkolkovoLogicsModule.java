@@ -278,7 +278,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initClasses() {
         initBaseClassAliases();
 
-        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("multiLanguageNamed");
+        multiLanguageNamed = (ConcreteCustomClass) BL.I18n.getClassByName("MultiLanguageNamed");
 
         projectType = addConcreteClass("projectType", "Тип проекта",
                 new String[]{"comparable", "surpasses", "russianbenchmark", "certainadvantages", "significantlyoutperforms", "nobenchmarks"},
@@ -4084,7 +4084,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), BL.contactLM.contactEmail, 1);
 
-        ConcreteCustomClass country = (ConcreteCustomClass) BL.getModule("Country").getClassByName("country");
+        ConcreteCustomClass country = (ConcreteCustomClass) BL.getModule("Country").getClassByName("Country");
 
         dateAgreementExpert = addDProp("dateAgreementExpert", "Дата соглашения с экспертом", DateClass.instance, expert);
         vone = addCProp("1", IntegerClass.instance, 1);
@@ -4678,7 +4678,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
     public ConcreteCustomClass getCurrencyClass() {
-        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("currency");
+        return (ConcreteCustomClass) BL.getModule("Currency").getClassByName("Currency");
     }
 
     private void addDefaultHintsIncrementTable(FormEntity form) {
