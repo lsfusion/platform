@@ -115,7 +115,7 @@ showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice)
 
 useExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += userInvoice IS Sale.UserInvoice AND order IS Sale.Order;
 
-toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoiceOrderDetail
+toInvoiceBatchOrderDetail (batch, orderDetail) = PARTITION UNGROUP toInvoicedOrderDetail
                                                            LIMIT STRICT currentBalanceBatchStock(batch, supplierStockOrderDetail(orderDetail)) AND skuBatch(batch) == skuOrderDetail(orderDetail)
                                                            BY orderDetail
                                                            ORDER orderBatch(batch);
@@ -131,7 +131,7 @@ createExplicitBatchDetailUserInvoiceOrder (userInvoice, order) += ACTION (userIn
        // todo: решить какие цены задавать: из заказа или из партии
             SET barcodePackUserInvoiceDetail(d) <- barcodePackOrderDetail(orderDetail);
             SET amountPackUserInvoiceDetail(d) <- amountPackOrderDetail(orderDetail);
-            SET packQuantityUserInvoiceDetail (d) <- toInvoiceOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
+            SET packQuantityUserInvoiceDetail (d) <- toInvoicedOrderDetail(orderDetail)/amountPackOrderDetail(orderDetail);
             SET VATUserInvoiceDetail (d) <- VATOrderDetail(orderDetail);
             SET valueVATUserInvoiceDetail (d) <- valueVATOrderDetail(orderDetail);
             SET priceListTypeInvoiceDetail (d) <- priceListTypeOrderDetail(orderDetail);

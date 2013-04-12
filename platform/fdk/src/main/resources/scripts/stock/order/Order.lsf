@@ -394,8 +394,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
         OBJECTS o = Order
         PROPERTIES (o) READONLY isPostedOrder FORCE GRID, isClosedOrder, numberOrder, seriesOrder, dateOrder, timeOrder,
                                 nameSupplierOrder, nameSupplierStockOrder, nameCustomerOrder, nameCustomerStockOrder, nameCurrencyOrder,
-                                nameAgreementOrder, namePriceListTypeOrder,
-                                countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
+                                nameAgreementOrder, countOrderDetailOrder, quantityOrderDetailOrder, sumOrderDetailOrder,
                                 VATSumOrderDetailOrder, invoiceSumOrderDetailOrder, shipmentDateOrder, shipmentTimeOrder, closeDateOrder,
                                 noteOrder, objectClassName
 
