@@ -12,7 +12,8 @@ public class RemoteContextAspect {
             "(execution(* platform.interop.RemoteLogicsInterface.*(..))" +
                     " || execution(* platform.interop.form.RemoteFormInterface.*(..))" +
                     " || execution(* platform.interop.form.RemoteDialogInterface.*(..))" +
-                    " || execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)))";
+                    " || execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..))" +
+                    " || execution(* platform.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)))";
 
     private static final String remotePointCut =
             executions +
