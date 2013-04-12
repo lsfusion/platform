@@ -2380,11 +2380,23 @@ public abstract class LogicsModule {
         addProp(constraintAction.property);
     }
 
+    public <T extends PropertyInterface> void addEventAction(Event event, boolean descending, boolean ordersNotNull, Object... params) {
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
+
+        ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = readImplements(innerInterfaces, params);
+        ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders = BaseUtils.immutableCast(listImplements.subList(2, listImplements.size()).toOrderSet().toOrderMap(descending));
+        addEventAction(innerInterfaces.getSet(), (ActionPropertyMapImplement<?, PropertyInterface>) listImplements.get(0), (CalcPropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, false);
+    }
+
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ActionProperty<P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve) {
+        addEventAction(actionProperty.interfaces, actionProperty.getImplement(), whereImplement, orders, ordersNotNull, event, resolve);
+    }
+
+    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve) {
         if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET);
 
-        ActionProperty<? extends PropertyInterface> action = DerivedProperty.createForAction(actionProperty.interfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty.getImplement(), null, false, null).property;
+        ActionProperty<? extends PropertyInterface> action = DerivedProperty.createForAction(innerInterfaces, SetFact.<P>EMPTY(), whereImplement, orders, ordersNotNull, actionProperty, null, false, null).property;
         action.setStrongUsed(whereImplement.property); // добавить сильную связь
 //        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         addProp(action);

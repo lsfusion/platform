@@ -3,6 +3,12 @@ package platform.server.data;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import platform.base.Result;
+import platform.base.col.interfaces.immutable.ImMap;
+import platform.base.col.interfaces.immutable.ImOrderMap;
+import platform.base.col.interfaces.immutable.ImOrderSet;
+
+import java.sql.SQLException;
 
 import static platform.server.ServerLoggers.sqlLogger;
 
@@ -24,9 +30,19 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, select);
     }
 
-    private static long runningTotal = 0;
+    @Around("execution(* platform.server.data.SQLSession.insertBatchRecords(java.lang.String, platform.base.col.interfaces.immutable.ImOrderSet, platform.base.col.interfaces.immutable.ImMap)) && args(table, keys, rows)")
+    public Object executeInsertBatch(ProceedingJoinPoint thisJoinPoint, String table, ImOrderSet keys, ImMap rows) throws Throwable {
+        return executeMethodAndLogTime(thisJoinPoint, "INSERT BATCH INTO " + table + " ROWS " + rows.size());
+    }
+    @Around("execution(* platform.server.data.SQLSession.readSingleValues(platform.server.data.SessionTable, ..)) && args(table, ..)")
+    public Object executeReadSingleValues(ProceedingJoinPoint thisJoinPoint, SessionTable table) throws Throwable {
+        return executeMethodAndLogTime(thisJoinPoint, "READ SINGLE VALUES " + table.name);
+    }
 
-    private Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
+    private static long runningTotal = 0;
+    private static int breakPointTime = 60;
+
+    public Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
         boolean loggingEnabled = sqlLogger.isDebugEnabled();
 
         long startTime = 0;
@@ -37,8 +53,12 @@ public class SQLSessionLoggerAspect {
 
         if (loggingEnabled) {
             long runTime = System.currentTimeMillis() - startTime;
+            if(runTime > breakPointTime)
+                sqlLogger.debug("WARNING");
             runningTotal += runTime;
-            sqlLogger.debug(String.format("Executed query (time: %1$d ms., running total: %3$d): %2$s", runTime, queryString, runningTotal));
+            if(result instanceof ImOrderMap) // cheat, но чисто для логинга
+                queryString = "[rows " + ((ImOrderMap)result).size() + "] " + queryString;
+            sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d): %2$s", runTime, queryString, runningTotal));
         }
 
         return result;
