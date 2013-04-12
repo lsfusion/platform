@@ -144,8 +144,9 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 
 // Recursive property
 // Expression syntax:
-// RECURSION initPropertyExpression STEP stepPropertyExpression [CYCLES [IMPOSSIBLE]]
+// RECURSION initPropertyExpression STEP stepPropertyExpression [CYCLES (YES | NO | IMPOSSIBLE)]
 // Previous value syntax: $param
+// Default: CYCLES NO
 
 // IF THEN ELSE property
 // Expression syntax:
