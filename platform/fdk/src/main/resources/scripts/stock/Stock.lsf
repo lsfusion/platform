@@ -1715,7 +1715,7 @@ META defineDocumentSkuStockCustom(object, detail, skuProp, stockProp)
     quantitySku###object###stockProp 'Кол-во товара в документе' (sku, object, stock) = GROUP SUM quantity###detail(detail)
         BY skuProp###detail(detail), object###detail(detail), stockProp###detail(detail);
 
-    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSku(agreement###object(object), sku);
 
     priceSkuStock###object 'Цена' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stock, dateTime###object(object));
     ledgerPriceSkuStock###object 'Цена (базовая)' (sku, stock, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stock, dateTime###object(object));
@@ -1841,7 +1841,7 @@ END
 
 META defineDocumentSkuPriceListType(object, stockProp)
     @defineDocumentSku(object, sku, stockProp);
-    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSkuOver(agreement###object(object), sku);
+    priceListType###object###sku(object, sku) = (priceListType###object(object) AND sku IS Sku) OR priceListTypeAgreementSku(agreement###object(object), sku);
 
     priceSku###object 'Цена' (sku, object) = prevPricePriceListTypeSkuStockDateTime(priceListType###object###sku(object, sku), sku, stockProp###object(object), dateTime###object(object));
     ledgerPriceSku###object 'Цена (базовая)' (sku, object) = prevPricePriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###sku(object, sku)), sku, stockProp###object(object), dateTime###object(object));
@@ -2163,14 +2163,15 @@ END
 
 //-------------------------------- Расширение формы подбор товаров (заказ/инвойс)----------------------------//
 
-META defineDocumentContactSkuStock (object, form, contact, contactCaption, concrete, concrete2)
-    contact###entity###object = DATA SESSION LegalEntity (###object);
-    name###contact###entity###object contactCaption (object) = name(contact###entity###object(object));
-    relation###contact###object###sku (object, sku) =  (TRUE AND in###contact###Sku(contact###entity###object(object), sku)) OR (sku IS Sku AND NOT contact###entity###object(object));
+META defineDocumentSkuStockSupplier (object, form, concrete, concrete2)
+    filterSupplier###object = DATA SESSION LegalEntity (###object);
+    nameFilterSupplier###object 'Поставщик' (object) = name(filterSupplier###object(object));
+    filterSupplier###object###sku (object, sku) = prevInSupplierSku(filterSupplier###object(object), sku) OR
+                                                  (sku IS Sku AND NOT filterSupplier###object(object));
 
     EXTEND FORM form
-        PROPERTIES name###contact###entity###object(concrete) FORCE PANEL
-        FILTERS           relation###contact###object###sku(concrete, s)
+        PROPERTIES nameFilterSupplier###object(concrete) FORCE PANEL
+        FILTERS    filterSupplier###object###sku(concrete, s)
     ;
     EXTEND DESIGN form {
         row {

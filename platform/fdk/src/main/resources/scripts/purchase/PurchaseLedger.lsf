@@ -25,8 +25,11 @@ sumPurchaseLedger 'Сумма покупки' (ledger) = ABSTRACT NUMERIC[16,2] 
 supplierPurchaseLedger  (ledger) = ABSTRACT LegalEntity (PurchaseLedger) PERSISTENT;
 nameSupplierPurchaseLedger 'Поставщик' (ledger) = name(supplierPurchaseLedger (ledger));
 
-inSupplierSku 'Связь' (legalEntity, sku)= GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
+quantityPurchaseSupplierSku 'Кол-во закуплено' = GROUP SUM quantityPurchaseLedger(ledger) IF isPostedPurchaseLedger(ledger)
     BY supplierPurchaseLedger(ledger), skuPurchaseLedger(ledger) PERSISTENT;
+
+inSupplierSku 'Были поставки' (legalEntity, sku) = TRUE IF quantityPurchaseSupplierSku(legalEntity, sku) PERSISTENT;
+prevInSupplierSku 'Были поставки (пред.)' (legalEntity, sku) = PREV(inSupplierSku(legalEntity, sku));
 
 sumPurchaseTypeExchangePurchaseLedger 'Сумма покупки валюта' (typeExchange, purchaseLedger)= roundPriceCurrency((sumPurchaseLedger (purchaseLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockPurchaseLedger(purchaseLedger)), datePurchaseLedger(purchaseLedger))), currencyTypeExchange(typeExchange));
@@ -290,7 +293,8 @@ META defineSupplierDialogStockSku (form)
 
     form###supplier = DATA SESSION LegalEntity ();
     form###nameSupplier 'Поставщик' () = name(form###supplier()) PREFCHARWIDTH 30;
-    form###suppliersFilter (sku) =  (TRUE AND inSupplierSku(form###supplier(), sku)) OR (sku IS Sku AND NOT form###supplier());
+    form###suppliersFilter (sku) =  inSupplierSku(form###supplier(), sku) OR
+                                    (sku IS Sku AND NOT form###supplier());
 
     EXTEND FORM form
         PROPERTIES() form###nameSupplier

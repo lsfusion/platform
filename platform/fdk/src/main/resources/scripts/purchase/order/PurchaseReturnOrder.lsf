@@ -53,7 +53,6 @@ inAssortmentSkuStockUserOrder (sku, stock, userOrder) =
     companyLedgerPriceListTypeSkuStockDateTime(ledgerPriceListTypePriceListType(priceListTypeUserOrderSku(userOrder, sku)),
                                                sku, stock, dateTimeUserOrder(userOrder)) == supplierUserOrder(userOrder);
 
-inUserOrderSku (userOrder, sku)= inSupplierSku(supplierUserOrder(userOrder), sku);
 EXTEND FORM userOrder
 
     FILTERGROUP filter
@@ -61,7 +60,7 @@ EXTEND FORM userOrder
         FILTER 'В заказе ' 'F9' quantitySkuUserOrderCustomerStock(s, o, st)
 
    FILTERGROUP filter1
-        FILTER 'С поступлением' 'F8' inUserOrderSku(o, s)
+        FILTER 'С поступлением' 'F8' quantityPurchaseSupplierSku(supplierUserOrder(o), s)
         FILTER 'В ассортименте' 'F7' inAssortmentSkuStockUserOrder(s, st, o) DEFAULT
 ;
 

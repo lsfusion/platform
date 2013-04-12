@@ -746,7 +746,7 @@ TABLE calcPriceListTypeGroup (CalcPriceListType, Group);
 markupCalcPriceListTypeGroup 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Group);
 
 TABLE calcPriceListTypeSku (CalcPriceListType, Sku);
-dataMarkupCalcPriceListTypeSku 'Надбавка, %' = DATA NUMERIC[8,2] (CalcPriceListType, Sku);
+dataMarkupCalcPriceListTypeSku 'Надбавка, % (перегруженная)' = DATA NUMERIC[8,2] (CalcPriceListType, Sku);
 
 
 //roundConditionCalcPriceListType 'Условие округления' = DATA RoundCondition (CalcPriceListType);

@@ -121,13 +121,13 @@ FORM customer 'Покупатель'
 
     OBJECTS ag=Agreement
     PROPERTIES(ag, cu, co2) isDefaultAgreementSupplierCustomer
-    PROPERTIES(ag, cu) inAgreementCustomerOver
+    PROPERTIES(ag, cu) inAgreementCustomer
     PROPERTIES(ag) READONLY name, numberObject, seriesObject, dateAgreement, timeAgreement,
                             fromDateAgreement, fromTimeAgreement, toDateAgreement, toTimeAgreement,
                             nameCurrencyAgreement, namePriceListTypeAgreement, noteAgreement
     PROPERTIES createAgreementSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR, addAgreementsSupplierCustomer(co2, cu) TODRAW ag FORCE PANEL TOOLBAR
-    FILTERS inAgreementCustomerOver(ag, cu),
-            inAgreementSupplierOver(ag,co2)
+    FILTERS inAgreementCustomer(ag, cu),
+            inAgreementSupplier(ag,co2)
 
     EDIT Customer OBJECT cu
 ;

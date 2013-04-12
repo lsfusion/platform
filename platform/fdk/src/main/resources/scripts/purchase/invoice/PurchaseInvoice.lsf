@@ -106,18 +106,14 @@ showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice)
 
 //------------------------------ Расширение формы -----------------------------//
 
-// Фильтры
-inAssortmentSkuUserInvoice (sku, userInvoice) = companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(userInvoice, sku), sku, customerStockUserInvoice(userInvoice), dateTimeUserInvoice(userInvoice)) == supplierUserInvoice(userInvoice);
-inUserInvoiceSku (userInvoice, sku)= inSupplierSku(supplierUserInvoice(userInvoice), sku);
-
 EXTEND FORM userInvoice
 
     FILTERGROUP filter
         FILTER 'С остатком ' 'F10' prevCurrentBalanceSkuUserInvoice(s, i)
         FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
     FILTERGROUP filter2
-        FILTER 'С поступлением ' 'F8' inUserInvoiceSku(i, s)
-        FILTER 'В ассортименте ' 'F7' inAssortmentSkuUserInvoice(s, i)
+        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), s)
+        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(i, s), s, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
 ;
 
 // Резервы

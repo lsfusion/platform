@@ -550,7 +550,7 @@ calculatePromotionsReceipt 'Рассчитать акции' = ACTION (receipt) 
 
 // Форма POS-терминала
 
-prevCurrentBalanceSkuReceipt (sku, receipt) = [PREV(currentBalanceSkuStock(sku, stock))] (sku, departmentStoreReceipt(receipt));
+prevCurrentBalanceSkuReceipt (sku, receipt) = prevCurrentBalanceSkuStock(sku, departmentStoreReceipt(receipt));
 prevCurrentBalanceReceiptDetail 'Тек. остаток' (receiptDetail) = prevCurrentBalanceSkuReceipt(skuReceiptDetail(receiptDetail), receiptReceiptDetail(receiptDetail));
 
 closedCurrentZReportMessage '' = 'Не открыт Z-отчет';

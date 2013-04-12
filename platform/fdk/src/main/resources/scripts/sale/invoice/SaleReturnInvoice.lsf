@@ -15,7 +15,7 @@ NAMESPACE SaleReturn;
 @defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
-@defineDocumentContactSkuStock (userInvoice, userInvoice, supplier, 'Поставщик', i, s);
+@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, s);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

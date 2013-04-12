@@ -80,12 +80,12 @@ META defineBlanketOrder(sign)
 
     priceListTypeBlanketOrderStockSku (blanketOrder, stock, sku) =
         IF agreementBlanketOrderStock(blanketOrder, stock) THEN
-            priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrder, stock), sku)
+            priceListTypeAgreementSku(agreementBlanketOrderStock(blanketOrder, stock), sku)
         ELSE
             priceListTypeBlanketOrderStock(blanketOrder, stock) AND sku IS Sku;
     // записываем вид цены из соглашения
      priceListTypeBlanketOrderDetail (detail) <- IF agreementBlanketOrderStock (blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
-        THEN priceListTypeAgreementSkuOver(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)), skuBlanketOrderDetail(detail))
+        THEN priceListTypeAgreementSku(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)), skuBlanketOrderDetail(detail))
         ELSE priceListTypeBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))
      WHEN CHANGED(agreementBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail))) OR
           CHANGED(priceListTypeBlanketOrderStock(blanketOrderBlanketOrderDetail(detail), customerStockBlanketOrderDetail(detail)));
@@ -223,7 +223,7 @@ META defineBlanketOrder(sign)
 //-- SKU
     @defineDocumentSkuStockContractor(blanketOrder, sku, supplierStock, customerStock);
     @extendFormDocumentSkuStockContractorCustom(blanketOrder, blanketOrder, o, supplier, supplierStock, customerStock);
-    @defineDocumentContactSkuStock (blanketOrder, blanketOrder, supplier, 'Поставщик', o, sts);
+    @defineDocumentSkuStockSupplier (blanketOrder, blanketOrder, o, sts);
 
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = BlanketOrder
