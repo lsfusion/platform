@@ -10,7 +10,7 @@ NAMESPACE Sale;
 
 @defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (продажа)', 'ЗП', sale);
 
-@defineDocumentSkuStockSupplier (userOrder, userOrder, o, sts);
+@defineDocumentSkuStockSupplier (userOrder, userOrder, o, sts.box);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

@@ -12,7 +12,7 @@ NAMESPACE SaleReturn;
 
 @defineNumeratedObjectDefaultPrefix(UserOrder, 'Нумератор для заказов (продажа-возврат)', 'ВП', saleReturn);
 
-@defineDocumentSkuStockSupplier (userOrder, userOrder, o, sts);
+@defineDocumentSkuStockSupplier (userOrder, userOrder, o, sts.box);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 

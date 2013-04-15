@@ -9,10 +9,15 @@ NAMESPACE Sale;
 
 @defineInvoiceBatch(supplierStock);
 
+@defineDocumentBatchPriceListType(userInvoice, supplierStock);
+@extendFormDocumentBatch(userInvoice, userInvoice, i);
+@extendFormDocumentBatchAll(userInvoice, userInvoice, i);
+
 @defineInvoiceDestination(supplier, customer);
 @defineInvoiceStockDestination(supplierStock, customerStock);
 
-@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, s);
+@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, row1);
+@defineDocumentBatchStockSupplier(userInvoice, userInvoice, i);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
@@ -161,6 +166,18 @@ EXTEND FORM userInvoice
     FILTERGROUP filter2
         FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, s)
         FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(s, i)
+
+;
+inUserInvoiceBatch (userInvoice, batch)= inCustomerSku(customerUserInvoice(userInvoice), skuBatch(batch));
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter3
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceBatchUserInvoice(b,i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailBatchUserInvoice(b,i)
+
+    FILTERGROUP filter4
+        FILTER 'С продажей ' 'F8' inUserInvoiceBatch(i,b)
+        FILTER 'В ассортименте' 'F7' ledgerPriceBatchUserInvoice(b, i)
 
 ;
 

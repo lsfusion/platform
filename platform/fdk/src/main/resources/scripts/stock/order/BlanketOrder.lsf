@@ -223,7 +223,7 @@ META defineBlanketOrder(sign)
 //-- SKU
     @defineDocumentSkuStockContractor(blanketOrder, sku, supplierStock, customerStock);
     @extendFormDocumentSkuStockContractorCustom(blanketOrder, blanketOrder, o, supplier, supplierStock, customerStock);
-    @defineDocumentSkuStockSupplier (blanketOrder, blanketOrder, o, sts);
+    @defineDocumentSkuStockSupplier (blanketOrder, blanketOrder, o, sts.box);
 
     FORM blanketOrders 'Множественные заказы' TITLE 'Множественные заказы'###sign
         OBJECTS o = BlanketOrder

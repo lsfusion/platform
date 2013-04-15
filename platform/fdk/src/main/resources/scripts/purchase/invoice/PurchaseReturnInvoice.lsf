@@ -14,6 +14,10 @@ NAMESPACE PurchaseReturn;
 @defineInvoiceBatch(customerStock);
 @defineInvoiceReturn(Purchase, PurchaseReturn, customerStock);
 
+@defineDocumentBatchPriceListType(userInvoice, customerStock);
+@extendFormDocumentBatch(userInvoice, userInvoice, i);
+@extendFormDocumentBatchAll(userInvoice, userInvoice, i);
+
 @defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
@@ -78,6 +82,15 @@ EXTEND FORM userInvoice
     FILTERGROUP filter2
         FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), s)
         FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeSkuStockDateTime(priceListTypeUserInvoiceSku(i, s), s, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
+;
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter3
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceBatchUserInvoice(b, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailBatchUserInvoice(b, i)
+    FILTERGROUP filter4
+        FILTER 'С поступлением ' 'F8' quantityPurchaseSupplierSku(supplierUserInvoice(i), skuBatch(b))
+        FILTER 'В ассортименте ' 'F7' companyLedgerPriceListTypeBatchStockDateTime(priceListTypeUserInvoiceBatch(i, b), b, customerStockUserInvoice(i), dateTimeUserInvoice(i)) == supplierUserInvoice(i)
 ;
 
 // Резервы

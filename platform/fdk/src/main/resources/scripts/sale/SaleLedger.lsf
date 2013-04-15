@@ -27,8 +27,9 @@ costSumSaleLedger 'Себестоимость продажи' (ledger) = ABSTRAC
 customerSaleLedger (ledger) = ABSTRACT LegalEntity (SaleLedger) PERSISTENT INDEXED;
 nameCustomerSaleLedger 'Покупатель' (ledger) = name(customerSaleLedger(ledger));
 
-inCustomerSku 'Связь' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
+inCustomerSku 'Кол-во продано' (legalEntity, sku)= GROUP SUM quantitySaleLedger(ledger) IF isPostedSaleLedger(ledger)
     BY customerSaleLedger(ledger), skuSaleLedger(ledger) PERSISTENT;
+prevInCustomerSku 'Были продажи (пред.)' (legalEntity, sku) = PREV(inCustomerSku(legalEntity, sku));
 
 sumSoldTypeExchangeSaleLedger 'Сумма продажи валюта' (typeExchange, saleLedger)= roundPriceCurrency((sumSaleLedger (saleLedger)/
     rateTypeExchangeCurrencyDate(typeExchange, currencyStock(stockSaleLedger(saleLedger)), dateSaleLedger(saleLedger))), currencyTypeExchange(typeExchange));

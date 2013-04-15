@@ -142,11 +142,22 @@ DESIGN userAdjustment FROM DEFAULT{
 @defineDocumentSkuSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
 @extendFormDocumentSku(userAdjustment, userAdjustment, i);
 @extendFormDocumentSkuAll(userAdjustment, userAdjustment, i);
+
+@defineDocumentBatchSystemLedgerPriceListType(userAdjustment, accountPriceListType, stock);
+@extendFormDocumentBatch(userAdjustment, userAdjustment, i);
+@extendFormDocumentBatchAll(userAdjustment, userAdjustment, i);
+
 EXTEND FORM userAdjustment
 
     FILTERGROUP filter
         FILTER 'С остатком ' 'F10' currentBalanceSkuUserAdjustment(s, i) DEFAULT
         FILTER 'В документе ' 'F9' quantityUserAdjustmentDetailSkuUserAdjustment(s, i)
+;
+EXTEND FORM userAdjustment
+
+    FILTERGROUP filter1
+        FILTER 'С остатком ' 'F10' currentBalanceBatchUserAdjustment(b, i) DEFAULT
+        FILTER 'В документе ' 'F9' quantityUserAdjustmentDetailBatchUserAdjustment(b, i)
 ;
 
 addUserAdjustment 'Добавить' = ACTION ADDFORM UserAdjustment;

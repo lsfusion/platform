@@ -11,11 +11,16 @@ NAMESPACE SaleReturn;
 @defineOrderInvoice(' (продажа-возврат)', supplierStock);
 @defineInvoiceBatch(supplierStock);
 
+@defineDocumentBatchPriceListType(userInvoice, supplierStock);
+@extendFormDocumentBatch(userInvoice, userInvoice, i);
+@extendFormDocumentBatchAll(userInvoice, userInvoice, i);
+
 @defineInvoiceReturn(Sale, SaleReturn, supplierStock);
 @defineInvoiceDestination(customer, supplier);
 @defineInvoiceStockDestination(customerStock, supplierStock);
 
-@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, s);
+@defineDocumentSkuStockSupplier (userInvoice, userInvoice, i, row1);
+@defineDocumentBatchStockSupplier(userInvoice, userInvoice, i);
 
 //----------------------------------------------- Операции -----------------------------------------------------//
 
@@ -74,8 +79,20 @@ EXTEND FORM userInvoice
         FILTER 'В документе ' 'F9' quantityUserInvoiceDetailSkuUserInvoice(s, i)
 
     FILTERGROUP filter2
-        FILTER 'Товары с продажей ' 'F8' inUserInvoiceSku(i, s)
+        FILTER 'С продажей ' 'F8' inUserInvoiceSku(i, s)
         FILTER 'В ассортименте' 'F7' ledgerPriceSkuUserInvoice(s, i)
+;
+inUserInvoiceBatch (userInvoice, batch)= inCustomerSku(customerUserInvoice(userInvoice), skuBatch(batch));
+EXTEND FORM userInvoice
+
+    FILTERGROUP filter3
+        FILTER 'С остатком ' 'F10' prevCurrentBalanceBatchUserInvoice(b,i)
+        FILTER 'В документе ' 'F9' quantityUserInvoiceDetailBatchUserInvoice(b,i)
+
+    FILTERGROUP filter4
+        FILTER 'С продажей ' 'F8' inUserInvoiceBatch(i,b)
+        FILTER 'В ассортименте' 'F7' ledgerPriceBatchUserInvoice(b, i)
+
 ;
 
 // Резервы

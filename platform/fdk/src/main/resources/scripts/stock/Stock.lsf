@@ -301,6 +301,9 @@ isPostedBatch 'Проведен' (batch) = ABSTRACT BOOLEAN (Batch) PERSISTENT;
 skuBatch (batch) = ABSTRACT Sku (Batch) PERSISTENT INDEXED;
 nameSkuBatch 'Наименование' (batch) = nameSku(skuBatch(batch)) IN recognize;
 
+UOMBatch(batch)= UOMSku(skuBatch(batch));
+shortNameUOMBatch '' (batch)= shortNameUOMSku(skuBatch(batch));
+
 stockBatch (batch) = ABSTRACT Stock (Batch) PERSISTENT INDEXED ;
 nameStockBatch 'Склад' (batch) = name(stockBatch(batch)) IN recognize;
 
@@ -562,6 +565,8 @@ META defineSkuLedgerBalanceProperties(postfix, caption)
     signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch) = signedCostSkuLedgerBatch(ledger, batch) AND active##postfix##SkuLedger(ledger) PERSISTENT;
     currentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = GROUP SUM signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch)
                                                                                            BY batch, stockSkuLedger(ledger) PERSISTENT;
+    prevCurrentBalance##postfix##BatchStock 'Текущий остаток'###caption (batch, stock) = PREV(currentBalance##postfix##BatchStock(batch, stock));
+
     countLedger##postfix##BatchStock 'Кол-во движений'###caption (batch, stock) =
         GROUP SUM 1 AND signedQuantityActive##postfix##SkuLedgerBatch(ledger, batch) BY batch, stockSkuLedger(ledger) PERSISTENT;
 
@@ -1938,8 +1943,11 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
                 ADD skuTree.tree.box { title = 'Группы SKU'; }
                 NEW row {
                     childConstraints = TO THE BOTTOM;
-                    ADD s.box {
-                        s.grid { fillHorizontal = 2; }
+                    NEW row1{
+                        childConstraints = TO THE BOTTOM;
+                        ADD s.box {
+                            s.grid { fillHorizontal = 2; }
+                        }
                     }
                 }
             }
@@ -1970,6 +1978,132 @@ META extendFormDocumentSkuAll(object, form, concrete)
 
     EXTEND FORM form
         PROPERTIES AFTER prevCurrentBalanceSku###object(s,concrete) form###all(s,concrete) ON CHANGE change###form###all(s, concrete)
+    ;
+END
+
+//----------- Изменение кол-ва для строки при изменении кол-ва для товара (один склад) Партии ---------------//
+
+META defineDocumentBatchPriceListType(object, stockProp)
+    @defineDocumentBatch(object, batch, sku, stockProp);
+    priceListType###object###batch(object, batch) = (priceListType###object(object) AND batch IS Batch) OR priceListTypeAgreementSku(agreement###object(object), skuBatch(batch));
+
+    priceBatch###object 'Цена' (batch, object) = prevPricePriceListTypeBatchStockDateTime(priceListType###object###batch(object, batch), batch, stockProp###object(object), dateTime###object(object));
+    ledgerPriceBatch###object 'Цена (базовая)' (batch, object) = prevPricePriceListTypeBatchStockDateTime(ledgerPriceListTypePriceListType(priceListType###object###batch(object, batch)), batch, stockProp###object(object), dateTime###object(object));
+END
+META defineDocumentBatchSystemLedgerPriceListType(object, priceListTypeProp, stockProp)
+    @defineDocumentBatch(object, batch, sku, stockProp);
+    priceBatch###object 'Цена' (batch, object) = prevPricePriceListTypeBatchStockDateTime(SystemLedgerPriceListType.##priceListTypeProp, batch, stockProp###object(object), dateTime###object(object));
+END
+
+META defineDocumentBatch(object, detail, batchProp, skuProp, stockProp)
+    @defineDocumentBatchInner(object, detail, ###detail, batchProp, skuProp, stockProp);
+END
+
+META defineDocumentBatchInner(object, detail, detailClass, batchProp, skuProp, stockProp)
+    detail###batch###object###stockProp (batch, object, stock) =  GROUP MAX detail
+        BY batchProp###detail(detail), object###detail(detail), stockProp###detail(detail);
+    detail###batch###object (batch, object) = detail###batch###object###stockProp(batch, object, stockProp###object(object));
+
+    currentBalanceBatch###object 'Остаток' (batch, object) = currentBalanceBatchStock(batch, stockProp###object(object));
+    prevCurrentBalanceBatch###object 'Остаток' (batch, object) = prevCurrentBalanceBatchStock(batch, stockProp###object(object));
+
+    quantity###detail###batchProp###object 'Кол-во товара в документе' (batch, object) = GROUP SUM quantity###detail(detail)
+        BY batchProp###detail(detail), object###detail(detail);
+
+    backgroundQuantityBatch###object 'Цвет' (batch, object) = RGB(255,128,128) IF quantity###detail###batchProp###object(batch, object) AND NOT
+        (quantity###detail###batchProp###object(batch, object) <= currentBalanceBatch###object(batch, object));
+
+    overChangeQuantityValueBatch###object##Detail = ABSTRACT ACTION (detail);
+
+    changeQuantityValueBatch###object = ACTION (batch, object) {
+        IF detail###batch###object(batch, object) THEN {
+            IF requestedNumeric() THEN {
+                SET quantity###detail(detail) <- requestedNumeric() WHERE detail == detail###batch###object(batch, object);
+                EXEC overChangeQuantityValueBatch###object##Detail(detail###batch###object(batch, object));
+            } ELSE {
+                FOR object###detail(detail) == object AND stockProp###detail(detail) == stockProp###object(object) AND batchProp###detail(detail) == batch DO {    //AND NOT quantity###detail(detail)
+                    EXEC delete(detail);
+                }
+            }
+        } ELSE {
+            IF requestedNumeric() THEN {
+                ADDOBJ detailClass;
+                FOR d == addedObject() DO {
+                    SET object###detail(d) <- object;
+                    SET stockProp###detail (d) <- stockProp###object(object);
+                    SET skuProp###detail(d) <- skuBatch(batch);
+                    SET batchProp###detail(d) <- batch;
+                    SET quantity###detail (d) <- requestedNumeric();
+                    EXEC overChangeQuantityValueBatch###object##Detail(d);
+                }
+            }
+        }
+    }
+
+    changeQuantityBatch###object = ACTION (batch, object) {
+        REQUEST NUMERIC[14,3] INPUT;
+        EXEC changeQuantityValueBatch###object(batch, object);
+    }
+END
+
+META defineDocumentBatch(object, batchProp, skuProp, stockProp)
+    @defineDocumentBatch(object, object##Detail, batchProp, skuProp, stockProp);
+END
+
+META extendFormDocumentBatchCustom(object, form, concrete, batchProp, detail)
+
+    EXTEND FORM form
+
+//        TREE skuTree sk = SkuGroup PARENT parentSkuGroup
+//        PROPERTIES READONLY skuTreeName = name(sk)
+//        ORDER BY skuTreeName
+
+        OBJECTS b=Batch
+        PROPERTIES             READONLY dateTimeBatch(b), nameSkuBatch(b), idBarcodeSkuBatch(b), shortNameUOMBatch(b), descriptionBatch(b)
+        PROPERTIES(b, concrete) quantity###detail###batchProp###object ON CHANGE changeQuantityBatch###object(b, concrete) BACKGROUND backgroundQuantityBatch###object(b, concrete),
+                                prevCurrentBalanceBatch###object READONLY, priceBatch###object READONLY
+
+
+        FILTERS                isParentSkuGroupBatch(sk, b)
+
+        FILTERS nameSkuBatch(b)
+        ORDER BY nameSkuBatch, dateTimeBatch
+    ;
+
+    EXTEND DESIGN form {
+        row1 {
+            type = TABBED;
+
+            ADD b.box {
+                b.grid { fillHorizontal = 2; }
+            }
+        }
+        PROPERTY(prevCurrentBalanceBatch###object) { background = #FFEEEE; }
+    }
+END
+META extendFormDocumentBatch(object, form, concrete)
+    @extendFormDocumentBatchCustom(object, form, concrete, batch, object##Detail);
+END
+META extendFormDocumentBatchAll(object, form, concrete)
+
+    form###batchAll 'Весь остаток' = DATA SESSION BOOLEAN (Batch, ###object);
+
+    change###form###batchAll= ACTION (batch, object) {
+        REQUEST BOOLEAN INPUT;
+        IF requestedLogical() THEN {
+            SET requestedNumeric() <- NULL;
+            SET form###batchAll (batch,object) <- TRUE;
+            SET requestedNumeric() <- currentBalanceBatch###object(batch,object) WHERE currentBalanceBatch###object(batch,object);
+            EXEC changeQuantityValueBatch###object(batch, object);
+        } ELSE {
+            SET form###batchAll (batch,object) <- NULL;
+            SET requestedNumeric() <- NULL;
+            EXEC changeQuantityValueBatch###object(batch, object);
+        }
+    }
+
+    EXTEND FORM form
+        PROPERTIES AFTER prevCurrentBalanceBatch###object(b,concrete) form###batchAll(b,concrete) ON CHANGE change###form###batchAll(b, concrete)
     ;
 END
 
@@ -2182,10 +2316,22 @@ META defineDocumentSkuStockSupplier (object, form, concrete, concrete2)
     ;
     EXTEND DESIGN form {
         row {
-            ADD concrete.panel BEFORE concrete2.box;
+            ADD concrete.panel BEFORE concrete2;  //concrete2.box
         }
     }
 END
+
+META defineDocumentBatchStockSupplier (object, form, concrete)
+
+    filterSupplier###object###batch (object, batch) = prevInSupplierSku(filterSupplier###object(object), skuBatch(batch)) OR
+                                                  (batch IS Batch AND NOT filterSupplier###object(object));
+
+    EXTEND FORM form
+        FILTERS    filterSupplier###object###batch(concrete, b)
+    ;
+
+END
+
 // ---------------------------------- Диалоги --------------------------- //
 
 editStock 'Редактировать' = ABSTRACT ACTION (stock) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
