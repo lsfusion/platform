@@ -1,0 +1,12 @@
+MODULE PurchaseOrderTaxReverse;
+
+REQUIRE TaxReverse, PurchaseOrder;
+
+NAMESPACE Purchase;
+
+reversiveRateDetail (detail) = IF reverseRange(VATOrderDetail(detail))
+                                THEN valueRateRangeDate(VATOrderDetail(detail), dateOrderDetail(detail))*
+                                     100/(100-valueRateRangeDate(VATOrderDetail(detail), dateOrderDetail(detail)))
+                                ELSE valueVATOrderDetail(detail);
+
+overVATUserOrderDetail(detail) += reversiveRateDetail (detail) AND detail IS Purchase.UserOrderDetail;
