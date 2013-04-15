@@ -30,7 +30,8 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         divStyle.setPaddingBottom(0, Style.Unit.PX);
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
-        divStyle.setWhiteSpace(Style.WhiteSpace.NOWRAP);
+        // важно оставить множественные пробелы
+        divStyle.setWhiteSpace(Style.WhiteSpace.PRE);
 
         //нужно для эллипсиса, но подтормаживает рендеринг,
         //оставлено закомменченым просто для справки
