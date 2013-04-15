@@ -234,8 +234,8 @@ includeVATLedgerPriceListType (priceListType) += includeVATDataPriceListType(pri
 @defineDocumentHeaderCurrency(dataPriceListType);
 currencyPriceListType(dataPriceListType) += currencyDataPriceListType(dataPriceListType);
 
-CLASS ABSTRACT PriceList 'Прайс';
-CLASS ABSTRACT PriceListDetail 'Строка прайса';
+CLASS ABSTRACT PriceList 'Прайс' : Document;
+CLASS ABSTRACT PriceListDetail 'Строка прайса' : DocumentDetail;
 
 CLASS UserPriceList 'Прайс (польз.)' : PriceList, Historizable, NumeratedObject;
 CLASS UserPriceListDetail 'Строка прайса (польз.)' : PriceListDetail;
@@ -449,6 +449,30 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
     }
 }
 
+//Подбор документов
+
+numberDocument(priceList) += numberPriceList(priceList);
+seriesDocument(priceList) += seriesPriceList(priceList);
+dateDocument(priceList) += datePriceList(priceList);
+supplierDocument(priceList) += companyPriceList(priceList);
+
+indexDocumentDetail(priceList) += indexPriceListDetail(priceList);
+skuDocumentDetail(priceList) += skuPriceListDetail(priceList);
+
+documentDocumentDetail(detail) += priceListPriceListDetail(detail);
+
+fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList) {
+    FORM documents MODAL;
+    IF formResult() == FormResult.ok THEN {
+        LOCAL chosenDocument = Document();
+        SET chosenDocument() <- chosenObject('d');
+        FOR documentDocumentDetail(documentDetail) == chosenDocument() ADDOBJ i = UserPriceListDetail DO {
+            SET userPriceListUserPriceListDetail(i) <- userPriceList;
+            SET skuPriceListDetail(i) <- skuDocumentDetail(documentDetail);
+        }
+    }
+} TOOLBAR;
+
 FORM userPriceList 'Прайс'
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
     PROPERTIES READONLY skuTreeName = name(sk)
@@ -469,7 +493,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
                   shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
-    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addDetailInputBarcodeUserPriceListDetailUserPriceList
+    PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))
 
