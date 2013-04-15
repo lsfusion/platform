@@ -1304,13 +1304,13 @@ META defineDocumentDetailPriceVATOnChangeCustom (detail)
     changePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,2] INPUT;
         IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
-                SET price###detail (detail) <- requestedNumeric();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
-            } ELSE {
+//            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
+//                SET price###detail (detail) <- requestedNumeric();
+//                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
+//            } ELSE {
                 SET price###detail (detail) <- requestedNumeric();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcVAT###detail(detail))/100;
-            }
+//            }
         } ELSE {
             SET price###detail (detail) <- NULL;
             SET invoicePrice###detail (detail) <- NULL;
@@ -1328,13 +1328,13 @@ META defineDocumentDetailNumberVATOnChangeCustom (detail, stockProp)
         REQUEST OBJECT r
             FORM rangeDialog OBJECTS c = country###stockProp###detail(detail) MODAL SHOWDROP;
         IF formResult() == FormResult.ok THEN {
-            IF rangeTypeRange(chosenObject('r')) == RangeType.units THEN {
-                SET VAT###detail (detail) <- requestedObject();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
-            } ELSE {
+//            IF rangeTypeRange(chosenObject('r')) == RangeType.units THEN {
+//                SET VAT###detail (detail) <- requestedObject();
+//                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - calcVAT###detail(detail));
+//            } ELSE {
                 SET VAT###detail (detail) <- requestedObject();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + calcVAT###detail(detail))/100;
-            }
+//            }
         } ELSE IF formResult() == FormResult.drop THEN {
             SET VAT###detail(detail) <- NULL;
             SET invoicePrice###detail(detail) <- price###detail (detail);
@@ -1351,13 +1351,13 @@ META defineDocumentDetailValueVATOnChangeCustom (detail)
     changeValueVAT###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[10,5] INPUT;
         IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
-                SET valueVAT###detail (detail) <- requestedNumeric();
-                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - requestedNumeric());
-            } ELSE {
+//            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
+//                SET valueVAT###detail (detail) <- requestedNumeric();
+//                SET invoicePrice###detail (detail) <- price###detail (detail) * 100 /(100 - requestedNumeric());
+//            } ELSE {
                 SET valueVAT###detail (detail) <- requestedNumeric();
                 SET invoicePrice###detail (detail) <- price###detail (detail) * (100 + requestedNumeric())/100;
-            }
+//            }
         }
     }
 END
@@ -1371,13 +1371,13 @@ META defineDocumentDetailInvoicePriceVATOnChangeCustom (detail)
     changeInvoicePrice###detail (detail) = ACTION (detail) {
         REQUEST NUMERIC[14,2] INPUT;
         IF requestedNumeric() THEN {
-            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
-                SET invoicePrice###detail (detail) <- requestedNumeric();
-                SET price###detail (detail) <- invoicePrice###detail (detail) * (100-calcVAT###detail(detail))/100;
-            } ELSE {
+//            IF rangeTypeRange(VAT###detail(detail)) == RangeType.units THEN {
+//                SET invoicePrice###detail (detail) <- requestedNumeric();
+//                SET price###detail (detail) <- invoicePrice###detail (detail) * (100-calcVAT###detail(detail))/100;
+//            } ELSE {
                 SET invoicePrice###detail (detail) <- requestedNumeric();
                 SET price###detail (detail) <- invoicePrice###detail (detail) * 100/(100 + calcVAT###detail(detail));
-            }
+//            }
         } ELSE {
             SET price###detail (detail) <- NULL;
             SET invoicePrice###detail (detail) <- NULL;
