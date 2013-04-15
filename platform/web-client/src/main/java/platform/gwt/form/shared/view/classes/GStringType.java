@@ -51,7 +51,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare getDefaultCompare() {
-        return GCompare.START_WITH;
+        return GCompare.CONTAINS;
     }
 
     private int correctMinimumCharWidth(int charWidth) {

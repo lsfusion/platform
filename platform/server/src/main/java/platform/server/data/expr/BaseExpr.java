@@ -115,9 +115,11 @@ public abstract class BaseExpr extends Expr {
             case START_WITH:
                 return LikeWhere.create(expr, this, true);
             case LIKE:
-                return LikeWhere.create(expr, this, false);
+                return LikeWhere.create(expr, this, null);
             case INARRAY:
                 return InArrayWhere.create(expr, this);
+            case CONTAINS:
+                return LikeWhere.create(expr, this, false);
         }
         throw new RuntimeException("should not be");
     }

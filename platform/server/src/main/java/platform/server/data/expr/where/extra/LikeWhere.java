@@ -1,5 +1,6 @@
 package platform.server.data.expr.where.extra;
 
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableObject;
 import platform.interop.Compare;
 import platform.server.caches.hash.HashContext;
@@ -10,9 +11,9 @@ import platform.server.data.where.Where;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
 
-    private final boolean isStartWith;
+    private final Boolean isStartWith;
 
-    private LikeWhere(BaseExpr operator1, BaseExpr operator2, boolean startWithType) {
+    private LikeWhere(BaseExpr operator1, BaseExpr operator2, Boolean startWithType) {
         super(operator1, operator2);
         this.isStartWith = startWithType;
     }
@@ -22,19 +23,23 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     protected Compare getCompare() {
-        return isStartWith ? Compare.START_WITH : Compare.LIKE;
+        return isStartWith == null ?
+                Compare.LIKE :
+                isStartWith ?
+                        Compare.START_WITH :
+                        Compare.CONTAINS;
     }
 
     protected boolean isComplex() {
         return true;
     }
     public int hash(HashContext hashContext) {
-        return (operator1.hashOuter(hashContext) * 31 + operator2.hashOuter(hashContext)) * 31 + (isStartWith?1:0);
+        return (operator1.hashOuter(hashContext) * 31 + operator2.hashOuter(hashContext)) * 31 + (isStartWith == null ? 0 : (isStartWith ? 1 : 2));
     }
 
     @Override
     public boolean twins(TwinImmutableObject obj) {
-        return super.twins(obj) && isStartWith == ((LikeWhere)obj).isStartWith;
+        return super.twins(obj) && BaseUtils.nullEquals(isStartWith, ((LikeWhere)obj).isStartWith);
     }
 
     protected String getCompareSource(CompileSource compile) {
@@ -48,10 +53,10 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
 
         return operator1.getSource(compile)
                + likeString
-               + "(" + operator2.getSource(compile) + (isStartWith ? " || '%'" : "") + ")";
+               + "(" + (isStartWith != null && !isStartWith ? "'%' || " : "") + operator2.getSource(compile) + (isStartWith != null ? " || '%'" : "") + ")";
     }
 
-    public static Where create(BaseExpr operator1, BaseExpr operator2, boolean isStartWith) {
+    public static Where create(BaseExpr operator1, BaseExpr operator2, Boolean isStartWith) {
         return create(operator1, operator2, new LikeWhere(operator1, operator2, isStartWith));
     }
 }

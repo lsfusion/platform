@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
 
-import static platform.interop.Compare.START_WITH;
+import static platform.interop.Compare.CONTAINS;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -128,6 +128,6 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public Compare getDefaultCompare() {
-        return START_WITH;
+        return CONTAINS;
     }
 }

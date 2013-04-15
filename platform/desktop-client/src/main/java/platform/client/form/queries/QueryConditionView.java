@@ -19,6 +19,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
     public interface UIHandlers {
         void conditionChanged();
         void conditionRemoved(ClientPropertyFilter condition);
+        void applyQuery();
     }
 
     private final UIHandlers uiHandlers;
@@ -98,7 +99,12 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         valueViews = new HashMap<ClientFilterValue, FilterValueView>();
 
         ClientDataFilterValue dataValue = new ClientDataFilterValue();
-        DataFilterValueView dataView = new DataFilterValueView(this, dataValue, filter.property, logicsSupplier);
+        DataFilterValueView dataView = new DataFilterValueView(this, dataValue, filter.property, logicsSupplier) {
+            @Override
+            public void applyQuery() {
+                uiHandlers.applyQuery();
+            }
+        };
         valueViews.put(dataValue, dataView);
 
         ClientObjectFilterValue objectValue = new ClientObjectFilterValue();

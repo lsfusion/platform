@@ -7,11 +7,14 @@ import platform.client.form.PropertyRenderer;
 import platform.client.form.editor.TextPropertyEditor;
 import platform.client.form.renderer.TextPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.Compare;
 import platform.interop.Data;
 
 import java.awt.*;
 import java.text.Format;
 import java.text.ParseException;
+
+import static platform.interop.Compare.CONTAINS;
 
 public class ClientTextClass extends ClientDataClass implements ClientTypeClass {
 
@@ -80,5 +83,15 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.text");
+    }
+
+    @Override
+    public Compare[] getFilterCompares() {
+        return Compare.values();
+    }
+
+    @Override
+    public Compare getDefaultCompare() {
+        return CONTAINS;
     }
 }

@@ -2,6 +2,7 @@ package platform.gwt.form.shared.view.classes;
 
 import platform.gwt.form.shared.view.GFont;
 import platform.gwt.form.shared.view.GPropertyDraw;
+import platform.gwt.form.shared.view.filter.GCompare;
 import platform.gwt.form.shared.view.grid.EditManager;
 import platform.gwt.form.shared.view.grid.editor.GridCellEditor;
 import platform.gwt.form.shared.view.grid.editor.TextGridCellEditor;
@@ -53,5 +54,15 @@ public class GTextType extends GDataType {
     @Override
     public Object parseString(String s) throws ParseException {
         return s;
+    }
+
+    @Override
+    public GCompare[] getFilterCompares() {
+        return GCompare.values();
+    }
+
+    @Override
+    public GCompare getDefaultCompare() {
+        return GCompare.CONTAINS;
     }
 }

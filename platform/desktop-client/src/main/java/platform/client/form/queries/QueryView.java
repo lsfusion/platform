@@ -214,6 +214,11 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         controller.removeConditionPressed(condition);
     }
 
+    @Override
+    public void applyQuery() {
+        controller.applyPressed();
+    }
+
     protected abstract Icon getApplyIcon();
 
     protected abstract Icon getAddConditionIcon();

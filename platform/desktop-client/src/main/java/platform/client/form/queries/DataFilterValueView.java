@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-public class DataFilterValueView extends FilterValueView {
+public abstract class DataFilterValueView extends FilterValueView {
     private final ClientDataFilterValue filterValue;
     private final DataFilterValueViewTable valueTable;
 
@@ -69,4 +69,6 @@ public class DataFilterValueView extends FilterValueView {
     public ClientFormController getForm() {
         return logicsSupplier.getForm();
     }
+
+    public abstract void applyQuery();
 }

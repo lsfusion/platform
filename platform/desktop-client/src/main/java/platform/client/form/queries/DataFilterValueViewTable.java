@@ -15,6 +15,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
@@ -140,9 +142,20 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             propertyEditor = getProperty().getValueEditorComponent(valueFilterView.getForm(), value);
             propertyEditor.setTableEditor(this);
-            
+
             if (propertyEditor != null) {
-                return propertyEditor.getComponent(null, null, editEvent);
+                Component editorComponent = propertyEditor.getComponent(null, null, editEvent);
+
+                editorComponent.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
+                            valueFilterView.applyQuery();
+                        }
+                    }
+                });
+
+                return editorComponent;
             }
 
             return null;
