@@ -399,9 +399,9 @@ META defineDocumentLabelTransaction (document, skuProp, stockProp)
     backgroundPrintLabelTransaction###document 'Цвет' (document) = RGB(212,255,212) IF showPrintLabelTransaction###document(document);
 END
 
-META extendFormDocumentLabelTransaction(form, object, document)
+META extendFormDocumentLabelTransaction(form, object, document, afterProp)
     EXTEND FORM form
-        PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY,
+        PROPERTIES(object) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshot###document##LabelTransaction(object) BACKGROUND backgroundPrintLabelTransaction###document(object) READONLY AFTER afterProp,
                            create###document##LabelTransaction FORCE PANEL SHOWIF showPrintLabelTransaction###document(object)
     ;
 END

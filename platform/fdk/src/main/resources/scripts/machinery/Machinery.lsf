@@ -245,11 +245,15 @@ TABLE barcodeGroupMachinery (Barcode, GroupMachinery);
 lastOrderTransactionBarcodeGroupMachinery (barcode, groupMachinery) = GROUP MAX orderMachineryPriceTransactionBarcode(transaction, barcode)
                                                                             BY barcode, groupMachineryMachineryPriceTransaction(transaction);
 lastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = lastOrderTransactionBarcodeGroupMachinery(barcode, groupMachinery) [2] PERSISTENT;
+prevLastTransactionBarcodeGroupMachinery (barcode, groupMachinery) = PREV(lastTransactionBarcodeGroupMachinery (barcode, groupMachinery));
 
 transactionNameBarcodeGroupMachinery 'Текущее наименование в оборудовании' (barcode, groupMachinery)  =
     nameMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+prevTransactionNameBarcodeGroupMachinery(barcode, groupMachinery) = PREV(transactionNameBarcodeGroupMachinery(barcode, groupMachinery));
+
 transactionPriceBarcodeGroupMachinery 'Текущая цена в оборудовании' (barcode, groupMachinery)  =
     priceMachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode) PERSISTENT;
+prevTransactionPriceBarcodeGroupMachinery (barcode, groupMachinery) = PREV(transactionPriceBarcodeGroupMachinery(barcode, groupMachinery));
 
 //--------------------Сообщения об ошибках транзакций--------------------//
 CLASS MachineryPriceTransactionError 'Ошибка';
@@ -318,6 +322,7 @@ FORM machineryPriceTransaction 'Загрузка прайса в оборудо�
 FORM machineryPriceTransactions 'Загрузки прайса в оборудование'
     OBJECTS s = Stock FIXED PANEL
     PROPERTIES name(s) SELECTOR
+    FILTERS isCompanyStock(s)
 
     OBJECTS t = MachineryPriceTransaction
     PROPERTIES(t) READONLY snapshotMachineryPriceTransaction, nameGroupMachineryMachineryPriceTransaction, dateMachineryPriceTransaction, timeMachineryPriceTransaction,
@@ -394,12 +399,12 @@ snapshotGroupMachineryDepartmentStore 'Перезагрузить прайс' = 
             SET commentMachineryPriceTransaction(t) <- 'Перезагрузка прайса целиком';
             SET snapshotMachineryPriceTransaction(t) <- TRUE;
             SET inMachineryPriceTransactionMachinery(t, machinery) <- selectedMachinery(machinery);
-            SET inMachineryPriceTransactionBarcode(t, barcode) <- TRUE AND lastTransactionBarcodeGroupMachinery(barcode, groupMachinery())
-                                                                       AND inGroupMachinerySku(groupMachinery(), skuBarcode(barcode)) // важно, что товар должен быть активным на текущий момент
-                                                                       AND activeBarcode(barcode);
-            SET nameMachineryPriceTransactionBarcode(t, barcode) <- transactionNameBarcodeGroupMachinery(barcode, groupMachinery());
+            SET inMachineryPriceTransactionBarcode(t, barcode) <- activeBarcode(barcode) AND
+                                                                  prevLastTransactionBarcodeGroupMachinery(barcode, groupMachinery()) AND
+                                                                  inGroupMachinerySku(groupMachinery(), skuBarcode(barcode)); // важно, что товар должен быть активным на текущий момент
+            SET nameMachineryPriceTransactionBarcode(t, barcode) <- prevTransactionNameBarcodeGroupMachinery(barcode, groupMachinery());
             EXEC snapshotAttributeMachineryPriceTransactionGroupMachinery(t, groupMachinery());
-            SET priceMachineryPriceTransactionBarcode(t, barcode) <- transactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
+            SET priceMachineryPriceTransactionBarcode(t, barcode) <- prevTransactionPriceBarcodeGroupMachinery(barcode, groupMachinery());
         }
         EXEC apply();
     }
@@ -491,11 +496,11 @@ EXTEND FORM machineryPriceTransactions
 // -------------------- Создание новых атрибутов ----------------- //
 
 META defineMachineryPriceTransactionAttributeBase(object, caption, nameProp)
-    transaction###object##BarcodeGroupMachinery caption###' (тек.)' (barcode, groupMachinery)  =
-        object##MachineryPriceTransactionBarcode(lastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
+    prevTransaction###object##BarcodeGroupMachinery caption###' (тек.)' (barcode, groupMachinery)  =
+        object##MachineryPriceTransactionBarcode(prevLastTransactionBarcodeGroupMachinery(barcode, groupMachinery), barcode);
 
     snapshotAttributeMachineryPriceTransactionGroupMachinery(t, groupMachinery) +=
-        ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- transaction###object##BarcodeGroupMachinery(barcode, groupMachinery);
+        ACTION SET object##MachineryPriceTransactionBarcode(t, barcode) <- prevTransaction###object##BarcodeGroupMachinery(barcode, groupMachinery);
 
     EXTEND FORM machineryPriceTransaction PROPERTIES(t, b) nameProp###object##MachineryPriceTransactionBarcode;
     EXTEND FORM machineryPriceTransactions PROPERTIES(t, b) READONLY nameProp###object##MachineryPriceTransactionBarcode;
@@ -559,9 +564,9 @@ META defineDocumentMachineryPriceTransaction (document, skuProp, stockProp)
                                                                                 RGB(212,255,212) IF showCreateMachineryPriceTransaction###document(document);
 END
 
-META extendFormDocumentMachineryPriceTransaction(form, object, document)
+META extendFormDocumentMachineryPriceTransaction(form, object, document, afterProp)
     EXTEND FORM form
-        PROPERTIES(object) statusMachineryPriceTransactionDocument ON SHORTCUT createSnapshot###document##MachineryPriceTransaction(object) BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY,
+        PROPERTIES(object) statusMachineryPriceTransactionDocument ON SHORTCUT createSnapshot###document##MachineryPriceTransaction(object) BACKGROUND backgroundCreateMachineryPriceTransaction###document(object) READONLY AFTER afterProp,
                            create###document###MachineryPriceTransaction FORCE PANEL SHOWIF showCreateMachineryPriceTransaction###document(object)
     ;
 END

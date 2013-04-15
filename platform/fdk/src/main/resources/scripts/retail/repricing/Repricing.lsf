@@ -651,7 +651,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStoreRepricingDetail(ledger)
 Machinery.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
 
 @defineDocumentMachineryPriceTransaction(repricing, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(repricings, p, repricing);
+@extendFormDocumentMachineryPriceTransaction(repricings, p, repricing, skipChangeLedgerRepricing);
 
 @implementStockDocumentLedgerInc(Repricing, departmentStore);
 sumIncStockDocumentLedger (ledger) += diffRetailSumRepricingDetailRepricing(ledger);

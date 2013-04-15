@@ -265,8 +265,8 @@ DESIGN userPriceChanges FROM DEFAULT {
 
 @Label.implementPriceTransactionDocument(UserPriceChange);
 @defineDocumentLabelTransaction(userPriceChange, sku, departmentStore);
-@extendFormDocumentLabelTransaction(userPriceChanges, u, userPriceChange);
+@extendFormDocumentLabelTransaction(userPriceChanges, u, userPriceChange, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument);
 
 @Machinery.implementPriceTransactionDocument(UserPriceChange);
 @defineDocumentMachineryPriceTransaction(userPriceChange, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange);
+@extendFormDocumentMachineryPriceTransaction(userPriceChanges, u, userPriceChange, diffRetailSumPriceChangeDocumentDetailPriceChangeDocument);

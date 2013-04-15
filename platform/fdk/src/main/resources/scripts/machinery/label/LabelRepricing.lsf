@@ -10,4 +10,4 @@ NAMESPACE Repricing;
 Label.skipPriceTransactionDocument(document) += skipChangeLedgerRepricing(document);
 
 @defineDocumentLabelTransaction(repricing, sku, departmentStore);
-@extendFormDocumentLabelTransaction(repricings, p, repricing);
+@extendFormDocumentLabelTransaction(repricings, p, repricing, skipChangeLedgerRepricing);

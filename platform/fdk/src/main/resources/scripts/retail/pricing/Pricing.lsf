@@ -574,7 +574,7 @@ inPriceListLedgerStock (ledger, stock) += departmentStorePricingDetail(ledger) =
 
 @Machinery.implementPriceTransactionDocument(Pricing);
 @defineDocumentMachineryPriceTransaction(pricing, sku, departmentStore);
-@extendFormDocumentMachineryPriceTransaction(pricings, p, pricing);
+@extendFormDocumentMachineryPriceTransaction(pricings, p, pricing, skipChangeLedgerPricing);
 
 // ------------------------------------- Автоматическое создание расценки для документа -------------------- //
 
