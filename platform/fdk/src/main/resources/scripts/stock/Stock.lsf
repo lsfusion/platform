@@ -1700,6 +1700,7 @@ END
 
 editSku 'Редактировать' = ABSTRACT ACTION (sku) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
 addSku 'Добавить' = ABSTRACT ACTION () IMAGE 'add.png' EDITKEY 'INSERT' HIDE TOOLBAR;
+copySku 'Копировать' = ABSTRACT ACTION (sku)  TOOLBAR;
 
 // ---------------------------------------------- Остатки или партия или товар -------------------------------------------- //
 
@@ -1777,7 +1778,7 @@ META extendFormDocumentSkuStockCustom(object, form, concrete, legalEntityProp, s
 
         OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
-        PROPERTIES        addSku() TODRAW sts, editSku(s)
+        PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
 
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT stockProp###object(concrete) OR
@@ -1918,7 +1919,7 @@ META extendFormDocumentSkuCustom(object, form, concrete, skuProp, detail)
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete) quantity###detail###skuProp###object ON CHANGE changeQuantitySku###object(s, concrete) BACKGROUND backgroundQuantitySku###object(s, concrete),
                                 prevCurrentBalanceSku###object READONLY, priceSku###object READONLY
-        PROPERTIES              addSku() TODRAW s, editSku(s)
+        PROPERTIES              addSku() TODRAW s, editSku(s), copySku(s)
 
         FILTERS                isParentSkuGroupSku(sk, s)
 
@@ -2039,7 +2040,7 @@ META extendFormDocumentSkuStockContractorCustom(object, form, concrete, fromLega
 
         OBJECTS           sts=(st=Stock, s=Sku)
         PROPERTIES        READONLY nameSku(s), idBarcodeSku(s), shortNameUOMSku(s), stockName = name(st)
-        PROPERTIES        addSku() TODRAW sts, editSku(s)
+        PROPERTIES        addSku() TODRAW sts, editSku(s), copySku(s)
         FILTERS           isParentSkuGroupSku(sk, s),
                           (st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts) AND NOT fromStock###object(concrete) OR
                           st == fromStock###object(concrete) AND NOT sg AND NOT ts
@@ -2135,7 +2136,7 @@ META extendFormDocumentInSkuStock(object, form, concrete, contBox)
         PROPERTIES             inSku###object(s,concrete) ON CHANGE changeInSku###object(s, concrete), inputName = nameSku(s) READONLY
         PROPERTIES(s)          READONLY idBarcodeSku, shortNameUOMSku
         PROPERTIES(s, concrete)currentBalanceSku###object READONLY
-        PROPERTIES             addSku() TODRAW s, editSku(s)
+        PROPERTIES             addSku() TODRAW s, editSku(s), copySku(s)
 
         FILTERS                isParentGroupSku(gg, s) OR s IS Sku AND NOT gg
 
@@ -2238,7 +2239,7 @@ FORM skus 'Sku'
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
     PROPERTIES() addSku TODRAW s
-    PROPERTIES(s) editSku
+    PROPERTIES(s) editSku, copySku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
 
@@ -2276,7 +2277,7 @@ FORM filterSkus 'Sku'
     OBJECTS s = Sku
     PROPERTIES(s) READONLY nameSku, shortNameUOMSku
     PROPERTIES() addSku TODRAW s
-    PROPERTIES(s) editSku
+    PROPERTIES(s) editSku, copySku
     FILTERS isParentSkuGroupSku(sg, s)
     ORDER BY nameSku
 ;

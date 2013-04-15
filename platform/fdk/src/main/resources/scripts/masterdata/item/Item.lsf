@@ -703,6 +703,8 @@ copyItem 'Копировать' = ACTION (item) NEWSESSION {
 
 EXTEND FORM items PROPERTIES (i) copyItem;
 
+copySku(sku) += copyItem(sku);
+
 createItemBarcodeDate = ACTION (barcode, date) NEWSESSION {
 
     LOCAL copy = BOOLEAN();
