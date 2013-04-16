@@ -43,6 +43,34 @@ EXTEND FORM userInvoice
 ;
 
 EXTEND FORM invoices
-    PROPERTIES(i) chargeSumInvoice
-    PROPERTIES(d) chargePriceInvoiceDetail BEFORE numberVATInvoiceDetail(d)
+    PROPERTIES(i) READONLY chargeSumInvoice
+    PROPERTIES(d) READONLY chargePriceInvoiceDetail BEFORE numberVATInvoiceDetail(d)
+;
+
+//-------------Расчет транспорта по коэффициенту в шапке накладной-------------//
+
+chargePercentInvoice '% трансп. расходов' = ABSTRACT NUMERIC[6,3] (Invoice) IN documentSumGroup;
+
+chargePercentUserInvoice '% трансп. расходов' (userInvoice) = DATA NUMERIC[6,3] (UserInvoice) IN documentSumGroup FIXEDCHARWIDTH 6;
+chargePercentUserInvoiceDetail '% трансп. расходов' (userInvoiceDetail) = DATA NUMERIC[6,3] (UserInvoiceDetail) MINCHARWIDTH 6;
+
+calcChargePercentUserInvoiceDetail (userInvoiceDetail) =
+    chargePercentUserInvoiceDetail(userInvoiceDetail) * priceUserInvoiceDetail(userInvoiceDetail) / 100;
+
+deriveCalcChargePriceUserInvoice 'Рассчитать сумму услуг по товарам' = ACTION (userInvoice) {
+    SET chargePercentUserInvoiceDetail(detail) <- chargePercentUserInvoice(userInvoiceUserInvoiceDetail(detail)) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
+    SET chargePriceUserInvoiceDetail(detail) <- calcChargePercentUserInvoiceDetail (detail) WHERE userInvoiceUserInvoiceDetail(detail) == userInvoice;
+}
+
+WHEN SESSION FORMS userInvoice CHANGED(chargePercentUserInvoice(userInvoice)) DO EXEC deriveCalcChargePriceUserInvoice(userInvoice);
+
+chargePercentInvoice(invoice) += chargePercentUserInvoice(invoice) AND invoice IS UserInvoice;
+
+EXTEND FORM userInvoice
+    PROPERTIES(i) chargePercentUserInvoice
+    PROPERTIES(d) chargePercentUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail(d)
+;
+
+EXTEND FORM invoices
+    PROPERTIES(i) READONLY chargePercentInvoice
 ;
