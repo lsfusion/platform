@@ -17,7 +17,7 @@ FORM printWriteOffBy 'Акт списания' PRINT
                    nameEmployeeWriteOffCommitteeWriteOff, writeOffCommitteeWriteOff, UNPLegalEntityStockWriteOff
 
     OBJECTS d=WriteOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, nameBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
 

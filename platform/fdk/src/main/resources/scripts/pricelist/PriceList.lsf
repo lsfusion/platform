@@ -946,7 +946,7 @@ FORM priceListTypes 'Виды цен'
     ORDER BY skuTreeName2
 
     OBJECTS b = Batch
-    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, costBatch
+    PROPERTIES(b) READONLY isPostedBatch, dateBatch, timeBatch, nameSkuBatch, nameStockBatch, descriptionBatch, nameBatch, costBatch
     PROPERTIES(b, s, dt) READONLY balanceABatchStockDateTime
     ORDER BY dateBatch, timeBatch
     FILTERGROUP filters

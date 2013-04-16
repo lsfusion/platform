@@ -329,8 +329,8 @@ META defineShipmentBatch(stockProp)
         }
     }
 
-    EXTEND FORM userShipment PROPERTIES (d) descriptionBatchUserShipmentDetail ON CHANGE changeBatchUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
-    EXTEND FORM shipments PROPERTIES (d) READONLY descriptionBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
+    EXTEND FORM userShipment PROPERTIES (d) nameBatchUserShipmentDetail ON CHANGE changeBatchUserShipmentDetail(d) AFTER shortNameUOMSkuUserShipmentDetail;
+    EXTEND FORM shipments PROPERTIES (d) READONLY nameBatchShipmentDetail AFTER shortNameUOMSkuShipmentDetail;
 
 END
 

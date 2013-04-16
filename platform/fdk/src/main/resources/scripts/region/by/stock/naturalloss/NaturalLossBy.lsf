@@ -11,7 +11,7 @@ FORM printNaturalLossBy 'Ведомость естественной убыли'
                            quantityNaturalLossDetailNaturalLoss, sumNaturalLoss, noteNaturalLoss
     OBJECTS d=NaturalLossDetail
     PROPERTIES(d) READONLY indexNaturalLossDetail, idBarcodeSkuNaturalLossDetail, nameSkuNaturalLossDetail, shortNameUOMSkuNaturalLossDetail,
-                           descriptionBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
+                           nameBatchNaturalLossDetail, quantityLossNaturalLossDetail, nameSubNaturalLossGroupNaturalLossDetail,
                            codeNaturalLossDetail, nameSubNaturalDetailNaturalLossDetail, percentNaturalLossDetail, quantityNaturalLossDetail,
                            priceNaturalLossDetail, sumNaturalLossDetail
 

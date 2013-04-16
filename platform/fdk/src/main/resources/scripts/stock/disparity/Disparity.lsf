@@ -90,6 +90,10 @@ quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateBatchInputDisparityDetail(ledger);
 sumInSkuLedger (ledger) += sumInputDisparityDetail(ledger);
 
+nameBatch(batch) += ustring3SP(string2(dateDisparityDetail(disparityDetailInputDisparityDetail(batch)), ''),
+                               string2SP('/ ', seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(batch)))),
+                               string2SP('/ ', nameLegalEntityStockDisparityDetail(disparityDetailInputDisparityDetail(batch))));
+
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
 quantityDisparityDetailSkuDisparity 'Кол-во для закачки в оборудование (приход)' (sku, disparity) = GROUP SUM inputQuantityDisparityDetail(disparityDetail) BY inputSkuDisparityDetail(disparityDetail), disparityDisparityDetail(disparityDetail);
@@ -104,7 +108,7 @@ FORM disparity 'Изменение сортности'
 
     OBJECTS d = DisparityDetail
     PROPERTIES(d)   indexDisparityDetail,
-                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, nameBatchDisparityDetail,
                     costBatchDisparityDetail, expiryDateBatchDisparityDetail,
                     quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
@@ -180,7 +184,7 @@ FORM disparities 'Изменения сортности'
 
     OBJECTS d=DisparityDetail
     PROPERTIES(d)   READONLY indexDisparityDetail,
-                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, descriptionBatchDisparityDetail,
+                    idBarcodeSkuDisparityDetail, nameSkuDisparityDetail, shortNameUOMSkuDisparityDetail, nameBatchDisparityDetail,
                     costBatchDisparityDetail, expiryDateBatchDisparityDetail, quantityDisparityDetail, priceDisparityDetail, sumDisparityDetail,
                     inputIdBarcodeSkuDisparityDetail, inputNameSkuDisparityDetail, inputShortNameUOMSkuDisparityDetail,
                     inputQuantityDisparityDetail, inputPriceDisparityDetail, inputSumDisparityDetail

@@ -260,7 +260,7 @@ END
 
 META defineInvoiceShipmentBatch(dumb)
     EXTEND FORM shipmentInvoices
-        PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
+        PROPERTIES (d) READONLY nameBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail
     ;
 
     overFillInvoiceUserShipmentDetailInvoiceDetail (sd, id) += ACTION SET batchUserShipmentDetail (sd) <- batchInvoiceDetail(id);

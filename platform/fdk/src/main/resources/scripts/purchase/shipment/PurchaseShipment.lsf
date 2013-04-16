@@ -88,6 +88,10 @@ ledgerBatchShipmentDetail (detail) = shipmentBatchShipmentDetail(detail) OR batc
 batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(ledger)) OR batchInvoiceDetail(ledger);
 batchPriceListLedger(ledger) += ledgerBatchShipmentDetail(invoiceShipmentDetailInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger))) OR batchInvoiceDetail(invoiceDetailInvoicePriceListLedger(ledger));
 
+nameBatch(batch) += ustring3SP(string2(dateShipmentDetail(shipmentDetailShipmentBatch(batch)), ''),
+                               string2SP('/ ', seriesNumberShipment(shipmentShipmentDetail(shipmentDetailShipmentBatch(batch)))),
+                               string2SP('/ ', nameSupplierShipmentDetail(shipmentDetailShipmentBatch(batch))));
+
 // Проводим по регистру учетных цен
 @implementSystemLedgerPriceListTypeBatch(account, shipmentBatch, stock);
 

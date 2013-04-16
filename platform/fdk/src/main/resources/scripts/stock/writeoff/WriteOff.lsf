@@ -204,7 +204,7 @@ FORM userWriteOff 'Списание'
 
     OBJECTS d=UserWriteOffDetail
     PROPERTIES (d) indexUserWriteOffDetail, idBarcodeSkuUserWriteOffDetail, nameSkuUserWriteOffDetail, shortNameUOMSkuUserWriteOffDetail,
-                   descriptionBatchUserWriteOffDetail, quantityUserWriteOffDetail,
+                   nameBatchUserWriteOffDetail, quantityUserWriteOffDetail,
                    priceUserWriteOffDetail, sumUserWriteOffDetail, ADDOBJ, delete
 
     PROPERTIES(w) TODRAW d fillDocumentWriteOff, addDetailDialogSkuStockUserWriteOffDetailUserWriteOff, addDetailDialogTerminalUserWriteOffDetailUserWriteOff,
@@ -273,7 +273,7 @@ FORM writeOffs 'Списания'
     PROPERTIES (w) delete FORCE PANEL TOOLBAR  SHOWIF isUserWriteOff(w)
 
     OBJECTS d=WriteOffDetail
-    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, descriptionBatchWriteOffDetail,
+    PROPERTIES (d) READONLY indexWriteOffDetail, idBarcodeSkuWriteOffDetail, nameSkuWriteOffDetail, shortNameUOMSkuWriteOffDetail, nameBatchWriteOffDetail,
                    quantityWriteOffDetail, priceWriteOffDetail, sumWriteOffDetail
 
     FILTERS writeOffWriteOffDetail(d) == w

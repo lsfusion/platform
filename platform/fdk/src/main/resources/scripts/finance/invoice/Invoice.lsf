@@ -460,10 +460,10 @@ META defineInvoiceBatch(stockProp)
     };
 
     EXTEND FORM userInvoice
-        PROPERTIES (d) descriptionBatchUserInvoiceDetail ON CHANGE changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
+        PROPERTIES (d) nameBatchUserInvoiceDetail ON CHANGE changeBatchUserInvoiceDetail(d) AFTER shortNameUOMSkuUserInvoiceDetail
 //        HINTTABLE LIST batchUserInvoiceDetail
     ;
-    EXTEND FORM invoices PROPERTIES (d) READONLY descriptionBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
+    EXTEND FORM invoices PROPERTIES (d) READONLY nameBatchInvoiceDetail AFTER shortNameUOMSkuInvoiceDetail;
 END
 
 META defineInvoiceReturn(NS, NSR, stockProp)

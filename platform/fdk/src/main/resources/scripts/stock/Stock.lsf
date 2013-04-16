@@ -311,6 +311,7 @@ costBatch 'Себестоимость' (batch) = ABSTRACT NUMERIC[14,2] (Batch) 
 prevCostBatch 'Себестоимость' (batch) = PREV(costBatch(batch));
 
 descriptionBatch 'Описание' (batch) = ABSTRACT STRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
+nameBatch 'Название' (batch) = ABSTRACT STRING[200] (Batch) PERSISTENT IN recognize MINCHARWIDTH 30 PREFCHARWIDTH 60;
 
 expiryDateBatch 'Годен до' (batch) = ABSTRACT DATE (Batch) PERSISTENT INDEXED;
 prevExpiryDateBatch 'Годен до' (batch) = PREV(expiryDateBatch(batch));
@@ -803,7 +804,7 @@ META implementBatchCustom(object, skuProp, stockProp, costProp)
     stockBatch (batch) += stockProp###object(batch);
     descriptionBatch (batch) += description###object(batch);
     costBatch (batch) += costProp###object(batch);
-END
+END //-- (не забывать имплементить nameBatch)
 
 META implementBatch(object, skuProp, stockProp, costProp)
     EXTEND CLASS object : Batch;
@@ -1354,6 +1355,7 @@ END
 META defineDocumentDetailBatchCustomPrefixInner(detail, batchProp, batchClass, prefix)
     prefix###batch###detail = DATA batchClass (###detail);
     prefix###descriptionBatch###detail 'Партия' (detail) = descriptionBatch(prefix###batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    prefix###nameBatch###detail 'Партия' (detail) = nameBatch(prefix###batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 
     CONSTRAINT skuBatch(prefix###batch###detail(detail)) != prefix###sku###detail(detail) CHECKED BY prefix###batch###detail
         MESSAGE 'Товар партии строки должен соответствовать SKU строки';
@@ -1383,6 +1385,7 @@ END
 META defineDocumentAbstractDetailBatchCustomInner(detail, batchProp, batchClass)
     batch###detail = ABSTRACT batchClass (###detail) PERSISTENT;
     descriptionBatch###detail 'Партия' (detail) = descriptionBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
+    nameBatch###detail 'Партия' (detail) = nameBatch(batch###detail(detail)) MINCHARWIDTH 20 PREFCHARWIDTH 40;
 END
 META defineDocumentInterfaceDetailBatchCustom(detail, batchProp)
     @defineDocumentAbstractDetailBatchCustom(detail, batchProp);
@@ -2059,7 +2062,7 @@ META extendFormDocumentBatchCustom(object, form, concrete, batchProp, detail)
 //        ORDER BY skuTreeName
 
         OBJECTS b=Batch
-        PROPERTIES             READONLY dateTimeBatch(b), nameSkuBatch(b), idBarcodeSkuBatch(b), shortNameUOMBatch(b), descriptionBatch(b)
+        PROPERTIES             READONLY dateTimeBatch(b), nameSkuBatch(b), idBarcodeSkuBatch(b), shortNameUOMBatch(b), descriptionBatch(b), nameBatch(b)
         PROPERTIES(b, concrete) quantity###detail###batchProp###object ON CHANGE changeQuantityBatch###object(b, concrete) BACKGROUND backgroundQuantityBatch###object(b, concrete),
                                 prevCurrentBalanceBatch###object READONLY, priceBatch###object READONLY
 
@@ -2458,7 +2461,7 @@ FORM dialogBatch 'Партии'
     OBJECTS sk = Sku FIXED PANEL
 
     OBJECTS bt = Batch
-    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, quantityBatch, costBatch
+    PROPERTIES (bt) READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch
     PROPERTIES  READONLY balanceBBatchStockDateTime(bt, st, t)
     FILTERS skuBatch(bt) == sk
 
@@ -2486,7 +2489,7 @@ FORM costSkuLedger 'Себестоимость (операции)'
         FILTER 'Нерасписанные строки' 'F9' needToCostDataSkuLedger(bil)
 
     OBJECTS bt = Batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, currentBalanceBatch
     PROPERTIES(bil, bt)     costSkuLedgerBatch FORCE GRID
     FILTERS skuBatch(bt) == skuSkuLedger(bil)
     ORDER BY dateTimeBatch DESC
@@ -2523,7 +2526,7 @@ FORM costSkuBatchLedger 'Себестоимость (партии)'
     PROPERTIES(i) SELECTOR nameSku//, idBarcodeSku
 
     OBJECTS bt = Batch
-    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, currentBalanceBatch
+    PROPERTIES(bt) READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, currentBalanceBatch
 
     OBJECTS bil = SkuLedger
     PROPERTIES(bil) READONLY dateTimeSkuLedger, descriptionSkuLedger, nameStockSkuLedger,
@@ -2592,7 +2595,7 @@ FORM currentBalanceSkuStock 'Текущие остатки'
     ORDER BY dateTimeSkuLedger DESC
 
     OBJECTS bt=Batch
-    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch
     PROPERTIES(bt, st) READONLY  currentBalanceBatchStock
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
@@ -2672,7 +2675,7 @@ FORM balanceSkuStock 'Остатки на дату'
     ORDER BY dateTimeSkuLedger DESC
 
     OBJECTS bt=Batch
-    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, quantityBatch, costBatch
+    PROPERTIES(bt) READONLY      dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch
     PROPERTIES(bt, st, t) READONLY  balanceBBatchStockDateTime
     FILTERS isPostedBatch(bt) AND skuBatch(bt)==s
     ORDER BY dateTimeBatch DESC
@@ -2737,7 +2740,7 @@ FORM currentBalanceBatchStock 'Текущие остатки по партиям
     OBJECTS           stb=(st=Stock, bt=Batch)
     PROPERTIES        READONLY nameSkuBatch(bt), stockName = name(st)
     PROPERTIES        currentBalanceBatchStock(bt, st)
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
                       st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
 
@@ -2814,7 +2817,7 @@ FORM balanceBatchStock 'Остатки по партиям на дату'
     OBJECTS           stb=(st=Stock, bt=Batch)
     PROPERTIES        READONLY stockName = name(st), nameSkuBatch(bt)
     PROPERTIES        balanceBBatchStockDateTime(bt, st, t)
-    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, quantityBatch, costBatch, expiryDateBatch
+    PROPERTIES(bt)    READONLY dateTimeBatch, descriptionBatch, nameBatch, quantityBatch, costBatch, expiryDateBatch
     FILTERS           isParentSkuGroupBatch(sk, bt),
                       st == ts AND sg IS StockGroup OR isParentStockGroupStock(sg, st) AND NOT ts OR st IS Stock AND NOT sg AND NOT ts
     ORDER BY          dateTimeBatch
@@ -2874,7 +2877,7 @@ FORM batches 'Партии'
     ORDER BY skuTreeName
 
     OBJECTS           bt=Batch
-    PROPERTIES(bt)    READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameStockBatch, quantityBatch, costBatch, expiryDateBatch
+    PROPERTIES(bt)    READONLY nameSkuBatch, dateTimeBatch, descriptionBatch, nameBatch, nameStockBatch, quantityBatch, costBatch, expiryDateBatch
 
     FILTERS           isParentSkuGroupBatch(sk, bt)
     ORDER BY          dateTimeBatch

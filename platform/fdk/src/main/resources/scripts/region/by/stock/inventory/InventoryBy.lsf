@@ -29,7 +29,7 @@ FORM printListInventoryBy 'Опись' PRINT
 
     OBJECTS         b=Batch
     PROPERTIES (li,b) indexListInventoryBatch
-    PROPERTIES (b)    idBarcodeSkuBatch, nameSkuBatch, descriptionBatch
+    PROPERTIES (b)    idBarcodeSkuBatch, nameSkuBatch, descriptionBatch, nameBatch
     PROPERTIES (li,b) quantityPageInventoryDetailListInventoryBatch, pricePageInventoryDetailListInventoryBatch, sumPageInventoryDetailListInventoryBatch
     FILTERS           quantityPageInventoryDetailListInventoryBatch(li,b) > 0
     ORDER BY indexListInventoryBatch
@@ -103,7 +103,7 @@ FORM printCollationSheetBy 'Сличительная ведомость' PRINT
     ORDER BY nameSku
 
     OBJECTS         b=Batch
-    PROPERTIES(b)    SELECTOR nameSkuBatch, idBarcodeSkuBatch, descriptionBatch
+    PROPERTIES(b)    SELECTOR nameSkuBatch, idBarcodeSkuBatch, descriptionBatch, nameBatch
     PROPERTIES(cs,b) SELECTOR quantityPageInventoryDetailCollationSheetBatch, quantityBalanceCollationSheetBatch, quantityShortageCollationSheetBatch
     PROPERTIES(cs,b) SELECTOR pricePageInventoryDetailCollationSheetBatch, priceBalanceCollationSheetBatch
     PROPERTIES(cs,b) READONLY sumPageInventoryDetailCollationSheetBatch, sumBalanceCollationSheetBatch, sumShortageCollationSheetBatch

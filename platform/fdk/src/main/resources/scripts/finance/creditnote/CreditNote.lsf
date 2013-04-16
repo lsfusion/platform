@@ -362,8 +362,8 @@ END
 META defineCreditNoteBatch(dumb)
     @defineDocumentInterfaceDetailBatch(creditNote, batch);
 
-    EXTEND FORM userCreditNote PROPERTIES (d) descriptionBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
-    EXTEND FORM creditNotes PROPERTIES (d) READONLY descriptionBatchCreditNoteDetail AFTER shortNameUOMSkuCreditNoteDetail;
+    EXTEND FORM userCreditNote PROPERTIES (d) nameBatchUserCreditNoteDetail AFTER shortNameUOMSkuUserCreditNoteDetail;
+    EXTEND FORM creditNotes PROPERTIES (d) READONLY nameBatchCreditNoteDetail AFTER shortNameUOMSkuCreditNoteDetail;
 
 
     batchUserCreditNoteDetail (detail)  <- batchInvoiceDetail(invoiceDetailUserCreditNoteDetail(detail))

@@ -81,7 +81,7 @@ FORM userAdjustment 'Изменение остатков'
 
     OBJECTS d = UserAdjustmentDetail
     PROPERTIES (d) indexUserAdjustmentDetail, idBarcodeSkuUserAdjustmentDetail, nameSkuUserAdjustmentDetail, shortNameUOMSkuUserAdjustmentDetail,
-                   descriptionBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
+                   nameBatchUserAdjustmentDetail ON CHANGE batchDialogUserAdjustmentDetail(d), quantityUserAdjustmentDetail, priceUserAdjustmentDetail, sumUserAdjustmentDetail, ADDOBJ, delete
 
     PROPERTIES(i) TODRAW d fillDocumentAdjustment, addDetailDialogSkuStockUserAdjustmentDetailUserAdjustment,
                            addDetailInputBarcodeUserAdjustmentDetailUserAdjustment, deleteUserAdjustmentDetailUserAdjustment
@@ -191,7 +191,7 @@ FORM adjustments 'Изменения остатков'
 
     OBJECTS d = AdjustmentDetail
     PROPERTIES (d) READONLY indexAdjustmentDetail, idBarcodeSkuAdjustmentDetail, nameSkuAdjustmentDetail, shortNameUOMSkuAdjustmentDetail,
-                   descriptionBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
+                   nameBatchAdjustmentDetail, quantityAdjustmentDetail, priceAdjustmentDetail, sumAdjustmentDetail
 
     FILTERS adjustmentAdjustmentDetail(d) == i
 
