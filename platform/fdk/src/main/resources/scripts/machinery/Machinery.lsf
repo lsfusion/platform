@@ -426,10 +426,6 @@ priceBarcodeGroupMachinery 'Цена' (barcode, groupMachinery) = pricePriceList
 createMachineryPriceTransactionSnapshot = DATA SESSION BOOLEAN ();
 
 createMachineryPriceTransactionSku = DATA SESSION BOOLEAN (Sku);
-createMachineryPriceTransactionBarcodeGroupMachinery (barcode, groupMachinery) = createMachineryPriceTransactionSku(skuBarcode(barcode)) // если передали параметром
-                                                                                 AND inGroupMachinerySku(groupMachinery, skuBarcode(barcode)) // если на эту группу оборудования должна закачиваться
-                                                                                 AND activeBarcode(barcode) // если активный штрих-код
-                                                                                 AND priceBarcodeGroupMachinery(barcode, groupMachinery); // если есть цена розничная
 
 createMachineryPriceTransactionDocument = DATA SESSION PriceTransactionDocument();
 createMachineryPriceTransactionComment = DATA SESSION STRING[20] ();
@@ -445,11 +441,18 @@ createMachineryPriceTransaction 'Создать транзакцию' = ACTION (
 
     FOR stockGroupMachinery(groupMachinery) == stock DO {
         LOCAL inBarcode = BOOLEAN (Barcode);
-        IF createMachineryPriceTransactionSnapshot() THEN
-            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
-        ELSE
-            SET inBarcode(barcode) <- createMachineryPriceTransactionBarcodeGroupMachinery(barcode, groupMachinery)
-                                        AND NOT (priceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)); // если цена изменилась
+
+        SET inBarcode(barcode) <- createMachineryPriceTransactionSku(skuBarcode(barcode));
+
+        // делаем разными запросами, чтобы было проще PostgreSQL
+        SET inBarcode(barcode) <- activeBarcode(barcode) WHERE inBarcode(barcode); // если активный штрих-код
+
+        SET inBarcode(barcode) <- inGroupMachinerySku(groupMachinery, skuBarcode(barcode)) WHERE inBarcode(barcode); // если на эту группу оборудования должна закачиваться
+
+        SET inBarcode(barcode) <- TRUE AND priceBarcodeGroupMachinery(barcode, groupMachinery) WHERE inBarcode(barcode); // если есть цена
+
+        IF TRUE AND NOT createMachineryPriceTransactionSnapshot() THEN
+            SET inBarcode(barcode) <- TRUE AND NOT (priceBarcodeGroupMachinery(barcode, groupMachinery) == transactionPriceBarcodeGroupMachinery(barcode, groupMachinery)) WHERE inBarcode(barcode);
 
         LOCAL countBarcode = INTEGER();
         SET countBarcode() <- [GROUP SUM 1 IF inBarcode(barcode)]();

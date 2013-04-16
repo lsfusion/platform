@@ -41,7 +41,7 @@ inLabelTypeStore 'Включен' (labelType, store) =
 inDataLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) = DATA BOOLEAN (LabelType, DepartmentStore);
 inLabelTypeDepartmentStore 'Включен' (labelType, departmentStore) =
     UNION OVERRIDE inLabelTypeStore(labelType, storeDepartmentStore(departmentStore)),
-                   inDataLabelTypeDepartmentStore(labelType, departmentStore);
+                   inDataLabelTypeDepartmentStore(labelType, departmentStore) PERSISTENT;
 //-- Приоритет
 dataPriorityLabelType 'Приоритет' = DATA INTEGER (LabelType);
 priorityLabelType 'Приоритет' (labelType) =
@@ -82,10 +82,12 @@ inLabelTypeSku 'Вкл.' (labelType, sku) =
     UNION OVERRIDE inLabelTypeGroup(labelType, groupGroupTypeSku(groupTypeLabelType(labelType), sku)),
                    dataInLabelTypeSku(labelType, sku);
 
-listLabelTypeDepartmentStoreSku (labelType, departmentStore) = STRUCT(priorityLabelTypeDepartmentStore(labelType, departmentStore), labelType);
+listLabelTypeDepartmentStoreSku (labelType, departmentStore) = STRUCT(priorityLabelTypeDepartmentStore(labelType, departmentStore), labelType) PERSISTENT;
 
 
-concatSkuDepartmentStore (sku, departmentStore)= GROUP MAX listLabelTypeDepartmentStoreSku (labelType, departmentStore) IF inLabelTypeSku(labelType, sku) AND inLabelTypeDepartmentStore(labelType, departmentStore)
+concatSkuDepartmentStore (sku, departmentStore)= GROUP MAX listLabelTypeDepartmentStoreSku (labelType, departmentStore) IF
+                                                           inLabelTypeSku(labelType, sku) AND
+                                                           inLabelTypeDepartmentStore(labelType, departmentStore)
     BY sku, departmentStore;
 
 labelTypeSkuDepartmentStore (sku, departmentStore)= concatSkuDepartmentStore (sku, departmentStore)[2];
@@ -329,9 +331,11 @@ createLabelTransactionFillParams 'Заполнить параметры' = ACTIO
 createLabelTransaction 'Распечатать ценники' = ACTION (departmentStore) {
 
     LOCAL inBarcode = BOOLEAN (Barcode);
-    SET inBarcode(barcode) <- createLabelTransactionSku(skuBarcode(barcode)) // если передали параметром
-                                                         AND activeBarcode(barcode) // если активный штрих-код
-                                                         AND priceLabelBarcodeDepartmentStore(barcode, departmentStore);
+    SET inBarcode(barcode) <- createLabelTransactionSku(skuBarcode(barcode));
+
+    // разбивается на несколько выполнений, чтобы не тупил PostgreSQL со сложным запросом
+    SET inBarcode(barcode) <- activeBarcode(barcode) WHERE inBarcode(barcode); // если штрих-код является активным
+    SET inBarcode(barcode) <- TRUE IF priceLabelBarcodeDepartmentStore(barcode, departmentStore) WHERE inBarcode(barcode); // если по штрих-коду есть цена
 
     IF createLabelTransactionSnapshot() THEN {
         FOR ADDOBJ t = LabelTransaction DO {
