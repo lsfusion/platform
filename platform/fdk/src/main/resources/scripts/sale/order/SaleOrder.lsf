@@ -117,6 +117,14 @@ CONSTRAINT customerUserOrder(userOrder) AND NOT isCustomerLegalEntity(customerUs
 
 @defineDocumentPack(order, o);
 Order.packQuantityOrderDetail(detail) += packQuantityOrderDetail(detail);
+EXTEND DESIGN userOrder {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserOrder);
+        }
+    }
+}
 
 @defineDocumentPackSkuStock(userOrder, sku, supplierStock);
 @extendFormDocumentPackSkuStock(userOrder, userOrder, o, supplierStock);

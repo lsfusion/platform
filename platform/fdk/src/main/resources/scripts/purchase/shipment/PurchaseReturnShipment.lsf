@@ -37,6 +37,14 @@ CONSTRAINT customerUserShipment(userShipment) AND NOT isCompanyLegalEntity(custo
 
 @defineDocumentPack(shipment, s);
 Shipment.packQuantityShipmentDetail(detail) += packQuantityShipmentDetail(detail);
+EXTEND DESIGN userShipment {
+    headerExtraParams {
+        NEW headerPack {
+            title = 'Упаковка';
+            ADD PROPERTY(showPackUserShipment);
+        }
+    }
+}
 
 @defineOrderShipmentPack();
 @defineInvoiceShipmentPack();

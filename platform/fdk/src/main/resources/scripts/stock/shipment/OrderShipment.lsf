@@ -162,7 +162,9 @@ META defineOrderShipment(sign, stockProp)
         PROPERTIES(s) fillOrderUserShipment, ordersShipment READONLY
         PROPERTIES(d) descriptionOrderUserShipmentDetail BEFORE delete(d)
     ;
-    EXTEND DESIGN userShipment { headerRow12 { ADD s.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+    EXTEND DESIGN userShipment { headerCreateDetail { ADD s.orderGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+
+
     EXTEND FORM shipments
         PROPERTIES(s) READONLY ordersShipment
         PROPERTIES(d) READONLY descriptionOrderShipmentDetail

@@ -19,8 +19,8 @@ EXTEND FORM userShipment
     PROPERTIES(s) BACKGROUND backgroundPurchaseShipment(s) createPurchaseUserShipment
 ;
 EXTEND DESIGN userShipment {
-    headerRow1{
-        NEW headerRow13{
+    headerCreateDocuments{
+        NEW headerShipment{
             title = 'Поставка';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseUserShipment);
@@ -228,7 +228,7 @@ EXTEND FORM Purchase.userShipment
     PROPERTIES(s) fillShipmentUserShipment, saleShipmentsShipment READONLY
     PROPERTIES(d) descriptionIndexShipmentDetailUserShipmentDetail BEFORE delete(d)
 ;
-EXTEND DESIGN Purchase.userShipment { headerRow12{ ADD s.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+EXTEND DESIGN Purchase.userShipment { headerCreateDetail{ ADD s.shipmentGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 
 EXTEND FORM Purchase.shipments
 //    PROPERTIES(s) READONLY saleShipmentsShipment

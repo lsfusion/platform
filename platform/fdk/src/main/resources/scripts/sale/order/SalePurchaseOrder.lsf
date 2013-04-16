@@ -19,8 +19,8 @@ EXTEND FORM userOrder
     PROPERTIES(o) BACKGROUND backgroundPurchaseOrder(o) createPurchaseUserOrder
 ;
 EXTEND DESIGN userOrder {
-    headerRow1{
-        NEW headerRow13{
+    headerCreateDocuments{
+        NEW headerOrder{
             title = 'Заказ';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseUserOrder);

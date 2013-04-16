@@ -173,8 +173,8 @@ EXTEND FORM userShipment
                    writeOffPriceUserShipmentDetail,  writeOffSumUserShipmentDetail
 ;
 EXTEND DESIGN userShipment {
-    headerRow1 {
-        NEW headerRow01 AFTER headerRow11 {
+    headerCreateDocuments {
+        NEW headerWriteOff {
             title = 'Акт списания';
             childConstraints = TO THE RIGHTBOTTOM;
             ADD PROPERTY(createPurchaseWriteOffUserShipment);

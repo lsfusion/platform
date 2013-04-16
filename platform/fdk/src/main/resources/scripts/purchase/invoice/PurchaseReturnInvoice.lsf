@@ -68,7 +68,11 @@ overChangeQuantityValueSkuUserInvoiceDetail(detail) += ACTION (detail) {
         SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
     }
 }
-
+overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
+    IF packBarcodeSku(skuBatch(batchUserInvoiceDetail(detail))) THEN {
+        SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
+    }
+}
 showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
 

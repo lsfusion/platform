@@ -286,10 +286,14 @@ META defineOrderInvoice(sign, stockProp)
         PROPERTIES(d) invoiceQuantityUserOrderDetail AFTER quantityUserOrderDetail SHOWIF createInvoiceUserOrder(o) BACKGROUND backgroundInvoiceOrder(o)
     ;
     EXTEND DESIGN userOrder {
-        o.documentPrmGroup {
-            ADD PROPERTY(createInvoiceUserOrder);
-            ADD PROPERTY(numberContractSkuUserOrder);
-            ADD PROPERTY(isCommissionUserOrder);
+        headerCreateDocuments {
+            NEW headerInvoice {
+                childConstraints = TO THE RIGHTBOTTOM;
+                title = 'Накладная';
+                ADD PROPERTY(createInvoiceUserOrder);
+                ADD PROPERTY(numberContractSkuUserOrder);
+                ADD PROPERTY(isCommissionUserOrder);
+            }
         }
     }
 

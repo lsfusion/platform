@@ -129,7 +129,7 @@ META defineInvoiceShipment(sign, stockProp)
         PROPERTIES(s) fillInvoiceUserShipment, invoicesShipment READONLY
         PROPERTIES(d) descriptionIndexInvoiceDetailUserShipmentDetail BEFORE delete(d)
     ;
-    EXTEND DESIGN userShipment { headerRow12{ ADD s.invoiceGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
+    EXTEND DESIGN userShipment { headerCreateDetail{ ADD s.invoiceGroup {childConstraints = TO THE RIGHTBOTTOM;}}}
 
     EXTEND FORM shipments
         PROPERTIES(s) READONLY invoicesShipment

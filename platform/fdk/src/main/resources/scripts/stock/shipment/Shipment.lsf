@@ -185,12 +185,30 @@ META defineShipment(sign, stockProp)
                             ADD PROPERTY(nameCustomerStockUserShipment);
                         }
                     }
-                    ADD s.documentPrmGroup {
-                        childConstraints = TO THE RIGHTBOTTOM;
-                    }
-                    NEW headerRow12 {
-//                        title = 'Сооздать на основании';
-                        childConstraints = TO THE RIGHTBOTTOM;
+
+                    NEW headerTabbedPane {
+                        type = TABBED;
+                        NEW headerMainParams {
+                            title = 'Основные параметры';
+                            childConstraints = TO THE BOTTOM;
+                            ADD s.documentPrmGroup {
+                                childConstraints = TO THE RIGHTBOTTOM;
+                            }
+                        }
+                        NEW headerExtraParams {
+                            title = 'Дополнительные параметры';
+                            minimumSize = (400, -1);
+                            childConstraints = TO THE RIGHTBOTTOM;
+                        }
+                        NEW headerCreateDetail {
+                            title = 'Основание';
+                            childConstraints = TO THE RIGHTBOTTOM;
+                        }
+                        NEW headerCreateDocuments {
+                            title = 'Производные документы';
+                            minimumSize = (400, -1);
+                            childConstraints = TO THE RIGHTBOTTOM;
+                        }
                     }
                 }
 

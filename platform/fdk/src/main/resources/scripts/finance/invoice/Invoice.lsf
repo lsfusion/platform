@@ -309,7 +309,7 @@ META defineInvoice(sign, stockProp)
                             title = 'Производные документы';
                             minimumSize = (400, -1);
                         }
-                     }
+                    }
                 }
                 ADD i.documentSumGroup {
                     childConstraints = TO THE BOTTOM;
