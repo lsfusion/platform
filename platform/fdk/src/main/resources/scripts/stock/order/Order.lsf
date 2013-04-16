@@ -333,7 +333,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
                         }
                         NEW headerExtraParams {
                             title = 'Дополнительные параметры';
-                            minimumSize = (400, -1);
+                            minimumSize = (500, -1);
                             childConstraints = TO THE RIGHTBOTTOM;
                             NEW documentShipmentGroup {
                                 title = 'Исполнение';
@@ -358,7 +358,7 @@ META defineOrder(sign, legalEntityProp, stockProp)
                         }
                         NEW headerCreateDocuments {
                             title = 'Производные документы';
-                            minimumSize = (400, -1);
+                            minimumSize = (500, -1);
                             childConstraints = TO THE RIGHTBOTTOM;
                         }
                     }

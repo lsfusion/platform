@@ -197,7 +197,7 @@ META defineShipment(sign, stockProp)
                         }
                         NEW headerExtraParams {
                             title = 'Дополнительные параметры';
-                            minimumSize = (400, -1);
+                            minimumSize = (500, -1);
                             childConstraints = TO THE RIGHTBOTTOM;
                         }
                         NEW headerCreateDetail {
@@ -206,7 +206,7 @@ META defineShipment(sign, stockProp)
                         }
                         NEW headerCreateDocuments {
                             title = 'Производные документы';
-                            minimumSize = (400, -1);
+                            minimumSize = (500, -1);
                             childConstraints = TO THE RIGHTBOTTOM;
                         }
                     }
