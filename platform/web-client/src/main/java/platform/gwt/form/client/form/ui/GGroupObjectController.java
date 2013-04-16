@@ -1,6 +1,5 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -412,13 +411,8 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public boolean focusFirstWidget() {
-        if (grid != null && !grid.getTable().isEmpty()) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                    grid.getTable().setFocus(true);
-                }
-            });
+        if (grid != null && !grid.getTable().isEmpty() && GwtClientUtils.isVisible(grid.getTable())) {
+            grid.getTable().setFocus(true);
             return true;
         }
 

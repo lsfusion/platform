@@ -1,7 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.CellPanel;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.ui.ResizableLayoutPanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.*;
@@ -239,13 +239,12 @@ public class GTreeGroupController extends GAbstractGroupObjectController impleme
     }
 
     public boolean focusFirstWidget() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                tree.setFocus(true);
-            }
-        });
-        return true;
+        if (GwtClientUtils.isVisible(tree)) {
+            tree.setFocus(true);
+            return true;
+        }
+
+        return panel.focusFirstWidget();
     }
 
     @Override

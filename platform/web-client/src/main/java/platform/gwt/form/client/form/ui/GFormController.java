@@ -855,7 +855,7 @@ public class GFormController extends ResizableSimplePanel {
                 relayoutTables(formLayout.getMainKey());
                 initialResizeProcessed = true;
             }
-            focusFirstWidget();
+            scheduleFocusFirstWidget();
         }
     }
 
@@ -886,7 +886,16 @@ public class GFormController extends ResizableSimplePanel {
     }
 
     protected void onInitialFormChangesReceived() {
-        focusFirstWidget();
+        scheduleFocusFirstWidget();
+    }
+
+    public void scheduleFocusFirstWidget() {
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+                focusFirstWidget();
+            }
+        });
     }
 
     private void focusFirstWidget() {

@@ -1,6 +1,5 @@
 package platform.gwt.form.shared.view.panel;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
@@ -143,12 +142,7 @@ public class DataPanelRenderer implements PanelRenderer {
 
     @Override
     public void focus() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                valueTable.setFocus(true);
-            }
-        });
+        valueTable.setFocus(true);
     }
 
     @Override

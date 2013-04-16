@@ -1,6 +1,7 @@
 package platform.gwt.form.client.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.shared.GwtSharedUtils;
 import platform.gwt.form.shared.view.GPropertyDraw;
@@ -236,9 +237,11 @@ public class GPanelController {
             }
 
             PanelRenderer toFocus = columnKeys == null ? renderers.values().iterator().next() : renderers.get(columnKeys.get(0));
-            toFocus.focus();
-
-            return true;
+            if (GwtClientUtils.isVisible(toFocus.getComponent())) {
+                toFocus.focus();
+                return true;
+            }
+            return false;
         }
 
         public boolean isViewVisible() {

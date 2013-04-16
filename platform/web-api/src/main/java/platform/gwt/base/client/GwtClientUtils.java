@@ -192,4 +192,11 @@ public class GwtClientUtils {
     public static boolean isIEUserAgent() {
         return getUserAgent().contains("msie");
     }
+
+    public static boolean isVisible(Widget w) {
+        if (w.getParent() == null) {
+            return w.isVisible();
+        }
+        return w.isVisible() && isVisible(w.getParent());
+    }
 }
