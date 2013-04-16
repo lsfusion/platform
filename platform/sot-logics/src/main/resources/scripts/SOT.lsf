@@ -10,6 +10,8 @@ REQUIRE System,
         Shipment,
         Stock,
         Warehouse,
+        PriceListWarehouse,
+        PriceListStore,
         MasterData;
 
 CLASS SotUOM 'Единица измерений SOT' : Externalizable;
@@ -58,6 +60,73 @@ FORM sotUOMs 'Единицы измерений SOT'
 
 EXTEND FORM itemGroups
     PROPERTIES (g) READONLY sidExternalizable BEFORE delete(g)
+;
+
+changeClassStock 'Сделать магазином' = ACTION (warehouse) NEWSESSION AUTOAPPLY {
+
+    LOCAL n = STRING[110]();
+    LOCAL a = STRING[100]();
+    LOCAL le = LegalEntity();
+    LOCAL la = NUMERIC[10,5]();
+    LOCAL lo = NUMERIC[10,5]();
+    LOCAL p = PriceStockGroup();
+    LOCAL i = INTEGER();
+    LOCAL w = WriteOffCommittee();
+    LOCAL e = Employee();
+    LOCAL ee = Employee();
+    LOCAL eee = Employee();
+    LOCAL b = BOOLEAN();
+    LOCAL r = BOOLEAN (Employee);
+
+    SET n() <- name(warehouse);
+    SET a() <- addressWarehouse(warehouse);
+    SET le() <- legalEntityWarehouse(warehouse);
+    SET la() <- latitudeWarehouse(warehouse);
+    SET lo() <- longitudeWarehouse(warehouse);
+    SET p() <- priceStockGroupWarehouse(warehouse);
+    SET i() <- quantityDaysCloseWarehouse(warehouse);
+    SET w() <- writeOffCommitteeStock(warehouse);
+    SET e() <- MRPStock(warehouse);
+    SET ee() <- accountantStock(warehouse);
+    SET eee() <- auditorStock(warehouse);
+    SET b() <- explicitBatchLedgerWarehouse(warehouse);
+
+    FOR inEmployeeDivisionEmployee(warehouse, employee) DO {
+        SET r(employee) <- inEmployeeDivisionEmployee(warehouse, employee);
+    }
+
+    CHANGECLASS warehouse TO DepartmentStore;
+
+    FOR ADDOBJ s = Store DO{
+        SET name(s) <- n();
+        SET addressStore(s) <- a();
+        SET legalEntityStore(s) <- le();
+        SET latitudeStore(s) <- la();
+        SET longitudeStore(s) <- lo();
+        SET priceStockGroupStore(s) <- p();
+
+        SET name(warehouse) <- n();
+        SET storeDepartmentStore(warehouse) <- s;
+        SET quantityDaysCloseDepartmentStore(warehouse) <- i();
+        SET writeOffCommitteeStock(warehouse) <- w();
+        SET MRPStock(warehouse) <- e();
+        SET accountantStock(warehouse) <- ee();
+        SET auditorStock(warehouse) <- eee();
+        SET explicitBatchLedgerDepartmentStore(warehouse) <- b();
+        FOR r(employee) DO {
+            SET inEmployeeDivisionEmployee(warehouse, employee) <- r(employee);
+        }
+    }
+};
+
+changeClassForStock 'Сделать магазинами' = ACTION () {
+    FOR mag2Stock(stock) AND stock IS Warehouse DO {
+        EXEC changeClassStock(stock);
+    }
+}
+
+EXTEND FORM migrationData
+    PROPERTIES() changeClassForStock
 ;
 
 NAVIGATOR {
