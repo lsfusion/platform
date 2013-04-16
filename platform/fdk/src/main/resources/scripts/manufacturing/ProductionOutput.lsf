@@ -194,9 +194,9 @@ quantityBatch (ledger) += quantityOutputDetail(ledger);
 expiryDateBatch (ledger) += expiryDateOutputDetail(ledger);
 sumInSkuLedger (ledger) += sumOutputDetail(ledger);
 
-nameBatch(batch) += ustring3SP(string2(dateOutputDetail(batch), ''),
-                               string2SP('/ ', seriesNumberOutputDetail(batch)),
-                               string2SP('/ ', nameLegalEntityStockOutputDetail(batch)));
+nameBatch(batch) += ustring3(toString10(dateOutputDetail(batch)),
+                             string2('/ ', seriesNumberOutputDetail(batch)),
+                             string2('/ ', nameLegalEntityStockOutputDetail(batch)));
 
 // Товарный отчет
 @implementStockDocumentLedgerInc(Output, stock);

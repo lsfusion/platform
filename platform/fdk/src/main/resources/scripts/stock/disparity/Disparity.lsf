@@ -90,9 +90,9 @@ quantityBatch (ledger) += quantityInputDisparityDetail(ledger);
 expiryDateBatch (ledger) += expiryDateBatchInputDisparityDetail(ledger);
 sumInSkuLedger (ledger) += sumInputDisparityDetail(ledger);
 
-nameBatch(batch) += ustring3SP(string2(dateDisparityDetail(disparityDetailInputDisparityDetail(batch)), ''),
-                               string2SP('/ ', seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(batch)))),
-                               string2SP('/ ', nameLegalEntityStockDisparityDetail(disparityDetailInputDisparityDetail(batch))));
+nameBatch(batch) += ustring3(toString10(dateDisparityDetail(disparityDetailInputDisparityDetail(batch))),
+                             string2('/ ',seriesNumberObject(disparityDisparityDetail(disparityDetailInputDisparityDetail(batch)))),
+                             string2('/ ',nameLegalEntityStockDisparityDetail(disparityDetailInputDisparityDetail(batch))));
 
 //------------------------------------------- Пересорт товара----------------------------------------------------//
 
