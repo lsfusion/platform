@@ -50,7 +50,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         updateElement(cellElement, value);
     }
 
-    private void updateElement(DivElement div, Object value) {
+    protected void updateElement(DivElement div, Object value) {
         String text = value == null ? null : renderToString((T) value);
 
         if (text == null || text.trim().isEmpty()) {

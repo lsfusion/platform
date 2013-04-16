@@ -81,6 +81,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             // Add the inner div.
             DivElement div = Document.get().createDivElement();
+            div.getStyle().setHeight(cellHeight, Style.Unit.PX);
 
             // Render the cell into the div.
             renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);

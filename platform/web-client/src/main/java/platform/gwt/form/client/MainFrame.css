@@ -44,6 +44,7 @@ textarea {
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
     padding: 2px;
+    border-top: 1px solid white;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
