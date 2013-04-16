@@ -92,6 +92,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LCP divide;
     public LCP sumDate;
     public LCP sumDateTimeDay;
+    public LCP subtractDateTimeSeconds;
     public LCP subtractDate;
     public LCP dateTimeToDateTime;
     public LCP toDateTime;
@@ -343,6 +344,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subtractDate = addSFProp("subtractDate", "((prm1)-(prm2))", DateClass.instance, 2);
 
         sumDateTimeDay = addSFProp("sumDateTimeDay", "((prm1)+(prm2)*CAST('1 days' AS INTERVAL))", DateTimeClass.instance, 2);
+
+        subtractDateTimeSeconds = addSFProp("subtractDateTimeSeconds", "((prm1)-(prm2)*CAST('1 seconds' AS INTERVAL))", DateTimeClass.instance, 2);
 
         // Константы
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);

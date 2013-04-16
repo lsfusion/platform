@@ -305,7 +305,7 @@ inShowPriceListPriceListType (priceList, priceListType) = inPriceListDataPriceLi
 
 priceListTypesPriceList 'Цены' (priceList) = GROUP CONCAT name(priceListType) IF inPriceListDataPriceListType(priceList, priceListType) , ', '
                                                BY priceList
-                                               ORDER priceListType MINCHARWIDTH 50 PERSISTENT;
+                                               ORDER priceListType MINCHARWIDTH 10 PREFCHARWIDTH 20 PERSISTENT;
 
 inPriceListDetailPriceListType (detail, dataPriceListType) = inPriceListDataPriceListType(priceListPriceListDetail(detail), dataPriceListType) PERSISTENT;
 
@@ -347,13 +347,13 @@ inPriceListStockOver 'Отм' (priceList, stock) =
 
 stocksPriceList 'Склады' (priceList) = GROUP CONCAT name(stock) IF inPriceListStockOver(priceList, stock) , ', '
                                        BY priceList
-                                       ORDER stock MINCHARWIDTH 100 PERSISTENT;
+                                       ORDER stock MINCHARWIDTH 20 PREFCHARWIDTH 40 PERSISTENT;
 
 currentPricePriceListDetailDataPriceListTypeStock 'Действующая цена' (priceListDetail, dataPriceListType, stock) =
-    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, fromDateTimePriceListDetail(priceListDetail));
+    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, skuPriceListDetail(priceListDetail), stock, subtractDateTimeSeconds(fromDateTimePriceListDetail(priceListDetail), 1));
 
 currentPriceSkuPriceListDataPriceListTypeStock 'Действующая цена' (sku, priceList, dataPriceListType, stock) =
-    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, fromDateTimePriceList(priceList));
+    prevPricePriceListTypeSkuStockDateTime(dataPriceListType, sku, stock, subtractDateTimeSeconds(fromDateTimePriceList(priceList), 1));
 
 markUpPricePriceListDetailDataPriceListTypeStock 'Изменение, %' (priceListDetail, dataPriceListType, stock) =
     pricePriceListDetailDataPriceListType(priceListDetail, dataPriceListType) * 100.0 /
@@ -1014,8 +1014,9 @@ addUserPriceListLegalEntity 'Добавить' = ACTION (legalEntity) {
 EXTEND FORM legalEntity
 
     OBJECTS p = UserPriceList
-    PROPERTIES(p) READONLY numberObject, seriesObject, fromDateTimeUserPriceList, toDateTimeUserPriceList,
-                           nameCurrencyUserPriceList, nameCompanyUserPriceList, priceListTypesPriceList,
+    PROPERTIES(p) READONLY isPostedUserPriceList, numberObject, seriesObject, dateUserPriceList, timeUserPriceList,
+                           fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
+                           nameCurrencyUserPriceList, priceListTypesPriceList,
                            stocksPriceList, noteUserPriceList, objectClassName
     PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL
     PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
