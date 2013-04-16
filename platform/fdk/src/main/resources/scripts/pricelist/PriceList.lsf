@@ -655,6 +655,32 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
     }
 }
 
+renewPriceList 'Обновить' = ACTION (priceList) {
+
+    FOR ADDOBJ u = UserPriceList DO {
+        SET currencyUserPriceList(u) <- currencyUserPriceList(priceList);
+        SET companyUserPriceList(u) <- companyUserPriceList(priceList);
+        SET inUserPriceListStock(u, stock) <- inUserPriceListStock(priceList, stock);
+        SET inUserPriceListStockGroup(u, stockGroup) <- inUserPriceListStockGroup(priceList, stockGroup);
+        SET inUserPriceList(u) <- inUserPriceList(priceList);
+        SET inPriceListDataPriceListType(u, priceListType) <- inPriceListDataPriceListType(priceList, priceListType);
+        FOR userPriceListUserPriceListDetail(detail) == priceList DO {
+            FOR ADDOBJ d = UserPriceListDetail DO {
+                SET userPriceListUserPriceListDetail(d) <- u;
+                SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
+            }
+        }
+        FORM userPriceList OBJECTS p = u DOCKEDMODAL;
+        IF formResult() == FormResult.ok THEN {
+            SET toDateUserPriceList(priceList) <- fromDateUserPriceList(u);
+            SET toTimeUserPriceList(priceList) <- fromTimeUserPriceList(u);
+            EXEC apply();
+        } ELSE {
+            EXEC delete(u);
+        }
+    }
+}
+
 FORM priceLists 'Прайсы'
 
     OBJECTS p = PriceList
@@ -664,7 +690,7 @@ FORM priceLists 'Прайсы'
                            notePriceList, objectClassName
 
     PROPERTIES ()  addUserPriceList TODRAW p
-    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR
+    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR, renewPriceList FORCE PANEL TOOLBAR
     PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
 
     OBJECTS t = DataPriceListType
