@@ -106,13 +106,13 @@ setValueNumeratedObject 'Сгенерировать номер' = ACTION (numera
     SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
     SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
     EXEC incrementValueNumerator(numeratorObject(numeratedObject));
-} SHORTCUT numberObject;
+}
 
 setValueSessionNumeratedObject 'Сгенерировать номер' = ACTION (numeratedObject) {
     SET numberObject(numeratedObject) <- curStringValueNumerator(numeratorObject(numeratedObject));
     SET seriesObject(numeratedObject) <- seriesNumerator(numeratorObject(numeratedObject));
     EXEC incrementValueSessionNumerator(numeratorObject(numeratedObject));
-} SHORTCUT numberObject;
+}
 
 WHEN CHANGED(numeratorObject(numeratedObject)) AND
      NOT CHANGED(numberObject(numeratedObject)) AND
