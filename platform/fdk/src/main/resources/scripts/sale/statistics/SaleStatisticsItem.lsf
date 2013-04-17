@@ -4,18 +4,23 @@ REQUIRE SaleStatistics, Item;
 
 NAMESPACE Sale;
 
-statisticGroupCountryItem 'Статистическая группа' = DATA StatisticGroup (Country, Item);
-nameStatisticGroupCountryItem 'Статистическая группа' = name(statisticGroupCountryItem(country, item));
+statisticGroupTypeItem 'Статистическая группа' = DATA StatisticGroup (StatisticGroupType, Item);
+nameStatisticGroupTypeItem 'Статистическая группа' = name(statisticGroupTypeItem(type, item));
 
-CONSTRAINT countryStatisticGroup(statisticGroupCountryItem(country, item)) != country
-    CHECKED BY nameStatisticGroupCountryItem MESSAGE 'Страна статистической группы не совпадает со страной';
+CONSTRAINT groupTypeStatisticGroup(parentStatisticGroup(group)) != groupTypeStatisticGroup(group)
+           CHECKED BY parentStatisticGroup MESSAGE 'Родительский объект статистической группы имеет неправильный тип классификатора';
 
-statisticGroupCountrySku (country, sku) += statisticGroupCountryItem (country, sku);
+statisticGroupTypeSku (type, sku) += statisticGroupTypeItem (type, sku);
 
 overCopyItem(s, d) += ACTION (s, d) {
-    SET statisticGroupCountryItem(country, d) <- statisticGroupCountryItem(country, s) IF country IS Country AND s IS Item AND d IS Item;
+    SET statisticGroupTypeItem(type, d) <- statisticGroupTypeItem(type, s) IF type IS StatisticGroupType AND s IS Item AND d IS Item;
 }
 
 EXTEND FORM item
-    PROPERTIES(c,i) nameStatisticGroupCountryItem
+    OBJECTS sgt = StatisticGroupType
+    PROPERTIES(sgt) READONLY name, idStatisticGroupType
+    FILTERS countryStatisticGroupType(sgt) == c
+
+    PROPERTIES(sgt,i) nameStatisticGroupTypeItem
 ;
+EXTEND DESIGN item { regionalPrm { ADD sgt.box;} }
