@@ -45,7 +45,7 @@ prevPricePVATPriceListTypeBatchStockDateTimeVAT 'Цена с НДС (пред.)'
 
 @defineDocumentAbstractHeaderCurrency(priceListType);
 
-roundConditionPriceListType 'Условие округления' = DATA RoundCondition (PriceListType) NOT NULL;
+roundConditionPriceListType 'Условие округления' = DATA RoundCondition (PriceListType);
 nameRoundConditionPriceListType 'Условие округления' (priceListType) = name(roundConditionPriceListType(priceListType));
 
 CONSTRAINT currencyRoundCondition(roundConditionPriceListType(priceListType)) != currencyPriceListType(priceListType)
