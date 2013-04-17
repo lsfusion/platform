@@ -466,7 +466,7 @@ public class ImportActionProperty {
                     ImportKey<?> userInvoiceDetailKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Purchase.UserInvoiceDetail"),
                             LM.findLCPByCompoundName("externalizableSID").getMapping(userInvoiceDetailField));
 
-                    ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
+                    ImportKey<?> itemKey = new ImportKey((CustomClass) LM.findClassByCompoundName("Sku"),
                             LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
 
                     ImportKey<?> contractKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("UserContractSku"),
@@ -510,7 +510,7 @@ public class ImportActionProperty {
                     props.add(new ImportProperty(retailMarkupUserInvoiceDetailField, LM.findLCPByCompoundName("Purchase.retailMarkupUserInvoiceDetail").getMapping(userInvoiceDetailKey)));
 
                     props.add(new ImportProperty(itemField, LM.findLCPByCompoundName("Purchase.skuInvoiceDetail").getMapping(userInvoiceDetailKey),
-                            LM.object(LM.findClassByCompoundName("Item")).getMapping(itemKey)));
+                            LM.object(LM.findClassByCompoundName("Sku")).getMapping(itemKey)));
 
                     props.add(new ImportProperty(userInvoiceField, LM.findLCPByCompoundName("Purchase.userInvoiceUserInvoiceDetail").getMapping(userInvoiceDetailKey),
                             LM.object(LM.findClassByCompoundName(posted ? "Purchase.UserInvoicePosted" : "Purchase.UserInvoice")).getMapping(userInvoiceKey)));
@@ -525,7 +525,7 @@ public class ImportActionProperty {
                     for (UserInvoiceDetail u : dataUserInvoiceDetail) {
                         data.add(Arrays.asList((Object) u.number, u.series, u.createPricing, u.createShipment,
                                 showManufacturingPrice, showWholesalePrice,
-                                u.sid == null ? null : ("UID" + u.sid), u.date, new Time(12, 0, 0), u.item == null ? null : ("I" + u.item),
+                                u.sid == null ? null : ("UID" + u.sid), u.date, new Time(12, 0, 0), u.itemID == null ? null : ((u.isWare ? "W" : "I") + u.itemID),
                                 u.quantity, u.supplier == null ? null : ("L" + u.supplier),
                                 u.warehouse == null ? null : ("WH" + u.warehouse),
                                 u.supplierWarehouse == null ? null : ("WH" + u.supplierWarehouse), u.price, u.price, u.chargePrice,

@@ -534,12 +534,13 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                         groupID = "0" + groupID;
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
-                    String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+                    Boolean isWare = groupID.startsWith("929");
+                    String itemID = isWare ? (pnt13 + pnt48) : (groupID + ":" + name + uomFullName);
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID)) {
                         userInvoiceDetailsList.add(new UserInvoiceDetail(supplierWarehouseID + "/" + warehouse + "/" + dateField,
-                                "AA", null, true, supplierWarehouseID + "/" + warehouse + "/" + dateField + "/" + pnt13 + pnt48, date, itemID,
-                                quantity, supplierID, warehouse, supplierWarehouseID, price, chargePrice, manufacturingPrice, wholesalePrice, wholesaleMarkup, null, null,
-                                textCompliance, null));
+                                "AA", null, true, supplierWarehouseID + "/" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
+                                date, itemID, isWare, quantity, supplierID, warehouse, supplierWarehouseID, price, chargePrice,
+                                manufacturingPrice, wholesalePrice, wholesaleMarkup, null, null, textCompliance, null));
                         Double sum = ((double) (Math.round(((price + (chargePrice == null ? 0 : chargePrice)) * quantity) * 100))) / 100;
                         Double subtotal = totalSumWarehouse.get(warehouse);
                         if (subtotal == null)
