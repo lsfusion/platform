@@ -97,7 +97,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 imp.makeImport();
 
                 if (getLCP("importBIVCDOSMag2").read(context) != null)
-                    importLegalEntityStock(context, path + "//MAGP");
+                    importLegalEntityStock(context, path + "//SWTP", path + "//MAGP");
 
                 if ((getLCP("importBIVCDOSItems").read(context) != null))
                     importSotUOM(context, path + "//SEDI", path + "//OST", numberOfItems);
@@ -807,9 +807,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         return contractsList;
     }
 
-    private void importLegalEntityStock(ExecutionContext context, String path) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException {
+    private void importLegalEntityStock(ExecutionContext context, String swtpPath, String magpPath) throws SQLException, ScriptingErrorLog.SemanticErrorException, IOException {
 
-        List<List<Object>> data = importLegalEntityStockFromFile(path);
+        List<List<Object>> data = importLegalEntityStockFromFile(swtpPath, magpPath);
 
         if (data != null) {
 
@@ -841,12 +841,33 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private List<List<Object>> importLegalEntityStockFromFile(String path) throws IOException {
+    private List<List<Object>> importLegalEntityStockFromFile(String swtpPath, String magpPath) throws IOException {
+        Set<String> warehousesSWTP = new HashSet<String>();
         List<List<Object>> data = new ArrayList<List<Object>>();
 
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path), "cp866"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(swtpPath), "cp866"));
         String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("^SWTP")) {
+                String[] splittedLine = line.split("\\(|\\)|,");
+                String sid = (splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", "");
+                String[] dataLegalEntity = reader.readLine().split(":");
+                String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : "";
+                Boolean filtered = false;
+                for (String filter : employeeFilters) {
+                    if (name.startsWith(filter)) {
+                        filtered = true;
+                        break;
+                    }
+                }
+                if (!name.trim().isEmpty() && !filtered && !warehousesSWTP.contains(sid)) {
+                    warehousesSWTP.add(sid);
+                }
+            }
+        }
+        reader.close();
+
+        reader = new BufferedReader(new InputStreamReader(new FileInputStream(magpPath), "cp866"));
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^MAGP")) {
                 String[] splittedLine = line.split("\\(|\\)|,");
@@ -855,7 +876,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     String warehouseID = splittedLine[2].replace("\"", "");
                     String mag2LegalEntityStock = reader.readLine();
 
-                    data.add(Arrays.asList((Object) ("L" + legalEntityID), "WHS" + warehouseID, mag2LegalEntityStock));
+                    if (warehousesSWTP.contains(warehouseID))
+                        data.add(Arrays.asList((Object) ("L" + legalEntityID), "WHS" + warehouseID, mag2LegalEntityStock));
                 }
             }
         }
