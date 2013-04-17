@@ -65,7 +65,7 @@ EXTEND DESIGN userInvoice {
 }
 
 EXTEND FORM invoices
-    PROPERTIES(i) BACKGROUND backgroundWholesaleInvoice(i) toShowWholesalePriceInvoice
+    PROPERTIES(i) READONLY BACKGROUND backgroundWholesaleInvoice(i) toShowWholesalePriceInvoice
     PROPERTIES(d) READONLY BACKGROUND backgroundWholesaleInvoice(i) SHOWIF toShowWholesalePriceInvoice(i) wholesaleMarkupInvoiceDetail, wholesalePriceInvoiceDetail
 ;
 

@@ -42,7 +42,7 @@ EXTEND DESIGN userInvoice {
 
 
 EXTEND FORM invoices
-    PROPERTIES(i) toShowRRPPriceInvoice
+    PROPERTIES(i) READONLY toShowRRPPriceInvoice
     PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
 ;
 

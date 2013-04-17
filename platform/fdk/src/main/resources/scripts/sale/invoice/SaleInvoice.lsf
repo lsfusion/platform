@@ -46,37 +46,6 @@ VATUserInvoice (userInvoice) <- rangeTaxTaxUnit(Tax.taxVAT, storeDepartmentStore
 
 @deriveDocumentDetailVATHeader(userInvoice, VAT, supplierStock);
 
-derivedVATSumUserInvoiceDetail (userInvoiceDetail) =
-//    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
-//        THEN roundPriceCurrency(invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail) * valueVATUserInvoiceDetail (userInvoiceDetail)/100, currencyUserInvoiceDetail(userInvoiceDetail))
-//        ELSE
-    roundPriceCurrency((sumUserInvoiceDetail(userInvoiceDetail) * calcVATUserInvoiceDetail (userInvoiceDetail) / 100), currencyUserInvoiceDetail(userInvoiceDetail))
-    PERSISTENT;
-
-VATSumUserInvoiceDetail (userInvoiceDetail) <- derivedVATSumUserInvoiceDetail (userInvoiceDetail)
-    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATUserInvoiceDetail(userInvoiceDetail))
-      OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(currencyUserInvoiceDetail(userInvoiceDetail));
-
-derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail) =
-    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
-        THEN invoicePriceUserInvoiceDetail (userInvoiceDetail) * quantityUserInvoiceDetail (userInvoiceDetail)
-        ELSE sumUserInvoiceDetail (userInvoiceDetail) (+) VATSumUserInvoiceDetail (userInvoiceDetail)
-    PERSISTENT;
-
-invoiceSumUserInvoiceDetail (userInvoiceDetail) <- derivedInvoiceSumUserInvoiceDetail (userInvoiceDetail)
-    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(quantityUserInvoiceDetail(userInvoiceDetail))
-    OR CHANGED(sumUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATSumUserInvoiceDetail(userInvoiceDetail));
-
-derivedPriceUserInvoiceDetail (userInvoiceDetail) =
-//    IF rangeTypeRange(VATUserInvoiceDetail(userInvoiceDetail)) == RangeType.units
-//        THEN invoicePriceUserInvoiceDetail(userInvoiceDetail)*(100-valueVATUserInvoiceDetail (userInvoiceDetail))/100
-//        ELSE
-        invoicePriceUserInvoiceDetail(userInvoiceDetail)*100/(100+calcVATUserInvoiceDetail (userInvoiceDetail))
-    PERSISTENT;
-
-priceUserInvoiceDetail (userInvoiceDetail) <- derivedPriceUserInvoiceDetail (userInvoiceDetail)
-    WHEN CHANGED(invoicePriceUserInvoiceDetail(userInvoiceDetail)) OR CHANGED(VATUserInvoiceDetail (userInvoiceDetail));
-
 isDepartmentStoreSupplierStockInvoice (invoice) = supplierStockInvoice(invoice) IS DepartmentStore;
 
 EXTEND FORM userInvoice
