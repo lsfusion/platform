@@ -168,7 +168,9 @@ META defineInvoice(sign, stockProp)
     Invoice.sumInvoiceDetail(detail) += sumInvoiceDetail(detail);
 
     @defineDocumentInterfaceDetailVATDataSum (invoice, invoice); // объявляем свойства суммы НДС и суммы с НДС
-    // суммы НДС и с НДС не записываем, поскольку для продажи нужен расчетный НДС
+    @deriveDocumentDetailVATDataSum(userInvoice); // записываем сумму НДС
+    @deriveDocumentDetailVATPrefixSum(userInvoice, invoice); // записываем сумму с НДС
+
     Invoice.VATSumInvoiceDetail(detail) += VATSumInvoiceDetail(detail);
     Invoice.invoiceSumInvoiceDetail(detail) += invoiceSumInvoiceDetail(detail);
 
