@@ -32,7 +32,7 @@ FORM materials 'Материалы'
     PROPERTIES READONLY skuGroupName = name(sg)
 
     OBJECTS m = Material
-    PROPERTIES(m) READONLY objectClassName, nameMaterial, shortNameUOMMaterial
+    PROPERTIES(m) READONLY nameMaterial, shortNameUOMMaterial, objectClassName
     PROPERTIES() addMaterial TODRAW m
     PROPERTIES(m) editMaterial
     FILTERS isParentSkuGroupMaterial(sg, m)
@@ -367,7 +367,7 @@ FORM BOM 'Спецификация'
     OBJECTS b=BOM FIXED PANEL
 //    OBJECTS dt = DATE FIXED PANEL
 
-    PROPERTIES(b) objectClassName, name, nameNumeratorObject, numberObject, seriesObject, noteBOM
+    PROPERTIES(b) name, nameNumeratorObject, numberObject, seriesObject, noteBOM, objectClassName
     PROPERTIES(b) READONLY quantityProductBOM, nettoQuantityComponentBOM, pricePercentBOM//, bruttoQuantityComponentBOM
     OBJECTS p = Product
     PROPERTIES(p) indexProduct, idBarcodeSkuProduct,nameSkuProduct, shortNameUOMProduct, quantityProduct, pricePercentProduct

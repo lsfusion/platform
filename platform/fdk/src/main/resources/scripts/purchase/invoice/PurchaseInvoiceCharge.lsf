@@ -37,14 +37,26 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += chargePriceInvoi
 
 extraCostPriceUserInvoiceDetail(detail) += chargePriceUserInvoiceDetail(detail);
 
+@defineDocumentInterfaceCreate (invoice, toShowChargePrice, 'Услуги');
+
 EXTEND FORM userInvoice
-    PROPERTIES(i) chargeSumUserInvoice, deriveChargePriceUserInvoice TODRAW d FORCE PANEL TOOLBAR
-    PROPERTIES(d) chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)
+    PROPERTIES(i)                                        toShowChargePriceUserInvoice
+    PROPERTIES(i) SHOWIF toShowChargePriceUserInvoice(i) chargeSumUserInvoice, deriveChargePriceUserInvoice TODRAW d FORCE PANEL TOOLBAR
+    PROPERTIES(d) SHOWIF toShowChargePriceUserInvoice(i) chargePriceUserInvoiceDetail BEFORE numberVATUserInvoiceDetail(d)
 ;
 
+EXTEND DESIGN userInvoice {
+    headerExtraParams {
+        NEW headerCharge {
+            title = 'Услуги';
+            ADD PROPERTY(toShowChargePriceUserInvoice);
+        }
+    }
+}
+
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY chargeSumInvoice
-    PROPERTIES(d) READONLY chargePriceInvoiceDetail BEFORE numberVATInvoiceDetail(d)
+    PROPERTIES(i) READONLY toShowChargePriceInvoice, chargeSumInvoice
+    PROPERTIES(d) SHOWIF toShowChargePriceInvoice(i) READONLY chargePriceInvoiceDetail BEFORE numberVATInvoiceDetail(d)
 ;
 
 //-------------Расчет транспорта по коэффициенту в шапке накладной-------------//
@@ -67,10 +79,19 @@ WHEN SESSION FORMS userInvoice CHANGED(chargePercentUserInvoice(userInvoice)) DO
 chargePercentInvoice(invoice) += chargePercentUserInvoice(invoice) AND invoice IS UserInvoice;
 
 EXTEND FORM userInvoice
-    PROPERTIES(i) chargePercentUserInvoice
-    PROPERTIES(d) chargePercentUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail(d)
+    PROPERTIES(i) SHOWIF toShowChargePriceUserInvoice(i) chargePercentUserInvoice
+    PROPERTIES(d) SHOWIF toShowChargePriceUserInvoice(i) chargePercentUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail(d)
 ;
+EXTEND DESIGN userInvoice {
+    headerCharge {
+        ADD PROPERTY(chargePercentUserInvoice);
+    }
+}
 
 EXTEND FORM invoices
     PROPERTIES(i) READONLY chargePercentInvoice
 ;
+
+// ---------------------- Операции ----------------------///
+toShowChargePriceUserInvoice (invoice) <- toShowChargePriceOperation(operationUserInvoice(invoice))
+    WHEN CHANGED(operationUserInvoice(invoice));

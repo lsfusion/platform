@@ -79,10 +79,6 @@ nameLegalEntityGroupLegalEntity 'Группа организаций' (legalEnti
 TABLE legalEntityGroupLegalEntityGroup(LegalEntityGroup, LegalEntityGroup);
 @defineHierarchy(legalEntityGroup);
 
-inLegalEntityGroupLegalEntity (legalEntityGroup, legalEntity) =
-    UNION OVERRIDE legalEntity IS LegalEntity AND NOT legalEntityGroup IS LegalEntityGroup,
-                   isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(legalEntity), legalEntityGroup);
-
 parentEmployeeDivisionGroup (group) += parentLegalEntityGroup(group);
 employeeDivisionGroupEmployeeDivision (legalEntity) += legalEntityGroupLegalEntity(legalEntity);
 
@@ -230,7 +226,9 @@ FORM legalEntities 'Организации'
     PROPERTIES(l) READONLYIF isReadonly() isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
 
-    FILTERS (inLegalEntityGroupLegalEntity(lg, l) OR (l IS LegalEntity AND lg IS LegalEntityGroup AND NOT legalEntityGroupLegalEntity(l)))
+    FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(l), lg) OR
+            l IS LegalEntity AND NOT lg IS LegalEntityGroup OR
+            (l IS LegalEntity AND lg IS LegalEntityGroup AND NOT legalEntityGroupLegalEntity(l))
 
     DIALOG LegalEntity OBJECT l
 ;

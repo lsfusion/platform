@@ -118,7 +118,7 @@ META defineOperationLegalEntity(prop, object, filter, tabcaption)
         PROPERTIES(object) READONLY name, fullNameLegalEntity, shortNameOwnershipLegalEntity, nameLegalEntityGroupLegalEntity,
                                addressLegalEntity, phoneLegalEntity,
                                isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
-        FILTERS (inLegalEntityGroupLegalEntity(object##g, object) OR (object IS LegalEntity AND object##g IS LegalEntityGroup AND NOT legalEntityGroupLegalEntity(object))),
+        FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(object), object##g),
                 filter(object)
         FILTERGROUP filters2
                 FILTER 'Показывать отмеченные' 'F10' is###prop###operation(object, o)

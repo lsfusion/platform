@@ -180,7 +180,7 @@ FORM agreement 'Соглашение'
     OBJECTS cc = LegalEntity
     PROPERTIES(cc) READONLY name
     PROPERTIES(a, cc) inAgreementSupplier
-    FILTERS inLegalEntityGroupLegalEntity(f, cc)
+    FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(cc), f)
 
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F9' inAgreementSupplier (a, cc)
@@ -192,7 +192,7 @@ FORM agreement 'Соглашение'
     OBJECTS c = LegalEntity
     PROPERTIES(c) READONLY name
     PROPERTIES(a, c) inAgreementCustomer
-    FILTERS inLegalEntityGroupLegalEntity(lg, c)
+    FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(c), lg)
 
     FILTERGROUP filters
         FILTER 'Только отмеченные' 'F10' inAgreementCustomer (a, c)

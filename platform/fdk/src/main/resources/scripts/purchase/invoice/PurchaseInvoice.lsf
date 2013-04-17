@@ -33,13 +33,6 @@ isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice
 
 @defineOrderInvoice(' (закупка)', customerStock);
 
-//isCustomInvoice 'Таможенные платежи' = DATA BOOLEAN(Invoice) IN documentPrmGroup;
-
-//backgroundCustomedInvoice 'Цвет' (invoice) = RGB(255, 224, 224) IF invoice IS Invoice;
-
-//customsGroupUserInvoiceDetail = DATA CustomsGroup(UserInvoiceDetail);
-//codeCustomsGroupUserInvoiceDetail 'ТН ВЭД' (userInvoiceDetail) = codeCustomsGroup(customsGroupUserInvoiceDetail(userInvoiceDetail)) MINCHARWIDTH 10;
-
 // --------------------------- Себестоимость ---------------------------------- //
 
 extraCostPriceInvoiceDetail = ABSTRACT NUMERIC[14,2] (InvoiceDetail) PERSISTENT;

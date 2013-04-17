@@ -20,6 +20,7 @@ pricingPriceListTypeOperation = DATA PriceListType (Operation);
 namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
 createRepricingOperation 'Создавать акт дооценки' = DATA BOOLEAN (Operation) IN createGroup;
 
+toShowChargePriceOperation 'Показывать услуги' = DATA BOOLEAN (Operation) IN toShowGroup;
 toShowManufacturingPriceOperation 'Показывать цену изготовителя' = DATA BOOLEAN (Operation) IN toShowGroup;
 toShowWholesalePriceOperation 'Показывать отпускную оптовую цену' = DATA BOOLEAN (Operation) IN toShowGroup;
 wholesaleCalcPriceListTypeOperation = DATA CalcPriceListType (Operation);
@@ -34,7 +35,7 @@ EXTEND FORM operation
     PROPERTIES(o) createShipmentOperation, createPurchaseWriteOffOperation,
                   createCreditNoteOperation, createPricingOperation, namePricingPriceListTypeOperation,
                   createRepricingOperation,
-                  toShowManufacturingPriceOperation, toShowWholesalePriceOperation, nameWholesaleCalcPriceListTypeOperation,
+                  toShowChargePriceOperation, toShowManufacturingPriceOperation, toShowWholesalePriceOperation, nameWholesaleCalcPriceListTypeOperation,
                   toShowRRPPriceOperation, showPackOperation, isHomeCurrencyOperation, isComplianceOperation,
                   isCustomOperation
 
@@ -53,6 +54,7 @@ EXTEND DESIGN operation{
         }
         NEW showContainer {
             caption = 'Отображение свойств';
+            ADD PROPERTY(toShowChargePriceOperation);
             ADD PROPERTY(toShowManufacturingPriceOperation);
             ADD PROPERTY(toShowWholesalePriceOperation);
             ADD PROPERTY(nameWholesaleCalcPriceListTypeOperation);
