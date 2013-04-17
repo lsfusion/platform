@@ -12,7 +12,6 @@ import platform.base.col.interfaces.immutable.*;
 import platform.base.col.interfaces.mutable.*;
 import platform.base.col.interfaces.mutable.add.MAddMap;
 import platform.base.col.interfaces.mutable.mapvalue.GetIndex;
-import platform.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
@@ -81,7 +80,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     protected LogicsInstance logicsInstance;
 
-    private Boolean dialogUndecorated = true;
+    private Boolean dialogUndecorated = false;
 
     private String overridingModulesList;
 

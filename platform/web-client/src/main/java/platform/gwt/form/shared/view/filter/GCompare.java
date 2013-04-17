@@ -1,7 +1,7 @@
 package platform.gwt.form.shared.view.filter;
 
 public enum GCompare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, LIKE, INARRAY, CONTAINS;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, LIKE, INARRAY;
 
     public static GCompare get(boolean min) {
         return min? GCompare.LESS: GCompare.GREATER;
