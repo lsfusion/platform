@@ -78,7 +78,7 @@ public class ImportExcelUserInvoicesActionProperty extends ImportExcelActionProp
             String userInvoiceDetailSID = (userInvoiceSeries==null ? "" : userInvoiceSeries) + userInvoiceNumber + itemID;
 
             data.add(new UserInvoiceDetail(userInvoiceNumber, userInvoiceSeries, null, true,
-                    userInvoiceDetailSID, date, itemID, quantity, supplier, customerWarehouse, supplierWarehouse,
+                    userInvoiceDetailSID, date, itemID, false, quantity, supplier, customerWarehouse, supplierWarehouse,
                     price, chargePrice, null, null, null, retailPrice, retailMarkup, textCompliance, null));
         }
 

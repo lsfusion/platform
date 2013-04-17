@@ -340,7 +340,7 @@ public class ImportLSTradeActionProperty extends ScriptingActionProperty {
             String contractID = new String(importFile.getField("K_CONT").getBytes(), "Cp1251").trim();
 
             if ((seriesNumber.length != 1) && (supplierID.startsWith("ПС")) && (quantityShipmentDetail != 0))
-                data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID,
+                data.add(new UserInvoiceDetail(number, series, true, true, userInvoiceDetailSID, dateShipment, itemID, false,
                         quantityShipmentDetail, supplierID, warehouseID, supplierWarehouse, priceShipmentDetail, null, null, null, null,
                         retailPriceShipmentDetail, retailMarkupShipmentDetail, null, contractID.isEmpty() ? null : contractID));
         }
