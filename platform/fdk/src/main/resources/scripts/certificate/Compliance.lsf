@@ -25,7 +25,7 @@ toTimeCertificate(certificate) += toTimeCompliance(certificate);
 
 seriesCertificate(compliance) += seriesObject(compliance) AND compliance IS Compliance;
 numberCertificate(compliance) += numberObject(compliance) AND compliance IS Compliance;
-numberToCompliance (number) = GROUP UNIQUE compliance BY numberCertificate(compliance) WHERE compliance IS Compliance;
+numberToCompliance (number) = GROUP AGGR compliance BY numberCertificate(compliance) WHERE compliance IS Compliance;
 
 textCompliance 'Текст сертификата' = DATA TEXT (Compliance);
 

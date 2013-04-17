@@ -65,7 +65,7 @@ overCopyGeneralLedger(from, to) += ACTION (from, to) {
     }
 }
 
-dimensionTypeIdDimensionType (string1) = GROUP UNIQUE dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS DimensionType;
+dimensionTypeIdDimensionType (string1) = GROUP AGGR dimensionType BY idDimensionType(dimensionType) WHERE dimensionType IS DimensionType;
 
 //-- Подсчет сумм одно субконто
 TABLE GLAccountLegalEntityDDate(GLAccount, LegalEntity, Dimension, DATE);

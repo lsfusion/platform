@@ -6,6 +6,6 @@ CLASS Externalizable 'Внешний объект';
 TABLE externalizable (Externalizable);
 
 sidExternalizable 'Внешний код' = DATA STRING[100] (Externalizable) INDEXED;
-externalizableSID (sid) = GROUP UNIQUE externalizable BY sidExternalizable (externalizable) WHERE externalizable IS Externalizable;
+externalizableSID (sid) = GROUP AGGR externalizable BY sidExternalizable (externalizable) WHERE externalizable IS Externalizable;
 
 

@@ -148,7 +148,7 @@ numberDefaultDeclarationDetail 'Номер' (declarationDetail) =
 userNumberDeclarationDetail 'Пользовательский номер' (declarationDetail) = DATA INTEGER (DeclarationDetail);
 numberDeclarationDetail 'Номер' (declarationDetail) = UNION OVERRIDE numberDefaultDeclarationDetail(declarationDetail), userNumberDeclarationDetail(declarationDetail);
 
-declarationDetailUserNumberNameCustoms (number, name) = GROUP UNIQUE declarationDetail BY
+declarationDetailUserNumberNameCustoms (number, name) = GROUP AGGR declarationDetail BY
         userNumberDeclarationDetail(declarationDetail), nameCustomsDeclarationDetail(declarationDetail)
         WHERE declarationDetail IS DeclarationDetail;
 

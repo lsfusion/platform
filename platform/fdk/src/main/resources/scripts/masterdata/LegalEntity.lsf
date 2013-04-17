@@ -8,7 +8,7 @@ CLASS Ownership 'Форма собственности' : Named;
 TABLE ownership (Ownership);
 
 shortNameOwnership 'Cокращенное название' = DATA STRING[10] (Ownership) IN base FIXEDCHARWIDTH 6;
-shortNameToOwnership (string) = GROUP UNIQUE ownership BY shortNameOwnership (ownership) WHERE ownership IS Ownership;
+shortNameToOwnership (string) = GROUP AGGR ownership BY shortNameOwnership (ownership) WHERE ownership IS Ownership;
 
 countryOwnership = DATA Country (Ownership);
 nameCountryOwnership 'Страна' (ownership) = name(countryOwnership(ownership)) MINCHARWIDTH 10 PREFCHARWIDTH 15 MAXCHARWIDTH 20;

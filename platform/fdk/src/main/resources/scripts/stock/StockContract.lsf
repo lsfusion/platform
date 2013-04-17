@@ -76,7 +76,7 @@ countDaysBonusPeriod 'Кол-во дней' = DATA INTEGER (BonusPeriod);
 percentBonusPeriod 'Процент' = DATA NUMERIC[8,3] (BonusPeriod);
 paymentConditionBonusPeriod 'Условия оплаты периода бонуса' = DATA PaymentCondition (BonusPeriod);
 
-bonusPeriodPaymentConditionDays(paymentCondition, days) = GROUP UNIQUE bonusPeriod BY paymentConditionBonusPeriod(bonusPeriod),
+bonusPeriodPaymentConditionDays(paymentCondition, days) = GROUP AGGR bonusPeriod BY paymentConditionBonusPeriod(bonusPeriod),
                                                                                       countDaysBonusPeriod(bonusPeriod)
                                                                                    WHERE bonusPeriod IS BonusPeriod;
 

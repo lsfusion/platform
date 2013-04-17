@@ -61,7 +61,7 @@ CLASS TerminalHandbookType 'Вид справочника ТСД' {
 
 TABLE terminalHandbookType(TerminalHandbookType);
 idTerminalHandbookType 'Код' = DATA STRING[10] (TerminalHandbookType) IN base;
-terminalHandbookTypeID (terminalHandbookType) = GROUP UNIQUE terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS TerminalHandbookType;
+terminalHandbookTypeID (terminalHandbookType) = GROUP AGGR terminalHandbookType BY idTerminalHandbookType (terminalHandbookType) WHERE terminalHandbookType IS TerminalHandbookType;
 
 FORM handbooksTerminalDocumentType 'Виды справочников ТСД'
     OBJECTS h=TerminalHandbookType
@@ -80,7 +80,7 @@ nameGroupTerminalDocumentTypeTerminalDocumentType 'Группа типов до�
 nameTerminalDocumentType 'Название' = DATA STRING[200] (TerminalDocumentType) IN base;
 
 idTerminalDocumentType 'Код' = DATA STRING[10] (TerminalDocumentType) IN base;
-terminalDocumentTypeID (terminalDocumentType) = GROUP UNIQUE terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS TerminalDocumentType;
+terminalDocumentTypeID (terminalDocumentType) = GROUP AGGR terminalDocumentType BY idTerminalDocumentType (terminalDocumentType) WHERE terminalDocumentType IS TerminalDocumentType;
 
 terminalHandbookType1TerminalDocumentType = DATA TerminalHandbookType (TerminalDocumentType);
 idTerminalHandbookType1TerminalDocumentType 'Код' (terminalDocumentType)  = idTerminalHandbookType (terminalHandbookType1TerminalDocumentType(terminalDocumentType));
@@ -184,7 +184,7 @@ CLASS TerminalDocument 'Документ ТСД';
 TABLE terminalDocument (TerminalDocument);
 
 idTerminalDocument 'Номер' = DATA INTEGER (TerminalDocument) IN base;
-terminalDocumentID (terminalDocument) = GROUP UNIQUE terminalDocument BY idTerminalDocument (terminalDocument)
+terminalDocumentID (terminalDocument) = GROUP AGGR terminalDocument BY idTerminalDocument (terminalDocument)
                                                        WHERE terminalDocument IS TerminalDocument;
 
 titleTerminalDocument 'Имя' = DATA STRING[100] (TerminalDocument) IN base;
@@ -207,7 +207,7 @@ TABLE terminalDocumentDetail (TerminalDocumentDetail);
 
 numberTerminalDocumentDetail 'Номер' = DATA INTEGER (TerminalDocumentDetail) IN base;
 terminalDocumentDetailIDDocumentIDDetail (terminalDocumentDetail, terminalDocument) =
-    GROUP UNIQUE terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
+    GROUP AGGR terminalDocumentDetail BY idTerminalDocument (terminalDocumentTerminalDocumentDetail(terminalDocumentDetail)), numberTerminalDocumentDetail(terminalDocumentDetail)
           WHERE terminalDocumentDetail IS TerminalDocumentDetail;
 
 barcodeTerminalDocumentDetail 'Штрих-код' = DATA STRING[14] (TerminalDocumentDetail) IN base;

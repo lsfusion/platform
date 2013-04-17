@@ -11,7 +11,7 @@ idBarcode 'Штрих код' = DATA STRING[14] (Barcode) IN recognize FIXEDCHAR
 dataDateBarcode 'Дата действия' = DATA DATE (Barcode);
 dateBarcode 'Дата действия' = (2001_01_01 IF barcode IS Barcode) OR dataDateBarcode(barcode) IN base PERSISTENT;
 
-dataBarcodeIdDate (id, date) = GROUP UNIQUE barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS Barcode PERSISTENT;
+dataBarcodeIdDate (id, date) = GROUP AGGR barcode BY idBarcode(barcode), dateBarcode(barcode) WHERE barcode IS Barcode PERSISTENT;
 orderBarcodeIdDate 'Дата действия' (id, date) = GROUP MAX STRUCT(dateIn, dataBarcodeIdDate(id, dateIn)) IF dateIn <= (date AS DATE) BY id, date IN base;
 barcodeIdDate (id, date) = orderBarcodeIdDate(id, date)[2];
 

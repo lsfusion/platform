@@ -65,7 +65,7 @@ CLASS WHfromCSRDetail 'Строка приемки на склад с СВХ';
 @defineDocument(WHfromCSR);
 
 WHfromCSIWHfromCSR = DATA WHfromCSI (WHfromCSR);
-WHfromCSRWHfromCSI(WHfrom) = GROUP UNIQUE WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
+WHfromCSRWHfromCSI(WHfrom) = GROUP AGGR WHfromCSR BY WHfromCSIWHfromCSR(WHfromCSR) WHERE WHfromCSR IS WHfromCSR;
 
 WHfromCSIWHfromCSRDetail (WHfromCSRDetail) = WHfromCSIWHfromCSR(WHfromCSRWHfromCSRDetail(WHfromCSRDetail));
 

@@ -273,7 +273,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitRedundantOrderGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
-        emitSimpleError(parser, format("ORDER properties are forbidden with '%s' grouping type", groupType));
+        emitSimpleError(parser, format("ORDER clause is forbidden with '%s' grouping type", groupType));
     }
 
     public void emitMultipleAggrGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
@@ -284,8 +284,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "GROUP CONCAT property should have two aggregate properties exactly (second is a separator)");
     }
 
-    public void emitNonObjectAggrUniqueGPropError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "GROUP UNIQUE should have simple parameter as aggregate function");
+    public void emitNonObjectAggrGPropError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "GROUP AGGR should have simple parameter as aggregate function");
+    }
+
+    public void emitWhereGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+        emitSimpleError(parser, format("WHERE clause is forbidden with '%s' grouping type", groupType));
     }
 
     public void emitDifferentObjsNPropsQuantity(ScriptParser parser) throws SemanticErrorException {

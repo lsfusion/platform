@@ -282,7 +282,7 @@ nameCollationSheet 'Внутренний номер' (collationSheet) = [FORMULA
         indexCollationSheet(collationSheet));
 
 collationSheetStockInventory 'Сличительная ведомость по складу и инвентаризации' (stock, inventory) =
-    GROUP UNIQUE collationSheet BY stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
+    GROUP AGGR collationSheet BY stockCollationSheet(collationSheet), inventoryCollationSheet(collationSheet);
 collationSheetListInventory(listInventory) = collationSheetStockInventory(stockListInventory(listInventory), inventoryListInventory(listInventory));
 nameCollationSheetListInventory 'Название сл. ведомости' (listInventory) = nameCollationSheet(collationSheetListInventory(listInventory));
 

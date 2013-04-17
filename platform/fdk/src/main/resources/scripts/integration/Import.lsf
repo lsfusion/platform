@@ -56,11 +56,11 @@ EXTEND CLASS Warehouse : Externalizable;
 EXTEND CLASS WarehouseGroup : Externalizable;
 EXTEND CLASS WriteOffRate : Externalizable;
 
-numberSeriesToUserInvoice (number, series) = GROUP UNIQUE userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
+numberSeriesToUserInvoice (number, series) = GROUP AGGR userInvoice BY numberObject(userInvoice), seriesObject(userInvoice) WHERE userInvoice IS UserInvoice;
 
-userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP UNIQUE userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
+userPriceListDetailSkuSIDUserPriceListSID (sku, userPriceList) = GROUP AGGR userPriceListDetail BY sidExternalizable(skuUserPriceListDetail(userPriceListDetail)), sidExternalizable(userPriceListUserPriceListDetail(userPriceListDetail)) WHERE userPriceListDetail IS UserPriceListDetail;
 
-storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP UNIQUE storeType BY name (storeType), sidExternalizable(storeType);
+storeTypeNameChainStores 'Формат магазина по имени и торговой сети' (name, chainStores) = GROUP AGGR storeType BY name (storeType), sidExternalizable(storeType);
 
 sidExternalizableBatch 'Внешний код' (batch) = ABSTRACT STRING[100] (Batch) PERSISTENT;
 

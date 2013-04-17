@@ -22,10 +22,10 @@ termDictionaryEntry 'Термин' = DATA STRING[50] (DictionaryEntry);
 insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
 translationDictionaryEntry 'Перевод' = DATA STRING[50] (DictionaryEntry);
 
-dictionaryEntryDictionaryTerm = GROUP UNIQUE dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
+dictionaryEntryDictionaryTerm = GROUP AGGR dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
 translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
 nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = name (dictionaryDictionaryEntry(dictionaryEntry));
-insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
+insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry);
 insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
 
 CLASS Language 'Язык' : Named;

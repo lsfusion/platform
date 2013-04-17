@@ -307,7 +307,7 @@ META defineDocumentTransferRecInner(object, class, caption, skuProp, stockProp)
     @defineDocument(object##Rec);
 
     object##In###object##Rec = DATA class##In (class##Rec) NOT NULL DELETE;
-    object##Rec###object##In = GROUP UNIQUE object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS class##Rec;
+    object##Rec###object##In = GROUP AGGR object##Rec BY object##In###object##Rec(object##Rec) WHERE object##Rec IS class##Rec;
 
     object##In###object##RecDetail (detail) = object##In###object##Rec(object##Rec###object##RecDetail(detail));
     object##Rec###object##InDetail (detail) = object##Rec###object##In(object##In###object##InDetail(detail));

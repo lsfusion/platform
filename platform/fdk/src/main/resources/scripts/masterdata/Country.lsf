@@ -11,7 +11,7 @@ TABLE countryCountry(Country, Country);
 nameOriginCountry 'Наименование (ориг.)' (country) = DATA ISTRING[50] (Country) IN base; //logics.country.name.origin.country
 sidCountry 'Код страны' (country) = DATA STRING[3] (Country) IN base; // logics.country.key
 //sid3Country 'Код 3 знака' (country) = DATA STRING[3] (Country) IN base MINCHARWIDTH 15;
-countrySID 'Страна' (sid) =  GROUP UNIQUE country BY sidCountry(country);  // logics.country
+countrySID 'Страна' (sid) =  GROUP AGGR country BY sidCountry(country);  // logics.country
 
 sidOrigin2Country 'Код 2 знака (ориг.)' (country) = DATA STRING[2] (Country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.2.country
 sidOrigin3Country 'Код 3 знака (ориг.)' (country) = DATA STRING[3] (Country) IN base MINCHARWIDTH 15; // logics.country.sid.origin.3.country
@@ -23,9 +23,9 @@ generateDatesCountry 'Генерировать выходные' (country) = DAT
 
 residentCountry 'Отечественный производитель' (country) = DATA BOOLEAN (Country) IN base MINCHARWIDTH 15; // logics.country.resident.country
 
-countryName(name) = GROUP UNIQUE country BY name(country) WHERE country IS Country;
+countryName(name) = GROUP AGGR country BY name(country) WHERE country IS Country;
 
-countrySIDOrigin2(sidOrigin2) = GROUP UNIQUE country BY sidOrigin2Country(country) WHERE country IS Country;
+countrySIDOrigin2(sidOrigin2) = GROUP AGGR country BY sidOrigin2Country(country) WHERE country IS Country;
 
 defaultCountry 'Страна по умолчанию' () = DATA Country (); // logics.country.default.country
 nameDefaultCountry 'Страна по умолчанию' () = name(defaultCountry()) PREFCHARWIDTH 30; // logics.country.default.country

@@ -127,9 +127,9 @@ outcomeQuantity2(store, article) = GROUP SUM quantity(doc, art) IF doc IS Outcom
 // GROUP CONCAT propertyExpr, separatorPropertyExpr [BY propertyExpr1, ..., propertyExprN] [ORDER [DESC] orderPropertyExpr1, ..., orderPropertyExprK]
 allNames() = GROUP CONCAT name(obj) IF obj IS Named, ', ' ORDER DESC name(obj);
 
-// UNIQUE group property
-// GROUP UNIQUE propertyExpression [BY propertyExpression1, ..., propertyExpressionN] [WHERE propertyExpression]
-nameToCountry(name) = GROUP UNIQUE country BY name(country);
+// AGGR group property
+// GROUP AGGR propertyExpression [BY propertyExpression1, ..., propertyExpressionN] [WHERE propertyExpression]
+nameToCountry(name) = GROUP AGGR country BY name(country);
 
 
 // Union property

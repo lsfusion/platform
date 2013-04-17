@@ -14,4 +14,4 @@ postAddressContact 'Почтовый адрес' = DATA STRING[100] (Contact) MI
 birthdayContact 'День рождения' = DATA DATE (Contact);
 
 emailContact 'E-mail'= DATA STRING[50] (Contact);
-contactEmail (email) = GROUP UNIQUE contact BY emailContact(contact) WHERE contact IS Contact;
+contactEmail (email) = GROUP AGGR contact BY emailContact(contact) WHERE contact IS Contact;

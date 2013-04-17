@@ -22,6 +22,7 @@
       <keyword name="ADDSESSIONFORM" />
       <keyword name="AFTER" />
       <keyword name="AGGPROP" />
+      <keyword name="AGGR" />
       <keyword name="ALL" />
       <keyword name="AND" />
       <keyword name="APPLY" />
@@ -240,7 +241,6 @@
       <keyword name="TRUE" />
       <keyword name="UNGROUP" />
       <keyword name="UNION" />
-      <keyword name="UNIQUE" />
       <keyword name="UPDATE" />
       <keyword name="VALIGN" />
       <keyword name="VERTICAL" />

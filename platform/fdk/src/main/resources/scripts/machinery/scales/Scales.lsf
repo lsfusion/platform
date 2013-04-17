@@ -15,7 +15,7 @@ weightCodeGroupScales 'Код для весовых товаров' = DATA STRIN
 // Модели
 CLASS ScalesModel 'Модель весов' : Model;
 
-scalesModelName (scalesModel) = GROUP UNIQUE scalesModel BY name (scalesModel) WHERE scalesModel IS ScalesModel;
+scalesModelName (scalesModel) = GROUP AGGR scalesModel BY name (scalesModel) WHERE scalesModel IS ScalesModel;
 
 maxTextScalesModel 'MAX допустимое колич. дополнительных текстов' = DATA INTEGER (ScalesModel) IN base;
 compositionScalesModel 'Число знаков в доп.тексте (составе товара)' = DATA INTEGER (ScalesModel) IN base;
@@ -101,7 +101,7 @@ groupScalesCellScales = DATA GroupScales (CellScales);
 compositionCellScales 'Ячейка' = DATA TEXT (CellScales);
 numberCellScales 'Номер' = PARTITION SUM 1 IF c IS CellScales BY groupScalesCellScales (c) ORDER c;
 
-cellScalesGroupScalesComposition (groupScales, composition) = GROUP UNIQUE cellScales
+cellScalesGroupScalesComposition (groupScales, composition) = GROUP AGGR cellScales
             BY groupScalesCellScales (cellScales), compositionCellScales (cellScales) WHERE cellScales IS CellScales;
 
 FORM cellScales 'Ячейки весов'
@@ -133,7 +133,7 @@ CLASS LabelFormat 'Формат этикетки' : Named;
 TABLE labelFormat (LabelFormat);
 
 idLabelFormat 'Код формата этикетки' = DATA INTEGER (LabelFormat) IN base;
-idToLabelFormat (labelFormat) = GROUP UNIQUE labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS LabelFormat;
+idToLabelFormat (labelFormat) = GROUP AGGR labelFormat BY idLabelFormat(labelFormat) WHERE labelFormat IS LabelFormat;
 
 fileLabelFormat = DATA CUSTOMFILE (LabelFormat);
 loadFileLabelFormat 'Загрузить файл этикетки' (labelFormat) = ACTION LOADFILE fileLabelFormat(labelFormat) IN base;

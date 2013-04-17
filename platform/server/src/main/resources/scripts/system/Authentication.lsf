@@ -17,7 +17,7 @@ TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
-customUserLogin 'Обычный пользователь' (login) = GROUP UNIQUE customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
+customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
 passwordCustomUser 'Пароль' = DATA STRING[30] (CustomUser);
 sha256PasswordCustomUser 'Хэш пароля' = DATA STRING[100] (CustomUser);
 calculatedHash 'Значение хэш' = DATA SESSION STRING[100] ();

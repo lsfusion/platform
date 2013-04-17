@@ -42,7 +42,7 @@ modelMachinery(machinery) += cashRegisterModelCashRegister(machinery);
 departmentStoreCashRegister (cashRegister) = departmentStoreGroupCashRegister(groupCashRegisterCashRegister(cashRegister));
 
 numberCashRegister 'Регистрационный номер кассы' = DATA STRING[100] (CashRegister) IN base;
-cashRegisterNumber (cashRegister) = GROUP UNIQUE cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS CashRegister;
+cashRegisterNumber (cashRegister) = GROUP AGGR cashRegister BY numberCashRegister (cashRegister) WHERE cashRegister IS CashRegister;
 
 dateCashRegister 'Дата фискализации кассового аппарата' = DATA DATE (CashRegister) IN base;
 
@@ -61,7 +61,7 @@ nameLegalEntityCashRegister 'Владелец кассы' (cashRegister) = name(
 computerCashRegister = DATA Computer (CashRegister);
 hostnameComputerCashRegister 'Компьютер' (cashRegister) = hostnameComputer(computerCashRegister(cashRegister)) IN base;
 
-cashRegisterComputer (computer) = GROUP UNIQUE cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS CashRegister PERSISTENT;
+cashRegisterComputer (computer) = GROUP AGGR cashRegister BY computerCashRegister(cashRegister) WHERE cashRegister IS CashRegister PERSISTENT;
 
 currentCashRegister 'Текущая касса' = cashRegisterComputer(currentComputer());
 

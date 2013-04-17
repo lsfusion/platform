@@ -31,7 +31,7 @@ nameBrandSupplierCoefficientBrandRetail 'Бренд' (coefficientBrandRetail) = 
 nameCategorySupplierCoefficientBrandRetail 'Группа' (coefficientBrandRetail) = name(categorySupplierCoefficientBrandRetail(coefficientBrandRetail));
 nameSeasonYearCoefficientBrandRetail 'Сезон' (coefficientBrandRetail) = nameSeasonYear(seasonYearCoefficientBrandRetail(coefficientBrandRetail));
 
-//uniqueCoefficientBrandCategorySeasonDate (brandSupplier, categorySupplier, seasonYear, date) = GROUP UNIQUE coefficientBrandRetail
+//uniqueCoefficientBrandCategorySeasonDate (brandSupplier, categorySupplier, seasonYear, date) = GROUP AGGR coefficientBrandRetail
 //                                                                                                         BY brandSupplierCoefficientBrandRetail(coefficientBrandRetail),
 //                                                                                                            categorySupplierCoefficientBrandRetail(coefficientBrandRetail),
 //                                                                                                            seasonYearCoefficientBrandRetail(coefficientBrandRetail),
@@ -151,7 +151,7 @@ statusPriceSetDocument 'Статус' (priceSetDocument) = IF isPostedPriceSetDo
 freightBasePriceSetDocument = DATA Freight(BasePriceSetDocument);
 importerBasePriceSetDocument = DATA Importer(BasePriceSetDocument);
 
-basePriceSetDocumentFreightImporter (freight, importer) = GROUP UNIQUE basePriceSetDocument
+basePriceSetDocumentFreightImporter (freight, importer) = GROUP AGGR basePriceSetDocument
     BY freightBasePriceSetDocument(basePriceSetDocument), importerBasePriceSetDocument(basePriceSetDocument)
     WHERE basePriceSetDocument IS BasePriceSetDocument;
 
@@ -317,7 +317,7 @@ rateRRPBasePriceSetDocumentSku(basePriceSetDocument, sku) <- rateTypeExchangeCur
                                                                CHANGED(datePriceSetDocument(basePriceSetDocument) AND inPriceSetDocumentSku(basePriceSetDocument, sku));
 rateRRPBasePriceSetDocumentSku(document, sku) => inPriceSetDocumentSku(document, sku) RESOLVE FALSE;
 
-priceSetDocumentSeriesNumberShortNameCurrency (series, number, currency) = GROUP UNIQUE priceSetDocument BY seriesObject(priceSetDocument), numberObject(priceSetDocument), shortNameCurrency(currencyPriceSetDocument(priceSetDocument))
+priceSetDocumentSeriesNumberShortNameCurrency (series, number, currency) = GROUP AGGR priceSetDocument BY seriesObject(priceSetDocument), numberObject(priceSetDocument), shortNameCurrency(currencyPriceSetDocument(priceSetDocument))
                                                                                         WHERE priceSetDocument IS PriceSetDocument;
 
 markupBasePriceSetDocumentSku 'Наценка' = DATA NUMERIC[14,2] (BasePriceSetDocument, Sku);

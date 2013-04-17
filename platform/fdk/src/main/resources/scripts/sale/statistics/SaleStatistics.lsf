@@ -9,7 +9,7 @@ CLASS StatisticGroupType 'Тип классификатора статистич
 
 idStatisticGroupType 'Идентификатор' = DATA STRING[20] (StatisticGroupType) MINCHARWIDTH 3 MAXCHARWIDTH 10 PREFCHARWIDTH 7;
 
-typeIdStatisticGroupType (string1) = GROUP UNIQUE type
+typeIdStatisticGroupType (string1) = GROUP AGGR type
     BY idStatisticGroupType(type) WHERE type IS StatisticGroupType;
 
 FORM statisticGroupType 'Тип классификатора статистических групп'
@@ -68,7 +68,7 @@ canonicalNumberStatisticGroup 'Канонический код' (statisticGroup)
 canonicalNumberNameStatisticGroup 'Канонический код-название' (statisticGroup) = [FORMULA STRING[100] '$1 || \' / \' || $2'](
     canonicalNumberStatisticGroup(statisticGroup), name(statisticGroup));
 
-groupIdTypeIdGroup (string1, string2) = GROUP UNIQUE group
+groupIdTypeIdGroup (string1, string2) = GROUP AGGR group
     BY idStatisticGroupType(groupTypeStatisticGroup(group)), sidStatisticGroup(group) WHERE group IS StatisticGroup;
 
 sidParentStatisticGroup 'Код родительского объекта' (statisticGroup) = sidStatisticGroup(parentStatisticGroup(statisticGroup));

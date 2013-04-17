@@ -9,7 +9,7 @@ TABLE userRoleProperty (UserRole, Property);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
 sidUserRole 'Идентификатор' = DATA STRING[30] (UserRole);
-userRoleSID (sid) = GROUP UNIQUE userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
+userRoleSID (sid) = GROUP AGGR userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
 mainRoleUser = DATA UserRole (User);
 mainRoleCustomUser (user) = mainRoleUser (user) IF user IS CustomUser;
 sidMainRoleCustomUser 'Идентификатор главной роли' (user) = sidUserRole (mainRoleCustomUser(user));
@@ -153,7 +153,7 @@ CLASS Policy 'Политика безопасности' : Named;
 TABLE policy (Policy);
 TABLE userRolePolicy (UserRole, Policy);
 
-policyName 'Политика' (name) = GROUP UNIQUE policy BY name(policy) WHERE policy IS Policy;
+policyName 'Политика' (name) = GROUP AGGR policy BY name(policy) WHERE policy IS Policy;
 descriptionPolicy 'Описание' = DATA STRING[100] (Policy);
 orderUserRolePolicy 'Порядок политики' = DATA INTEGER (UserRole, Policy);
 orderUserPolicy 'Порядок политики' (user, policy) = orderUserRolePolicy (mainRoleUser(user), policy);

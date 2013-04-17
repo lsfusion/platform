@@ -85,7 +85,7 @@ CLASS YesNo 'Логическое' {
     no 'НЕТ'
 } : Named;
 
-classSIDToYesNo 'Да/нет по ИД'(string) = GROUP UNIQUE yesNo BY classSID (yesNo) WHERE yesNo IS YesNo;
+classSIDToYesNo 'Да/нет по ИД'(string) = GROUP AGGR yesNo BY classSID (yesNo) WHERE yesNo IS YesNo;
 
 META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
     @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, name,
@@ -131,7 +131,7 @@ DESIGN dialogNumeric FROM DEFAULT {
 
 META defineAggregationCustom (primProperty, primObject, aggrObject, aggrClass, aggrProperty)
     aggrObject###primObject (primObject) =
-        GROUP UNIQUE aggrObject BY primProperty(aggrObject)
+        GROUP AGGR aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
     aggrProperty(primObject) => aggrObject###primObject(primObject) RESOLVE TRUE;
@@ -158,7 +158,7 @@ END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object (prim1Object, prim2Object) =
-        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
+        GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
         WHERE aggrObject IS aggrClass;
 
     aggrProperty(prim1Object, prim2Object) => aggrObject###prim1Object###prim2Object(prim1Object, prim2Object) RESOLVE TRUE;
@@ -186,7 +186,7 @@ END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrClass, aggrProperty)
     aggrObject###prim1Object###prim2Object###prim3Object (prim1Object, prim2Object, prim3Object) =
-        GROUP UNIQUE aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
+        GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
     aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE TRUE;

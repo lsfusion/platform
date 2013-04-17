@@ -8,7 +8,7 @@ TABLE currency(Currency);
 symbolCurrency 'Символ' = DATA STRING[5] (Currency);
 shortNameCurrency 'Валюта сокр.' = DATA STRING[3] (Currency);
 documentNameCurrency 'Валюта в накладной сокр.' = DATA STRING[10] (Currency);
-currencyShortName (string) = GROUP UNIQUE currency BY shortNameCurrency(currency) WHERE currency IS Currency;
+currencyShortName (string) = GROUP AGGR currency BY shortNameCurrency(currency) WHERE currency IS Currency;
 
 GROUP nbrbGroup 'Курсы нацбанка' : public;
 
@@ -42,7 +42,7 @@ TABLE rateExchange (TypeExchange, Currency, DATE);
 currencyTypeExchange 'Валюта типа обмена (ИД)'= DATA Currency(TypeExchange);
 nameCurrencyTypeExchange 'Валюта типа обмена (наим.)' (typeExchange) = name(currencyTypeExchange(typeExchange)) IN base;
 rateExchange 'Курс обмена' = DATA NUMERIC[15,8] (TypeExchange, Currency, DATE);
-typeExchangeName (name) = GROUP UNIQUE typeExchange BY name(typeExchange) WHERE typeExchange IS TypeExchange;
+typeExchangeName (name) = GROUP AGGR typeExchange BY name(typeExchange) WHERE typeExchange IS TypeExchange;
 
 dateTypeExchangeCurrencyDate (typeExchange, currency, date)  =
     GROUP MAX dateIn IF rateExchange(typeExchange, currency, dateIn) AND dateIn <= date AND date IS DATE

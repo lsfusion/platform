@@ -51,7 +51,7 @@ currencyAccount(account) <- currencyLegalEntity(legalEntityAccount(account))
 nameCurrencyAccount 'Валюта счета' = name(currencyAccount(account)) IN accountGroup;
 
 numberAccount 'Номер расчетного счета'  = DATA STRING[13] (Account) IN accountGroup FIXEDCHARWIDTH 13;
-accountNumber 'Расчетный счет по номеру' (string) = GROUP UNIQUE account BY numberAccount (account) WHERE account IS Account;
+accountNumber 'Расчетный счет по номеру' (string) = GROUP AGGR account BY numberAccount (account) WHERE account IS Account;
 
 nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN accountGroup;
 addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN accountGroup;

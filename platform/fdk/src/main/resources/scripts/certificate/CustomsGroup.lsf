@@ -5,7 +5,7 @@ REQUIRE Certificate, Hierarchy, Utils, Historizable, Tax, Stock;
 CLASS CustomsZone 'Таможенная зона' : Named;
 TABLE customsZone(CustomsZone);
 
-customsZoneName (name) = GROUP UNIQUE customsZone BY name(customsZone) WHERE customsZone IS CustomsZone;
+customsZoneName (name) = GROUP AGGR customsZone BY name(customsZone) WHERE customsZone IS CustomsZone;
 
 currencyCustomsZone = DATA Currency(CustomsZone);
 nameCurrencyCustomsZone 'Валюта' (customsZone) = name(currencyCustomsZone(customsZone)) IN base;
@@ -17,7 +17,7 @@ hasCodeCustomsGroup 'Есть код' = DATA BOOLEAN (CustomsGroup) IN base;
 dateFromCustomsGroup 'Дата с' = DATA DATE (CustomsGroup) IN base;
 dateToCustomsGroup 'Дата по' = DATA DATE (CustomsGroup) IN base;
 codeCustomsGroup 'Код' = DATA STRING[10](CustomsGroup) IN base;
-customsGroupCode (code) = GROUP UNIQUE customsGroup BY codeCustomsGroup(customsGroup) WHERE customsGroup IS CustomsGroup;
+customsGroupCode (code) = GROUP AGGR customsGroup BY codeCustomsGroup(customsGroup) WHERE customsGroup IS CustomsGroup;
 
 numberCustomsGroup 'Номер строки' = DATA INTEGER(CustomsGroup) IN base;
 

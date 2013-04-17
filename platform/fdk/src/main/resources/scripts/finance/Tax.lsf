@@ -62,7 +62,7 @@ TABLE rangeTaxUnit (Range, TaxUnit);
 inRangeTaxUnit 'Вкл.' (range, taxUnit) = DATA BOOLEAN (Range, TaxUnit);
 inRangeTaxUnit (range, taxUnit) => isUnitsTypeRange(range) RESOLVE FALSE;
 
-rangeTaxTaxUnit 'Шкала по налогу и субъекту' (tax, taxUnit) = GROUP UNIQUE range BY taxRange(range), taxUnit
+rangeTaxTaxUnit 'Шкала по налогу и субъекту' (tax, taxUnit) = GROUP AGGR range BY taxRange(range), taxUnit
                                                                        WHERE inRangeTaxUnit(range, taxUnit) AND Tax.taxVAT == taxRange(range);
 
 rangeVATTaxUnit 'Шкала субъекту' (taxUnit) = rangeTaxTaxUnit (Tax.taxVAT, taxUnit);
@@ -94,7 +94,7 @@ nameUserCreatedActingRateRange 'Создан пользователем' (range)
 CONSTRAINT rangeRate(rt1) == rangeRate(rt2) AND NOT (dateFromRate(rt2) <= dateFromRate(rt1) OR dateToRate(rt1) < dateFromRate(rt2))  MESSAGE 'ошибка: Одновременно не может быть несколько действующих ставок / или не задано: действует с';
 
 // для импорта
-valueCurrentVATCountryValue 'Шкала НДС по значению' (country, doubleValue) = GROUP UNIQUE range BY countryRange(range), valueCurrentRateRange (range);
+valueCurrentVATCountryValue 'Шкала НДС по значению' (country, doubleValue) = GROUP AGGR range BY countryRange(range), valueCurrentRateRange (range);
 
 valueCurrentVATDefaultValue 'Шкала по значению' (doubleValue) = valueCurrentVATCountryValue(defaultCountry(), doubleValue);
 

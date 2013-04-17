@@ -39,7 +39,7 @@ TABLE discountCard (DiscountCard);
 
 CLASS ABSTRACT DiscountSkuGroup 'Дисконтная группа товаров' : Named;
 
-discountCardSeriesNumber (discountCard) = GROUP UNIQUE discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS DiscountCard;
+discountCardSeriesNumber (discountCard) = GROUP AGGR discountCard BY seriesNumberObject (discountCard) WHERE discountCard IS DiscountCard;
 discountCardNumber (discountCard) = GROUP MAX discountCard BY numberObject(discountCard) IF discountCard IS DiscountCard;
 
 clientDiscountCard (discountCard) = DATA Client(DiscountCard);

@@ -19,7 +19,7 @@ parentNaturalLossGroup = DATA NaturalLossGroup (SubNaturalLossGroup);
 nameParentNaturalLossGroup 'Родительская группа' (subNaturalLossGroup) = name(parentNaturalLossGroup(subNaturalLossGroup));
 codeSubNaturalLossGroup 'Код нормы естественной убыли' = DATA STRING[3] (SubNaturalLossGroup);
 
-nameToNaturalLossGroup (name) = GROUP UNIQUE naturalLossGroup BY name(naturalLossGroup) WHERE naturalLossGroup IS NaturalLossGroup;
+nameToNaturalLossGroup (name) = GROUP AGGR naturalLossGroup BY name(naturalLossGroup) WHERE naturalLossGroup IS NaturalLossGroup;
 subNaturalLossGroupSubNaturalLossGroupDetail = DATA SubNaturalLossGroup (SubNaturalLossGroupDetail);
 dayFromNaturalLossGroupDetail 'День' = DATA INTEGER (SubNaturalLossGroupDetail);
 monthFromNaturalLossGroupDetail = DATA Month (SubNaturalLossGroupDetail);

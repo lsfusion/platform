@@ -578,7 +578,7 @@ numberGroupDeclaration 'Номер' (groupDeclaration) =
 userNumberGroupDeclaration 'Пользовательский номер' (groupDeclaration) = DATA INTEGER (GroupDeclaration);
 overNumberGroupDeclaration 'Номер' (groupDeclaration) = UNION OVERRIDE numberGroupDeclaration(groupDeclaration), userNumberGroupDeclaration(groupDeclaration);
 
-uniqueGroupDeclaration = GROUP UNIQUE groupDeclaration BY overNumberGroupDeclaration (groupDeclaration),
+uniqueGroupDeclaration = GROUP AGGR groupDeclaration BY overNumberGroupDeclaration (groupDeclaration),
                                                           declarationGroupDeclaration (groupDeclaration)
                                                           WHERE groupDeclaration IS GroupDeclaration;
 

@@ -55,7 +55,7 @@ TABLE roundGroup(RoundGroup);
 TABLE roundConditionRoundGroup (RoundCondition, RoundGroup);
 inRoundConditionRoundGroup 'Вкл' = DATA BOOLEAN (RoundCondition, RoundGroup);
 
-roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP UNIQUE roundCondition
+roundConditionUniqueCurrencyRoundGroup(currency, roundGroup) = GROUP AGGR roundCondition
                                                                      BY currencyRoundCondition(roundCondition), roundGroup
                                                                      WHERE inRoundConditionRoundGroup(roundCondition, roundGroup) PERSISTENT;
 

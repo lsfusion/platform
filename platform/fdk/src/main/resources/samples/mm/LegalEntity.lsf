@@ -8,7 +8,7 @@ nameLegalEntity 'Наименование' (legalEntity) = DATA STRING[100](Lega
 addressLegalEntity 'Адрес' (legalEntity) = DATA STRING[150](LegalEntity) IN base;
 innLegalEntity 'ИНН' (legalEntity) = DATA STRING[9](LegalEntity) IN base;
 
-legalEntityINN (inn) = GROUP UNIQUE legalEntity BY innLegalEntity(legalEntity);
+legalEntityINN (inn) = GROUP AGGR legalEntity BY innLegalEntity(legalEntity);
 
 FORM legalEntities 'Организации'
 	OBJECTS l=LegalEntity

@@ -1055,7 +1055,7 @@ groupingType returns [GroupingType type]
 	|	'MAX' 	{ $type = GroupingType.MAX; }
 	|	'MIN' 	{ $type = GroupingType.MIN; }
 	|	'CONCAT' { $type = GroupingType.CONCAT; }
-	|	'UNIQUE' { $type = GroupingType.UNIQUE; }
+	|	'AGGR' { $type = GroupingType.AGGR; }
 	|	'EQUAL'	{ $type = GroupingType.EQUAL; }	
 	;
 

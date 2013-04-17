@@ -108,7 +108,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum ConstType { STATIC, INT, REAL, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
-    public enum GroupingType {SUM, MAX, MIN, CONCAT, UNIQUE, EQUAL}
+    public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL}
 
     private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
@@ -1260,10 +1260,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         checkGPropOrderConsistence(type, orderProps.size());
         checkGPropAggregateConsistence(type, mainProps.size());
-        checkGPropUniqueConstraints(type, mainProps, groupProps);
+        checkGPropAggrConstraints(type, mainProps, groupProps);
+        checkGPropWhereConsistence(type, whereProp);
 
         List<LPWithParams> whereProps = new ArrayList<LPWithParams>();
-        if (type == GroupingType.UNIQUE) {
+        if (type == GroupingType.AGGR) {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
@@ -1282,7 +1283,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
             resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
-        } else if (type == GroupingType.UNIQUE) {
+        } else if (type == GroupingType.AGGR) {
             resultProp = addAGProp(null, false, genSID(), false, "", false, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, genSID(), false, "", null, groupPropParamCount, resultParams.toArray());
@@ -2107,12 +2108,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkGPropUniqueConstraints(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
-        if (type == GroupingType.UNIQUE) {
+    private void checkGPropAggrConstraints(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
+        if (type == GroupingType.AGGR) {
             if (mainProps.get(0).property != null) {
-                errLog.emitNonObjectAggrUniqueGPropError(parser);
+                errLog.emitNonObjectAggrGPropError(parser);
             }
-            //todo [dale]: добавить ошибку для группировочных свойств
+        }
+    }
+
+    private void checkGPropWhereConsistence(GroupingType type, LPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
+        if (type != GroupingType.AGGR && where != null) {
+            errLog.emitWhereGPropError(parser, type);
         }
     }
 

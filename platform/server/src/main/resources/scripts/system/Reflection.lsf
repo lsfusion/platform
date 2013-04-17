@@ -12,7 +12,7 @@ levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l 
 captionPropertyGroup 'Имя' = DATA STRING[250] (PropertyGroup);
 numberPropertyGroup 'Номер' = DATA INTEGER (PropertyGroup);
 SIDPropertyGroup 'Код свойства' = DATA STRING[100] (PropertyGroup);
-propertyGroupSID 'Свойство' (sid) = GROUP UNIQUE propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
+propertyGroupSID 'Свойство' (sid) = GROUP AGGR propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
@@ -22,7 +22,7 @@ TABLE navigatorElement (NavigatorElement);
 captionNavigatorElement 'Название формы' = DATA STRING[250] (NavigatorElement);
 sidNavigatorElement 'Код формы' = DATA STRING[50] (NavigatorElement);
 numberNavigatorElement 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElementSID 'Форма' (sid) = GROUP UNIQUE navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+navigatorElementSID 'Форма' (sid) = GROUP AGGR navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
 parentNavigatorElement 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
 isNavigatorElement (navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
 isForm (form) = form IS Form;
@@ -42,7 +42,7 @@ signatureProperty 'Сигнатура' = DATA STRING[100] (Property);
 returnProperty 'Возвращаемый класс' = DATA STRING[100] (Property);
 classProperty 'Класс свойства' = DATA STRING[100] (Property);
 captionProperty 'Заголовок' = DATA STRING[250] (Property) IN base;
-propertySID 'Свойство' (sid) = GROUP UNIQUE property BY SIDProperty(property) WHERE property IS Property;
+propertySID 'Свойство' (sid) = GROUP AGGR property BY SIDProperty(property) WHERE property IS Property;
 
 CLASS PropertyDraw 'Свойство на форме';
 CLASS PropertyDrawShowStatus 'Показ свойства'
@@ -58,7 +58,7 @@ sidPropertyDraw 'Код свойства на форме' = DATA STRING[100] (Pr
 captionPropertyDraw 'Название свойства на форме' = DATA STRING[250] (PropertyDraw);
 formPropertyDraw 'Форма' = DATA Form (PropertyDraw);
 groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
-propertyDrawFormSID 'Свойство на форме' = GROUP UNIQUE propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
+propertyDrawFormSID 'Свойство на форме' = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
 propertyDrawSIDNavigatorElementSIDPropertyDraw 'Код формы' (str1, str2) = propertyDrawFormSID (navigatorElementSID(str1), str2);
 //PropertyDrawSIDNavigatorElementSIDPropertyDraw = addJProp(BL.LM.baseGroup, "PropertyDrawSIDNavigatorElementSIDPropertyDraw", getString("logics.forms.code"), propertyDrawFormSID, navigatorElementSID, 1, 2);
 
@@ -94,7 +94,7 @@ CLASS Table 'Таблица';
 TABLE tables (Table);
 
 sidTable 'Имя таблицы' = DATA STRING[100] (Table);
-tableSID 'Имя таблицы' (sid) = GROUP UNIQUE table BY sidTable (table) WHERE table IS Table;
+tableSID 'Имя таблицы' (sid) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
 rowsTable 'Количество записей' = DATA INTEGER (Table);
 tableTableKey 'Таблица' = DATA Table (TableKey);
 
@@ -102,7 +102,7 @@ CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
 sidTableKey 'Код ключа' = DATA STRING[100] (TableKey);
-tableKeySID 'Ключ' = GROUP UNIQUE tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
+tableKeySID 'Ключ' = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
 classTableKey 'Класс ключа' = DATA STRING[40] (TableKey);
 nameTableKey 'Имя ключа' = DATA STRING[20] (TableKey);
 quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
@@ -112,7 +112,7 @@ TABLE tableColumn (TableColumn);
 
 tableTableColumn 'Таблица' = DATA Table(TableColumn);
 sidTableColumn 'Имя колонки' = DATA STRING[100] (TableColumn);
-tableColumnSID 'Колонка' = GROUP UNIQUE tableColumn BY sidTableColumn(tableColumn) WHERE tableColumn IS TableColumn;
+tableColumnSID 'Колонка' = GROUP AGGR tableColumn BY sidTableColumn(tableColumn) WHERE tableColumn IS TableColumn;
 propertyTableColumn 'Свойство' (tableColumn) = propertySID(sidTableColumn(tableColumn));
 namePropertyTableColumn 'Заголовок свойства' (tableColumn) = captionProperty (propertyTableColumn(tableColumn));
 quantityTableColumn 'Количество разновидностей' = DATA INTEGER (TableColumn);
@@ -134,7 +134,7 @@ CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
 sidDropColumn 'Имя колонки' = DATA STRING[100] (DropColumn);
-dropColumnSID 'Удалённая колонка' (sid) = GROUP UNIQUE dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
+dropColumnSID 'Удалённая колонка' (sid) = GROUP AGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
 sidTableDropColumn 'Имя таблицы' = DATA STRING[100] (DropColumn);
 timeDropColumn 'Время удаления' = DATA DATETIME (DropColumn);
 revisionDropColumn 'Версия' = DATA STRING[10] (DropColumn);
@@ -146,7 +146,7 @@ TABLE groupObject (GroupObject);
 sidGroupObject 'Код группы объектов' = DATA STRING[100] (GroupObject);
 navigatorElementGroupObject 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
 sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject));
-groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP UNIQUE groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
+groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
 
 
 FORM physicalModel 'Физическая модель'

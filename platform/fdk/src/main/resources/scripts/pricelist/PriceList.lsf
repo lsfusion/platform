@@ -280,7 +280,7 @@ toTimePriceList(userPriceList) += toTimeUserPriceList(userPriceList);
 //    IF u IS UserPriceList AND toTimeUserPriceList(u) THEN SET toTimeUserPriceList(u) <- NULL;
 //} SESSION;
 
-userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyPriceList(userPriceList) WHERE userPriceList IS UserPriceList;
+userPriceListLegalEntity (legalEntity) = GROUP MAX userPriceList BY companyUserPriceList(userPriceList);
 
 pricePriceListDetailDataPriceListType 'Цена (новая)' = ABSTRACT NUMERIC[14,2] (PriceListDetail, DataPriceListType) PERSISTENT;
 priceUserPriceListDetailDataPriceListType 'Цена (новая)' = DATA NUMERIC[14,2] (PriceListDetail, DataPriceListType);
