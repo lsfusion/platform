@@ -237,6 +237,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
      */
     boolean isFocused;
 
+    private boolean focusable = true;
+
     private final List<Column<T, ?>> columns = new ArrayList<Column<T, ?>>();
     private final Map<Column<T, ?>, String> columnWidths = new HashMap<Column<T, ?>, String>();
 
@@ -1925,8 +1927,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < tableRowCount) {
             TableRowElement newTR = rows.getItem(newLocalSelectedRow);
 
-            setRowStyleName(newTR, selectedRowStyle, selectedRowCellStyle, isFocused || !isRemoveKeyboardStylesOnBlur());
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, isFocused);
+            setRowStyleName(newTR, selectedRowStyle, selectedRowCellStyle, focusable && (isFocused || !isRemoveKeyboardStylesOnBlur()));
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, focusable && isFocused);
 
             oldLocalSelectedRow = newLocalSelectedRow;
             oldLocalSelectedCol = newLocalSelectedCol;
@@ -1982,6 +1984,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         tableHeader.hideUnusedColumns(columnCount);
         tableData.hideUnusedColumns(columnCount);
         tableFooter.hideUnusedColumns(columnCount);
+    }
+
+    public void setTableFocusable(boolean focusable) {
+        this.focusable = focusable;
+        tableData.setTableFocusable(focusable);
     }
 
     /**
@@ -2345,6 +2352,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
                     containerElement.getStyle().clearWidth();
                 }
             }
+        }
+
+        public void setTableFocusable(boolean focusable) {
+            setFocusable(containerElement, focusable);
         }
     }
 

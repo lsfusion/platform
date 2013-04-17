@@ -53,6 +53,10 @@ public class DataPanelRenderer implements PanelRenderer {
             }
         };
 
+        if (!property.focusable) {
+            valueTable.setTableFocusable(false);
+        }
+
         gridPanel = new ResizableSimplePanel();
         gridPanel.addStyleName("dataPanelRendererGridPanel");
         gridPanel.add(valueTable);

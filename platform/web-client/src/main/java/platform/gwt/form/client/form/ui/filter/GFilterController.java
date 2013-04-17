@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import platform.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import platform.gwt.form.shared.view.GPropertyDraw;
 import platform.gwt.form.shared.view.filter.GPropertyFilter;
 import platform.gwt.form.shared.view.grid.EditEvent;
@@ -36,14 +37,17 @@ public abstract class GFilterController {
     public GFilterController(GGroupObjectLogicsSupplier logicsSupplier) {
         this.logicsSupplier = logicsSupplier;
 
-        toolbarButton = new ImageButton(null, ADD_FILTER);
-        toolbarButton.addStyleName("toolbarButton");
-        toolbarButton.addClickHandler(new ClickHandler() {
+        toolbarButton = new GToolbarButton(ADD_FILTER) {
             @Override
-            public void onClick(ClickEvent event) {
-                showFilterPressed();
+            public void addListener() {
+                addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        showFilterPressed();
+                    }
+                });
             }
-        });
+        };
 
         filterView = new GFilterView(this);
 

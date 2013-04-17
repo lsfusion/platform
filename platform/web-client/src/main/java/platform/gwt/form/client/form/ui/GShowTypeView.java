@@ -4,9 +4,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
+import platform.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import platform.gwt.form.shared.view.GClassViewType;
 import platform.gwt.form.shared.view.GGroupObject;
-import platform.gwt.form.shared.view.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +27,18 @@ public class GShowTypeView extends ResizableHorizontalPanel {
 
         addStyleName("showType");
 
-        add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID));
-        add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL));
-        add(hideButton = createShowTypeButton("view_hide.png", GClassViewType.HIDE));
+        add(gridButton = createShowTypeButton("view_grid.png", GClassViewType.GRID, "Таблица"));
+        add(panelButton = createShowTypeButton("view_panel.png", GClassViewType.PANEL, "Панель"));
+        add(hideButton = createShowTypeButton("view_hide.png", GClassViewType.HIDE, "Скрыть"));
     }
 
-    private Button createShowTypeButton(String imagePath, GClassViewType newClassView) {
-        Button showTypeButton = new ImageButton(null, imagePath);
-        showTypeButton.addStyleName("toolbarButton");
-        showTypeButton.addClickHandler(new ChangeViewBtnClickHandler(newClassView));
+    private Button createShowTypeButton(String imagePath, final GClassViewType newClassView, String tooltipText) {
+        Button showTypeButton = new GToolbarButton(imagePath, tooltipText) {
+            @Override
+            public void addListener() {
+                addClickHandler(new ChangeViewBtnClickHandler(newClassView));
+            }
+        };
         return showTypeButton;
     }
 

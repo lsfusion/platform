@@ -69,6 +69,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 }
             });
         }
+        button.setFocusable(property.focusable);
     }
 
     private boolean click(EventTarget ifocusTargetAfterEdit) {

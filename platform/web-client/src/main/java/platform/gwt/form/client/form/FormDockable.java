@@ -149,7 +149,13 @@ final class FormDockable {
         public TabWidget(String title) {
             label = new Label(title);
 
-            closeButton = new Button();
+            closeButton = new Button() {
+                @Override
+                protected void onAttach() {
+                    super.onAttach();
+                    setTabIndex(-1);
+                }
+            };
             closeButton.setText(EscapeUtils.UNICODE_CROSS);
             closeButton.setStyleName("closeTabButton");
 

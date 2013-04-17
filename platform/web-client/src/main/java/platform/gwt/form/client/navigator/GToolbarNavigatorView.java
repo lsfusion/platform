@@ -3,7 +3,10 @@ package platform.gwt.form.client.navigator;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.SimplePanel;
 import platform.gwt.base.client.ui.ResizableHorizontalPanel;
 import platform.gwt.base.client.ui.ResizableVerticalPanel;
 import platform.gwt.form.shared.view.GNavigatorElement;
@@ -61,6 +64,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
                 navigatorController.openElement(element);
             }
         });
+        button.setFocusable(false);
 
         button.setHeight("auto");
         button.addStyleName("toolbarNavigatorButton");

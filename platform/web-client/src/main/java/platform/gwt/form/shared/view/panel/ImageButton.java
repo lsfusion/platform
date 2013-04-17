@@ -17,6 +17,8 @@ public class ImageButton extends Button {
     private String imagePath;
     private String text;
 
+    private boolean focusable = true;
+
     public ImageButton() {
         this(null, null, false);
     }
@@ -116,5 +118,18 @@ public class ImageButton extends Button {
 
     public Label getLabel() {
         return label;
+    }
+
+    // call before attach
+    public void setFocusable(boolean focusable) {
+        this.focusable = focusable;
+    }
+
+    @Override
+    protected void onAttach() {
+        super.onAttach();
+        if (!focusable) {
+            setTabIndex(-1);
+        }
     }
 }
