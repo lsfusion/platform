@@ -505,12 +505,12 @@ META deriveDocumentHeaderAgreement (object, supplier, customer)
 
     CONSTRAINT agreement###object(o) AND NOT inAgreementSupplier(agreement###object(o), supplier(o))
                CHECKED BY agreement###object
-               MESSAGE 'Соглашение должно быть между заданными организациями';
+               MESSAGE 'Соглашение должно быть между заданными организациями (поставщик)';
 
     CONSTRAINT agreement###object(object)
                AND NOT inAgreementCustomer(agreement###object(object), customer(object))
                CHECKED BY agreement###object
-               MESSAGE 'Соглашение должно быть между заданными организациями';
+               MESSAGE 'Соглашение должно быть между заданными организациями (покупатель)';
 END
 
 
@@ -550,10 +550,10 @@ META defineDocumentInterfaceHeaderAgreement(object1Class, object2Class, supplier
     CONSTRAINT agreement###object1Class###object2Class(o1, o2)
                AND NOT inAgreementSupplier(agreement###object1Class###object2Class(o1, o2), supplierProp###object1Class(o1))
                CHECKED BY agreement###object1Class###object2Class
-               MESSAGE 'Соглашение должно быть между заданными организациями';
+               MESSAGE 'Соглашение должно быть между заданными организациями (поставщик)';
 
     CONSTRAINT agreement###object1Class###object2Class(o1, o2)
                AND NOT inAgreementCustomer(agreement###object1Class###object2Class(o1, o2), customerProp###object1Class(o1))
                CHECKED BY agreement###object1Class###object2Class
-               MESSAGE 'Соглашение должно быть между заданными организациями';
+               MESSAGE 'Соглашение должно быть между заданными организациями (покупатель)';
 END

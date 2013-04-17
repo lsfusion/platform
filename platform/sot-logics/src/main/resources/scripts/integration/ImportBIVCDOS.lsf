@@ -31,9 +31,10 @@ importBIVCDOSContracts 'Импортировать контракты' = DATA BO
 
 EXTEND FORM integrationData
     PROPERTIES() importBIVCDOSDataAction, importBIVCDOSDirectory, importBIVCDOSStartDate, importBIVCDOSNumberItems,
-    importBIVCDOSNumberItemsAtATime, importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSWares, importBIVCDOSUserInvoices,
-    importBIVCDOSUserInvoicesPosted, importBIVCDOSNumberUserInvoices, importBIVCDOSNumberUserInvoicesAtATime, importBIVCDOSBanks,
-    importBIVCDOSEmployees, importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2, importBIVCDOSContracts
+    importBIVCDOSNumberItemsAtATime, importBIVCDOSGroupItems, importBIVCDOSItems, importBIVCDOSWares, importBIVCDOSBanks,
+    importBIVCDOSEmployees, importBIVCDOSLegalEntities, importBIVCDOSWarehouses, importBIVCDOSMag2, importBIVCDOSContracts,
+    importBIVCDOSUserInvoices, importBIVCDOSUserInvoicesPosted, importBIVCDOSNumberUserInvoices,
+    importBIVCDOSNumberUserInvoicesAtATime
 ;
 EXTEND DESIGN integrationData {
     pane {

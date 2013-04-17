@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 
 public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
+    Map<String, String[]> suppliersFastMap;
+
     public ImportBIVCDOSActionProperty(ScriptingLogicsModule LM) {
         super(LM);
 
@@ -378,7 +380,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
 
         Set<String> suppliers = new HashSet<String>();
         Map<String, String[]> suppliersMap = new HashMap<String, String[]>();
-        Map<String, String[]> suppliersFastMap = new HashMap<String, String[]>();
+        suppliersFastMap = new HashMap<String, String[]>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(swtpPath), "cp866"));
         Map<String, String> warehouseLegalEntityMap = new HashMap<String, String>();
@@ -389,7 +391,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                 if (splittedLine.length >= 2) {
                     String legalEntityID = splittedLine[1].replaceAll("\"", "");
                     String warehouseID = (splittedLine.length == 2 ? splittedLine[1] : splittedLine[2]).replace("\"", "");
-                    if(warehouseLegalEntityMap.containsKey(warehouseID))
+                    if (warehouseLegalEntityMap.containsKey(warehouseID))
                         legalEntityID = warehouseLegalEntityMap.get(warehouseID);
                     else
                         warehouseLegalEntityMap.put(warehouseID, legalEntityID);
@@ -456,8 +458,8 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
                     Date currentDate = new Date(System.currentTimeMillis());
                     String currentDateField = new SimpleDateFormat("dd/MM/yy").format(currentDate);
-                    dateField = date1 == null ? (date2==null ? currentDateField : date2Field) : (date2==null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
-                    date = date1 == null ? (date2==null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    dateField = date1 == null ? (date2 == null ? currentDateField : date2Field) : (date2 == null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
+                    date = date1 == null ? (date2 == null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
 
                     String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
@@ -497,6 +499,9 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                             } else
                                 suppliersFastMap.put(supplierString, new String[]{supplierID, supplierWarehouseID});
                         }
+                    } else {
+                        supplierID = "ds";
+                        supplierWarehouseID = "dsw";
                     }
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                     Double sumPrice = Double.parseDouble(splittedLine.length > 2 ? splittedLine[2] : null);
@@ -987,6 +992,7 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
         Date date = null;
         String name = null;
         String priceListText = null;
+        String supplierWarehouseID = null;
         Double quantity = null;
         while ((line = reader.readLine()) != null) {
             if (numberOfItems != null && SOTUserInvoicesList.size() >= numberOfItems)
@@ -1004,18 +1010,28 @@ public class ImportBIVCDOSActionProperty extends ScriptingActionProperty {
                     Date date1 = (date1Field == null || date1Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date1Field, new String[]{"ddMMyy"}).getTime());
                     String date2Field = splittedLine.length > 0 ? splittedLine[0].substring(24, 30) : null;
                     Date date2 = (date2Field == null || date2Field.equals("000000")) ? null : new Date(DateUtils.parseDate(date2Field, new String[]{"ddMMyy"}).getTime());
-                    dateField = date1 == null ? date2Field : (date2 == null ? date1Field : date1.after(date2) ? date1Field : date2Field);
-                    date = date1 == null ? date2 : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
+                    Date currentDate = new Date(System.currentTimeMillis());
+                    String currentDateField = new SimpleDateFormat("dd/MM/yy").format(currentDate);
+                    dateField = date1 == null ? (date2 == null ? currentDateField : date2Field) : (date2 == null ? date1Field : (date1.after(date2) ? date1Field : date2Field));
+                    date = date1 == null ? (date2 == null ? currentDate : date2) : (date2 == null ? date1 : date1.after(date2) ? date1 : date2);
                     name = splittedLine.length > 3 ? splittedLine[3] : null;
                     priceListText = splittedLine.length > 4 ? splittedLine[4] : null;
+                    String supplierString = splittedLine.length > 5 ? splittedLine[5] : null;
+                    if (supplierString != null && !supplierString.isEmpty() && suppliersFastMap.containsKey(supplierString))
+                        supplierWarehouseID = suppliersFastMap.get(supplierString)[1];
+                    else
+                        supplierWarehouseID = "dsw";
                     quantity = splittedLine.length > 7 ? Double.parseDouble(splittedLine[7]) : null;
                 } else if ("9".equals(extra)) {
                     String groupID = reader.readLine();
+                    if (groupID.split(":")[0].length() == 2)
+                        groupID = "0" + groupID;
                     UOM uom = uomMap.get(uomID);
                     String uomFullName = uom == null ? "" : uom.uomFullName;
                     String itemID = /*pnt13 + pnt48*/groupID + ":" + name + uomFullName;
+
                     if (isCorrectUserInvoiceDetail(quantity, startDate, date, groupID))
-                        SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
+                        SOTUserInvoicesList.add(Arrays.asList((Object) ("I" + itemID), "UID" + supplierWarehouseID + "/" + warehouse + "/" + dateField + "/" + pnt13 + pnt48,
                                 pnt13 + pnt48, priceListText));
                 }
             }
