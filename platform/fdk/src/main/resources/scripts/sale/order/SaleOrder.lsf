@@ -36,37 +36,6 @@ VATUserOrder (userOrder) <- rangeTaxTaxUnit(Tax.taxVAT, storeDepartmentStore(sup
 
 @deriveDocumentDetailVATHeader(userOrder, VAT, supplierStock);
 
-derivedVATSumUserOrderDetail (userOrderDetail) =
-//    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
-//        THEN roundPriceCurrency(invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail) * valueVATUserOrderDetail (userOrderDetail)/100, currencyUserOrderDetail(userOrderDetail))
-//        ELSE
-        roundPriceCurrency((sumUserOrderDetail(userOrderDetail) * calcVATUserOrderDetail (userOrderDetail) / 100), currencyUserOrderDetail(userOrderDetail))
-    PERSISTENT;
-
-VATSumUserOrderDetail (userOrderDetail) <- derivedVATSumUserOrderDetail (userOrderDetail)
-    WHEN CHANGED(invoicePriceUserOrderDetail(userOrderDetail)) OR CHANGED(quantityUserOrderDetail(userOrderDetail)) OR CHANGED(VATUserOrderDetail(userOrderDetail))
-      OR CHANGED(sumUserOrderDetail(userOrderDetail)) OR CHANGED(currencyUserOrderDetail(userOrderDetail));
-
-derivedInvoiceSumUserOrderDetail (userOrderDetail) =
-    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
-        THEN invoicePriceUserOrderDetail (userOrderDetail) * quantityUserOrderDetail (userOrderDetail)
-        ELSE sumUserOrderDetail (userOrderDetail) (+) VATSumUserOrderDetail (userOrderDetail)
-    PERSISTENT;
-
-invoiceSumUserOrderDetail (userOrderDetail) <- derivedInvoiceSumUserOrderDetail (userOrderDetail)
-    WHEN CHANGED(invoicePriceUserOrderDetail(userOrderDetail)) OR CHANGED(quantityUserOrderDetail(userOrderDetail))
-    OR CHANGED(sumUserOrderDetail(userOrderDetail)) OR CHANGED(VATSumUserOrderDetail(userOrderDetail));
-
-derivedPriceUserOrderDetail (userOrderDetail) =
-//    IF rangeTypeRange(VATUserOrderDetail(userOrderDetail)) == RangeType.units
-//        THEN invoicePriceUserOrderDetail(userOrderDetail)*(100-valueVATUserOrderDetail (userOrderDetail))/100
-//        ELSE
-        invoicePriceUserOrderDetail(userOrderDetail)*100/(100+calcVATUserOrderDetail (userOrderDetail))
-    PERSISTENT;
-
-priceUserOrderDetail (userOrderDetail) <- derivedPriceUserOrderDetail (userOrderDetail)
-    WHEN CHANGED(invoicePriceUserOrderDetail(userOrderDetail)) OR CHANGED(VATUserOrderDetail (userOrderDetail));
-
 isDepartmentStoreSupplierStockOrder (order) = supplierStockOrder(order) IS DepartmentStore;
 
 EXTEND FORM userOrder
