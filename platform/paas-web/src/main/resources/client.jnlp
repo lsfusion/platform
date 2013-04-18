@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="${codebase.url}">
+<jnlp spec="1.5+" codebase="${codebase.url}" href="${jnlp.url}">
     <information>
         <title>${scripted.name}</title>
         <vendor>Nomosoft Ltd.</vendor>

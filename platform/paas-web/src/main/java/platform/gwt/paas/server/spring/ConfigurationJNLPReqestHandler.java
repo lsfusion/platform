@@ -7,7 +7,6 @@ import org.springframework.web.HttpRequestHandler;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.remote.PaasRemoteInterface;
 import platform.base.IOUtils;
-import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 
 import javax.servlet.ServletException;
@@ -48,12 +47,17 @@ public class ConfigurationJNLPReqestHandler implements HttpRequestHandler {
         }
 
         try {
-            ConfigurationDTO configuration = paasProvider.getLogics().getConfiguration(ServerUtils.getAuthentication().getName(), confId);
+            ConfigurationDTO configuration = paasProvider.getLogics().getConfiguration(null, confId);
 
             logger.debug("Read configuration: " + configuration.name + ":" + configuration.exportName);
 
+            StringBuffer requestURL = request.getRequestURL();
+            String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
+            String jnlpUrl = requestURL.append("?").append(CONFIGURATION_ID).append("=").append(confId).toString();
+
             Properties properties = new Properties();
-            properties.put("codebase.url", request.getContextPath());
+            properties.put("codebase.url", codebaseUrl);
+            properties.put("jnlp.url", jnlpUrl);
             properties.put("scripted.name", nvl(configuration.name, "Launch app").trim());
             properties.put("scripted.host", paasProvider.getRegistryHost());
             properties.put("scripted.port", String.valueOf(paasProvider.getRegistryPort()));

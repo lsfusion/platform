@@ -19,7 +19,7 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
     private ToolStripButton btnStart;
     private ToolStripButton btnStop;
     private ToolStripButton btnRestart;
-    private ToolStripButton btnConnect;
+//    private ToolStripButton btnConnect;
     private ToolStripButton btnLink;
     private DynamicForm configurationsForm;
     private ConfigurationsDataSource configurationDS;
@@ -92,15 +92,15 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
             }
         });
 
-        btnConnect = addToolStripButton("connect.png", "Download JNLP-file to connect", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                ListGridRecord selected = cbConfigurations.getSelectedRecord();
-                if (selected != null) {
-                    uiHandlers.downloadJnlp((ConfigurationRecord) selected);
-                }
-            }
-        });
+//        btnConnect = addToolStripButton("connect.png", "Download JNLP-file to connect", new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                ListGridRecord selected = cbConfigurations.getSelectedRecord();
+//                if (selected != null) {
+//                    uiHandlers.downloadJnlp((ConfigurationRecord) selected);
+//                }
+//            }
+//        });
 
         addToolStripButton("configuration.png", "Setup configurations", new ClickHandler() {
             @Override
@@ -152,7 +152,7 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         btnRestart.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnStop.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnLink.setDisabled(record == null || !"started".equals(record.getStatus()));
-        btnConnect.setDisabled(record == null);
+//        btnConnect.setDisabled(record == null);
     }
 
     public void setConfigurations(ConfigurationDTO[] configurations) {

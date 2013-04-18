@@ -38,14 +38,14 @@ public class LoginDialog extends JDialog {
     private JPanel warningPanel;
     private JComboBox serverDB;
     private String waitMessage = ClientResourceBundle.getString("dialog.please.wait");
-    private LoginInfo defaultLoginInfo;
+    private LoginInfo loginInfo;
     private boolean autoLogin = false;
     private JLabel imageLabel;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
         imageLabel.setIcon(Main.getLogo());
 
-        this.defaultLoginInfo = restoreLoginData(defaultLoginInfo);
+        loginInfo = restoreLoginData(defaultLoginInfo);
         setContentPane(contentPane);
         setAlwaysOnTop(true);
         setUndecorated(true);
@@ -57,30 +57,30 @@ public class LoginDialog extends JDialog {
 
         initUIHandlers();
 
-        if (this.defaultLoginInfo.getServerHost() != null) {
-            StringBuilder server = new StringBuilder(this.defaultLoginInfo.getServerHost());
-            if (defaultLoginInfo.getServerPort() != null) {
+        if (loginInfo.getServerHost() != null) {
+            StringBuilder server = new StringBuilder(loginInfo.getServerHost());
+            if (loginInfo.getServerPort() != null) {
                 server.append(":");
-                server.append(this.defaultLoginInfo.getServerPort());
+                server.append(loginInfo.getServerPort());
             }
             String item = server.toString();
             ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
             serverHost.setSelectedItem(item);
         }
 
-        String db = this.defaultLoginInfo.getServerDB();
+        String db = loginInfo.getServerDB();
         if (db != null) {
             if (serverDB.getItemCount() == 0)
                 ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
             serverDB.setSelectedItem(db);
         }
 
-        if (this.defaultLoginInfo.getUserName() != null) {
-            loginField.setText(this.defaultLoginInfo.getUserName());
+        if (loginInfo.getUserName() != null) {
+            loginField.setText(loginInfo.getUserName());
         }
 
-        if (this.defaultLoginInfo.getPassword() != null) {
-            passwordField.setText(this.defaultLoginInfo.getPassword());
+        if (loginInfo.getPassword() != null) {
+            passwordField.setText(loginInfo.getPassword());
         }
 
         warningPanel.setVisible(false);
@@ -242,7 +242,7 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        result = defaultLoginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()));
+        result = loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()));
 
         storeServerData();
         setVisible(false);
@@ -256,11 +256,11 @@ public class LoginDialog extends JDialog {
             fileWr.write(result.getServerHost() + '\n');
             fileWr.write(result.getServerPort() + '\n');
             fileWr.write(result.getUserName() + '\n');
+            fileWr.write(result.getServerDB() + '\n');
             fileWr.write(String.valueOf(savePassword.isSelected()) + '\n');
             if (savePassword.isSelected()) {
                 fileWr.write(Base64.encodeBase64String(result.getPassword().getBytes()) + '\n');
             }
-            fileWr.write(result.getServerDB() + '\n');
             fileWr.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -285,6 +285,13 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getUserName() != null) {
                     userName = loginInfo.getUserName();
                 }
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
+                if (loginInfo.getServerDB() != null) {
+                    serverDB = loginInfo.getServerDB();
+                }
+                if (serverDB.isEmpty()) {
+                    serverDB = "default";
+                }
                 String savePwd = scanner.hasNextLine() ? scanner.nextLine() : "";
                 savePassword.setSelected(Boolean.valueOf(savePwd));
                 String password = "";
@@ -296,14 +303,6 @@ public class LoginDialog extends JDialog {
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
                 }
-                if (scanner.hasNextLine()) scanner.nextLine();   //из-за лишней пустой строки
-                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (serverDB.isEmpty()) {
-                    serverDB = "default";
-                }
-                //if (loginInfo.getServerDB() != null) {
-                //    serverDB = loginInfo.getServerDB();
-                //}
 
                 return new LoginInfo(serverHost, serverPort, serverDB, userName, password);
             }
@@ -330,8 +329,8 @@ public class LoginDialog extends JDialog {
     }
 
     public void setWarningMsg(String msg) {
-        this.warning.setText(msg);
-        this.warningPanel.setVisible(msg != null && !msg.isEmpty());
+        warning.setText(msg);
+        warningPanel.setVisible(msg != null && !msg.isEmpty());
     }
 
     public void setAutoLogin(boolean autoLogin) {
@@ -339,8 +338,8 @@ public class LoginDialog extends JDialog {
     }
 
     public LoginInfo login() {
-        boolean needData = defaultLoginInfo.getServerHost() == null || defaultLoginInfo.getServerPort() == null ||
-                defaultLoginInfo.getUserName() == null || defaultLoginInfo.getPassword() == null;
+        boolean needData = loginInfo.getServerHost() == null || loginInfo.getServerPort() == null ||
+                loginInfo.getUserName() == null || loginInfo.getPassword() == null;
         if (!autoLogin || needData) {
             pack();
             setLocationRelativeTo(null);
@@ -352,7 +351,7 @@ public class LoginDialog extends JDialog {
             return result;
         }
 
-        return defaultLoginInfo;
+        return loginInfo;
     }
 
     {

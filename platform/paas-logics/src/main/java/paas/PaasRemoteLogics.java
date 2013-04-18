@@ -407,7 +407,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 DataObject configObj = session.addObject(paasLM.configuration);
 
                 DataObject dbObj = session.addObject(paasLM.database);
-                String dbName = "generated_config_" + dbObj.object;
+                String dbName = "generated_config_" + configObj.object;
                 baseLM.name.change(dbName, session, dbObj);
 
                 baseLM.name.change("Configuration " + configObj.object, session, configObj);

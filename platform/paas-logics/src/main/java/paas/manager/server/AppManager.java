@@ -25,6 +25,7 @@ import platform.base.col.interfaces.immutable.ImRevMap;
 import platform.server.ServerLoggers;
 import platform.server.context.Context;
 import platform.server.context.ContextAwareDaemonThreadFactory;
+import platform.server.context.ThreadLocalContext;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.QueryBuilder;
@@ -385,6 +386,8 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         public void onProcessComplete(int exitValue) {
             super.onProcessComplete(exitValue);
 
+            ThreadLocalContext.set(instanceContext);
+
             appManagerProcessDestroyer.removeExportedName(exportName);
         }
 
@@ -393,6 +396,8 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
             super.onProcessFailed(e);
 
             logger.error("Error executing process: " + e.getMessage(), e.getCause());
+
+            ThreadLocalContext.set(instanceContext);
 
             appManagerProcessDestroyer.removeExportedName(exportName);
 

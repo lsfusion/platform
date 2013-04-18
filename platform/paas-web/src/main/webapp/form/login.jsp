@@ -31,6 +31,9 @@
                                     <input type="password" id="j_password" name="j_password" class="round full-width-input"/>
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
+                                <a class="desktop-link" href="${pageContext.request.contextPath}/jnlp/client.jnlp?confId=${requestScope['PAAS_CONFIGURATION_ID']}">
+                                    Run desktop client
+                                </a>
                             </fieldset>
                         </form>
                         <c:if test="${!empty param.error}">

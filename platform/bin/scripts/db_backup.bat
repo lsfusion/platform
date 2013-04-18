@@ -5,6 +5,8 @@ set POSTGRE_DIR=d:\Program Files\PostgreSQL\9.2
 set db=%1
 set file=%2
 
+chcp 1251
+
 if "%db%" == "" (
     echo "usage db_backup <dbname> [<filename>]"
 ) else (

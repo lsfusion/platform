@@ -6,6 +6,8 @@ set tempfile="%TEMP%\_copy_db_temp.backup"
 set fromdb=%1
 set todb=%2
 
+chcp 1251
+
 if "%fromdb%" == "" (
     echo "usage db_copy <from_dbname> <to_dbname>"
 ) else (
