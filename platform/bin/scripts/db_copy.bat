@@ -1,4 +1,4 @@
-    @echo off
+@echo off
 
 setlocal
 set POSTGRE_DIR=d:\Program Files\PostgreSQL\9.2

@@ -29,8 +29,10 @@
     <!-- Other services -->
     <bean id="appManager" class="paas.manager.server.AppManager">
         <property name="logicsInstance" ref="logicsInstance"/>
+        <property name="rmiManager" ref="rmiManager"/>
         <property name="businessLogics" ref="businessLogics"/>
         <property name="acceptPort" value="${paas.acceptPort}"/>
+        <property name="registryPort" value="${rmi.registryPort}"/>
         <property name="dbServer" value="${db.server}"/>
         <property name="dbUser" value="${db.user}"/>
         <property name="dbPassword" value="${db.password}"/>

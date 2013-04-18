@@ -125,7 +125,6 @@
 
     <!-- Custom beans ====================================================================================================================================== -->
     <bean id="threadLocalBlProvider" class="platform.gwt.paas.server.spring.ConfigurationBLProviderImpl">
-        <property name="serverHost" value="localhost"/>
         <property name="paasProvider" ref="paasProvider"/>
     </bean>
 
@@ -146,7 +145,7 @@
     </bean>
 
     <bean id="jnlpHandler" class="platform.gwt.paas.server.spring.ConfigurationJNLPReqestHandler">
-        <property name="blProvider" ref="paasProvider"/>
+        <property name="paasProvider" ref="paasProvider"/>
     </bean>
 
     <bean id="formDispatch" class="platform.gwt.form.server.FormDispatchServlet">

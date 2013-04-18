@@ -4,10 +4,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.web.HttpRequestHandler;
-import platform.base.BaseUtils;
 import platform.base.IOUtils;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +18,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     @Autowired
-    private ServletContext servletContext;
+    private BusinessLogicsProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -30,8 +28,8 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             StringBuffer requestURL = request.getRequestURL();
             Properties properties = new Properties();
             properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
-            properties.put("client.host", request.getServerName());
-            properties.put("client.port", BaseUtils.nvl(servletContext.getInitParameter("serverPort"), "7652"));
+            properties.put("client.host", blProvider.getRegistryPort());
+            properties.put("client.port", blProvider.getRegistryHost());
 
             String content = stringResolver.replacePlaceholders(
                     IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties

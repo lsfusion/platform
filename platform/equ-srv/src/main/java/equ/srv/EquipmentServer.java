@@ -35,6 +35,8 @@ import java.util.*;
 public class EquipmentServer extends LifecycleAdapter implements EquipmentServerInterface, InitializingBean {
     private static final Logger logger = Logger.getLogger(EquipmentServer.class);
 
+    public static final String EXPORT_NAME = "EquipmentServer";
+
     private RMIManager rmiManager;
 
     private BusinessLogics businessLogics;
@@ -74,7 +76,7 @@ public class EquipmentServer extends LifecycleAdapter implements EquipmentServer
     protected void onStarted(LifecycleEvent event) {
         logger.info("Binding Equipment Server.");
         try {
-            rmiManager.bindAndExport(getExportName(), this);
+            rmiManager.bindAndExport(EXPORT_NAME, this);
             started = true;
         } catch (Exception e) {
             throw new RuntimeException("Error exporting Equipment Server: ", e);
@@ -86,15 +88,11 @@ public class EquipmentServer extends LifecycleAdapter implements EquipmentServer
         if (started) {
             logger.info("Stopping Equipment Server.");
             try {
-                rmiManager.unbindAndUnexport(getExportName(), this);
+                rmiManager.unbindAndUnexport(EXPORT_NAME, this);
             } catch (Exception e) {
                 throw new RuntimeException("Error stopping Equipment Server: ", e);
             }
         }
-    }
-
-    private String getExportName() {
-        return rmiManager.getDbName() + "/EquipmentServer";
     }
 
     @Override

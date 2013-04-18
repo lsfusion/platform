@@ -8,7 +8,7 @@ public interface ProjectsListPageUIHandlers extends UiHandlers {
 
     void addNewProject();
 
-    void refreshButtonClicked(boolean refreshContent);
+    void refreshButtonClicked();
 
     void openProject(ProjectRecord selectedProject);
 

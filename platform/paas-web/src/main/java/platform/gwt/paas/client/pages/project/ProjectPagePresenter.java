@@ -49,13 +49,17 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
     }
 
     public interface MyView extends View, HasUiHandlers<ProjectPageUIHandlers> {
-        ModulesPane getModulesPane();
+        void onReveal();
+
+        void openModule(ModuleRecord record);
 
         void setModules(ModuleDTO[] modules);
 
-        void cleanView();
-
         void setConfigurations(ConfigurationDTO[] configurations);
+
+        void refreshContent();
+
+        UpdateModulesAction getModulesContent();
 
         void showLoading();
 
@@ -71,7 +75,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     public void moduleRecordSelected(ModuleRecord record) {
-        getView().getModulesPane().openModuleTab(record);
+        getView().openModule(record);
     }
 
     @Override
@@ -91,7 +95,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     public void saveAllButtonClicked() {
-        dispatcher.execute(getView().getModulesPane().prepareSaveModuleAction(), new PaasCallback<VoidResult>() {
+        dispatcher.execute(getView().getModulesContent(), new PaasCallback<VoidResult>() {
             @Override
             public void success(VoidResult result) {
                 SC.say("Saved successfully!");
@@ -101,17 +105,19 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     public void configurationButtonClicked() {
-        ConfigurationDialog.showDialog(currentProject, new ConfigurationUIHandlers() {
-        });
+        ConfigurationDialog.showDialog(currentProject, new ConfigurationUIHandlers() {});
     }
 
     @Override
-    public void refreshButtonClicked(boolean refreshContent) {
-        updateModuleList();
-        fillConfigurations();
-        if (refreshContent) {
-            getView().getModulesPane().refreshModules();
-        }
+    public void refreshModulesList() {
+        updateModules();
+    }
+
+    @Override
+    public void refreshAll() {
+        updateModules();
+        updateConfigurations();
+        getView().refreshContent();
     }
 
     @Override
@@ -134,8 +140,18 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         executeGetConfigAction(new RestartConfigurationAction(record.toDTO()));
     }
 
-    private void fillConfigurations() {
+    private void updateConfigurations() {
         executeGetConfigAction(new GetConfigurationsAction(currentProject));
+    }
+
+    private void updateModules() {
+        dispatcher.execute(new GetModulesAction(currentProject), new GetModulesCallback() {
+            @Override
+            public void failure(Throwable caught) {
+                super.failure(caught);
+                placeManager.revealProjectListPage();
+            }
+        });
     }
 
     @Override
@@ -165,28 +181,17 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     protected void onReveal() {
+        Log.debug("projectPage.onReveal");
         super.onReveal();
 
         int projectId = placeManager.getCurrentIntParameter(PROJECT_ID_PARAM, currentProject);
         if (projectId != -1) {
-            if (projectId != currentProject) {
-                getView().cleanView();
-                currentProject = projectId;
-            }
+            currentProject = projectId;
 
-            updateModuleList();
-            fillConfigurations();
+            getView().onReveal();
+
+            refreshAll();
         }
-    }
-
-    private void updateModuleList() {
-        dispatcher.execute(new GetModulesAction(currentProject), new GetModulesCallback() {
-            @Override
-            public void failure(Throwable caught) {
-                super.failure(caught);
-                placeManager.revealProjectListPage();
-            }
-        });
     }
 
     @Override

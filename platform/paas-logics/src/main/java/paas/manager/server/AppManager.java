@@ -33,6 +33,7 @@ import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.BusinessLogicsBootstrap;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsInstance;
+import platform.server.logics.RMIManager;
 import platform.server.session.DataSession;
 
 import java.io.File;
@@ -41,15 +42,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 
+import static java.lang.String.format;
+import static platform.base.BaseUtils.isRedundantString;
 import static platform.base.BaseUtils.nvl;
+import static platform.base.SystemUtils.isPortAvailable;
 import static platform.server.lifecycle.LifecycleEvent.*;
 
 public final class AppManager extends LifecycleAdapter implements InitializingBean {
@@ -65,7 +70,11 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
 
     private boolean started = false;
 
+    private RMIManager rmiManager;
+
     private int acceptPort;
+
+    private int registryPort;
 
     private Context instanceContext;
 
@@ -77,12 +86,23 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
     private String dbUser;
     private String dbPassword;
 
+    //todo: locksMap[configId -> lock] for performance
+    private final Object configurationStatusLock = new Object();
+
     public void setLogicsInstance(LogicsInstance logicsInstance) {
         instanceContext = logicsInstance.getContext();
     }
 
+    public void setRmiManager(RMIManager rmiManager) {
+        this.rmiManager = rmiManager;
+    }
+
     public void setBusinessLogics(PaasBusinessLogics businessLogics) {
         this.paas = businessLogics;
+    }
+
+    public void setRegistryPort(int registryPort) {
+        this.registryPort = registryPort;
     }
 
     public void setAcceptPort(int acceptPort) {
@@ -107,9 +127,11 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         Assert.notNull(dbServer, "dbServer must be specified");
         Assert.notNull(dbUser, "dbUser must be specified");
         Assert.notNull(dbPassword, "dbPassword must be specified");
+        Assert.notNull(rmiManager, "rmiManager must be specified");
         //assert logicsInstance by checking the context
         Assert.notNull(instanceContext, "logicsInstance must be specified");
 
+        Assert.state(0 <= registryPort && registryPort <= 65535, "registryPort must be between 0 and 65535");
         Assert.state(0 < acceptPort && acceptPort <= 65535, "acceptPort must be between 0 and 65535");
     }
 
@@ -173,53 +195,31 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         openChannels.add(channel);
     }
 
-    public String getStatus(int port) {
-        if (isPortAvailable(port)) {
-            return "stopped";
-        }
-
+    public String getStatus(String exportName) {
         try {
-            getManagedAppTerminal(port);
+            getManagedAppTerminal(exportName);
             return "started";
         } catch (Exception e) {
-            return "busyPort";
+            return "stopped";
         }
     }
 
-    public boolean isPortAvailable(int port) {
-        Socket socket = null;
-        try {
-            socket = new Socket("localhost", port);
-        } catch (Exception e) {
-            // Getting exception means the port is not used by other applications
-            return true;
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException ioe) {
-                    // Do nothing
-                }
-            }
-        }
-
-        return false;
+    public void stopApplication(String exportName) throws RemoteException, MalformedURLException, NotBoundException {
+        getManagedAppTerminal(exportName).stop();
     }
 
-    public void stopApplication(Integer port) throws RemoteException, MalformedURLException, NotBoundException {
-        getManagedAppTerminal(port).stop();
-    }
-
-    private ApplicationTerminal getManagedAppTerminal(int port) throws NotBoundException, MalformedURLException, RemoteException {
-        return (ApplicationTerminal) Naming.lookup("rmi://localhost:" + port + "/default/AppTerminal");
+    private ApplicationTerminal getManagedAppTerminal(String exportName) throws NotBoundException, MalformedURLException, RemoteException {
+        exportName = exportName.trim();
+        return (ApplicationTerminal) Naming.lookup(format("rmi://localhost:%d/%s/AppTerminal", registryPort, exportName));
     }
 
     public void executeConfiguration(DataSession session, DataObject confObj) throws IOException, InterruptedException, SQLException {
-        Integer exportPort = (Integer) paasLM.configurationPort.read(session, confObj);
+
+        Integer exportPort = (Integer) nvl(paasLM.configurationPort.read(session, confObj), 0);
 
         PaasUtils.checkPortExceptionally(exportPort);
 
-        if (!isPortAvailable(exportPort)) {
+        if (exportPort != 0 && !isPortAvailable(exportPort)) {
             throw new IllegalStateException("Port is busy.");
         }
 
@@ -229,6 +229,11 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         }
 
         dbName = dbName.trim();
+
+        String exportName = (String) paasLM.configurationExportName.read(session, confObj);
+        if (isRedundantString(exportName)) {
+            throw new IllegalStateException("exportName is empty.");
+        }
 
         Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
 
@@ -255,16 +260,32 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
             moduleFilePaths.add(createTemporaryScriptFile(tempModulesDir, moduleSource));
         }
 
-        executeScriptedBL((Integer) confObj.object, exportPort, dbName, tempProjectDir, moduleFilePaths);
+        int configurationId = (Integer) confObj.object;
+
+        boolean canStart = false;
+        synchronized (configurationStatusLock) {
+            if ("stopped".equals(paas.getConfigurationStatus(configurationId))) {
+                canStart = true;
+                paas.changeConfigurationStatus(confObj, "init");
+            }
+        }
+
+        if (canStart) {
+            executeScriptedBL(configurationId, dbName, exportName, exportPort,  tempProjectDir, moduleFilePaths);
+        }
     }
 
-    private void executeScriptedBL(int configurationId, int configurationPort, String dbName, File tempProjectDir, List<String> scriptFilePaths) throws IOException, InterruptedException {
+    private void executeScriptedBL(int configurationId, String dbName, String exportName, int exportPort, File tempProjectDir, List<String> scriptFilePaths) throws IOException, InterruptedException {
+        exportName = exportName.trim();
+
         Properties properties = new Properties();
         properties.setProperty("db.server", dbServer);
         properties.setProperty("db.name", dbName);
         properties.setProperty("db.user", dbUser);
         properties.setProperty("db.password", dbPassword);
-        properties.setProperty("rmi.exportPort", String.valueOf(configurationPort));
+        properties.setProperty("rmi.registryPort", String.valueOf(registryPort));
+        properties.setProperty("rmi.exportPort", String.valueOf(exportPort));
+        properties.setProperty("rmi.exportName", exportName);
         properties.setProperty("logics.overridingModulesList", "");
         properties.setProperty("logics.includedPaths", "paasmodules/");
         properties.setProperty("logics.excludedPaths", "");
@@ -287,7 +308,7 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         executor.setStreamHandler(new PumpStreamHandler(new NullOutputStream(), new NullOutputStream()));
         executor.setExitValue(0);
 
-        executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId, configurationPort));
+        executor.execute(commandLine, new ManagedLogicsExecutionHandler(configurationId, exportName));
     }
 
     private String createTemporaryScriptFile(File tempModulesDir, String moduleSource) throws IOException {
@@ -305,8 +326,12 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
 
         int configurationId = notificationData.configurationId;
         String eventType = notificationData.eventType;
-        if (STARTED.equals(eventType)) {
+        if (INIT.equals(eventType)) {
+            paas.changeConfigurationStatus(configurationId, "init");
+        } else if (STARTED.equals(eventType)) {
             paas.changeConfigurationStatus(configurationId, "started");
+        } else if (STOPPING.equals(eventType)) {
+            paas.changeConfigurationStatus(configurationId, "stopping");
         } else if (STOPPED.equals(eventType)) {
             paas.changeConfigurationStatus(configurationId, "stopped");
         } else if (ERROR.equals(eventType)) {
@@ -319,31 +344,59 @@ public final class AppManager extends LifecycleAdapter implements InitializingBe
         paas.pushConfigurationLaunchError(configurationId, errorMsg);
     }
 
+    private void cleanAfterManagedAppFailed(int configurationId, String exportName) {
+        paas.changeConfigurationStatus(configurationId, "stopped");
+
+        String bindings[];
+        try {
+            bindings = rmiManager.list();
+        } catch (RemoteException e) {
+            logger.error("Can't list registry bindings.");
+            return;
+        }
+
+        exportName += "/";
+
+        for (String binding : bindings) {
+            if (binding.startsWith(exportName)) {
+                try {
+                    rmiManager.unbind(binding);
+                } catch (RemoteException e) {
+                    logger.error("Error unbinding '" + binding + "': ", e);
+                } catch (NotBoundException ignore) {
+                    //возможно, что бинда уже может не быть
+                }
+            }
+        }
+    }
+
     private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {
         private final int configurationId;
-        private final int configurationPort;
+        private final String exportName;
 
-        public ManagedLogicsExecutionHandler(int configurationId, int configurationPort) {
+        public ManagedLogicsExecutionHandler(int configurationId, String exportName) {
             this.configurationId = configurationId;
-            this.configurationPort = configurationPort;
+            this.exportName = exportName;
 
-            appManagerProcessDestroyer.addPort(configurationPort);
+            appManagerProcessDestroyer.addExportedName(exportName);
         }
 
         @Override
         public void onProcessComplete(int exitValue) {
-            appManagerProcessDestroyer.removePort(configurationPort);
-
             super.onProcessComplete(exitValue);
+
+            appManagerProcessDestroyer.removeExportedName(exportName);
         }
 
         @Override
         public void onProcessFailed(ExecuteException e) {
-            appManagerProcessDestroyer.removePort(configurationPort);
-
             super.onProcessFailed(e);
 
             logger.error("Error executing process: " + e.getMessage(), e.getCause());
+
+            appManagerProcessDestroyer.removeExportedName(exportName);
+
+            cleanAfterManagedAppFailed(configurationId, exportName);
 
             pushConfigurationLaunchError(configurationId, "Error executing process: " + e.getMessage());
         }

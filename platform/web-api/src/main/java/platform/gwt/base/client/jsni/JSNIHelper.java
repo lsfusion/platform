@@ -43,7 +43,7 @@ public class JSNIHelper {
         console.log(category + ":" + message);
     }-*/;
 
-    public static native void consoleLogElement(Element element) /*-{
-        console.log(element);
+    public static native void consoleLogJavaScriptObject(JavaScriptObject object) /*-{
+        console.log(object);
     }-*/;
 }

@@ -11,13 +11,13 @@
     </session-config>
 
     <context-param>
-        <description>Сервер, на котором работает сервер приложения.</description>
-        <param-name>serverHost</param-name>
+        <description>Сервер, на котором работает реестр приложений.</description>
+        <param-name>registryHost</param-name>
         <param-value>localhost</param-value>
     </context-param>
     <context-param>
-        <description>Порт, на котором работает сервер приложения.</description>
-        <param-name>serverPort</param-name>
+        <description>Порт, на котором работает реестр приложений.</description>
+        <param-name>registryPort</param-name>
         <param-value>7652</param-value>
     </context-param>
 

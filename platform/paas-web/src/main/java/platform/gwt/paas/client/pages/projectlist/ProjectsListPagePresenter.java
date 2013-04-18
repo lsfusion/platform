@@ -56,7 +56,7 @@ public class ProjectsListPagePresenter extends Presenter<ProjectsListPagePresent
     }
 
     @Override
-    public void refreshButtonClicked(boolean refreshContent) {
+    public void refreshButtonClicked() {
         updateProjectList();
     }
 

@@ -11,7 +11,6 @@ import com.gwtplatform.mvp.client.proxy.Place;
 import com.gwtplatform.mvp.client.proxy.Proxy;
 import com.gwtplatform.mvp.client.proxy.RevealRootContentEvent;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.paas.client.NameTokens;
@@ -26,6 +25,8 @@ import platform.gwt.sgwtbase.client.ui.login.LoginBox;
 import platform.gwt.sgwtbase.client.ui.login.SpringLoginBoxUiHandlers;
 import platform.gwt.sgwtbase.client.ui.register.RegisterBox;
 import platform.gwt.sgwtbase.client.ui.register.RegisterBoxUiHandlers;
+
+import static platform.gwt.paas.client.Parameters.TARGET_PLACE_PARAM;
 
 public class LoginPagePresenter extends Presenter<LoginPagePresenter.MyView, LoginPagePresenter.MyProxy> {
     private final PaasPlaceManager placeManager;
@@ -75,7 +76,7 @@ public class LoginPagePresenter extends Presenter<LoginPagePresenter.MyView, Log
         @Override
         protected void onLoginSucceded() {
             LoginAuthenticatedEvent.fire(getEventBus(), getView().getLoginBox().getUserName());
-            placeManager.revealPlaceFromString(placeManager.getCurrentParameter(GwtClientUtils.TARGET_PARAM, NameTokens.projectsListPage));
+            placeManager.revealPlaceFromString(placeManager.getCurrentParameter(TARGET_PLACE_PARAM, NameTokens.projectsListPage));
         }
 
         @Override

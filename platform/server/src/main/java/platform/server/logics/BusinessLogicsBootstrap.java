@@ -36,11 +36,11 @@ public class BusinessLogicsBootstrap {
 
         if (instanceCreated) {
             try {
+                stopped = false;
+
                 logicsInstance.start();
 
                 registerShutdownHook();
-
-                stopped = false;
 
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
@@ -67,7 +67,7 @@ public class BusinessLogicsBootstrap {
                       new int[]{settings.getLRUOftenProceedBucket(), settings.getLRURareProceedBucket()});
     }
 
-    public static void stop() {
+    public synchronized static void stop() {
         if (!stopped) {
             logger.info("Server is stopping...");
 

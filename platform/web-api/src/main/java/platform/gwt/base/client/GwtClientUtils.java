@@ -18,7 +18,7 @@ import java.util.MissingResourceException;
 
 public class GwtClientUtils {
     public static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
-    public static final String TARGET_PARAM = "targetUrl";
+    public static final String TARGET_URL_PARAM = "targetUrl";
     public static final String GWT_DEVMODE_PARAM = "gwt.codesvr";
 
     public static final BaseMessages baseMessages = BaseMessages.Instance.get();
@@ -88,11 +88,11 @@ public class GwtClientUtils {
     }
 
     public static String getLogoutUrl() {
-        return getPageUrlPreservingParameters("logout", TARGET_PARAM, getCurrentUrlEncoded());
+        return getPageUrlPreservingParameters("logout", TARGET_URL_PARAM, getCurrentUrlEncoded());
     }
 
     public static String getLoginUrl() {
-        return getPageUrlPreservingParameters("login.jsp", TARGET_PARAM, getCurrentUrlEncoded());
+        return getPageUrlPreservingParameters("login.jsp", TARGET_URL_PARAM, getCurrentUrlEncoded());
     }
 
     public static void relogin() {

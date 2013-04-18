@@ -19,6 +19,8 @@ import platform.server.session.DataSession;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import static platform.base.BaseUtils.isRedundantString;
+
 public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
 
     private final SoftHashMap<Integer, String> configurationLaunchErrors = new SoftHashMap<Integer, String>();
@@ -102,15 +104,15 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
                     );
                 }
 
-                q.addProperty("port", paasLM.configurationPort.getExpr(session.getModifier(), confExpr));
+                q.addProperty("exportName", paasLM.configurationExportName.getExpr(session.getModifier(), confExpr));
 
                 ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
                 for (int i=0,size=values.size();i<size;i++) {
                     Integer configId = (Integer) values.getKey(i).get("configId");
-                    Integer port = (Integer) values.getValue(i).get("port");
+                    String exportName = (String) values.getValue(i).get("exportName");
 
-                    if (port != null) {
-                        changeConfigurationStatus(session, configId, appManager.getStatus(port));
+                    if (!isRedundantString(exportName)) {
+                        changeConfigurationStatus(session, configId, appManager.getStatus(exportName));
                     }
                 }
 
@@ -164,5 +166,27 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> {
         } catch (SQLException e) {
             logger.error("Ошибка при изменении статуса конфигурации: ", e);
         }
+    }
+
+    public String getConfigurationStatus(int configurationId) {
+        try {
+            DataSession session = getDbManager().createSession();
+
+            try {
+                DataObject confObj = new DataObject(configurationId, paasLM.configuration);
+
+                Integer statusId = (Integer) paasLM.configurationStatus.read(session, confObj);
+                if (statusId == null) {
+                    return null;
+                }
+
+                return paasLM.status.getObjectName(statusId);
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            logger.warn("Ошибка при чтении статуса: ", e);
+        }
+        return null;
     }
 }

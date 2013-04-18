@@ -44,7 +44,7 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
         addToolStripButton("refresh.png", "Refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                uiHandlers.refreshButtonClicked(true);
+                uiHandlers.refreshAll();
             }
         });
 
@@ -148,9 +148,9 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
     }
 
     private void updateConfigButtons(ConfigurationRecord record) {
-        btnStart.setDisabled(record == null || "started".equals(record.getStatus()));
-        btnRestart.setDisabled(record == null || "stopped".equals(record.getStatus()));
-        btnStop.setDisabled(record == null || "stopped".equals(record.getStatus()));
+        btnStart.setDisabled(record == null || !"stopped".equals(record.getStatus()));
+        btnRestart.setDisabled(record == null || !"started".equals(record.getStatus()));
+        btnStop.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnLink.setDisabled(record == null || !"started".equals(record.getStatus()));
         btnConnect.setDisabled(record == null);
     }

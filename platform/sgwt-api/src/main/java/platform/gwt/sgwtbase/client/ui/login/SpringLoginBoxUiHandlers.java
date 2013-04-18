@@ -77,7 +77,7 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
     }
 
     protected void onLoginSucceded() {
-        String targetUrl = Window.Location.getParameter(GwtClientUtils.TARGET_PARAM);
+        String targetUrl = Window.Location.getParameter(GwtClientUtils.TARGET_URL_PARAM);
         if (targetUrl != null) {
             Window.open(URL.decodePathSegment(targetUrl), "_self", null);
         } else {

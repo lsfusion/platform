@@ -19,6 +19,8 @@ import static platform.server.logics.ServerResourceBundle.getString;
 public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogicsLoaderInterface, InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
 
+    public static final String EXPORT_NAME = "RemoteLogicsLoader";
+
     private RMIManager rmiManager;
 
     private RemoteLogics remoteLogics;
@@ -48,7 +50,7 @@ public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogics
         logger.info("Binding Remote Logics Loader.");
         try {
             rmiManager.export(remoteLogics);
-            rmiManager.bindAndExport(getExportName(), this);
+            rmiManager.bindAndExport(EXPORT_NAME, this);
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
         }
@@ -61,15 +63,11 @@ public class RemoteLogicsLoader extends LifecycleAdapter implements RemoteLogics
             logger.info("Stopping Remote Logics Loader.");
             try {
                 rmiManager.unexport(remoteLogics);
-                rmiManager.unbindAndUnexport(getExportName(), this);
+                rmiManager.unbindAndUnexport(EXPORT_NAME, this);
             } catch (Exception e) {
                 throw new RuntimeException("Error stopping Remote Logics Loader: ", e);
             }
         }
-    }
-
-    private String getExportName() {
-        return rmiManager.getDbName() + "/RemoteLogicsLoader";
     }
 
     public RemoteLogicsInterface getLogics() throws RemoteException {

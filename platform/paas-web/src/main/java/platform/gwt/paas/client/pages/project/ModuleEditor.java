@@ -54,6 +54,9 @@ public class ModuleEditor extends HLayout {
             }
         });
 
+        toolbar.addFill();
+        toolbar.addLoadingIndicator();
+
         codeMirror = new CodeMirror();
 
         WidgetCanvas codeMirrorCanvas = new WidgetCanvas(codeMirror);
@@ -79,13 +82,15 @@ public class ModuleEditor extends HLayout {
     }
 
     public void showLoader() {
-        removeMember(mainPane);
-        addMember(loader);
+        toolbar.showLoading();
+//        removeMember(mainPane);
+//        addMember(loader);
     }
 
     public void hideLoader() {
-        removeMember(loader);
-        addMember(mainPane);
+        toolbar.hideLoading();
+//        removeMember(loader);
+//        addMember(mainPane);
     }
 
     public void setModuleText(String text) {

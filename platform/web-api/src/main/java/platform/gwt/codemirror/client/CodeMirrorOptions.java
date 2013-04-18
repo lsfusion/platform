@@ -9,6 +9,7 @@ public class CodeMirrorOptions {
     public CodeMirrorOptions(String value) {
         setValue(value);
         //defaults
+        setAttribute("mode", "fusion");
         setAttribute("tabMode", "shift");
         setAttribute("lineNumbers", true);
         setAttribute("matchBrackets", true);

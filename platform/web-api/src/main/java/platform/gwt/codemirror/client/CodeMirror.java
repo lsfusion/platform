@@ -65,5 +65,6 @@ public class CodeMirror extends Widget {
     private native void setValueJS(String value) /*-{
         var editor = this.@platform.gwt.codemirror.client.CodeMirror::editor;
         editor.setValue(value);
+        editor.refresh();
     }-*/;
 }

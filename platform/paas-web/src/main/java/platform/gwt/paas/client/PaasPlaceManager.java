@@ -7,14 +7,16 @@ import com.gwtplatform.mvp.client.proxy.PlaceManagerImpl;
 import com.gwtplatform.mvp.client.proxy.PlaceRequest;
 import com.gwtplatform.mvp.client.proxy.TokenFormatter;
 
+import static platform.gwt.paas.client.Parameters.TARGET_PLACE_PARAM;
+
 public class PaasPlaceManager extends PlaceManagerImpl {
-    public static final String TARGET_PARAM = "targetPlace";
 
     private final PlaceRequest defaultPlaceRequest = new PlaceRequest(NameTokens.defaultPage);
 
     private final PlaceRequest errorPlaceReqest = new PlaceRequest(NameTokens.errorPage);
 
     private final PlaceRequest projectListPage = new PlaceRequest(NameTokens.projectsListPage);
+
     private final TokenFormatter tokenFormatter;
 
     @Inject
@@ -40,7 +42,7 @@ public class PaasPlaceManager extends PlaceManagerImpl {
     @Override
     public void revealUnauthorizedPlace(String unauthorizedHistoryToken) {
         Log.debug("Unauthorized access to: " + unauthorizedHistoryToken);
-        revealPlace(new PlaceRequest(NameTokens.loginPage).with(TARGET_PARAM, unauthorizedHistoryToken));
+        revealPlace(new PlaceRequest(NameTokens.loginPage).with(TARGET_PLACE_PARAM, unauthorizedHistoryToken));
     }
 
     public void revealPlaceFromString(String target) {

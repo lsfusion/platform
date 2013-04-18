@@ -10,7 +10,6 @@ import platform.base.IOUtils;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,13 +25,10 @@ public class ConfigurationJNLPReqestHandler implements HttpRequestHandler {
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     @Autowired
-    private ServletContext servletContext;
+    private BusinessLogicsProvider<PaasRemoteInterface> paasProvider;
 
-    @Autowired
-    private BusinessLogicsProvider<PaasRemoteInterface> blProvider;
-
-    public void setBlProvider(BusinessLogicsProvider<PaasRemoteInterface> blProvider) {
-        this.blProvider = blProvider;
+    public void setPaasProvider(BusinessLogicsProvider<PaasRemoteInterface> paasProvider) {
+        this.paasProvider = paasProvider;
     }
 
     @Override
@@ -52,17 +48,16 @@ public class ConfigurationJNLPReqestHandler implements HttpRequestHandler {
         }
 
         try {
-            StringBuffer requestURL = request.getRequestURL();
+            ConfigurationDTO configuration = paasProvider.getLogics().getConfiguration(ServerUtils.getAuthentication().getName(), confId);
 
-            ConfigurationDTO configuration = blProvider.getLogics().getConfiguration(ServerUtils.getAuthentication().getName(), confId);
-            logger.debug("Read configuration: " + configuration.name + ":" + configuration.port);
+            logger.debug("Read configuration: " + configuration.name + ":" + configuration.exportName);
 
             Properties properties = new Properties();
-            properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
-            properties.put("jnlp.url", requestURL.append("?").append(request.getQueryString()).toString());
-            properties.put("scripted.name", configuration.name == null ? "Launch app" : configuration.name.trim());
-            properties.put("scripted.host", getLogicsHost());
-            properties.put("scripted.port", configuration.port.toString());
+            properties.put("codebase.url", request.getContextPath());
+            properties.put("scripted.name", nvl(configuration.name, "Launch app").trim());
+            properties.put("scripted.host", paasProvider.getRegistryHost());
+            properties.put("scripted.port", String.valueOf(paasProvider.getRegistryPort()));
+            properties.put("scripted.exportName", configuration.exportName);
 
             String content = stringResolver.replacePlaceholders(
                     IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties
@@ -74,9 +69,5 @@ public class ConfigurationJNLPReqestHandler implements HttpRequestHandler {
             logger.debug("Error handling jnlp request: ", e);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Configuration can't be found.");
         }
-    }
-
-    private String getLogicsHost() {
-        return nvl(servletContext.getInitParameter("serverHost"), "localhost");
     }
 }

@@ -52,7 +52,7 @@ public final class LoginAction {
     private LoginAction() {
         serverHost = System.getProperty(PLATFORM_CLIENT_HOSTNAME);
         serverPort = System.getProperty(PLATFORM_CLIENT_HOSTPORT);
-        serverDB = System.getProperty(PLATFORM_CLIENT_DB, "default");
+        serverDB = System.getProperty(PLATFORM_CLIENT_EXPORTNAME, "default");
         user = System.getProperty(PLATFORM_CLIENT_USER);
         password = System.getProperty(PLATFORM_CLIENT_PASSWORD);
         autoLogin = Boolean.getBoolean(PLATFORM_CLIENT_AUTOLOGIN);

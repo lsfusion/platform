@@ -5,21 +5,20 @@ import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import paas.manager.server.AppManager;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.ValueClass;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.UserActionProperty;
+import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class StopConfigurationActionProperty extends UserActionProperty {
+import static platform.base.BaseUtils.isRedundantString;
+
+public class StopConfigurationActionProperty extends ScriptingActionProperty {
     private final static Logger logger = Logger.getLogger(StopConfigurationActionProperty.class);
 
-    public StopConfigurationActionProperty(String sID, String caption, PaasLogicsModule paasLM) {
-        super(sID, caption, new ValueClass[]{paasLM.configuration});
+    public StopConfigurationActionProperty(PaasLogicsModule paasLM) {
+        super(paasLM, paasLM.configuration);
     }
 
     @Override
@@ -28,24 +27,18 @@ public class StopConfigurationActionProperty extends UserActionProperty {
 
         PaasBusinessLogics paas = (PaasBusinessLogics)context.getBL();
 
-        Integer port = (Integer) paas.paasLM.configurationPort.read(context, confObj);
-        if (port == null) {
-            context.delayUserInterfaction(new MessageClientAction("Порт не задан.", "Ошибка!"));
+        String exportName = (String) paas.paasLM.configurationExportName.read(context, confObj);
+        if (isRedundantString(exportName)) {
+            context.delayUserInterfaction(new MessageClientAction("Имя для экспорта не задано.", "Ошибка!"));
             return;
         }
 
         try {
             AppManager appManager = context.getLogicsInstance().getCustomObject(AppManager.class);
-            appManager.stopApplication(port);
+            appManager.stopApplication(exportName);
         } catch (Exception e) {
             logger.warn("Ошибка при попытке остановить приложение: ", e);
             paas.changeConfigurationStatus(confObj, "stopped");
         }
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setIconPath("stop.png");
     }
 }

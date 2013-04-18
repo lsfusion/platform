@@ -2,7 +2,7 @@ package paas;
 
 public class PaasUtils {
     public static boolean isPortValid(Integer port) {
-        return port != null && port > 0 && port < 65536;
+        return port == null || (port >= 0 && port < 65536);
     }
 
     public static void checkPortExceptionally(Integer port) {

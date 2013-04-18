@@ -31,7 +31,7 @@ public class ModulesPane extends HLayout {
         addMember(tabSet);
     }
 
-    public void openModuleTab(ModuleRecord record) {
+    public void openModule(ModuleRecord record) {
         Tab tab = idToTab.get(record.getId());
         if (tab == null) {
             tab = createNewTab(record);
@@ -57,7 +57,7 @@ public class ModulesPane extends HLayout {
         return tab;
     }
 
-    public UpdateModulesAction prepareSaveModuleAction() {
+    public UpdateModulesAction getModulesContent() {
         Tab[] tabs = tabSet.getTabs();
 
         int moduleIds[] = new int[tabs.length];
@@ -71,7 +71,7 @@ public class ModulesPane extends HLayout {
         return new UpdateModulesAction(moduleIds, moduleTexts);
     }
 
-    public void refreshModules() {
+    public void refreshContent() {
         Tab[] tabs = tabSet.getTabs();
 
         for (Tab t : tabs) {
@@ -80,7 +80,11 @@ public class ModulesPane extends HLayout {
         }
     }
 
-    public void removeTabsForMissingModules(ModuleDTO[] modules) {
+    public void cleanTabs() {
+        removeAllModulesExcept(new ModuleDTO[0]);
+    }
+
+    public void removeAllModulesExcept(ModuleDTO[] modules) {
         Tab[] tabs = tabSet.getTabs();
 
         HashSet<Integer> newIds = new HashSet<Integer>();

@@ -14,10 +14,12 @@
         <all-permissions/>
     </security>
     <resources>
+        <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="128m"/>
         <property name="platform.client.hostname" value="${scripted.host}"/>
         <property name="platform.client.hostport" value="${scripted.port}"/>
-        <jar href="client.jar"/>
+        <property name="platform.client.exportname" value="${scripted.exportName}"/>
+        <jar href="lsfusion-client-1.0-SNAPSHOT.jar"/>
     </resources>
     <application-desc/>
 </jnlp>

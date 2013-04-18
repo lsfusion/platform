@@ -79,11 +79,11 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(blProvider, "businessLogicProvider must be specified");
-        blProvider.addInvlidateListener(this);
+        blProvider.addInvalidateListener(this);
     }
 
     @Override
     public void destroy() throws Exception {
-        blProvider.removeInvlidateListener(this);
+        blProvider.removeInvalidateListener(this);
     }
 }

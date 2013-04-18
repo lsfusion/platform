@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface RemoteServerAgentInterface extends Remote {
-    void addDbName(String dbName) throws RemoteException;
+    void addExportName(String exportName) throws RemoteException;
 
-    List<String> getDbNames() throws RemoteException;
+    List<String> getExportNames() throws RemoteException;
 }

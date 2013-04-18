@@ -25,6 +25,8 @@ import platform.server.session.DataSession;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 
+import static platform.base.BaseUtils.nullTrim;
+
 public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implements PaasRemoteInterface {
     public PaasLogicsModule paasLM;
 
@@ -46,7 +48,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 Expr projExpr = keys.get("project");
 
                 QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
-                q.and(paasLM.projectOwnerUserLogin.getExpr(projExpr).compare(new DataObject(userLogin), Compare.EQUALS));
+                q.and(paasLM.projectOwnerLogin.getExpr(projExpr).compare(new DataObject(userLogin), Compare.EQUALS));
 
                 q.addProperty("name", baseLM.name.getExpr(projExpr));
                 q.addProperty("description", paasLM.projectDescription.getExpr(projExpr));
@@ -69,7 +71,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о проектах", e);
         }
     }
@@ -94,7 +96,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
             return getProjects(userLogin);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при добавлении проекта", e);
         }
     }
@@ -119,7 +121,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при сохранении проектов", e);
         }
     }
@@ -139,7 +141,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             }
             return getProjects(userLogin);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при удалении проекта", e);
         }
     }
@@ -166,7 +168,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о модулях", e);
         }
     }
@@ -194,7 +196,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о модулях", e);
         }
     }
@@ -229,6 +231,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 q.addProperty("name", baseLM.name.getExpr(confExpr));
                 q.addProperty("port", paasLM.configurationPort.getExpr(confExpr));
+                q.addProperty("exportName", paasLM.configurationExportName.getExpr(confExpr));
                 q.addProperty("status", paasLM.configurationStatus.getExpr(confExpr));
 
                 ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
@@ -240,6 +243,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                     dto.id = (Integer) values.getKey(i).get("conf");
                     dto.name = (String) propValues.get("name");
                     dto.port = (Integer) propValues.get("port");
+                    dto.exportName = nullTrim((String) propValues.get("exportName"));
                     Integer statusId = (Integer) propValues.get("status");
                     dto.status = statusId == null ? null : paasLM.status.getObjectName(statusId);
                     dto.description = "";
@@ -252,7 +256,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о конфигурациях", e);
         }
     }
@@ -293,7 +297,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о модуле", e);
         }
     }
@@ -314,7 +318,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при сохранении модулей", e);
         }
     }
@@ -334,7 +338,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при добавлении модулей", e);
         }
 
@@ -359,7 +363,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при добавлении модулей", e);
         }
 
@@ -380,7 +384,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при удалении модуля", e);
         }
 
@@ -402,12 +406,16 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
 
                 DataObject configObj = session.addObject(paasLM.configuration);
 
-                int databaseId = generateDatabase();
+                DataObject dbObj = session.addObject(paasLM.database);
+                String dbName = "generated_config_" + dbObj.object;
+                baseLM.name.change(dbName, session, dbObj);
 
                 baseLM.name.change("Configuration " + configObj.object, session, configObj);
                 paasLM.configurationStatus.change(paasLM.status.getObjectID("stopped"), session, configObj);
                 paasLM.configurationProject.change(projectId, session, configObj);
-                paasLM.configurationDatabase.change(databaseId, session, configObj);
+                paasLM.configurationDatabase.change(dbObj.object, session, configObj);
+                paasLM.configurationExportName.change(dbName, session, configObj);
+                paasLM.configurationPort.change(0, session, configObj);
 
                 session.apply(businessLogics);
             } finally {
@@ -415,24 +423,8 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             }
             return getProjectConfigurations(userLogin, projectId);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при добавлении конфигурации", e);
-        }
-    }
-
-    private int generateDatabase() throws SQLException {
-        DataSession session = createSession();
-        try {
-            DataObject dbOjb = session.addObject(paasLM.database);
-
-            //todo: возможно генерацию имени стоит переделать на что-нибудь более надёжное, типа зачитывания текущих значений и выбора MAX+1
-            baseLM.name.change("paas_generated_" + System.currentTimeMillis(), session, dbOjb);
-
-            session.apply(businessLogics);
-
-            return (Integer) dbOjb.object;
-        } finally {
-            session.close();
         }
     }
 
@@ -451,14 +443,14 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             }
             return getProjectConfigurations(userLogin, projectId);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при удалении конфигурации", e);
         }
     }
 
     @Override
     public ConfigurationDTO[] updateConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
-        String currentStatus = getConfigurationStatus(configuration.id);
+        String currentStatus = businessLogics.getConfigurationStatus(configuration.id);
         if ("started".equals(currentStatus)) {
             //запрещаем изменение запущенных конфигураций
             throw new RemoteMessageException("Изменение запущенных конфигураций запрещено");
@@ -481,7 +473,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при сохранении конфигурации", e);
         }
     }
@@ -493,7 +485,6 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
             DataSession session = createSession();
 
             try {
-
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
@@ -529,6 +520,8 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
         PaasUtils.checkPortExceptionally(configuration.port);
 
         paasLM.configurationPort.change(configuration.port, session, confObj);
+        // пока не даём менять укникальное сгенерированное имя для экспорта
+//        paasLM.configurationExportName.change(configuration.exportName, session, confObj);
         baseLM.name.change(configuration.name, session, confObj);
     }
 
@@ -550,7 +543,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 return error;
             }
 
-            if (status.equals(getConfigurationStatus(configurationId))) {
+            if (status.equals(businessLogics.getConfigurationStatus(configurationId))) {
                 return null;
             }
             attempts++;
@@ -565,28 +558,6 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 logger.debug("Thread interrupted: ", e);
             }
         }
-    }
-
-    private String getConfigurationStatus(int configurationId) {
-        try {
-            DataSession session = createSession();
-
-            try {
-                DataObject confObj = new DataObject(configurationId, paasLM.configuration);
-
-                Integer statusId = (Integer) paasLM.configurationStatus.read(session, confObj);
-                if (statusId == null) {
-                    return null;
-                }
-
-                return paasLM.status.getObjectName(statusId);
-            } finally {
-                session.close();
-            }
-        } catch (Exception e) {
-            logger.warn("Ошибка при чтении статуса: ", e);
-        }
-        return null;
     }
 
     @Override
@@ -614,7 +585,7 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при остановке конфигурации", e);
         }
     }
@@ -624,9 +595,10 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
         try {
             DataSession session = createSession();
             try {
-                DataObject confObj = new DataObject(configurationId, paasLM.configuration);
-
-                //todo: check if configuration exists
+                DataObject confObj = session.getDataObject(paasLM.configuration, configurationId);
+                if (confObj.objectClass != paasLM.configuration) {
+                    throw new RuntimeException("Конфигурация не найдена");
+                }
 
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 if (userLogin != null) {
@@ -635,21 +607,21 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
                 }
 
                 Integer port = (Integer) paasLM.configurationPort.read(session, confObj);
-                if (port == null) {
-                    throw new IllegalStateException("Порт конфигурации не задан");
-                }
+
+                String exportName = (String) paasLM.configurationExportName.read(session, confObj);
 
                 String name = (String) baseLM.name.read(session, confObj);
 
                 ConfigurationDTO configuration = new ConfigurationDTO();
-                configuration.port = port;
                 configuration.name = name;
+                configuration.port = port;
+                configuration.exportName = nullTrim(exportName);
                 return configuration;
             } finally {
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("", e);
             throw new RemoteMessageException("Ошибка при считывании информации о конфигурации", e);
         }
     }
@@ -657,7 +629,6 @@ public class PaasRemoteLogics extends RemoteLogics<PaasBusinessLogics> implement
     private void addModuleToProject(DataSession session, DataObject projectId, DataObject moduleId) throws SQLException {
         paasLM.moduleInProject.change(true, session, projectId, moduleId);
     }
-
 
     @Aspect
     private static class RemoteLogicsContextHoldingAspect {

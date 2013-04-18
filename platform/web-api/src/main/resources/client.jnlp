@@ -18,7 +18,6 @@
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
         <property name="platform.client.hostname" value="${client.host}"/>
         <property name="platform.client.hostport" value="${client.port}"/>
-        <property name="platform.client.db" value="default"/>
         <jar href="lsfusion-client-1.0-SNAPSHOT.jar"/>
     </resources>
     <application-desc>

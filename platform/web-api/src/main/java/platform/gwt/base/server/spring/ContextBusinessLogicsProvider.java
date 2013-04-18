@@ -6,31 +6,40 @@ import platform.interop.RemoteLogicsInterface;
 
 import javax.servlet.ServletContext;
 
+import static platform.base.BaseUtils.nvl;
+
 public class ContextBusinessLogicsProvider<T extends RemoteLogicsInterface> extends SingleBusinessLogicsProvider<T> implements InitializingBean {
 
     @Autowired
     private ServletContext servletContext;
 
-    private String serverHostKey = "serverHost";
-    private String serverPortKey = "serverPort";
+    private String registryHostKey = "registryHost";
+    private String registryPortKey = "registryPort";
+    private String exportNameKey = "exportName";
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String serverHost = servletContext.getInitParameter(serverHostKey);
-        String serverPort = servletContext.getInitParameter(serverPortKey);
-        if (serverHost == null || serverPort == null) {
-            throw new IllegalStateException(serverHostKey + " or " + serverPortKey + " parameters aren't set in web.xml");
+        String registryHost = servletContext.getInitParameter(registryHostKey);
+        String registryPort = servletContext.getInitParameter(registryPortKey);
+        String exportName = nvl(servletContext.getInitParameter(exportNameKey), "default");
+        if (registryHost == null || registryPort == null) {
+            throw new IllegalStateException(registryHostKey + " or " + registryPortKey + " parameters aren't set in web.xml");
         }
 
-        setServerHost(serverHost);
-        setServerPort(Integer.parseInt(serverPort));
+        setRegistryHost(registryHost);
+        setRegistryPort(Integer.parseInt(registryPort));
+        setExportName(exportName);
     }
 
-    public void setServerHostKey(String serverHostKey) {
-        this.serverHostKey = serverHostKey;
+    public void setRegistryHostKey(String registryHostKey) {
+        this.registryHostKey = registryHostKey;
     }
 
-    public void setServerPortKey(String serverPortKey) {
-        this.serverPortKey = serverPortKey;
+    public void setRegistryPortKey(String registryPortKey) {
+        this.registryPortKey = registryPortKey;
+    }
+
+    public void setExportNameKey(String exportNameKey) {
+        this.exportNameKey = exportNameKey;
     }
 }

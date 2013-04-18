@@ -59,7 +59,9 @@
 
     <!-- Remoting -->
     <bean id="rmiManager" class="platform.server.logics.RMIManager">
-        <property name="exportPort" value="${rmi.exportPort}"/>
+        <property name="registryPort" value="${rmi.registryPort}"/>
+        <property name="exportPort" value="${rmi.exportPort?:0}"/>
+        <property name="exportName" value="${rmi.exportName:}" />
     </bean>
 
     <bean id="remoteLogics" class="platform.server.remote.RemoteLogics">

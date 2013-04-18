@@ -7,6 +7,7 @@ import platform.gwt.base.client.GwtClientUtils;
 public class ConfigurationRecord extends BasicRecord {
     public static final String JNLP_SERVLET_PREFIX = "jnlp/client.jnlp?confId=";
     public static final String PORT_FIELD = "port";
+    public static final String EXPORTNAME_FIELD = "exportName";
     public static final String STATUS_FIELD = "status";
     public static final String JNLP_FIELD = "jnlp";
 
@@ -17,10 +18,11 @@ public class ConfigurationRecord extends BasicRecord {
         super(jsObj);
     }
 
-    public ConfigurationRecord(int id, String name, String description, Integer port, String status) {
+    public ConfigurationRecord(int id, String name, String description, Integer port, String exportName, String status) {
         super(id, name, description);
 
         setPort(port);
+        setExportName(exportName);
         setStatus(status);
         setJnlp(GwtClientUtils.getWebAppBaseURL() + JNLP_SERVLET_PREFIX + id);
     }
@@ -41,6 +43,14 @@ public class ConfigurationRecord extends BasicRecord {
         return getAttributeAsInt(PORT_FIELD);
     }
 
+    public void setExportName(String exportName) {
+        setAttribute(EXPORTNAME_FIELD, exportName);
+    }
+
+    public String getExportName() {
+        return getAttribute(EXPORTNAME_FIELD);
+    }
+
     public void setStatus(String status) {
         setAttribute(STATUS_FIELD, status);
     }
@@ -50,7 +60,7 @@ public class ConfigurationRecord extends BasicRecord {
     }
 
     public static ConfigurationRecord fromDTO(ConfigurationDTO dto) {
-        return new ConfigurationRecord(dto.id, dto.name, dto.description, dto.port, dto.status);
+        return new ConfigurationRecord(dto.id, dto.name, dto.description, dto.port, dto.exportName, dto.status);
     }
 
     public static ConfigurationRecord[] fromDTOs(ConfigurationDTO[] dtos) {
@@ -62,6 +72,6 @@ public class ConfigurationRecord extends BasicRecord {
     }
 
     public ConfigurationDTO toDTO() {
-        return new ConfigurationDTO(getId(), getName(), getDescription(), getPort(), getStatus());
+        return new ConfigurationDTO(getId(), getName(), getDescription(), getPort(), getExportName(), getStatus());
     }
 }

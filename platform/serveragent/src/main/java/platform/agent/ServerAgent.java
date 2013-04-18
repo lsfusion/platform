@@ -8,19 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerAgent extends RemoteObject implements RemoteServerAgentInterface {
-    private final List<String> dbNames = new ArrayList<String>();
+    private final List<String> exportNames = new ArrayList<String>();
 
     public ServerAgent(final int exportPort) throws RemoteException {
         super(exportPort, true);
     }
 
-    public void addDbName(String dbName) {
-        if (!dbNames.contains(dbName)) {
-            dbNames.add(dbName);
+    public void addExportName(String exportName) {
+        if (!exportNames.contains(exportName)) {
+            exportNames.add(exportName);
         }
     }
 
-    public List<String> getDbNames() {
-        return dbNames;
+    public List<String> getExportNames() {
+        return exportNames;
     }
 }

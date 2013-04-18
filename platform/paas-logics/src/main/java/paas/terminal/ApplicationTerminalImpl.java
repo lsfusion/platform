@@ -12,6 +12,8 @@ public class ApplicationTerminalImpl extends LifecycleAdapter implements Applica
 
     private static final Logger logger = Logger.getLogger(ApplicationTerminalImpl.class);
 
+    public static final String EXPORT_NAME = "AppTerminal";
+
     private RMIManager rmiManager;
     private boolean started = false;
 
@@ -28,7 +30,7 @@ public class ApplicationTerminalImpl extends LifecycleAdapter implements Applica
     protected void onStarted(LifecycleEvent event) {
         logger.info("Binding Application Terminal.");
         try {
-            rmiManager.bindAndExport(getExportName(), this);
+            rmiManager.bindAndExport(EXPORT_NAME, this);
             started = true;
         } catch (Exception e) {
             throw new RuntimeException("Error exporting Application Terminal: ", e);
@@ -40,15 +42,11 @@ public class ApplicationTerminalImpl extends LifecycleAdapter implements Applica
         if (started) {
             logger.info("Stopping Application Terminal.");
             try {
-                rmiManager.unbindAndUnexport(getExportName(), this);
+                rmiManager.unbindAndUnexport(EXPORT_NAME, this);
             } catch (Exception e) {
                 throw new RuntimeException("Error stopping Application Terminal: ", e);
             }
         }
-    }
-
-    private String getExportName() {
-        return rmiManager.getDbName() + "/AppTerminal";
     }
 
     @Override

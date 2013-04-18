@@ -10,7 +10,7 @@ public class AppManagerProcessDestroyer implements ProcessDestroyer {
     private final AppManager appManager;
 
     private final Vector<Process> processes = new Vector<Process>();
-    private final Vector<Integer> busyPorts = new Vector<Integer>();
+    private final Vector<String> exportedNames = new Vector<String>();
 
     public AppManagerProcessDestroyer(AppManager appManager) {
         this.appManager = appManager;
@@ -31,19 +31,19 @@ public class AppManagerProcessDestroyer implements ProcessDestroyer {
         return processes.size();
     }
 
-    public void addPort(int port) {
-        busyPorts.addElement(port);
+    public void addExportedName(String exportName) {
+        exportedNames.addElement(exportName);
     }
 
-    public void removePort(int port) {
-        busyPorts.removeElement(port);
+    public void removeExportedName(String exportName) {
+        exportedNames.removeElement(exportName);
     }
 
     public void shutdown() {
-        synchronized (busyPorts) {
-            for (int port : busyPorts) {
+        synchronized (exportedNames) {
+            for (String exportName : exportedNames) {
                 try {
-                    appManager.stopApplication(port);
+                    appManager.stopApplication(exportName);
                 } catch (Exception e) {
                     Throwables.propagate(e);
                 }

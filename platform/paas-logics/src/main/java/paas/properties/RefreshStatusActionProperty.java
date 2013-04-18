@@ -2,19 +2,16 @@ package paas.properties;
 
 import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
-import platform.server.classes.ValueClass;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
-import platform.server.logics.property.actions.UserActionProperty;
+import platform.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
-public class RefreshStatusActionProperty extends UserActionProperty {
+public class RefreshStatusActionProperty extends ScriptingActionProperty {
 
-    public RefreshStatusActionProperty(String sID, String caption, PaasLogicsModule paasLM) {
-        super(sID, caption, new ValueClass[]{paasLM.project});
+    public RefreshStatusActionProperty(PaasLogicsModule paasLM) {
+        super(paasLM, paasLM.project);
     }
 
     @Override
@@ -24,11 +21,5 @@ public class RefreshStatusActionProperty extends UserActionProperty {
         context.emitExceptionIfNotInFormSession();
 
         context.getFormInstance().refreshData();
-    }
-
-    @Override
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
-        super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setIconPath("refresh.png");
     }
 }

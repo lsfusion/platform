@@ -49,6 +49,7 @@ public class ConfigurationDialog extends Window {
     private ButtonItem btnStart;
     private TextItem portItem;
     private TextItem nameItem;
+//    private TextItem exportNameItem;
 
     public ConfigurationDialog(int project, ConfigurationUIHandlers uiHandlers) {
         this.project = project;
@@ -145,7 +146,9 @@ public class ConfigurationDialog extends Window {
         statusItem.setColSpan(5);
         statusItem.setWidth("*");
         statusItem.setValueMap(new LinkedHashMap() {{
+            put("init", "Starting");
             put("started", "Started");
+            put("stopping", "Stopping");
             put("stopped", "Stopped");
         }});
 
@@ -154,8 +157,20 @@ public class ConfigurationDialog extends Window {
         nameItem.setColSpan(5);
         nameItem.setWidth("*");
 
-        portItem = new TextItem(ConfigurationRecord.PORT_FIELD, "Port");
-        portItem.setRequired(true);
+        StaticTextItem portHintItem = new StaticTextItem("lbPort", "lb port");
+        portHintItem.setDefaultValue("Communication port is only used for desktop client. Set port value to 0 or empty to use anonymous port. ");
+        portHintItem.setShowTitle(false);
+        portHintItem.setColSpan("*");
+        portHintItem.setEndRow(true);
+
+        //пока не светим export name вообще, по сути просто будем использовать уникальное сгенерированное имя
+//        exportNameItem = new TextItem(ConfigurationRecord.EXPORTNAME_FIELD, "Export name");
+//        exportNameItem.setRequired(true);
+//        exportNameItem.setColSpan(5);
+//        exportNameItem.setWidth("*");
+
+        portItem = new TextItem(ConfigurationRecord.PORT_FIELD, "Communication port");
+//        portItem.setHint("Set 0 or empty to use anonymouse port");
         portItem.setColSpan(5);
         portItem.setWidth("*");
         IntegerRangeValidator portValidator = new IntegerRangeValidator();
@@ -227,6 +242,8 @@ public class ConfigurationDialog extends Window {
         configurationForm.setColWidths("*", "110", "110", "110", "*");
         configurationForm.setFields(statusItem,
                                     nameItem,
+                                    portHintItem,
+//                                    exportNameItem,
                                     portItem,
                                     new SpacerItem(), btnStart, btnStop, btnApply, new SpacerItem(),
                                     filler,
@@ -311,6 +328,7 @@ public class ConfigurationDialog extends Window {
     private ConfigurationRecord populateCurrentRecord() {
         ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
         record.setName(nameItem.getValueAsString());
+//        record.setExportName(exportNameItem.getValueAsString());
         record.setPort(getPortValue());
         return record;
     }
@@ -330,10 +348,11 @@ public class ConfigurationDialog extends Window {
             configurationForm.show();
             configurationForm.editRecord(selected);
             String status = selected.getStatus();
-            btnStop.setDisabled("stopped".equals(status));
-            btnStart.setDisabled("started".equals(status));
-            portItem.setDisabled("started".equals(status));
-            nameItem.setDisabled("started".equals(status));
+            btnStop.setDisabled(!"started".equals(status));
+            btnStart.setDisabled(!"stopped".equals(status));
+            portItem.setDisabled(!"stopped".equals(status));
+            nameItem.setDisabled(!"stopped".equals(status));
+//            exportNameItem.setDisabled(!"stopped".equals(status));
             btnApply.disable();
         } else {
             configurationForm.hide();

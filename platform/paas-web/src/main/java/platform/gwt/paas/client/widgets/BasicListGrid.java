@@ -3,6 +3,7 @@ package platform.gwt.paas.client.widgets;
 import com.smartgwt.client.types.Autofit;
 import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import paas.api.gwt.shared.dto.BasicDTO;
 import platform.gwt.paas.client.data.BasicRecord;
 import platform.gwt.paas.client.data.DTOConverter;
@@ -58,4 +59,7 @@ public class BasicListGrid extends ListGrid {
         }
     }
 
+    public void removeAllRecords() {
+        setData(new ListGridRecord[0]);
+    }
 }

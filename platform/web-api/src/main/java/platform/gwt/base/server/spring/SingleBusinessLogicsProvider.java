@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static platform.base.BaseUtils.isRedundantString;
+
 public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> implements BusinessLogicsProvider<T> {
     protected final static Logger logger = Logger.getLogger(SingleBusinessLogicsProvider.class);
 
@@ -18,31 +20,44 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     private volatile T logics;
     private final Object logicsLock = new Object();
 
-    private String serverHost;
-    private int serverPort;
+    private String registryHost;
+    private int registryPort;
+    private String exportName;
 
     public SingleBusinessLogicsProvider() {
     }
 
-    public SingleBusinessLogicsProvider(String serverHost, int serverPort) {
-        this.serverHost = serverHost;
-        this.serverPort = serverPort;
+    public SingleBusinessLogicsProvider(String registryHost, int registryPort, String exportName) {
+        this.registryHost = registryHost;
+        this.registryPort = registryPort;
+        this.exportName = exportName;
+        if (isRedundantString(exportName)) {
+            throw new IllegalArgumentException("exportName must not be null");
+        }
     }
 
-    public String getServerHost() {
-        return serverHost;
+    public String getRegistryHost() {
+        return registryHost;
     }
 
-    public void setServerHost(String serverHost) {
-        this.serverHost = serverHost;
+    public void setRegistryHost(String registryHost) {
+        this.registryHost = registryHost;
     }
 
-    public int getServerPort() {
-        return serverPort;
+    public int getRegistryPort() {
+        return registryPort;
     }
 
-    public void setServerPort(int serverPort) {
-        this.serverPort = serverPort;
+    public void setRegistryPort(int registryPort) {
+        this.registryPort = registryPort;
+    }
+
+    public String getExportName() {
+        return exportName;
+    }
+
+    public void setExportName(String exportName) {
+        this.exportName = exportName;
     }
 
     public T getLogics() {
@@ -59,9 +74,8 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     private RemoteLogicsInterface createRemoteLogics() {
         try {
-            Registry registry = LocateRegistry.getRegistry(serverHost, serverPort);
-            //todo: setup dbName
-            RemoteLogicsLoaderInterface loader = (RemoteLogicsLoaderInterface) registry.lookup("default/RemoteLogicsLoader");
+            Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
+            RemoteLogicsLoaderInterface loader = (RemoteLogicsLoaderInterface) registry.lookup(exportName + "/RemoteLogicsLoader");
 
             return loader.getLogics();
         } catch (Exception e) {
@@ -81,12 +95,12 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     }
 
     @Override
-    public void addInvlidateListener(InvalidateListener listener) {
+    public void addInvalidateListener(InvalidateListener listener) {
         invlidateListeners.add(listener);
     }
 
     @Override
-    public void removeInvlidateListener(InvalidateListener listener) {
+    public void removeInvalidateListener(InvalidateListener listener) {
         invlidateListeners.remove(listener);
     }
 }

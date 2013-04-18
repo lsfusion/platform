@@ -20,7 +20,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
     public NavigatorProviderImpl(BusinessLogicsProvider blProvider) {
         this.blProvider = blProvider;
-        blProvider.addInvlidateListener(this);
+        blProvider.addInvalidateListener(this);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
     @Override
     public void destroy() throws Exception {
-        blProvider.removeInvlidateListener(this);
+        blProvider.removeInvalidateListener(this);
 
         RemoteNavigatorInterface navigator = getNavigator();
         if (navigator != null) {

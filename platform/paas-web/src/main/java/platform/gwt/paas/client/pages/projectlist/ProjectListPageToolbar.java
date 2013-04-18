@@ -16,7 +16,7 @@ public class ProjectListPageToolbar extends ToolbarWithUIHandlers<ProjectsListPa
         addToolStripButton("refresh.png", "Refresh", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                uiHandlers.refreshButtonClicked(true);
+                uiHandlers.refreshButtonClicked();
             }
         });
 

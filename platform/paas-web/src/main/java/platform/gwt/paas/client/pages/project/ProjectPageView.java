@@ -16,6 +16,7 @@ import com.smartgwt.client.widgets.layout.VLayout;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.gwt.shared.dto.ModuleDTO;
 import platform.gwt.paas.client.data.ModuleRecord;
+import platform.gwt.paas.shared.actions.UpdateModulesAction;
 
 public class ProjectPageView extends ViewWithUiHandlers<ProjectPageUIHandlers> implements ProjectPagePresenter.MyView {
     private final ProjectPageToolbar toolbar;
@@ -90,7 +91,7 @@ public class ProjectPageView extends ViewWithUiHandlers<ProjectPageUIHandlers> i
 
         refreshButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent event) {
-                getUiHandlers().refreshButtonClicked(false);
+                getUiHandlers().refreshModulesList();
             }
         });
     }
@@ -103,22 +104,22 @@ public class ProjectPageView extends ViewWithUiHandlers<ProjectPageUIHandlers> i
     }
 
     @Override
-    public ModulesPane getModulesPane() {
-        return modulesPane;
+    public void openModule(ModuleRecord record) {
+        modulesPane.openModule(record);
     }
 
     @Override
     public void setModules(ModuleDTO[] modules) {
         modulesGrid.setDataFromDTOs(modules);
-        modulesPane.removeTabsForMissingModules(modules);
+        modulesPane.removeAllModulesExcept(modules);
         modulesGrid.show();
         modulesPane.show();
     }
 
     @Override
-    public void cleanView() {
-        modulesGrid.hide();
-        modulesPane.hide();
+    public void onReveal() {
+        modulesPane.cleanTabs();
+        modulesGrid.removeAllRecords();
     }
 
     @Override
@@ -129,6 +130,16 @@ public class ProjectPageView extends ViewWithUiHandlers<ProjectPageUIHandlers> i
     @Override
     public void setConfigurations(ConfigurationDTO[] configurations) {
         toolbar.setConfigurations(configurations);
+    }
+
+    @Override
+    public void refreshContent() {
+        modulesPane.refreshContent();
+    }
+
+    @Override
+    public UpdateModulesAction getModulesContent() {
+        return modulesPane.getModulesContent();
     }
 
     @Override

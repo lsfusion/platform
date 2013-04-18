@@ -30,27 +30,34 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
                     new CacheLoader<Integer, BusinessLogicsProvider>() {
                         public BusinessLogicsProvider load(Integer configurationId) throws RemoteException {
                             ConfigurationDTO configuration = paasProvider.getLogics().getConfiguration(null, configurationId);
-                            return new SingleBusinessLogicsProvider(serverHost, configuration.port);
+                            return new SingleBusinessLogicsProvider(registryHost, registryPort, configuration.exportName);
                         }
                     }
             );
 
-    private String serverHost;
-
     private BusinessLogicsProvider<PaasRemoteInterface> paasProvider;
+
+    private String registryHost;
+    private int registryPort;
 
     public void setPaasProvider(BusinessLogicsProvider<PaasRemoteInterface> paasProvider) {
         this.paasProvider = paasProvider;
     }
 
-    public void setServerHost(String serverHost) {
-        this.serverHost = serverHost;
+    public String getRegistryHost() {
+        return registryHost;
+    }
+
+    public int getRegistryPort() {
+        return registryPort;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notNull(serverHost, "serverHost must be set");
         Assert.notNull(paasProvider, "paasProvider must be set");
+
+        registryHost = paasProvider.getRegistryHost();
+        registryPort = paasProvider.getRegistryPort();
     }
 
     //todo: нужно удалять закэшированную логику, если порт конфигурации изменился
@@ -60,8 +67,13 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
         try {
             BusinessLogicsProvider blProvider = configurationBLProviders.get(configurationId);
 
-            //todo: cache timeZone
-            ServerUtils.timeZone.set(blProvider.getLogics().getTimeZone());
+            try {
+                //todo: cache timeZone
+                ServerUtils.timeZone.set(blProvider.getLogics().getTimeZone());
+            } catch (RemoteException e) {
+                blProvider.invalidate();
+                throw e;
+            }
             threadLocalProviders.set(blProvider);
         } catch (ExecutionException e) {
             Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
@@ -88,12 +100,12 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
     }
 
     @Override
-    public void addInvlidateListener(InvalidateListener listener) {
-        getCurrentProvider().addInvlidateListener(listener);
+    public void addInvalidateListener(InvalidateListener listener) {
+        getCurrentProvider().addInvalidateListener(listener);
     }
 
     @Override
-    public void removeInvlidateListener(InvalidateListener listener) {
-        getCurrentProvider().removeInvlidateListener(listener);
+    public void removeInvalidateListener(InvalidateListener listener) {
+        getCurrentProvider().removeInvalidateListener(listener);
     }
 }

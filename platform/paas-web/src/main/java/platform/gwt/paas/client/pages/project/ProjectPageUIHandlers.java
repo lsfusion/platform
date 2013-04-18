@@ -13,7 +13,9 @@ public interface ProjectPageUIHandlers extends UiHandlers {
 
     public void configurationButtonClicked();
 
-    public void refreshButtonClicked(boolean refreshContent);
+    public void refreshModulesList();
+
+    public void refreshAll();
 
     public void removeRecordClicked(ModuleRecord record);
 

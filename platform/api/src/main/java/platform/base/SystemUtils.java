@@ -6,6 +6,7 @@ import platform.interop.remote.ZipSocketFactory;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
@@ -225,5 +226,25 @@ public class SystemUtils {
         } catch (IOException ignore) {
         }
         return revision;
+    }
+
+    public static boolean isPortAvailable(int port) {
+        Socket socket = null;
+        try {
+            socket = new Socket("localhost", port);
+        } catch (Exception e) {
+            // Getting exception means the port is not used by other applications
+            return true;
+        } finally {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ioe) {
+                    // Do nothing
+                }
+            }
+        }
+
+        return false;
     }
 }
