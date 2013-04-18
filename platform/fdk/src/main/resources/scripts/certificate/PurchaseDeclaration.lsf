@@ -98,9 +98,9 @@ EXTEND DESIGN declaration {
     ADD functions.box;
 }
 
-isCustomInvoice 'Таможенные платежи' = ABSTRACT BOOLEAN(Invoice);
-isCustomUserInvoice 'Таможенные платежи' = DATA BOOLEAN(UserInvoice) IN documentPrmGroup;
-isCustomInvoice(invoice) += isCustomUserInvoice(invoice);
+showDeclarationInvoice 'Таможенные платежи' = ABSTRACT BOOLEAN(Invoice);
+showDeclarationUserInvoice 'Таможенные платежи' = DATA BOOLEAN(UserInvoice) IN documentPrmGroup;
+showDeclarationInvoice(invoice) += showDeclarationUserInvoice(invoice);
 
 //------------------------------------------ позиции декларации -------------------------------------------------------//
 TABLE declarationNameUOMCustomsGroupCountryPrice(Declaration, STRING[200], UOM, CustomsGroup, Country, NUMERIC[14,2]);
@@ -363,26 +363,26 @@ setPriceInvoiceDetailes 'Рассчитать расходы (за ед.)' = ACT
 } TOOLBAR;
 
 EXTEND FORM userInvoice
-    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) isCustomUserInvoice
-    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-                                                          priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i),
-                                                          priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF isCustomUserInvoice(i)
+    PROPERTIES(i) BACKGROUND backgroundCustomedInvoice(i) showDeclarationUserInvoice
+    PROPERTIES(d) BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
+                                                          priceDutyUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i),
+                                                          priceRegistrationUserInvoiceDetail BEFORE chargePriceUserInvoiceDetail SHOWIF showDeclarationUserInvoice(i)
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {
         NEW headerCustoms {
             title = 'Таможенные платежи';
-            ADD PROPERTY(isCustomUserInvoice);
+            ADD PROPERTY(showDeclarationUserInvoice);
         }
     }
 }
 
 
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) isCustomInvoice FORCE GRID
-    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
-                                                                   priceDutyInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i),
-                                                                   priceRegistrationInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF isCustomInvoice(i)
+    PROPERTIES(i) READONLY BACKGROUND backgroundCustomedInvoice(i) showDeclarationInvoice FORCE GRID
+    PROPERTIES(d) READONLY BACKGROUND backgroundCustomedInvoice(i) codeCustomsGroupInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF showDeclarationInvoice(i),
+                                                                   priceDutyInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF showDeclarationInvoice(i),
+                                                                   priceRegistrationInvoiceDetail BEFORE chargePriceInvoiceDetail SHOWIF showDeclarationInvoice(i)
 ;
 
 EXTEND FORM declaration
@@ -399,11 +399,7 @@ EXTEND DESIGN declaration {
     }
     ADD functions.box;
 }
+
 //-- Операция
-isCustomUserInvoice (invoice) <- isCustomOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
-
-
-
-
+@defineOperationProperty(showDeclaration, 'Таможенные платежи', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showDeclaration);

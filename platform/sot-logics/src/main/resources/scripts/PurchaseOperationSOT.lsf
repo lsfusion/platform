@@ -4,7 +4,7 @@ REQUIRE PurchaseOperation, InvoiceSOT;
 
 NAMESPACE PurchaseOperation;
 
-toShowRetailMarkupSkuOperation 'Показывать розничную надбавку' = DATA BOOLEAN (Purchase.Operation) IN toShowGroup;
+toShowRetailMarkupSkuOperation 'Показывать розничную надбавку' = DATA BOOLEAN (Purchase.Operation);
 
 EXTEND FORM Purchase.operation
     PROPERTIES(o) toShowRetailMarkupSkuOperation

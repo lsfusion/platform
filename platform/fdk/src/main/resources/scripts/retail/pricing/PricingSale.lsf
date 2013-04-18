@@ -31,9 +31,9 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-// Проставление галочки акт расценки
-createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// -- Операция
+@defineOperationProperty(createPricing, 'Акт расценки', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPricing);
 
 // Добавление цены поставщика на форму
 EXTEND FORM userInvoice

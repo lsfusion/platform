@@ -70,8 +70,8 @@ overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
     }
 }
 
-showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, showPack);
 
 //------------------------------ Расширение формы -----------------------------//
 

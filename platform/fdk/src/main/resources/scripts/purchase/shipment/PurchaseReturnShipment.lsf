@@ -23,8 +23,7 @@ NAMESPACE PurchaseReturn;
 @defineDocumentOperationLegalEntity(userShipment, customer, 'Покупатель');
 @defineDocumentOperationRole(userShipment);
 
-createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+@deriveDocumentOperationProperty(UserInvoice, createShipment);
 
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 

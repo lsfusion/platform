@@ -23,9 +23,9 @@ NAMESPACE Sale;
 @defineDocumentOperationLegalEntity(userShipment, customer, 'Покупатель');
 @defineDocumentOperationRole(userShipment);
 
-createShipmentUserInvoice(invoice) <- createShipmentOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-    
+@defineOperationProperty(createShipment, 'Поставка', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createShipment);
+
 //------------------------------ Ограничение на выбор контрагентов -----------------------------//
 
 CONSTRAINT supplierUserShipment(userShipment) AND NOT isCompanyLegalEntity(supplierUserShipment(userShipment))

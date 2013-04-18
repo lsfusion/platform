@@ -55,11 +55,9 @@ addressPOI (poi) += addressStock(poi);
 TABLE stockGroupStock (StockGroup, Stock);
 isParentStockGroupStock (stockGroup, stock) = isParentStockGroupStockGroup(stockGroupStock(stock), stockGroup) PERSISTENT;
 
-GROUP createGroup 'Создавать по умолчанию' : public;
 GROUP committeeGroup 'Комиссии' : public;
 GROUP responsibilityGroup 'Ответственные лица' : public;
 GROUP bookkeepingGroup 'Учет и цены' : public;
-GROUP toShowGroup 'Отображать' : public;
 
 // -------------------------------------- Регион ------------------------------- //
 

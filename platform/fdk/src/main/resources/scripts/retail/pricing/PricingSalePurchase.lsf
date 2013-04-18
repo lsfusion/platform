@@ -18,8 +18,6 @@ purchasePricingQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(de
 
 // Виды цен
 @defineDocumentInterfacePriceListType (invoice, priceListType, purchaseRetail, ' розничный (закупка)');
-purchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 purchaseRetailPriceListTypeUserInvoiceDetail(detail) <- purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
                                                 WHEN CHANGED(purchaseRetailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
 
@@ -67,8 +65,28 @@ purchaseRoundConditionUserInvoiceDetail(userInvoiceDetail) =
 
 // Галочка по созданию акта расценки на закупке
 @defineDocumentInterfaceCreate (invoice, createPurchasePricing, 'Создать акт расценки (закупка)');
-createPurchasePricingUserInvoice (invoice) <- createPurchasePricingOperation(operationUserInvoice(invoice))
+
+// -- Операции
+@defineOperationProperty(createPurchasePricing, 'Акт расценки (закупка)', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPurchasePricing);
+
+// Вид цены для акта расценки (закупка)
+purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
+namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = name(purchaseRetailPriceListTypeOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePurchaseRetailPriceListTypeOperation
+;
+
+EXTEND DESIGN operation{
+    createContainer {
+        ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
+    }
+}
+
+purchaseRetailPriceListTypeUserInvoice (invoice) <- purchaseRetailPriceListTypeOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
+
 
 showCreatePurchasePricingInvoice (invoice) = customerStockInvoice(invoice) IS DepartmentStore AND createPurchaseInvoiceInvoice(invoice) AND NOT costLedgerDepartmentStore(customerStockInvoice(invoice));
 showPurchasePricingInvoice (invoice) = showCreatePurchasePricingInvoice (invoice) AND NOT createPurchasePricingInvoice(invoice);

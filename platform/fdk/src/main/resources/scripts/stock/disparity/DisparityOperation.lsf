@@ -6,7 +6,7 @@ REQUIRE Operation, Disparity;
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
 
-createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation) IN createGroup;
+createRepricingOperation 'Создать акт переоценки' = DATA BOOLEAN (Operation);
 
 EXTEND FORM operation
     PROPERTIES(o) createRepricingOperation
@@ -14,7 +14,7 @@ EXTEND FORM operation
 
 EXTEND DESIGN operation {
     tabContainer{
-        NEW aggrContainer{
+        NEW createContainer {
             caption = 'Производные документы';
             ADD PROPERTY(createRepricingOperation);
         }

@@ -5,7 +5,12 @@ REQUIRE PurchaseInvoice;
 NAMESPACE Purchase;
 
 //------------------------- Рекомендуемая розничная цена-------------------------//
-@defineDocumentInterfaceHeaderCreate (invoice, toShowRRPPrice, 'RRP');
+@defineDocumentInterfaceHeaderCreate (invoice, showRRP, 'RRP');
+
+// -- Операция
+@defineOperationProperty(showRRP, 'RRP', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showRRP);
+
 @defineDocumentInterfaceDetailPriceListType (invoice, priceListType, RRP, ' (RRP)');
 
 RRPPriceListTypeUserInvoiceDetail(userInvoiceDetail) <- RRPPriceListTypeAgreement(agreementUserInvoice(userInvoiceUserInvoiceDetail(userInvoiceDetail)))
@@ -28,22 +33,22 @@ RRPPriceUserInvoiceDetail (detail)  <-  prevPricePriceListTypeSkuStockDateTime(R
                                                          CHANGED(dateTimeUserInvoiceDetail(detail));
 
 EXTEND FORM userInvoice
-    PROPERTIES(i) toShowRRPPriceUserInvoice
-    PROPERTIES(d) SHOWIF toShowRRPPriceUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
+    PROPERTIES(i) showRRPUserInvoice
+    PROPERTIES(d) SHOWIF showRRPUserInvoice(i) BEFORE delete(d) nameRRPPriceListTypeUserInvoiceDetail, nameCurrencyRRPUserInvoiceDetail READONLY, RRPPriceUserInvoiceDetail
 ;
 EXTEND DESIGN userInvoice {
     headerExtraParams {
         NEW headerRRP {
             title = 'RRP';
-            ADD PROPERTY(toShowRRPPriceUserInvoice);
+            ADD PROPERTY(showRRPUserInvoice);
         }
     }
 }
 
 
 EXTEND FORM invoices
-    PROPERTIES(i) READONLY toShowRRPPriceInvoice
-    PROPERTIES(d) READONLY SHOWIF toShowRRPPriceInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
+    PROPERTIES(i) READONLY showRRPInvoice
+    PROPERTIES(d) READONLY SHOWIF showRRPInvoice(i) nameRRPPriceListTypeInvoiceDetail, nameCurrencyRRPInvoiceDetail, RRPPriceInvoiceDetail
 ;
 
 // Создаем виды цен
@@ -80,12 +85,5 @@ pricePriceListLedgerSystemLedgerPriceListType (ledger, type) += RRPPriceInvoiceD
 //             CHANGED(dateUserInvoiceDetail(detail)) OR
 //             CHANGED(RRPPriceUserInvoiceDetail (detail));
 //
-//toShowRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
-//    invoice) AND toShowRRPPriceInvoice(invoice);
-
-//-- Операция
-toShowRRPPriceUserInvoice (invoice) <- toShowRRPPriceOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
-
-
+//showRRPExchangePriceInvoice(invoice) = [GROUP SUM 1 AND NOT currencyInvoiceDetail(invoiceDetail) == currencyRRPInvoiceDetail(invoiceDetail) BY invoiceInvoiceDetail(invoiceDetail)](
+//    invoice) AND showRRPInvoice(invoice);

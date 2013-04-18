@@ -1,6 +1,6 @@
 MODULE SaleReturnCreditNote;
 
-REQUIRE CreditNote, SaleReturnShipment;
+REQUIRE CreditNote, SaleReturnShipment, SaleCreditNote;
 
 NAMESPACE SaleReturn;
 
@@ -21,9 +21,8 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCustomerLegalEntity(
 
 @defineDocumentSupplierCustomerStockAccess(UserCreditNote, company, customer, userCreditNote);
 
-//-- Операция
-createCreditNoteUserInvoice (invoice) <- createCreditNoteOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, createCreditNote);
 
 NAVIGATOR {
     saleReturnNavigator {

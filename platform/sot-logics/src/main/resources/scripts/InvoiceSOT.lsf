@@ -55,7 +55,7 @@ changeRetailMarkupSkuUserInvoiceDetail = ACTION(detail) {
 }
 
 EXTEND FORM Purchase.userInvoice
-    PROPERTIES (i) AFTER toShowWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoice
+    PROPERTIES (i) AFTER showWholesalePriceUserInvoice toShowRetailMarkupSkuUserInvoice
     PROPERTIES(d) BEFORE wholesaleMarkupUserInvoiceDetail retailMarkupSkuUserInvoiceDetail SHOWIF toShowRetailMarkupSkuUserInvoice(i) ON CHANGE changeRetailMarkupSkuUserInvoiceDetail(d)
 ;
 

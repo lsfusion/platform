@@ -265,9 +265,6 @@ invoiceDetailInvoiceDetail(invoiceDetail) += invoiceDetailPurchaseInvoiceDetail(
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createPurchaseInvoiceUserInvoice (invoice) <- createPurchaseInvoiceOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
-
-
-
+// -- Операция
+@defineOperationProperty(createPurchaseInvoice, 'Накладную (закупка)', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPurchaseInvoice);

@@ -199,3 +199,20 @@ META defineDocumentOperationRole(object)
     @defineDocumentOperationRole(object, ###object);
 END
 
+META defineOperationProperty(property, caption, container)
+    property###operation caption = DATA BOOLEAN (Operation);
+
+    EXTEND FORM operation
+        PROPERTIES(o) property###operation
+    ;
+    EXTEND DESIGN operation {
+        container {
+            ADD PROPERTY(property###operation);
+        }
+    }
+END
+
+META deriveDocumentOperationProperty(objectClass, property)
+    property###objectClass (o) <- property###operation(operation###objectClass(o))
+        WHEN CHANGED(operation###objectClass(o));
+END

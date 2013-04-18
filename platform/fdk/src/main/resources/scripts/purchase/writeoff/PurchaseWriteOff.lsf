@@ -42,8 +42,8 @@ FORM writeOffRateDialog 'Нормы отходов'
 
 //------------------------------ Создание аггрегированных объектов через операции -----------------------------//
 
-createPurchaseWriteOffUserInvoice (invoice) <- createPurchaseWriteOffOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+@defineOperationProperty(createPurchaseWriteOff, 'Акт списания', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPurchaseWriteOff);
 
 reasonInvoice 'Причина списания (ИД)' = ABSTRACT Reason (Invoice);
 reasonUserInvoice 'Причина списания (ИД)' = DATA Reason (UserInvoice);
@@ -115,8 +115,7 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 
 
 @defineDocumentInterfaceCreate (shipment, createPurchaseWriteOff, 'Создать акт списания');
-createPurchaseWriteOffUserShipment (shipment) <- createPurchaseWriteOffOperation(operationUserShipment(shipment))
-     WHEN CHANGED(operationUserShipment(shipment));
+@deriveDocumentOperationProperty(UserShipment, createPurchaseWriteOff);
 
 overCopyInvoice(s, d) += ACTION (s, d) {
     SET createPurchaseWriteOffUserInvoice(d) <- createPurchaseWriteOffUserInvoice(s);

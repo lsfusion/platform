@@ -1,6 +1,6 @@
 MODULE PricingPurchaseReturn;
 
-REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment;//, PurchaseOperation;
+REQUIRE Pricing, PurchaseReturnInvoice, PurchaseReturnShipment, PricingPurchase;
 
 NAMESPACE PurchaseReturn;
 
@@ -26,6 +26,5 @@ retailMarkupUserInvoiceDetail(userInvoiceDetail)  <- [round2((((X - X*Y/(100+Y))
 skipChangeLedgerPricing(pricing) += pricing IS InvoicePricing;
 isReturnPricing(pricing) +=  pricing IS InvoicePricing;
 
-// Автоматическое проставление галочки
-createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// Автоматическое проставление галочки создания акта расценки
+@deriveDocumentOperationProperty(UserInvoice, createPricing);

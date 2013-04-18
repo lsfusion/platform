@@ -7,48 +7,20 @@ NAMESPACE Sale;
 @defineOperation('(продажа)');
 
 @defineOperationPriceListType();
+
 @defineOperationLegalEntity(supplier, s, isCompanyLegalEntity, 'Поставщики');
 @defineOperationLegalEntity(customer, c, isBuyerLegalEntity, 'Покупатели');
+
 @defineOperationRole();
 @extendFormFilterRole(o, dialogOperations);
 
-createShipmentOperation 'Создавать поставку' = DATA BOOLEAN (Operation) IN createGroup;
-createPricingOperation 'Создавать акт расценки' = DATA BOOLEAN (Operation) IN createGroup;
-createCreditNoteOperation 'Создавать акт расхождения' = DATA BOOLEAN (Operation) IN createGroup;
-createPurchaseInvoiceOperation 'Создавать накладную(закупка)' = DATA BOOLEAN (Operation) IN createGroup;
-createPurchasePricingOperation 'Создавать акт расценки(закупка)' = DATA BOOLEAN (Operation) IN createGroup;
-purchaseRetailPriceListTypeOperation = DATA PriceListType (Operation);
-namePurchaseRetailPriceListTypeOperation 'Вид цен акт расценки(закупка)' (operation) = name(purchaseRetailPriceListTypeOperation(operation));
-createPurchaseShipmentOperation 'Создавать поставку (закупка)' = DATA BOOLEAN (Operation) IN createGroup;
-
-toShowManufacturingPriceOperation 'Показывать цену изготовителя' = DATA BOOLEAN (Operation) IN toShowGroup;
-showPackOperation 'Показывать упаковку' = DATA BOOLEAN (Operation) IN toShowGroup;
-toShowRRPPriceOperation 'Показывать RRP' = DATA BOOLEAN (Operation) IN toShowGroup;
-
-EXTEND FORM operation
-    PROPERTIES(o) createShipmentOperation, createPricingOperation, createCreditNoteOperation,
-                  createPurchaseInvoiceOperation, createPurchasePricingOperation, namePurchaseRetailPriceListTypeOperation,
-                  createPurchaseShipmentOperation,
-                  toShowManufacturingPriceOperation, showPackOperation, toShowRRPPriceOperation
-;
-
 EXTEND DESIGN operation{
-    tabContainer{
-        NEW aggrContainer{
+    tabContainer {
+        NEW createContainer {
             caption = 'Производные документы';
-            ADD PROPERTY(createShipmentOperation);
-            ADD PROPERTY(createCreditNoteOperation);
-            ADD PROPERTY(createPricingOperation);
-            ADD PROPERTY(createPurchaseInvoiceOperation);
-            ADD PROPERTY(createPurchasePricingOperation);
-            ADD PROPERTY(namePurchaseRetailPriceListTypeOperation);
-            ADD PROPERTY(createPurchaseShipmentOperation);
         }
         NEW showContainer {
             caption = 'Отображение свойств';
-            ADD PROPERTY(toShowManufacturingPriceOperation);
-            ADD PROPERTY(toShowRRPPriceOperation);
-            ADD PROPERTY(showPackOperation);
         }
     }
 }

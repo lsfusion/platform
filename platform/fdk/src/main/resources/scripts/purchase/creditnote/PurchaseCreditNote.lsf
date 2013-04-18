@@ -18,9 +18,9 @@ CONSTRAINT customerUserCreditNote(userCreditNote) AND NOT isCompanyLegalEntity(c
 
 @defineDocumentSupplierCustomerStockAccess(UserCreditNote, supplier, company, userCreditNote);
 
-//-- Операция
-createCreditNoteUserInvoice (invoice) <- createCreditNoteOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// -- Операция
+@defineOperationProperty(createCreditNote, 'Акт расхождения', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createCreditNote);
 
 NAVIGATOR {
     purchasePurchaseNavigator {

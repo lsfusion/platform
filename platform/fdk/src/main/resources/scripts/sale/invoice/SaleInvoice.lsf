@@ -88,9 +88,9 @@ overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
     }
 }
 
-showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
-
+// -- Операция
+@defineOperationProperty(showPack, 'Упаковка', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showPack);
 
 // ---------------- Проставление партий в инвойсе с использование партий заказа -------- //
 

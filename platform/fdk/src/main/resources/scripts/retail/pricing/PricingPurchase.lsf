@@ -9,8 +9,6 @@ NAMESPACE Purchase;
 // Объявляем вид цены, автоматически проставляем
 @defineDocumentInterfacePriceListType (invoice, priceListType, retail, ' (розничный)');
 
-retailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
 retailPriceListTypeUserInvoiceDetail(detail) <- retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail))
                                                 WHEN CHANGED(retailPriceListTypeUserInvoice(userInvoiceUserInvoiceDetail(detail)));
 
@@ -23,9 +21,28 @@ roundConditionUserInvoiceDetail(userInvoiceDetail) =
 @defineInvoicePricingAggregation(invoice, Invoice, ' (закупка)', 'Акт расценки на основе инвойса', 'Проведенный акт расценки на основе инвойса', customerStock, );
 @defineInvoicePricingRelation(' (закупка)', customerStock);
 
-// Проставление галочки акт расценки
-createPricingUserInvoice (invoice) <- createPricingOperation(operationUserInvoice(invoice))
+// -- Операция
+@defineOperationProperty(createPricing, 'Акт расценки', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPricing);
+
+// Вид цены для расценки
+pricingPriceListTypeOperation = DATA PriceListType (Operation);
+namePricingPriceListTypeOperation 'Вид цен акт расценки' (operation) = name(pricingPriceListTypeOperation(operation));
+
+EXTEND FORM operation
+    PROPERTIES(o) namePricingPriceListTypeOperation
+;
+
+EXTEND DESIGN operation {
+    createContainer {
+        ADD PROPERTY(namePricingPriceListTypeOperation);
+    }
+}
+
+// Записываем тип цены по умолчанию из операции
+retailPriceListTypeUserInvoice (invoice) <- pricingPriceListTypeOperation(operationUserInvoice(invoice))
     WHEN CHANGED(operationUserInvoice(invoice));
+
 
 // Добавляем вид цены на форму
 EXTEND FORM userInvoice
@@ -53,8 +70,8 @@ retailVATUserInvoiceDetail (detail) <- VATUserInvoiceDetail(detail) WHEN CHANGED
 //----------------------------------------------- Акт дооценки ---------------------------------------------------//
 @defineRepricingAggregation(' (закупка)', customerStock);
 
-createRepricingUserInvoice (invoice) <- createRepricingOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+@defineOperationProperty(createRepricing, 'Акт дооценки', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createRepricing);
 
 // Копирование документа
 overCopyInvoice(s, d) += ACTION (s, d) {

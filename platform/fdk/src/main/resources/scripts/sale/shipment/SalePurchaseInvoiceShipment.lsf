@@ -10,8 +10,10 @@ GROUP shipmentGroup 'Информация о поставке' : base;
 
 // Галочка по созданию акта расценки на закупке
 @defineDocumentInterfaceCreate (invoice, createPurchaseShipment, 'Создать поставку (закупка)');
-createPurchaseShipmentUserInvoice (invoice) <- createPurchaseShipmentOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+
+// -- Операция
+@defineOperationProperty(createPurchaseShipment, 'Поставка (закупка)', createContainer);
+@deriveDocumentOperationProperty(UserInvoice, createPurchaseShipment);
 
 backgroundPurchaseShipmentInvoice 'Цвет' (invoice) = RGB(238, 250, 200) IF invoice IS Invoice;
 //--

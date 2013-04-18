@@ -27,13 +27,16 @@ NAMESPACE PurchaseReturn;
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineDocumentOperation(invoice, i);
+
 @defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка-возврат)');
+
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
+
 @defineDocumentOperationRole(userInvoice);
 
-isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+@deriveDocumentOperationProperty(Invoice, isHomeCurrency);
+
 //------------------------------ Ограничение на выбор поставщиков -----------------------------//
 
 CONSTRAINT supplierUserInvoice(userInvoice) AND NOT isSupplierLegalEntity(supplierUserInvoice(userInvoice))
@@ -73,8 +76,9 @@ overChangeQuantityValueBatchUserInvoiceDetail(detail) += ACTION (detail) {
         SET packQuantityUserInvoiceDetail(detail) <- quantityUserInvoiceDetail(detail)/amountPackUserInvoiceDetail(detail);
     }
 }
-showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+
+// -- Операция
+@deriveDocumentOperationProperty(UserInvoice, showPack);
 
 //------------------------------ Расширение формы -----------------------------//
 

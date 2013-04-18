@@ -24,12 +24,18 @@ NAMESPACE Purchase;
 //----------------------------------------------- Операции -----------------------------------------------------//
 
 @defineDocumentOperation(invoice, i);
+
 @defineDocumentOperationPriceListType(userInvoice, 'накладной (закупка)');
+
 @defineDocumentOperationLegalEntity(userInvoice, supplier, 'Поставщик');
 @defineDocumentOperationLegalEntity(userInvoice, customer, 'Покупатель');
-isHomeCurrency (invoice) <- isHomeCurrencyOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+
 @defineDocumentOperationRole(userInvoice);
+
+@defineOperationProperty(isHomeCurrency, 'Конвертация', showContainer);
+@deriveDocumentOperationProperty(Invoice, isHomeCurrency);
+
+// -------------------------------------------- Инвойс на основе заказа -------------------------------------- //
 
 @defineOrderInvoice(' (закупка)', customerStock);
 
@@ -47,11 +53,11 @@ certificateCostPriceInvoiceDetail 'Цена за сертификацию' = ABS
 certificateCostPriceUserInvoiceDetail 'Цена за сертификацию' = ABSTRACT NUMERIC[14,2](UserInvoiceDetail) PERSISTENT;
 certificateCostPriceInvoiceDetail(detail) += certificateCostPriceUserInvoiceDetail(detail);
 
-priceInvoiceDetailOver (detail) = IF isHomeCurrency(invoiceInvoiceDetail(detail)) THEN
+priceInvoiceDetailOver (detail) = IF isHomeCurrencyInvoice(invoiceInvoiceDetail(detail)) THEN
                                      homePriceInvoiceDetail(detail)
                                 ELSE priceInvoiceDetail(detail);
 
-priceUserInvoiceDetailOver (detail) = IF isHomeCurrency(userInvoiceUserInvoiceDetail(detail)) THEN
+priceUserInvoiceDetailOver (detail) = IF isHomeCurrencyInvoice(userInvoiceUserInvoiceDetail(detail)) THEN
                                          homePriceUserInvoiceDetail(detail)
                                     ELSE priceUserInvoiceDetail(detail);
 
@@ -96,8 +102,9 @@ EXTEND DESIGN userInvoice {
 //    }
 //}
 
-showPackUserInvoice (invoice) <- showPackOperation(operationUserInvoice(invoice))
-    WHEN CHANGED(operationUserInvoice(invoice));
+// -- Операция
+@defineOperationProperty(showPack, 'Упаковка', showContainer);
+@deriveDocumentOperationProperty(UserInvoice, showPack);
 
 //------------------------------ Расширение формы -----------------------------//
 
