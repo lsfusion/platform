@@ -11,6 +11,7 @@ import com.smartgwt.client.widgets.form.validator.MatchesFieldValidator;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.layout.VLayout;
 import platform.gwt.base.client.BaseMessages;
+import platform.gwt.base.client.GwtClientUtils;
 
 public class RegisterBox extends VLayout {
     private final static String EMAIL_VALIDATION_REGEX = "^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$";
@@ -83,7 +84,7 @@ public class RegisterBox extends VLayout {
         repeatPasswordBox.setRequired(true);
 
         captchaSalt = ("" + Math.random() * 10).substring(3);
-        Img captchaImage = new Img("/jcaptcha?salt=" + captchaSalt);
+        Img captchaImage = new Img(GwtClientUtils.getWebAppBaseURL() + "/jcaptcha?salt=" + captchaSalt);
         captchaImageItem = new CanvasItem();
         captchaImageItem.setShowTitle(false);
         captchaImageItem.setCanvas(captchaImage);
