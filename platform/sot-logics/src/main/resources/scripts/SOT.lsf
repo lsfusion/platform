@@ -24,7 +24,7 @@ netWeightSotUOM 'Вес нетто' (sotUOM) = DATA NUMERIC[9,3](SotUOM) IN base
 UOMSotUOM 'Единица измерений' = DATA UOM (SotUOM);
 nameUOMSotUOM 'Единица измерений' (sotUOM) = name(UOMSotUOM(sotUOM)) IN base;
 
-sotUOMWeightUOM (weight, uom) = GROUP MAX sotUOM BY netWeightSotUOM(sotUOM), UOMSotUOM(sotUOM) WHERE sotUOM IS SotUOM;
+sotUOMWeightUOM (weight, uom) = GROUP MAX sotUOM BY netWeightSotUOM(sotUOM), UOMSotUOM(sotUOM);
 
 sotUOMItem = DATA SotUOM (Item);
 nameSotUOMItem 'Единица измерений SOT' (item) = nameSotUOM(sotUOMItem(item)) IN itemBaseGroup;
