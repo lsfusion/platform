@@ -77,7 +77,8 @@ EXTEND CLASS Features.StoreSize
 //                                                                                                 [PREFCHARWIDTH <int value>]
 //                                                                                                 [IMAGE 'name'] [EDITKEY '<key code>' [SHOW | HIDE]] [AUTOSET] [CONFIRM]
 //                                                                                                 [REGEXP '<expression>' ['<regExp message>']] [LOGGABLE] [ECHO] [INDEXED]
-//                                                                                                 [AGGPROP] [NOT NULL [DELETE [SESSION]]] [ON (CHANGE | CHANGEWYS) action]
+//                                                                                                 [AGGPROP] [NOT NULL [DELETE] [APPLY | SESSION] [FORMS form1, ..., formN]]
+//                                                                                                 [ON (CHANGE | CHANGEWYS) action]
 //                                                                                                 [EVENTID 'id'];
 
 // Если именованные параметры не указываются, то они выводятся из propertyExpression

@@ -1513,8 +1513,8 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting returns [boolean toResolve = false, Event event = Event.APPLY]
-	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; } et=baseEvent { $event = $et.event; })?
+notNullSetting returns [boolean toResolve = false, Event event]
+	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; })? et=baseEvent { $event = $et.event; }
 	;
 
 eventSetting [LP property, List<String> context]
@@ -1989,15 +1989,14 @@ constraintStatement
 @init {
 	boolean checked = false;
 	List<String> propNames = null;
-	Event event = Event.APPLY;
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, event, checked, propNames, $message.val);
+		self.addScriptedConstraint($expr.property.property, $et.event, checked, propNames, $message.val);
 	}
 }
 	:	'CONSTRAINT'
-	    (et=baseEvent { event = $et.event; })
+	    et=baseEvent
 		expr=propertyExpression[new ArrayList<String>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
 		('CHECKED' { checked = true; } 
 			('BY' list=nonEmptyCompoundIdList { propNames = $list.ids; })? 
