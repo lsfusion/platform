@@ -88,8 +88,9 @@ EXTEND FORM payment
                   sumContractPayment ON CHANGE setRateExchangeContractPayment(p),
                   nameCurrencyContractPayment
 
-    PROPERTIES(i) READONLY descriptionInContractLedger, debtInContractLedger
+    PROPERTIES(i) READONLY dateInContractLedger, descriptionInContractLedger, debtInContractLedger
     PROPERTIES(p, i) costOutContractLedgerInContractLedger
+    ORDER BY dateInContractLedger
 
     FILTERS contractPayment(p) == contractInContractLedger(i)
 ;

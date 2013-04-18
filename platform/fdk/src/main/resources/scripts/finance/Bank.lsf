@@ -73,8 +73,18 @@ FORM account 'Расчетный счет'
 ;
 
 DESIGN account FROM DEFAULT{
-    a.accountGroup{
+    main{
+        ADD PROPERTY(numberAccount);
+        ADD PROPERTY(nameCurrencyAccount);
         ADD PROPERTY(nameLegalEntityAccount);
+        ADD PROPERTY(nameBankAccount);
+        ADD PROPERTY(addressBankAccount);
+        ADD PROPERTY(MFOBankAccount);
+        ADD PROPERTY(departmentBankAccount);
+        ADD PROPERTY(CBUBankAccount);
+        ADD PROPERTY(noteAccount);
+
+        ADD functions.box;
     }
 }
 
@@ -85,6 +95,16 @@ PaymentLedger.editAccount(account) += editAccount(account);
 EXTEND FORM accounts
     PROPERTIES(a) READONLY nameBankAccount, addressBankAccount, MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
     PROPERTIES() addAccount TODRAW a FORCE PANEL
+;
+
+FORM accounts 'Счета'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount, nameLegalEntityAccount, nameBankAccount, addressBankAccount,
+                           MFOBankAccount, departmentBankAccount, CBUBankAccount, noteAccount
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
+
+    DIALOG Account OBJECT a
 ;
 
 // ------------------------ Привязка банков к юрлицам ------------------------ //

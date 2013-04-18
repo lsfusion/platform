@@ -600,26 +600,30 @@ FORM contractLedger 'Управление задолженностями'
 
 
     OBJECTS ic = InContractLedger
-    PROPERTIES(ic) READONLY descriptionInContractLedger, sumInContractLedger
+    PROPERTIES(ic) READONLY dateInContractLedger, descriptionInContractLedger, sumInContractLedger
     PROPERTIES(ic, d) READONLY debtInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic),
                                bonusSumInContractLedger BACKGROUND backgroundBonusSumInContractLedger(ic),
                                bonusDebtSumInContractLedgerDate BACKGROUND backgroundBonusSumInContractLedger(ic)
+    ORDER BY dateInContractLedger
 
     OBJECTS icoc = OutContractLedger
-    PROPERTIES(icoc) READONLY descriptionOutContractLedger, sumOutContractLedger
+    PROPERTIES(icoc) READONLY dateOutContractLedger, descriptionOutContractLedger, sumOutContractLedger
     PROPERTIES(icoc, d) READONLY costedInContractLedgerOutContractLedgerDate
     PROPERTIES READONLY costOutContractLedgerInContractLedger(icoc, ic)
+    ORDER BY dateOutContractLedger
 
     OBJECTS oc = OutContractLedger
-    PROPERTIES(oc) READONLY descriptionOutContractLedger, sumOutContractLedger
+    PROPERTIES(oc) READONLY dateOutContractLedger, descriptionOutContractLedger, sumOutContractLedger
     PROPERTIES(oc, d) READONLY costedInContractLedgerOutContractLedgerDate
     PROPERTIES(oc) FORCE PANEL TOOLBAR writeOutContractLedgerFIFO SHOWIF isOutContractLedger(oc),
-                                             writeOutContractLedgerLIFO SHOWIF isOutContractLedger(oc)
+                                       writeOutContractLedgerLIFO SHOWIF isOutContractLedger(oc)
+    ORDER BY dateOutContractLedger
 
     OBJECTS ocic = InContractLedger
-    PROPERTIES(ocic) READONLY descriptionInContractLedger, sumInContractLedger
+    PROPERTIES(ocic) READONLY dateInContractLedger, descriptionInContractLedger, sumInContractLedger
     PROPERTIES(ocic, d) READONLY debtInContractLedgerDate
     PROPERTIES READONLY costOutContractLedgerInContractLedger(oc, ocic)
+    ORDER BY dateInContractLedger
 
     FILTERS contractContractLedger(cl) == c,
             contractContractALedger(cal) == c,

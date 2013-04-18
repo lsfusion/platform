@@ -38,6 +38,15 @@ EXTEND FORM accounts
     PROPERTIES() addAccount TODRAW a FORCE PANEL
 ;
 
+FORM accounts 'Счета'
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY numberAccount, nameCurrencyAccount, nameLegalEntityAccount
+    PROPERTIES(a) editAccount FORCE PANEL TOOLBAR, delete
+    PROPERTIES() addAccount TODRAW a FORCE PANEL
+
+    DIALOG Account OBJECT a
+;
+
 EXTEND FORM legalEntity
     OBJECTS ca=Account
     PROPERTIES(ca)  numberAccount, nameCurrencyAccount, ADDOBJ, delete
