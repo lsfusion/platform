@@ -28,7 +28,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             StringBuffer requestURL = request.getRequestURL();
             Properties properties = new Properties();
             properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
-            properties.put("client.host", blProvider.getRegistryPort());
+            properties.put("client.host", String.valueOf(blProvider.getRegistryPort()));
             properties.put("client.port", blProvider.getRegistryHost());
 
             String content = stringResolver.replacePlaceholders(
