@@ -1,6 +1,8 @@
 MODULE PriceList;
 
-REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound;
+REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound, Operation;
+
+NAMESPACE PriceList;
 
 // --------------------------- Виды цен ------------------------- //
 
@@ -449,6 +451,64 @@ changeMarkUpSkuUserPriceList 'Изменить наценку' = ACTION (userPri
     }
 }
 
+// ----------------------------------------- Операции --------------------------------------- //
+
+META defineOperationPriceListType(dumb)
+
+    TABLE priceListType###operation(PriceListType, Operation);
+    isPriceListType###operation 'Отм.' = DATA BOOLEAN (PriceListType, Operation);
+
+    EXTEND FORM operation
+        OBJECTS pt = PriceListType
+        PROPERTIES(pt, o) isPriceListType###operation
+        PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
+        FILTERGROUP filters
+            FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
+    ;
+
+    EXTEND DESIGN operation {
+        tabContainer {
+            ADD pt.box;
+        }
+    }
+
+END
+
+META defineDocumentOperationPriceListType(object, caption)
+    CONSTRAINT operation###object(object) AND priceListType###object(object)
+               AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
+        CHECKED BY priceListType###object
+        MESSAGE 'Вид цены для '###caption###' должен совпадать с отмеченными в операции ';
+
+    CONSTRAINT operation###object##Detail(detail) AND priceListType###object##Detail(detail)
+               AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
+        CHECKED BY priceListType###object##Detail
+        MESSAGE 'Вид цены для строки '###caption###' должен совпадать с отмеченными в операции';
+END
+
+@defineOperation('(прайс)');
+@defineOperationRole();
+@extendFormFilterRole(o, dialogOperations);
+
+TABLE priceListTypeOperation(PriceListType, Operation);
+
+isPriceListTypeOperation 'Изменять цены' = DATA BOOLEAN (DataPriceListType, Operation);
+showPriceListTypeOperation 'Показывать цены' = DATA BOOLEAN (PriceListType, Operation);
+
+EXTEND FORM operation
+    OBJECTS pt = PriceListType
+    PROPERTIES(pt, o) isPriceListTypeOperation TODRAW pt FORCE GRID, showPriceListTypeOperation
+    PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
+    FILTERGROUP filters
+        FILTER 'Показывать отмеченные' 'F9' isPriceListTypeOperation(pt, o)
+;
+
+EXTEND DESIGN operation {
+    tabContainer {
+        ADD pt.box;
+    }
+}
+
 //Подбор документов
 
 numberDocument(priceList) += numberPriceList(priceList);
@@ -472,6 +532,16 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
         }
     }
 } TOOLBAR;
+
+isActivePriceList(priceList) = toDateTimePriceList(priceList) > currentDateTime() OR priceList IS PriceList AND NOT toDateTimePriceList(priceList);
+backgroundPriceList 'Цвет' (priceList) =
+    CASE
+        WHEN currentDateTime() > toDateTimePriceList(priceList)
+            THEN RGB(255, 226, 226) AND priceList IS PriceList
+        WHEN toDateTimePriceList(priceList) > currentDateTime() OR priceList IS PriceList
+            THEN RGB(226, 255, 226) AND priceList IS PriceList
+        DEFAULT RGB(226, 255, 226) AND priceList IS PriceList
+    END;
 
 FORM userPriceList 'Прайс'
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
@@ -576,28 +646,18 @@ DESIGN userPriceList FROM DEFAULT {
             ADD PROPERTY (toDateUserPriceList);
             ADD PROPERTY (toTimeUserPriceList);
         }
-        NEW propContainer{
+        ADD p.documentPrmGroup{
             caption = 'Параметры документа';
             childConstraints = TO THE RIGHT;
             ADD PROPERTY(nameCurrencyUserPriceList);
             ADD PROPERTY(nameCompanyUserPriceList);
             ADD PROPERTY(noteUserPriceList);
         }
-        POSITION propContainer TO THE RIGHT timeContainer;
+        //POSITION p.documentPrmGroup TO THE RIGHT timeContainer;
         NEW detailContainer{
             childConstraints = TO THE RIGHT;
             type = TABBED;
             NEW firstContainer{
-                caption = 'Параметры';
-                type = SPLITH;
-                NEW firstSecondContainer{
-                    type = SPLITV;
-                    ADD t.box;
-                    ADD stockTree.tree.box{caption = 'Группы складов';}
-                }
-                ADD ts.box{fillHorizontal = 2.0;}
-            }
-            NEW secondContainer {
                 caption = 'Спецификация';
                 childConstraints = TO THE BOTTOM;
 
@@ -609,7 +669,20 @@ DESIGN userPriceList FROM DEFAULT {
                     ADD d.box{fillHorizontal = 3.0;}
                 }
             }
+
+            NEW secondContainer {
+                caption = 'Склады';
+                type = SPLITH;
+                ADD stockTree.tree.box{caption = 'Группы складов';}
+                ADD ts.box{fillHorizontal = 2.0;}
+            }
+
             NEW thirdContainer{
+                caption = 'Вид цен';
+                ADD t.box;
+            }
+
+            NEW fourthContainer{
                 caption = 'Подбор';
                 NEW topThirdContainer{
                     childConstraints = TO THE RIGHT;
@@ -622,7 +695,8 @@ DESIGN userPriceList FROM DEFAULT {
                     ADD skuTree2.tree.box;
                     ADD s2.box{fillHorizontal = 3.0;}
                 }
-           }
+            }
+
         }
         PROPERTY(formOk) {
             caption = 'Провести';
@@ -649,6 +723,7 @@ copyPriceList 'Копировать' = ACTION (priceList) NEWSESSION {
             FOR ADDOBJ d = UserPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
+                SET pricePriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
         FORM userPriceList OBJECTS p = u MANAGESESSION DOCKEDMODAL;
@@ -668,13 +743,13 @@ renewPriceList 'Обновить' = ACTION (priceList) {
             FOR ADDOBJ d = UserPriceListDetail DO {
                 SET userPriceListUserPriceListDetail(d) <- u;
                 SET skuUserPriceListDetail(d) <- skuUserPriceListDetail(detail);
+                SET pricePriceListDetailDataPriceListType(d, priceListType) <- pricePriceListDetailDataPriceListType(detail, priceListType);
             }
         }
         FORM userPriceList OBJECTS p = u DOCKEDMODAL;
         IF formResult() == FormResult.ok THEN {
             SET toDateUserPriceList(priceList) <- fromDateUserPriceList(u);
             SET toTimeUserPriceList(priceList) <- fromTimeUserPriceList(u);
-            EXEC apply();
         } ELSE {
             EXEC delete(u);
         }
@@ -684,13 +759,14 @@ renewPriceList 'Обновить' = ACTION (priceList) {
 FORM priceLists 'Прайсы'
 
     OBJECTS p = PriceList
-    PROPERTIES(p) READONLY isPostedPriceList FORCE GRID, numberObject, seriesObject, datePriceList, timePriceList,
-                           fromDatePriceList, fromTimePriceList, toDatePriceList, toTimePriceList,
-                           nameCurrencyPriceList, nameCompanyPriceList, priceListTypesPriceList, stocksPriceList,
-                           notePriceList, objectClassName
+    PROPERTIES(p) READONLY BACKGROUND backgroundPriceList(p )
+           isPostedPriceList FORCE GRID, numberObject, seriesObject, datePriceList, timePriceList,
+           fromDatePriceList, fromTimePriceList, toDatePriceList, toTimePriceList,
+           nameCurrencyPriceList, nameCompanyPriceList, priceListTypesPriceList, stocksPriceList,
+           notePriceList, objectClassName
 
     PROPERTIES ()  addUserPriceList TODRAW p
-    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR, renewPriceList FORCE PANEL TOOLBAR
+    PROPERTIES (p) editPriceList, copyPriceList FORCE PANEL TOOLBAR
     PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserPriceList(p)
 
     OBJECTS t = DataPriceListType
@@ -704,6 +780,10 @@ FORM priceLists 'Прайсы'
     PROPERTIES(p, ts) READONLY inPriceListStockOver
 
     PROPERTIES(d, t) READONLY pricePriceListDetailDataPriceListType COLUMNS (t) HEADER name(t)
+
+    FILTERGROUP filters
+        FILTER 'Активные прайсы' 'F10' isActivePriceList(p) DEFAULT
+
 
     FILTERS userPriceListUserPriceListDetail(d) == p,
             inPriceListDataPriceListType(p, t),
@@ -754,6 +834,15 @@ addUnderPriceListUserPriceList 'Заполнить на основании' = AC
 EXTEND FORM userPriceList
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR addUnderPriceListUserPriceList
 ;
+
+//Определение операции для прайсов
+@defineDocumentOperation(priceList, p);
+
+inUserPriceListDataPriceListType(priceList, dataPriceListType) <- isPriceListTypeOperation(dataPriceListType, operationUserPriceList(priceList))
+    WHEN CHANGED(operationUserPriceList(priceList));
+
+showUserPriceListPriceListType(priceList, priceListType) <- showPriceListTypeOperation(priceListType, operationUserPriceList(priceList))
+    WHEN CHANGED(operationUserPriceList(priceList));
 
 // ------- Проведение по priceListLedger ----- //
 
@@ -1018,7 +1107,7 @@ EXTEND FORM legalEntity
                            fromDateUserPriceList, fromTimeUserPriceList, toDateUserPriceList, toTimeUserPriceList,
                            nameCurrencyUserPriceList, priceListTypesPriceList,
                            stocksPriceList, noteUserPriceList, objectClassName
-    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL
+    PROPERTIES addUserPriceListLegalEntity(l) TODRAW p FORCE PANEL, renewPriceList(p) TODRAW p FORCE PANEL TOOLBAR
     PROPERTIES(p) EDITSESSIONFORM, delete FORCE PANEL TOOLBAR
     FILTERS companyUserPriceList(p) == l
 ;
@@ -1040,6 +1129,7 @@ NAVIGATOR {
             ADD priceListTypes;
             ADD priceIntervals;
             ADD priceStockGroups;
+            ADD operations;
         }
     }
 }
@@ -1438,39 +1528,4 @@ END
 
 META defineDocumentDetailInvoicePriceVATOnChange (object)
     @defineDocumentDetailInvoicePriceVATOnChangeCustom(object###Detail);
-END
-
-// ----------------------------------------- Операции --------------------------------------- //
-
-META defineOperationPriceListType(dumb)
-
-    TABLE priceListType###operation(PriceListType, Operation);
-    isPriceListType###operation 'Отм.' = DATA BOOLEAN (PriceListType, Operation);
-
-    EXTEND FORM operation
-        OBJECTS pt = PriceListType
-        PROPERTIES(pt, o) isPriceListType###operation
-        PROPERTIES(pt) READONLY name, nameCurrencyPriceListType, objectClassName
-        FILTERGROUP filters
-            FILTER 'Показывать отмеченные' 'F9' isPriceListType###operation(pt, o)
-    ;
-
-    EXTEND DESIGN operation {
-        tabContainer {
-            ADD pt.box;
-        }
-    }
-
-END
-
-META defineDocumentOperationPriceListType(object, caption)
-    CONSTRAINT operation###object(object) AND priceListType###object(object)
-               AND NOT isPriceListType###operation(priceListType###object(object), operation###object(object))
-        CHECKED BY priceListType###object
-        MESSAGE 'Вид цены для '###caption###' должен совпадать с отмеченными в операции ';
-
-    CONSTRAINT operation###object##Detail(detail) AND priceListType###object##Detail(detail)
-               AND NOT isPriceListType###operation(priceListType###object##Detail(detail), operation###object##Detail(detail))
-        CHECKED BY priceListType###object##Detail
-        MESSAGE 'Вид цены для строки '###caption###' должен совпадать с отмеченными в операции';
 END

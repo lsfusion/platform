@@ -63,7 +63,7 @@ closeDateOrder 'Дата автоматического закрытия' = ABST
 @defineDocumentHeaderGrossWeight(order);
 @defineDocumentAbstractHeaderCurrency (order);
 
-operationOrder = ABSTRACT Operation (Order) PERSISTENT;
+operationOrder = ABSTRACT Operation.Operation (Order) PERSISTENT;
 nameOperationOrder 'Операция' (order) = name(operationOrder(order));
 
 quantityFromOrderStock 'Кол-во со склада' (order, stock) = GROUP SUM quantityOrderDetail(orderDetail) BY orderOrderDetail(orderDetail),
