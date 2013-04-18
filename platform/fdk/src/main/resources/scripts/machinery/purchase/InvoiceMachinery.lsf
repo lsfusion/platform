@@ -23,5 +23,3 @@ EXTEND FORM invoices
     PROPERTIES(i) statusLabelPriceTransactionDocumentInvoice ON SHORTCUT createSnapshotPricingLabelTransactionInvoice(i) BACKGROUND backgroundPrintLabelTransactionInvoice(i) READONLY AFTER isCommissionInvoice,
                        createPricingLabelTransactionInvoice FORCE PANEL SHOWIF showPrintLabelTransactionInvoice(i)
 ;
-
-

@@ -4,9 +4,6 @@ REQUIRE TaxReverse, PurchaseInvoice;
 
 NAMESPACE Purchase;
 
-reversiveRateDetail (detail) = IF reverseRange(VATInvoiceDetail(detail))
-                                THEN valueRateRangeDate(VATInvoiceDetail(detail), dateInvoiceDetail(detail))*
-                                     100/(100-valueRateRangeDate(VATInvoiceDetail(detail), dateInvoiceDetail(detail)))
-                                ELSE valueVATInvoiceDetail(detail);
-
-overVATUserInvoiceDetail(detail) += reversiveRateDetail (detail) AND detail IS Purchase.UserInvoiceDetail;
+overVATUserInvoiceDetail(detail) += valueRateRangeDate(VATUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)) * 100 /
+                                    (100-valueRateRangeDate(VATUserInvoiceDetail(detail), dateUserInvoiceDetail(detail)))
+                                    IF reverseRange(VATUserInvoiceDetail(detail));

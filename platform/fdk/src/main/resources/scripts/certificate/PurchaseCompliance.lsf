@@ -283,4 +283,4 @@ EXTEND FORM invoices
 
 //-- Операция
 @defineOperationProperty(showCompliance, 'Сертификация', showContainer);
-@deriveDocumentOperationProperty(Invoice, showCompliance);
+@deriveDocumentOperationProperty(UserInvoice, showCompliance);
