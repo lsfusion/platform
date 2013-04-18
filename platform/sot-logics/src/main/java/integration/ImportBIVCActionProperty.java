@@ -64,7 +64,10 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                 importData.setUserInvoicesList((getLCP("importBIVCUserInvoices").read(context) != null) ?
                         importUserInvoices(path + "//stmc") : null);
 
-                new ImportActionProperty(LM, importData, context).makeImport();
+                ImportActionProperty imp = new ImportActionProperty(LM, importData, context);
+                imp.showManufacturingPrice = true;
+                imp.showWholesalePrice = true;
+                imp.makeImport();
 
                 if ((getLCP("importBIVCItems").read(context) != null))
                     importSotUOM(context, path + "//stmc");
@@ -246,13 +249,18 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         String line;
         String sid;
         String itemID;
+        Double baseMarkup = null;
+        Double supplierMarkup = null;
         Double quantity = null;
-        Double price = null;
-        String warehouseID = null;
-        String supplierWarehouse = null;
+        Double price;
+        Double manufacturingPrice = null;
         Double chargePrice = null;
+        Double wholesalePrice;
+        String customerWarehouseID = null;
+        String supplierWarehouseID = null;
         String supplierID = null;
         String number = null;
+        String textCompliance = null;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("^stmc")) {
                 sid = line.split("\\(|\\)|,")[1];
@@ -262,15 +270,26 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     case 0:
                         quantity = Double.parseDouble(reader.readLine().trim());
                         break;
+                    case 2:
+                        String baseMarkupString = reader.readLine().trim();
+                        baseMarkup = baseMarkupString.isEmpty() ? 0 : Double.parseDouble(baseMarkupString);
+                        break;
+                    case 4:
+                        String supplierMarkupString = reader.readLine().trim();
+                        supplierMarkup = supplierMarkupString.isEmpty() ? 0 : Double.parseDouble(supplierMarkupString);
+                        break;
+                    case 8:
+                        textCompliance = reader.readLine().trim();
+                        break;
                     case 23:
-                        price = Double.parseDouble(reader.readLine().trim());
+                        manufacturingPrice = Double.parseDouble(reader.readLine().trim());
                         break;
                     case 27:
-                        warehouseID = reader.readLine().trim();
+                        customerWarehouseID = trimWarehouseSID(reader.readLine().trim());
                         break;
                     case 30:
                         supplierID = reader.readLine().trim();
-                        supplierWarehouse = supplierID;
+                        supplierWarehouseID = "S" + trimWarehouseSID(supplierID);
                         break;
                     case 32:
                         String cp = reader.readLine().trim();
@@ -282,16 +301,21 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                         break;
                     case 38:
                         if ((number != null) && (!"".equals(number))) {
+                            price = manufacturingPrice * (100 - supplierMarkup) / 100;
+                            wholesalePrice = (manufacturingPrice + chargePrice) * (100 + baseMarkup) / 100;
                             String d = reader.readLine().trim();
                             java.sql.Date date = "".equals(d) ? null : new java.sql.Date(Long.parseLong(d));
                             userInvoiceDetailsList.add(new UserInvoiceDetail(number, "AA", null, true, sid,
-                                    date, itemID, false, quantity, supplierID, warehouseID, supplierWarehouse, price,
-                                    chargePrice, null, null, null, null, null, null, null));
+                                    date, itemID, false, quantity, supplierID, customerWarehouseID,
+                                    supplierWarehouseID, price, chargePrice, manufacturingPrice, wholesalePrice,
+                                    baseMarkup, null, null, textCompliance, null));
                             quantity = null;
                             supplierID = null;
-                            warehouseID = null;
-                            supplierWarehouse = null;
-                            price = null;
+                            customerWarehouseID = null;
+                            supplierWarehouseID = null;
+                            baseMarkup = null;
+                            supplierMarkup = null;
+                            textCompliance = null;
                         }
                         break;
                 }
@@ -299,6 +323,12 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
         }
         reader.close();
         return userInvoiceDetailsList;
+    }
+
+    private String trimWarehouseSID(String warehouseSID) {
+        while (warehouseSID.startsWith("0"))
+            warehouseSID = warehouseSID.substring(1);
+        return warehouseSID;
     }
 
     private List<Warehouse> importWarehouses(String path, String path2) {
@@ -314,7 +344,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     String warehouseID = line.split("\\(|\\)")[1];
                     String[] dataWarehouse = reader.readLine().split(":");
                     String name = dataWarehouse.length > 0 ? dataWarehouse[0].trim() : null;
-                    warehousesList.add(new Warehouse(defaultLegalEntitySID, "own", warehouseID, name, null));
+                    warehousesList.add(new Warehouse(defaultLegalEntitySID, "own", trimWarehouseSID(warehouseID), name, null));
                 }
             }
             reader.close();
@@ -327,7 +357,8 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
                     String name = dataLegalEntity.length > 0 ? dataLegalEntity[0].trim() : null;
                     String warehouseAddress = dataLegalEntity.length > 13 ? dataLegalEntity[13].trim() : null;
                     if (name != null && !"".equals(name))
-                        warehousesList.add(new Warehouse(legalEntityID, "contractor", "swtp_" + legalEntityID, name, warehouseAddress));
+                        warehousesList.add(new Warehouse(legalEntityID, "contractor", "S" + trimWarehouseSID(legalEntityID),
+                                name, warehouseAddress));
                 }
             }
             reader.close();
@@ -450,10 +481,10 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             ImportField itemField = new ImportField(LM.findLCPByCompoundName("sidExternalizable"));
             ImportField weightItemField = new ImportField(LM.findLCPByCompoundName("netWeightItem"));
 
-            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("item"),
+            ImportKey<?> itemKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("Item"),
                     LM.findLCPByCompoundName("externalizableSID").getMapping(itemField));
 
-            ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("sotUOM"),
+            ImportKey<?> sotUOMKey = new ImportKey((ConcreteCustomClass) LM.findClassByCompoundName("SotUOM"),
                     LM.findLCPByCompoundName("externalizableSID").getMapping(sotUOMIDField));
 
             List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
@@ -461,7 +492,7 @@ public class ImportBIVCActionProperty extends ScriptingActionProperty {
             props.add(new ImportProperty(weightItemField, LM.findLCPByCompoundName("netWeightItem").getMapping(itemKey)));
             props.add(new ImportProperty(weightItemField, LM.findLCPByCompoundName("grossWeightItem").getMapping(itemKey)));
             props.add(new ImportProperty(sotUOMIDField, LM.findLCPByCompoundName("sotUOMItem").getMapping(itemKey),
-                    LM.object(LM.findClassByCompoundName("sotUOM")).getMapping(sotUOMKey)));
+                    LM.object(LM.findClassByCompoundName("SotUOM")).getMapping(sotUOMKey)));
 
             ImportTable table = new ImportTable(Arrays.asList(sotUOMIDField, itemField, weightItemField), data);
 

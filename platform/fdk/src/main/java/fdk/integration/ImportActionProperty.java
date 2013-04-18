@@ -527,7 +527,7 @@ public class ImportActionProperty {
                                 showManufacturingPrice, showWholesalePrice,
                                 u.sid == null ? null : ("UID" + u.sid), u.date, new Time(12, 0, 0), u.itemID == null ? null : ((u.isWare ? "W" : "I") + u.itemID),
                                 u.quantity, u.supplier == null ? null : ("L" + u.supplier),
-                                u.warehouse == null ? null : ("WH" + u.warehouse),
+                                u.customerWarehouse == null ? null : ("WH" + u.customerWarehouse),
                                 u.supplierWarehouse == null ? null : ("WH" + u.supplierWarehouse), u.price, u.price, u.chargePrice,
                                 u.manufacturingPrice, u.wholesalePrice, u.wholesaleMarkup,
                                 u.retailPrice, u.retailMarkup, u.textCompliance, true, u.contractID== null ? null : ("CN" + u.contractID)));

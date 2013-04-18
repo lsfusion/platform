@@ -16,7 +16,7 @@ public class UserInvoiceDetail {
     public Boolean isWare;
     public Double quantity;
     public String supplier;
-    public String warehouse;
+    public String customerWarehouse;
     public String supplierWarehouse;
     public Double price;
     public Double chargePrice;
@@ -30,7 +30,7 @@ public class UserInvoiceDetail {
 
 
     public UserInvoiceDetail(String number, String series, Boolean createPricing, Boolean createShipment, String sid,
-                             Date date, String itemID, Boolean isWare, Double quantity, String supplier, String warehouse,
+                             Date date, String itemID, Boolean isWare, Double quantity, String supplier, String customerWarehouse,
                              String supplierWarehouse, Double price, Double chargePrice, Double manufacturingPrice,
                              Double wholesalePrice, Double wholesaleMarkup, Double retailPrice, Double retailMarkup,
                              String textCompliance, String contractID) {
@@ -44,7 +44,7 @@ public class UserInvoiceDetail {
         this.isWare = isWare;
         this.quantity = quantity;
         this.supplier = supplier;
-        this.warehouse = warehouse;
+        this.customerWarehouse = customerWarehouse;
         this.supplierWarehouse = supplierWarehouse;
         this.price = price;
         this.chargePrice = chargePrice;
