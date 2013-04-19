@@ -393,6 +393,7 @@ public class ConfigurationDialog extends Window {
         @Override
         public void success(GetConfigurationsResult result) {
             setConfigurations(result.configurations);
+            uiHandlers.configurationsUpdated(result.configurations);
         }
 
         @Override

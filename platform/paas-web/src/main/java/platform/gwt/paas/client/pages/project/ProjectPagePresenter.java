@@ -105,7 +105,12 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     @Override
     public void configurationButtonClicked() {
-        ConfigurationDialog.showDialog(currentProject, new ConfigurationUIHandlers() {});
+        ConfigurationDialog.showDialog(currentProject, new ConfigurationUIHandlers() {
+            @Override
+            public void configurationsUpdated(ConfigurationDTO[] configurations) {
+                getView().setConfigurations(configurations);
+            }
+        });
     }
 
     @Override
