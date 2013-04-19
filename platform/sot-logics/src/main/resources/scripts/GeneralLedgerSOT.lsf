@@ -6,6 +6,11 @@ NAMESPACE Sale;
 
 //---------------------------- Для примера ------------------------//
 
+EXTEND CLASS Sale.Invoice : GeneralLedger.GLDocument;
+
+nameGLDocument(GLDocument) += descriptionInvoice(GLDocument);
+editGLDocument (GLDocument)+= editInvoice(GLDocument);
+
 //-- Tара
 @defineGeneralLedgerAggregation (invoice, supplierContainer, supplier, sumContainerInvoiceDetailInvoice, date, descriptionInvoice, '62.1', '41.1', '1');
 debitGeneralLedgerDimensionType(generalLedger,dimensionType) += customerInvoice(invoiceSupplierContainerGeneralLedger(generalLedger)) WHEN CLASS(invoiceSupplierContainerGeneralLedger(generalLedger)) AND dimensionType == DimensionType.organization;

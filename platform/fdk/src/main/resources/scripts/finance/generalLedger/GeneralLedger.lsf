@@ -2,6 +2,13 @@ MODULE GeneralLedger;
 
 REQUIRE GLAccountType;
 
+
+CLASS ABSTRACT GLDocument 'Регистр-основание';
+TABLE GLDocument(GLDocument);
+
+nameGLDocument 'Регистр-основание' = ABSTRACT STRING[200] (GLDocument);
+editGLDocument 'Редактировать регистр' = ABSTRACT ACTION (GLDocument) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+
 //-------------------------- Проводки -------------------------//
 
 CLASS ABSTRACT GeneralLedger 'Проводка': Named;
@@ -15,6 +22,14 @@ CLASS UserGeneralLedgerPosted 'Проведенная проводка (поль
 WHEN SESSION ASSIGNED(userGeneralLedger AS UserGeneralLedger) DO {
     IF userGeneralLedger IS UserGeneralLedger AND NOT dateUserGeneralLedger(userGeneralLedger) THEN SET dateUserGeneralLedger(userGeneralLedger) <- currentDate();
 };
+
+GLDocumentGeneralLedger = ABSTRACT GLDocument (GeneralLedger) PERSISTENT;
+nameGLDocumentGeneralLedger 'Регистр-основание' (generalLedger) = nameGLDocument(GLDocumentGeneralLedger(generalLedger));
+GLDocumentUserGeneralLedger = DATA GLDocument (UserGeneralLedger);
+nameGLDocumentUserGeneralLedger 'Регистр-основание' (userGeneralLedger) = nameGLDocument(GLDocumentUserGeneralLedger(userGeneralLedger));
+GLDocumentGeneralLedger (generalLedger) += GLDocumentUserGeneralLedger (generalLedger);
+
+editGLDocumentGeneralLedger 'Редактировать регистр' (generalLedger) = editGLDocument(GLDocumentGeneralLedger(generalLedger));
 
 legalEntityGeneralLedger = ABSTRACT LegalEntity (GeneralLedger) PERSISTENT;
 nameLegalEntityGeneralLedger 'Компания' (generalLedger) = name(legalEntityGeneralLedger(generalLedger));
@@ -147,7 +162,7 @@ EXTEND DESIGN GLAccounts {
 
 FORM userGeneralLedger 'Проводка'
     OBJECTS g=UserGeneralLedger FIXED PANEL
-    PROPERTIES(g) nameLegalEntityUserGeneralLedger, descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger,
+    PROPERTIES(g) nameLegalEntityUserGeneralLedger, nameGLDocumentUserGeneralLedger, descriptionUserGeneralLedger, dateUserGeneralLedger, idDebitUserGeneralLedger, idCreditUserGeneralLedger,
                   sumUserGeneralLedger
 
     EVENTS
@@ -167,6 +182,7 @@ DESIGN userGeneralLedger FROM DEFAULT{
             ADD g.documentHeaderGroup {
                 childConstraints = TO THE RIGHT;
                 ADD PROPERTY(nameLegalEntityUserGeneralLedger);
+                ADD PROPERTY(nameGLDocumentUserGeneralLedger);
                 ADD PROPERTY(descriptionUserGeneralLedger);
                 ADD PROPERTY(dateUserGeneralLedger);
             }
@@ -207,8 +223,9 @@ copyGeneralLedger 'Копировать' = ACTION (generalLedger) NEWSESSION {
 
 FORM generalLedgers 'Проводки'
     OBJECTS g = GeneralLedger
-    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, nameLegalEntityGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
+    PROPERTIES(g)  READONLY isPostedGeneralLedger FORCE GRID, dateGeneralLedger, nameLegalEntityGeneralLedger, nameGLDocumentGeneralLedger, descriptionGeneralLedger, idDebitGeneralLedger,
                    idCreditGeneralLedger, sumGeneralLedger
+    PROPERTIES(g)  editGLDocumentGeneralLedger
 
 
     PROPERTIES (g) READONLY FORCE PANEL nameUserCreatedHistorizable, timeCreatedHistorizable, hostnameComputerCreatedHistorizable,
@@ -245,6 +262,7 @@ META defineGeneralLedgerAggregationInner (object, prop, propClass, companyProp, 
     TABLE prop###generalLedger (propClass###generalLedger);
     @defineAggregation(object, prop###generalLedger, property);
 
+    GLDocumentGeneralLedger(generalLedger) += object###prop###generalLedger(generalLedger);
     legalEntityGeneralLedger(generalLedger) += companyProp###object(object###prop###generalLedger(generalLedger));
     isPostedGeneralLedger(generalLedger) += isPosted###object(object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(object###prop###generalLedger(generalLedger));
@@ -266,6 +284,7 @@ META defineGeneralLedgerAggregationInner (prim1Object, prim2Object, prop, propCl
     TABLE prop###generalLedger (propClass###generalLedger);
     @defineAggregation (prim1Object, prim2Object, prop###generalLedger, property);
 
+    GLDocumentGeneralLedger(generalLedger) += prim1Object###prop###generalLedger(generalLedger);
     legalEntityGeneralLedger(generalLedger) += companyProp###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     isPostedGeneralLedger(generalLedger) += isPosted###prim1Object(prim1Object###prop###generalLedger(generalLedger));
     descriptionGeneralLedger(generalLedger) += description(prim1Object###prop###generalLedger(generalLedger), prim2Object###prop###generalLedger(generalLedger));

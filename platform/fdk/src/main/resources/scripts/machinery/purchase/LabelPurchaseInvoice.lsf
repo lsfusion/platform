@@ -1,0 +1,19 @@
+MODULE LabelPurchaseInvoice;
+
+REQUIRE Label, PurchaseInvoice;
+
+NAMESPACE Purchase;
+
+// ------------------------------------- Печать ценников ------------------------------ //
+
+@Label.implementPriceTransactionDocument(Invoice);
+@defineDocumentLabelTransaction(invoice, sku, customerStock);
+
+showToPrintLabelTransactionInvoice 'Показывать' (invoice) = isPostedInvoice(invoice) AND NOT Label.skipPriceTransactionDocument(invoice)
+                                                                                      AND NOT printedPriceTransactionDocument(invoice)
+                                                                                      AND customerStockInvoice(invoice) IS DepartmentStore;
+
+EXTEND FORM invoices
+PROPERTIES(i) statusLabelPriceTransactionDocument ON SHORTCUT createSnapshotInvoiceLabelTransaction(i) BACKGROUND backgroundPrintLabelTransactionInvoice(i) READONLY AFTER isCommissionInvoice,
+              createInvoiceLabelTransaction FORCE PANEL SHOWIF showToPrintLabelTransactionInvoice(i)
+;
