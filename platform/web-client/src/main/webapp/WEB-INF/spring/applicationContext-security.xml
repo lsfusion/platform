@@ -70,11 +70,11 @@
     </b:bean>
 
     <!-- Custom beans -->
-    <b:bean id="paasProvider" class="platform.gwt.base.server.spring.ContextBusinessLogicsProvider" />
+    <b:bean id="blProvider" class="platform.gwt.base.server.spring.ContextBusinessLogicsProvider" />
 
     <b:bean id="navigatorProvider" scope="session" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
-        <b:constructor-arg ref="paasProvider"/>
+        <b:constructor-arg ref="blProvider"/>
     </b:bean>
 
     <b:bean id="formManager" scope="session" class="platform.gwt.form.server.FormSessionManagerImpl">

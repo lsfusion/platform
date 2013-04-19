@@ -5,6 +5,7 @@ import platform.interop.RemoteLogicsInterface;
 public interface BusinessLogicsProvider<T extends RemoteLogicsInterface> {
     String getRegistryHost();
     int getRegistryPort();
+    String getExportName();
 
     T getLogics();
 

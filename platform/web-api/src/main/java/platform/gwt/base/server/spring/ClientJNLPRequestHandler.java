@@ -26,10 +26,32 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
 
         try {
             StringBuffer requestURL = request.getRequestURL();
+            String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
+            handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(), blProvider.getRegistryPort(), blProvider.getExportName());
+        } catch (Exception e) {
+            logger.debug("Error handling jnlp request: ", e);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Configuration can't be found.");
+        }
+    }
+
+    protected void handleJNLPRequest(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     String codebaseUrl,
+                                     String jnlpUrl,
+                                     String appName,
+                                     String registryHost,
+                                     int registryPort,
+                                     String exportName) throws ServletException, IOException {
+        logger.debug("Generating jnlp response.");
+
+        try {
             Properties properties = new Properties();
-            properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
-            properties.put("client.host", String.valueOf(blProvider.getRegistryPort()));
-            properties.put("client.port", blProvider.getRegistryHost());
+            properties.put("jnlp.codebase", codebaseUrl);
+            properties.put("jnlp.url", jnlpUrl);
+            properties.put("jnlp.appName", appName);
+            properties.put("jnlp.registryHost", registryHost);
+            properties.put("jnlp.registryPort", String.valueOf(registryPort));
+            properties.put("jnlp.exportName", exportName);
 
             String content = stringResolver.replacePlaceholders(
                     IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties

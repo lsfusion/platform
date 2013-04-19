@@ -44,14 +44,6 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
         this.paasProvider = paasProvider;
     }
 
-    public String getRegistryHost() {
-        return registryHost;
-    }
-
-    public int getRegistryPort() {
-        return registryPort;
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(paasProvider, "paasProvider must be set");
@@ -83,6 +75,19 @@ public class ConfigurationBLProviderImpl implements ConfigurationBLProvider, Ini
 
     public void setCurrentProviderToPaas() {
         threadLocalProviders.set(paasProvider);
+    }
+
+    public String getRegistryHost() {
+        return registryHost;
+    }
+
+    public int getRegistryPort() {
+        return registryPort;
+    }
+
+    @Override
+    public String getExportName() {
+        return getCurrentProvider().getExportName();
     }
 
     public BusinessLogicsProvider getCurrentProvider() {

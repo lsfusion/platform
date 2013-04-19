@@ -17,6 +17,7 @@
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
         <property name="platform.client.hostname" value="10.245.181.31"/>
         <property name="platform.client.hostport" value="7652"/>
+        <property name="platform.client.exportname" value="default"/>
         <property name="platform.client.logo" value="http://10.245.181.31/res/splash.png"/>
         <jar href="client.jar"/>
     </resources>

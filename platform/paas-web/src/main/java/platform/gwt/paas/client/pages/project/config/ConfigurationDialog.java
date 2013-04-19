@@ -181,18 +181,18 @@ public class ConfigurationDialog extends Window {
         RowSpacerItem filler = new RowSpacerItem();
         filler.setHeight("*");
 
-        LinkItem jnlpItem = new LinkItem(ConfigurationRecord.JNLP_FIELD);
-        jnlpItem.setShowTitle(false);
-        jnlpItem.setColSpan(5);
-        jnlpItem.setWidth("*");
-        jnlpItem.setTextAlign(Alignment.RIGHT);
-        jnlpItem.setLinkTitle("Download jnlp to connect");
-        jnlpItem.setShowIfCondition(new FormItemIfFunction() {
-            @Override
-            public boolean execute(FormItem item, Object value, DynamicForm form) {
-                return form.getValue("port") != null;
-            }
-        });
+//        LinkItem jnlpItem = new LinkItem(ConfigurationRecord.JNLP_FIELD);
+//        jnlpItem.setShowTitle(false);
+//        jnlpItem.setColSpan(5);
+//        jnlpItem.setWidth("*");
+//        jnlpItem.setTextAlign(Alignment.RIGHT);
+//        jnlpItem.setLinkTitle("Download jnlp to connect");
+//        jnlpItem.setShowIfCondition(new FormItemIfFunction() {
+//            @Override
+//            public boolean execute(FormItem item, Object value, DynamicForm form) {
+//                return form.getValue("port") != null;
+//            }
+//        });
 
         btnStart = new ButtonItem("startField", "Start");
         btnStart.setStartRow(false);
@@ -246,8 +246,8 @@ public class ConfigurationDialog extends Window {
 //                                    exportNameItem,
                                     portItem,
                                     new SpacerItem(), btnStart, btnStop, btnApply, new SpacerItem(),
-                                    filler,
-                                    jnlpItem
+                                    filler
+//                                    ,jnlpItem
         );
         configurationForm.hide();
     }

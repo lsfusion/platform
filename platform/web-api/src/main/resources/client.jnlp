@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.5+" codebase="${codebase.url}" href="client.jnlp">
+<jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}">
     <information>
-        <title>lsFusion Client</title>
+        <title>${jnlp.appName}</title>
         <vendor>Nomosoft Ltd.</vendor>
         <description>Fusion</description>
         <icon href="default.png" kind="default"/>
@@ -16,10 +16,10 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="1024m"/>
-        <property name="platform.client.hostname" value="${client.host}"/>
-        <property name="platform.client.hostport" value="${client.port}"/>
+        <property name="platform.client.hostname" value="${jnlp.registryHost}"/>
+        <property name="platform.client.hostport" value="${jnlp.registryPort}"/>
+        <property name="platform.client.exportname" value="${jnlp.exportName}"/>
         <jar href="lsfusion-client-1.0-SNAPSHOT.jar"/>
     </resources>
-    <application-desc>
-    </application-desc>
+    <application-desc/>
 </jnlp>
