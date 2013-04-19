@@ -55,13 +55,28 @@
     </bean>
 
     <!-- Список для переопределения custom-объектов -->
-    <util:list id="instanceCustomObjects"/>
+    <bean id="instanceCustomObjects" class="platform.spring.SpringListsMergerFactory">
+        <property name="listsToMerge">
+            <list>
+                <ref bean="coreCustomObjects"/>
+                <ref bean="customObjects"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Список базовых custom-объектов -->
+    <util:list id="coreCustomObjects">
+        <ref bean="scheduler"/>
+    </util:list>
+
+    <!-- Список для задания дополнительных custom-объектов -->
+    <util:list id="customObjects"/>
 
     <!-- Remoting -->
     <bean id="rmiManager" class="platform.server.logics.RMIManager">
         <property name="registryPort" value="${rmi.registryPort}"/>
         <property name="exportPort" value="${rmi.exportPort?:0}"/>
-        <property name="exportName" value="${rmi.exportName:}" />
+        <property name="exportName" value="${rmi.exportName:}"/>
     </bean>
 
     <bean id="remoteLogics" class="platform.server.remote.RemoteLogics">

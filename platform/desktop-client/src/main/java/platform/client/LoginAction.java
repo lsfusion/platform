@@ -66,38 +66,37 @@ public final class LoginAction {
 
         int status = connect();
 
-            while (!(status == OK)) {
-                switch (status) {
-                    case HOST_NAME_ERROR:
-                        loginDialog.setWarningMsg(getString("errors.check.server.address"));
-                        break;
-                    case CONNECT_ERROR:
-                        loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
-                        break;
-                    case SERVER_ERROR:
-                        loginDialog.setWarningMsg(getString("errors.internal.server.error"));
-                        break;
-                    case PENDING_RESTART_WARNING:
-                        loginDialog.setWarningMsg(getString("errors.server.reboots"));
-                        break;
-                    case ERROR:
-                        loginDialog.setWarningMsg(getString("errors.error.connecting"));
-                        break;
-                    case CANCELED:
-                        loginDialog.setWarningMsg(getString("errors.error.cancel"));
-                        break;
-                    case LOGIN_ERROR:
-                        loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
-                        break;
-                }
-                loginDialog.setAutoLogin(false);
-                loginInfo = loginDialog.login();
-                if (loginInfo == null) {
-                    return false;
-                }
-                status = connect();
-
+        while (!(status == OK)) {
+            switch (status) {
+                case HOST_NAME_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.check.server.address"));
+                    break;
+                case CONNECT_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
+                    break;
+                case SERVER_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.internal.server.error"));
+                    break;
+                case PENDING_RESTART_WARNING:
+                    loginDialog.setWarningMsg(getString("errors.server.reboots"));
+                    break;
+                case ERROR:
+                    loginDialog.setWarningMsg(getString("errors.error.connecting"));
+                    break;
+                case CANCELED:
+                    loginDialog.setWarningMsg(getString("errors.error.cancel"));
+                    break;
+                case LOGIN_ERROR:
+                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
+                    break;
             }
+            loginDialog.setAutoLogin(false);
+            loginInfo = loginDialog.login();
+            if (loginInfo == null) {
+                return false;
+            }
+            status = connect();
+        }
 
         return true;
     }

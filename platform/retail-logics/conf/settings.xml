@@ -20,7 +20,7 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <util:list id="instanceCustomObjects">
+    <util:list id="сustomObjects">
         <ref bean="equipmentServer"/>
     </util:list>
 
