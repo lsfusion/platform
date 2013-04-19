@@ -1,6 +1,6 @@
 MODULE PriceList;
 
-REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound, Operation;
+REQUIRE System, Document, Numerator, Stock, Barcode, PriceRound, Operation, PurchaseLedger;
 
 NAMESPACE PriceList;
 
@@ -533,15 +533,30 @@ fillDocumentPriceList 'Подбор документа' = ACTION (userPriceList)
     }
 } TOOLBAR;
 
-isActivePriceList(priceList) = toDateTimePriceList(priceList) > currentDateTime() OR priceList IS PriceList AND NOT toDateTimePriceList(priceList);
+isActivePriceList(priceList) = (fromDateTimePriceList(priceList) < currentDateTime() AND toDateTimePriceList(priceList) > currentDateTime()) OR
+                               (fromDateTimePriceList(priceList) < currentDateTime() AND priceList IS PriceList AND NOT toDateTimePriceList(priceList));
 backgroundPriceList 'Цвет' (priceList) =
     CASE
         WHEN currentDateTime() > toDateTimePriceList(priceList)
             THEN RGB(255, 226, 226) AND priceList IS PriceList
-        WHEN toDateTimePriceList(priceList) > currentDateTime() OR priceList IS PriceList
+        WHEN fromDateTimePriceList(priceList) > currentDateTime()
             THEN RGB(226, 255, 226) AND priceList IS PriceList
-        DEFAULT RGB(226, 255, 226) AND priceList IS PriceList
+        DEFAULT RGB(255, 255, 255) AND priceList IS PriceList
     END;
+
+//вкладка подбор
+filterSupplierUserPriceList = DATA SESSION LegalEntity (UserPriceList);
+nameFilterSupplierUserPriceList 'Поставщик' (userPriceList) = name(filterSupplierUserPriceList(userPriceList));
+filterSupplierUserPriceListSku (userPriceList, sku) = prevInSupplierSku(filterSupplierUserPriceList(userPriceList), sku) OR
+                                              (sku IS Sku AND NOT filterSupplierUserPriceList(userPriceList));
+
+filterPriceListTypeUserPriceList = DATA SESSION PriceListType (UserPriceList);
+nameFilterPriceListTypeUserPriceList 'Вид цены' (userPriceList) = name(filterPriceListTypeUserPriceList(userPriceList));
+currentPriceSkuPriceListStock 'Текущая цена' (sku, userPriceList, stock) =
+    currentPriceSkuPriceListDataPriceListTypeStock(sku, userPriceList, filterPriceListTypeUserPriceList(userPriceList), stock);
+filterPriceListTypeUserPriceListSkuStock (userPriceList, sku, stock) =
+    currentPriceSkuPriceListStock (sku, userPriceList, stock) OR
+    (sku IS Sku AND stock IS Stock AND NOT filterPriceListTypeUserPriceList(userPriceList));
 
 FORM userPriceList 'Прайс'
     TREE skuTree sk = SkuGroup PARENT parentSkuGroup
@@ -601,16 +616,14 @@ FORM userPriceList 'Прайс'
     PROPERTIES(ts2) SELECTOR name
     FILTERS inPriceListStockOver(p, ts2),
             isCompanyStock(ts2)
-
-    OBJECTS t2 = PriceListType FIXED PANEL
-    PROPERTIES(t2) SELECTOR name
+    PROPERTIES(p) FORCE PANEL nameFilterPriceListTypeUserPriceList, nameFilterSupplierUserPriceList
 
     OBJECTS s2=Sku
     PROPERTIES inSkuUserPriceList(s2, p) ON CHANGE changeInSkuUserPriceList(s2, p)
     PROPERTIES READONLY inputName2 = nameSku(s2), idBarcodeSku(s2), currentBalanceSkuStock(s2, ts2)
-    PROPERTIES READONLY currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t, ts2) COLUMNS (t) HEADER extendNameCurrentDataPriceListType(p, t) BACKGROUND backgroundCurrentDataPriceListType(t)
-    FILTERGROUP filters
-        FILTER 'С действующей ценой' 'F10' currentPriceSkuPriceListDataPriceListTypeStock(s2, p, t2, ts2) DEFAULT
+    PROPERTIES READONLY currentPriceSkuPriceListStock(s2, p, ts2) SHOWIF filterPriceListTypeUserPriceList(p)
+    FILTERS    filterSupplierUserPriceListSku(p, s2),
+               filterPriceListTypeUserPriceListSkuStock(p, s2, ts2)
 
     FILTERGROUP filters2
         FILTER 'С остатком' 'F11' currentBalanceSkuStock(s2, ts2)
@@ -687,9 +700,14 @@ DESIGN userPriceList FROM DEFAULT {
                 NEW topThirdContainer{
                     childConstraints = TO THE RIGHT;
                     ADD ts2.box;
-                    ADD t2.box;
+                    NEW filtersContainer{
+                        caption = 'Фильтры';
+                        childConstraints = TO THE RIGHT;
+                        ADD PROPERTY(nameFilterPriceListTypeUserPriceList);
+                        ADD PROPERTY(nameFilterSupplierUserPriceList);
+                    }
                 }
-                NEW detailThirdContainer{
+                NEW detailFourthContainer{
                     childConstraints = TO THE RIGHT;
                     type = SPLITH;
                     ADD skuTree2.tree.box;
