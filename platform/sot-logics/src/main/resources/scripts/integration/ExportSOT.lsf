@@ -7,7 +7,9 @@ REQUIRE System,
         Item,
         LegalEntity,
         LegalEntityBy,
+        PricingSalePurchase,
         SaleInvoice,
+        SaleReturnInvoice,
         SaleInvoiceRRP,
         Shipment,
         SOT,
@@ -15,25 +17,39 @@ REQUIRE System,
 
 //---------------------------------------------- Экспорт данных -----------------------------------------------------//
 
-GROUP sotGroup 'sot' : public;
+GROUP sotGroup 'SOT' : public;
+GROUP sotReepGroup 'REEP' : sotGroup;
+GROUP sotFtxpGroup 'FTXP' : sotGroup;
+GROUP sotFtxdGroup 'FTXD' : sotGroup;
 
 exportSOTDataAction 'Экспортировать данные (SOT)' = ACTION CUSTOM 'integration.ExportSOTActionProperty' IN sotGroup;
 exportSOTDirectory 'Папка' = DATA STRING[200] () IN sotGroup;
-exportSOTReep 'Массив REEP' = DATA BOOLEAN () IN sotGroup;
-exportSOTDateFrom 'Дата с' = DATA DATE () IN sotGroup;
-exportSOTDateTo 'Дата по' = DATA DATE () IN sotGroup;
-exportSOTSupplier 'Поставщик' = DATA LegalEntity () IN sotGroup;
-nameExportSOTSupplier 'Поставщик' () = name(exportSOTSupplier()) IN sotGroup;
-exportSOTSupplierStock 'Склад поставщика' = DATA Warehouse () IN sotGroup;
-nameExportSOTSupplierStock 'Склад поставщика' () = name(exportSOTSupplierStock()) IN sotGroup;
-exportSOTCustomer 'Покупатель' = DATA LegalEntity () IN sotGroup;
-nameExportSOTCustomer 'Покупатель' () = name(exportSOTCustomer()) IN sotGroup;
-exportSOTCustomerStock 'Склад покупателя' = DATA Warehouse () IN sotGroup;
-nameExportSOTCustomerStock 'Склад покупателя' () = name(exportSOTCustomerStock()) IN sotGroup;
+exportSOTReep 'Массив Reep' = DATA BOOLEAN () IN sotReepGroup;
+
+exportSOTReepDateFrom 'Дата с' = DATA DATE () IN sotReepGroup;
+exportSOTReepDateTo 'Дата по' = DATA DATE () IN sotReepGroup;
+exportSOTSupplier 'Поставщик' = DATA LegalEntity () IN sotReepGroup;
+nameExportSOTSupplier 'Поставщик' () = name(exportSOTSupplier()) IN sotReepGroup;
+exportSOTSupplierStock 'Склад поставщика' = DATA Warehouse () IN sotReepGroup;
+nameExportSOTSupplierStock 'Склад поставщика' () = name(exportSOTSupplierStock()) IN sotReepGroup;
+exportSOTCustomer 'Покупатель' = DATA LegalEntity () IN sotReepGroup;
+nameExportSOTCustomer 'Покупатель' () = name(exportSOTCustomer()) IN sotReepGroup;
+exportSOTCustomerStock 'Склад покупателя' = DATA Warehouse () IN sotReepGroup;
+nameExportSOTCustomerStock 'Склад покупателя' () = name(exportSOTCustomerStock()) IN sotReepGroup;
+
+exportSOTFtxpDateFrom 'Дата с' = DATA DATE () IN sotFtxpGroup;
+exportSOTFtxpDateTo 'Дата по' = DATA DATE () IN sotFtxpGroup;
+exportSOTFtxp 'Массив Ftxp' = DATA BOOLEAN () IN sotFtxpGroup;
+
+exportSOTFtxdDateFrom 'Дата с' = DATA DATE () IN sotFtxdGroup;
+exportSOTFtxdDateTo 'Дата по' = DATA DATE () IN sotFtxdGroup;
+exportSOTFtxd 'Массив Ftxd' = DATA BOOLEAN () IN sotFtxdGroup;
 
 EXTEND FORM integrationData
-    PROPERTIES() exportSOTDataAction, exportSOTDirectory, exportSOTReep, exportSOTDateFrom, exportSOTDateTo,
-                 nameExportSOTSupplier, nameExportSOTSupplierStock, nameExportSOTCustomer, nameExportSOTCustomerStock
+    PROPERTIES() exportSOTDataAction, exportSOTDirectory, exportSOTReep, exportSOTReepDateFrom, exportSOTReepDateTo,
+                 nameExportSOTSupplier, nameExportSOTSupplierStock, nameExportSOTCustomer, nameExportSOTCustomerStock,
+                 exportSOTFtxp, exportSOTFtxpDateFrom, exportSOTFtxpDateTo,
+                 exportSOTFtxd, exportSOTFtxdDateFrom, exportSOTFtxdDateTo
 ;
 EXTEND DESIGN integrationData {
     pane {
