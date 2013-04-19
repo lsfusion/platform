@@ -7,6 +7,11 @@ REQUIRE Repricing;
 @defineDocumentInterfaceDetailPriceCustomPrefix(repricingDetail, curManufacturing, ' изготовителя до');
 @deriveDocumentDetailPriceSystemLedgerPriceListType(userRepricing, manufacturingPriceStockPriceListType, curManufacturing, sku, departmentStore);
 
+overManagementRepricing(detail, sku, department, time) += ACTION (detail, sku, department, time) {
+    SET manufacturingPriceUserRepricingDetail(detail) <- prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.manufacturingPriceStockPriceListType, sku, department, time)
+        WHERE prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.manufacturingPriceStockPriceListType, sku, department, time);
+}
+
 @changeDocumentDetailPricePrefix(userRepricingDetail, curManufacturing, cur, cur, curManufacturing, cur, curRetail);
 @changeDocumentDetailPricePrefix(userRepricingDetail, manufacturing, newRetail, , manufacturing, , retail);
 

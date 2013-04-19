@@ -547,6 +547,74 @@ EXTEND FORM userRepricing
 //    PROPERTIES allSkuUserRepricing(s,p) ON CHANGE overChangeAllSkuUserRepricing(s,p) AFTER currentBalanceSkuUserRepricing(s,p)
 //;
 
+//------------------------ Управленческая переоценка ----------------------------//
+
+FORM managementRepricing 'Управленческая переоценка'
+    OBJECTS d = DepartmentStore FIXED PANEL
+    PROPERTIES (d) SELECTOR name
+
+    OBJECTS p = PriceListType FIXED PANEL
+    PROPERTIES (p) SELECTOR name
+
+    OBJECTS t=DATETIME FIXED PANEL
+    PROPERTIES(t) OBJVALUE
+
+;
+DESIGN managementRepricing FROM DEFAULT {
+    main {
+        childConstraints = TO THE BOTTOM;
+
+        NEW topContainer {
+            childConstraints = TO THE RIGHT;
+            ADD d.box { title = 'Выберите отдел магазина';  font = 'Tahoma bold 72'; }
+            ADD p.box { title = 'Выберите вид цен';  font = 'Tahoma bold 72'; }
+            ADD t.box;
+        }
+        ADD functions.box;
+    }
+}
+
+needToRepricing (priceList, department, time) = GROUP SUM 1 IF  currentBalanceSkuStock(sku, department) AND
+            pricePriceListTypeSkuStockDateTime(priceList, sku, department, time) !=
+            pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department, time) AND
+            pricePriceListTypeSkuStockDateTime(priceList, sku, department, time) BY priceList, department, time;
+
+overManagementRepricing = ABSTRACT ACTION (a,b,c,d);
+
+createManagementRepricing 'Создать управленческую переоценку' = ACTION () NEWSESSION {
+
+    FORM managementRepricing  MODAL;
+    IF formResult() == FormResult.ok THEN {
+        LOCAL department = DepartmentStore();
+        LOCAL priceList = PriceListType();
+        LOCAL time =  DATETIME();
+        SET department() <- chosenObject('d');
+        SET priceList() <- chosenObject('p');
+        SET time() <- chosenDateTime('t');
+
+        FOR needToRepricing(priceList(), department(), time()) ADDOBJ r = UserRepricing DO {
+            SET departmentStoreUserRepricing(r) <-  department();
+
+            FOR currentBalanceSkuStock(sku, department()) AND pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time()) !=
+            pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time()) AND
+            pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time()) ADDOBJ rd = UserRepricingDetail DO {
+                SET userRepricingUserRepricingDetail(rd) <- r;
+                SET skuUserRepricingDetail(rd) <- sku;
+                SET quantityUserRepricingDetail(rd) <- currentBalanceSkuStock(sku, department());
+                SET retailPriceUserRepricingDetail(rd) <- pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time())
+                    WHERE pricePriceListTypeSkuStockDateTime(priceList(), sku, department(), time());
+                SET curRetailPriceUserRepricingDetail(rd) <- pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time())
+                    WHERE pricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.retailPricingPriceListType, sku, department(), time());
+                SET priceUserRepricingDetail(rd) <- prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.supplierPricingPriceListType, sku, department(), time())
+                    WHERE prevPricePriceListTypeSkuStockDateTime(SystemLedgerPriceListType.supplierPricingPriceListType, sku, department(), time());
+                EXEC overManagementRepricing(rd, sku, department(), time());
+            }
+            FORM userRepricing  OBJECTS p = r MANAGESESSION DOCKEDMODAL;
+
+        }
+    }
+} TOOLBAR;
+
 addUserRepricing 'Добавить' = ACTION ADDFORM UserRepricing;
 editUserRepricing 'Редактировать' (userRepricing) = ACTION EDITFORM UserRepricing;
 
@@ -565,6 +633,8 @@ FORM repricings 'Акты переоценки' TITLE 'Акты переоцен
     PROPERTIES (p) editUserRepricing
     PROPERTIES (p) delete FORCE PANEL TOOLBAR SHOWIF isUserRepricing(p)
     PROPERTIES (p) printRepricing FORCE PANEL
+    PROPERTIES ()  createManagementRepricing TODRAW p
+
 
     OBJECTS d = RepricingDetail
     PROPERTIES (d) READONLY indexRepricingDetail, idBarcodeSkuRepricingDetail, nameSkuRepricingDetail, shortNameUOMSkuRepricingDetail, quantityRepricingDetail,
