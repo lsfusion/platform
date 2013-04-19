@@ -36,13 +36,8 @@ public final class LoginAction {
     final static int CANCELED = 6;
     final static int LOGIN_ERROR = 7;
 
-    public String serverHost;
-    public String serverPort;
-    private String serverDB;
-    private String user;
-    private String password;
     private boolean autoLogin;
-    private LoginInfo loginInfo;
+    public LoginInfo loginInfo;
     private LoginDialog loginDialog;
 
     private RemoteLogicsInterface remoteLogics;
@@ -50,19 +45,16 @@ public final class LoginAction {
     private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
-        serverHost = System.getProperty(PLATFORM_CLIENT_HOSTNAME);
-        serverPort = System.getProperty(PLATFORM_CLIENT_HOSTPORT);
-        serverDB = System.getProperty(PLATFORM_CLIENT_EXPORTNAME);
-        user = System.getProperty(PLATFORM_CLIENT_USER);
-        password = System.getProperty(PLATFORM_CLIENT_PASSWORD);
         autoLogin = Boolean.getBoolean(PLATFORM_CLIENT_AUTOLOGIN);
-        loginInfo = new LoginInfo(serverHost, serverPort, serverDB, user, password);
+        loginInfo = new LoginInfo(System.getProperty(PLATFORM_CLIENT_HOSTNAME), System.getProperty(PLATFORM_CLIENT_HOSTPORT),
+                System.getProperty(PLATFORM_CLIENT_EXPORTNAME), System.getProperty(PLATFORM_CLIENT_USER),
+                System.getProperty(PLATFORM_CLIENT_PASSWORD));
 
         loginDialog = new LoginDialog(loginInfo);
     }
 
     public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
-        boolean needData = serverHost == null || serverPort == null || serverDB == null || user == null || password == null;
+        boolean needData = loginInfo.getServerHost() == null || loginInfo.getServerPort() == null || loginInfo.getServerDB() == null || loginInfo.getUserName() == null || loginInfo.getPassword() == null;
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);
             loginInfo = loginDialog.login();
@@ -73,43 +65,39 @@ public final class LoginAction {
         }
 
         int status = connect();
-        while (!(status == OK)) {
-            switch (status) {
-                case HOST_NAME_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.check.server.address"));
-                    break;
-                case CONNECT_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
-                    break;
-                case SERVER_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.internal.server.error"));
-                    break;
-                case PENDING_RESTART_WARNING:
-                    loginDialog.setWarningMsg(getString("errors.server.reboots"));
-                    break;
-                case ERROR:
-                    loginDialog.setWarningMsg(getString("errors.error.connecting"));
-                    break;
-                case CANCELED:
-                    loginDialog.setWarningMsg(getString("errors.error.cancel"));
-                    break;
-                case LOGIN_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
-                    break;
-            }
-            loginDialog.setAutoLogin(false);
-            loginInfo = loginDialog.login();
-            if (loginInfo == null) {
-                return false;
-            }
-            status = connect();
 
-            serverHost = loginInfo.getServerHost();
-            serverPort = loginInfo.getServerPort();
-            serverDB = loginInfo.getServerDB();
-            user = loginInfo.getUserName();
-            password = loginInfo.getPassword();
-        }
+            while (!(status == OK)) {
+                switch (status) {
+                    case HOST_NAME_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.check.server.address"));
+                        break;
+                    case CONNECT_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
+                        break;
+                    case SERVER_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.internal.server.error"));
+                        break;
+                    case PENDING_RESTART_WARNING:
+                        loginDialog.setWarningMsg(getString("errors.server.reboots"));
+                        break;
+                    case ERROR:
+                        loginDialog.setWarningMsg(getString("errors.error.connecting"));
+                        break;
+                    case CANCELED:
+                        loginDialog.setWarningMsg(getString("errors.error.cancel"));
+                        break;
+                    case LOGIN_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
+                        break;
+                }
+                loginDialog.setAutoLogin(false);
+                loginInfo = loginDialog.login();
+                if (loginInfo == null) {
+                    return false;
+                }
+                status = connect();
+
+            }
 
         return true;
     }
