@@ -4,6 +4,6 @@ REQUIRE TaxReverse, SaleBlanketOrder;
 
 NAMESPACE Sale;
 
-overVATBlanketOrderDetail(detail) += valueRateRangeDate(VATBlanketOrderDetail(detail), dateBlanketOrderDetail(detail)) * 100 /
+overValueVATBlanketOrderDetail(detail) += valueRateRangeDate(VATBlanketOrderDetail(detail), dateBlanketOrderDetail(detail)) * 100 /
                                      (100-valueRateRangeDate(VATBlanketOrderDetail(detail), dateBlanketOrderDetail(detail)))
                                      IF reverseRange(VATBlanketOrderDetail(detail));

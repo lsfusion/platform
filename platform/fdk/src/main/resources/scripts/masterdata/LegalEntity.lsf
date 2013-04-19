@@ -220,11 +220,12 @@ FORM legalEntities 'Организации'
     PROPERTIES(lg) ADDFORM, EDITFORM, delete FORCE PANEL TOOLBAR
 
     OBJECTS l=LegalEntity
-    PROPERTIES(l) READONLYIF isReadonly() name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
+    PROPERTIES(l) READONLYIF isReadonly() nameL = name, fullNameLegalEntity, shortNameOwnershipLegalEntity,
                                           nameLegalEntityGroupLegalEntity
     PROPERTIES(l) READONLY                addressLegalEntity, phoneLegalEntity
     PROPERTIES(l) READONLYIF isReadonly() isSupplierLegalEntity, isCompanyLegalEntity, isCustomerLegalEntity
     PROPERTIES(l) ADDFORM, EDITFORM, delete
+    ORDER BY nameL
 
     FILTERS isParentLegalEntityGroupLegalEntityGroup(legalEntityGroupLegalEntity(l), lg) OR
             l IS LegalEntity AND NOT lg IS LegalEntityGroup OR
