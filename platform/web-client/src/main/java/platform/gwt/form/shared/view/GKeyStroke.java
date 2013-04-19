@@ -128,8 +128,7 @@ public class GKeyStroke implements Serializable {
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYPRESS.equals(eventType)) {
-            return isChangeKeyCode(keyCode) ||
-                    (event.getCharCode() != 0 && keyCode != KEY_ENTER); // смотрим и на чаркод, т.к. в хроме получаем пересечение с символами '!', '%', '(', '#' и пр.
+            return isChangeKey(keyCode, event.getCharCode());
         } else if (KEYDOWN.equals(eventType)) {
             return keyCode == KeyCodes.KEY_DELETE;
         }
@@ -140,7 +139,7 @@ public class GKeyStroke implements Serializable {
         String eventType = event.getType();
         int keyCode = event.getKeyCode();
         if (KEYDOWN.equals(eventType)) {
-            return isChangeKeyCode(keyCode) ||
+            return isChangeKey(keyCode, 0) ||
                     keyCode == KEY_DELETE ||
                     keyCode == KEY_BACKSPACE ||
                     keyCode == KEY_INSERT ||
@@ -149,7 +148,7 @@ public class GKeyStroke implements Serializable {
                     (KEY_F1 <= keyCode && keyCode <= KEY_F12);
         } else if (KEYPRESS.equals(eventType)) {
             return !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                    (isChangeKeyCode(keyCode) || (event.getCharCode() != 0 && keyCode != KEY_ENTER));
+                    (isChangeKey(keyCode, event.getCharCode()));
         }
         return false;
     }
@@ -159,15 +158,14 @@ public class GKeyStroke implements Serializable {
             int keyCode = event.getKeyCode();
             int charCode = event.getCharCode();
             return  !event.getCtrlKey() && !event.getAltKey() && !event.getMetaKey() &&
-                    keyCode != KEY_TAB &&
-                    charCode != 0;
+                    isChangeKey(keyCode, charCode);
         }
         return false;
     }
 
-    public static boolean isChangeKeyCode(int keyCode) {
-        return keyCode != KEY_ENTER
-                && keyCode != KEY_ESCAPE
+    public static boolean isChangeKey(int keyCode, int charCode) { // смотрим и на чаркод, т.к. в хроме получаем пересечение с символами '!', '%', '(', '#' и пр.
+        return keyCode != KEY_ENTER &&
+                (keyCode != KEY_ESCAPE
                 && keyCode != KEY_TAB
                 && keyCode != KEY_HOME
                 && keyCode != KEY_END
@@ -176,7 +174,7 @@ public class GKeyStroke implements Serializable {
                 && keyCode != KEY_LEFT
                 && keyCode != KEY_RIGHT
                 && keyCode != KEY_UP
-                && keyCode != KEY_DOWN;
+                && keyCode != KEY_DOWN || charCode != 0) ;
     }
 
     public static boolean isReplaceFilterEvent(NativeEvent event) {
