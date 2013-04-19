@@ -10,10 +10,12 @@ import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.events.CloseClickEvent;
 import com.smartgwt.client.widgets.events.CloseClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.events.ItemChangedEvent;
 import com.smartgwt.client.widgets.form.events.ItemChangedHandler;
-import com.smartgwt.client.widgets.form.fields.*;
+import com.smartgwt.client.widgets.form.fields.ButtonItem;
+import com.smartgwt.client.widgets.form.fields.RowSpacerItem;
+import com.smartgwt.client.widgets.form.fields.StaticTextItem;
+import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.validator.IntegerRangeValidator;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
@@ -175,7 +177,7 @@ public class ConfigurationDialog extends Window {
         portItem.setWidth("*");
         IntegerRangeValidator portValidator = new IntegerRangeValidator();
         portValidator.setMax(65535);
-        portValidator.setMin(1024);
+        portValidator.setMin(0);
         portItem.setValidators(portValidator);
 
         RowSpacerItem filler = new RowSpacerItem();
