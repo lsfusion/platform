@@ -245,8 +245,7 @@ CLASS UserPriceListPosted 'Проведенный прайс (польз.)' : Us
 
 @defineDocumentInterface(priceList);
 
-@defineDocumentInterfaceTimePrefix(priceList, from, ' c');
-//@defineDocumentInterfaceTimePrefix(priceList, to, ' по');
+@defineDocumentInterfaceDataTimePrefix(priceList, from, ' c');
 
 toDatePriceList 'Дата по' = ABSTRACT DATE (PriceList) IN documentHeaderGroup PERSISTENT;
 toTimePriceList 'Время по' = ABSTRACT TIME (PriceList) IN documentHeaderGroup PERSISTENT;
@@ -275,7 +274,7 @@ toTimePriceList(userPriceList) += toTimeUserPriceList(userPriceList);
 @defineDocumentInterfaceDetailQuantity(priceList);
 @defineAddDetailDialogBarcode(userPriceList, sku);
 
-@defineDocumentInterfaceDetailTimePrefix(priceList, to, 'по');
+@defineDocumentInterfaceDetailDataTimePrefix(priceList, to, ' по');
 
 //WHEN ASSIGNED(u AS UserPriceList) DO {
 //    IF u IS UserPriceList AND toDateUserPriceList(u) THEN SET toDateUserPriceList(u) <- NULL;
@@ -544,6 +543,17 @@ backgroundPriceList 'Цвет' (priceList) =
         DEFAULT RGB(255, 255, 255) AND priceList IS PriceList
     END;
 
+isActivePriceListDetail(priceListDetail) = (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND toDateTimePriceListDetail(priceListDetail) > currentDateTime()) OR
+                               (fromDateTimePriceListDetail(priceListDetail) < currentDateTime() AND priceListDetail IS PriceListDetail AND NOT toDateTimePriceListDetail(priceListDetail));
+backgroundPriceListDetail 'Цвет' (priceListDetail) =
+    CASE
+        WHEN currentDateTime() > toDateTimePriceListDetail(priceListDetail)
+            THEN RGB(255, 226, 226) AND priceListDetail IS PriceListDetail
+        WHEN fromDateTimePriceListDetail(priceListDetail) > currentDateTime()
+            THEN RGB(226, 255, 226) AND priceListDetail IS PriceListDetail
+        DEFAULT RGB(255, 255, 255) AND priceListDetail IS PriceListDetail
+    END;
+
 //вкладка подбор
 filterSupplierUserPriceList = DATA SESSION LegalEntity (UserPriceList);
 nameFilterSupplierUserPriceList 'Поставщик' (userPriceList) = name(filterSupplierUserPriceList(userPriceList));
@@ -575,12 +585,16 @@ FORM userPriceList 'Прайс'
     FILTERS (currencyUserPriceList(p) == currencyPriceListType(t)) OR (p IS UserPriceList AND t IS PriceListType AND NOT currencyPriceListType(t))
 
     OBJECTS d = UserPriceListDetail
-    PROPERTIES(d) isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
-                  shortNameUOMSkuUserPriceListDetail, ADDOBJ, delete
+    PROPERTIES(d) BACKGROUND backgroundPriceListDetail(d)
+                  isSelectedPriceListDetail, indexUserPriceListDetail, idBarcodeSkuUserPriceListDetail, nameSkuUserPriceListDetail,
+                  shortNameUOMSkuUserPriceListDetail, fromDateUserPriceListDetail, fromTimeUserPriceListDetail,
+                  toDateUserPriceListDetail, toTimeUserPriceListDetail, ADDOBJ, delete
     PROPERTIES(d, t) pricePriceListDetailDataPriceListType COLUMNS (t) HEADER extendNameDataPriceListType(p, t) BACKGROUND backgroundDataPriceListType(t) TODRAW d FORCE GRID
     PROPERTIES(p) TODRAW d FORCE PANEL TOOLBAR fillDocumentPriceList, addDetailInputBarcodeUserPriceListDetailUserPriceList
     FILTERS userPriceListUserPriceListDetail(d) == p,
             isParentSkuGroupSku(sk, skuPriceListDetail(d)) OR (sk IS SkuGroup AND d IS PriceListDetail AND NOT skuPriceListDetail(d))
+    FILTERGROUP filters
+        FILTER 'Активные строки' 'F10' isActivePriceListDetail(d)
 
 
     TREE stockTree a=STRING[3], sg = StockGroup PARENT parentStockGroup
@@ -598,7 +612,7 @@ FORM userPriceList 'Прайс'
     PROPERTIES(d, t, ts) markUpPricePriceListDetailDataPriceListTypeStock COLUMNS (t) HEADER extendNameMarkUpDataPriceListType(p, t) BACKGROUND backgroundMarkUpDataPriceListType(t)
     FILTERS inStockGroupStock(sg, ts),
             isCompanyStock(ts)
-    FILTERGROUP filters
+    FILTERGROUP filters2
             FILTER 'Выбранные склады' 'F10' inPriceListStockOver(p, ts) DEFAULT
 
     OBJECTS tt = Stock FIXED PANEL
@@ -625,8 +639,8 @@ FORM userPriceList 'Прайс'
     FILTERS    filterSupplierUserPriceListSku(p, s2),
                filterPriceListTypeUserPriceListSkuStock(p, s2, ts2)
 
-    FILTERGROUP filters2
-        FILTER 'С остатком' 'F11' currentBalanceSkuStock(s2, ts2)
+    FILTERGROUP filters3
+        FILTER 'С остатком' 'F10' currentBalanceSkuStock(s2, ts2)
 
     FILTERS isParentSkuGroupSku(sk2, s2)
     ORDER BY inputName2
@@ -777,7 +791,7 @@ renewPriceList 'Обновить' = ACTION (priceList) {
 FORM priceLists 'Прайсы'
 
     OBJECTS p = PriceList
-    PROPERTIES(p) READONLY BACKGROUND backgroundPriceList(p )
+    PROPERTIES(p) READONLY BACKGROUND backgroundPriceList(p)
            isPostedPriceList FORCE GRID, numberObject, seriesObject, datePriceList, timePriceList,
            fromDatePriceList, fromTimePriceList, toDatePriceList, toTimePriceList,
            nameCurrencyPriceList, nameCompanyPriceList, priceListTypesPriceList, stocksPriceList,
