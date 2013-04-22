@@ -114,7 +114,7 @@
 
     <bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к dispatch-сервису -->
-        <property name="urlPattern" value="/dispatch.*"/>
+        <property name="urlPattern" value="/(paas|configurations/\d+)?/dispatch.*"/>
     </bean>
 
     <bean id="forwardDynamicsFilter" class="platform.gwt.paas.server.spring.filters.ConfigurationForwardDynamicsFilter"/>

@@ -38,7 +38,7 @@
         <property name="dbPassword" value="${db.password}"/>
     </bean>
 
-    <util:list id="сustomObjects">
+    <util:list id="customObjects">
         <ref bean="appManager"/>
     </util:list>
 

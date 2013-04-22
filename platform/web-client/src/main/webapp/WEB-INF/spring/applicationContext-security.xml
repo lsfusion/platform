@@ -28,7 +28,7 @@
     <!-- Custom security filters -->
     <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
-        <b:property name="urlPattern" value="/platform\.gwt\.(?!login\.).*/dispatch.*"/>
+        <b:property name="urlPattern" value="/(?!login\.).*/dispatch.*"/>
     </b:bean>
 
     <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">

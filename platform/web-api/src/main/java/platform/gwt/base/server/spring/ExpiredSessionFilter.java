@@ -1,6 +1,5 @@
 package platform.gwt.base.server.spring;
 
-import org.springframework.security.web.util.UrlUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -36,7 +35,7 @@ public class ExpiredSessionFilter extends GenericFilterBean {
 
         request.setAttribute(FILTER_APPLIED, Boolean.TRUE);
 
-        String requestUrl = UrlUtils.buildRequestUrl(request);
+        String requestUrl = request.getServletPath();
 
         if (request.getRequestedSessionId() != null
                 && !request.isRequestedSessionIdValid()
